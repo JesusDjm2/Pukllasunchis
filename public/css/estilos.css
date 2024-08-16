@@ -1,0 +1,901 @@
+html {
+  scroll-behavior: smooth;
+}
+
+.header-area .main-header-area .main-menu ul li .submenu li a:hover {
+  color: #cd9244;
+}
+
+h3 {
+  color: rgba(0, 0, 0, 0.7450980392);
+  font-size: 20px;
+}
+
+#reiniciarContadorBtn {
+  background: #33445a;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 0.4em;
+  left: -6em;
+  position: fixed;
+  top: 50%;
+  transition: 0.2s ease;
+  z-index: 99;
+}
+#reiniciarContadorBtn:hover {
+  transition: 0.2s ease;
+  left: -1em;
+}
+
+.single_slider {
+  position: relative;
+  overflow: hidden;
+}
+
+.pegajoso {
+  position: sticky;
+  top: 8em;
+}
+
+.slidePuklla1 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url(../img/fondo-institucion.webp);
+  background-size: cover;
+  background-position: center;
+  animation: zoomInOut 10s infinite;
+}
+
+.modal-backdrop.show {
+  z-index: 999;
+}
+
+.slidePuklla2 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url(../img/puklla-fonfo-02.webp);
+  background-size: cover;
+  background-position: center;
+  animation: zoomInOut 10s infinite;
+}
+
+.slidePuklla3 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url(../img/pukllaFondo-03.webp);
+  background-size: cover;
+  background-position: center;
+  animation: zoomInOut 10s infinite;
+}
+
+.slidePuklla4 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url(../img/slides/Proyectos-pukllasunchis.webp);
+  background-size: cover;
+  background-position: center;
+  animation: zoomInOut 10s infinite;
+}
+
+.slidePuklla5 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url(../img/slides/bolsa-de-trabajo-EESP-Pukllasunchis.webp);
+  background-size: cover;
+  background-position: center;
+  animation: zoomInOut 10s infinite;
+}
+
+@keyframes zoomInOut {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.wasa {
+  padding: 15px;
+  font-size: 30px;
+  width: 60px;
+  text-align: center;
+  text-decoration: none;
+  margin: 5px 2px;
+  border-radius: 50%;
+  position: fixed;
+  bottom: 2.5em;
+  right: 0.5em;
+  z-index: 9;
+  background: #25d366;
+  color: #fff;
+}
+
+.wasa:focus {
+  color: #fff;
+}
+
+.wasa:hover {
+  background: #fff;
+  color: #25d366;
+  box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+  border: 1px solid rgba(37, 211, 102, 0.3411764706);
+}
+
+#scrollToTopBtn {
+  bottom: 1em;
+  right: 1.5em;
+  position: fixed;
+  z-index: 99;
+  border-radius: 50%;
+  padding: 8px;
+  width: 45px;
+  background: #d59d52;
+  color: white;
+  border: #d59d52 1px solid;
+  transition: 0.4s ease;
+  cursor: pointer;
+}
+
+#scrollToTopBtn:hover {
+  background: #fff;
+  color: #d59d52;
+  box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+  margin-bottom: 0.2em;
+  transition: 0.4s ease;
+}
+
+.business_info ul li a {
+  color: #727272;
+}
+
+.parallax {
+  position: relative;
+  background: url("../img/slides/Proyectos-pukllasunchis.webp") fixed;
+  background-size: cover;
+  height: auto;
+  color: white;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4em 10em 5em 10em;
+}
+
+.parallax::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.67);
+}
+
+.linea-white {
+  text-align: center;
+  width: 35px;
+  height: 3px;
+  background: #fff;
+  margin: auto;
+  margin-bottom: 1.2em;
+}
+
+.linea-medio {
+  text-align: center;
+  width: 35px;
+  height: 3px;
+  background: #cd9244;
+  margin: auto;
+  margin-bottom: 1.2em;
+}
+
+.linea-debajo {
+  position: relative;
+  display: inline-block;
+  margin-top: 0.8em !important;
+  margin-bottom: 0.8em;
+}
+.linea-debajo::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -5px;
+  width: 60px;
+  height: 3px;
+  background: #cd9244;
+}
+
+.submenu2 li {
+  line-height: 2.4em;
+}
+.submenu2 li a:hover {
+  color: #cd9244;
+  border-radius: 5px;
+  border-bottom: 1px dashed #cd9244;
+  transition: 1s ease;
+  padding-left: 0.3em;
+}
+
+.parallax .row .card .card-body {
+  transition: 0.6s ease;
+}
+.parallax .row .card .card-body:hover {
+  background: #fff;
+  color: #fff;
+  transition: 0.5s ease;
+}
+.parallax .row .card .card-body:hover h5,
+.parallax .row .card .card-body:hover .text-white {
+  color: #000 !important;
+  transition: 0.5s ease;
+}
+.parallax .row .card .card-body .text-white {
+  color: #fff;
+  transition: 0.5s ease;
+}
+.parallax .row .card .card-body span {
+  color: #cd9244;
+  font-size: 40px;
+}
+
+.collapseBolsa .card-header {
+  background: #364651;
+}
+.collapseBolsa h5 .rotate {
+  transform: rotate(180deg);
+  transition: transform 0.3s ease;
+}
+.collapseBolsa h5 .arrow {
+  float: right;
+  margin-top: 0.6em;
+  transition: 0.4s ease;
+}
+.collapseBolsa h5 .arrow2 {
+  float: right;
+  margin-top: 0.6em;
+  transition: 0.4s ease;
+}
+.collapseBolsa h5 button {
+  width: 100%;
+  text-align: left;
+  text-decoration: none;
+  color: #fff;
+}
+.collapseBolsa h5 button:hover {
+  color: #fff;
+  text-decoration: none;
+}
+
+.card-postulantes {
+  padding: 0;
+  text-align: center;
+  border: 1px solid rgba(205, 146, 68, 0.431372549);
+  border-radius: 8px;
+  background: #364651;
+  transition: 0.4s ease;
+}
+.card-postulantes:hover {
+  box-shadow: 0 0 30px 0 rgba(146, 81, 6, 0.35);
+  transition: 0.4s ease;
+}
+.card-postulantes h5 {
+  position: relative;
+  margin-bottom: 1.4em;
+  color: #fff;
+}
+.card-postulantes h5::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: -5px;
+  width: 20px;
+  height: 2px;
+  background-color: #ffd9a5;
+}
+.card-postulantes .texto {
+  padding: 0.6em;
+}
+.card-postulantes .texto p {
+  text-align: left;
+  font-size: 14px;
+  line-height: 1.2em;
+  color: #fff;
+}
+.card-postulantes .img {
+  width: 150px;
+  height: 150px;
+  margin: auto;
+  margin-top: 0.6em;
+}
+.card-postulantes .img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  box-shadow: 0px 25px 20px -20px rgba(0, 0, 0, 0.45);
+}
+.card-postulantes .btn-postulantes {
+  background: #cd9244;
+  display: inline-block;
+  padding: 3px 10px;
+  font-size: 14px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: #fff !important;
+  text-transform: capitalize;
+  font-weight: 400;
+  transition: 0.5s;
+}
+.card-postulantes .btn-postulantes:hover {
+  background: #c18535;
+  color: #fff;
+  border: 1px solid #c18535;
+  box-shadow: rgba(149, 157, 165, 0.2) 0px 4px 4px;
+}
+
+.hoverPostulante:hover {
+  background: rgba(128, 128, 128, 0.0901960784);
+}
+
+.modalPostulante .img img {
+  width: 30%;
+  height: 225px;
+  object-fit: cover;
+}
+.modalPostulante p {
+  margin-bottom: 1em;
+}
+.modalPostulante p strong {
+  position: relative;
+}
+.modalPostulante p strong::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 20px;
+  height: 1px;
+  background-color: #cd9244;
+}
+.modalPostulante ul li {
+  list-style: disc;
+  font-size: 14px;
+  color: #4a4a4a;
+  font-weight: 300;
+  margin-left: 2em;
+}
+.modalPostulante a:focus {
+  outline: none;
+  box-shadow: none !important;
+}
+
+@media (max-width: 768px) {
+  .modalPostulante .img img {
+    width: 90%;
+  }
+}
+.novedadesCard .card {
+  transition: 0.6s ease;
+}
+.novedadesCard .card:hover {
+  box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+  transition: 0.6s ease;
+}
+.novedadesCard .card:hover p:first-child {
+  color: blue;
+  transition: 0.5s ease;
+}
+.novedadesCard .card p {
+  transition: 0.5s ease;
+}
+.novedadesCard .card .overflow {
+  overflow: hidden;
+  height: 200px;
+}
+.novedadesCard .card img {
+  height: 100% !important;
+  width: 100% !important;
+  object-fit: cover;
+  position: relative;
+}
+
+.btn-puklla {
+  --offset: 6px;
+  --border-size: 1px;
+  display: block;
+  position: relative;
+  padding: 0.6em 1em;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #cd9244;
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  outline: none;
+  cursor: pointer;
+  font-weight: bold;
+  border-radius: 0;
+  box-shadow: inset 0 0 0 var(--border-size) currentcolor;
+  -webkit-transition: background 0.8s ease;
+  transition: background 0.8s ease;
+  margin: auto;
+  margin-top: 1em;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.btn-puklla:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.puklla__horizontal,
+.puklla__vertical {
+  position: absolute;
+  top: var(--horizontal-offset, 0);
+  right: var(--vertical-offset, 0);
+  bottom: var(--horizontal-offset, 0);
+  left: var(--vertical-offset, 0);
+  -webkit-transition: -webkit-transform 0.8s ease;
+  transition: -webkit-transform 0.8s ease;
+  transition: transform 0.8s ease;
+  transition: transform 0.8s ease, -webkit-transform 0.8s ease;
+  will-change: transform;
+}
+
+.puklla__horizontal::before,
+.puklla__vertical::before {
+  content: "";
+  position: absolute;
+  border: inherit;
+}
+
+.puklla__horizontal {
+  --vertical-offset: calc(var(--offset) * -1);
+  border-top: var(--border-size) solid currentcolor;
+  border-bottom: var(--border-size) solid currentcolor;
+}
+
+.puklla__horizontal::before {
+  top: calc(var(--vertical-offset) - var(--border-size));
+  bottom: calc(var(--vertical-offset) - var(--border-size));
+  left: calc(var(--vertical-offset) * -1);
+  right: calc(var(--vertical-offset) * -1);
+}
+
+.btn-puklla:hover .puklla__horizontal {
+  -webkit-transform: scaleX(0);
+  transform: scaleX(0);
+}
+
+.puklla__vertical {
+  --horizontal-offset: calc(var(--offset) * -1);
+  border-left: var(--border-size) solid currentcolor;
+  border-right: var(--border-size) solid currentcolor;
+}
+
+.puklla__vertical::before {
+  top: calc(var(--horizontal-offset) * -1);
+  bottom: calc(var(--horizontal-offset) * -1);
+  left: calc(var(--horizontal-offset) - var(--border-size));
+  right: calc(var(--horizontal-offset) - var(--border-size));
+}
+
+.btn-puklla:hover .puklla__vertical {
+  -webkit-transform: scaleY(0);
+  transform: scaleY(0);
+}
+
+.fondoLogo {
+  background-image: url(../img/Fondo-logo.webp);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center center;
+}
+
+.scroolOk {
+  padding-top: 140px;
+  margin-top: -140px !important;
+}
+
+.mision {
+  background: url(../img/Pages/Fondo-mision.jpg);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center center;
+  background-attachment: fixed;
+  position: relative;
+  padding: 4em 12em;
+}
+.mision::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+.mision h3 {
+  color: #fff;
+}
+.mision ul li {
+  color: #fff;
+  left: 1.2em;
+  list-style: disc;
+  position: relative;
+}
+.mision p {
+  color: #fff;
+  text-align: justify;
+}
+
+.welcome_docmed_area .row .card {
+  transition: transform 0.3s ease;
+}
+
+@keyframes moveUpDown {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-0.3em);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+@keyframes revealLine {
+  0% {
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  100% {
+    transform: scaleX(1);
+    transform-origin: right;
+  }
+}
+.welcome_docmed_area .row .card .linea-medio {
+  transform-origin: left;
+  transform: scaleX(1);
+  transition: transform 0.5s ease;
+}
+
+.welcome_docmed_area .row .card:hover {
+  background: #f7f7f7;
+  transition: 0.4s ease;
+}
+
+.welcome_docmed_area .row .card:hover .linea-medio {
+  transform: scaleX(0);
+  animation: revealLine 0.5s ease forwards;
+}
+
+.welcome_docmed_area .row .card:hover h3 {
+  animation: moveUpDown 0.5s ease forwards;
+}
+
+.fondoClaro {
+  background: #f5fbff;
+  padding-top: 4em;
+  padding-bottom: 4em;
+}
+
+.fichas .card {
+  width: 100% !important;
+  border: 1px solid rgba(213, 157, 82, 0.2901960784);
+  transition: 1s ease;
+  z-index: 9;
+}
+.fichas .card:hover {
+  box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+  border: 1px solid rgba(128, 128, 128, 0.1882352941);
+  transition: 0.3s ease;
+  background: rgba(7, 70, 130, 0.0588235294);
+  cursor: pointer;
+}
+.fichas .card:hover a p i {
+  font-size: 22px;
+  transform: rotate(360deg);
+  -ms-transform: rotate(360deg);
+  -moz-transform: rotate(360deg);
+  -webkit-transform: rotate(360deg);
+  -o-transform: rotate(360deg);
+  color: #3067b6;
+  transition: 0.4s ease !important;
+}
+.fichas .card a p {
+  color: #000000;
+  font-size: 14px;
+  font-weight: 600;
+}
+.fichas .card a p i {
+  color: #449fcd;
+  transition: 0.4s ease !important;
+}
+
+.directiva li {
+  left: 0.4em;
+  position: relative;
+  list-style: disc;
+  text-transform: uppercase;
+  padding-bottom: 0.6em;
+}
+.directiva li ul li {
+  list-style: circle;
+  font-size: 15px;
+}
+
+.accordion-button:not(.collapsed) {
+  color: #fff;
+  background-color: #cd9244;
+  box-shadow: inset 0 -1px 0 rgba(110, 110, 110, 0.13);
+}
+
+.accordion-button:not(.collapsed)::after {
+  background-image: url("../img/min/Flecha-4.svg");
+  transform: rotate(-180deg);
+}
+
+.accordion-button:focus {
+  border-color: #d59d52;
+  box-shadow: none;
+}
+
+.typing::after {
+  content: "";
+  border-left: 2px solid black;
+  background: white;
+  right: 0;
+  height: 40%;
+  position: absolute;
+  animation: maquinaescribir 4s infinite alternate steps(16);
+}
+
+.desktop {
+  display: block;
+}
+
+.responsive {
+  display: none;
+}
+
+.tituloAnimado {
+  position: relative;
+  animation: aparecerDesdeIzquierda 1s forwards;
+}
+
+.slideUp {
+  position: relative;
+  animation: fadeInUp 1s forwards;
+}
+
+.listasCuerpo {
+  color: #4d4d4d;
+}
+.listasCuerpo li {
+  list-style: disc;
+  margin-left: 1em;
+  line-height: 2em;
+}
+.listasCuerpo li ul li {
+  list-style: circle;
+}
+
+.listasDecimal {
+  color: #4d4d4d;
+}
+.listasDecimal > li {
+  list-style: decimal;
+  margin-left: 1em;
+  line-height: 2em;
+  font-weight: bold;
+  color: #cd9244;
+}
+.listasDecimal > li ul li {
+  list-style-type: disc;
+  font-weight: normal;
+  margin-left: 1em;
+  color: rgba(0, 0, 0, 0.7019607843);
+}
+.listasDecimal > li ul li ul li {
+  list-style: circle;
+}
+
+@keyframes aparecerDesdeIzquierda {
+  0% {
+    left: 60%;
+    opacity: 0;
+  }
+  100% {
+    left: 0;
+    opacity: 1;
+  }
+}
+@keyframes maquinaescribir {
+  from {
+    width: 90%;
+  }
+  to {
+    width: 6%;
+  }
+}
+@media (max-width: 600px) {
+  .mision {
+    padding: 2px 16px;
+  }
+  .desktop {
+    display: none;
+  }
+  .responsive {
+    display: block;
+  }
+}
+@font-face {
+  font-family: "Arial";
+  font-variant: normal;
+  font-style: normal;
+  font-weight: bold;
+  src: url("#FontID0") format(svg);
+}
+.mensajes {
+  width: 100%;
+}
+.mensajes .seccion-left,
+.mensajes .seccion-right {
+  position: relative;
+  width: 50%;
+  height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+}
+.mensajes .seccion-left h3,
+.mensajes .seccion-left ul,
+.mensajes .seccion-left p,
+.mensajes .seccion-left a,
+.mensajes .seccion-right h3,
+.mensajes .seccion-right ul,
+.mensajes .seccion-right p,
+.mensajes .seccion-right a {
+  position: relative;
+  z-index: 2;
+  color: white;
+}
+.mensajes .seccion-left h3::after,
+.mensajes .seccion-right h3::after {
+  content: "";
+  display: block;
+  width: 40px;
+  height: 3px;
+  background: #fff;
+  margin-top: 10px;
+  margin-left: 0;
+}
+.mensajes .seccion-left {
+  background-image: linear-gradient(rgb(31, 118, 121), rgba(33, 22, 105, 0.83)), url("../img/slides/Grado-de-bachiller-Pukllasunchis.webp");
+  border-right: 1px solid rgba(255, 255, 255, 0.431372549);
+}
+.mensajes .seccion-right {
+  background-image: linear-gradient(rgb(31, 31, 108), rgba(22, 105, 105, 0.83)), url("../img/slides/Grado-de-licenciado-Pukllasunchis.webp");
+  background-color: #e9ecef;
+}
+@media (max-width: 768px) {
+  .mensajes .seccion-left,
+  .mensajes .seccion-right {
+    width: 100%;
+    height: auto;
+  }
+  .mensajes .seccion-left {
+    border-left: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.431372549);
+  }
+}
+
+.str0 {
+  stroke: #52658c;
+  stroke-width: 75;
+  stroke-miterlimit: 22.9256;
+}
+
+.str1 {
+  stroke: #52658c;
+  stroke-width: 75;
+  stroke-miterlimit: 22.9256;
+  stroke-dasharray: 75 225;
+}
+
+.fil0 {
+  fill: none;
+}
+
+.asociacion:hover .fil1 {
+  box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+}
+
+.fil2 {
+  fill: #fefefe;
+}
+
+.fil6 {
+  fill: #889fac;
+}
+
+.fil1 {
+  fill: #915b2f;
+}
+
+.fil4 {
+  fill: #bd7235;
+}
+
+.fil3 {
+  fill: #c77430;
+}
+
+.fil5 {
+  fill: #d67e36;
+}
+
+.fnt4 {
+  font-weight: bold;
+  font-size: 284.38px;
+  font-family: "Arial";
+}
+
+.fnt1 {
+  font-weight: bold;
+  font-size: 331.09px;
+  font-family: "Arial";
+}
+
+.fnt0 {
+  font-weight: bold;
+  font-size: 381.01px;
+  font-family: "Arial";
+}
+
+.fnt5 {
+  font-weight: bold;
+  font-size: 388.3px;
+  font-family: "Arial";
+}
+
+.fnt3 {
+  font-weight: bold;
+  font-size: 388.31px;
+  font-family: "Arial";
+}
+
+.fnt2 {
+  font-weight: bold;
+  font-size: 428.83px;
+  font-family: "Arial";
+}
+
+/*# sourceMappingURL=estilos.css.map */
