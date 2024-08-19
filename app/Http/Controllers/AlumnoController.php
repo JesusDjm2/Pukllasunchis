@@ -28,7 +28,8 @@ class AlumnoController extends Controller
             return view('admin.index', compact('alumno', 'usuario'));
         }
     }
-    public function ficha(Alumno $alumno){
+    public function ficha(Alumno $alumno)
+    {
         return view('alumnos.ficha', compact('alumno'));
     }
 
@@ -50,16 +51,16 @@ class AlumnoController extends Controller
         return view('alumnos.vistasAlumnos.formulario', compact('user', 'programas', 'ciclos'));
     }
     public function filtro(Request $request)
-{
-    // Usar 'with' para cargar las relaciones de programa y ciclo
-    $alumnos = Alumno::with('programa', 'ciclo')->get();
-    
-    // Obtener los nombres de las columnas de la tabla 'alumnos'
-    $campos = Schema::getColumnListing('alumnos');
-    
-    // Retornar la vista con los datos
-    return view('alumnos.filtro', compact('alumnos', 'campos'));
-}
+    {
+        // Usar 'with' para cargar las relaciones de programa y ciclo
+        $alumnos = Alumno::with('programa', 'ciclo')->get();
+
+        // Obtener los nombres de las columnas de la tabla 'alumnos'
+        $campos = Schema::getColumnListing('alumnos');
+
+        // Retornar la vista con los datos
+        return view('alumnos.filtro', compact('alumnos', 'campos'));
+    }
     public function store(Request $request)
     {
         // Validar los datos del formulario
@@ -72,9 +73,14 @@ class AlumnoController extends Controller
 
         $userInput = $request->input('num_comprobante');
 
-        if ($userInput === 'Beca') {
+        if (stripos($userInput, 'Beca') !== false) {
             $counter = Alumno::where('num_comprobante', 'like', 'Beca%')->count() + 1;
             $request->merge(['num_comprobante' => 'Beca_' . $counter]);
+        }
+        
+        if (stripos($userInput, 'AMANTANI') !== false) {
+            $counter = Alumno::where('num_comprobante', 'like', 'AMANTANI%')->count() + 1;
+            $request->merge(['num_comprobante' => 'AMANTANI_' . $counter]);
         }
 
         /* if (strtolower($userInput) === 'con deuda') */
@@ -311,6 +317,17 @@ class AlumnoController extends Controller
         // Verificar que los valores de 'lengua_1' y 'lengua_2' sean diferentes
         if ($lengua_1 === $lengua_2) {
             return redirect()->back()->withInput()->withErrors(['lengua_1' => 'La Lengua 1 y Lengua 2 deben ser diferentes.']);
+        }
+        $userInput = $request->input('num_comprobante');
+
+        if (stripos($userInput, 'Beca') !== false) {
+            $counter = Alumno::where('num_comprobante', 'like', 'Beca%')->count() + 1;
+            $request->merge(['num_comprobante' => 'Beca_' . $counter]);
+        }
+        
+        if (stripos($userInput, 'AMANTANI') !== false) {
+            $counter = Alumno::where('num_comprobante', 'like', 'AMANTANI%')->count() + 1;
+            $request->merge(['num_comprobante' => 'AMANTANI_' . $counter]);
         }
 
         // Comprobar si hay errores en la validación

@@ -2,7 +2,7 @@
 @section('contenido')
     <div class="container-fluid">
         <div class="d-sm-flex align-items-center justify-content-between mb-4">
-            <h4 class="mb-0 text-gray-800">Editar alumno:    <strong> {{ $alumno->apellidos }}
+            <h4 class="mb-0 text-gray-800">Editar alumno: <strong> {{ $alumno->apellidos }}
                     {{ $alumno->nombres }}</strong></h4>
             <a href="javascript:history.go(-1)" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
                 Volver
@@ -20,14 +20,14 @@
                     </div>
                 @endif
                 @if (stripos($alumno->num_comprobante, 'beca') !== false)
-                        <div class="alert alert-info text-center" role="alert">
-                            De no tener ningun dato para actualizar, solo guardar el formulario.
-                        </div>
-                    @else
-                        <div class="alert alert-info text-center" role="alert">
-                            De no tener ningun dato para actualizar, solo completar número de voucher y guardar el formulario.
-                        </div>
-                    @endif
+                    <div class="alert alert-info text-center" role="alert">
+                        De no tener ningun dato para actualizar, solo guardar el formulario.
+                    </div>
+                @else
+                    <div class="alert alert-info text-center" role="alert">
+                        De no tener ningun dato para actualizar, solo completar número de voucher y guardar el formulario.
+                    </div>
+                @endif
             </div>
             <div class="col-lg-12 card pt-3 pb-3 border border-primary">
                 <form action="{{ route('alumnos.update', ['alumno' => $alumno->id]) }}" method="POST">

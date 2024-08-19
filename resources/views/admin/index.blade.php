@@ -356,6 +356,7 @@
             filterTable();
         });
     </script>
+    
     <script>
         function mostrarTabla(tipo) {
             if (tipo === 'admins') {

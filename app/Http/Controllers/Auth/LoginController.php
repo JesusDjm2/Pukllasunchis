@@ -8,6 +8,16 @@ use Illuminate\Http\Request;
 
 class LoginController extends Controller
 {
+    /*
+    |--------------------------------------------------------------------------
+    | Login Controller
+    |--------------------------------------------------------------------------
+    |
+    | This controller handles authenticating users for the application and
+    | redirecting them to your home screen. The controller uses a trait
+    | to conveniently provide its functionality to your applications.
+    |
+    */
 
     use AuthenticatesUsers;
 
@@ -36,12 +46,12 @@ class LoginController extends Controller
             return redirect()->route('trabajo.index')->with('userData', $user);
         } elseif ($user->hasRole('alumnoB')) {
             return redirect()->route('postulante.index')->with('userData', $user);
-        }elseif ($user->hasRole('alumno')) {
+        } elseif ($user->hasRole('alumno')) {
             $alumno = $user->alumno;
             return redirect()->route('admin')->with('userData', $user)->with('alumno', $alumno);
-        }  elseif ($user->hasRole('docente')) {            
-            return redirect()->route('docente')->with(['userData' => $user]);
-        }else { 
+        } elseif ($user->hasRole('docente')) {
+            return redirect()->route('docente')->with('userData', $user);
+        } else {
             return redirect('/');
         }
     }

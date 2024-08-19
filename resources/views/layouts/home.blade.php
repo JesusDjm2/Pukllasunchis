@@ -93,9 +93,34 @@
                                     <li><a href="http://repositorio.pukllasunchis.org/xmlui/" target="_blank"
                                             class="text-uppercase"><i class="fa fa-file-pdf"></i>
                                             Repositorio</a></li>
-                                    <li><a href="{{ route('admin') }}"> <i class="fa fa-user"></i>
-                                            Matrícula</a>
-                                    </li>
+                                    @auth
+                                        @php
+                                            $user = auth()->user();
+                                        @endphp
+                                        @if ($user->hasRole('admin'))
+                                            <li>
+                                                <a href="{{ route('admin') }}">
+                                                    <i class="fa fa-user"></i> Administrador
+                                                </a>
+                                            </li>
+                                        @elseif ($user->hasRole('adminB'))
+                                            <li><a href="{{ route('adminB') }}"> <i class="fa fa-user"></i> Matrícula Admin
+                                                    B</a></li>
+                                        @elseif ($user->hasRole('alumnoB'))
+                                            <li><a href="{{ route('alumnoB') }}"> <i class="fa fa-user"></i> Matrícula
+                                                    Alumno B</a></li>
+                                        @elseif ($user->hasRole('alumno'))
+                                            <li><a href="{{ route('alumno') }}"> <i class="fa fa-user"></i> Matrícula
+                                                    Alumno</a></li>
+                                        @elseif ($user->hasRole('docente'))
+                                            <li><a href="{{ route('docente') }}"> <i class="fa fa-user"></i> Docente</a>
+                                            </li>
+                                        @else
+                                            <li><a href="{{ route('home') }}"> <i class="fa fa-user"></i> Home</a></li>
+                                        @endif
+                                    @else
+                                        <li><a href="{{ route('login') }}"> <i class="fa fa-user"></i> Matrícula</a></li>
+                                    @endauth
                                     <li><a
                                             href="https://wa.me/51984529158/?text=Buen%20día,%20me%20gustaría%20más%20información%20por%20favor.">
                                             <i class="fa fa-phone"></i> +51 984 529 158</a></li>
@@ -309,21 +334,6 @@
             </div>
         </div>
 
-
-        {{-- <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-            aria-hidden="true">
-            <div class="modal-dialog modal-lg" role="document">
-                <div class="modal-content">
-                    <div class="modal-body">
-                        <button style="float:right" type="button" class="btn btn-danger btn-sm"
-                            data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                        <img src="{{ asset('img/novedades/Tesis-empastada.webp') }}" width="100%">
-                    </div>
-                </div>
-            </div>
-        </div> --}}
         <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
             aria-hidden="true">
             <div class="modal-dialog modal-lg" role="document">

@@ -117,6 +117,106 @@
                 </div>
             </ul>
         @endrole
+        @role('docente')
+            <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+                <a class="sidebar-brand d-flex align-items-center justify-content-center mb-3"
+                    href="{{ route('index') }}">
+                    <div class="sidebar-brand-icon">
+                        <img class="pt-3" src="{{ asset('admin/img/Logo-Pukllasunchis-blanco.png') }}"
+                            alt="Logo Pukllasunchis" width="100%">
+                    </div>
+                    <div class="sidebar-brand-text mx-3">
+                        <!---Contenido solo para estilo a logo--->
+                    </div>
+                </a>
+                <li class="nav-item">
+                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities"
+                        aria-expanded="true" aria-controls="collapseUtilities">
+                        <i class="fas fa-book"></i>
+                        <span>Programas</span>
+                    </a>
+                    <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities"
+                        data-parent="#accordionSidebar">
+                        <div class="bg-white py-2 collapse-inner rounded">
+                            <h6 class="collapse-header">Gestionar alumnos:</h6>
+                            <a class="collapse-item" href="{{ route('programa.index') }}">Programas</a>
+                            <a class="collapse-item" href="{{ route('ciclo.index') }}">Ciclos</a>
+                            <a class="collapse-item" href="{{ route('curso.index') }}">Cursos</a>
+                        </div>
+                    </div>
+                </li>
+                <hr class="sidebar-divider d-none d-md-block">
+                <li class="nav-item">
+                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
+                        aria-expanded="true" aria-controls="collapseTwo">
+                        <i class="fas fa-pen"></i>
+                        <span>Registrados</span>
+                    </a>
+                    <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                        <div class="bg-white py-2 collapse-inner rounded">
+                            <h6 class="collapse-header">Gestionar adminis</h6>
+                            <a class="collapse-item" href="{{ route('admin') }}">Perfiles registrados</a>
+                            <a class="collapse-item" href="{{ route('registerAdmin') }}">Registrar nuevo</a>
+                        </div>
+                    </div>
+                </li>
+                <hr class="sidebar-divider d-none d-md-block">
+                <li class="nav-item">
+                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseDocentes"
+                        aria-expanded="true" aria-controls="collapseDocentes">
+                        <i class="fas fa-user-tie"></i>
+                        <span>Docentes</span>
+                    </a>
+                    <div id="collapseDocentes" class="collapse" aria-labelledby="headingDocentes"
+                        data-parent="#accordionSidebar">
+                        <div class="bg-white py-2 collapse-inner rounded">
+                            <h6 class="collapse-header">Gestionar Docentes:</h6>
+                            <a class="collapse-item" href="">Cursos</a>
+                            <a class="collapse-item" href="">Actualizar datos</a>
+                        </div>
+                    </div>
+                </li>
+                <hr class="sidebar-divider d-none d-md-block">
+                <li class="nav-item">
+                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseAlumnos"
+                        aria-expanded="true" aria-controls="collapseAlumnos">
+                        <i class="fas fa-fw fa-graduation-cap"></i>
+                        <span>Matriculados</span>
+                    </a>
+                    <div id="collapseAlumnos" class="collapse" aria-labelledby="headingAlumnos"
+                        data-parent="#accordionSidebar">
+                        <div class="bg-white py-2 collapse-inner rounded">
+                            <h6 class="collapse-header">Gestionar alumnos:</h6>
+                            <a class="collapse-item" href="{{ route('adminAlumnos') }}">Alumnos</a>
+                            <a class="collapse-item" href="{{ route('vistAlumno') }}">Ingresar nuevo</a>
+                            <a class="collapse-item" href="{{ route('filtro') }}">Filtrar por campos</a>
+                        </div>
+                    </div>
+                </li>
+                <!-- Divider -->
+                <hr class="sidebar-divider d-none d-md-block">
+                <li class="nav-item">
+                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#bolsa"
+                        aria-expanded="true" aria-controls="bolsa">
+                        <i class="fas fa-fw fa-dollar-sign"></i>
+                        <span>Bolsa de trabajo</span>
+                    </a>
+                    <div id="bolsa" class="collapse" aria-labelledby="headingAlumnos"
+                        data-parent="#accordionSidebar">
+                        <div class="bg-white py-2 collapse-inner rounded">
+                            <h6 class="collapse-header">Gestionar usuarios:</h6>
+                            <a class="collapse-item" href="{{ route('listaPostulantes') }}">Registrados</a>
+                            <a class="collapse-item" href="{{ route('trabajo.create') }}">Ingresar nuevo</a>
+                        </div>
+                    </div>
+                </li>
+                <!-- Divider -->
+                <hr class="sidebar-divider d-none d-md-block">
+                <div class="text-center d-none d-md-inline">
+                    <button class="rounded-circle border-0" id="sidebarToggle"></button>
+                </div>
+            </ul>
+        @endrole
         @role('alumno')
             <ul class="navbar-nav bg-gradient-info sidebar sidebar-dark accordion" id="accordionSidebar">
                 <a class="sidebar-brand d-flex align-items-center justify-content-center mb-3"
@@ -137,13 +237,13 @@
                     <a class="nav-link collapsed" href="{{ route('admin') }}">
                         <i class="fas fa-fw fa-newspaper"></i>
                         <span>Ficha técnica</span>
-                    </a> 
+                    </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link collapsed" href="{{ route('postulante.index') }}">
                         <i class="fas fa-fw fa-money-bill"></i>
                         <span>Bolsa de trabajo</span>
-                    </a> 
+                    </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link collapsed" href="{{ route('index') }}">

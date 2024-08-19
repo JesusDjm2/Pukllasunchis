@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('apellidos');
             $table->string('dni');
             $table->string('condicion')->nullable();
-            $table->string('pendiente')->nullable();
+            $table->string('pendiente', 500)->nullable();
             $table->string('perfil')->nullable();
             $table->boolean('beca')->nullable();
             $table->string('email')->unique();

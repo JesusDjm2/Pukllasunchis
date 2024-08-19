@@ -133,7 +133,6 @@ class Alumno extends Model
             'p_m_soltero' => 'required|boolean',
             'num_hijos' => 'required|integer',
             'sector_socioeconomico' => 'required',
-            'num_comprobante' => 'required|string|max:255|unique:alumnos,num_comprobante',
             //Datos Familiares
             'convivientes' => 'required|string|max:255',
             'quien_mantiene' => 'required|string|max:255',

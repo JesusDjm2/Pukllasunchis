@@ -9,7 +9,7 @@
         </div>
         <div class="row">
             <div class="col-lg-12">
-                <p><strong>Programa:</strong> 
+                <p><strong>Programa:</strong>
                     {{ $admin->programa ? $admin->programa->nombre : 'No asignado' }} | <strong>Ciclo:</strong>
                     {{ optional($admin->ciclo)->nombre ?? 'N/A' }} </p>
                 <p><strong>Condicion:</strong> {{ $admin->condicion }} | <strong>Perfil: </strong>
@@ -77,7 +77,8 @@
                                 </option>
                                 <option value="docente" {{ $currentRole === 'docente' ? 'selected' : '' }}>Docente</option>
                                 <option value="alumno" {{ $currentRole === 'alumno' ? 'selected' : '' }}>Alumno</option>
-                                <option value="adminB" {{ $currentRole === 'adminB' ? 'selected' : '' }}>Administrador Bolsa</option>
+                                <option value="adminB" {{ $currentRole === 'adminB' ? 'selected' : '' }}>Administrador
+                                    Bolsa</option>
                             </select>
                             @error('role')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -104,7 +105,8 @@
                                     <select id="ciclo_id" name="ciclo_id" class="form-control form-control-sm">
                                         <option disabled>Seleccionar Ciclo</option>
                                         @foreach ($ciclos as $ciclo)
-                                            <option value="{{ $ciclo->id }}" {{ $ciclo->id == $currentCicloId ? 'selected' : '' }}>
+                                            <option value="{{ $ciclo->id }}"
+                                                {{ $ciclo->id == $currentCicloId ? 'selected' : '' }}>
                                                 {{ $ciclo->nombre }}
                                             </option>
                                         @endforeach
@@ -112,32 +114,46 @@
                                 </div>
                                 <div class="col-lg-3 mb-2">
                                     <label for="condicion">Condición:</label>
-                                    <select class="form-control form-control-sm @error('condicion') is-invalid @enderror" id="condicion" name="condicion">
-                                        <option value="" disabled {{ !$admin->condicion ? 'selected' : '' }}>Seleccionar Condición</option>
-                                        <option value="Regular" {{ $admin->condicion == 'Regular' ? 'selected' : '' }}>Regular</option>
-                                        <option value="Beca Continua" {{ $admin->condicion == 'Beca Continua' ? 'selected' : '' }}>Beca Continua</option>
-                                        <option value="Beca 18" {{ $admin->condicion == 'Beca 18' ? 'selected' : '' }}>Beca 18</option>
-                                        <option value="Beca Puklla" {{ $admin->condicion == 'Beca Puklla' ? 'selected' : '' }}>Beca Puklla</option>
+                                    <select class="form-control form-control-sm @error('condicion') is-invalid @enderror"
+                                        id="condicion" name="condicion">
+                                        <option value="" disabled {{ !$admin->condicion ? 'selected' : '' }}>
+                                            Seleccionar Condición</option>
+                                        <option value="Regular" {{ $admin->condicion == 'Regular' ? 'selected' : '' }}>
+                                            Regular</option>
+                                        <option value="Beca Continua"
+                                            {{ $admin->condicion == 'Beca Continua' ? 'selected' : '' }}>Beca Continua
+                                        </option>
+                                        <option value="Beca 18" {{ $admin->condicion == 'Beca 18' ? 'selected' : '' }}>Beca
+                                            18</option>
+                                        <option value="Beca Puklla"
+                                            {{ $admin->condicion == 'Beca Puklla' ? 'selected' : '' }}>Beca Puklla</option>
                                     </select>
                                     @error('condicion')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
-                                
+
                                 <div class="col-lg-3 mb-2">
-                                    <label for="perfil">Perfil: <small>Este campo se usa para bolsa de trabajo</small></label>
-                                    <select class="form-control form-control-sm @error('perfil') is-invalid @enderror" id="perfil" name="perfil">
-                                        <option value="" disabled {{ !$admin->perfil ? 'selected' : '' }}>Seleccionar Perfil</option>
-                                        <option value="Estudiante" {{ $admin->perfil == 'Estudiante' ? 'selected' : '' }}>Estudiante</option>
-                                        <option value="Bachiller" {{ $admin->perfil == 'Bachiller' ? 'selected' : '' }}>Bachiller</option>
-                                        <option value="Titulado" {{ $admin->perfil == 'Titulado' ? 'selected' : '' }}>Titulado</option>
-                                        <option value="Egresado" {{ $admin->perfil == 'Egresado' ? 'selected' : '' }}>Egresado</option>
+                                    <label for="perfil">Perfil: <small>Este campo se usa para bolsa de
+                                            trabajo</small></label>
+                                    <select class="form-control form-control-sm @error('perfil') is-invalid @enderror"
+                                        id="perfil" name="perfil">
+                                        <option value="" disabled {{ !$admin->perfil ? 'selected' : '' }}>Seleccionar
+                                            Perfil</option>
+                                        <option value="Estudiante" {{ $admin->perfil == 'Estudiante' ? 'selected' : '' }}>
+                                            Estudiante</option>
+                                        <option value="Bachiller" {{ $admin->perfil == 'Bachiller' ? 'selected' : '' }}>
+                                            Bachiller</option>
+                                        <option value="Titulado" {{ $admin->perfil == 'Titulado' ? 'selected' : '' }}>
+                                            Titulado</option>
+                                        <option value="Egresado" {{ $admin->perfil == 'Egresado' ? 'selected' : '' }}>
+                                            Egresado</option>
                                     </select>
                                     @error('perfil')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
-                                
+
                                 <div class="col-lg-3 mb-4">
                                     <label for="beca" class="form-label">Beca:</label>
                                     <select id="beca" name="beca" class="form-control form-control-sm">
@@ -148,28 +164,27 @@
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
-                                
+
                                 <div class="col-lg-3 mb-3">
-                                    <label for="tiene_cursos_pendientes" class="form-label">¿Tiene cursos
-                                        pendientes?</label>
-                                    <select id="tiene_cursos_pendientes" name="tiene_cursos_pendientes"
-                                        class="form-control form-control-sm">
-                                        <option value="1"
-                                            {{ old('tiene_cursos_pendientes') == 1 ? 'selected' : '' }}>Sí</option>
-                                        <option value="0"
-                                            {{ old('tiene_cursos_pendientes') == 0 ? 'selected' : '' }}>No</option>
+                                    <label for="tiene_cursos_pendientes" class="form-label">¿Tiene cursos pendientes?</label>
+                                    <select id="tiene_cursos_pendientes" name="tiene_cursos_pendientes" class="form-control form-control-sm">
+                                        <option value="1" 
+                                            {{ old('tiene_cursos_pendientes', isset($admin->pendiente) ? 1 : null) == 1 ? 'selected' : '' }}>Sí</option>
+                                        <option value="0" 
+                                            {{ old('tiene_cursos_pendientes', isset($admin->pendiente) ? 1 : null) == 0 ? 'selected' : '' }}>No</option>
                                     </select>
                                 </div>
                                 <div class="col-lg-12 mb-4" id="cursos-pendientes"
-                                    style="{{ old('tiene_cursos_pendientes') == 1 ? '' : 'display: none;' }}">
+                                    style="{{ old('tiene_cursos_pendientes', isset($admin->pendiente) ? 1 : null) == 1 ? '' : 'display: none;' }}">
                                     <label for="pendiente" class="form-label">Cursos Pendientes:</label>
-                                    <input type="text" id="pendiente" name="pendiente"
-                                        class="form-control form-control-sm" value="{{ old('pendiente') }}"
-                                        placeholder="Escriba los cursos pendientes separados por comas">
+                                    <input type="text" id="pendiente" name="pendiente" class="form-control form-control-sm" 
+                                           value="{{ old('pendiente', $admin->pendiente ?? '') }}" 
+                                           placeholder="Escriba los cursos pendientes separados por comas">
                                     @error('pendiente')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
+                                
                             </div>
                         </div>
                         <button type="submit" class="btn btn-primary">Actualizar</button>
@@ -181,11 +196,9 @@
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Obtener los elementos y el contenedor de cursos pendientes
             var tieneCursosPendientes = document.getElementById('tiene_cursos_pendientes');
             var cursosPendientesContainer = document.getElementById('cursos-pendientes');
 
-            // Mostrar u ocultar el contenedor según la selección
             tieneCursosPendientes.addEventListener('change', function() {
                 if (tieneCursosPendientes.value == 1) {
                     cursosPendientesContainer.style.display = 'block';
@@ -194,8 +207,8 @@
                 }
             });
 
-            // Llamada inicial para establecer la visibilidad según el valor predeterminado
-            if (tieneCursosPendientes.value == 1) {
+            // Ensure the correct display state on page load
+            if (tieneCursosPendientes.value == 1 || '{{ old('tiene_cursos_pendientes') }}' == 1) {
                 cursosPendientesContainer.style.display = 'block';
             } else {
                 cursosPendientesContainer.style.display = 'none';

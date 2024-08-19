@@ -17,11 +17,8 @@ class AdminController extends Controller
     public function login()
     {
         /* if (auth()->check()) {
-            if (auth()->user()->hasRole('alumno')) {
-                $alumno = auth()->user()->alumno;
-                if ($alumno) {
-                    return view('alumnos.vistasAlumnos.index', compact('alumno'));
-                }
+            if (auth()->user()->hasRole('docente')) {
+                return view('docentes.index', compact('alumno'));
             }
         } */
         return view('admin.login');
@@ -125,9 +122,9 @@ class AdminController extends Controller
         $programas = Programa::all();
         $ciclos = Ciclo::all();
         $currentProgramId = $admin->programa_id;
-        $currentRole = $admin->getRoleNames()->first(); 
+        $currentRole = $admin->getRoleNames()->first();
         $currentCicloId = $admin->ciclo_id;
-        return view('admin.edit', compact('admin', 'programas', 'ciclos', 'currentRole','currentCicloId', 'currentProgramId'));
+        return view('admin.edit', compact('admin', 'programas', 'ciclos', 'currentRole', 'currentCicloId', 'currentProgramId'));
     }
     public function store(Request $request)
     {
@@ -137,7 +134,7 @@ class AdminController extends Controller
             'dni' => 'required|string|max:255',
             'condicion' => 'nullable|string|max:40',
             'pendiente' => 'nullable|string',
-            'perfil'=>'nullable|string',
+            'perfil' => 'nullable|string',
             'beca' => 'nullable|boolean',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:7|confirmed',
