@@ -104,19 +104,16 @@
                                                 </a>
                                             </li>
                                         @elseif ($user->hasRole('adminB'))
-                                            <li><a href="{{ route('adminB') }}"> <i class="fa fa-user"></i> Matrícula Admin
-                                                    B</a></li>
+                                            <li><a href="{{ route('adminB') }}"> <i class="fa fa-user"></i> Matrícula</a></li>
                                         @elseif ($user->hasRole('alumnoB'))
-                                            <li><a href="{{ route('alumnoB') }}"> <i class="fa fa-user"></i> Matrícula
-                                                    Alumno B</a></li>
+                                            <li><a href="{{ route('alumnoB') }}"> <i class="fa fa-user"></i> Matrícula</a></li>
                                         @elseif ($user->hasRole('alumno'))
-                                            <li><a href="{{ route('alumno') }}"> <i class="fa fa-user"></i> Matrícula
-                                                    Alumno</a></li>
+                                            <li><a href="{{ route('alumnos.index') }}"> <i class="fa fa-user"></i> Matrícula</a></li>
                                         @elseif ($user->hasRole('docente'))
-                                            <li><a href="{{ route('docente') }}"> <i class="fa fa-user"></i> Docente</a>
+                                            <li><a href="{{ route('vistaDocente', ['docente' => $user->docente->id]) }}"> <i class="fa fa-user"></i> Docente</a>
                                             </li>
                                         @else
-                                            <li><a href="{{ route('home') }}"> <i class="fa fa-user"></i> Home</a></li>
+                                            <li><a href="{{ route('login') }}"> <i class="fa fa-user"></i> Matricula</a></li>
                                         @endif
                                     @else
                                         <li><a href="{{ route('login') }}"> <i class="fa fa-user"></i> Matrícula</a></li>
@@ -334,7 +331,7 @@
             </div>
         </div>
 
-        <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        {{-- <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
             aria-hidden="true">
             <div class="modal-dialog modal-lg" role="document">
                 <div class="modal-content">
@@ -347,7 +344,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> --}}
 
 
         <script>

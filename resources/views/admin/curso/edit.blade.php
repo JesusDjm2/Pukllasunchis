@@ -2,7 +2,8 @@
 @section('contenido')
     <div class="container-fluid bg-white">
         <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3">
-            <h3 class="mb-0 text-gray-800">Editar Curso</h3>
+            <h5 class="mb-0 text-primary font-weight-bold">Editar Curso: <span
+                    class="text-primary font-weight-bold">{{ $curso->nombre }}</span></h5>
             <a href="{{ route('curso.index') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
                 Volver
             </a>
@@ -28,12 +29,21 @@
                             <div class="row">
                                 <div class="col-lg-6 mb-4">
                                     <label for="programa_id">Programa:</label>
-                                    <select id="programa_id" name="programa_id" class="form-control" required>
+                                    {{-- <select id="programa_id" name="programa_id" class="form-control" required>
                                         <option disabled>Elegir Programa:</option>
                                         @foreach ($programas as $programa)
                                             <option value="{{ $programa->id }}"
                                                 {{ $curso->programa_id == $programa->id ? 'selected' : '' }}>
                                                 {{ $programa->nombre }}
+                                            </option>
+                                        @endforeach
+                                    </select> --}}
+                                    <select id="programa_id" name="programa_id" class="form-control" required>
+                                        <option disabled>Elegir Programa:</option>
+                                        @foreach ($programas as $prog)
+                                            <option value="{{ $prog->id }}"
+                                                {{ $programa->id == $prog->id ? 'selected' : '' }}>
+                                                {{ $prog->nombre }}
                                             </option>
                                         @endforeach
                                     </select>
@@ -60,10 +70,12 @@
                                 </div>
                                 <div class="col-lg-4 mb-3">
                                     <label for="cc">Componente Curricular:</label>
-                                    <select name="cc" class="form-control form-control-sm @error('cc') is-invalid @enderror" required>
+                                    <select name="cc"
+                                        class="form-control form-control-sm @error('cc') is-invalid @enderror" required>
                                         <option value="">Selecciona una opción</option>
-                                        @foreach (['Formacion General', 'Formacion Específica', 'Formacion Práctica e Investigación', 'Electivo'] as $option)
-                                            <option value="{{ $option }}" {{ $curso->cc == $option ? 'selected' : '' }}>{{ $option }}</option>
+                                        @foreach (['Formacion General', 'Formacion Específica', 'Formacion Práctica e Investigación', 'Electivo', 'Extracurricular'] as $option)
+                                            <option value="{{ $option }}"
+                                                {{ $curso->cc == $option ? 'selected' : '' }}>{{ $option }}</option>
                                         @endforeach
                                     </select>
                                     @error('cc')
@@ -88,6 +100,21 @@
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
+                                <div class="col-lg-12 mb-3">
+                                    <label for="competencias">Competencias:</label>
+                                    <div id="competencias">
+                                        @foreach ($competencias as $competencia)
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="competencias[]"
+                                                    value="{{ $competencia->id }}" id="competencia{{ $competencia->id }}"
+                                                    {{ in_array($competencia->id, $curso->competencias->pluck('id')->toArray()) ? 'checked' : '' }}>
+                                                <label class="form-check-label" for="competencia{{ $competencia->id }}">
+                                                    {{ $competencia->nombre }}
+                                                </label>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
                             </div>
                             <button type="submit" class="btn btn-sm btn-primary">Actualizar Curso</button>
                         </form>
@@ -97,26 +124,29 @@
         </div>
     </div>
     <script>
-        // JavaScript para cargar dinámicamente los ciclos según el programa seleccionado
         document.addEventListener('DOMContentLoaded', function() {
-            var programaId = '{{ $curso->programa_id }}';
+            var programaSelect = document.getElementById('programa_id');
+            var cicloSelect = document.getElementById('ciclo_id');
 
-            fetch('/obtener-ciclos/' + programaId)
-                .then(response => response.json())
-                .then(data => {
-                    var selectCiclo = document.getElementById('ciclo_id');
-                    selectCiclo.innerHTML = ''; // Limpiar opciones anteriores
+            // Cargar ciclos cuando el programa cambia
+            programaSelect.addEventListener('change', function() {
+                fetch('/obtener-ciclos/' + programaSelect.value)
+                    .then(response => response.json())
+                    .then(data => {
+                        cicloSelect.innerHTML = ''; // Limpiar opciones anteriores
 
-                    data.forEach(ciclo => {
-                        var option = document.createElement('option');
-                        option.value = ciclo.id;
-                        option.text = ciclo.nombre;
-                        selectCiclo.appendChild(option);
+                        data.forEach(ciclo => {
+                            var option = document.createElement('option');
+                            option.value = ciclo.id;
+                            option.text = ciclo.nombre;
+                            cicloSelect.appendChild(option);
+                        });
+
+                        // Si hay un ciclo seleccionado previamente, mantenlo seleccionado
+                        var selectedCicloId = '{{ $curso->ciclo_id }}';
+                        cicloSelect.value = selectedCicloId;
                     });
-
-                    var selectedCicloId = '{{ $curso->ciclo_id }}';
-                    document.getElementById('ciclo_id').value = selectedCicloId;
-                });
+            });
         });
     </script>
 @endsection

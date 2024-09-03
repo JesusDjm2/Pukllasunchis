@@ -55,8 +55,11 @@
                     <div class="row">
                         <div class="col-lg-6 mb-3">
                             <button class="btn btn-primary btn-sm" onclick="mostrarTabla('admins')">Alumnos</button>
-                            <button class="btn btn-primary btn-sm" onclick="mostrarTabla('alumnos')">Administradores</button>
-                            <button class="btn btn-primary btn-sm" onclick="mostrarTabla('adminsB')">Admins Bolsa</button>
+                            <button class="btn btn-info btn-sm" onclick="mostrarTabla('docentes')">Docentes</button>
+                            <button class="btn btn-danger btn-sm" onclick="mostrarTabla('inhabilitados')">Inhabilitados
+                            </button>
+                            <button class="btn btn-warning btn-sm" onclick="mostrarTabla('alumnos')">Administradores</button>
+                            <button class="btn btn-success btn-sm" onclick="mostrarTabla('adminsB')">Admins Bolsa</button>
                         </div>
                         <div class="col-lg-6 mb-3" style="float: right">
                             <input type="text" id="search-box"0 class="form-control" placeholder="Buscar Alumnos">
@@ -145,9 +148,9 @@
                                         <td>{{ $admin->email }}</td>
                                         <td>
                                             <a href="{{ route('adminEdit', ['id' => $admin->id]) }}"
-                                                class="btn btn-info btn-sm">Editar</a>
+                                                class="btn btn-info btn-sm"><i class="fa fa-pen"></i></a>
                                             <a href="{{ route('adminDestroy', ['id' => $admin->id]) }}"
-                                                class="btn btn-danger btn-sm">Eliminar</a>
+                                                class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></a>
                                         </td>
                                     </tr>
                                 @endif
@@ -171,9 +174,104 @@
                                             <td>{{ $admin->email }}</td>
                                             <td>
                                                 <a href="{{ route('adminEdit', ['id' => $admin->id]) }}"
-                                                    class="btn btn-info btn-sm">Editar</a>
+                                                    class="btn btn-info btn-sm"><i class="fa fa-pen"></i></a>
+                                                <a href="#" class="btn btn-danger btn-sm" data-toggle="modal"
+                                                    data-target="#confirmDeleteModal"
+                                                    data-href="{{ route('adminDestroy', ['id' => $admin->id]) }}">
+                                                    <i class="fa fa-trash"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    @endif
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="docentes-table">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Nombre</th>
+                                    <th>Correo</th>
+                                    <th>DNI</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @php
+                                    $docenteCount = 0;
+                                @endphp
+                                @foreach ($admins as $admin)
+                                    @if ($admin->hasRole('docente'))
+                                        @php
+                                            $docenteCount++;
+                                        @endphp
+                                        <tr>
+                                            <td>{{ $docenteCount }}</td>
+                                            <td>{{ $admin->name }} {{ $admin->apellidos }}</td>
+                                            <td>{{ $admin->email }}</td>
+                                            <td>{{ $admin->dni }}</td>
+                                            {{-- <td>
+                                                <a href="{{ route('asignar', ['id' => $admin->id]) }}"
+                                                    class="btn btn-success btn-sm" title="Asignar Curso"><i
+                                                        class="fa fa-plus fa-sm"></i>
+                                                </a>
+                                                <a href="{{ route('editcursosasignados', ['id' => $admin->id]) }}"
+                                                    class="btn btn-warning btn-sm" title="Editar Cursos Asignados">
+                                                    <i class="fa fa-edit"></i>
+                                                </a>
+                                            </td> --}}
+                                            <td>
+                                                <a href="{{ route('adminEdit', ['id' => $admin->id]) }}"
+                                                    class="btn btn-info btn-sm" title="Editar Docente">
+                                                    <i class="fa fa-edit"></i> <i class="fa fa-user"></i>
+                                                </a>
+                                                {{-- <a href="{{ route('adminDestroy', ['id' => $admin->id]) }}"
+                                                    class="btn btn-danger btn-sm"><i class="fa fa-trash"></i>
+                                                </a> --}}
+                                                <a href="#" class="btn btn-danger btn-sm" data-toggle="modal"
+                                                    data-target="#confirmDeleteModal"
+                                                    data-href="{{ route('adminDestroy', ['id' => $admin->id]) }}">
+                                                    <i class="fa fa-trash"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    @endif
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="inhabilitado-table">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Nombre</th>
+                                    <th>Correo</th>
+                                    <th>DNI</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @php
+                                    $docenteCount = 0;
+                                @endphp
+                                @foreach ($admins as $admin)
+                                    @if ($admin->hasRole('inhabilitado'))
+                                        @php
+                                            $docenteCount++;
+                                        @endphp
+                                        <tr>
+                                            <td>{{ $docenteCount }}</td> <!-- Enumerator -->
+                                            <td>{{ $admin->name }} {{ $admin->apellidos }}</td>
+                                            <td>{{ $admin->email }}</td>
+                                            <td>{{ $admin->dni }}</td>
+                                            <td>
+                                                <a href="{{ route('adminEdit', ['id' => $admin->id]) }}"
+                                                    class="btn btn-info btn-sm"><i class="fa fa-pen"></i></a>
                                                 <a href="{{ route('adminDestroy', ['id' => $admin->id]) }}"
-                                                    class="btn btn-danger btn-sm">Eliminar</a>
+                                                    class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></a>
                                             </td>
                                         </tr>
                                     @endif
@@ -198,8 +296,10 @@
                     @endif
                     @if (auth()->user()->alumno)
                         <div class="alert alert-warning alert-dismissible fade show text-center" role="alert">
-                            {{ Session::get('success') }} Botón de actualización de datos de ficha de matricula habilitado hasta el 16 de agosto, de no tener datos para
-                            actualizar solo llenar el <strong> Número de boleta electrónica emitida por la EES para el ciclo 2024 II y guardar el registro. De ser becado, solo guardar registro. </strong>
+                            {{ Session::get('success') }} Botón de actualización de datos de ficha de matricula habilitado
+                            hasta el 16 de agosto, de no tener datos para
+                            actualizar solo llenar el <strong> Número de boleta electrónica emitida por la EES para el ciclo
+                                2024 II y guardar el registro. De ser becado, solo guardar registro. </strong>
                             <a type="button" class="close" data-dismiss="alert" aria-label="Close">
                                 <span aria-hidden="true">&times;</span>
                             </a>
@@ -219,7 +319,7 @@
                                         <td>
                                             <ul>
                                                 <li>
-                                                    {{ $alumno->programa->nombre }} 
+                                                    {{ $alumno->programa->nombre }}
                                                 </li>
                                             </ul>
                                         </td>
@@ -240,22 +340,47 @@
                                     <tr>
                                         <td class="font-weight-bold">Cursos del semestre:</td>
                                         <td>
-                                            @if ($alumno->ciclo)
-                                                <ul>
-                                                    @foreach ($alumno->ciclo->cursos as $curso)
-                                                        <li>
-                                                            <a
-                                                                href="{{ route('curso.show', $curso->id) }}">{{ $curso->nombre }}</a>
-                                                        </li>
-                                                    @endforeach
-                                                </ul>
-                                            @endif
+                                            @foreach ($alumno->ciclo->cursos as $curso)
+                                                <li class="d-flex align-items-center justify-content-between curso-item"
+                                                    style="border-bottom: 1px dashed rgba(128, 128, 128, 0.452)">
+                                                    <a href="{{ route('curso.show', $curso->id) }}"
+                                                        class="mr-2">{{ $curso->nombre }}</a>
+                                                    <div class="d-flex align-items-center">
+                                                        @if ($curso->docente)
+                                                            <small class="mr-2">
+                                                                <strong>Docente:</strong> {{ $curso->docente->nombre }}
+                                                            </small>
+                                                        @endif |
+                                                        @if ($curso->silabo)
+                                                            <a class="btn btn-success btn-sm d-inline-block"
+                                                                href="{{ asset('docentes/silabo/' . $curso->silabo) }}"
+                                                                target="_blank" title="Ver Sílabo">
+                                                                Ver sílabo <i class="fa fa-eye fa-sm"></i>
+                                                            </a>
+                                                        @endif |
+                                                        @if ($curso->classroom)
+                                                            <div class="ml-2">
+                                                                <a href="{{ $curso->classroom }}" target="_blank">Link
+                                                                    <small><i
+                                                                            class="fa fa-sm fa-external-link-alt"></i></small></a>
+                                                                →
+                                                                {{ $curso->clave }} <i class="fa fa-sm fa-lock"></i>
+                                                            </div>
+                                                        @else
+                                                            <div class="ml-2">
+                                                                No tiene asignado un Classroom
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                </li>
+                                            @endforeach
                                         </td>
                                     </tr>
 
                                     @if (isset($alumno->user->pendiente))
                                         <tr class="bg-danger text-white">
-                                            <td>Curso(s) a cargo: <br> <small>*Es responsabilidad del estudiante solicitar la subsanación de cursos pendientes.</small></td>
+                                            <td>Curso(s) a cargo: <br> <small>*Es responsabilidad del estudiante solicitar la
+                                                    subsanación de cursos pendientes.</small></td>
                                             <td>
                                                 @php
                                                     $cursos = explode(',', $alumno->user->pendiente);
@@ -306,7 +431,40 @@
         @endrole
 
     </div>
+
+    <!-- Modal de Confirmación -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog"
+        aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar Eliminación</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    ¿Estás seguro de que deseas eliminar este administrador?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <a id="confirm-delete" class="btn btn-danger" href="#">Eliminar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script>
+        $('#confirmDeleteModal').on('show.bs.modal', function(e) {
+            var button = $(e.relatedTarget); // Botón que activó el modal
+            var url = button.data('href'); // Obtiene la URL del atributo data-href
+            var modal = $(this);
+            modal.find('#confirm-delete').attr('href', url); // Configura el enlace de eliminación
+        });
+    </script>
+
     {{-- Script para mostrar contenido de alumnos --}}
     <script>
         document.getElementById('mostrar-contenido')?.addEventListener('click', function() {
@@ -337,41 +495,71 @@
     </script>
 
     <script>
-        function filterTable() {
-            var searchText = $('#search-box').val().toLowerCase();
-            $('.alumno-row').each(function() {
-                var row = $(this);
-                var found = false;
-                row.find('td').each(function() {
-                    if ($(this).text().toLowerCase().indexOf(searchText) !== -1) {
-                        found = true;
-                        return false; // Para salir del bucle each una vez que se haya encontrado una coincidencia
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchBox = document.getElementById('search-box');
+            const tables = document.querySelectorAll('.table');
+
+            searchBox.addEventListener('keyup', function() {
+                const searchTerm = searchBox.value.toLowerCase();
+
+                tables.forEach(table => {
+                    const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+
+                    for (let i = 0; i < rows.length; i++) {
+                        let rowText = rows[i].innerText.toLowerCase();
+                        if (rowText.includes(searchTerm)) {
+                            rows[i].style.display = '';
+                        } else {
+                            rows[i].style.display = 'none';
+                        }
                     }
                 });
-                row.toggle(found);
             });
-        }
-
-        $('#search-box').on('input', function() {
-            filterTable();
         });
     </script>
-    
+
     <script>
         function mostrarTabla(tipo) {
             if (tipo === 'admins') {
                 document.getElementById('admins-table').style.display = 'table';
                 document.getElementById('alumnos-table').style.display = 'none';
                 document.getElementById('adminsB-table').style.display = 'none';
+                document.getElementById('docentes-table').style.display = 'none';
+                document.getElementById('inhabilitado-table').style.display = 'none';
             } else if (tipo === 'alumnos') {
                 document.getElementById('admins-table').style.display = 'none';
                 document.getElementById('alumnos-table').style.display = 'table';
                 document.getElementById('adminsB-table').style.display = 'none';
+                document.getElementById('docentes-table').style.display = 'none';
+                document.getElementById('inhabilitado-table').style.display = 'none';
             } else if (tipo === 'adminsB') {
                 document.getElementById('admins-table').style.display = 'none';
                 document.getElementById('alumnos-table').style.display = 'none';
                 document.getElementById('adminsB-table').style.display = 'table';
+                document.getElementById('docentes-table').style.display = 'none';
+                document.getElementById('inhabilitado-table').style.display = 'none';
+            } else if (tipo === 'docentes') {
+                document.getElementById('admins-table').style.display = 'none';
+                document.getElementById('alumnos-table').style.display = 'none';
+                document.getElementById('adminsB-table').style.display = 'none';
+                document.getElementById('docentes-table').style.display = 'table';
+                document.getElementById('inhabilitado-table').style.display = 'none';
+            } else if (tipo === 'inhabilitados') {
+                document.getElementById('admins-table').style.display = 'none';
+                document.getElementById('alumnos-table').style.display = 'none';
+                document.getElementById('adminsB-table').style.display = 'none';
+                document.getElementById('docentes-table').style.display = 'none';
+                document.getElementById('inhabilitado-table').style.display = 'table';
             }
         }
     </script>
+    <style>
+        .curso-item {
+            transition: background-color 0.3s ease;
+        }
+
+        .curso-item:hover {
+            background-color: #e7e7e7;
+        }
+    </style>
 @endsection

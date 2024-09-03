@@ -83,27 +83,22 @@
                                                     class="text-primary">Descargar <i
                                                         class="fa fa-arrow-down"></i></a></small>
                                         </li>
-                                        <li>Una fotocopia de DNI ampliado y legalizado.</li>
-                                        <li>Partida de nacimiento original y una copia legalizada.</li>
-                                        <li>Certificado de estudios de secundaria original actualizado y una copia
-                                            legalizada.</li>
-                                        <li>Ocho (8) fotos tamaño pasaporte en fondo blanco y con terno.</li>
+                                        <li>Una fotocopia de DNI ampliado y legalizado. </li>
+                                       
+                                        <li>Ocho (8) fondo blanco, papel mate, con terno de color negro.</li>
                                         <li>Una copia de RD de haber aprobado las prácticas pre profesionales. → s/50.00
                                         </li>
-                                        <li>Carta de aceptación de la I.E. donde se realiza la investigación, original y una
-                                            copia.</li>
-                                        <li>Constancia de no deudor original y una copia.</li>
-                                        <li>Constancia de egresado original y una copia.</li>
-                                        <li>Una copia de Certificado de Estudios Superiores. </li>
-                                        <li>D de Aprobación de PTI y asignación de asesor original y una copia.</li>
-                                        <li>Informe de Trabajo de Investigación Apto original y una copia.</li>
-                                        <li>RD de aprobación de Trabajo de Investigación original y una copia.</li>
+                                        <li>Carta de aceptación de la I.E. donde se realiza la investigación, original.</li>
+                                        <li>Constancia de no deudor original.</li>
+                                        <li>Constancia de egresado original.</li>                                       
+                                        <li>Resolución Directoral de Aprobación de PTI y asignación de asesor original.</li>
+                                        <li>Informe de Trabajo de Investigación Apto original.</li>
+                                        <li>Resolución Directoral de aprobación de Trabajo de Investigación original.</li>
                                         <li>Una copia del Certificado de conocimiento de idioma extranjero Nivel A2, para
                                             Inicial o Primaria.</li>
                                         <li>Una copia del Certificado de conocimiento de lengua originaria, para Primaria
                                             EIB.</li>
-                                        <li>Comprobante de pago por Derecho de obtención de grado de Bachiller original y
-                                            una copia.</li>
+                                        <li>Comprobante de pago por Derecho de obtención de grado de Bachiller original.</li>
                                     </ul>
                                     <p class="mt-2">
                                         Como resultado de este trámite obtendrás una Carta de aceptación de Expediente de

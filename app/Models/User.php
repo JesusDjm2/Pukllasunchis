@@ -59,6 +59,10 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Programa::class);
     }
+    public function docente()
+    {
+        return $this->hasOne(Docente::class);
+    }
 
     public function ciclo()
     {

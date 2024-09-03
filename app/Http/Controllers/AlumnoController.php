@@ -25,7 +25,10 @@ class AlumnoController extends Controller
         if ($alumno) {
             $usuario = $alumno->user;
             $alumno->load('programa', 'ciclo.cursos');
-            return view('admin.index', compact('alumno', 'usuario'));
+            return view('alumnos.vistasAlumnos.index', compact('alumno', 'usuario'));
+        }
+        else{
+            return view('alumnos.vistasAlumnos.index');
         }
     }
     public function ficha(Alumno $alumno)

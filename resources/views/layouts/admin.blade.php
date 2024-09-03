@@ -38,10 +38,11 @@
                     <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities"
                         data-parent="#accordionSidebar">
                         <div class="bg-white py-2 collapse-inner rounded">
-                            <h6 class="collapse-header">Gestionar alumnos:</h6>
+                            <h6 class="collapse-header">Gestionar Cursos:</h6>
                             <a class="collapse-item" href="{{ route('programa.index') }}">Programas</a>
                             <a class="collapse-item" href="{{ route('ciclo.index') }}">Ciclos</a>
                             <a class="collapse-item" href="{{ route('curso.index') }}">Cursos</a>
+                            <a class="collapse-item" href="{{ route('competencias.index') }}">Competencias</a>
                         </div>
                     </div>
                 </li>
@@ -50,11 +51,11 @@
                     <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
                         aria-expanded="true" aria-controls="collapseTwo">
                         <i class="fas fa-pen"></i>
-                        <span>Registrados</span>
+                        <span>Perfiles</span>
                     </a>
                     <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                         <div class="bg-white py-2 collapse-inner rounded">
-                            <h6 class="collapse-header">Gestionar adminis</h6>
+                            <h6 class="collapse-header">Gestionar perfiles</h6>
                             <a class="collapse-item" href="{{ route('admin') }}">Perfiles registrados</a>
                             <a class="collapse-item" href="{{ route('registerAdmin') }}">Registrar nuevo</a>
                         </div>
@@ -71,8 +72,7 @@
                         data-parent="#accordionSidebar">
                         <div class="bg-white py-2 collapse-inner rounded">
                             <h6 class="collapse-header">Gestionar Docentes:</h6>
-                            <a class="collapse-item" href="">Cursos</a>
-                            <a class="collapse-item" href="">Actualizar datos</a>
+                            <a class="collapse-item" href="{{route('docente.index')}}">Lista de Docentes</a>
                         </div>
                     </div>
                 </li>

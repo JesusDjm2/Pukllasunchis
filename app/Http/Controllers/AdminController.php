@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Alumno;
 use App\Models\Ciclo;
+use App\Models\Docente;
 use App\Models\Programa;
 use App\Models\User;
 use App\Models\Curso;
@@ -138,7 +139,7 @@ class AdminController extends Controller
             'beca' => 'nullable|boolean',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:7|confirmed',
-            'role' => 'required|string|in:admin,docente,alumno,adminB,alumnoB',
+            'role' => 'required|string|in:admin,docente,alumno,adminB,alumnoB,inhabilitado',
             'programa_id' => 'required_if:role,alumno|exists:programas,id',
             'ciclo_id' => 'required_if:role,alumno|exists:ciclos,id',
         ]);
@@ -159,13 +160,22 @@ class AdminController extends Controller
 
         if ($role) {
             $user->assignRole($role);
-            // Asociar Programa y Ciclo solo si el rol es 'alumno'
+            // Crear un registro en la tabla Docente si el rol es 'docente'
+            if ($roleName === 'docente') {
+                $docente = new Docente();
+                $docente->nombre = $request->input('name') . ' ' . $request->input('apellidos');
+                $docente->dni = $request->input('dni');
+                $docente->email = $request->input('email');
+
+                $docente->user_id = $user->id;
+                $docente->save();
+            }
+
             if ($roleName === 'alumno') {
                 $user->programa()->associate($request->input('programa_id'));
                 $user->ciclo()->associate($request->input('ciclo_id'));
                 $user->save();
 
-                // Asignar cursos al usuario
                 if ($request->has('cursos')) {
                     $user->cursos()->attach($request->input('cursos'));
                 }
@@ -185,7 +195,7 @@ class AdminController extends Controller
             'beca' => 'nullable|boolean',
             'email' => 'required|email|unique:users,email,' . $id,
             'password' => 'nullable|string|min:7|confirmed',
-            'role' => 'required|string|in:admin,docente,alumno',
+            'role' => 'required|string|in:admin,docente,alumno,adminB,alumnoB,inhabilitado',
             'programa_id' => 'required_if:role,alumno|exists:programas,id',
             'ciclo_id' => 'required_if:role,alumno|exists:ciclos,id',
         ]);
@@ -208,7 +218,15 @@ class AdminController extends Controller
 
         if ($role) {
             $user->syncRoles([$role]);
-            // Asociar Programa y Ciclo solo si el rol es 'alumno'
+
+            if ($roleName === 'docente') {
+                $docente = $user->docente;  
+                $docente->nombre = $request->input('name') . ' ' . $request->input('apellidos');
+                $docente->dni = $request->input('dni');
+                $docente->email = $request->input('email');
+                $docente->save();
+            }
+            
             if ($roleName === 'alumno') {
                 $user->programa()->associate($request->input('programa_id'));
                 $user->ciclo()->associate($request->input('ciclo_id'));
@@ -221,12 +239,24 @@ class AdminController extends Controller
     public function destroy($id)
     {
         $admin = User::findOrFail($id);
+        $hasAlumnoRole = $admin->hasRole('alumno');
         $userCount = User::whereHas('roles', function ($query) {
             $query->where('name', 'admin');
         })->count();
 
         if ($userCount > 1) {
+            // Si el usuario tiene el rol de 'alumno', eliminar el registro en 'alumnos'
+            if ($hasAlumnoRole) {
+                // Elimina el registro relacionado en la tabla 'alumnos'
+                $alumno = Alumno::where('user_id', $admin->id)->first();
+                if ($alumno) {
+                    $alumno->delete();
+                }
+            }
+
+            // Eliminar el usuario
             $admin->delete();
+
             return redirect()->route('admin')->with('success', 'Usuario eliminado exitosamente');
         } else {
             return redirect()->route('admin')->with('error', 'No puedes eliminar al último usuario registrado con el rol de admin');

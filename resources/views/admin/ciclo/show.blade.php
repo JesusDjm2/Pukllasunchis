@@ -33,10 +33,13 @@
             </div>
             @foreach ($ciclo->cursos as $curso)
                 <div class="col-lg-4 mb-2 mt-2">
-                    <div class="card" style="height: 100px">
+                    <div class="card {{ str_contains($curso->cc, 'Extracurricular') ? 'bg-secondary text-white' : '' }}"
+                        style="height: 100px">
                         <div class="card-body text-center">
                             <a href="{{ route('curso.show', $curso->id) }}">
-                                <h6 class="">{{ $curso->nombre }}</h6>
+                                <h6 class="{{ str_contains($curso->cc, 'Extracurricular') ? 'text-white' : '' }}">
+                                    {{ $curso->nombre }}
+                                </h6>
                             </a>
                             <a href="{{ route('curso.show', $curso->id) }}" class="btn btn-sm btn-info" title="Ver Curso">
                                 <i class="fa fa-eye fa-sm"></i> Ver Curso
@@ -86,11 +89,18 @@
                                             </td>
                                             <td>
                                                 <label class="form-check-label" for="alumno{{ $alumno->id }}">
-                                                    {{ $alumno->apellidos }}, {{ $alumno->nombres }} 
+                                                    {{ $alumno->apellidos }}, {{ $alumno->nombres }}
                                                 </label>
                                             </td>
                                             <td>{{ $alumno->dni }}</td>
-                                            <td>{{ $alumno->user->pendiente }}</td>
+                                            <td>
+                                                @if (isset($alumno->user->pendiente))
+                                                    {{ $alumno->user->pendiente }}
+                                                @else
+                                                    ---
+                                                @endif
+                                            </td>
+
                                         </tr>
                                     @endforeach
                                 </tbody>

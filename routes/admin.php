@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AlumnoController;
 use App\Http\Controllers\BolsaController;
 use App\Http\Controllers\CicloController;
+use App\Http\Controllers\CompetenciaController;
 use App\Http\Controllers\CursoController;
 use App\Http\Controllers\DocenteCOntroller;
 use App\Http\Controllers\PostulanteController;
@@ -25,6 +26,8 @@ Route::post('/admin/store', [AdminController::class, 'store'])->name('adminStore
 Route::get('/admin/alumnos', [AdminController::class, 'alumnos'])->name('adminAlumnos');
 Route::post('/relacionar-usuario/{alumno}', [AdminController::class, 'relacionarUsuario'])->name('relacionarUsuario');
 Route::post('/asignar-rol-alumno/{alumno}', [AdminController::class, 'asignarRolAlumno'])->name('asignarRolAlumno');
+Route::get('/inhabilitado', function () {
+    return view('admin.inhabilitado'); })->name('inhabilitado');
 
 //Programas
 Route::prefix('programas')->middleware(['auth'])->group(function () {
@@ -42,7 +45,26 @@ Route::prefix('cursos')->middleware(['auth'])->group(function () {
 });
 
 //Docentes
-Route::get('/docente', [DocenteCOntroller::class, 'showDocente'])->name('docente')->middleware('auth');
+Route::resource('docente', DocenteCOntroller::class)->names('docente')->middleware('auth');
+Route::get('Dashboard-Docente/{docente}', [DocenteCOntroller::class, 'vistaDocente'])->name('vistaDocente')->middleware('auth');
+Route::get('asignar-cursos/{id}', [DocenteCOntroller::class, 'asignar'])->name('asignar')->middleware('auth');
+Route::post('/asignar-curso/{docenteId}', [DocenteCOntroller::class, 'asignarCurso'])->name('cursos.asignar');
+
+//Eliminar cursos asignados
+Route::delete('/docente/{docente}/curso/{curso}', [DocenteController::class, 'eliminarCurso'])->name('docente.curso.eliminar');
+Route::get('/Lista-de-alumnos/{curso}/{docente}', [DocenteController::class, 'showAlumnos'])->name('docentes.cursos.alumnos');
+
+Route::post('cursos/{curso}/upload-silabo', [CursoController::class, 'uploadSilabo'])->name('cursos.uploadSilabo');
+Route::get('cursos/{curso}/edit-silabo', [CursoController::class, 'editSilabo'])->name('cursos.editSilabo');
+Route::post('cursos/{curso}/upload-silabo', [CursoController::class, 'uploadSilabo'])->name('cursos.uploadSilabo');
+Route::delete('cursos/{curso}/destroy-silabo', [CursoController::class, 'destroySilabo'])->name('cursos.destroySilabo'); 
+
+Route::post('/cursos/{curso}/classroomClaveCRUD', [CursoController::class, 'classroomClaveCRUD'])->name('cursos.classroomClaveCRUD');
+
+//Competencias
+Route::resource('competencias', CompetenciaController::class)->middleware('auth')->names('competencias');
+
+/* Route::get('/docente', [DocenteCOntroller::class, 'showDocente'])->name('docente')->middleware('auth'); */
 //Alumnos
 Route::prefix('alumnos')->group(function () {
     Route::resource('alumnos', AlumnoController::class)->except(['store']);
@@ -61,6 +83,7 @@ Route::get('/filtrar-datos', [AlumnoController::class, 'filtro'])->name('filtro'
 //Vista Alumnos
 Route::get('Alumnos-Formulario', [vistasAlumnosController::class, 'form'])->name('vistAlumno');
 Route::get('/obtener-ciclos/{programa}', [vistasAlumnosController::class, 'obtenerCiclos']);
+Route::get('/obtener-cursos/{cicloId}', [vistasAlumnosController::class, 'getCursos'])->name('obtener.cursos');
 
 
 Route::resource('trabajo', BolsaController::class);

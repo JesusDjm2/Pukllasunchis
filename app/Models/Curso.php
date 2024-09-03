@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Curso extends Model
 {
     use HasFactory;
-    protected $fillable = ['nombre','cc', 'horas', 'creditos', 'ciclo_id'];
+    protected $fillable = ['nombre', 'cc', 'horas', 'creditos', 'ciclo_id', 'silabo', 'classroom', 'clave'];
 
     public function ciclo()
     {
@@ -17,5 +17,13 @@ class Curso extends Model
     public function users()
     {
         return $this->belongsToMany(User::class)->withTimestamps();
+    }
+    public function docente()
+    {
+        return $this->belongsTo(Docente::class);
+    }
+    public function competencias()
+    {
+        return $this->belongsToMany(Competencia::class);
     }
 }

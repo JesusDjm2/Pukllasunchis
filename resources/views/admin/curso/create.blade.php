@@ -2,7 +2,7 @@
 @section('contenido')
     <div class="container-fluid bg-white">
         <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3">
-            <h3 class="mb-0 text-gray-800">Crear nuevo Curso</h3>
+            <h3 class="mb-0 text-primary font-weight-bold">Crear nuevo Curso:</h3>
             <a href="{{ route('curso.index') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
                 Volver
             </a>
@@ -56,6 +56,7 @@
                                         <option value="Formacion Específica" {{ old('cc') == 'Formacion Específica' ? 'selected' : '' }}>Formación Específica</option>
                                         <option value="Formacion Práctica e Investigación" {{ old('cc') == 'Formacion Práctica e Investigación' ? 'selected' : '' }}>Formación Práctica e Investigación</option>
                                         <option value="Electivo" {{ old('cc') == 'Electivo' ? 'selected' : '' }}>Electivo</option>
+                                        <option value="Extracurricular" {{ old('cc') == 'Extracurricular' ? 'selected' : '' }}>Extracurricular</option>
                                     </select>
                                     @error('cc')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -81,6 +82,20 @@
                                     @error('creditos')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
+                                </div>
+                            </div>
+                            <div class="col-lg-12 mb-3">
+                                <label for="competencias">Competencias:</label>
+                                <div id="competencias">
+                                    @foreach ($competencias as $competencia)
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="competencias[]"
+                                                value="{{ $competencia->id }}" id="competencia{{ $competencia->id }}">
+                                            <label class="form-check-label" for="competencia{{ $competencia->id }}">
+                                                {{ $competencia->nombre }}
+                                            </label>
+                                        </div>
+                                    @endforeach
                                 </div>
                             </div>
                             <button type="submit" class="mt-3 mb-3 btn btn-sm btn-primary">Guardar Curso</button>

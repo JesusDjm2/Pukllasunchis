@@ -79,6 +79,7 @@
                                 <option value="alumno" {{ $currentRole === 'alumno' ? 'selected' : '' }}>Alumno</option>
                                 <option value="adminB" {{ $currentRole === 'adminB' ? 'selected' : '' }}>Administrador
                                     Bolsa</option>
+                                <option value="inhabilitado" {{ $currentRole === 'inhabilitado' ? 'selected' : '' }}>Inhabilitado</option>
                             </select>
                             @error('role')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -166,25 +167,30 @@
                                 </div>
 
                                 <div class="col-lg-3 mb-3">
-                                    <label for="tiene_cursos_pendientes" class="form-label">¿Tiene cursos pendientes?</label>
-                                    <select id="tiene_cursos_pendientes" name="tiene_cursos_pendientes" class="form-control form-control-sm">
-                                        <option value="1" 
-                                            {{ old('tiene_cursos_pendientes', isset($admin->pendiente) ? 1 : null) == 1 ? 'selected' : '' }}>Sí</option>
-                                        <option value="0" 
-                                            {{ old('tiene_cursos_pendientes', isset($admin->pendiente) ? 1 : null) == 0 ? 'selected' : '' }}>No</option>
+                                    <label for="tiene_cursos_pendientes" class="form-label">¿Tiene cursos
+                                        pendientes?</label>
+                                    <select id="tiene_cursos_pendientes" name="tiene_cursos_pendientes"
+                                        class="form-control form-control-sm">
+                                        <option value="1"
+                                            {{ old('tiene_cursos_pendientes', isset($admin->pendiente) ? 1 : null) == 1 ? 'selected' : '' }}>
+                                            Sí</option>
+                                        <option value="0"
+                                            {{ old('tiene_cursos_pendientes', isset($admin->pendiente) ? 1 : null) == 0 ? 'selected' : '' }}>
+                                            No</option>
                                     </select>
                                 </div>
                                 <div class="col-lg-12 mb-4" id="cursos-pendientes"
                                     style="{{ old('tiene_cursos_pendientes', isset($admin->pendiente) ? 1 : null) == 1 ? '' : 'display: none;' }}">
                                     <label for="pendiente" class="form-label">Cursos Pendientes:</label>
-                                    <input type="text" id="pendiente" name="pendiente" class="form-control form-control-sm" 
-                                           value="{{ old('pendiente', $admin->pendiente ?? '') }}" 
-                                           placeholder="Escriba los cursos pendientes separados por comas">
+                                    <input type="text" id="pendiente" name="pendiente"
+                                        class="form-control form-control-sm"
+                                        value="{{ old('pendiente', $admin->pendiente ?? '') }}"
+                                        placeholder="Escriba los cursos pendientes separados por comas">
                                     @error('pendiente')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
-                                
+
                             </div>
                         </div>
                         <button type="submit" class="btn btn-primary">Actualizar</button>

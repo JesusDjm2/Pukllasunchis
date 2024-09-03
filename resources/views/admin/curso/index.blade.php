@@ -1,7 +1,8 @@
 @extends('layouts.admin')
 @section('contenido')
     <div class="container-fluid bg-white">
-        <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3 pb-2" style="border-bottom: 1px dashed #80808078">
+        <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3 pb-2"
+            style="border-bottom: 1px dashed #80808078">
             <h2 class="mb-0 text-uppercase font-weight-bold text-primary">Cursos:</h2>
             <a href="{{ route('curso.create') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
                 Crear nuevo Curso <i class="fa fa-plus fa-sm"></i>
@@ -38,27 +39,40 @@
             </div>
             <div class="col-lg-12" id="tablaCursos">
                 <div id="tablaCursos" class="table-responsive">
-                    <table class="table" style="font-size: 14px">
+                    <table class="table table-hover" style="font-size: 14px">
                         <thead style="background: #205070; color:#fff">
                             <tr>
-                                <td>Nombre del Curso</td>
-                                <td>Ciclo</td>
-                                <td>Programa</td>
-                                <td>CC</td>
-                                <td>Horas</td>
-                                <td>Créditos</td>
+                                <td>Datos del Curso</td>
+                                <td>Competencias</td>
                                 <td>Acciones</td>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($cursos as $curso)
                                 <tr>
-                                    <td>{{ $curso->nombre }}</td>
-                                    <td>{{ $curso->ciclo->nombre }}</td>
-                                    <td>{{ $curso->ciclo->programa->nombre }}</td>
-                                    <td>{{ $curso->cc }}</td>
-                                    <td>{{ $curso->horas }}</td>
-                                    <td>{{ $curso->creditos }}</td>
+                                    <td><span class="font-weight-bold" style="font-size: 16px">{{ $curso->nombre }}</span>
+                                        <ul>
+                                            <li><span class="font-weight-bold">Programa/Ciclo:</span>
+                                                @if (str_contains($curso->ciclo->programa->nombre, 'Programa Primaria EIB'))
+                                                    {{ 'EIB' }}
+                                                @elseif(str_contains($curso->ciclo->programa->nombre, 'Programa Inicial'))
+                                                    {{ 'Inicial' }}
+                                                @else
+                                                    {{ $curso->ciclo->programa->nombre }}
+                                                @endif - {{ $curso->ciclo->nombre }}
+                                            </li>
+                                            <li><span class="font-weight-bold">CC:</span> {{ $curso->cc }}</li>
+                                            <li><span class="font-weight-bold">Horas:</span> {{ $curso->horas }}</li>
+                                            <li><span class="font-weight-bold">Créditos:</span> {{ $curso->creditos }}</li>
+                                        </ul>
+                                    </td>
+                                    <td>
+                                        <ul>
+                                            @foreach ($curso->competencias as $competencia)
+                                                <li>{{ $competencia->nombre }}</li>
+                                            @endforeach
+                                        </ul>
+                                    </td>
                                     <td>
                                         <a href="{{ route('curso.show', $curso->id) }}" class="btn btn-sm btn-info"
                                             title="Ver Curso"><i class="fa fa-eye fa-sm"></i> </a>
@@ -82,27 +96,40 @@
             </div>
             <div class="col-lg-12">
                 <div id="tablaInicial" class="table-responsive" style="display: none;">
-                    <table class="table" style="font-size: 15px">
-                        <thead class="thead-dark">
+                    <table class="table table-hover" style="font-size: 15px">
+                        <thead style="background: #205070; color:#fff">
                             <tr>
-                                <th>Nombre del Curso</th>
-                                <th>Ciclo</th>
-                                <th>Programa</th>
-                                <th>CC</th>
-                                <th>Horas</th>
-                                <th>Créditos</th>
+                                <th>Datos del Curso</th>
+                                <th>Competencias</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($cursosInicial as $curso)
                                 <tr>
-                                    <td>{{ $curso->nombre }}</td>
-                                    <td>{{ $curso->ciclo->nombre }}</td>
-                                    <td>{{ $curso->ciclo->programa->nombre }}</td>
-                                    <td>{{ $curso->cc }}</td>
-                                    <td>{{ $curso->horas }}</td>
-                                    <td>{{ $curso->creditos }}</td>
+                                    <td><span class="font-weight-bold" style="font-size: 16px">{{ $curso->nombre }}</span>
+                                        <ul>
+                                            <li><span class="font-weight-bold">Programa/Ciclo:</span>
+                                                @if (str_contains($curso->ciclo->programa->nombre, 'Programa Primaria EIB'))
+                                                    {{ 'EIB' }}
+                                                @elseif(str_contains($curso->ciclo->programa->nombre, 'Programa Inicial'))
+                                                    {{ 'Inicial' }}
+                                                @else
+                                                    {{ $curso->ciclo->programa->nombre }}
+                                                @endif - {{ $curso->ciclo->nombre }}
+                                            </li>
+                                            <li><span class="font-weight-bold">CC:</span> {{ $curso->cc }}</li>
+                                            <li><span class="font-weight-bold">Horas:</span> {{ $curso->horas }}</li>
+                                            <li><span class="font-weight-bold">Créditos:</span> {{ $curso->creditos }}</li>
+                                        </ul>
+                                    </td>
+                                    <td>
+                                        <ul>
+                                            @foreach ($curso->competencias as $competencia)
+                                                <li>{{ $competencia->nombre }}</li>
+                                            @endforeach
+                                        </ul>
+                                    </td>
                                     <td>
                                         <a href="{{ route('curso.show', $curso->id) }}" class="btn btn-sm btn-info"
                                             title="Ver Curso"><i class="fa fa-eye fa-sm"></i> </a>
@@ -126,27 +153,41 @@
             </div>
             <div class="col-lg-12">
                 <div id="tablaEib" class="table-responsive" style="display: none">
-                    <table class="table" style="font-size: 15px">
-                        <thead class="thead-dark">
+                    <table class="table table-hover" style="font-size: 14px">
+                        <thead style="background: #205070; color:#fff">
                             <tr>
-                                <th>Nombre del Curso</th>
-                                <th>Ciclo</th>
-                                <th>Programa</th>
-                                <th>CC</th>
-                                <th>Horas</th>
-                                <th>Créditos</th>
+                                <th>Datos del Curso</th>
+                                <th>Competencias</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($cursosEib as $curso)
                                 <tr>
-                                    <td>{{ $curso->nombre }}</td>
-                                    <td>{{ $curso->ciclo->nombre }}</td>
-                                    <td>{{ $curso->ciclo->programa->nombre }}</td>
-                                    <td>{{ $curso->cc }}</td>
-                                    <td>{{ $curso->horas }}</td>
-                                    <td>{{ $curso->creditos }}</td>
+                                    <td><span class="font-weight-bold" style="font-size: 16px">{{ $curso->nombre }}</span>
+                                        <ul>
+                                            <li><span class="font-weight-bold">Programa/Ciclo:</span>
+                                                @if (str_contains($curso->ciclo->programa->nombre, 'Programa Primaria EIB'))
+                                                    {{ 'EIB' }}
+                                                @elseif(str_contains($curso->ciclo->programa->nombre, 'Programa Inicial'))
+                                                    {{ 'Inicial' }}
+                                                @else
+                                                    {{ $curso->ciclo->programa->nombre }}
+                                                @endif - {{ $curso->ciclo->nombre }}
+                                            </li>
+                                            <li><span class="font-weight-bold">CC:</span> {{ $curso->cc }}</li>
+                                            <li><span class="font-weight-bold">Horas:</span> {{ $curso->horas }}</li>
+                                            <li><span class="font-weight-bold">Créditos:</span> {{ $curso->creditos }}
+                                            </li>
+                                        </ul>
+                                    </td>
+                                    <td>
+                                        <ul>
+                                            @foreach ($curso->competencias as $competencia)
+                                                <li>{{ $competencia->nombre }}</li>
+                                            @endforeach
+                                        </ul>
+                                    </td>
                                     <td>
                                         <a href="{{ route('curso.show', $curso->id) }}" class="btn btn-sm btn-info"
                                             title="Ver Curso"><i class="fa fa-eye fa-sm"></i> </a>
@@ -178,13 +219,13 @@
                 $('#tablaEib').hide();
                 $('#tablaInicial').show();
             });
-    
+
             $('#todos').click(function() {
                 $('#tablaEib').hide();
                 $('#tablaInicial').hide();
                 $('#tablaCursos').show();
             });
-    
+
             $('#eib').click(function() {
                 $('#tablaInicial').hide();
                 $('#tablaCursos').hide();

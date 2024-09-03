@@ -332,7 +332,7 @@
                         <p>
                             Los pagos ordinarios <strong>SOLO SE PUEDEN PAGAR EN VENTANILLAS</strong> de cualquier agencia a
                             nivel nacional de CAJA CUSCO. <a class="text-primary" target="_blank"
-                                href="../../../../public/pdf/Conceptos-ordinarios-caja-cusco.pdf">Ver PDF para
+                                href="../../../../public/pdf/Conceptos-ordinarios-caja-cusco-2.pdf">Ver PDF para
                                 pagos<small><i class="fa fa-eye"></i></small></a>
                         </p>
                     </div>

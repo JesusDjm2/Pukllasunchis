@@ -21,6 +21,10 @@ return new class extends Migration
             $table->string('perfil')->nullable();
             $table->boolean('beca')->nullable();
             $table->string('email')->unique();
+            
+            //Nuevo campo de fotografía
+            $table->string('foto')->nullable();
+            
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
