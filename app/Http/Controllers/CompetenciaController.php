@@ -66,24 +66,18 @@ class CompetenciaController extends Controller
     } */
     public function show($id)
     {
-        // Recuperar la competencia por ID o fallar si no se encuentra
         $competencia = Competencia::findOrFail($id);
-
-        // Obtener el usuario autenticado
         $user = Auth::user();
-
-        // Obtener el docente asociado al usuario, si existe
         $docente = $user->docente;
+        $alumno = $user->alumno; 
 
-        // Determinar la vista a usar basada en el rol del usuario
         if ($user->hasRole('docente')) {
             return view('docentes.competencias.showDocente', compact('competencia', 'docente'));
         } elseif ($user->hasRole('admin')) {
             return view('docentes.competencias.show', compact('competencia', 'docente'));
         } elseif ($user->hasRole('alumno')) {
-            return view('docentes.competencias.showAlumno', compact('competencia', 'docente'));
+            return view('docentes.competencias.showAlumno', compact('competencia', 'docente', 'alumno'));
         } else {
-            // Redirigir a una vista por defecto o mostrar un error si el rol no es reconocido
             return abort(403, 'Acceso denegado.');
         }
     }

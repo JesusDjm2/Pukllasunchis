@@ -2,8 +2,8 @@
 @section('contenido')
     <div class="container-fluid bg-white">
         <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3">
-            <h4 >Asignar cursos a Docente: <span class="text-primary font-weight-bold">{{ $docente->nombre }}</span></h4>
-            <a href="{{ route('admin') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm float-right">
+            <h4>Asignar cursos a Docente: <span class="text-primary font-weight-bold">{{ $docente->nombre }}</span></h4>
+            <a href="{{ route('docente.index') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm float-right">
                 Volver
             </a>
         </div>
@@ -21,11 +21,6 @@
         </div>
         <div class="row">
             <div class="col-lg-12">
-                {{-- @if ($docente)
-                    <p>{{ $docente->nombre }}</p>
-                @else
-                    <p class="text-danger">Este perfil no es un docente</p>
-                @endif --}}
                 <form action="{{ route('cursos.asignar', $docente->id) }}" method="POST" autocomplete="off">
                     @csrf
                     <div class="row">
@@ -66,7 +61,7 @@
                     .then(data => {
                         var selectCiclo = document.getElementById('ciclo_id');
                         selectCiclo.innerHTML =
-                        '<option selected disabled>Elegir Ciclo</option>'; // Limpiar opciones anteriores
+                            '<option selected disabled>Elegir Ciclo</option>'; // Limpiar opciones anteriores
 
                         data.forEach(ciclo => {
                             var option = document.createElement('option');
@@ -88,9 +83,12 @@
                 fetch('/obtener-cursos/' + cicloId)
                     .then(response => response.json())
                     .then(data => {
+                        // Ordenar los cursos alfabéticamente por nombre
+                        data.sort((a, b) => a.nombre.localeCompare(b.nombre));
+
                         var selectCurso = document.getElementById('curso_id');
                         selectCurso.innerHTML =
-                        '<option selected disabled>Elegir Curso</option>'; // Limpiar opciones anteriores
+                            '<option selected disabled>Elegir Curso</option>'; // Limpiar opciones anteriores
 
                         data.forEach(curso => {
                             var option = document.createElement('option');

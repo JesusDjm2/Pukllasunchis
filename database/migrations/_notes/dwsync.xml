@@ -10,10 +10,11 @@
 <file name="2024_02_22_164640_create_programas_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133531091920000000" remote="133693686600000000" Dst="0" />
 <file name="2024_02_22_200242_create_ciclos_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133531092060000000" remote="133693686600000000" Dst="0" />
 <file name="2024_02_22_200309_create_alumnos_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133585430395732935" remote="133693686600000000" Dst="0" />
-<file name="2024_02_23_181340_create_cursos_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133692437585013234" remote="133693686600000000" Dst="0" />
+<file name="2024_02_23_181340_create_cursos_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133698722625713802" remote="133700634600000000" Dst="0" />
 <file name="2024_03_07_152857_add_programa_ciclo_to_users_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133543012186294962" remote="133693686600000000" Dst="0" />
-<file name="2024_02_22_213923_create_docentes_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133688151274536062" remote="133693686600000000" Dst="0" />
+<file name="2024_02_22_213923_create_docentes_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133700411713872661" remote="133700634600000000" Dst="0" />
 <file name="2024_04_26_200536_create_postulantes_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133608732291569740" remote="133693686600000000" Dst="0" />
 <file name="2024_08_26_211928_create_competencias_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133692665257087430" remote="133693686600000000" Dst="0" />
 <file name="2024_08_27_150723_create_competencia_curso_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133692455399244617" remote="133693686600000000" Dst="0" />
+<file name="2024_09_03_170404_create_curso_docente_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133698572108801306" remote="133700634600000000" Dst="0" />
 </dwsync>

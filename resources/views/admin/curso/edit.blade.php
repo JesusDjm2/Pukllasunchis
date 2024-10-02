@@ -29,15 +29,7 @@
                             <div class="row">
                                 <div class="col-lg-6 mb-4">
                                     <label for="programa_id">Programa:</label>
-                                    {{-- <select id="programa_id" name="programa_id" class="form-control" required>
-                                        <option disabled>Elegir Programa:</option>
-                                        @foreach ($programas as $programa)
-                                            <option value="{{ $programa->id }}"
-                                                {{ $curso->programa_id == $programa->id ? 'selected' : '' }}>
-                                                {{ $programa->nombre }}
-                                            </option>
-                                        @endforeach
-                                    </select> --}}
+                                    
                                     <select id="programa_id" name="programa_id" class="form-control" required>
                                         <option disabled>Elegir Programa:</option>
                                         @foreach ($programas as $prog)

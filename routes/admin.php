@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AlumnoController;
 use App\Http\Controllers\BolsaController;
+use App\Http\Controllers\CalificacionController;
 use App\Http\Controllers\CicloController;
 use App\Http\Controllers\CompetenciaController;
 use App\Http\Controllers\CursoController;
@@ -27,7 +28,8 @@ Route::get('/admin/alumnos', [AdminController::class, 'alumnos'])->name('adminAl
 Route::post('/relacionar-usuario/{alumno}', [AdminController::class, 'relacionarUsuario'])->name('relacionarUsuario');
 Route::post('/asignar-rol-alumno/{alumno}', [AdminController::class, 'asignarRolAlumno'])->name('asignarRolAlumno');
 Route::get('/inhabilitado', function () {
-    return view('admin.inhabilitado'); })->name('inhabilitado');
+    return view('admin.inhabilitado');
+})->name('inhabilitado');
 
 //Programas
 Route::prefix('programas')->middleware(['auth'])->group(function () {
@@ -50,18 +52,32 @@ Route::get('Dashboard-Docente/{docente}', [DocenteCOntroller::class, 'vistaDocen
 Route::get('asignar-cursos/{id}', [DocenteCOntroller::class, 'asignar'])->name('asignar')->middleware('auth');
 Route::post('/asignar-curso/{docenteId}', [DocenteCOntroller::class, 'asignarCurso'])->name('cursos.asignar');
 
+//Asignar competencias a calificar
+Route::get('/curso/{cursoId}/competencias', [CalificacionController::class, 'gestionarCompetencias'])
+    ->name('curso.gestionar.competencias');
+
+Route::post('/curso/{cursoId}/competencias/guardar', [CalificacionController::class, 'guardarCompetenciasSeleccionadas'])
+    ->name('curso.guardar.competencias');
+
 //Eliminar cursos asignados
 Route::delete('/docente/{docente}/curso/{curso}', [DocenteController::class, 'eliminarCurso'])->name('docente.curso.eliminar');
 Route::get('/Lista-de-alumnos/{curso}/{docente}', [DocenteController::class, 'showAlumnos'])->name('docentes.cursos.alumnos');
-
 Route::post('cursos/{curso}/upload-silabo', [CursoController::class, 'uploadSilabo'])->name('cursos.uploadSilabo');
 Route::get('cursos/{curso}/edit-silabo', [CursoController::class, 'editSilabo'])->name('cursos.editSilabo');
 Route::post('cursos/{curso}/upload-silabo', [CursoController::class, 'uploadSilabo'])->name('cursos.uploadSilabo');
-Route::delete('cursos/{curso}/destroy-silabo', [CursoController::class, 'destroySilabo'])->name('cursos.destroySilabo'); 
-
+Route::delete('cursos/{curso}/destroy-silabo', [CursoController::class, 'destroySilabo'])->name('cursos.destroySilabo');
 Route::post('/cursos/{curso}/classroomClaveCRUD', [CursoController::class, 'classroomClaveCRUD'])->name('cursos.classroomClaveCRUD');
 
-//Competencias
+//Calificaciones
+Route::get('calificar/{id}', [DocenteCOntroller::class, 'calificar'])->name('calificar')->middleware('auth');
+Route::post('docentes/{docente}/cursos/{curso}/calificar', [DocenteController::class, 'calificarCurso'])->name('competencias.calificar')->middleware('auth');
+//Guardar Calificacion de alumnos
+Route::post('/calificaciones/store', [CalificacionController::class, 'nuevaCalificacion'])->name('guardarCalificacion');
+//Periodos
+Route::post('/publicarPeriodoUno', [CalificacionController::class, 'publicarPeriodoUno'])->name('publicarPeriodoUno');
+Route::post('/eliminarPeriodoUno', [CalificacionController::class, 'eliminarPeriodoUno'])->name('eliminarPeriodoUno');
+
+//Competencias 
 Route::resource('competencias', CompetenciaController::class)->middleware('auth')->names('competencias');
 
 /* Route::get('/docente', [DocenteCOntroller::class, 'showDocente'])->name('docente')->middleware('auth'); */
@@ -74,6 +90,7 @@ Route::prefix('alumnos')->group(function () {
     Route::get('alumnos/create', [AlumnoController::class, 'create'])
         ->name('alumnos.create')
         ->withoutMiddleware('auth');
+    Route::get('calificaciones/{alumno}', [AlumnoController::class, 'calificaciones'])->name('calificaciones');
 });
 Route::post('/mostrar-contenido', [AlumnoController::class, 'mostrarContenido'])->name('mostrar-contenido');
 Route::get('ficha-matricula/{alumno}', [AlumnoController::class, 'ficha'])->name('ficha-matricula')->middleware('auth');

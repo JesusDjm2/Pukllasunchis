@@ -167,7 +167,7 @@
                     Dashboard
                 </div>
                 <li class="nav-item">
-                    <a class="nav-link collapsed" href="{{ route('admin') }}">
+                    <a class="nav-link collapsed" href="{{ route('alumnos.index') }}">
                         <i class="fas fa-fw fa-newspaper"></i>
                         <span>Ficha técnica</span>
                     </a> 

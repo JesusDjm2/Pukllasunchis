@@ -19,23 +19,17 @@ return new class extends Migration
             $table->string('creditos');
             $table->foreignId('ciclo_id')->constrained();
             $table->string('silabo')->nullable();
-            //Classroom
             $table->string('classroom')->nullable();
             $table->string('clave')->nullable();
-            
-            $table->foreignId('docente_id')->nullable()->constrained()->onDelete('set null');
+
             $table->timestamps();
         });
     }
-
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::table('cursos', function (Blueprint $table) {
-            $table->dropForeign(['docente_id']);
-        });
         Schema::dropIfExists('cursos');
     }
 };

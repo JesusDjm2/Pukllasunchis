@@ -18,12 +18,25 @@ class Curso extends Model
     {
         return $this->belongsToMany(User::class)->withTimestamps();
     }
-    public function docente()
+    public function docentes()
     {
-        return $this->belongsTo(Docente::class);
+        return $this->belongsToMany(Docente::class, 'curso_docente');
     }
     public function competencias()
     {
         return $this->belongsToMany(Competencia::class);
+    }
+    public function competenciasSeleccionadas()
+    {
+        return $this->belongsToMany(Competencia::class, 'curso_competencia_seleccionada');
+    }
+
+    public function calificaciones()
+    {
+        return $this->hasMany(Calificacion::class);
+    }
+    public function periodos()
+    {
+        return $this->hasMany(PeriodoUno::class);
     }
 }

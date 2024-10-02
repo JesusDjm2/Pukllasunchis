@@ -14,6 +14,11 @@ class Docente extends Model
     }
     public function cursos()
     {
-        return $this->hasMany(Curso::class);
+        return $this->belongsToMany(Curso::class, 'curso_docente');
+    }
+    public function competenciasPorCurso($cursoId)
+    {
+        return $this->belongsToMany(Competencia::class, 'docente_curso_competencia')
+            ->where('curso_id', $cursoId);
     }
 }

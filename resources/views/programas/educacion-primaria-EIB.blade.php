@@ -1,6 +1,6 @@
 @extends('layouts.home')
 @section('metas')
-    @php $titulo = 'Educación Primaria EIB'; @endphp
+    @php $titulo = 'Educación Primaria Intercultural Bilingüe'; @endphp
     <title>{{ $titulo }} - EESPP Pukllasunchis </title>
     <meta name="description"
         content="Esta especialidad se centra en jóvenes interesados en el cuidado y desarrollo de niños pequeños, fomentando entornos de juego y creatividad. Busca cultivar habilidades sociales y sensibilidad, promoviendo la convivencia y la conexión con la naturaleza.">
@@ -12,7 +12,7 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="bradcam_text">
-                        <h3 class="tituloAnimado">{{ $titulo }}</h3>
+                        <h3 class="tituloAnimado">Educación Primaria <br> Intercultural Bilingüe</h3>
                         <p class="slideUp"><a href="{{ route('index') }}">Inicio /</a> {{ $titulo }}</p>
                     </div>
                 </div>

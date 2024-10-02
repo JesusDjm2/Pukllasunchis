@@ -390,7 +390,7 @@
                                 style="writing-mode: vertical-rl;transform: rotate(-180deg); ">
                                 Informe de investigación destacada
                             </th>
-                            
+
                         </tr>
                         <tr>
                             <td style="background:#ffc10778!important">Práctica e Investigación IX</td>
@@ -437,6 +437,10 @@
                 <h3 class="linea-debajo scroolOk" id="perfil">Perfil del egresado de Formación Inicial Docente</h3>
                 <br><br>
                 <div class="row">
+                    <div class="col-lg-12 mb-4">
+                        <a href="{{ asset('pdf/Perfil-educacion-primaria.pdf') }}" target="_blank" class="btn btn-sm btn-danger">Descargar
+                            PDF <i class="fa fa-file-pdf"></i></a>
+                    </div>
                     <div class="col-lg-6 card p-3 border-success">
                         <h4><i class="fa fa-check fa-sm text-success"></i> Primero los niños</h4>
                         <p>

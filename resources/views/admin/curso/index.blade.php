@@ -38,7 +38,7 @@
                 <input type="text" class="form-control form-control-sm" id="buscador" placeholder="Buscar curso...">
             </div>
             <div class="col-lg-12" id="tablaCursos">
-                <div id="tablaCursos" class="table-responsive">
+                <div id="tablaCursos" class="table-responsive table-bordered">
                     <table class="table table-hover" style="font-size: 14px">
                         <thead style="background: #205070; color:#fff">
                             <tr>
@@ -50,7 +50,8 @@
                         <tbody>
                             @foreach ($cursos as $curso)
                                 <tr>
-                                    <td><span class="font-weight-bold" style="font-size: 16px">{{ $curso->nombre }}</span>
+                                    <td>
+                                        <span class="font-weight-bold" style="font-size: 16px">{{ $curso->nombre }}</span>
                                         <ul>
                                             <li><span class="font-weight-bold">Programa/Ciclo:</span>
                                                 @if (str_contains($curso->ciclo->programa->nombre, 'Programa Primaria EIB'))
@@ -68,25 +69,32 @@
                                     </td>
                                     <td>
                                         <ul>
-                                            @foreach ($curso->competencias as $competencia)
-                                                <li>{{ $competencia->nombre }}</li>
-                                            @endforeach
+                                            @if ($curso->competencias->isNotEmpty())
+                                                @foreach ($curso->competencias as $competencia)
+                                                    <li>{{ $competencia->nombre }}</li>
+                                                @endforeach
+                                            @else
+                                                <p>No hay competencias asignadas a este curso.</p>
+                                            @endif
+
                                         </ul>
                                     </td>
                                     <td>
-                                        <a href="{{ route('curso.show', $curso->id) }}" class="btn btn-sm btn-info"
+                                        <a href="{{ route('curso.show', $curso->id) }}" class="btn btn-sm btn-info mb-1"
                                             title="Ver Curso"><i class="fa fa-eye fa-sm"></i> </a>
-                                        <a href="{{ route('curso.edit', $curso->id) }}" class="btn btn-sm btn-primary"
+                                        <a href="{{ route('curso.edit', $curso->id) }}" class="btn btn-sm btn-primary mb-1"
                                             title="Editar Curso"><i class="fa fa-sm fa-pen"></i> </a>
                                         <form action="{{ route('curso.destroy', $curso->id) }}" method="POST"
                                             style="display:inline">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-danger"
+                                            <button type="submit" class="btn btn-sm btn-danger mb-1"
                                                 onclick="return confirm('¿Estás seguro de eliminar este curso?')"
                                                 title="Eliminar Curso">
-                                                <i class="fa fa-sm fa-trash"></i></button>
+                                                <i class="fa fa-sm fa-trash"></i>
+                                            </button>
                                         </form>
+                                        
                                     </td>
                                 </tr>
                             @endforeach
@@ -158,13 +166,15 @@
                             <tr>
                                 <th>Datos del Curso</th>
                                 <th>Competencias</th>
+                                <th>Comp. a Calificar</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($cursosEib as $curso)
                                 <tr>
-                                    <td><span class="font-weight-bold" style="font-size: 16px">{{ $curso->nombre }}</span>
+                                    <td><span class="font-weight-bold"
+                                            style="font-size: 16px">{{ $curso->nombre }}</span>
                                         <ul>
                                             <li><span class="font-weight-bold">Programa/Ciclo:</span>
                                                 @if (str_contains($curso->ciclo->programa->nombre, 'Programa Primaria EIB'))
@@ -188,6 +198,7 @@
                                             @endforeach
                                         </ul>
                                     </td>
+                                    <td>Vista ejemplo</td>
                                     <td>
                                         <a href="{{ route('curso.show', $curso->id) }}" class="btn btn-sm btn-info"
                                             title="Ver Curso"><i class="fa fa-eye fa-sm"></i> </a>

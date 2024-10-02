@@ -21,6 +21,19 @@ class Alumno extends Model
         return $this->belongsTo(Ciclo::class);
     }
 
+    /* public function calificacion()
+    {
+        return $this->hasOne(Calificacion::class);
+    } */
+    public function calificaciones()
+    {
+        return $this->hasMany(Calificacion::class);
+    }
+    public function periodos()
+    {
+        return $this->hasMany(PeriodoUno::class);
+    }
+
     public static function asociarPorEmail($email)
     {
         $alumno = static::where('email', $email)->first();

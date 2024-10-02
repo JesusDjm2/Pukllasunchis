@@ -31,14 +31,19 @@
                     </div>
                 @endif
             </div>
-            @foreach ($ciclo->cursos as $curso)
+            @php
+                $cursosOrdenados = $ciclo->cursos->sortBy('nombre'); 
+            @endphp
+            @foreach ($cursosOrdenados as $curso)
                 <div class="col-lg-4 mb-2 mt-2">
-                    <div class="card {{ str_contains($curso->cc, 'Extracurricular') ? 'bg-secondary text-white' : '' }}"
-                        style="height: 100px">
+                    <div class="card" style="height: 100px">
                         <div class="card-body text-center">
                             <a href="{{ route('curso.show', $curso->id) }}">
-                                <h6 class="{{ str_contains($curso->cc, 'Extracurricular') ? 'text-white' : '' }}">
+                                <h6>
                                     {{ $curso->nombre }}
+                                    @if (str_contains($curso->cc, 'Extracurricular'))
+                                        <small class="d-block mt-1 text-muted">(Extracurricular)</small>
+                                    @endif
                                 </h6>
                             </a>
                             <a href="{{ route('curso.show', $curso->id) }}" class="btn btn-sm btn-info" title="Ver Curso">
@@ -48,6 +53,7 @@
                     </div>
                 </div>
             @endforeach
+
             <div class="col-lg-12 mt-4">
                 <h5 class="font-weight-bold">Alumnos:</h5>
                 <form action="{{ route('ciclo.updateAlumnos') }}" method="POST">

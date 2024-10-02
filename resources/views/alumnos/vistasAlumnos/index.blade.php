@@ -3,7 +3,7 @@
     <div class="container-fluid bg-white pt-2">
         <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3 pb-3"
             style="border-bottom: 1px dashed #80808078">
-            <h3 class="mb-2 text-gray-800">Ficha Técnica: </h3>
+            <h3 class="mb-2 text-primary font-weight-bold">Ficha Técnica: </h3>
             @if (auth()->user()->alumno)
                 @if (!Session::has('mostrar_contenido'))
                     <button type="button" class="btn btn-info btn-sm mb-2" id="mostrar-contenido">
@@ -75,15 +75,19 @@
                                     <td class="font-weight-bold">Cursos del semestre:</td>
                                     <td>
                                         @foreach ($alumno->ciclo->cursos as $curso)
-                                            <li class="d-flex align-items-center justify-content-between curso-item">
+                                            <li class="d-flex align-items-center justify-content-between curso-item" style="border-bottom: 1px dashed rgba(128, 128, 128, 0.526)">
                                                 <a href="{{ route('curso.show', $curso->id) }}"
                                                     class="mr-2">{{ $curso->nombre }}</a>
                                                 <div class="d-flex align-items-center">
-                                                    @if ($curso->docente)
-                                                        <small class="mr-1">
-                                                            <strong>Docente:</strong> {{ $curso->docente->nombre }}
-                                                        </small>
-                                                    @endif
+                                                    {{-- @if ($curso->docentes->count() > 0)
+                                                        <div class="mr-1">
+                                                            <ul><strong>Docentes:</strong>
+                                                                @foreach ($curso->docentes as $docente)
+                                                                    {{ $docente->nombre }}
+                                                                @endforeach
+                                                            </ul>
+                                                        </div>
+                                                    @endif --}}
                                                     @if ($curso->silabo)
                                                         <a class="btn btn-success btn-sm d-inline-block"
                                                             href="{{ asset('docentes/silabo/' . $curso->silabo) }}"

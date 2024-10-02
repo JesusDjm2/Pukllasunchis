@@ -87,9 +87,12 @@
                         <div class="col-xl-8 col-md-6">
                             <div class="short_contact_list">
                                 <ul>
-                                    <li><a href="https://admin.pukllasunchis.startapps.com.pe/login" target="_blank"
-                                            class="text-uppercase"><i class="fa fa-download"></i>
+                                    <li><a href="{{ route('login') }}" class="text-uppercase"><i
+                                                class="fa fa-download"></i>
                                             Intranet</a></li>
+                                    {{-- <li><a href="{{ route('login') }}" class="text-uppercase"><i
+                                                class="fa fa-download"></i>
+                                            Intranet</a></li> --}}
                                     <li><a href="http://repositorio.pukllasunchis.org/xmlui/" target="_blank"
                                             class="text-uppercase"><i class="fa fa-file-pdf"></i>
                                             Repositorio</a></li>
@@ -104,16 +107,21 @@
                                                 </a>
                                             </li>
                                         @elseif ($user->hasRole('adminB'))
-                                            <li><a href="{{ route('adminB') }}"> <i class="fa fa-user"></i> Matrícula</a></li>
+                                            <li><a href="{{ route('adminB') }}"> <i class="fa fa-user"></i> Matrícula</a>
+                                            </li>
                                         @elseif ($user->hasRole('alumnoB'))
-                                            <li><a href="{{ route('alumnoB') }}"> <i class="fa fa-user"></i> Matrícula</a></li>
+                                            <li><a href="{{ route('alumnoB') }}"> <i class="fa fa-user"></i> Matrícula</a>
+                                            </li>
                                         @elseif ($user->hasRole('alumno'))
-                                            <li><a href="{{ route('alumnos.index') }}"> <i class="fa fa-user"></i> Matrícula</a></li>
+                                            <li><a href="{{ route('alumnos.index') }}"> <i class="fa fa-user"></i>
+                                                    Matrícula</a></li>
                                         @elseif ($user->hasRole('docente'))
-                                            <li><a href="{{ route('vistaDocente', ['docente' => $user->docente->id]) }}"> <i class="fa fa-user"></i> Docente</a>
+                                            <li><a href="{{ route('vistaDocente', ['docente' => $user->docente->id]) }}">
+                                                    <i class="fa fa-user"></i> Docente</a>
                                             </li>
                                         @else
-                                            <li><a href="{{ route('login') }}"> <i class="fa fa-user"></i> Matricula</a></li>
+                                            <li><a href="{{ route('login') }}"> <i class="fa fa-user"></i> Matricula</a>
+                                            </li>
                                         @endif
                                     @else
                                         <li><a href="{{ route('login') }}"> <i class="fa fa-user"></i> Matrícula</a></li>

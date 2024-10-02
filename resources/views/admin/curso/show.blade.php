@@ -1,10 +1,10 @@
-@extends('layouts.admin')
+@extends('layouts.alumno')
 @section('contenido')
     <div class="container-fluid bg-white">
         <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3 pb-2"
             style="border-bottom: 1px dashed #80808078">
             <h5 class="mb-0 text-uppercase font-weight-bold">Detalles del curso</h5>
-            <a href="javascript:history.go(-1)" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <a href="javascript:history.go(-1)" class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm">
                 Volver
             </a>
         </div>
@@ -41,10 +41,12 @@
                         </td>
                     </tr>
                     <tr>
-                        <td class="font-weight-bold">Docente:</td>
+                        <td class="font-weight-bold">Docentes:</td>
                         <td>
-                            @if ($curso->docente)
-                                {{ $curso->docente->nombre }}
+                            @if ($docentes->count() > 0)
+                                @foreach ($docentes as $docente)
+                                    <li><a href="{{ route('docente.show', $docente->id) }}">{{ $docente->nombre }}</a></li>
+                                @endforeach
                             @else
                                 No asignado
                             @endif
@@ -69,7 +71,7 @@
                         <td>
                             @if ($curso->classroom)
                                 <a href="{{ $curso->classroom }}" target="_blank">Link <small><i
-                                    class="fa fa-sm fa-external-link-alt"></i></small> </a> →
+                                            class="fa fa-sm fa-external-link-alt"></i></small> </a> →
                                 {{ $curso->clave }} <i class="fa fa-sm fa-lock"></i>
                             @else
                                 No tiene asignado un Classroom
@@ -131,6 +133,20 @@
                         </td>
                     </tr>
                 </table>
+            </div>
+        </div>
+
+        <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3 pb-2"
+            style="border-bottom: 1px dashed #80808078">
+            <h5 class="mb-0 text-uppercase font-weight-bold">Notas</h5>
+        </div>
+        <div class="row mb-4">
+            <div class="col-lg-12">
+                @if ($alumno->calificacion)
+                    {{ $calificacion->valoracion_1 }}
+                @else
+                    No tiene asignado ningun periodo
+                @endif
             </div>
         </div>
         <div class="d-sm-flex align-items-center justify-content-between mb-2 pb-2"

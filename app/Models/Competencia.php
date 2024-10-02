@@ -17,4 +17,12 @@ class Competencia extends Model
     {
         return $this->belongsToMany(Curso::class);
     }
+    public function docentes()
+    {
+        return $this->belongsToMany(Docente::class, 'competencia_docente');
+    }
+    public function cursosSeleccionados()
+    {
+        return $this->belongsToMany(Curso::class, 'curso_competencia_seleccionada');
+    }
 }

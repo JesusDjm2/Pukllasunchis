@@ -513,6 +513,9 @@
                 <h3 class="linea-debajo scroolOk" id="perfil">Perfil del egresado de Formación Inicial Docente</h3>
                 <br><br>
                 <div class="row">
+                    <div class="col-lg-12 mb-4">
+                        <a href="{{asset('pdf/Perfil-educacion-inicial.pdf')}}" class="btn btn-sm btn-danger" target="_blank">Descargar PDF <i class="fa fa-file-pdf"></i></a>
+                    </div>
                     <div class="col-lg-6 card p-3 border-success">
                         <h4><i class="fa fa-check fa-sm text-success"></i> Primero los niños</h4>
                         <p>

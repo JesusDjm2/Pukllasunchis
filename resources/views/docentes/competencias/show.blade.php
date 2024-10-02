@@ -5,7 +5,7 @@
         <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3 pb-2"
             style="border-bottom: 1px dashed #80808078">
             <h4 class="font-weight-bold text-primary">Detalles de la Competencia</h4>
-            <a href="javascript:history.go(-1)" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <a href="javascript:history.go(-1)" class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm">
                 Volver
             </a>
         </div>

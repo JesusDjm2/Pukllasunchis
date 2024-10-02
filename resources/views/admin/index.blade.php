@@ -188,7 +188,7 @@
                         </table>
                     </div>
                     <div class="table-responsive">
-                        <table class="table table-hover" id="docentes-table">
+                        <table class="table table-hover" id="docentes-table" style="display:none">
                             <thead class="thead-dark">
                                 <tr>
                                     <th>#</th>
@@ -243,7 +243,7 @@
                         </table>
                     </div>
                     <div class="table-responsive">
-                        <table class="table table-hover" id="inhabilitado-table">
+                        <table class="table table-hover" id="inhabilitado-table" style="display: none">
                             <thead class="thead-dark">
                                 <tr>
                                     <th>#</th>
@@ -283,7 +283,7 @@
             </div>
         @endrole
 
-        @role('alumno')
+        {{-- @role('alumno')
             <div class="row bg-white" id="contenido-alumno">
                 <div class="col-12">
                     @if (Session::has('success'))
@@ -428,7 +428,7 @@
                     </div>
                 @endif
             </div>
-        @endrole
+        @endrole --}}
 
     </div>
 

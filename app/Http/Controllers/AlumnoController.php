@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Mail\NotificacionRegistro;
 use App\Models\Alumno;
+use App\Models\Calificacion;
 use App\Models\Ciclo;
 use App\Models\Programa;
 use Illuminate\Http\Request;
@@ -15,27 +16,34 @@ class AlumnoController extends Controller
 {
     public function index(Request $request)
     {
-        /* $alumno = auth()->user()->alumno;
-        if ($alumno) {
-            $alumno->load('programa', 'ciclo.cursos');
+        if (!auth()->check()) {
+            return redirect()->route('login'); // Redirige al login si no está autenticado
         }
-        return view('alumnos.vistasAlumnos.index', compact('alumno')); */
 
         $alumno = auth()->user()->alumno;
+
         if ($alumno) {
             $usuario = $alumno->user;
-            $alumno->load('programa', 'ciclo.cursos');
+            $alumno->load('programa', 'ciclo.cursos.docentes');
+
             return view('alumnos.vistasAlumnos.index', compact('alumno', 'usuario'));
-        }
-        else{
+        } else {
+            // Si no hay 'alumno', pasa solo a la vista sin datos adicionales
             return view('alumnos.vistasAlumnos.index');
         }
+        /* $alumno = auth()->user()->alumno;
+        if ($alumno) {
+            $usuario = $alumno->user;
+            $alumno->load('programa', 'ciclo.cursos.docentes'); // Asegúrate de cargar los docentes
+            return view('alumnos.vistasAlumnos.index', compact('alumno', 'usuario'));
+        } else {
+            return view('alumnos.vistasAlumnos.index');
+        } */
     }
     public function ficha(Alumno $alumno)
     {
         return view('alumnos.ficha', compact('alumno'));
     }
-
     public function mostrarContenido(Request $request)
     {
         $request->validate([
@@ -55,15 +63,11 @@ class AlumnoController extends Controller
     }
     public function filtro(Request $request)
     {
-        // Usar 'with' para cargar las relaciones de programa y ciclo
         $alumnos = Alumno::with('programa', 'ciclo')->get();
-
-        // Obtener los nombres de las columnas de la tabla 'alumnos'
         $campos = Schema::getColumnListing('alumnos');
-
-        // Retornar la vista con los datos
         return view('alumnos.filtro', compact('alumnos', 'campos'));
     }
+
     public function store(Request $request)
     {
         // Validar los datos del formulario
@@ -80,7 +84,7 @@ class AlumnoController extends Controller
             $counter = Alumno::where('num_comprobante', 'like', 'Beca%')->count() + 1;
             $request->merge(['num_comprobante' => 'Beca_' . $counter]);
         }
-        
+
         if (stripos($userInput, 'AMANTANI') !== false) {
             $counter = Alumno::where('num_comprobante', 'like', 'AMANTANI%')->count() + 1;
             $request->merge(['num_comprobante' => 'AMANTANI_' . $counter]);
@@ -297,7 +301,6 @@ class AlumnoController extends Controller
         ];
         return view('alumnos.edit', compact('alumno', 'programas', 'ciclos', 'user', 'opcionesBienesVivienda', 'opcionesServicios', 'opcionesHabilidades'));
     }
-
     public function update(Request $request, Alumno $alumno)
     {
         // Obtener el ID del alumno
@@ -327,7 +330,7 @@ class AlumnoController extends Controller
             $counter = Alumno::where('num_comprobante', 'like', 'Beca%')->count() + 1;
             $request->merge(['num_comprobante' => 'Beca_' . $counter]);
         }
-        
+
         if (stripos($userInput, 'AMANTANI') !== false) {
             $counter = Alumno::where('num_comprobante', 'like', 'AMANTANI%')->count() + 1;
             $request->merge(['num_comprobante' => 'AMANTANI_' . $counter]);
@@ -428,5 +431,16 @@ class AlumnoController extends Controller
         $alumno->delete();
 
         return redirect()->route('adminAlumnos')->with('success', 'El alumno ha sido eliminado correctamente.');
+    }
+
+    public function calificaciones($id)
+    {
+        $alumno = Alumno::with(['ciclo.cursos.periodos'])->findOrFail($id);
+
+        // Obtiene el periodoUno del primer curso asociado al alumno
+        $periodoUno = $alumno->ciclo->cursos->flatMap(function ($curso) use ($alumno) {
+            return $curso->periodos()->where('alumno_id', $alumno->id)->get();
+        })->first();
+        return view('alumnos.vistasAlumnos.calificaciones', compact('alumno', 'periodoUno'));
     }
 }

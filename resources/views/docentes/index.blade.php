@@ -1,5 +1,19 @@
 @extends('layouts.admin')
 @section('contenido')
+    <style>
+        .quitarCurso {
+            border: none;
+            color: red;
+            font-size: 32px;
+            background: none;
+            border-radius: 50%
+        }
+
+        .quitarCurso:hover {
+            color: red;
+            transition: 0.4s ease;
+        }
+    </style>
     <div class="container-fluid bg-white">
         <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3 pb-3">
             <h4 class="font-weight-bold text-primary">Lista de Docentes:</h4>
@@ -21,12 +35,13 @@
             </div>
         </div>
         <!-- Buscador -->
-        <div class="row mb-3">            
+        <div class="row mb-3">
             <div class="col-lg-12">
                 <input type="text" id="searchInput" class="form-control form-control-sm"
                     placeholder="Buscar por nombre, dni o email...">
             </div>
         </div>
+
         <div class="row">
             <div class="col-lg-12">
                 <div class="table-responsive">
@@ -41,15 +56,18 @@
                         </thead>
                         <tbody>
                             @php
+                                $docentesOrdenados = $docentes->sortBy('nombre');
                                 $docenteCount = 0;
                             @endphp
-                            @foreach ($docentes as $docente)
+
+                            @foreach ($docentesOrdenados as $docente)
                                 @php
                                     $docenteCount++;
                                 @endphp
                                 <tr>
-                                    <td>{{ $docenteCount }} </td>
-                                    <td><strong> {{ $docente->nombre }}</strong>
+                                    <td>{{ $docenteCount }}</td>
+                                    <td>
+                                        <strong>{{ $docente->nombre }}</strong>
                                         <ul>
                                             <li>{{ $docente->email }}</li>
                                             <li>{{ $docente->dni }}</li>
@@ -63,9 +81,19 @@
                                                 @endphp
 
                                                 @foreach ($cursosOrdenados as $curso)
-                                                    <li> {{ $curso->nombre }} <strong>(
+                                                    <li>
+                                                        {{ $curso->nombre }} <strong>(
                                                             {{ $curso->ciclo->programa->nombre }} -
                                                             {{ $curso->ciclo->nombre }})</strong>
+
+                                                        @if ($curso->silabo)
+                                                            <a style="font-size: 20px"
+                                                                href="{{ asset('docentes/silabo/' . $curso->silabo) }}"
+                                                                target="_blank" title="Ver Sílabos">
+                                                                <i class="fa fa-file-pdf"></i>
+                                                            </a>
+                                                        @endif
+
                                                         <form
                                                             action="{{ route('docente.curso.eliminar', [$docente->id, $curso->id]) }}"
                                                             method="POST" style="display:inline;">
@@ -73,9 +101,42 @@
                                                             @method('DELETE')
                                                             <button type="submit" class="quitarCurso"
                                                                 title="Quitar Curso asignado"
-                                                                onclick="return confirm('¿Estás seguro de que deseas quitar este curso?')">
-                                                                - </button>
+                                                                onclick="return confirm('¿Estás seguro de que deseas quitar este curso?')">-</button>
                                                         </form>
+
+                                                        @if ($curso->competenciasSeleccionadas->count() > 0)
+                                                            <ul>
+                                                                <li>
+                                                                    <a href="{{ route('curso.gestionar.competencias', $curso->id) }}"
+                                                                        class="text-primary">
+                                                                        Editar competencias a calificar <i
+                                                                            class="fa fa-sm fa-tasks"></i>
+                                                                    </a>
+                                                                </li>
+                                                            </ul>
+                                                        @elseif ($curso->competencias->count() > 3)
+                                                            <ul>
+                                                                <li>
+                                                                    <a href="{{ route('curso.gestionar.competencias', $curso->id) }}"
+                                                                        class="text-danger">
+                                                                        Elegir competencias (max 3) <i
+                                                                            class="fa fa-sm fa-tasks"></i>
+                                                                    </a>
+                                                                </li>
+                                                            </ul>
+                                                        @endif
+
+                                                        {{-- @if ($curso->competencias->count() > 3)
+                                                            <ul>
+                                                                <li>
+                                                                    <a href="{{ route('curso.gestionar.competencias', $curso->id) }}"
+                                                                        class="text-warning">
+                                                                        Elegir competencias (max 3) <i
+                                                                            class="fa fa-sm fa-tasks"></i>
+                                                                    </a>
+                                                                </li>
+                                                            </ul>
+                                                        @endif --}}
                                                     </li>
                                                 @endforeach
                                             </ul>
@@ -83,21 +144,55 @@
                                             <span class="text-muted">No hay cursos asignados</span>
                                         @endif
                                     </td>
+
                                     <td style="width: 160px">
                                         @if ($docente->user)
                                             <a href="{{ route('asignar', ['id' => $docente->user->id]) }}"
-                                                class="btn btn-success btn-sm"><i class="fa fa-plus fa-sm"></i></a>
+                                                class="btn btn-success btn-sm" title="Asignar Curso">
+                                                <i class="fa fa-plus fa-sm"></i>
+                                            </a>
                                         @else
                                             <span class="text-danger">No User Assigned</span>
                                         @endif
                                         <a href="{{ route('adminEdit', ['id' => $docente->user->id]) }}"
-                                            class="btn btn-info btn-sm"><i class="fa fa-pen fa-sm"></i>
+                                            class="btn btn-info btn-sm">
+                                            <i class="fa fa-pen fa-sm"></i>
                                         </a>
-                                        <a href="" class="btn btn-sm btn-warning"><i class="fa fa-sm fa-eye"></i>
-                                        </a>
-                                        <a href="{{ route('adminDestroy', ['id' => $docente->user->id]) }}"
-                                            class="btn btn-danger btn-sm"><i class="fa fa-trash"></i>
-                                        </a>
+
+                                        <button type="button" class="btn btn-danger btn-sm" data-toggle="modal"
+                                            data-target="#confirmDeleteModal">
+                                            <i class="fa fa-sm fa-trash"></i>
+                                        </button>
+
+                                        <!-- Modal de confirmación -->
+                                        <div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog"
+                                            aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+                                            <div class="modal-dialog" role="document">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar
+                                                            eliminación</h5>
+                                                        <button type="button" class="close" data-dismiss="modal"
+                                                            aria-label="Close">
+                                                            <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        ¿Estás seguro de que deseas eliminar este docente?
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary"
+                                                            data-dismiss="modal">Cancelar</button>
+                                                        <form action="{{ route('docente.destroy', $docente->id) }}"
+                                                            method="POST" style="display:inline;">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="btn btn-danger">Eliminar</button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
@@ -107,71 +202,31 @@
             </div>
         </div>
     </div>
-    <!-- Modal de Confirmación -->
-    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteLabel"
-        aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="confirmDeleteLabel">Confirmar Eliminación</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    ¿Estás seguro de que deseas eliminar este registro? Esta acción no se puede deshacer.
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                    <form id="deleteForm" method="POST" action="">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-danger">Eliminar</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-    <style>
-        .quitarCurso {
-            border: none;
-            color: red;
-            font-size: 32px;
-            background: none;
-            border-radius: 50%
-        }
-
-        .quitarCurso:hover {
-            color: red;
-            transition: 0.4s ease;
-        }
-    </style>
-
     <script>
-        function confirmDelete(action) {
-            // Configura la acción del formulario dentro del modal con la ruta de eliminación
-            var form = document.getElementById('deleteForm');
-            form.action = action;
-
-            // Muestra el modal de confirmación
-            $('#confirmDeleteModal').modal('show');
-        }
-    </script>
-    <script>
-        // Filtrar tabla en función del valor ingresado en el campo de búsqueda
         document.getElementById('searchInput').addEventListener('keyup', function() {
-            var searchValue = this.value.toLowerCase();
+            var searchValue = normalizeString(this.value.toLowerCase());
+            var searchTerms = searchValue.split(' ').filter(term => term.length >
+                0);
             var tableRows = document.querySelectorAll('#docentes-table tbody tr');
 
             tableRows.forEach(function(row) {
-                var docenteName = row.querySelector('td:nth-child(2) strong').innerText.toLowerCase();
-                var docenteEmail = row.querySelector('td:nth-child(2) ul li:nth-child(1)').innerText
-                    .toLowerCase();
-                var docenteDni = row.querySelector('td:nth-child(2) ul li:nth-child(2)').innerText
-                    .toLowerCase();
+                var docenteName = normalizeString(row.querySelector('td:nth-child(2) strong').innerText
+                    .toLowerCase());
+                var docenteEmail = normalizeString(row.querySelector('td:nth-child(2) ul li:nth-child(1)')
+                    .innerText.toLowerCase());
+                var docenteDni = normalizeString(row.querySelector('td:nth-child(2) ul li:nth-child(2)')
+                    .innerText.toLowerCase());
 
-                if (docenteName.includes(searchValue) || docenteEmail.includes(searchValue) || docenteDni
-                    .includes(searchValue)) {
+                var cursosAsignados = Array.from(row.querySelectorAll('td:nth-child(3) ul li'))
+                    .map(li => normalizeString(li.innerText.toLowerCase()))
+                    .join(' ');
+
+                var matches = searchTerms.every(term =>
+                    docenteName.includes(term) || docenteEmail.includes(term) || docenteDni.includes(
+                        term) || cursosAsignados.includes(term)
+                );
+
+                if (matches) {
                     row.style.display = '';
                 } else {
                     row.style.display = 'none';
@@ -179,13 +234,8 @@
             });
         });
 
-        function confirmDelete(action) {
-            // Configura la acción del formulario dentro del modal con la ruta de eliminación
-            var form = document.getElementById('deleteForm');
-            form.action = action;
-
-            // Muestra el modal de confirmación
-            $('#confirmDeleteModal').modal('show');
+        function normalizeString(str) {
+            return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
         }
     </script>
 @endsection

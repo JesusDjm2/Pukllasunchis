@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Calificacion;
 use App\Models\Ciclo;
+use App\Models\Competencia;
 use App\Models\Curso;
 use App\Models\Docente;
 use App\Models\Programa;
@@ -45,51 +47,23 @@ class DocenteCOntroller extends Controller
         ]);
 
         $docente = Docente::findOrFail($docenteId);
-
         $curso = Curso::findOrFail($request->curso_id);
-        $curso->docente_id = $docente->id;
-        $curso->save();
+        $docente->cursos()->attach($curso->id);
 
         return redirect()->route('docente.index')->with('success', 'Curso asignado exitosamente.');
     }
-
     public function eliminarCurso(Docente $docente, Curso $curso)
     {
-        // Establecer el campo docente_id a null en el curso
-        $curso->docente_id = null;
-        $curso->save();
+        // Eliminar la relación entre el docente y el curso
+        $docente->cursos()->detach($curso->id);
 
         return redirect()->back()->with('success', 'Curso eliminado correctamente.');
     }
-
-    //Prueba para editar Cursos asignados
-    /* public function editCursos($id)
-    {
-        $user = User::findOrFail($id);
-
-        return view('docentes.editcursos', compact('user'));
-    }
-
-    // Método para actualizar los cursos asignados
-    public function updateCursos(Request $request, $id)
-    {
-        $docente = Docente::findOrFail($id);
-        $cursosIds = $request->input('cursos', []);
-
-        // Aquí puedes añadir lógica para asignar los cursos al docente
-        // Por ejemplo:
-        $docente->cursos()->sync($cursosIds);
-
-        return redirect()->route('docente.index')->with('success', 'Cursos actualizados exitosamente.');
-    } */
-
     public function edit($id)
     {
         $docente = Docente::findOrFail($id);
         return view('docentes.edit', compact('docente'));
     }
-
-    // Update the specified resource in storage.
     public function update(Request $request, $id)
     {
         $request->validate([
@@ -158,6 +132,38 @@ class DocenteCOntroller extends Controller
     public function show($id)
     {
         $docente = Docente::findOrFail($id);
+        $alumno = auth()->user()->alumno;
+        if (auth()->user()->hasRole('alumno')) {
+            return view('alumnos.vistasAlumnos.docente', compact('docente', 'alumno'));
+        }
         return view('docentes.perfil', compact('docente'));
+    }
+    public function destroy($id)
+    {
+        $docente = Docente::findOrFail($id);
+
+        // Eliminar el usuario relacionado
+        if ($docente->user) {
+            $docente->user->delete();
+        }
+
+        // Eliminar el docente
+        $docente->delete();
+
+        return redirect()->route('docente.index')->with('success', 'Docente eliminado correctamente.');
+    }
+    public function calificar($id)
+    {
+        $docente = Docente::findOrFail($id);
+        return view('docentes.calificaciones.index', compact('docente'));
+    }
+    public function calificarCurso(Request $request, $docenteId, $cursoId)
+    {
+        $curso = Curso::findOrFail($cursoId);
+        $docente = Docente::findOrFail($docenteId);
+        $competenciasSeleccionadas = Competencia::whereIn('id', $request->input('competencias'))->get();
+        $alumnos = $curso->ciclo->alumnos()->orderBy('apellidos')->get();
+
+        return view('docentes.calificaciones.alumnos', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos'));
     }
 }

@@ -32,7 +32,6 @@ class CursoController extends Controller
         $competencias = Competencia::all();
         return view('admin.curso.index', compact('cursos', 'cant', 'inicial', 'cursosInicial', 'EIB', 'cursosEib', 'competencias'));
     }
-
     public function create()
     {
         $programas = Programa::all();
@@ -41,7 +40,6 @@ class CursoController extends Controller
         $competencias = Competencia::all();
         return view('admin.curso.create', compact('programas', 'ciclos', 'cursos', 'competencias'));
     }
-
     public function uploadSilabo(Request $request, Curso $curso)
     {
         $request->validate([
@@ -99,7 +97,7 @@ class CursoController extends Controller
             'horas' => $request->input('horas'),
             'creditos' => $request->input('creditos'),
         ]);
-        
+
         if ($request->has('competencias')) {
             $curso->competencias()->sync($request->input('competencias'));
         }
@@ -131,7 +129,6 @@ class CursoController extends Controller
         $competencias = Competencia::all();
         return view('admin.curso.edit', compact('programas', 'curso', 'ciclos', 'competencias', 'programa'));
     }
-
     public function update(Request $request, $id)
     {
         $request->validate([
@@ -170,9 +167,12 @@ class CursoController extends Controller
             ->orderBy('apellidos')
             ->get();
         $cantidadAlumnos = $alumnos->count();
-        return view('admin.curso.show', compact('curso', 'alumnos', 'cantidadAlumnos'));
-    }
 
+        // Cargar los docentes del curso
+        $docentes = $curso->docentes;
+
+        return view('admin.curso.show', compact('curso', 'alumnos', 'cantidadAlumnos', 'docentes'));
+    }
     public function destroy(Curso $curso)
     {
         $curso->delete();
