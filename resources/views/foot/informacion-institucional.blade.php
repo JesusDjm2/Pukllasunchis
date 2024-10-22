@@ -41,6 +41,19 @@
                             </a>
                         </div>
                     </div>
+					<div class="col-lg-4 col-6 text-center p-2">
+                        <div class="card">
+                            <a href="{{ asset('pdf/RM-387-2020-MINEDU-Resolucion-licenciamiento.pdf') }}" target="_blank">
+                                <div style="height: 100px">
+                                    <img height="100%"
+                                        src="{{ asset('img/min/Aprobacion.png') }}"
+                                        alt="Ficha de Inscrición Pukllasunchis">
+                                </div>
+                                <p class="text-center">Resolución de Licenciamiento <br>RM 387-2020 MINEDU </p>
+                                <p class="text-center"><i class="fa fa-arrow-circle-right fa-lg"></i></p>
+                            </a>
+                        </div>
+                    </div>
                     <div class="col-lg-4 col-6 text-center p-2">
                         <div class="card">
                             <a href="{{ asset('pdf/TUPA-EESPP-2024-08022024-4.pdf') }}" target="_blank">

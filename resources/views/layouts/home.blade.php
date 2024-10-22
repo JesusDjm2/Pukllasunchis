@@ -87,9 +87,36 @@
                         <div class="col-xl-8 col-md-6">
                             <div class="short_contact_list">
                                 <ul>
-                                    <li><a href="{{ route('login') }}" class="text-uppercase"><i
-                                                class="fa fa-download"></i>
-                                            Intranet</a></li>
+                                    @auth
+                                        @php
+                                            $user = auth()->user();
+                                        @endphp
+                                        @if ($user->hasRole('admin'))
+                                            <li>
+                                                <a href="{{ route('admin') }}">
+                                                    <i class="fa fa-download"></i> Administrador
+                                                </a>
+                                            </li>
+                                        @elseif ($user->hasRole('adminB'))
+                                            <li><a href="{{ route('adminB') }}"> <i class="fa fa-download"></i> Intranet</a>
+                                            </li>
+                                        @elseif ($user->hasRole('alumnoB'))
+                                            <li><a href="{{ route('alumnoB') }}"> <i class="fa fa-download"></i> Intranet</a>
+                                            </li>
+                                        @elseif ($user->hasRole('alumno'))
+                                            <li><a href="{{ route('alumnos.index') }}"> <i class="fa fa-download"></i>
+                                                    Matrícula</a></li>
+                                        @elseif ($user->hasRole('docente'))
+                                            <li><a href="{{ route('vistaDocente', ['docente' => $user->docente->id]) }}">
+                                                    <i class="fa fa-download"></i> Intranet</a>
+                                            </li>
+                                        @else
+                                            <li><a href="{{ route('login') }}"> <i class="fa fa-download"></i> Intranet</a>
+                                            </li>
+                                        @endif
+                                    @else
+                                        <li><a href="{{ route('login') }}"> <i class="fa fa-download"></i> Intranet</a></li>
+                                    @endauth
                                     {{-- <li><a href="{{ route('login') }}" class="text-uppercase"><i
                                                 class="fa fa-download"></i>
                                             Intranet</a></li> --}}

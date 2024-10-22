@@ -116,19 +116,41 @@ class DocenteCOntroller extends Controller
         return redirect()->route('docente.show', $docente->id)
             ->with('success', 'Perfil actualizado correctamente.');
     }
-    public function showAlumnos(Curso $curso, Docente $docente)
+    /* public function showAlumnos(Curso $curso, Docente $docente)
     {
         $programa = $curso->ciclo->programa;
         $ciclo = $curso->ciclo;
 
-        $alumnos = $programa->alumnos()
+        $alumnos = $programa->alumnos() 
             ->where('ciclo_id', $ciclo->id)
             ->orderBy('apellidos')
             ->get();
         $cantidadAlumnos = $alumnos->count();
 
         return view('docentes.alumnos', compact('curso', 'alumnos', 'cantidadAlumnos', 'ciclo', 'docente'));
+    } */
+
+    public function showAlumnos(Curso $curso, Docente $docente)
+    {
+        $programa = $curso->ciclo->programa;
+        $ciclo = $curso->ciclo;
+
+        // Filtrar los alumnos del programa excluyendo los que tienen el rol "inhabilitado"
+        $alumnos = $programa->alumnos()
+            ->where('ciclo_id', $ciclo->id)
+            ->whereHas('user', function ($query) {
+                $query->whereDoesntHave('roles', function ($roleQuery) {
+                    $roleQuery->where('name', 'inhabilitado');
+                });
+            })
+            ->orderBy('apellidos')
+            ->get();
+
+        $cantidadAlumnos = $alumnos->count();
+
+        return view('docentes.alumnos', compact('curso', 'alumnos', 'cantidadAlumnos', 'ciclo', 'docente'));
     }
+
     public function show($id)
     {
         $docente = Docente::findOrFail($id);
@@ -157,13 +179,103 @@ class DocenteCOntroller extends Controller
         $docente = Docente::findOrFail($id);
         return view('docentes.calificaciones.index', compact('docente'));
     }
-    public function calificarCurso(Request $request, $docenteId, $cursoId)
+    /* public function calificarCurso(Request $request, $docenteId, $cursoId)
     {
         $curso = Curso::findOrFail($cursoId);
         $docente = Docente::findOrFail($docenteId);
         $competenciasSeleccionadas = Competencia::whereIn('id', $request->input('competencias'))->get();
         $alumnos = $curso->ciclo->alumnos()->orderBy('apellidos')->get();
 
+        if (auth()->user()->hasRole('admin')) {
+            return view('admin.curso.calificaciones', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos'));
+        }
+
         return view('docentes.calificaciones.alumnos', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos'));
+    } */
+    public function calificarCurso(Request $request, $docenteId, $cursoId)
+    {
+        $curso = Curso::findOrFail($cursoId);
+        $docente = Docente::findOrFail($docenteId);
+        $competenciasSeleccionadas = Competencia::whereIn('id', $request->input('competencias'))->get();
+
+        // Filtrar alumnos excluyendo aquellos que tengan el rol "inhabilitado"
+        $alumnos = $curso->ciclo->alumnos()
+            ->whereHas('user', function ($query) {
+                $query->whereDoesntHave('roles', function ($roleQuery) {
+                    $roleQuery->where('name', 'inhabilitado');
+                });
+            })
+            ->orderBy('apellidos')
+            ->get();
+
+        if (auth()->user()->hasRole('admin')) {
+            return view('admin.curso.calificaciones', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos'));
+        }
+
+        return view('docentes.calificaciones.alumnos', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos'));
+    }
+
+    public function updateBlog(Request $request, $id)
+    {
+        // Validar la entrada
+        $request->validate([
+            'blog' => 'nullable|string',
+            'curso_id' => 'sometimes|exists:cursos,id',
+            'docente_id' => 'sometimes|exists:docentes,id',
+            'competencias' => 'sometimes|array',
+            'competencias.*' => 'exists:competencias,id',
+        ]);
+
+        // Encontrar el docente por ID
+        $docente = Docente::findOrFail($id);
+
+        // Actualizar solo el campo blog
+        $docente->blog = $request->input('blog');
+        $docente->save();
+
+        // Recoger las variables del formulario
+        $cursoId = $request->input('curso_id');
+        $competenciasSeleccionadas = $request->input('competencias', []);
+
+        // Redirigir a la vista con las variables solo si están presentes
+        $response = redirect()->back()->with('success', 'Blog actualizado correctamente');
+
+        // Verificar si las variables están presentes
+        if ($request->has('curso_id') && $request->has('competencias')) {
+            $curso = Curso::findOrFail($cursoId);
+            $docente = Docente::findOrFail($id);
+            $competenciasSeleccionadas = Competencia::whereIn('id', $request->input('competencias'))->get();
+
+            // Filtrar alumnos excluyendo aquellos que tengan el rol "inhabilitado"
+            $alumnos = $curso->ciclo->alumnos()
+                ->whereHas('user', function ($query) {
+                    $query->whereDoesntHave('roles', function ($roleQuery) {
+                        $roleQuery->where('name', 'inhabilitado');
+                    });
+                })
+                ->orderBy('apellidos')
+                ->get();
+
+            return view('docentes.calificaciones.alumnos', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos'));
+        }
+
+        return $response;
+    }
+
+    public function alumnos($id)
+    {
+        $docente = Docente::findOrFail($id);
+        $cursos = $docente->cursos;
+        $alumnosPorCurso = [];
+        foreach ($cursos as $curso) {
+            /* $alumnosOrdenados = $curso->ciclo->alumnos->sortBy('apellidos'); */
+            $alumnosOrdenados = $curso->ciclo->alumnos
+                ->filter(function ($alumno) {
+                    return $alumno->user && !$alumno->user->hasRole('inhabilitado');
+                })
+                ->sortBy('apellidos');
+            $alumnosPorCurso[$curso->id] = $alumnosOrdenados;
+        }
+        return view('docentes.alumnos.index', compact('docente', 'alumnosPorCurso'));
     }
 }

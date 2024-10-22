@@ -32,7 +32,7 @@
                 <a class="nav-link" href="{{ route('index') }}">
                     <i class="fa fa-sm fa-home"></i> <span>Ir a la web</span>
                 </a>
-            </li>       
+            </li>
             <hr class="sidebar-divider d-none d-md-block">
             <li class="nav-item">
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#perfil"
@@ -64,8 +64,25 @@
                 <div id="cursos" class="collapse" aria-labelledby="headingUtilities" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Gestionar Cursos:</h6>
-                        <a class="collapse-item" href="{{ route('vistaDocente', ['docente' => $docente->id]) }}">Ver mis
+                        <a class="collapse-item" href="{{ route('vistaDocente', ['docente' => $docente->id]) }}">Ver
+                            mis
                             cursos</a>
+                    </div>
+                </div>
+            </li>
+            <hr class="sidebar-divider d-none d-md-block">
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#alumnos"
+                    aria-expanded="true" aria-controls="alumnos">
+                    <i class="fas fa-book"></i>
+                    <span>Alumnos</span>
+                </a>
+                <div id="alumnos" class="collapse" aria-labelledby="headingUtilities" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <h6 class="collapse-header">Ver alumnos</h6>
+                        <a class="collapse-item" href="{{ route('vistaAlumnos', ['docente' => $docente->id]) }}">
+                            Ver mis alumnos
+                        </a>
                     </div>
                 </div>
             </li>
@@ -80,12 +97,13 @@
                     data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Calificaciones</h6>
-                        <a class="collapse-item" href="{{ route('calificar', ['id' => $docente->id]) }}">Calificaciones</a>
+                        <a class="collapse-item"
+                            href="{{ route('calificar', ['id' => $docente->id]) }}">Calificaciones</a>
                     </div>
                 </div>
             </li>
             <hr class="sidebar-divider d-none d-md-block">
-            
+
             <div class="text-center d-none d-md-inline">
                 <button class="rounded-circle border-0" id="sidebarToggle"></button>
             </div>
@@ -93,7 +111,6 @@
         <div id="content-wrapper" class="d-flex flex-column">
             <div id="content">
                 <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
-                    <!-- Sidebar Toggle (Topbar) -->
                     <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
                         <i class="fa fa-bars"></i>
                     </button>
@@ -132,12 +149,122 @@
                 </div>
             </footer>
         </div>
-
     </div>
     <a class="scroll-to-top rounded" href="#page-top">
         <i class="fas fa-angle-up"></i>
     </a>
 
+    <!-- Burbuja flotante con editor de texto -->
+    <div id="floating-bubble-editor" class="floating-bubble-editor" onclick="openTextEditor()">
+        ✎
+    </div>
+    <!-- Modal para el editor de texto -->
+    <div id="textEditorModalNew" class="modal-editor" style="display:none;"
+        onclick="closeModalOnBackgroundClick(event)">
+        <div class="modal-editor-content" onclick="event.stopPropagation();">
+            <span class="close-editor" onclick="closeTextEditor()">&times;</span>            
+            <form action="{{ route('docentes.updateBlog', $docente->id) }}" method="POST">
+                @csrf
+                @if (isset($curso) && isset($docente) && isset($competenciasSeleccionadas))
+                    <input type="hidden" name="curso_id" value="{{ $curso->id }}">
+                    <input type="hidden" name="docente_id" value="{{ $docente->id }}">
+                    @foreach ($competenciasSeleccionadas as $competencia)
+                        <input type="hidden" name="competencias[]" value="{{ $competencia->id }}">
+                    @endforeach
+                @endif
+                <div class="form-group">
+                    <textarea id="editorNew" name="blog" class="form-control">{{ $docente->blog }}</textarea>
+                </div>
+                <div class="form-group text-center">
+                    <button type="submit" class="btn btn-primary btn-sm">Guardar Blog</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openTextEditor() {
+            document.getElementById("textEditorModalNew").style.display = "flex";
+            CKEDITOR.replace('editorNew'); // Inicializa el editor de texto con el nuevo ID
+        }
+
+        function closeTextEditor() {
+            document.getElementById("textEditorModalNew").style.display = "none";
+            CKEDITOR.instances.editorNew.destroy(); // Destruye el editor al cerrar
+        }
+
+        function closeModalOnBackgroundClick(event) {
+            // Verificar si el clic fue fuera del contenido del modal
+            if (event.target.classList.contains('modal-editor')) {
+                closeTextEditor();
+            }
+        }
+    </script>
+
+    <style>
+        .floating-bubble-editor {
+            position: fixed;
+            bottom: 3em;
+            right: 12px;
+            width: 50px;
+            height: 50px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            transition: 0.4s ease;
+        }
+
+        .floating-bubble-editor:hover {
+            background-color: #0069d9;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.4);
+            transition: background-color 0.3s ease;
+            transition: box-shadow 0.3s ease;
+            transition: transform 0.3s ease;
+            transform: scale(1.1);
+
+        }
+
+        .modal-editor {
+            position: fixed;
+            z-index: 1001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Contenido del modal del nuevo editor */
+        .modal-editor-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            width: 80%;
+            max-width: 1200px;
+        }
+
+        /* Botón de cerrar del nuevo editor */
+        .close-editor {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            color: #ffffff;
+            font-size: 28px;
+            cursor: pointer;
+        }
+    </style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.9.2/ckeditor.js"></script>
     <script src="{{ asset('admin/vendor/jquery/jquery.min.js') }}"></script>
     <script src="{{ asset('admin/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('admin/vendor/jquery-easing/jquery.easing.min.js') }}"></script>

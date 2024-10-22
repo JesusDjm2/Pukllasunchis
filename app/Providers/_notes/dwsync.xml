@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <dwsync>
-<file name="AppServiceProvider.php" server="ftp.eesppukllasunchis.edu.pe" local="133582937312246763" remote="133586439600000000" Dst="0" />
-<file name="AuthServiceProvider.php" server="ftp.eesppukllasunchis.edu.pe" local="133488496460000000" remote="133586439600000000" Dst="0" />
-<file name="BroadcastServiceProvider.php" server="ftp.eesppukllasunchis.edu.pe" local="133488496460000000" remote="133586439600000000" Dst="0" />
-<file name="EventServiceProvider.php" server="ftp.eesppukllasunchis.edu.pe" local="133488496460000000" remote="133586439600000000" Dst="0" />
-<file name="RouteServiceProvider.php" server="ftp.eesppukllasunchis.edu.pe" local="133528365940000000" remote="133586439600000000" Dst="0" />
+<file name="AppServiceProvider.php" server="ftp.eesppukllasunchis.edu.pe" local="133582937312246763" remote="133729870200000000" Dst="0" />
+<file name="AuthServiceProvider.php" server="ftp.eesppukllasunchis.edu.pe" local="133488496460000000" remote="133729870200000000" Dst="0" />
+<file name="BroadcastServiceProvider.php" server="ftp.eesppukllasunchis.edu.pe" local="133488496460000000" remote="133729870200000000" Dst="0" />
+<file name="EventServiceProvider.php" server="ftp.eesppukllasunchis.edu.pe" local="133488496460000000" remote="133729870200000000" Dst="0" />
+<file name="RouteServiceProvider.php" server="ftp.eesppukllasunchis.edu.pe" local="133528365940000000" remote="133729870200000000" Dst="0" />
+<file name="DocenteServiceProvider.php" server="ftp.eesppukllasunchis.edu.pe" local="133694200501345496" remote="133729870200000000" Dst="0" />
 </dwsync>

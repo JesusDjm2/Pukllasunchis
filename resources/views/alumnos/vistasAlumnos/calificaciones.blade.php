@@ -18,16 +18,19 @@
                         <table class="table table-bordered table-hover">
                             <thead>
                                 <tr>
-                                    <td colspan="8" class="bg-dark text-white font-weight-bold text-center">
-                                        {{ $periodoUno->nombre }}
+                                    <td colspan="8" class="bg-dark text-white font-weight-bold text-center text-uppercase">
+                                        @if ($periodoUno)
+                                            {{ $periodoUno->nombre }}
+                                        @else
+                                            Aun no existe Periodo 1
+                                        @endif
                                     </td>
                                 </tr>
                                 <tr style="font-size: 14px" class="bg-secondary text-white">
-                                    <td class="font-weight-bold">Curso</td>
-                                    <td colspan="3" class="font-weight-bold">Competencias</td>
-                                    <td class="font-weight-bold">Valoración Curso</td>
-                                    <td class="font-weight-bold">Calificación Curso</td>
-                                    <td class="font-weight-bold">Calificación Sistema</td>
+                                    <td class="font-weight-bold align-middle align-middle">Curso</td>
+                                    <td class="font-weight-bold align-middle text-center">Valoración Curso</td>
+                                    <td class="font-weight-bold align-middle text-center">Calificación Curso</td>
+                                    <td class="font-weight-bold align-middle text-center">Calificación Sistema</td>
                                 </tr>
                             </thead>
                             <tbody>
@@ -41,17 +44,13 @@
                                             ->first();
                                     @endphp
                                     <tr>
-                                        <td>
+                                        <td class="align-middle bg-light">
                                             <a href="{{ route('curso.show', $curso->id) }}">{{ $curso->nombre }}</a>
                                         </td>
-                                        {{-- Mostramos las competencias y valoraciones si existe periodoUno --}}
                                         @if ($periodoUno)
-                                            <td class="text-center">{{ $periodoUno->comp1 }}</td>
-                                            <td class="text-center">{{ $periodoUno->comp2 }}</td>
-                                            <td class="text-center">{{ $periodoUno->comp3 }}</td>
-                                            <td class="text-center">{{ $periodoUno->valoracion_curso }}</td>
-                                            <td class="text-center">{{ $periodoUno->calificacion_curso }}</td>
-                                            <td class="text-center">{{ $periodoUno->calificacion_sistema }}</td>
+                                        <td class="text-center align-middle bg-success text-white">{{ $periodoUno->valoracion_curso }}</td>
+                                        <td class="text-center align-middle bg-success text-white">{{ $periodoUno->calificacion_curso }}</td>
+                                        <td class="text-center align-middle bg-success text-white">{{ $periodoUno->calificacion_sistema }}</td>
                                         @else
                                             <td colspan="6" class="text-center">No hay calificaciones disponibles</td>
                                         @endif

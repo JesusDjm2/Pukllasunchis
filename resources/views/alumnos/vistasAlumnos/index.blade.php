@@ -10,12 +10,11 @@
                         Notificar que he terminado con mi registro. <i class="fa fa-smile"></i>
                     </button>
                 @endif
-                {{-- <a href="{{ route('ficha-matricula', ['alumno' => $alumno->id]) }}" class="btn btn-sm btn-info">Descargar ficha de matricula.</a> --}}
-                <span>
+                {{-- <span>
                     <a href="{{ route('alumnos.edit', ['alumno' => $alumno->id]) }}" class="btn btn-sm btn-primary">Actualizar
                         Matricula
                     </a>
-                </span>
+                </span> --}}
             @endif
         </div>
 
@@ -29,7 +28,7 @@
                         </a>
                     </div>
                 @endif
-                @if (auth()->user()->alumno)
+                {{-- @if (auth()->user()->alumno)
                     <div class="alert alert-warning alert-dismissible fade show text-center" role="alert">
                         {{ Session::get('success') }} Botón de actualización de datos de ficha de matricula habilitado
                         hasta el 16 de agosto, de no tener datos para
@@ -39,7 +38,7 @@
                             <span aria-hidden="true">&times;</span>
                         </a>
                     </div>
-                @endif
+                @endif --}}
             </div>
             @if (auth()->user()->alumno)
                 <div class="col-lg-12">

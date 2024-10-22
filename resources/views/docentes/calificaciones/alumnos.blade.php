@@ -62,12 +62,16 @@
             </a>
         </div>
         <div class="col-lg-12">
-            <p class="text-center">
-                <span class="text-success">Destacado: 17 - 20</span>
-                | <span class="text-primary">Logrado: 14 - 16</span>
-                | <span class="text-info">En Proceso: 11 - 13</span>
-                | <span class="text-warning">Inicio: 6 - 10 </span>
-                | <span class="text-danger">Previo al Inicio: 1- 5</span>
+            <p class="text-center" style="color: #000000">
+                <span style="color:#07ab57">Destacado: 17 - 20</span>
+                <span>|</span>
+                <span style="color:#07ab57"> Logrado: 14 - 16</span>
+                <span>|</span>
+                <span style="color:#d7bf08"> En Proceso: 11 - 13</span>
+                <span>|</span>
+                <span class="text-danger"> Inicio: 6 - 10 </span>
+                <span>|</span>
+                <span class="text-danger"> Previo al Inicio: 1- 5</span>
             </p>
         </div>
         <div class="col-lg-12 text-center mb-2">
@@ -83,41 +87,6 @@
                 @endif
             @endforeach
         </div>
-        <div class="col-lg-12 text-center mb-2">
-            <div class="d-flex justify-content-center mb-2">
-                <form action="{{ route('publicarPeriodoUno') }}" method="POST" class="me-2">
-                    @csrf
-                    <input type="hidden" name="curso_id" value="{{ $curso->id }}">
-                    <input type="hidden" name="docente_id" value="{{ $docente->id }}">
-                    @foreach ($competenciasSeleccionadas as $competencia)
-                        <input type="hidden" name="competencias[]" value="{{ $competencia->id }}">
-                    @endforeach
-                    <button type="submit" class="btn btn-sm btn-success mr-1">Publicar Periodo 1</button>
-                </form>
-                @php
-                    $hayPeriodoUno = \App\Models\PeriodoUno::where('curso_id', $curso->id)->exists();
-                @endphp
-
-                @if ($hayPeriodoUno)
-                    <form action="{{ route('eliminarPeriodoUno') }}" method="POST" onsubmit="return confirmDelete();">
-                        @csrf
-                        <input type="hidden" name="curso_id" value="{{ $curso->id }}">
-                        <input type="hidden" name="docente_id" value="{{ $docente->id }}">
-                        @foreach ($competenciasSeleccionadas as $competencia)
-                            <input type="hidden" name="competencias[]" value="{{ $competencia->id }}">
-                        @endforeach
-                        <button type="submit" class="btn btn-sm btn-danger mr-2">Eliminar Periodo 1</button>
-                    </form>
-                @endif
-                <script>
-                    function confirmDelete() {
-                        return confirm('¿Estás seguro que deseas eliminar el Periodo 1? Esta acción no se puede deshacer.');
-                    }
-                </script>
-                {{-- <a href="" class="btn btn-sm btn-success mr-1">Publicar Perido 2</a>
-                <a href="" class="btn btn-sm btn-success mr-1">Publicar Desempeño Semestral</a> --}}
-            </div>
-        </div>
         <div class="row bg-white">
             <div class="col-12">
                 @if (Session::has('success'))
@@ -128,65 +97,68 @@
                         </a>
                     </div>
                 @endif
-                @if (isset($success))
-                    <div class="alert alert-success alert-dismissible fade show text-center" role="alert">
-                        {{ $success }}
-                        <a type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </a>
-                    </div>
-                @endif
             </div>
         </div>
         <div class="row pb-5">
             <div class="col-lg-12 table-responsive">
-                <div style="max-height: 400px; overflow-y: auto;">
-                    <table class="table table-hover table-bordered text-center" style="font-size: 13px">
-                        <thead class="thead-dark">
-                            <tr>
-                                <th rowspan="2" class="text-center align-middle sortable">#</th>
-                                <th rowspan="2" class="text-center align-middle sortable">Alumno</th>
-                                @foreach ($competenciasSeleccionadas as $competencia)
-                                    <th rowspan="2" class="text-center align-middle sortable" style="font-size: 14px">
-                                        {{ $competencia->nombre }}
-                                    </th>
-                                @endforeach
-
-                                <th colspan="3" class="text-center sortable">Calificación</th>
-                                <th rowspan="2" class="align-middle sortable">Calificar</th>
-                            </tr>
-                            <tr>
-                                <th class="align-middle sortable">Valoración del Curso</th>
-                                <th class="align-middle sortable">Calificación del Curso</th>
-                                <th class="align-middle sortable">Calificación para el Sistema</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($alumnos as $index => $alumno)
+                <form action="{{ route('guardarCalificacionesEnBloque') }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="curso_id" value="{{ $curso->id }}">
+                    <input type="hidden" name="docente_id" value="{{ $docente->id }}">
+                    <div class="text-center"><button type="submit" class="btn btn-primary btn-sm mb-2">Guardar todas las
+                            calificaciones</button></div>
+                    <div style="max-height: 550px; overflow-y: auto;">
+                        <table class="table table-hover table-bordered text-center" style="font-size: 13px">
+                            <thead class="thead-dark">
                                 <tr>
-                                    <td>{{ $index + 1 }}</td>
-                                    <td style="text-align: left">
-                                        {{ $alumno->apellidos }},
-                                        {{ $alumno->nombres }}
-                                    </td>
-                                    <form action="{{ route('guardarCalificacion') }}" method="POST">
-                                        @csrf
-                                        <input type="hidden" name="alumno_id" value="{{ $alumno->id }}">
-                                        <input type="hidden" name="docente_id" value="{{ $docente->id }}">
-                                        <input type="hidden" name="curso_id" value="{{ $curso->id }}">
+                                    <th rowspan="2" class="text-center align-middle sortable">#</th>
+                                    <th rowspan="2" class="text-center align-middle sortable">Alumno</th>
+                                    @foreach ($competenciasSeleccionadas as $competencia)
+                                        <th rowspan="2" class="text-center align-middle sortable"
+                                            style="font-size: 14px">
+                                            {{ $competencia->nombre }}<br>
+                                            <small style="font-size: 10px">
+                                                {{ implode(' ', array_slice(explode(' ', $competencia->descripcion), 0, 12)) }}
+                                                @if (str_word_count($competencia->descripcion) > 6)
+                                                    ...
+                                                @endif
+                                            </small>
+                                        </th>
+                                    @endforeach
+                                    <th colspan="3" class="text-center sortable">Calificación</th>
+                                </tr>
+                                <tr>
+                                    <th class="align-middle sortable">Valoración del Curso</th>
+                                    <th class="align-middle sortable">Calificación del Curso</th>
+                                    <th class="align-middle sortable">Calificación para el Sistema</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($alumnos as $index => $alumno)
+                                    <input type="hidden" name="alumnos[{{ $alumno->id }}][alumno_id]"
+                                        value="{{ $alumno->id }}">
+                                    <tr>
+                                        <td>{{ $index + 1 }}</td>
+                                        <td style="text-align: left">
+                                            {{ $alumno->apellidos }}, {{ $alumno->nombres }}
+                                        </td>
+                                        <input type="hidden" name="alumnos[{{ $alumno->id }}][docente_id]"
+                                            value="{{ $docente->id }}">
+                                        <input type="hidden" name="alumnos[{{ $alumno->id }}][curso_id]"
+                                            value="{{ $curso->id }}">
                                         @foreach ($competenciasSeleccionadas as $index => $competencia)
-                                            <input type="hidden" name="competencias[]" value="{{ $competencia->id }}">
+                                            @php
+                                                $calificacion = $alumno
+                                                    ->calificaciones()
+                                                    ->where('curso_id', $curso->id)
+                                                    ->first();
+                                            @endphp
+                                            <input type="hidden" name="alumnos[{{ $alumno->id }}][competencias][]"
+                                                value="{{ $competencia->id }}">
                                             <td>
                                                 <select class="form-control form-control-sm select-competencia"
-                                                    name="valoracion_{{ $index + 1 }}">
-                                                    <option selected>Seleccionar</option>
-                                                    @php
-                                                        // Obtener la calificación para el alumno y el curso
-                                                        $calificacion = $alumno
-                                                            ->calificaciones()
-                                                            ->where('curso_id', $curso->id)
-                                                            ->first();
-                                                    @endphp
+                                                    name="alumnos[{{ $alumno->id }}][valoracion_{{ $index + 1 }}]">
+                                                    <option value="0" selected>Seleccionar</option>
                                                     <option value="5"
                                                         {{ $calificacion && $calificacion->{'valoracion_' . ($index + 1)} == 5 ? 'selected' : '' }}>
                                                         Destacado</option>
@@ -203,71 +175,44 @@
                                                         {{ $calificacion && $calificacion->{'valoracion_' . ($index + 1)} == 1 ? 'selected' : '' }}>
                                                         Previo al Inicio</option>
                                                 </select>
-                                                <input type="text"
-                                                    class="form-control form-control-sm input-competencia"
-                                                    name="nota_{{ $competencia->id }}[]"
-                                                    value="{{ $alumno->calificacion ? $alumno->calificacion->nota : '' }}"
-                                                    readonly style="display: none">
+                                                <input type="text" class="form-control form-control-sm input-competencia"
+                                                    name="alumnos[{{ $alumno->id }}][nota_{{ $competencia->id }}]"
+                                                    value="{{ $calificacion ? $calificacion->nota : '' }}" readonly
+                                                    style="display: none">
                                             </td>
                                         @endforeach
                                         <td>
                                             <input type="text"
                                                 class="form-control form-control-sm valoracion-curso text-center"
-                                                name="valoracion_curso"
+                                                name="alumnos[{{ $alumno->id }}][valoracion_curso]"
                                                 value="{{ $calificacion ? $calificacion->valoracion_curso : '' }}"
                                                 readonly>
                                         </td>
                                         <td>
                                             <input type="text"
                                                 class="form-control form-control-sm calificacion-curso text-center"
-                                                name="calificacion_curso"
+                                                name="alumnos[{{ $alumno->id }}][calificacion_curso]"
                                                 value="{{ $calificacion ? $calificacion->calificacion_curso : '' }}"
                                                 readonly>
                                         </td>
                                         <td>
                                             <input type="text"
                                                 class="form-control form-control-sm calificacion-sistema text-center"
-                                                name="calificacion_sistema"
+                                                name="alumnos[{{ $alumno->id }}][calificacion_sistema]"
                                                 value="{{ $calificacion ? $calificacion->calificacion_sistema : '' }}"
                                                 readonly>
                                         </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
 
-                                        {{-- <td>
-                                            <input type="text"
-                                                class="form-control form-control-sm valoracion-curso text-center"
-                                                name="valoracion_curso"
-                                                value="{{ $alumno->calificacion ? $alumno->calificacion->valoracion_curso : '' }}"
-                                                readonly>
-                                        </td>
-                                        <td>
-                                            <input type="text"
-                                                class="form-control form-control-sm calificacion-curso text-center"
-                                                name="calificacion_curso"
-                                                value="{{ $alumno->calificacion ? $alumno->calificacion->calificacion_curso : '' }}"
-                                                readonly>
-                                        </td>
-                                        <td>
-                                            <input type="text"
-                                                class="form-control form-control-sm calificacion-sistema text-center"
-                                                name="calificacion_sistema"
-                                                value="{{ $alumno->calificacion ? $alumno->calificacion->calificacion_sistema : '' }}"
-                                                readonly>
-                                        </td> --}}
-                                        <td>
-                                            <button type="submit"
-                                                class="btn btn-sm {{ $alumno->calificacion ? 'btn-success' : 'btn-primary' }}">
-                                                {{ $alumno->calificacion ? 'Actualizar' : 'Guardar' }}
-                                            </button>
-                                        </td>
-                                    </form>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                </form>
             </div>
         </div>
     </div>
+
     <div id="competenciaModal" class="modal" onclick="closeModal(event)">
         <div class="modal-content" onclick="event.stopPropagation();">
             <span class="close" onclick="closeModal(event)">&times;</span>
@@ -277,6 +222,7 @@
             <p id="competenciaCapacidades" class="text-justify"></p>
         </div>
     </div>
+    {{-- Modal --}}
     <script>
         function openModal(element) {
             // Extraer datos del elemento a partir de los atributos "data-"
@@ -300,18 +246,35 @@
             document.getElementById("competenciaModal").style.display = "none";
         }
     </script>
+    
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const competenciaSelects = document.querySelectorAll('.select-competencia');
+
+            // Recalcula todas las filas al cargar la página
+            competenciaSelects.forEach(select => {
+                const row = select.closest('tr');
+                const valor = select.value;
+
+                // Si el valor es diferente de 0, se recalcula
+                if (valor !== "0") {
+                    const input = select.nextElementSibling;
+                    input.value = valor;
+                    recalcularValoracionCurso(row);
+                }
+            });
 
             competenciaSelects.forEach(select => {
                 select.addEventListener('change', function() {
                     const row = this.closest('tr');
                     const valor = this.value;
-                    const input = this
-                        .nextElementSibling;
-                    input.value = valor;
-                    recalcularValoracionCurso(row);
+
+                    // Si el valor es diferente de 0, se recalcula
+                    if (valor !== "0") {
+                        const input = this.nextElementSibling;
+                        input.value = valor;
+                        recalcularValoracionCurso(row);
+                    }
                 });
             });
 
@@ -328,8 +291,6 @@
                 });
 
                 const promedio = count > 0 ? (sum / count).toFixed(2) : 0;
-
-                // Actualiza el input de valoración del curso en la fila específica
                 const valoracionInput = row.querySelector('.valoracion-curso');
                 if (valoracionInput) {
                     valoracionInput.value = promedio;
@@ -387,15 +348,6 @@
                 if (valor == 20) return "Destacado";
                 return '';
             }
-
-            const calificacionSistemaInputs = document.querySelectorAll('.calificacion-sistema');
-
-            calificacionSistemaInputs.forEach(input => {
-                input.addEventListener('input', function() {
-                    const row = this.closest('tr'); // Solo afecta la fila actual
-                    actualizarCalificacionCurso(this, row);
-                });
-            });
         });
     </script>
 @endsection

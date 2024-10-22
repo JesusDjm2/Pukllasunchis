@@ -11,7 +11,6 @@ Route::get('/', function () {
 })->name('index');
 
 //Pandero
-
 Route::get('pandero', [EnlacesController::class, 'pandero'])->name('pandero');
 
 Route::get('nosotros', [EnlacesController::class, 'nosotros'])->name('nosotros');
@@ -19,7 +18,7 @@ Route::get('nosotros', [EnlacesController::class, 'nosotros'])->name('nosotros')
 Route::get('programas/educacion-inicial', [EnlacesController::class, 'inicial'])->name('inicial');
 Route::get('programas/educacion-primaria', [EnlacesController::class, 'primaria'])->name('primaria');
 Route::get('programas/educacion-primaria-EIB', [EnlacesController::class, 'primariaEIB'])->name('primariaEIB');
-Route::get('programas/formacion-continua', [ EnlacesController::class, 'formacion'])->name('formacion');
+Route::get('programas/formacion-continua', [EnlacesController::class, 'formacion'])->name('formacion');
 
 Route::get('profesionalizacion-docente', [EnlacesController::class, 'profesionalizacion'])->name('profesionalizacion');
 
@@ -61,11 +60,12 @@ Route::get('informacion-institucional', [EnlacesController::class, 'informacion'
 Route::get('politica-de-privacidad', [EnlacesController::class, 'politica'])->name('politica');
 Route::get('terminos-y-condiciones', [EnlacesController::class, 'terminos'])->name('terminos');
 
-Route::get('/clear-cache', function() {
+Route::get('/clear-cache', function () {
     $exitCode = Artisan::call('cache:clear');
     $exitCode = Artisan::call('config:cache');
     $exitCode = Artisan::call('config:clear');
-    return 'DONE'; //Return anything
+    $exitCode = Artisan::call('view:clear');    
+    return 'DONE';
 });
 
 

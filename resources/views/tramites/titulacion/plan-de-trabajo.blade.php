@@ -62,7 +62,7 @@
                     </div>
                     <div class="col-lg-4 col-6 text-center">
                         <div class="card">
-                            <a href="{{ asset('pdf/Guia-de-Investigacion.pdf') }}" target="_blank">
+                            <a href="{{ asset('pdf/Guia-de-investigacion-2.pdf') }}" target="_blank">
                                 <div style="height: 100px">
                                     <img height="100%" src="{{ asset('img/min/Ficha-de-inscripcion-Pukllasunchis.png') }}" alt="">
                                 </div>

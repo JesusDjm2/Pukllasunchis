@@ -240,6 +240,12 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link collapsed" href="{{route('calificaciones', $alumno->id)}}">
+                        <i class="fas fa-fw fa-newspaper"></i>
+                        <span>Calificaciones</span>
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link collapsed" href="{{ route('postulante.index') }}">
                         <i class="fas fa-fw fa-money-bill"></i>
                         <span>Bolsa de trabajo</span>

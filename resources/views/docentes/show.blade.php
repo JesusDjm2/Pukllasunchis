@@ -71,6 +71,7 @@
                                             </li>
                                             <li>Horas: {{ $curso->horas }}</li>
                                             <li>Créditos: {{ $curso->creditos }}</li>
+                                            <li>CC: {{ $curso->cc }}</li>
                                         </ul>
                                     </ul>
                                 </td>

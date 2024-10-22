@@ -24,6 +24,7 @@ class AdminController extends Controller
         } */
         return view('admin.login');
     }
+
     public function index()
     {
         $alumno = auth()->user()->alumno;
@@ -38,7 +39,7 @@ class AdminController extends Controller
         $totalRecords = Alumno::count();
         return view('admin.index', compact('alumno', 'admins', 'totalAlumnos', 'totalRecords'));
     }
-    public function alumnos(Request $request)
+    /* public function alumnos(Request $request)
     {
         $query = Alumno::query();
         $alumno = null;
@@ -77,7 +78,58 @@ class AdminController extends Controller
         }
 
         return view('alumnos.index', compact('alumno', 'alumnos', 'totalRecords'));
+    } */
+    public function alumnos(Request $request)
+    {
+        $query = Alumno::query();
+
+        // Excluir completamente los usuarios que tienen el rol "inhabilitado"
+        $query->whereHas('user', function ($subQuery) {
+            $subQuery->whereDoesntHave('roles', function ($roleQuery) {
+                $roleQuery->where('name', 'inhabilitado');
+            });
+        });
+
+        $withUser = $request->get('with_user');
+
+        // Filtrar por alumnos que tienen o no tienen usuario según el filtro "with_user"
+        if ($withUser === '1') {
+            $query->has('user');
+        } elseif ($withUser === '0') {
+            $query->doesntHave('user');
+        }
+
+        // Búsqueda personalizada
+        if ($request->has('search')) {
+            $searchTerms = explode(' ', $request->input('search'));
+            $query->where(function ($subquery) use ($searchTerms) {
+                foreach ($searchTerms as $term) {
+                    $subquery->where(function ($nameOrApellidoQuery) use ($term) {
+                        $nameOrApellidoQuery->where('nombres', 'like', '%' . $term . '%')
+                            ->orWhere('apellidos', 'like', '%' . $term . '%');
+                    })
+                        ->orWhere('dni', 'like', '%' . $term . '%')
+                        ->orWhereHas('programa', function ($programaQuery) use ($term) {
+                            $programaQuery->where('nombre', 'like', '%' . $term . '%');
+                        });
+                }
+            });
+        }
+
+        $perPage = $request->input('perPage', 10);
+        $alumnos = $query->paginate($perPage);
+        $alumnos->appends($request->all());
+        $totalRecords = Alumno::count();
+
+        if ($alumnos->isEmpty() && !$request->has('search_page')) {
+            session()->flash('error', 'No se han encontrado resultados. Se ha buscado un total de ' . $totalRecords . ' registros.');
+        }
+
+        return view('alumnos.index', compact('alumnos', 'totalRecords'));
     }
+
+
+
     public function relacionarUsuario($alumnoId)
     {
         $alumno = Alumno::find($alumnoId);
@@ -198,6 +250,7 @@ class AdminController extends Controller
             'role' => 'required|string|in:admin,docente,alumno,adminB,alumnoB,inhabilitado',
             'programa_id' => 'required_if:role,alumno|exists:programas,id',
             'ciclo_id' => 'required_if:role,alumno|exists:ciclos,id',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 
         $user = User::findOrFail($id);
@@ -209,6 +262,18 @@ class AdminController extends Controller
         $user->pendiente = $request->input('pendiente');
         $user->beca = $request->input('beca');
         $user->email = $request->input('email');
+
+        if ($request->has('password')) {
+            $user->password = Hash::make($request->input('password'));
+        }
+        // Manejo de la imagen
+        if ($request->hasFile('foto')) {
+            $foto = $request->file('foto');
+            $nombreFoto = time() . '_' . $foto->getClientOriginalName();
+            $foto->move(public_path('img/estudiantes'), $nombreFoto);
+            $user->foto = $nombreFoto;
+        }
+
         if ($request->has('password')) {
             $user->password = Hash::make($request->input('password'));
         }
@@ -220,13 +285,13 @@ class AdminController extends Controller
             $user->syncRoles([$role]);
 
             if ($roleName === 'docente') {
-                $docente = $user->docente;  
+                $docente = $user->docente;
                 $docente->nombre = $request->input('name') . ' ' . $request->input('apellidos');
                 $docente->dni = $request->input('dni');
                 $docente->email = $request->input('email');
                 $docente->save();
             }
-            
+
             if ($roleName === 'alumno') {
                 $user->programa()->associate($request->input('programa_id'));
                 $user->ciclo()->associate($request->input('ciclo_id'));

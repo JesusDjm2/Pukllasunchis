@@ -51,6 +51,14 @@ Route::resource('docente', DocenteCOntroller::class)->names('docente')->middlewa
 Route::get('Dashboard-Docente/{docente}', [DocenteCOntroller::class, 'vistaDocente'])->name('vistaDocente')->middleware('auth');
 Route::get('asignar-cursos/{id}', [DocenteCOntroller::class, 'asignar'])->name('asignar')->middleware('auth');
 Route::post('/asignar-curso/{docenteId}', [DocenteCOntroller::class, 'asignarCurso'])->name('cursos.asignar');
+Route::get('/ver-mis-alumnos/{docente}', [DocenteCOntroller::class, 'alumnos'])->name('vistaAlumnos')->middleware('auth');
+
+//Periodos
+/* Route::post('/publicarPeriodoUno', [CalificacionController::class, 'publicarperiodouno'])->name('publicarperiodouno'); */
+Route::post('/publicarPeriodoUno', function () {
+    return 'La ruta está funcionandossss'; // Mostrar los datos de la solicitud
+})->name('publicar.periodo.uno');
+Route::post('/eliminarPeriodoUno', [CalificacionController::class, 'eliminarPeriodoUno'])->name('eliminarPeriodoUno');
 
 //Asignar competencias a calificar
 Route::get('/curso/{cursoId}/competencias', [CalificacionController::class, 'gestionarCompetencias'])
@@ -73,9 +81,12 @@ Route::get('calificar/{id}', [DocenteCOntroller::class, 'calificar'])->name('cal
 Route::post('docentes/{docente}/cursos/{curso}/calificar', [DocenteController::class, 'calificarCurso'])->name('competencias.calificar')->middleware('auth');
 //Guardar Calificacion de alumnos
 Route::post('/calificaciones/store', [CalificacionController::class, 'nuevaCalificacion'])->name('guardarCalificacion');
-//Periodos
-Route::post('/publicarPeriodoUno', [CalificacionController::class, 'publicarPeriodoUno'])->name('publicarPeriodoUno');
-Route::post('/eliminarPeriodoUno', [CalificacionController::class, 'eliminarPeriodoUno'])->name('eliminarPeriodoUno');
+Route::post('/guardar-calificaciones', [CalificacionController::class, 'guardarCalificacionesEnBloque'])->name('guardarCalificacionesEnBloque');
+
+//Blog de notas
+Route::post('/docentes/blog/{id}', [DocenteController::class, 'updateBlog'])->name('docentes.updateBlog');
+
+Route::post('/borrarCalificaciones', [CalificacionController::class, 'borrarCalificaciones'])->name('borrarCalificaciones');
 
 //Competencias 
 Route::resource('competencias', CompetenciaController::class)->middleware('auth')->names('competencias');
@@ -97,15 +108,16 @@ Route::get('ficha-matricula/{alumno}', [AlumnoController::class, 'ficha'])->name
 Route::put('/ciclo/update-alumnos', [CicloController::class, 'updateCicloAlumnos'])->name('ciclo.updateAlumnos');
 
 Route::get('/filtrar-datos', [AlumnoController::class, 'filtro'])->name('filtro');
+
 //Vista Alumnos
 Route::get('Alumnos-Formulario', [vistasAlumnosController::class, 'form'])->name('vistAlumno');
 Route::get('/obtener-ciclos/{programa}', [vistasAlumnosController::class, 'obtenerCiclos']);
 Route::get('/obtener-cursos/{cicloId}', [vistasAlumnosController::class, 'getCursos'])->name('obtener.cursos');
 
-
 Route::resource('trabajo', BolsaController::class);
 Route::resource('postulante', PostulanteController::class);
 Route::get('lista-postulantes', [PostulanteController::class, 'lista'])->middleware('auth')->name('listaPostulantes');
+
 
 
 

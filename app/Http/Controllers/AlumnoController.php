@@ -17,7 +17,7 @@ class AlumnoController extends Controller
     public function index(Request $request)
     {
         if (!auth()->check()) {
-            return redirect()->route('login'); // Redirige al login si no está autenticado
+            return redirect()->route('login'); 
         }
 
         $alumno = auth()->user()->alumno;
@@ -28,17 +28,8 @@ class AlumnoController extends Controller
 
             return view('alumnos.vistasAlumnos.index', compact('alumno', 'usuario'));
         } else {
-            // Si no hay 'alumno', pasa solo a la vista sin datos adicionales
             return view('alumnos.vistasAlumnos.index');
         }
-        /* $alumno = auth()->user()->alumno;
-        if ($alumno) {
-            $usuario = $alumno->user;
-            $alumno->load('programa', 'ciclo.cursos.docentes'); // Asegúrate de cargar los docentes
-            return view('alumnos.vistasAlumnos.index', compact('alumno', 'usuario'));
-        } else {
-            return view('alumnos.vistasAlumnos.index');
-        } */
     }
     public function ficha(Alumno $alumno)
     {

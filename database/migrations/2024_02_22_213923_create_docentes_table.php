@@ -17,17 +17,15 @@ return new class extends Migration
             $table->string('foto')->nullable();
             $table->string('dni');
             $table->string('email');
-            $table->string('telefono');
+            $table->string('telefono')->nullable();
             $table->text('descripcion')->nullable();
+            $table->longText('blog')->nullable();
             $table->timestamps();
             $table->unsignedBigInteger('user_id')->nullable();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('docentes');

@@ -23,7 +23,6 @@ return new class extends Migration {
             $table->string('valoracion_curso')->nullable();
             $table->string('calificacion_curso')->nullable();
             $table->string('calificacion_sistema')->nullable();
-            
             $table->string('publicar')->nullable();
             
             $table->timestamps();

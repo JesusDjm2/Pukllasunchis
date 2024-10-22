@@ -18,50 +18,51 @@
 
 <body id="page-top">
     <div id="wrapper">
-            <ul class="navbar-nav bg-gradient-info sidebar sidebar-dark accordion" id="accordionSidebar">
-                <a class="sidebar-brand d-flex align-items-center justify-content-center mb-3"
-                    href="{{ route('index') }}">
-                    <div class="sidebar-brand-icon">
-                        <img class="pt-3" src="{{ asset('admin/img/Logo-Pukllasunchis-blanco.png') }}"
-                            alt="Logo Pukllasunchis" width="100%">
-                    </div>
-                    <div class="sidebar-brand-text mx-3">
-                        <!---Contenido solo para estilo a logo--->
-                    </div>
-                </a>
-                <hr class="sidebar-divider">
-                <div class="sidebar-heading">
-                    Dashboard Alumno
+        <ul class="navbar-nav bg-gradient-info sidebar sidebar-dark accordion" id="accordionSidebar">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center mb-3" href="{{ route('index') }}">
+                <div class="sidebar-brand-icon">
+                    <img class="pt-3" src="{{ asset('admin/img/Logo-Pukllasunchis-blanco.png') }}"
+                        alt="Logo Pukllasunchis" width="100%">
                 </div>
+                <div class="sidebar-brand-text mx-3">
+                    <!---Contenido solo para estilo a logo--->
+                </div>
+            </a>
+            <hr class="sidebar-divider">
+            <div class="sidebar-heading">
+                Dashboard Alumno
+            </div>
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="{{ route('alumnos.index') }}">
+                    <i class="fas fa-fw fa-newspaper"></i>
+                    <span>Ficha técnica</span>
+                </a>
+            </li>
+            @if (isset($alumno) && $alumno)
                 <li class="nav-item">
-                    <a class="nav-link collapsed" href="{{ route('alumnos.index') }}">
-                        <i class="fas fa-fw fa-newspaper"></i>
-                        <span>Ficha técnica</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="{{route('calificaciones', $alumno->id)}}">
+                    <a class="nav-link collapsed" href="{{ route('calificaciones', $alumno->id) }}">
                         <i class="fas fa-fw fa-newspaper"></i>
                         <span>Calificaciones</span>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="{{ route('postulante.index') }}">
-                        <i class="fas fa-fw fa-money-bill"></i>
-                        <span>Bolsa de trabajo</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="{{ route('index') }}">
-                        <i class="fas fa-fw fa-graduation-cap"></i>
-                        <span>Regresar a la página</span>
-                    </a>
-                </li>
-                <hr class="sidebar-divider d-none d-md-block">
-                <div class="text-center d-none d-md-inline">
-                    <button class="rounded-circle border-0" id="sidebarToggle"></button>
-                </div>
-            </ul>
+            @endif
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="{{ route('postulante.index') }}">
+                    <i class="fas fa-fw fa-money-bill"></i>
+                    <span>Bolsa de trabajo</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="{{ route('index') }}">
+                    <i class="fas fa-fw fa-graduation-cap"></i>
+                    <span>Regresar a la página</span>
+                </a>
+            </li>
+            <hr class="sidebar-divider d-none d-md-block">
+            <div class="text-center d-none d-md-inline">
+                <button class="rounded-circle border-0" id="sidebarToggle"></button>
+            </div>
+        </ul>
         <div id="content-wrapper" class="d-flex flex-column">
             <div id="content">
                 <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
@@ -84,8 +85,7 @@
                                                     document.getElementById('logout-form').submit();">
                                     {{ __('Logout') }}
                                 </a>
-                                <form id="logout-form" action="{{ route('logout') }}" method="POST"
-                                    class="d-none">
+                                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
                                     @csrf
                                 </form>
                             </div>
@@ -98,8 +98,8 @@
                 <div class="container my-auto">
                     <div class="copyright text-center my-auto">
                         <span>Copyright &copy; {{ date('Y') }} | Hecho por <a class="text-primary"
-                                href="https://www.facebook.com/DjmWebMaster" target="_blank"
-                                rel="noopener noreferrer"> DJM2 </a> | Versión 2024.2</span>
+                                href="https://www.facebook.com/DjmWebMaster" target="_blank" rel="noopener noreferrer">
+                                DJM2 </a> | Versión 2024.2</span>
                     </div>
                 </div>
             </footer>

@@ -1,29 +1,51 @@
 @extends('layouts.admin')
 @section('contenido')
     <div class="container-fluid">
-        <div class="d-sm-flex align-items-center justify-content-between mb-4">
-            <h1 class="h3 mb-0 text-gray-800">Editar Admin: <span>{{ $admin->name }}</span></h1>
+        <div class="d-sm-flex align-items-center justify-content-between mb-4"
+            style="border-bottom: 1px dashed #4848fc78; padding-bottom:1em">
+            <h4 class="font-weight-bold text-primary">Editar: <span>{{ $admin->apellidos }}, {{ $admin->name }}</span></h4>
             <a href="{{ route('admin') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
                 Volver
             </a>
         </div>
         <div class="row">
-            <div class="col-lg-12">
-                <p><strong>Programa:</strong>
-                    {{ $admin->programa ? $admin->programa->nombre : 'No asignado' }} | <strong>Ciclo:</strong>
-                    {{ optional($admin->ciclo)->nombre ?? 'N/A' }} </p>
-                <p><strong>Condicion:</strong> {{ $admin->condicion }} | <strong>Perfil: </strong>
-                    @if ($admin->perfil)
-                        {{ $admin->perfil }}
-                    @else
-                        Sin perfil
-                    @endif
-                </p>
-                @if ($admin->pendiente)
-                    <p>
-                        {{ $admin->pendiente }}
-                    </p>
+            <style>
+                .vertical-align {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                }
+            </style>
+            <div class="col-lg-2" style="border-bottom: 1px dashed #4848fc78; padding-bottom:1em">
+                @if ($admin->foto)
+                    <label class="font-weight-bold">Foto actual:</label>
+                    <img src="{{ asset('img/estudiantes/' . $admin->foto) }}" alt="Foto del usuario" class="img-fluid">
+                @else
+                    <div
+                        style="width: 100%; height: 150px; background-color: #e0e0e0; display: flex; justify-content: center; align-items: center;">
+                        <span class="text-muted">Sin foto asignada</span>
+                    </div>
                 @endif
+            </div>
+            <div class="col-lg-10 vertical-align" style="border-bottom: 1px dashed #4848fc78; padding-bottom:1em">
+                <div>
+                    @if ($admin->alumno)
+                        <p><strong>Programa:</strong>
+                            {{ $admin->programa ? $admin->programa->nombre : 'No asignado' }} | <strong>Ciclo:</strong>
+                            {{ optional($admin->ciclo)->nombre ?? 'N/A' }}
+                        </p>
+                        <p><strong>Condición:</strong> {{ $admin->condicion }} | <strong>Perfil: </strong>
+                            @if ($admin->perfil)
+                                {{ $admin->perfil }}
+                            @else
+                                Sin perfil
+                            @endif
+                        </p>
+                        @if ($admin->pendiente)
+                            <p>{{ $admin->pendiente }}</p>
+                        @endif
+                    @endif
+                </div>
             </div>
             <div class="col-lg-12">
                 @if (session('success'))
@@ -31,10 +53,45 @@
                         {{ session('success') }}
                     </div>
                 @endif
-                <form id="editForm" method="POST" action="{{ route('adminUpdate', $admin->id) }}" class="mt-3">
+                <form id="editForm" method="POST" action="{{ route('adminUpdate', $admin->id) }}" class="mt-3"
+                    enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
                     <div class="row">
+                        <!-- Campo para subir la foto -->
+                        <div class="col-lg-8 mb-3">
+                            <label for="foto" class="form-label">Subir Foto:</label>
+                            <input type="file" name="foto" id="foto" accept="image/*"
+                                class="form-control form-control-sm @error('foto') is-invalid @enderror"
+                                onchange="previewImage(event)">
+                            @error('foto')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="col-lg-2">
+                            <label>Subir/Actualizar:</label>
+                            <div>
+                                <img id="preview" src="#" alt="Previsualización de la imagen"
+                                    style="width: 100%; display: none;">
+                            </div>
+                        </div>
+
+                        <script>
+                            function previewImage(event) {
+                                const input = event.target;
+                                const reader = new FileReader();
+
+                                reader.onload = function() {
+                                    const preview = document.getElementById('preview');
+                                    preview.src = reader.result;
+                                    preview.style.display = 'block';
+                                };
+
+                                if (input.files && input.files[0]) {
+                                    reader.readAsDataURL(input.files[0]);
+                                }
+                            }
+                        </script>
                         <div class="col-lg-6 mb-3">
                             <label for="name" class="form-label">Nombre:</label>
                             <input type="text" class="form-control form-control-sm @error('name') is-invalid @enderror"
@@ -68,6 +125,42 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
+
+
+                        <div class="col-lg-6 mb-3">
+                            <label for="password">Nueva Contraseña (opcional):</label>
+                            <input type="password" name="password" id="password" class="form-control form-control-sm"
+                                placeholder="Nueva contraseña">
+
+                            <!-- Mostrar errores para el campo de contraseña -->
+                            @if ($errors->has('password'))
+                                <span class="text-danger">{{ $errors->first('password') }}</span>
+                            @endif
+                        </div>
+
+                        <div class="col-lg-6 mb-3">
+                            <label for="password_confirmation">Confirmar Contraseña (opcional):</label>
+                            <input type="password" name="password_confirmation" id="password_confirmation"
+                                class="form-control form-control-sm" placeholder="Confirmar contraseña">
+
+                            <!-- Mostrar errores para el campo de confirmación de contraseña -->
+                            @if ($errors->has('password_confirmation'))
+                                <span class="text-danger">{{ $errors->first('password_confirmation') }}</span>
+                            @endif
+                        </div>
+
+
+                        {{-- <div class="form-group">
+                            <label for="password">Nueva Contraseña (opcional):</label>
+                            <input type="password" name="password" id="password" class="form-control" placeholder="Nueva contraseña">
+                        </div>
+            
+                        <div class="form-group">
+                            <label for="password_confirmation">Confirmar Contraseña (opcional):</label>
+                            <input type="password" name="password_confirmation" id="password_confirmation" class="form-control"
+                                placeholder="Confirmar contraseña">
+                        </div> --}}
+
                         <div class="col-lg-12 mb-3">
                             <label for="role" class="form-label">Asignar Rol:</label>
                             <select id="role" name="role"
@@ -79,13 +172,13 @@
                                 <option value="alumno" {{ $currentRole === 'alumno' ? 'selected' : '' }}>Alumno</option>
                                 <option value="adminB" {{ $currentRole === 'adminB' ? 'selected' : '' }}>Administrador
                                     Bolsa</option>
-                                <option value="inhabilitado" {{ $currentRole === 'inhabilitado' ? 'selected' : '' }}>Inhabilitado</option>
+                                <option value="inhabilitado" {{ $currentRole === 'inhabilitado' ? 'selected' : '' }}>
+                                    Inhabilitado</option>
                             </select>
                             @error('role')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-
                         <div class="col-lg-12" id="admin-fields" style="display: none;">
                             <div class="row">
                                 <div class="col-lg-3 mb-3">
@@ -124,7 +217,8 @@
                                         <option value="Beca Continua"
                                             {{ $admin->condicion == 'Beca Continua' ? 'selected' : '' }}>Beca Continua
                                         </option>
-                                        <option value="Beca 18" {{ $admin->condicion == 'Beca 18' ? 'selected' : '' }}>Beca
+                                        <option value="Beca 18" {{ $admin->condicion == 'Beca 18' ? 'selected' : '' }}>
+                                            Beca
                                             18</option>
                                         <option value="Beca Puklla"
                                             {{ $admin->condicion == 'Beca Puklla' ? 'selected' : '' }}>Beca Puklla</option>
@@ -139,7 +233,8 @@
                                             trabajo</small></label>
                                     <select class="form-control form-control-sm @error('perfil') is-invalid @enderror"
                                         id="perfil" name="perfil">
-                                        <option value="" disabled {{ !$admin->perfil ? 'selected' : '' }}>Seleccionar
+                                        <option value="" disabled {{ !$admin->perfil ? 'selected' : '' }}>
+                                            Seleccionar
                                             Perfil</option>
                                         <option value="Estudiante" {{ $admin->perfil == 'Estudiante' ? 'selected' : '' }}>
                                             Estudiante</option>
@@ -193,6 +288,7 @@
 
                             </div>
                         </div>
+
                         <button type="submit" class="btn btn-primary">Actualizar</button>
                     </div>
                 </form>

@@ -1,4 +1,4 @@
-@extends('layouts.alumno')
+@extends('layouts.admin')
 @section('contenido')
     <div class="container-fluid bg-white">
         <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3 pb-2"
@@ -135,21 +135,24 @@
                 </table>
             </div>
         </div>
-
-        <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3 pb-2"
-            style="border-bottom: 1px dashed #80808078">
-            <h5 class="mb-0 text-uppercase font-weight-bold">Notas</h5>
-        </div>
-        <div class="row mb-4">
-            <div class="col-lg-12">
-                @if ($alumno->calificacion)
-                    {{ $calificacion->valoracion_1 }}
-                @else
-                    No tiene asignado ningun periodo
-                @endif
+        @role('alumno')
+            <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3 pb-2"
+                style="border-bottom: 1px dashed #80808078">
+                <h5 class="mb-0 text-uppercase font-weight-bold">Notas</h5>
             </div>
-        </div>
-        <div class="d-sm-flex align-items-center justify-content-between mb-2 pb-2"
+            <div class="row mb-4">
+                <div class="col-lg-12">
+
+                    @if ($alumno->calificacion)
+                        {{ $calificacion->valoracion_1 }}
+                    @else
+                        No tiene asignado ningun periodo
+                    @endif
+
+                </div>
+            </div>
+        @endrole
+        {{-- <div class="d-sm-flex align-items-center justify-content-between mb-2 pb-2"
             style="border-bottom: 1px dashed #80808078">
             <h5 class="mb-0 text-uppercase font-weight-bold">Competencias Modulares</h5>
         </div>
@@ -157,6 +160,6 @@
         <div class="progress">
             <div class="progress-bar" role="progressbar" style="width: 75%;" aria-valuenow="25" aria-valuemin="0"
                 aria-valuemax="100">75%</div>
-        </div>
+        </div> --}}
     </div>
 @endsection

@@ -3,15 +3,15 @@
     <style>
         .quitarCurso {
             border: none;
-            color: red;
-            font-size: 32px;
+            color: #e74a3b;
             background: none;
-            border-radius: 50%
+            font-size: 13px
         }
 
         .quitarCurso:hover {
-            color: red;
+            color: #e74a3b;
             transition: 0.4s ease;
+            text-decoration: underline
         }
     </style>
     <div class="container-fluid bg-white">
@@ -48,7 +48,7 @@
                     <table class="table table-hover table-bordered" id="docentes-table">
                         <thead class="thead-dark">
                             <tr>
-                                <th>#</th>
+                                <th>ID</th>
                                 <th>Docente</th>
                                 <th>Cursos</th>
                                 <th>Acciones</th>
@@ -65,7 +65,7 @@
                                     $docenteCount++;
                                 @endphp
                                 <tr>
-                                    <td>{{ $docenteCount }}</td>
+                                    <td>{{ $docente->id }}</td>
                                     <td>
                                         <strong>{{ $docente->nombre }}</strong>
                                         <ul>
@@ -79,35 +79,30 @@
                                                 @php
                                                     $cursosOrdenados = $docente->cursos->sortBy('nombre');
                                                 @endphp
-
                                                 @foreach ($cursosOrdenados as $curso)
                                                     <li>
-                                                        {{ $curso->nombre }} <strong>(
-                                                            {{ $curso->ciclo->programa->nombre }} -
-                                                            {{ $curso->ciclo->nombre }})</strong>
+                                                        <strong>{{ $curso->nombre }}</strong> (
+                                                        {{ $curso->ciclo->programa->nombre }} -
+                                                        {{ $curso->ciclo->nombre }})
 
-                                                        @if ($curso->silabo)
-                                                            <a style="font-size: 20px"
-                                                                href="{{ asset('docentes/silabo/' . $curso->silabo) }}"
-                                                                target="_blank" title="Ver Sílabos">
-                                                                <i class="fa fa-file-pdf"></i>
-                                                            </a>
-                                                        @endif
-
-                                                        <form
-                                                            action="{{ route('docente.curso.eliminar', [$docente->id, $curso->id]) }}"
-                                                            method="POST" style="display:inline;">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit" class="quitarCurso"
-                                                                title="Quitar Curso asignado"
-                                                                onclick="return confirm('¿Estás seguro de que deseas quitar este curso?')">-</button>
-                                                        </form>
-
+                                                        <ul>
+                                                            <li>
+                                                                @if ($curso->silabo)
+                                                                    <a style="font-size: 13px"
+                                                                        href="{{ asset('docentes/silabo/' . $curso->silabo) }}"
+                                                                        target="_blank" title="Ver Sílabos">
+                                                                        Ver sílabo <i class="fa fa-file-pdf"></i>
+                                                                    </a>
+                                                                @else
+                                                                    <small class="text-muted">Sin Sílabo</small>
+                                                                @endif
+                                                            </li>
+                                                        </ul>
                                                         @if ($curso->competenciasSeleccionadas->count() > 0)
                                                             <ul>
                                                                 <li>
-                                                                    <a href="{{ route('curso.gestionar.competencias', $curso->id) }}"
+                                                                    <a style="font-size: 13px"
+                                                                        href="{{ route('curso.gestionar.competencias', $curso->id) }}"
                                                                         class="text-primary">
                                                                         Editar competencias a calificar <i
                                                                             class="fa fa-sm fa-tasks"></i>
@@ -119,24 +114,111 @@
                                                                 <li>
                                                                     <a href="{{ route('curso.gestionar.competencias', $curso->id) }}"
                                                                         class="text-danger">
-                                                                        Elegir competencias (max 3) <i
-                                                                            class="fa fa-sm fa-tasks"></i>
+                                                                        <small>Elegir competencias (max 3) <i
+                                                                                class="fa fa-sm fa-tasks"></i></small>
                                                                     </a>
                                                                 </li>
                                                             </ul>
                                                         @endif
 
-                                                        {{-- @if ($curso->competencias->count() > 3)
-                                                            <ul>
-                                                                <li>
-                                                                    <a href="{{ route('curso.gestionar.competencias', $curso->id) }}"
-                                                                        class="text-warning">
-                                                                        Elegir competencias (max 3) <i
-                                                                            class="fa fa-sm fa-tasks"></i>
-                                                                    </a>
-                                                                </li>
-                                                            </ul>
-                                                        @endif --}}
+                                                        <ul>
+                                                            {{-- @if ($curso->calificaciones->count() > 0)
+                                                                <form
+                                                                    action="{{ route('competencias.calificar', ['docente' => $docente->id, 'curso' => $curso->id]) }}"
+                                                                    method="POST">
+                                                                    @csrf
+                                                                    <input type="hidden" name="docente_id"
+                                                                        value="{{ $docente->id }}">
+                                                                    <input type="hidden" name="curso_id"
+                                                                        value="{{ $curso->id }}">
+                                                                    @if ($curso->competenciasSeleccionadas->isNotEmpty())
+                                                                        <ul style="dispaly:none">
+                                                                            @foreach ($curso->competenciasSeleccionadas as $competencia)
+                                                                                <li>{{ $competencia->nombre }}</li>
+                                                                                <input type="hidden" name="competencias[]"
+                                                                                    value="{{ $competencia->id }}">
+                                                                            @endforeach
+
+                                                                        </ul>
+                                                                    @endif
+                                                                    <li>
+                                                                        <button type="submit" class="text-primary"
+                                                                            id="{{ $curso->id }}"
+                                                                            style="background: none; border: none; font-size:14px; margin-left: -6px">
+                                                                            Ver calificaciones
+                                                                        </button>
+                                                                    </li>
+                                                                </form>
+                                                            @else
+                                                                <small class="text-muted">Sin calificaciones</small>
+                                                            @endif --}}
+
+                                                            @if ($curso->calificaciones->count() > 0)
+                                                                <form
+                                                                    action="{{ route('competencias.calificar', ['docente' => $docente->id, 'curso' => $curso->id]) }}"
+                                                                    method="POST">
+                                                                    @csrf
+                                                                    <input type="hidden" name="docente_id"
+                                                                        value="{{ $docente->id }}">
+                                                                    <input type="hidden" name="curso_id"
+                                                                        value="{{ $curso->id }}">
+
+                                                                    @if ($curso->competenciasSeleccionadas->isNotEmpty())
+                                                                        <ul style="display:none">
+                                                                            @foreach ($curso->competenciasSeleccionadas as $competencia)
+                                                                                <li>{{ $competencia->nombre }}</li>
+                                                                                <input type="hidden" name="competencias[]"
+                                                                                    value="{{ $competencia->id }}">
+                                                                            @endforeach
+                                                                        </ul>
+                                                                    @elseif ($curso->competencias->count() <= 3)
+                                                                        <ul style="display:none">
+                                                                            @foreach ($curso->competencias as $competencia)
+                                                                                <li>{{ $competencia->nombre }}</li>
+                                                                                <input type="hidden" name="competencias[]"
+                                                                                    value="{{ $competencia->id }}">
+                                                                            @endforeach
+                                                                        </ul>
+                                                                    @endif
+
+                                                                    <li>
+                                                                        <button type="submit" class="text-primary"
+                                                                            id="{{ $curso->id }}"
+                                                                            style="background: none; border: none; font-size:14px; margin-left: -6px">
+                                                                            Ver calificaciones
+                                                                        </button>
+                                                                    </li>
+                                                                </form>
+                                                            @else
+                                                                <small class="text-muted">Sin calificaciones</small>
+                                                            @endif
+                                                        </ul>
+                                                        {{-- <ul>
+                                                            <li>
+                                                                @if ($curso->calificaciones->count() > 0)
+                                                                    <a href="" class="text-primary"><small> Ver
+                                                                            Calificaciones</small></a>
+                                                                @else
+                                                                    <small class="text-muted">Sin calificaciones</small>
+                                                                @endif
+                                                            </li>
+                                                        </ul> --}}
+                                                        <ul>
+                                                            <li>
+                                                                <form
+                                                                    action="{{ route('docente.curso.eliminar', [$docente->id, $curso->id]) }}"
+                                                                    method="POST" style="display:inline;">
+                                                                    @csrf
+                                                                    @method('DELETE')
+                                                                    <button type="submit" class="quitarCurso"
+                                                                        title="Quitar Curso asignado"
+                                                                        style="margin-left: -3px"
+                                                                        onclick="return confirm('¿Estás seguro de que deseas quitar este curso?')">
+                                                                        Quitar Curso <i class="fa fa-sm fa-trash"></i>
+                                                                    </button>
+                                                                </form>
+                                                            </li>
+                                                        </ul>
                                                     </li>
                                                 @endforeach
                                             </ul>
@@ -187,7 +269,8 @@
                                                             method="POST" style="display:inline;">
                                                             @csrf
                                                             @method('DELETE')
-                                                            <button type="submit" class="btn btn-danger">Eliminar</button>
+                                                            <button type="submit"
+                                                                class="btn btn-danger">Eliminar</button>
                                                         </form>
                                                     </div>
                                                 </div>
@@ -198,6 +281,8 @@
                             @endforeach
                         </tbody>
                     </table>
+
+
                 </div>
             </div>
         </div>

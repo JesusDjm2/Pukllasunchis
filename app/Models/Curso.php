@@ -30,7 +30,6 @@ class Curso extends Model
     {
         return $this->belongsToMany(Competencia::class, 'curso_competencia_seleccionada');
     }
-
     public function calificaciones()
     {
         return $this->hasMany(Calificacion::class);

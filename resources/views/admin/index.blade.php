@@ -264,7 +264,13 @@
                                         @endphp
                                         <tr>
                                             <td>{{ $docenteCount }}</td> <!-- Enumerator -->
-                                            <td>{{ $admin->name }} {{ $admin->apellidos }}</td>
+                                            <td><strong>{{ $admin->name }} {{ $admin->apellidos }}</strong>
+                                                <ul>
+                                                    <li>{{ $admin->ciclo->programa->nombre }} -
+                                                        {{ $admin->ciclo->nombre }}
+                                                    </li>
+                                                </ul>
+                                            </td>
                                             <td>{{ $admin->email }}</td>
                                             <td>{{ $admin->dni }}</td>
                                             <td>

@@ -39,7 +39,6 @@
                         <a href="{{ route('adminAlumnos', ['with_user' => 0]) }}" class="btn btn-sm btn-danger">Sin
                             Login</a>
                     </div>
-
                     <div class="col-lg-4 mt-3">
                         <form id="searchForm" action="{{ route('adminAlumnos') }}" method="GET">
                             <div class="input-group mb-3">
