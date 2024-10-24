@@ -54,10 +54,7 @@ Route::post('/asignar-curso/{docenteId}', [DocenteCOntroller::class, 'asignarCur
 Route::get('/ver-mis-alumnos/{docente}', [DocenteCOntroller::class, 'alumnos'])->name('vistaAlumnos')->middleware('auth');
 
 //Periodos
-/* Route::post('/publicarPeriodoUno', [CalificacionController::class, 'publicarperiodouno'])->name('publicarperiodouno'); */
-Route::post('/publicarPeriodoUno', function () {
-    return 'La ruta está funcionandossss'; // Mostrar los datos de la solicitud
-})->name('publicar.periodo.uno');
+Route::post('/publicar-periodo-uno', [CalificacionController::class, 'publicarPeriodoUno'])->name('publicar.periodo.uno');
 Route::post('/eliminarPeriodoUno', [CalificacionController::class, 'eliminarPeriodoUno'])->name('eliminarPeriodoUno');
 
 //Asignar competencias a calificar

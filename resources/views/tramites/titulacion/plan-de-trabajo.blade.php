@@ -187,7 +187,7 @@
                     <div class="col-lg-12">
                         <h3 class="mt-3">Para pagos Ordinarios:</h3>
                         <p>
-                            Los pagos ordinarios <strong>SOLO SE PUEDEN PAGAR EN VENTANILLAS</strong>  de cualquier agencia a nivel nacional de CAJA CUSCO. <a class="text-primary" target="_blank" href="../../../../public/pdf/Conceptos-ordinarios-caja-cusco.pdf">Ver PDF para pagos<small><i class="fa fa-eye"></i></small></a>
+                            Los pagos ordinarios <strong>SOLO SE PUEDEN PAGAR EN VENTANILLAS</strong>  de cualquier agencia a nivel nacional de CAJA CUSCO. <a class="text-primary" target="_blank" href="../../../../public/pdf/Conceptos-ordinarios-caja-cusco-3.pdf">Ver PDF para pagos<small><i class="fa fa-eye"></i></small></a>
                         </p>                        
                     </div>
                 </div>
@@ -195,8 +195,7 @@
                     <strong>OJO:</strong><br>
 					- Cliente debe indicar <span class="text-danger font-weight-bold">PAGO ORDINARIO</span> de la
                                 <span class="text-danger font-weight-bold">ASOCIACIÓN PUKLLASUNCHIS - EESPP</span><br>
-					- Cliente debe indicar el concepto a pagar (ejemplo: Examen de admisión, Constancia de
-                                Matrpicula, Traslado, etc.)<br>
+					- Cliente debe indicar el concepto a pagar (ejemplo: Aprobación de PTI, Cambio de tema, cambio de asesor, disolucion de grupo, extensión de plazo.<br>
 					- El representante del servicio realizará la búsqueda y le indicará el monto del concepto ordinario para la validación del cliente.<br> 
 					- Finalmente el Cliente deberá dictar el código (DNI), el nombre y apellidos completos del
                                 alumno.

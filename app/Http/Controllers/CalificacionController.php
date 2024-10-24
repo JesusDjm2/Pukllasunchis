@@ -198,9 +198,8 @@ class CalificacionController extends Controller
         // Redireccionamos con un mensaje de éxito
         return redirect()->back()->with('success', 'Todas las calificaciones han sido guardadas correctamente.');
     } */
-    public function publicarperiodouno(Request $request)
+    public function publicarPeriodoUno(Request $request) 
     {
-        dd($request->all());
         $curso = Curso::findOrFail($request->curso_id);
         $docente = Docente::findOrFail($request->docente_id);
         $alumnos = $curso->ciclo->alumnos()->orderBy('apellidos')->get();

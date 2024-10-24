@@ -26,10 +26,12 @@
             <div class="col-lg-3">
                 <div class="pegajoso">
                     <ul class="submenu2">
-                        <li><a href="{{route('plan')}}"><i class="fa fa-caret-right fa-sm"></i> Plan de Trabajo</a></li>
-                        <li><a href="{{route('tinvestigacion')}}"><i class="fa fa-caret-right fa-sm"></i> Trabajo de Investigación</a></li>
-                        <li><a href="{{route('tesis')}}"><i class="fa fa-caret-right fa-sm"></i> Tesis</a></li>
-                        <li><a href="{{route('tramites')}}"><i class="fa fa-caret-right fa-sm"></i> Trámites presenciales</a></li>
+                        <li><a href="{{ route('plan') }}"><i class="fa fa-caret-right fa-sm"></i> Plan de Trabajo</a></li>
+                        <li><a href="{{ route('tinvestigacion') }}"><i class="fa fa-caret-right fa-sm"></i> Trabajo de
+                                Investigación</a></li>
+                        <li><a href="{{ route('tesis') }}"><i class="fa fa-caret-right fa-sm"></i> Tesis</a></li>
+                        <li><a href="{{ route('tramites') }}"><i class="fa fa-caret-right fa-sm"></i> Trámites
+                                presenciales</a></li>
                     </ul>
                 </div>
             </div>
@@ -159,48 +161,64 @@
                                 hora para sustentación de Tesis, en un plazo no mayor a 5 días hábiles.</li>
                         </ul>
                     </li>
-                    <li>Solicitar registro de TI en repositorio institucional:
+                    <li> Solicitar Resolución Directoral (RD) de aprobación de sustentación
                         <ul>
-                            <li>Hacer el pago de S/50 soles por derecho de registro de TI en repositorio institucional en
+						<li>Solicitar Resolución Directoral (RD) de aprobación de sustentación</li>
+                            <li>Hacer el pago de S/50 soles por derecho de RD de aprobación de sustentación de Tesis en las oficinas de Caja Cusco.</li>
+                            <li>Llenar el formulario de <a
+                                    href="https://docs.google.com/forms/d/e/1FAIpQLSc8k02uEAuRt9OdrGpj1Xe6OIBdXXCZ2j7pNToBxhdktq_smQ/viewform"
+                                    target="_blank" class="text-primary">Resolución de aprobación de Sustentación de Tesis</a>
+                            </li>
+                            <li> Acta de sustentación</li>
+                            <li>Informe de apto</li>
+                            <li>Comprobante de pago</li>
+                        </ul>
+                    </li>
+
+                    </li>
+                    <li>Solicitar registro de Tesis en repositorio institucional:
+                        <ul>
+                            <li>Hacer el pago de S/50 soles por derecho de registro de Tesis en repositorio institucional en
                                 las oficinas de Caja Cusco.</li>
                             <li>Descargar, completar y firmar la <a href="{{ asset('pdf/Autorizacion-Puklla.docx') }}"
                                     target="_blank" class="text-primary"> AUTORIZACIÓN DE REGISTRO EN
                                     REPOSITORIO.</a></li>
-                            <li>Descargar, completar y firmar la <a href="{{ asset('pdf/Declaración-jurada-de-autenticidad.docx') }}"
-                                    target="_blank" class="text-primary"> Declaración jurada de autenticidad</a></li>
-                            <li>Llenar <a href="https://docs.google.com/forms/d/e/1FAIpQLScT8tet1JGXD9XT8psVS5XR15L4gdwZsVwGktL5Bbl4eSoRjQ/viewform"
+                            <li>Descargar, completar y firmar la <a
+                                    href="{{ asset('pdf/Declaración-jurada-de-autenticidad.docx') }}" target="_blank"
+                                    class="text-primary"> Declaración jurada de autenticidad</a></li>
+                            <li>Llenar <a
+                                    href="https://docs.google.com/forms/d/e/1FAIpQLScT8tet1JGXD9XT8psVS5XR15L4gdwZsVwGktL5Bbl4eSoRjQ/viewform"
                                     target="_blank" class="text-primary">FORMULARIO DE REGISTRO EN REPOSITORIO.</a> </li>
                             <li>Adjuntar:
                                 <ul>
-                                    <li>Enlace a la versión final del TI en formato PDF</li>
+                                    <li>Enlace a la versión final del Tesis en formato PDF</li>
                                     <li>Formato de autorización de depósito en repositorio en formato PDF</li>
                                     <li>Declaración Jurada de autenticidad en formato PDF</li>
                                     <li>Comprobante de pago por derecho de registro en repositorio institucional</li>
                                 </ul>
                             </li>
-                            <li>Si es que el TI no tiene ninguna observación, recibirás en tu correo institucional el URL de
-                                registro del TI en el repositorio institucional</li>
+                            <li>Si es que el Tesis no tiene ninguna observación, recibirás en tu correo institucional el URL
+                                de
+                                registro del Tesis en el repositorio institucional</li>
                         </ul>
                     </li>
-                    <li>Solicitar emisión de diploma de grado de bachiller previo pago de s/400.00 en las oficinas de <span
-                            class="text-danger font-weight-bold">Caja Cusco:</span>
+                    <li>Solicitar emisión de diploma de grado de Licenciado previo pago de s/400.00 en las oficinas de <span
+                            class="text-danger font-weight-bold">Caja
+                            Cusco:</span>
                         <ul>
                             <li>Este trámite solo se realiza de manera presencial en la oficina de secretaría de la EESP
                                 Pukllasunchis.</li>
                         </ul>
                     </li>
-                    <li>Solicitar inscripción de grado de bachiller en SUNEDU previo pago de s/200.00 en las oficinas de
-                        <span class="text-danger font-weight-bold">Caja Cusco:</span>:
+                    <li>Solicitar inscripción de grado de Licenciado en SUNEDU previo pago de s/200.00 en las oficinas de
+                        <span class="text-danger font-weight-bold">Caja Cusco:</span>
                         <ul>
                             <li>Este trámite solo se realiza de manera presencial en la oficina de secretaría de la EESP
                                 Pukllasunchis</li>
                         </ul>
                     </li>
                 </ul>
-                <p class="generic-blockquote mt-4">
-                    <strong>Nota:</strong><br>
-                    Los pagos se realizan por cualquier plataforma disponible de Caja Cusco al mismo número de cuenta.
-                </p><br>
+               
                 <h3 class="linea-debajo">Documentos para el proceso de obtención del Título de Licenciado </h3>
                 <div class="row justify-content-center align-items-center fichas mt-4">
                     <div class="col-lg-12 mb-4">
@@ -282,28 +300,27 @@
                         </div>
                     </div>
                 </div><br>
-                
+
                 <div class="row mb-3 mt-4">
                     <div class="col-lg-12">
                         <h3>Pagos para la Obtención del Título de Licenciado </h3>
-                <p>La EESPP Pukllasunchis ha establecido el siguiente medio de pago: </p>
+                        <p>La EESPP Pukllasunchis ha establecido el siguiente medio de pago: </p>
                         <p>
-                            Los pagos ordinarios <strong>SOLO SE PUEDEN PAGAR EN VENTANILLAS</strong>  de cualquier agencia a nivel nacional de CAJA CUSCO. <a class="text-primary" target="_blank" href="../../../../public/pdf/Conceptos-ordinarios-caja-cusco.pdf">Ver PDF para pagos<small><i class="fa fa-eye"></i></small></a>
+                            Los pagos ordinarios <strong>SOLO SE PUEDEN PAGAR EN VENTANILLAS</strong> de cualquier agencia a
+                            nivel nacional de CAJA CUSCO. <a class="text-primary" target="_blank"
+                                href="../../../../public/pdf/Conceptos-ordinarios-caja-cusco.pdf">Ver PDF para
+                                pagos<small><i class="fa fa-eye"></i></small></a>
                         </p>
                     </div>
                 </div>
                 <p class="generic-blockquote">
                     <strong>OJO:</strong><br>
-                    <p class="generic-blockquote">
-                    <strong>OJO:</strong><br>
 					- Cliente debe indicar <span class="text-danger font-weight-bold">PAGO ORDINARIO</span> de la
                                 <span class="text-danger font-weight-bold">ASOCIACIÓN PUKLLASUNCHIS - EESPP</span><br>
-					- Cliente debe indicar el concepto a pagar (ejemplo: Examen de admisión, Constancia de
-                                Matrpicula, Traslado, etc.)<br>
+					- Cliente debe indicar el concepto a pagar (ejemplo: Aprobación de PTI, Cambio de tema, cambio de asesor, disolucion de grupo, extensión de plazo.<br>
 					- El representante del servicio realizará la búsqueda y le indicará el monto del concepto ordinario para la validación del cliente.<br> 
 					- Finalmente el Cliente deberá dictar el código (DNI), el nombre y apellidos completos del
                                 alumno.
-                </p>
                 </p>
             </div>
         </div>

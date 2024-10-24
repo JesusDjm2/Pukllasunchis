@@ -122,7 +122,7 @@
                                     Investigación y una carta modelo de Aceptación de Trabajo de Investigación. </li>                                
                             </ul>
                         </ul>
-                        <p class="text-primary">Nota : ¿Para qué sirve? La Carta de Aceptación emitida por la institución les ayudará a completar su expediente para obtener el grado de bachiller.</p>
+                       
                     </li>
                     <li>Solicitar revisión de originalidad (Turnitin):
                         <ul>
@@ -139,6 +139,7 @@
                             </li>
                             <li>Como resultado de este trámite, recibirás en tu correo institucional el Reporte de
                                 originalidad (Turnitin), en un plazo no mayor a 10 días hábiles.</li>
+							<small style="color: #000; font-style: italic;">Nota: el porcentaje máximo para aprobar el reporte de originalidad debe ser 20%, de lo contrario, debe corregir el documento y solicitar nuevamente la revisión. Con el pago que usted realiza puede hacer 3 revisiones de originalidad en un plazo no mayor a 20 días.</small>
                         </ul>
                     </li>
                     <li>Solicitar la revisión del TI:
@@ -235,7 +236,7 @@
                         </ul>
                     </li>
                     <li>Solicitar inscripción de grado de bachiller en SUNEDU previo pago de s/200.00 en las oficinas de
-                        <span class="text-danger font-weight-bold">Caja Cusco:</span>:
+                        <span class="text-danger font-weight-bold">Caja Cusco:</span>
                         <ul>
                             <li>Este trámite solo se realiza de manera presencial en la oficina de secretaría de la EESP
                                 Pukllasunchis</li>
@@ -346,14 +347,12 @@
 
                 <p class="generic-blockquote">
                     <strong>OJO:</strong><br>
-                    - Cliente debe indicar <span class="text-danger font-weight-bold">PAGO ORDINARIO</span> de la
-                    <span class="text-danger font-weight-bold">ASOCIACIÓN PUKLLASUNCHIS - EESPP</span><br>
-                    - Cliente debe indicar el concepto a pagar (ejemplo: Examen de admisión, Constancia de
-                    Matrpicula, Traslado, etc.)<br>
-                    - El representante del servicio realizará la búsqueda y le indicará el monto del concepto ordinario para
-                    la validación del cliente.<br>
-                    - Finalmente el Cliente deberá dictar el código (DNI), el nombre y apellidos completos del
-                    alumno.
+					- Cliente debe indicar <span class="text-danger font-weight-bold">PAGO ORDINARIO</span> de la
+                                <span class="text-danger font-weight-bold">ASOCIACIÓN PUKLLASUNCHIS - EESPP</span><br>
+					- Cliente debe indicar el concepto a pagar (ejemplo: Aprobación de PTI, Cambio de tema, cambio de asesor, disolucion de grupo, extensión de plazo.<br>
+					- El representante del servicio realizará la búsqueda y le indicará el monto del concepto ordinario para la validación del cliente.<br> 
+					- Finalmente el Cliente deberá dictar el código (DNI), el nombre y apellidos completos del
+                                alumno.
                 </p>
             </div>
         </div>

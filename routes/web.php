@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminController;
 /* use App\Http\Controllers\Auth\RegisterController; */
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\CalificacionController;
 use App\Http\Controllers\EnlacesController;
 use Illuminate\Support\Facades\Route;
 
@@ -67,6 +68,8 @@ Route::get('/clear-cache', function () {
     $exitCode = Artisan::call('view:clear');    
     return 'DONE';
 });
+
+
 
 
 

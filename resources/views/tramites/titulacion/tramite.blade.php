@@ -293,16 +293,11 @@
                 <p>
                     Como resultado de este trámite obtendrás el Diploma de Bachiller.
                 </p>
-                <p class="generic-blockquote mt-4">
-                    <strong>Nota:</strong><br>
-                    Los pagos se realizan por cualquier plataforma disponible de Caja Cusco al mismo número de cuenta.
-                </p><br>
                 <h3 class="mt-4">Pagos para la realización de los Trámites Presenciales </h3>
                 <p>SOLO SE PUEDEN PAGAR EN VENTANILLAS de cualquier agencia a nivel nacional.</p>
                 <ul class="listasDecimal">
                     <li>Cliente debe indicar PAGO ORDINARIO de la ASOCIACION PUKLLASUNCHIS – EESPP</li>
-                    <li>Cliente debe indicar el concepto a pagar ejemplo: Examen de Admisión, Constancia de Matrícula,
-                        Traslado etc.</li>
+                    <li>Cliente debe indicar el concepto a pagar ejemplo: Aprobación de PTI, Cambio de tema, cambio de asesor, disolucion de grupo, extensión de plazo.</li>
                     <li>El representante del servicio realizará la búsqueda y le indicará el monto del concepto ordinario
                         para la validación del cliente</li>
                     <li>Finalmente el Cliente deberá dictar el código(DNI), el nombre y apellidos completos del alumno.</li>
@@ -310,14 +305,7 @@
                 <p>
                     Estos pagos ordinarios SOLO SE PUEDEN PAGAR EN VENTANILLAS de cualquier agencia a nivel nacional.
                 </p>
-                <p class="generic-blockquote">
-                    <strong>OJO:</strong><br>
-                    El estudiante tiene la OBLIGACIÓN de enviar, adjunto a la Ficha de Inscripción, una foto del comprobante
-                    de depósito (voucher) entregado por el banco, con los siguientes datos escritos con letra clara: <br>
-                    - Nombre y apellidos completos<br>
-                    - Número de DNI<br>
-                    - Programa de formación al que postula (Inicial / Primaria EIB / Profesionalización / 2da Especialidad)
-                </p>
+                
             </div>
         </div>
     </div>
