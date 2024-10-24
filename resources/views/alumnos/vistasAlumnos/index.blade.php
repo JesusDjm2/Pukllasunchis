@@ -10,11 +10,11 @@
                         Notificar que he terminado con mi registro. <i class="fa fa-smile"></i>
                     </button>
                 @endif
-                {{-- <span>
+                 <span>
                     <a href="{{ route('alumnos.edit', ['alumno' => $alumno->id]) }}" class="btn btn-sm btn-primary">Actualizar
                         Matricula
                     </a>
-                </span> --}}
+                </span>
             @endif
         </div>
 
