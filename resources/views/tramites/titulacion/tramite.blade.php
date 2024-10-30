@@ -132,24 +132,24 @@
                                         <li>Constancia de primera matrícula. → s/50.00</li>
                                         <li>Armar expediente de graduación. → s/500.00
                                             <ul class="listasCuerpo">
-                                                <li>FUT debidamente llenado. Puedes solicitarlo en la oficina secretaría o
-                                                    descargarlo de la
+                                                <li>FUT debidamente llenado. Puedes solicitarlo en la oficina secretaría o  descargarlo de la
                                                     página web. <small><a href="{{ asset('pdf/fut.docx') }}"
                                                             class="text-primary">Descargar
                                                             <i class="fa fa-arrow-down"></i></a></small></li>
                                                 <li>Una fotocopia de DNI ampliado y legalizado.</li>
-                                                <li>Cuatro (4) fotos tamaño pasaporte en fondo blanco y con terno.</li>
+                                                <li>Cuatro (4) fotos tamaño pasaporte en fondo blanco y con terno en papel mate.</li>
                                                 <li>Carta de aceptación de la I.E. donde se realiza la investigación,
                                                     original y una copia.</li>
                                                 <li>Constancia de no deudor original y una copia.</li>
                                                 <li>Constancia de egresado original y una copia.</li>
 
-                                                <li>Una copia de Certificado de Estudios Superiores.
+                                                <li>Certificado original de Estudios Superiores.
                                                     <ul>
                                                         <li>Para estudiantes provenientes de Institutos (IESP): Certificado
                                                             de Estudios
                                                             original, visado por la DREC.
                                                         </li>
+														<li>Certificado de Estudios de Universidad. Legalizado por notaria o Fedatado por la misma Universidad.</li>
                                                     </ul>
                                                 </li>
                                                 <li>RD de Aprobación de PTI y asignación de asesor, original y una copia.

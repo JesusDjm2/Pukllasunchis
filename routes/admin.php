@@ -56,6 +56,11 @@ Route::get('/ver-mis-alumnos/{docente}', [DocenteCOntroller::class, 'alumnos'])-
 //Periodos
 Route::post('/publicar-periodo-uno', [CalificacionController::class, 'publicarPeriodoUno'])->name('publicar.periodo.uno');
 Route::post('/eliminarPeriodoUno', [CalificacionController::class, 'eliminarPeriodoUno'])->name('eliminarPeriodoUno');
+//Exportar CSV
+/* Route::post('/calificaciones/exportar/{docente}', [CalificacionController::class, 'exportarCSV'])->name('calificaciones.exportar'); */
+Route::get('/exportar-csv/{docenteId}/{cursoId}', [CalificacionController::class, 'exportarCSV'])->name('calificaciones.exportar');
+
+
 
 //Asignar competencias a calificar
 Route::get('/curso/{cursoId}/competencias', [CalificacionController::class, 'gestionarCompetencias'])

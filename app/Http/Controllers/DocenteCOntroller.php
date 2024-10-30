@@ -18,7 +18,8 @@ class DocenteCOntroller extends Controller
     public function index()
     {
         $docentes = Docente::all();
-        return view('docentes.index', compact('docentes'));
+        $totalDocentes = $docentes->count(); // Contar el número total de docentes
+        return view('docentes.index', compact('docentes', 'totalDocentes'));
     }
     public function vistaDocente($docenteId)
     {

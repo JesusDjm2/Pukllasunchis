@@ -15,8 +15,8 @@
         }
     </style>
     <div class="container-fluid bg-white">
-        <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3 pb-3">
-            <h4 class="font-weight-bold text-primary">Lista de Docentes:</h4>
+        <div class="d-sm-flex align-items-center justify-content-between mb-2 pt-3 pb-1">
+            <h4 class="font-weight-bold text-primary">Lista de Docentes: <small>{{ $docentes->count() }} docentes registrados</small></h4>
             <a href="{{ route('registerAdmin') }}"
                 class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm float-right">
                 Crear nuevo Docente <i class="fa fa-plus fa-sm"></i>
@@ -122,36 +122,6 @@
                                                         @endif
 
                                                         <ul>
-                                                            {{-- @if ($curso->calificaciones->count() > 0)
-                                                                <form
-                                                                    action="{{ route('competencias.calificar', ['docente' => $docente->id, 'curso' => $curso->id]) }}"
-                                                                    method="POST">
-                                                                    @csrf
-                                                                    <input type="hidden" name="docente_id"
-                                                                        value="{{ $docente->id }}">
-                                                                    <input type="hidden" name="curso_id"
-                                                                        value="{{ $curso->id }}">
-                                                                    @if ($curso->competenciasSeleccionadas->isNotEmpty())
-                                                                        <ul style="dispaly:none">
-                                                                            @foreach ($curso->competenciasSeleccionadas as $competencia)
-                                                                                <li>{{ $competencia->nombre }}</li>
-                                                                                <input type="hidden" name="competencias[]"
-                                                                                    value="{{ $competencia->id }}">
-                                                                            @endforeach
-
-                                                                        </ul>
-                                                                    @endif
-                                                                    <li>
-                                                                        <button type="submit" class="text-primary"
-                                                                            id="{{ $curso->id }}"
-                                                                            style="background: none; border: none; font-size:14px; margin-left: -6px">
-                                                                            Ver calificaciones
-                                                                        </button>
-                                                                    </li>
-                                                                </form>
-                                                            @else
-                                                                <small class="text-muted">Sin calificaciones</small>
-                                                            @endif --}}
 
                                                             @if ($curso->calificaciones->count() > 0)
                                                                 <form
@@ -190,19 +160,12 @@
                                                                     </li>
                                                                 </form>
                                                             @else
+                                                            <li>
                                                                 <small class="text-muted">Sin calificaciones</small>
+                                                            </li>                                                                
                                                             @endif
                                                         </ul>
-                                                        {{-- <ul>
-                                                            <li>
-                                                                @if ($curso->calificaciones->count() > 0)
-                                                                    <a href="" class="text-primary"><small> Ver
-                                                                            Calificaciones</small></a>
-                                                                @else
-                                                                    <small class="text-muted">Sin calificaciones</small>
-                                                                @endif
-                                                            </li>
-                                                        </ul> --}}
+                                                        
                                                         <ul>
                                                             <li>
                                                                 <form

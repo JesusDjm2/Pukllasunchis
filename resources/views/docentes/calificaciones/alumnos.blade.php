@@ -56,9 +56,18 @@
             <h4 class="font-weight-bold text-primary">{{ $curso->nombre }}
                 <small class="text-secondary">({{ $curso->ciclo->programa->nombre }} - {{ $curso->ciclo->nombre }})</small>
             </h4>
+            {{-- <form action="{{ route('calificaciones.exportar', ['docenteId' => $docente->id, 'cursoId' => $curso->id]) }}"
+                method="GET">
+                @csrf
+                @foreach ($competenciasSeleccionadas as $competencia)
+                    <input type="hidden" name="competencias[]" value="{{ $competencia->id }}">
+                @endforeach
+                <div class="text-center"><button type="submit" class="btn btn-primary btn-sm mb-2">Exportar CSV <i
+                            class="fa fa-file-csv"></i></button></div>
+            </form> --}}
             <a href="{{ route('calificar', $docente->id) }}"
                 class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm float-right mb-3">
-                Volver
+                <i class="fa fa-arrow-left fa-sm"></i> Volver
             </a>
         </div>
         <div class="col-lg-12">
@@ -207,8 +216,8 @@
                             </tbody>
                         </table>
                     </div>
-
                 </form>
+
             </div>
         </div>
     </div>
@@ -246,7 +255,7 @@
             document.getElementById("competenciaModal").style.display = "none";
         }
     </script>
-    
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const competenciaSelects = document.querySelectorAll('.select-competencia');

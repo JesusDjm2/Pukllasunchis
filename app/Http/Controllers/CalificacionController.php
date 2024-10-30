@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\CalificacionesExport;
 use App\Models\Alumno;
 use App\Models\Calificacion;
 use App\Models\Competencia;
@@ -9,6 +10,8 @@ use App\Models\Curso;
 use App\Models\Docente;
 use App\Models\PeriodoUno;
 use Illuminate\Http\Request;
+/* use Maatwebsite\Excel\Excel; */
+use Maatwebsite\Excel\Facades\Excel;
 
 class CalificacionController extends Controller
 {
@@ -76,7 +79,6 @@ class CalificacionController extends Controller
         }
         return view('docentes.calificaciones.alumnos', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos'));
     }
-
     public function borrarCalificaciones(Request $request)
     {
         $cursoId = $request->input('curso_id');
@@ -101,7 +103,6 @@ class CalificacionController extends Controller
         return view('admin.curso.calificaciones', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos'))
             ->with('success', 'Las calificaciones han sido eliminadas para los alumnos seleccionados.');
     }
-
     public function guardarCalificacionesEnBloque(Request $request)
     {
         $request->validate([
@@ -131,12 +132,18 @@ class CalificacionController extends Controller
                     'curso_id' => $cursoId,
                 ],
                 [
-                    'valoracion_1' => $data['valoracion_1'],
+                    /* 'valoracion_1' => $data['valoracion_1'],
                     'valoracion_2' => $data['valoracion_2'],
                     'valoracion_3' => $data['valoracion_3'],
                     'valoracion_curso' => $data['valoracion_curso'],
                     'calificacion_curso' => $data['calificacion_curso'],
-                    'calificacion_sistema' => $data['calificacion_sistema'],
+                    'calificacion_sistema' => $data['calificacion_sistema'], */
+                    'valoracion_1' => $data['valoracion_1'] ?? null,
+                    'valoracion_2' => $data['valoracion_2'] ?? null,
+                    'valoracion_3' => $data['valoracion_3'] ?? null,
+                    'valoracion_curso' => $data['valoracion_curso'] ?? null,
+                    'calificacion_curso' => $data['calificacion_curso'] ?? null,
+                    'calificacion_sistema' => $data['calificacion_sistema'] ?? null,
                 ]
             );
         }
@@ -198,7 +205,7 @@ class CalificacionController extends Controller
         // Redireccionamos con un mensaje de éxito
         return redirect()->back()->with('success', 'Todas las calificaciones han sido guardadas correctamente.');
     } */
-    public function publicarPeriodoUno(Request $request) 
+    public function publicarPeriodoUno(Request $request)
     {
         $curso = Curso::findOrFail($request->curso_id);
         $docente = Docente::findOrFail($request->docente_id);
@@ -263,5 +270,26 @@ class CalificacionController extends Controller
             'competenciasSeleccionadas' => $competenciasSeleccionadas,
             'alumnos' => $alumnos,
         ])->with('success', 'Periodo 1 eliminado correctamente.');
+    }
+
+
+    /* public function exportarCSV($docenteId, $cursoId, Request $request)
+    {
+        $competenciasSeleccionadas = $request->input('competencias');
+        if (is_null($competenciasSeleccionadas) || !is_array($competenciasSeleccionadas)) {
+            return redirect()->back()->withErrors(['message' => 'Por favor, selecciona al menos una competencia.']);
+        }
+        $competenciasSeleccionadas = Competencia::whereIn('id', $competenciasSeleccionadas)->get();
+        return Excel::download(new CalificacionesExport($docenteId, $cursoId, $competenciasSeleccionadas), 'calificaciones.xlsx');
+    } */
+    public function exportarCSV($docenteId, $cursoId, Request $request)
+    {
+        // Continuar con la lógica después de la verificación
+        $competenciasSeleccionadas = $request->input('competencias');
+        if (is_null($competenciasSeleccionadas) || !is_array($competenciasSeleccionadas)) {
+            return redirect()->back()->withErrors(['message' => 'Por favor, selecciona al menos una competencia.']);
+        }
+        $competenciasSeleccionadas = Competencia::whereIn('id', $competenciasSeleccionadas)->get();
+        return Excel::download(new CalificacionesExport($docenteId, $cursoId, $competenciasSeleccionadas), 'calificaciones.xlsx');
     }
 }

@@ -8,6 +8,16 @@ use Illuminate\Database\Eloquent\Model;
 class Docente extends Model
 {
     use HasFactory;
+    protected $fillable = [
+        'nombre',
+        'foto',
+        'dni',
+        'email',
+        'telefono',
+        'descripcion',
+        'blog',
+        'user_id',
+    ];
     public function user()
     {
         return $this->belongsTo(User::class);
