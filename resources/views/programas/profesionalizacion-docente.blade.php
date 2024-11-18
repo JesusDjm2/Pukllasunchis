@@ -145,11 +145,53 @@
                         requisitos
                         para la obtención del grado de bachiller mediante un PPD deben estar previamente registrados.
                     </p>
-                    <ul class="listasCuerpo">
-                        <li>Por la SUNEDU (para grados y títulos otorgados por universidades o instituciones con rango
-                            universitario).</li>
-                        <li>En la DRE correspondiente (para los títulos de profesor).</li>
-                    </ul>
+                   
+                    <div class="accordion mt-4" id="accordionExample">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingOne">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                    Por la SUNEDU (para grados y títulos otorgados por universidades o instituciones con rango universitario).
+                                </button>
+                            </h2>
+                            <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne"
+                                data-bs-parent="#accordionExample">
+                                <div class="accordion-body">
+                                    <ul class="listasCuerpo">
+                                        <li>Copia del grado o título fedateada.</li>
+                                        <li>Constancia del Grado de Bachiller o título profesional que esté debidamente registrado en SUNEDU.</li>
+                                        <li>Certificados originales de estudios superiores emitidos por su UNIVERSIDAD.</li>
+                                        <li>Constancia de trabajo o un documento que acredite labor como docente en ejercicio o la realización de alguna actividad pedagógica.</li>
+                                        <li>Copia de DNI ampliado.</li>
+                                        <li>2 fotos tamaño pasaporte.</li>
+                                        <li>Pago por derecho de inscripción.</li>
+                                    </ul>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingTwo">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                    En la DRE correspondiente (para los títulos de profesor).
+                                </button>
+                            </h2>
+                            <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo"
+                                data-bs-parent="#accordionExample">
+                                <div class="accordion-body">
+                                    <ul class="listasCuerpo">
+                                        <li>Copia fedateada del Título Pedagógico por la Dirección Regional de Educación (DRE), con su copia respectiva de la Resolución Directoral de Inscripción en su DRE.</li>
+                                        <li>Certificado de estudios superiores original.</li>
+                                        <li>Pago por derecho de inscripción.</li>
+                                        <li>Copia de DNI ampliado.</li>
+                                        <li>2 fotos tamaño pasaporte.</li>
+                                    </ul>                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <br>
                     <p>
                         Al respecto, se precisa que el literal a) del numeral 15 2 del artículo 15 de la Ley Nº 30512 no
@@ -323,4 +365,7 @@
                 </div>
             </div>
         </div>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous">
+        </script>
     @endsection

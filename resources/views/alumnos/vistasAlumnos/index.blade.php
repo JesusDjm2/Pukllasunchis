@@ -4,7 +4,7 @@
         <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3 pb-3"
             style="border-bottom: 1px dashed #80808078">
             <h3 class="mb-2 text-primary font-weight-bold">Ficha Técnica: </h3>
-            @if (auth()->user()->alumno)
+            {{-- @if (auth()->user()->alumno)
                 @if (!Session::has('mostrar_contenido'))
                     <button type="button" class="btn btn-info btn-sm mb-2" id="mostrar-contenido">
                         Notificar que he terminado con mi registro. <i class="fa fa-smile"></i>
@@ -15,7 +15,7 @@
                         Matricula
                     </a>
                 </span>
-            @endif
+            @endif --}}
         </div>
 
         <div class="row bg-white" id="contenido-alumno">

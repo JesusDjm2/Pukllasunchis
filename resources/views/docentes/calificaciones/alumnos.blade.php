@@ -56,7 +56,7 @@
             <h4 class="font-weight-bold text-primary">{{ $curso->nombre }}
                 <small class="text-secondary">({{ $curso->ciclo->programa->nombre }} - {{ $curso->ciclo->nombre }})</small>
             </h4>
-            {{-- <form action="{{ route('calificaciones.exportar', ['docenteId' => $docente->id, 'cursoId' => $curso->id]) }}"
+            <form action="{{ route('calificaciones.exportar', ['docenteId' => $docente->id, 'cursoId' => $curso->id]) }}"
                 method="GET">
                 @csrf
                 @foreach ($competenciasSeleccionadas as $competencia)
@@ -64,7 +64,7 @@
                 @endforeach
                 <div class="text-center"><button type="submit" class="btn btn-primary btn-sm mb-2">Exportar CSV <i
                             class="fa fa-file-csv"></i></button></div>
-            </form> --}}
+            </form>
             <a href="{{ route('calificar', $docente->id) }}"
                 class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm float-right mb-3">
                 <i class="fa fa-arrow-left fa-sm"></i> Volver
@@ -141,6 +141,7 @@
                                     <th class="align-middle sortable">Calificación del Curso</th>
                                     <th class="align-middle sortable">Calificación para el Sistema</th>
                                 </tr>
+
                             </thead>
                             <tbody>
                                 @foreach ($alumnos as $index => $alumno)
@@ -196,6 +197,16 @@
                                                 name="alumnos[{{ $alumno->id }}][valoracion_curso]"
                                                 value="{{ $calificacion ? $calificacion->valoracion_curso : '' }}"
                                                 readonly>
+                                            @if ($alumno->periodos->where('curso_id', $curso->id)->isNotEmpty())
+                                                <p class="mt-1 text-primary mb-0" style="font-size: 11px">Periodo 1:
+                                                    {{ $alumno->periodos->where('curso_id', $curso->id)->first()->valoracion_curso ?? '-' }}
+                                                </p>
+                                            @endif
+                                            @if ($alumno->periododos->where('curso_id', $curso->id)->isNotEmpty())
+                                                <p class="mt-1 text-info mb-0" style="font-size: 11px">Periodo 2:
+                                                    {{ $alumno->periododos->where('curso_id', $curso->id)->first()->valoracion_curso ?? '-' }}
+                                                </p>
+                                            @endif
                                         </td>
                                         <td>
                                             <input type="text"
@@ -203,6 +214,17 @@
                                                 name="alumnos[{{ $alumno->id }}][calificacion_curso]"
                                                 value="{{ $calificacion ? $calificacion->calificacion_curso : '' }}"
                                                 readonly>
+                                            @if ($alumno->periodos->where('curso_id', $curso->id)->isNotEmpty())
+                                                <p class="mt-1 text-primary mb-0" style="font-size: 11px">Periodo 1:
+                                                    {{ $alumno->periodos->where('curso_id', $curso->id)->first()->calificacion_curso ?? '-' }}
+                                                </p>
+                                            @endif
+
+                                            @if ($alumno->periododos->where('curso_id', $curso->id)->isNotEmpty())
+                                                <p class="mt-1 text-info mb-0" style="font-size: 11px">Periodo 2:
+                                                    {{ $alumno->periododos->where('curso_id', $curso->id)->first()->calificacion_curso ?? '-' }}
+                                                </p>
+                                            @endif
                                         </td>
                                         <td>
                                             <input type="text"
@@ -210,6 +232,17 @@
                                                 name="alumnos[{{ $alumno->id }}][calificacion_sistema]"
                                                 value="{{ $calificacion ? $calificacion->calificacion_sistema : '' }}"
                                                 readonly>
+                                            @if ($alumno->periodos->where('curso_id', $curso->id)->isNotEmpty())
+                                                <p class="mt-1 text-primary mb-0" style="font-size: 11px">Periodo 1:
+                                                    {{ $alumno->periodos->where('curso_id', $curso->id)->first()->calificacion_sistema ?? '-' }}
+                                                </p>
+                                            @endif
+
+                                            @if ($alumno->periododos->where('curso_id', $curso->id)->isNotEmpty())
+                                                <p class="mt-1 text-info mb-0" style="font-size: 11px">Periodo 2:
+                                                    {{ $alumno->periododos->where('curso_id', $curso->id)->first()->calificacion_sistema ?? '-' }}
+                                                </p>
+                                            @endif
                                         </td>
                                     </tr>
                                 @endforeach
@@ -217,7 +250,6 @@
                         </table>
                     </div>
                 </form>
-
             </div>
         </div>
     </div>

@@ -4,7 +4,7 @@
         <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3"
             style="border-bottom: 1px dashed #80808078">
             <h4 class="font-weight-bold text-primary">Calificar Cursos:</strong></h4>
-            
+
             <a href="{{ route('vistaDocente', $docente->id) }}"
                 class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm float-right">
                 Volver
@@ -34,9 +34,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @php
-                            $contador = 0;
-                        @endphp
+                        @php $contador = 0; @endphp
                         @foreach ($docente->cursos as $curso)
                             @php
                                 $contador++;
@@ -86,22 +84,26 @@
                                     </form>
                                 </td>
                                 <td>
-                                    <form action="{{ route('competencias.calificar', ['docente' => $docente->id, 'curso' => $curso->id]) }}" method="POST">
+                                    <form
+                                        action="{{ route('competencias.calificar', ['docente' => $docente->id, 'curso' => $curso->id]) }}"
+                                        method="POST">
                                         @csrf
                                         <input type="hidden" name="docente_id" value="{{ $docente->id }}">
-                                        <input type="hidden" name="curso_id" value="{{ $curso->id }}">                                
+                                        <input type="hidden" name="curso_id" value="{{ $curso->id }}">
                                         @if ($curso->competenciasSeleccionadas->isNotEmpty())
                                             <ul>
                                                 @foreach ($curso->competenciasSeleccionadas as $competencia)
                                                     <li>{{ $competencia->nombre }}</li>
-                                                    <input type="hidden" name="competencias[]" value="{{ $competencia->id }}">
+                                                    <input type="hidden" name="competencias[]"
+                                                        value="{{ $competencia->id }}">
                                                 @endforeach
-                                            </ul>                                
-                                            <button type="submit" class="btn btn-primary btn-sm float-right" id="calificar-btn-{{ $curso->id }}">
+                                            </ul>
+                                            <button type="submit" class="btn btn-primary btn-sm float-right"
+                                                id="calificar-btn-{{ $curso->id }}">
                                                 Calificar
                                             </button>
                                         @endif
-                                    </form>                                    
+                                    </form>
                                 </td>
                             </tr>
                         @endforeach

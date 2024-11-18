@@ -11,6 +11,7 @@ use App\Http\Controllers\DocenteCOntroller;
 use App\Http\Controllers\PostulanteController;
 use App\Http\Controllers\ProgramaController;
 use App\Http\Controllers\vistasAlumnosController;
+use App\Models\Calificacion;
 
 Auth::routes();
 
@@ -55,7 +56,17 @@ Route::get('/ver-mis-alumnos/{docente}', [DocenteCOntroller::class, 'alumnos'])-
 
 //Periodos
 Route::post('/publicar-periodo-uno', [CalificacionController::class, 'publicarPeriodoUno'])->name('publicar.periodo.uno');
-Route::post('/eliminarPeriodoUno', [CalificacionController::class, 'eliminarPeriodoUno'])->name('eliminarPeriodoUno');
+
+Route::post('/periodouno/storeBloque', [CalificacionController::class, 'storePeriodoEnBloque'])->name('periodouno.storeBloque');
+Route::delete('/eliminar-periodo-uno', [CalificacionController::class, 'eliminarPeriodoUno'])->name('periodouno.eliminar');
+
+Route::post('/periododos/storeBloque', [CalificacionController::class, 'storePeriodoDos'])->name('storePeriodoDos');
+Route::delete('/eliminar-periodo-dos', [CalificacionController::class, 'eliminarPeriodoDos'])->name('periododos.eliminar');
+
+Route::post('/periodotres/storeBloque', [CalificacionController::class, 'storePeriodoTres'])->name('storePeriodoTres');
+Route::delete('/eliminar-periodo-tres', [CalificacionController::class, 'eliminarPeriodoTres'])->name('periodotres.eliminar');
+
+/* Route::post('/eliminarPeriodoUno', [CalificacionController::class, 'eliminarPeriodoUno'])->name('eliminarPeriodoUno'); */
 //Exportar CSV
 /* Route::post('/calificaciones/exportar/{docente}', [CalificacionController::class, 'exportarCSV'])->name('calificaciones.exportar'); */
 Route::get('/exportar-csv/{docenteId}/{cursoId}', [CalificacionController::class, 'exportarCSV'])->name('calificaciones.exportar');
@@ -89,6 +100,7 @@ Route::post('/guardar-calificaciones', [CalificacionController::class, 'guardarC
 Route::post('/docentes/blog/{id}', [DocenteController::class, 'updateBlog'])->name('docentes.updateBlog');
 
 Route::post('/borrarCalificaciones', [CalificacionController::class, 'borrarCalificaciones'])->name('borrarCalificaciones');
+Route::get('/calificaciones/eliminar-todas', [CalificacionController::class, 'borrarTodasLasCalificaciones'])->name('calificaciones.eliminarTodas');
 
 //Competencias 
 Route::resource('competencias', CompetenciaController::class)->middleware('auth')->names('competencias');

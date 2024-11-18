@@ -199,7 +199,6 @@ class DocenteCOntroller extends Controller
         $docente = Docente::findOrFail($docenteId);
         $competenciasSeleccionadas = Competencia::whereIn('id', $request->input('competencias'))->get();
 
-        // Filtrar alumnos excluyendo aquellos que tengan el rol "inhabilitado"
         $alumnos = $curso->ciclo->alumnos()
             ->whereHas('user', function ($query) {
                 $query->whereDoesntHave('roles', function ($roleQuery) {
@@ -207,6 +206,7 @@ class DocenteCOntroller extends Controller
                 });
             })
             ->orderBy('apellidos')
+            ->with(['periodos', 'periododos', 'periodotres']) 
             ->get();
 
         if (auth()->user()->hasRole('admin')) {

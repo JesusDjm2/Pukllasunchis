@@ -49,8 +49,7 @@
                 <div class="row justify-content-center align-items-center fichas mt-4">
                     <div class="col-lg-4 col-6 text-center">
                         <div class="card">
-                            <a href="{{ asset('pdf/Formato-PTI.docx') }}"
-                                target="_blank">
+                            <a href="{{ asset('pdf/Formato-PTI.docx') }}" target="_blank">
                                 <div style="height: 100px">
                                     <img height="100%" src="{{ asset('img/min/Bachillerato-Pukllasunchis.png') }}"
                                         alt="Formato PTI">
@@ -64,7 +63,8 @@
                         <div class="card">
                             <a href="{{ asset('pdf/Guia-de-investigacion-2.pdf') }}" target="_blank">
                                 <div style="height: 100px">
-                                    <img height="100%" src="{{ asset('img/min/Ficha-de-inscripcion-Pukllasunchis.png') }}" alt="">
+                                    <img height="100%" src="{{ asset('img/min/Ficha-de-inscripcion-Pukllasunchis.png') }}"
+                                        alt="">
                                 </div>
                                 <p class="text-center">Guía de Investigación</p>
                                 <p class="text-center"><i class="fa fa-arrow-circle-right fa-lg"></i></p>
@@ -82,14 +82,15 @@
                                 <p class="text-center"><i class="fa fa-arrow-circle-right fa-lg"></i></p>
                             </a>
                         </div>
-                    </div>                    
+                    </div>
                 </div><br><br>
                 <h3 class="mt-4 scroolOk linea-debajo">Requisitos para la apobación del PTI:</h3>
                 <p>
                     Para solicitar la aprobación del Plan de Trabajo de Investigación debes:
                 </p>
                 <ul class="listasCuerpo">
-                    <li>Hacer el pago correspondiente por derecho de aprobación del PTI y asignación de asesor en las oficinas
+                    <li>Hacer el pago correspondiente por derecho de aprobación del PTI y asignación de asesor en las
+                        oficinas
                         de Caja Cusco.</li>
                     <li>Descargar y completar el Formato del PTI.</li>
                     <li>Llenar <a
@@ -118,7 +119,8 @@
                     <li>Extensión de plazo. (Costo: S/ 50.00)</li>
                 </ul>
 
-                <h2 class="mt-4 scroolOk linea-debajo mt-3" id="investigacion">Documentos para el proceso de aprobación de PTI
+                <h2 class="mt-4 scroolOk linea-debajo mt-3" id="investigacion">Documentos para el proceso de aprobación de
+                    PTI
                 </h2>
 
                 <div class="row justify-content-center align-items-center fichas mt-4">
@@ -187,18 +189,23 @@
                     <div class="col-lg-12">
                         <h3 class="mt-3">Para pagos Ordinarios:</h3>
                         <p>
-                            Los pagos ordinarios <strong>SOLO SE PUEDEN PAGAR EN VENTANILLAS</strong>  de cualquier agencia a nivel nacional de CAJA CUSCO. <a class="text-primary" target="_blank" href="../../../../public/pdf/Conceptos-ordinarios-caja-cusco-3.pdf">Ver PDF para pagos<small><i class="fa fa-eye"></i></small></a>
-                        </p>                        
+                            Los pagos ordinarios <strong>SOLO SE PUEDEN PAGAR EN VENTANILLAS</strong> de cualquier agencia a
+                            nivel nacional de CAJA CUSCO. <a class="text-primary" target="_blank"
+                                href="{{ asset('pdf/PAGOS-ORDINARIOS-CAJA-CUSCO.pdf') }}">Ver PDF para pagos<small><i
+                                        class="fa fa-eye"></i></small></a>
+                        </p>
                     </div>
                 </div>
                 <p class="generic-blockquote">
                     <strong>OJO:</strong><br>
-					- Cliente debe indicar <span class="text-danger font-weight-bold">PAGO ORDINARIO</span> de la
-                                <span class="text-danger font-weight-bold">ASOCIACIÓN PUKLLASUNCHIS - EESPP</span><br>
-					- Cliente debe indicar el concepto a pagar (ejemplo: Aprobación de PTI, Cambio de tema, cambio de asesor, disolucion de grupo, extensión de plazo.<br>
-					- El representante del servicio realizará la búsqueda y le indicará el monto del concepto ordinario para la validación del cliente.<br> 
-					- Finalmente el Cliente deberá dictar el código (DNI), el nombre y apellidos completos del
-                                alumno.
+                    - Cliente debe indicar <span class="text-danger font-weight-bold">PAGO ORDINARIO</span> de la
+                    <span class="text-danger font-weight-bold">ASOCIACIÓN PUKLLASUNCHIS - EESPP</span><br>
+                    - Cliente debe indicar el concepto a pagar (ejemplo: Aprobación de PTI, Cambio de tema, cambio de
+                    asesor, disolucion de grupo, extensión de plazo.<br>
+                    - El representante del servicio realizará la búsqueda y le indicará el monto del concepto ordinario para
+                    la validación del cliente.<br>
+                    - Finalmente el Cliente deberá dictar el código (DNI), el nombre y apellidos completos del
+                    alumno.
                 </p>
             </div>
         </div>

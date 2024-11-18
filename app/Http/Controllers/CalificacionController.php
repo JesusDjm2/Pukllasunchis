@@ -8,9 +8,10 @@ use App\Models\Calificacion;
 use App\Models\Competencia;
 use App\Models\Curso;
 use App\Models\Docente;
+use App\Models\PeriodoDos;
+use App\Models\PeriodoTres;
 use App\Models\PeriodoUno;
 use Illuminate\Http\Request;
-/* use Maatwebsite\Excel\Excel; */
 use Maatwebsite\Excel\Facades\Excel;
 
 class CalificacionController extends Controller
@@ -103,6 +104,12 @@ class CalificacionController extends Controller
         return view('admin.curso.calificaciones', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos'))
             ->with('success', 'Las calificaciones han sido eliminadas para los alumnos seleccionados.');
     }
+    public function borrarTodasLasCalificaciones()
+    {
+        Calificacion::query()->delete();
+
+        return redirect()->back()->with('success', 'Todas las calificaciones han sido eliminadas exitosamente.');
+    }
     public function guardarCalificacionesEnBloque(Request $request)
     {
         $request->validate([
@@ -157,11 +164,8 @@ class CalificacionController extends Controller
         }
 
         $competenciasIds = array_unique($competenciasIds);
-
         $competenciasSeleccionadas = Competencia::whereIn('id', $competenciasIds)->get();
-
         $alumnos = $curso->ciclo->alumnos()->orderBy('apellidos')->get();
-
         return view('docentes.calificaciones.alumnos', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos'));
     }
     /* public function guardarCalificaciones(Request $request)
@@ -248,7 +252,158 @@ class CalificacionController extends Controller
             'alumnos' => $alumnos,
         ])->with('success', 'Periodo 1 publicado correctamente.');
     }
-    public function eliminarPeriodoUno(Request $request)
+
+    public function storePeriodoEnBloque(Request $request)
+    {
+        $alumnos = Alumno::whereHas('user.roles', function ($query) {
+            $query->where('name', '!=', 'inhabilitado');
+        })->get();
+
+        foreach ($alumnos as $alumno) {
+            foreach ($alumno->ciclo->cursos as $curso) {
+                $competencias = $curso->competencias;
+                if ($competencias->count() < 3) {
+                    $comp1 = $competencias->get(0)->nombre ?? null;
+                    $comp2 = $competencias->get(1)->nombre ?? null;
+                    $comp3 = $competencias->get(2)->nombre ?? null;
+                } else {
+                    $competenciasSeleccionadas = $curso->competenciasSeleccionadas;
+                    $comp1 = $competenciasSeleccionadas->get(0)->nombre ?? null;
+                    $comp2 = $competenciasSeleccionadas->get(1)->nombre ?? null;
+                    $comp3 = $competenciasSeleccionadas->get(2)->nombre ?? null;
+                }
+
+                $calificacion = $alumno->calificaciones()->where('curso_id', $curso->id)->first();
+
+                if ($calificacion) {
+                    PeriodoUno::updateOrCreate(
+                        [
+                            'alumno_id' => $alumno->id,
+                            'curso_id' => $curso->id
+                        ],
+                        [
+                            'comp1' => $comp1,
+                            'comp2' => $comp2,
+                            'comp3' => $comp3,
+                            'valoracion_1' => $calificacion->valoracion_1,
+                            'valoracion_2' => $calificacion->valoracion_2,
+                            'valoracion_3' => $calificacion->valoracion_3,
+                            'valoracion_curso' => $calificacion->valoracion_curso,
+                            'calificacion_curso' => $calificacion->calificacion_curso,
+                            'calificacion_sistema' => $calificacion->calificacion_sistema,
+                        ]
+                    );
+                }
+            }
+        }
+        return back()->with('success', 'Periodo 1 publicado correctamente.');
+    }
+    public function eliminarPeriodoUno()
+    {
+        \DB::table('periodouno')->truncate();
+        return back()->with('success', 'Todos los datos de Periodo 1 han sido eliminados correctamente.');
+    }
+    public function storePeriodoDos(Request $request)
+    {
+        $alumnos = Alumno::whereHas('user.roles', function ($query) {
+            $query->where('name', '!=', 'inhabilitado');
+        })->get();
+
+        foreach ($alumnos as $alumno) {
+            foreach ($alumno->ciclo->cursos as $curso) {
+                $competencias = $curso->competencias;
+                if ($competencias->count() < 3) {
+                    $comp1 = $competencias->get(0)->nombre ?? null;
+                    $comp2 = $competencias->get(1)->nombre ?? null;
+                    $comp3 = $competencias->get(2)->nombre ?? null;
+                } else {
+                    $competenciasSeleccionadas = $curso->competenciasSeleccionadas;
+                    $comp1 = $competenciasSeleccionadas->get(0)->nombre ?? null;
+                    $comp2 = $competenciasSeleccionadas->get(1)->nombre ?? null;
+                    $comp3 = $competenciasSeleccionadas->get(2)->nombre ?? null;
+                }
+
+                $calificacion = $alumno->calificaciones()->where('curso_id', $curso->id)->first();
+
+                if ($calificacion) {
+                    PeriodoDos::updateOrCreate(
+                        [
+                            'alumno_id' => $alumno->id,
+                            'curso_id' => $curso->id
+                        ],
+                        [
+                            'comp1' => $comp1,
+                            'comp2' => $comp2,
+                            'comp3' => $comp3,
+                            'valoracion_1' => $calificacion->valoracion_1,
+                            'valoracion_2' => $calificacion->valoracion_2,
+                            'valoracion_3' => $calificacion->valoracion_3,
+                            'valoracion_curso' => $calificacion->valoracion_curso,
+                            'calificacion_curso' => $calificacion->calificacion_curso,
+                            'calificacion_sistema' => $calificacion->calificacion_sistema,
+                        ]
+                    );
+                }
+            }
+        }
+        return back()->with('success', 'Periodo 2 publicado correctamente.');
+    }
+    public function eliminarPeriodoDos()
+    {
+        \DB::table('periodo_dos')->truncate();
+        return back()->with('success', 'Todos los datos de Periodo 2 han sido eliminados correctamente.');
+    }
+    public function storePeriodoTres(Request $request)
+    {
+        $alumnos = Alumno::whereHas('user.roles', function ($query) {
+            $query->where('name', '!=', 'inhabilitado');
+        })->get();
+
+        foreach ($alumnos as $alumno) {
+            foreach ($alumno->ciclo->cursos as $curso) {
+                $competencias = $curso->competencias;
+                if ($competencias->count() < 3) {
+                    $comp1 = $competencias->get(0)->nombre ?? null;
+                    $comp2 = $competencias->get(1)->nombre ?? null;
+                    $comp3 = $competencias->get(2)->nombre ?? null;
+                } else {
+                    $competenciasSeleccionadas = $curso->competenciasSeleccionadas;
+                    $comp1 = $competenciasSeleccionadas->get(0)->nombre ?? null;
+                    $comp2 = $competenciasSeleccionadas->get(1)->nombre ?? null;
+                    $comp3 = $competenciasSeleccionadas->get(2)->nombre ?? null;
+                }
+
+                $calificacion = $alumno->calificaciones()->where('curso_id', $curso->id)->first();
+
+                if ($calificacion) {
+                    PeriodoTres::updateOrCreate(
+                        [
+                            'alumno_id' => $alumno->id,
+                            'curso_id' => $curso->id
+                        ],
+                        [
+                            'comp1' => $comp1,
+                            'comp2' => $comp2,
+                            'comp3' => $comp3,
+                            'valoracion_1' => $calificacion->valoracion_1,
+                            'valoracion_2' => $calificacion->valoracion_2,
+                            'valoracion_3' => $calificacion->valoracion_3,
+                            'valoracion_curso' => $calificacion->valoracion_curso,
+                            'calificacion_curso' => $calificacion->calificacion_curso,
+                            'calificacion_sistema' => $calificacion->calificacion_sistema,
+                        ]
+                    );
+                }
+            }
+        }
+        return back()->with('success', 'Periodo 2 publicado correctamente.');
+    }
+    public function eliminarPeriodoTres()
+    {
+        \DB::table('periodo_tres')->truncate();
+        return back()->with('success', 'Todos los datos de Periodo 2 han sido eliminados correctamente.');
+    }
+    /* public function eliminarPeriodoUno(Request $request)
     {
         $curso = Curso::findOrFail($request->curso_id);
         $docente = Docente::findOrFail($request->docente_id);
@@ -270,18 +425,8 @@ class CalificacionController extends Controller
             'competenciasSeleccionadas' => $competenciasSeleccionadas,
             'alumnos' => $alumnos,
         ])->with('success', 'Periodo 1 eliminado correctamente.');
-    }
-
-
-    /* public function exportarCSV($docenteId, $cursoId, Request $request)
-    {
-        $competenciasSeleccionadas = $request->input('competencias');
-        if (is_null($competenciasSeleccionadas) || !is_array($competenciasSeleccionadas)) {
-            return redirect()->back()->withErrors(['message' => 'Por favor, selecciona al menos una competencia.']);
-        }
-        $competenciasSeleccionadas = Competencia::whereIn('id', $competenciasSeleccionadas)->get();
-        return Excel::download(new CalificacionesExport($docenteId, $cursoId, $competenciasSeleccionadas), 'calificaciones.xlsx');
     } */
+
     public function exportarCSV($docenteId, $cursoId, Request $request)
     {
         // Continuar con la lógica después de la verificación

@@ -14,87 +14,6 @@ use Maatwebsite\Excel\Concerns\WithCustomCsvSettings;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-/* class CalificacionesExport implements FromCollection, WithHeadings, WithCustomCsvSettings
-{
-    protected $docenteId;
-    protected $cursoId;
-    protected $competenciasSeleccionadas;
-
-    public function __construct($docenteId, $cursoId, $competenciasSeleccionadas)
-    {
-        $this->docenteId = $docenteId;
-        $this->cursoId = $cursoId;
-        $this->competenciasSeleccionadas = $competenciasSeleccionadas;
-    }
-
-    public function collection()
-    {
-        // Obtener el curso y los alumnos válidos
-        $curso = Curso::find($this->cursoId);
-        $alumnos = $curso->ciclo->alumnos()
-            ->whereHas('user', function ($query) {
-                $query->whereDoesntHave('roles', function ($roleQuery) {
-                    $roleQuery->where('name', 'inhabilitado');
-                });
-            })
-            ->orderBy('apellidos')
-            ->get();
-
-        $data = [];
-        foreach ($alumnos as $index => $alumno) {
-            // Prepara la fila para cada alumno
-            $row = [
-                $index + 1, // Número
-                "{$alumno->apellidos}, {$alumno->nombres}", // Nombre del alumno
-            ];
-
-            // Iterar sobre las competencias seleccionadas y obtener las valoraciones
-            $calificacion = $alumno->calificaciones()->where('curso_id', $this->cursoId)->first();
-            foreach ($this->competenciasSeleccionadas as $competencia) {
-                // Obtener la valoración correspondiente a cada competencia
-                $row[] = $calificacion ? $calificacion->{"valoracion_" . $competencia->id} : 'N/A';
-            }
-
-            // Agregar las calificaciones del curso
-            $row[] = $calificacion ? $calificacion->valoracion_curso : 'N/A';
-            $row[] = $calificacion ? $calificacion->calificacion_curso : 'N/A';
-            $row[] = $calificacion ? $calificacion->calificacion_sistema : 'N/A';
-
-            $data[] = $row;
-        }
-
-        return collect($data);
-    }
-
-    public function headings(): array
-    {
-        // Encabezados de las columnas
-        $headers = [
-            '#',
-            'Alumno',
-        ];
-
-        // Encabezados para cada competencia seleccionada
-        foreach ($this->competenciasSeleccionadas as $competencia) {
-            $headers[] = $competencia->nombre;
-        }
-
-        // Encabezados para las calificaciones
-        $headers[] = 'Valoración del Curso';
-        $headers[] = 'Calificación del Curso';
-        $headers[] = 'Calificación para el Sistema';
-
-        return $headers;
-    }
-
-    public function getCsvSettings(): array
-    {
-        return [
-            'delimiter' => ';', // Delimitador personalizado
-        ];
-    }
-} */
-
 class CalificacionesExport implements FromCollection, WithHeadings, WithCustomCsvSettings
 {
     protected $docenteId;
@@ -105,12 +24,11 @@ class CalificacionesExport implements FromCollection, WithHeadings, WithCustomCs
     {
         $this->docenteId = $docenteId;
         $this->cursoId = $cursoId;
-        $this->competencias = $competenciasSeleccionadas; // Competencias seleccionadas
+        $this->competencias = $competenciasSeleccionadas; 
     }
 
     public function collection()
     {
-        // Obtener el curso y los alumnos válidos
         $curso = Curso::find($this->cursoId);
         $alumnos = $curso->ciclo->alumnos()
             ->whereHas('user', function ($query) {
@@ -156,7 +74,7 @@ class CalificacionesExport implements FromCollection, WithHeadings, WithCustomCs
         return collect($data);
     }
 
-    public function headings(): array
+    /* public function headings(): array
     {
         $headers = [
             '#',
@@ -174,6 +92,24 @@ class CalificacionesExport implements FromCollection, WithHeadings, WithCustomCs
         $headers[] = 'Calificación para el Sistema';
 
         return $headers;
+    } */
+
+    public function headings(): array
+    {
+        $curso = Curso::find($this->cursoId);
+        $docente = Docente::find($this->docenteId);
+
+        return [
+            // Encabezado adicional con información del curso y docente
+            ["Curso: {$curso->nombre} - Docente: {$docente->nombre}"],
+
+            // Encabezados principales
+            array_merge(
+                ['#', 'Alumno'], // Columnas básicas
+                $this->competencias->pluck('nombre')->toArray(), // Competencias
+                ['Valoración del Curso', 'Calificación del Curso', 'Calificación para el Sistema'] // Calificaciones adicionales
+            ),
+        ];
     }
 
     public function getCsvSettings(): array
@@ -182,4 +118,5 @@ class CalificacionesExport implements FromCollection, WithHeadings, WithCustomCs
             'delimiter' => ';',
         ];
     }
+    
 }
