@@ -16,6 +16,9 @@
                     </a>
                 </span>
             @endif --}}
+            <span>
+                <a class="btn btn-sm btn-info" href="{{ route('ficha-matricula', ['alumno' => $alumno->id]) }}">Ficha de matricula</a>
+            </span>
         </div>
 
         <div class="row bg-white" id="contenido-alumno">
@@ -74,7 +77,8 @@
                                     <td class="font-weight-bold">Cursos del semestre:</td>
                                     <td>
                                         @foreach ($alumno->ciclo->cursos as $curso)
-                                            <li class="d-flex align-items-center justify-content-between curso-item" style="border-bottom: 1px dashed rgba(128, 128, 128, 0.526)">
+                                            <li class="d-flex align-items-center justify-content-between curso-item"
+                                                style="border-bottom: 1px dashed rgba(128, 128, 128, 0.526)">
                                                 <a href="{{ route('curso.show', $curso->id) }}"
                                                     class="mr-2">{{ $curso->nombre }}</a>
                                                 <div class="d-flex align-items-center">

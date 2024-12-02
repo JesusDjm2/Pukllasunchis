@@ -12,7 +12,8 @@ class PostulanteController extends Controller
     public function index()
     {
         $user = auth()->user();
-        return view('bolsa.postulante.index', compact('user'));
+        $alumno = $user->alumno;
+        return view('bolsa.postulante.index', compact('user', 'alumno'));
     }
 
     public function create()

@@ -125,41 +125,24 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-
-
                         <div class="col-lg-6 mb-3">
                             <label for="password">Nueva Contraseña (opcional):</label>
                             <input type="password" name="password" id="password" class="form-control form-control-sm"
                                 placeholder="Nueva contraseña">
 
-                            <!-- Mostrar errores para el campo de contraseña -->
                             @if ($errors->has('password'))
                                 <span class="text-danger">{{ $errors->first('password') }}</span>
                             @endif
                         </div>
-
                         <div class="col-lg-6 mb-3">
                             <label for="password_confirmation">Confirmar Contraseña (opcional):</label>
                             <input type="password" name="password_confirmation" id="password_confirmation"
                                 class="form-control form-control-sm" placeholder="Confirmar contraseña">
 
-                            <!-- Mostrar errores para el campo de confirmación de contraseña -->
                             @if ($errors->has('password_confirmation'))
                                 <span class="text-danger">{{ $errors->first('password_confirmation') }}</span>
                             @endif
                         </div>
-
-
-                        {{-- <div class="form-group">
-                            <label for="password">Nueva Contraseña (opcional):</label>
-                            <input type="password" name="password" id="password" class="form-control" placeholder="Nueva contraseña">
-                        </div>
-            
-                        <div class="form-group">
-                            <label for="password_confirmation">Confirmar Contraseña (opcional):</label>
-                            <input type="password" name="password_confirmation" id="password_confirmation" class="form-control"
-                                placeholder="Confirmar contraseña">
-                        </div> --}}
 
                         <div class="col-lg-12 mb-3">
                             <label for="role" class="form-label">Asignar Rol:</label>

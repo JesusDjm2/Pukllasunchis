@@ -30,129 +30,129 @@
                 </div>
             </a>
             @role('admin')
-            <ul class="navbar-nav bg-gradient-info sidebar sidebar-dark accordion" id="accordionSidebar">
-               
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities"
-                        aria-expanded="true" aria-controls="collapseUtilities">
-                        <i class="fas fa-book"></i>
-                        <span>Programas</span>
-                    </a>
-                    <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities"
-                        data-parent="#accordionSidebar">
-                        <div class="bg-white py-2 collapse-inner rounded">
-                            <h6 class="collapse-header">Gestionar alumnos:</h6>
-                            <a class="collapse-item" href="{{ route('programa.index') }}">Programas</a>
-                            <a class="collapse-item" href="{{ route('ciclo.index') }}">Ciclos</a>
-                            <a class="collapse-item" href="{{ route('curso.index') }}">Cursos</a>
+                <ul class="navbar-nav bg-gradient-info sidebar sidebar-dark accordion" id="accordionSidebar">
+
+                    <li class="nav-item">
+                        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities"
+                            aria-expanded="true" aria-controls="collapseUtilities">
+                            <i class="fas fa-book"></i>
+                            <span>Programas</span>
+                        </a>
+                        <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities"
+                            data-parent="#accordionSidebar">
+                            <div class="bg-white py-2 collapse-inner rounded">
+                                <h6 class="collapse-header">Gestionar alumnos:</h6>
+                                <a class="collapse-item" href="{{ route('programa.index') }}">Programas</a>
+                                <a class="collapse-item" href="{{ route('ciclo.index') }}">Ciclos</a>
+                                <a class="collapse-item" href="{{ route('curso.index') }}">Cursos</a>
+                            </div>
                         </div>
+                    </li>
+                    <hr class="sidebar-divider d-none d-md-block">
+                    <li class="nav-item">
+                        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
+                            aria-expanded="true" aria-controls="collapseTwo">
+                            <i class="fas fa-cog"></i>
+                            <span>Administradores</span>
+                        </a>
+                        <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                            <div class="bg-white py-2 collapse-inner rounded">
+                                <h6 class="collapse-header">Gestionar adminis</h6>
+                                <a class="collapse-item" href="{{ route('admin') }}">Lista de Admins</a>
+                                <a class="collapse-item" href="{{ route('registerAdmin') }}">Registrar Admin</a>
+                            </div>
+                        </div>
+                    </li>
+                    <hr class="sidebar-divider d-none d-md-block">
+                    <li class="nav-item">
+                        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseDocentes"
+                            aria-expanded="true" aria-controls="collapseDocentes">
+                            <i class="fas fa-user-tie"></i>
+                            <span>Docentes</span>
+                        </a>
+                        <div id="collapseDocentes" class="collapse" aria-labelledby="headingDocentes"
+                            data-parent="#accordionSidebar">
+                            <div class="bg-white py-2 collapse-inner rounded">
+                                <h6 class="collapse-header">Gestionar Docentes:</h6>
+                                <a class="collapse-item" href="">Cursos</a>
+                                <a class="collapse-item" href="">Actualizar datos</a>
+                            </div>
+                        </div>
+                    </li>
+                    <hr class="sidebar-divider d-none d-md-block">
+                    <li class="nav-item">
+                        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseAlumnos"
+                            aria-expanded="true" aria-controls="collapseAlumnos">
+                            <i class="fas fa-fw fa-graduation-cap"></i>
+                            <span>Matriculados</span>
+                        </a>
+                        <div id="collapseAlumnos" class="collapse" aria-labelledby="headingAlumnos"
+                            data-parent="#accordionSidebar">
+                            <div class="bg-white py-2 collapse-inner rounded">
+                                <h6 class="collapse-header">Gestionar alumnos:</h6>
+                                <a class="collapse-item" href="{{ route('adminAlumnos') }}">Alumnos</a>
+                                <a class="collapse-item" href="{{ route('vistAlumno') }}">Ingresar nuevo</a>
+                                <a class="collapse-item" href="{{ route('filtro') }}">Filtrar por campos</a>
+                            </div>
+                        </div>
+                    </li>
+                    <!-- Divider -->
+                    <hr class="sidebar-divider d-none d-md-block">
+                    <li class="nav-item">
+                        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#bolsa"
+                            aria-expanded="true" aria-controls="bolsa">
+                            <i class="fas fa-fw fa-pencil-alt"></i>
+                            <span>Bolsa de trabajo</span>
+                        </a>
+                        <div id="bolsa" class="collapse" aria-labelledby="headingAlumnos"
+                            data-parent="#accordionSidebar">
+                            <div class="bg-white py-2 collapse-inner rounded">
+                                <h6 class="collapse-header">Gestionar usuarios:</h6>
+                                <a class="collapse-item" href="{{ route('listaPostulantes') }}">Registrados</a>
+                                <a class="collapse-item" href="{{ route('trabajo.create') }}">Ingresar nuevo</a>
+                            </div>
+                        </div>
+                    </li>
+                    <!-- Divider -->
+                    <hr class="sidebar-divider d-none d-md-block">
+                    <div class="text-center d-none d-md-inline">
+                        <button class="rounded-circle border-0" id="sidebarToggle"></button>
                     </div>
-                </li>
-                <hr class="sidebar-divider d-none d-md-block">
+                </ul>
+            @endrole
+            @role('adminB')
                 <li class="nav-item">
                     <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
                         aria-expanded="true" aria-controls="collapseTwo">
                         <i class="fas fa-cog"></i>
-                        <span>Administradores</span>
+                        <span>Registros</span>
                     </a>
                     <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                         <div class="bg-white py-2 collapse-inner rounded">
                             <h6 class="collapse-header">Gestionar adminis</h6>
-                            <a class="collapse-item" href="{{ route('admin') }}">Lista de Admins</a>
-                            <a class="collapse-item" href="{{ route('registerAdmin') }}">Registrar Admin</a>
+                            <a class="collapse-item" href="{{ route('trabajo.index') }}">Lista de registros</a>
+                            <a class="collapse-item" href="{{ route('trabajo.create') }}">Registrar Nuevo</a>
                         </div>
                     </div>
                 </li>
-                <hr class="sidebar-divider d-none d-md-block">
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseDocentes"
-                        aria-expanded="true" aria-controls="collapseDocentes">
-                        <i class="fas fa-user-tie"></i>
-                        <span>Docentes</span>
-                    </a>
-                    <div id="collapseDocentes" class="collapse" aria-labelledby="headingDocentes"
-                        data-parent="#accordionSidebar">
-                        <div class="bg-white py-2 collapse-inner rounded">
-                            <h6 class="collapse-header">Gestionar Docentes:</h6>
-                            <a class="collapse-item" href="">Cursos</a>
-                            <a class="collapse-item" href="">Actualizar datos</a>
-                        </div>
-                    </div>
-                </li>
-                <hr class="sidebar-divider d-none d-md-block">
                 <li class="nav-item">
                     <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseAlumnos"
                         aria-expanded="true" aria-controls="collapseAlumnos">
                         <i class="fas fa-fw fa-graduation-cap"></i>
-                        <span>Matriculados</span>
+                        <span>Postulantes</span>
                     </a>
                     <div id="collapseAlumnos" class="collapse" aria-labelledby="headingAlumnos"
                         data-parent="#accordionSidebar">
                         <div class="bg-white py-2 collapse-inner rounded">
-                            <h6 class="collapse-header">Gestionar alumnos:</h6>
-                            <a class="collapse-item" href="{{ route('adminAlumnos') }}">Alumnos</a>
-                            <a class="collapse-item" href="{{ route('vistAlumno') }}">Ingresar nuevo</a>
-                            <a class="collapse-item" href="{{ route('filtro') }}">Filtrar por campos</a>
+                            <h6 class="collapse-header">Gestionar postulantes:</h6>
+                            <a class="collapse-item" href="{{ route('listaPostulantes') }}">Visibles en página</a>
                         </div>
                     </div>
                 </li>
-                <!-- Divider -->
-                <hr class="sidebar-divider d-none d-md-block">
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#bolsa"
-                        aria-expanded="true" aria-controls="bolsa">
-                        <i class="fas fa-fw fa-pencil-alt"></i>
-                        <span>Bolsa de trabajo</span>
-                    </a>
-                    <div id="bolsa" class="collapse" aria-labelledby="headingAlumnos"
-                        data-parent="#accordionSidebar">
-                        <div class="bg-white py-2 collapse-inner rounded">
-                            <h6 class="collapse-header">Gestionar usuarios:</h6>
-                            <a class="collapse-item" href="{{ route('listaPostulantes') }}">Registrados</a>
-                            <a class="collapse-item" href="{{ route('trabajo.create') }}">Ingresar nuevo</a>
-                        </div>
-                    </div>
-                </li>
-                <!-- Divider -->
-                <hr class="sidebar-divider d-none d-md-block">
-                <div class="text-center d-none d-md-inline">
-                    <button class="rounded-circle border-0" id="sidebarToggle"></button>
-                </div>
-            </ul>
-            @endrole
-            @role('adminB')
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
-                    aria-expanded="true" aria-controls="collapseTwo">
-                    <i class="fas fa-cog"></i>
-                    <span>Registros</span>
-                </a>
-                <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">Gestionar adminis</h6>
-                        <a class="collapse-item" href="{{ route('trabajo.index') }}">Lista de registros</a>
-                        <a class="collapse-item" href="{{ route('trabajo.create') }}">Registrar Nuevo</a>
-                    </div>
-                </div>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseAlumnos"
-                    aria-expanded="true" aria-controls="collapseAlumnos">
-                    <i class="fas fa-fw fa-graduation-cap"></i>
-                    <span>Postulantes</span>
-                </a>
-                <div id="collapseAlumnos" class="collapse" aria-labelledby="headingAlumnos"
-                    data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">Gestionar postulantes:</h6>
-                        <a class="collapse-item" href="{{ route('listaPostulantes') }}">Visibles en página</a>
-                    </div>
-                </div>
-            </li>
             @endrole
             @role('alumno')
-            <ul class="navbar-nav bg-gradient-info sidebar sidebar-dark accordion" id="accordionSidebar">
-                {{-- <a class="sidebar-brand d-flex align-items-center justify-content-center mb-3"
+                <ul class="navbar-nav bg-gradient-info sidebar sidebar-dark accordion" id="accordionSidebar">
+                    {{-- <a class="sidebar-brand d-flex align-items-center justify-content-center mb-3"
                     href="{{ route('index') }}">
                     <div class="sidebar-brand-icon">
                         <img class="pt-3" src="{{ asset('admin/img/Logo-Pukllasunchis-blanco.png') }}"
@@ -162,37 +162,43 @@
                         <!---Contenido solo para estilo a logo--->
                     </div>
                 </a> --}}
-                <hr class="sidebar-divider">
-                <div class="sidebar-heading">
-                    Dashboard
-                </div>
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="{{ route('alumnos.index') }}">
-                        <i class="fas fa-fw fa-newspaper"></i>
-                        <span>Ficha técnica</span>
-                    </a> 
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="{{ route('postulante.index') }}">
-                        <i class="fas fa-fw fa-money-bill"></i>
-                        <span>Bolsa de trabajo</span>
-                    </a> 
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="{{ route('index') }}">
-                        <i class="fas fa-fw fa-graduation-cap"></i>
-                        <span>Regresar a la página</span>
-                    </a>
-                </li>
-                <hr class="sidebar-divider d-none d-md-block">
-                <div class="text-center d-none d-md-inline">
-                    <button class="rounded-circle border-0" id="sidebarToggle"></button>
-                </div>
-            </ul>
+                    <hr class="sidebar-divider">
+                    <div class="sidebar-heading">
+                        Dashboard
+                    </div>
+                    <li class="nav-item">
+                        <a class="nav-link collapsed" href="{{ route('alumnos.index') }}">
+                            <i class="fas fa-fw fa-newspaper"></i>
+                            <span>Ficha técnica</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link collapsed" href="{{ route('calificaciones', $alumno->id) }}">
+                            <i class="fas fa-fw fa-newspaper"></i>
+                            <span>Calificaciones</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link collapsed" href="{{ route('postulante.index') }}">
+                            <i class="fas fa-fw fa-money-bill"></i>
+                            <span>Bolsa de trabajo</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link collapsed" href="{{ route('index') }}">
+                            <i class="fas fa-fw fa-graduation-cap"></i>
+                            <span>Regresar a la página</span>
+                        </a>
+                    </li>
+                    <hr class="sidebar-divider d-none d-md-block">
+                    <div class="text-center d-none d-md-inline">
+                        <button class="rounded-circle border-0" id="sidebarToggle"></button>
+                    </div>
+                </ul>
             @endrole
             @role('alumnoB')
-            <ul class="navbar-nav bg-gradient-info sidebar sidebar-dark accordion" id="accordionSidebar">
-                {{-- <a class="sidebar-brand d-flex align-items-center justify-content-center mb-3"
+                <ul class="navbar-nav bg-gradient-info sidebar sidebar-dark accordion" id="accordionSidebar">
+                    {{-- <a class="sidebar-brand d-flex align-items-center justify-content-center mb-3"
                     href="{{ route('index') }}">
                     <div class="sidebar-brand-icon">
                         <img class="pt-3" src="{{ asset('admin/img/Logo-Pukllasunchis-blanco.png') }}"
@@ -202,35 +208,35 @@
                         <!---Contenido solo para estilo a logo--->
                     </div>
                 </a> --}}
-                <hr class="sidebar-divider">
-                <div class="sidebar-heading">
-                    Dashboard
-                </div>
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="{{ route('admin') }}">
-                        <i class="fas fa-fw fa-newspaper"></i>
-                        <span>Ficha técnica</span>
-                    </a> 
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="{{ route('postulante.index') }}">
-                        <i class="fas fa-fw fa-money-bill"></i>
-                        <span>Bolsa de trabajo</span>
-                    </a> 
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="{{ route('index') }}">
-                        <i class="fas fa-fw fa-graduation-cap"></i>
-                        <span>Regresar a la página</span>
-                    </a>
-                </li>
-                <hr class="sidebar-divider d-none d-md-block">
-                <div class="text-center d-none d-md-inline">
-                    <button class="rounded-circle border-0" id="sidebarToggle"></button>
-                </div>
-            </ul>
+                    <hr class="sidebar-divider">
+                    <div class="sidebar-heading">
+                        Dashboard
+                    </div>
+                    <li class="nav-item">
+                        <a class="nav-link collapsed" href="{{ route('admin') }}">
+                            <i class="fas fa-fw fa-newspaper"></i>
+                            <span>Ficha técnica</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link collapsed" href="{{ route('postulante.index') }}">
+                            <i class="fas fa-fw fa-money-bill"></i>
+                            <span>Bolsa de trabajo</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link collapsed" href="{{ route('index') }}">
+                            <i class="fas fa-fw fa-graduation-cap"></i>
+                            <span>Regresar a la página</span>
+                        </a>
+                    </li>
+                    <hr class="sidebar-divider d-none d-md-block">
+                    <div class="text-center d-none d-md-inline">
+                        <button class="rounded-circle border-0" id="sidebarToggle"></button>
+                    </div>
+                </ul>
             @endrole
-            
+
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block">
             <div class="text-center d-none d-md-inline">
@@ -239,7 +245,7 @@
         </ul>
         <div id="content-wrapper" class="d-flex flex-column">
             <div id="content">
-                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">                    
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
                     <!-- Sidebar Toggle (Topbar) -->
                     <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
                         <i class="fa fa-bars"></i>
@@ -275,7 +281,8 @@
                                                     document.getElementById('logout-form').submit();">
                                     {{ __('Logout') }}
                                 </a>
-                                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                                <form id="logout-form" action="{{ route('logout') }}" method="POST"
+                                    class="d-none">
                                     @csrf
                                 </form>
                             </div>

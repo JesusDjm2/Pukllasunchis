@@ -33,16 +33,17 @@
                     <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities"
                         aria-expanded="true" aria-controls="collapseUtilities">
                         <i class="fas fa-book"></i>
-                        <span>Programas</span>
+                        <span>Gestión</span>
                     </a>
                     <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities"
                         data-parent="#accordionSidebar">
                         <div class="bg-white py-2 collapse-inner rounded">
-                            <h6 class="collapse-header">Gestionar Cursos:</h6>
+                            <h6 class="collapse-header">Gestionar programas:</h6>
                             <a class="collapse-item" href="{{ route('programa.index') }}">Programas</a>
                             <a class="collapse-item" href="{{ route('ciclo.index') }}">Ciclos</a>
                             <a class="collapse-item" href="{{ route('curso.index') }}">Cursos</a>
                             <a class="collapse-item" href="{{ route('competencias.index') }}">Competencias</a>
+                            <a class="collapse-item" href="{{ route('periodos.index') }}">Periodos</a>
                         </div>
                     </div>
                 </li>
@@ -300,7 +301,7 @@
                     <div class="copyright text-center my-auto">
                         <span>Copyright &copy; {{ date('Y') }} | Hecho por <a class="text-primary"
                                 href="https://www.facebook.com/DjmWebMaster" target="_blank"
-                                rel="noopener noreferrer"> DJM2 </a> | Versión 2024.2</span>
+                                rel="noopener noreferrer"> DJM2 </a> | Versión 2024.5</span>
                     </div>
                 </div>
             </footer>

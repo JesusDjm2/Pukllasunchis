@@ -38,4 +38,8 @@ class Curso extends Model
     {
         return $this->hasMany(PeriodoUno::class);
     }
+    public function periodo()
+    {
+        return $this->hasMany(Periodo::class);
+    }
 }

@@ -104,8 +104,8 @@
                 <ul class="listasDecimal">
                     <li> Solicitar revisión de originalidad (Turnitin):
                         <ul>
-                            <li>Hacer el pago correspondiente por derecho de revisión de originalidad (Turnitin) en las
-                                oficinas de Caja Cusco.</li>
+                            <li>Hacer el pago correspondiente por derecho de revisión de originalidad (Turnitin) <strong>como pago ordinario</strong> en las
+                                oficinas de Caja Cusco. <small class="text-info">(Concepto: REVISION TURNITIN DE TESIS / Codigo: 37 / Costo: s/30.00)</small></li>
                             <li>Llenar <a
                                     href="https://docs.google.com/forms/d/e/1FAIpQLSc1Bam9QlzjkT66NYeKMxS-xyoU4MchYtYiGCMmtvKVbHiCjg/viewform"
                                     target="_blank" class="text-primary"> FORMULARIO DE REVISIÓN DE ORIGINALIDAD.</a></li>
@@ -308,7 +308,7 @@
                         <p>
                             Los pagos ordinarios <strong>SOLO SE PUEDEN PAGAR EN VENTANILLAS</strong> de cualquier agencia a
                             nivel nacional de CAJA CUSCO. <a class="text-primary" target="_blank"
-                                href="{{ asset('pdf/PAGOS-ORDINARIOS-CAJA-CUSCO.pdf') }}">Ver PDF para
+                                href="{{ asset('pdf/PAGOS-ORDINARIOS-CAJA-CUSCO-2.pdf') }}">Ver PDF para
                                 pagos<small><i class="fa fa-eye"></i></small></a>
                         </p>
                     </div>

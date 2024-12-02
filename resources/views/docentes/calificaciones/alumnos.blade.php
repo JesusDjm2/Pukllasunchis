@@ -114,8 +114,10 @@
                     @csrf
                     <input type="hidden" name="curso_id" value="{{ $curso->id }}">
                     <input type="hidden" name="docente_id" value="{{ $docente->id }}">
-                    <div class="text-center"><button type="submit" class="btn btn-primary btn-sm mb-2">Guardar todas las
-                            calificaciones</button></div>
+                    <div class="text-center">
+                       {{--  <button type="submit" class="btn btn-primary btn-sm mb-2">Guardar/Actualizar todas las
+                            calificaciones</button> --}}
+                    </div>
                     <div style="max-height: 550px; overflow-y: auto;">
                         <table class="table table-hover table-bordered text-center" style="font-size: 13px">
                             <thead class="thead-dark">

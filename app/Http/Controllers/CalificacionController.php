@@ -107,7 +107,6 @@ class CalificacionController extends Controller
     public function borrarTodasLasCalificaciones()
     {
         Calificacion::query()->delete();
-
         return redirect()->back()->with('success', 'Todas las calificaciones han sido eliminadas exitosamente.');
     }
     public function guardarCalificacionesEnBloque(Request $request)
@@ -139,12 +138,6 @@ class CalificacionController extends Controller
                     'curso_id' => $cursoId,
                 ],
                 [
-                    /* 'valoracion_1' => $data['valoracion_1'],
-                    'valoracion_2' => $data['valoracion_2'],
-                    'valoracion_3' => $data['valoracion_3'],
-                    'valoracion_curso' => $data['valoracion_curso'],
-                    'calificacion_curso' => $data['calificacion_curso'],
-                    'calificacion_sistema' => $data['calificacion_sistema'], */
                     'valoracion_1' => $data['valoracion_1'] ?? null,
                     'valoracion_2' => $data['valoracion_2'] ?? null,
                     'valoracion_3' => $data['valoracion_3'] ?? null,
@@ -165,7 +158,9 @@ class CalificacionController extends Controller
 
         $competenciasIds = array_unique($competenciasIds);
         $competenciasSeleccionadas = Competencia::whereIn('id', $competenciasIds)->get();
-        $alumnos = $curso->ciclo->alumnos()->orderBy('apellidos')->get();
+        $alumnos = $curso->ciclo->alumnos()->whereHas('user.roles', function ($query) {
+            $query->where('name', '!=', 'inhabilitado');
+        })->orderBy('apellidos')->get();
         return view('docentes.calificaciones.alumnos', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos'));
     }
     /* public function guardarCalificaciones(Request $request)

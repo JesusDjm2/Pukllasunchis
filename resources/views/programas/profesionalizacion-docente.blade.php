@@ -73,7 +73,7 @@
                             </a>
                         </div>
                         <div class="col-lg-6 text-center">
-                            <a href="https://docs.google.com/forms/d/e/1FAIpQLSfKZsW9Hfr5uAEIBa_GzZl3GsqrodmCXor4-bowezymh3LR0A/viewform"
+                            <a href="https://forms.gle/QxnSF7uiC3oHnH5NA"
                                 target="_blank" class="text-center">
                                 <img width="160px" src="{{ asset('img/min/Ficha-de-inscripcion-Pukllasunchis.png') }}"
                                     alt="Ficha de Inscrición Pukllasunchis" class="img-fluid">

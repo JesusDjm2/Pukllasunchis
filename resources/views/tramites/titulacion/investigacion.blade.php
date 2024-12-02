@@ -109,16 +109,16 @@
                         Para la Aplicación de Trabajo de Investigación
                         <ul>
                             <li>Llenar el Formato Único de Trámite (FUT): <small>
-								<a href="{{route('partes')}}" class="text-primary">Ir a formato <i class="fa fa-eye"></i> </a> |
+								<a href="{{route('partes')}}" class="text-info">Ir a formato <i class="fa fa-eye"></i> </a> |
 								<a href="{{ asset('pdf/fut.docx') }}" target="_blank" class="text-primary"> Descargar FUT</a>        
                                 </small>
                             </a>
 							</li>
                             <ul>
-                                <li>Hacer el pago de S/ 10 soles.</li>
+                                <li>Hacer el pago de S/ 10 soles <strong>como pago ordinario</strong> en las oficinas de Caja Cusco. <small class="text-info">(Concepto: Carta de presentación para INV / Codigo: 10 )</small></li>
                                 <li>Presentar FUT en la Secretaría o llenar el formulario. <small><a href="https://forms.gle/LFwgrVfQ7XYPCDSm8" target="_blank" class="text-primary">
 									Formulario <i class="fa fa-external-link"></i> </a></small></li>
-                                <li>o Como resultado de este trámite recibirás la carta de aplicación de Trabajo de
+                                <li>Como resultado de este trámite recibirás la carta de aplicación de Trabajo de
                                     Investigación y una carta modelo de Aceptación de Trabajo de Investigación. </li>                                
                             </ul>
                         </ul>
@@ -339,7 +339,7 @@
                         <p>
                             Los pagos ordinarios <strong>SOLO SE PUEDEN PAGAR EN VENTANILLAS</strong> de cualquier agencia a
                             nivel nacional de CAJA CUSCO. <a class="text-primary" target="_blank"
-                                href="{{ asset('pdf/PAGOS-ORDINARIOS-CAJA-CUSCO.pdf') }}">Ver PDF para
+                                href="{{ asset('pdf/PAGOS-ORDINARIOS-CAJA-CUSCO-2.pdf') }}">Ver PDF para
                                 pagos<small><i class="fa fa-eye"></i></small></a>
                         </p>
                     </div>

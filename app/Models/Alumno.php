@@ -36,6 +36,10 @@ class Alumno extends Model
     {
         return $this->hasMany(PeriodoTres::class);
     }
+    public function periodo()
+    {
+        return $this->hasMany(Periodo::class);
+    }
     public static function asociarPorEmail($email)
     {
         $alumno = static::where('email', $email)->first();

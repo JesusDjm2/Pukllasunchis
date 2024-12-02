@@ -8,6 +8,7 @@ use App\Http\Controllers\CicloController;
 use App\Http\Controllers\CompetenciaController;
 use App\Http\Controllers\CursoController;
 use App\Http\Controllers\DocenteCOntroller;
+use App\Http\Controllers\PeriodoController;
 use App\Http\Controllers\PostulanteController;
 use App\Http\Controllers\ProgramaController;
 use App\Http\Controllers\vistasAlumnosController;
@@ -66,9 +67,9 @@ Route::delete('/eliminar-periodo-dos', [CalificacionController::class, 'eliminar
 Route::post('/periodotres/storeBloque', [CalificacionController::class, 'storePeriodoTres'])->name('storePeriodoTres');
 Route::delete('/eliminar-periodo-tres', [CalificacionController::class, 'eliminarPeriodoTres'])->name('periodotres.eliminar');
 
-/* Route::post('/eliminarPeriodoUno', [CalificacionController::class, 'eliminarPeriodoUno'])->name('eliminarPeriodoUno'); */
-//Exportar CSV
-/* Route::post('/calificaciones/exportar/{docente}', [CalificacionController::class, 'exportarCSV'])->name('calificaciones.exportar'); */
+Route::resource('periodos', PeriodoController::class)->middleware('auth')->names('periodos');
+Route::get('/periodos/{nombre}', [PeriodoController::class, 'show'])->name('periodos.show');
+
 Route::get('/exportar-csv/{docenteId}/{cursoId}', [CalificacionController::class, 'exportarCSV'])->name('calificaciones.exportar');
 
 

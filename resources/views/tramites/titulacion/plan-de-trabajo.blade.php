@@ -89,9 +89,8 @@
                     Para solicitar la aprobación del Plan de Trabajo de Investigación debes:
                 </p>
                 <ul class="listasCuerpo">
-                    <li>Hacer el pago correspondiente por derecho de aprobación del PTI y asignación de asesor en las
-                        oficinas
-                        de Caja Cusco.</li>
+                    <li>Hacer el pago correspondiente por derecho de aprobación del PTI y asignación de asesor <strong>como pago ordinario</strong> en las
+                        oficinas de Caja Cusco.<small class="text-info">(Concepto: Aprobación de PTI Y Asesor / Codigo: 10 - Costo: s/50.00)</small> </li>
                     <li>Descargar y completar el Formato del PTI.</li>
                     <li>Llenar <a
                             href="https://docs.google.com/forms/d/e/1FAIpQLSeErc1rq886EWiuavn27wd5kpCkZ48ntkOrWgNS5uE2XKw5JA/viewform"
@@ -191,7 +190,7 @@
                         <p>
                             Los pagos ordinarios <strong>SOLO SE PUEDEN PAGAR EN VENTANILLAS</strong> de cualquier agencia a
                             nivel nacional de CAJA CUSCO. <a class="text-primary" target="_blank"
-                                href="{{ asset('pdf/PAGOS-ORDINARIOS-CAJA-CUSCO.pdf') }}">Ver PDF para pagos<small><i
+                                href="{{ asset('pdf/PAGOS-ORDINARIOS-CAJA-CUSCO-2.pdf') }}">Ver PDF para pagos<small><i
                                         class="fa fa-eye"></i></small></a>
                         </p>
                     </div>

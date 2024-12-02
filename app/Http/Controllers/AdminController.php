@@ -263,7 +263,10 @@ class AdminController extends Controller
         $user->beca = $request->input('beca');
         $user->email = $request->input('email');
 
-        if ($request->has('password')) {
+        /* if ($request->has('password')) {
+            $user->password = Hash::make($request->input('password'));
+        } */
+        if ($request->filled('password')) {
             $user->password = Hash::make($request->input('password'));
         }
         // Manejo de la imagen
@@ -272,10 +275,6 @@ class AdminController extends Controller
             $nombreFoto = time() . '_' . $foto->getClientOriginalName();
             $foto->move(public_path('img/estudiantes'), $nombreFoto);
             $user->foto = $nombreFoto;
-        }
-
-        if ($request->has('password')) {
-            $user->password = Hash::make($request->input('password'));
         }
 
         $roleName = $request->input('role');
