@@ -25,10 +25,13 @@
                 <div class="pegajoso">
                     <h3 class="linea-debajo">Admisión</h3>
                     <ul class="submenu2">
-                        <li><a href=""><i class="fa fa-caret-right fa-sm"></i> Ingreso Ordinario</a></li>
-                        <li><a href=""><i class="fa fa-caret-right fa-sm"></i> Por Exoneración</a></li>
-                        <li><a href=""><i class="fa fa-caret-right fa-sm"></i> Traslado Externo</a></li>
-                        <li><a href=""><i class="fa fa-caret-right fa-sm"></i> Resultados</a></li>
+                        <li><a href="{{ route('ordinario') }}"><i class="fa fa-caret-right fa-sm"></i> Ingreso Ordinario</a>
+                        </li>
+                        <li><a href="{{ route('exoneracion') }}"><i class="fa fa-caret-right fa-sm"></i> Por Exoneración</a>
+                        </li>
+                        <li><a href="{{ route('traslado') }}"><i class="fa fa-caret-right fa-sm"></i> Traslado Externo</a>
+                        </li>
+                        <li><a href="{{ route('resultados') }}"><i class="fa fa-caret-right fa-sm"></i> Resultados</a></li>
                     </ul>
                 </div>
             </div>
@@ -39,29 +42,34 @@
                     culminar tus estudios y graduarte en nuestra Institución, debes ingresar por el proceso de admisión
                     ordinario y presentar los documentos necesarios para hacer la convalidación de tus cursos.
                 </p>
+                <p>
+                    Los traslados se aceptan solo hasta el 5to semestre. Estos traslados solo son aceptados si provienes de
+                    una Escuela de Educación Superior Pedagógica y en el primer periodo académico del año, en los siguientes
+                    programas de estudio:
+                </p>
+                <ul>
+                    <li>Educación Inicial</li>
+                    <li>Educación Primaria Intercultural Bilingüe</li>
+                </ul>
                 <h3 class="mt-4"><i class="fa fa-caret-right" style="color:#cd9244"></i> Requisitos de inscripción: </h3>
                 <p>
                     Para inscribirte y tener derecho al proceso de evaluación (en marzo) debes:
                 </p>
                 <ul class="listasCuerpo">
                     <li>
-                        Hacer el pago de S/150 soles por derecho a la inscripción en las oficinas de Scotiabank.
+                        Certificado de estudios superiores visado por le DRE 
                     </li>
-                    <li> Llenar FICHA DE INSCRIPCIÓN</li>
-                    <li>
-                        Adjuntar:
-                        <ul>
-                            <li>Partida de nacimiento</li>
-                            <li>Certificado de estudios de Educación Secundaria</li>
-                            <li>Certificados originales de estudios, expedidos por la institución de origen. </li>
-                            <li>Copia simple del documento nacional de identidad (DNI)</li>
-                            <li>Dos fotografías recientes e iguales, tamaño carné, de frente, a color y en fondo blanco.
-                            </li>
-                            <li> Comprobante de pago del derecho de inscripción. </li>
-                            <li>Constancia de no haber sido separado de la institución de procedencia por motivos académicos
-                                o disciplinarios.</li>
-                        </ul>
+                    <li>Resolución de retiro por traslado externo emitida por el SIA.</li>
+                    <li>Ficha de seguimiento emitida por el SIA.</li>
+                    <li>Sílabos de semestres cursados.</li>
+                    <li>Copia de DNI ampliado </li>
+                    <li>Certificado de estudios secundarios.</li>
+                    <li>Copia de partida de nacimiento </li>
+                    <li>2 fotos tamaño carnet </li>
+                    <li>Pago por derecho de armado de expediente por traslado externo (100.00 soles), 
                     </li>
+                    <li>a realizar en Caja Cusco como pago ordinario.</li>
+                    
                 </ul>
                 <h3 class="mt-4"><i class="fa fa-caret-right" style="color:#cd9244"></i> Posteriormente, será necesario:
                 </h3>
@@ -153,7 +161,8 @@
                         tienen una cuenta de ahorros y tarjeta en la Caja Cusco:
                         <ul>
                             <li>Revisar la guía de pago en <strong><span class="text-danger"><a
-                                            href="https://www.cmac-cusco.com.pe/" rel="no-follow" title="Seguir enlace" target="_blank">
+                                            href="https://www.cmac-cusco.com.pe/" rel="no-follow" title="Seguir enlace"
+                                            target="_blank">
                                             www.cmac-cusco.com.pe</a></span></strong></li>
                         </ul>
                     </li>

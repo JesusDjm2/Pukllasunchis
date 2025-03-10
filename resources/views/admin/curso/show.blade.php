@@ -12,7 +12,7 @@
             <div class="col-lg-12">
                 <table class="table table-hover">
                     <tr style="background: #80808030">
-                        <td class="font-weight-bold">Nombre del curso:</td>
+                        <td class="font-weight-bold" style="width: 18%">Nombre del curso:</td>
                         <td>{{ $curso->nombre }}</td>
                     </tr>
                     <tr>
@@ -26,7 +26,11 @@
                             @role('alumno')
                                 {{ $curso->ciclo->programa->nombre }}
                             @endrole
-                        </td>
+                        </td>   
+                    </tr>
+                    <tr>
+                        <td class="font-weight-bold">Sumilla:</td>
+                        <td>{!! $curso->sumilla ?? 'Sin datos' !!}</td>
                     </tr>
                     <tr>
                         <td class="font-weight-bold">Ciclo:</td>

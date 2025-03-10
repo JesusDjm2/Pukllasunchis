@@ -56,6 +56,10 @@ class User extends Authenticatable
     {
         return $this->hasOne(Alumno::class);
     }
+    public function alumnoB()
+    {
+        return $this->hasOne(Ppd::class);
+    }
     public function programa()
     {
         return $this->belongsTo(Programa::class);

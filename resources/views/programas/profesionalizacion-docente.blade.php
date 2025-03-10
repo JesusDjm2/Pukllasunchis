@@ -80,14 +80,14 @@
                                 <p class="text-center">¡Inscríbete acá!</p>
                             </a>
                         </div>
-                        <div class="col-lg-12 mt-4">
+                        <!--<div class="col-lg-12 mt-4">
                             <iframe width="100%" height="480" src="https://www.youtube.com/embed/yXI-Q29iJsE"
                                 title="PROGRAMA DE PROFESIONALIZACION DOCENTE - SPOT ADMISIÓN 2024" frameborder="0"
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                                 allowfullscreen></iframe>
-                        </div>
+                        </div>-->
                         <div class="col-lg-8 pt-5">
-                            <img src="{{ asset('img/banner/Banner-profesionalizacion-Pukllasunchis.webp') }}"
+                            <img src="{{ asset('img/banner/PPD-2025.webp') }}"
                                 width="100%" alt="Programa de profesionalización Pukllasunchis">
                         </div>
                     </div><br>

@@ -18,6 +18,10 @@ class Ciclo extends Model
     {
         return $this->hasMany(Alumno::class);
     }
+    public function alumnosB()
+    {
+        return $this->hasMany(ppd::class);
+    }
     public function cursos()
     {
         return $this->hasMany(Curso::class);
@@ -25,5 +29,16 @@ class Ciclo extends Model
     public function users()
     {
         return $this->hasMany(User::class);
+    }
+    public function proyecto()
+    {
+        return $this->belongsTo(Proyecto::class);
+    }
+
+    public function estandares()
+    {
+        return $this->belongsToMany(Estandares::class, 'ciclo_competencia_estandar')
+                    ->withPivot('competencia_id')
+                    ->withTimestamps();
     }
 }

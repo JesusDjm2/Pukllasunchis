@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <dwsync>
-<file name="asignar.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="133700300591676020" remote="133730723400000000" Dst="0" />
-<file name="index.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="133761765938600615" remote="133766292000000000" Dst="0" />
-<file name="alumnos.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="133722921584757001" remote="133730723400000000" Dst="0" />
-<file name="create.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="133687446742545055" remote="133730723400000000" Dst="0" />
-<file name="edit.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="133688323087595627" remote="133730724000000000" Dst="0" />
-<file name="editcursos.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="133688171108426173" remote="133730724000000000" Dst="0" />
-<file name="perfil.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="133693426059499652" remote="133730724000000000" Dst="0" />
-<file name="show.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="133724427651920775" remote="133730724000000000" Dst="0" />
+<file name="asignar.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="133700300600000000" remote="133849203000000000" Dst="0" />
+<file name="index.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="133791913260000000" remote="133849203000000000" Dst="0" />
+<file name="alumnos.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="133844602158131785" remote="133849203000000000" Dst="0" />
+<file name="create.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="133687446760000000" remote="133849203000000000" Dst="0" />
+<file name="edit.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="133688323100000000" remote="133849203000000000" Dst="0" />
+<file name="editcursos.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="133688171120000000" remote="133849203000000000" Dst="0" />
+<file name="perfil.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="133693426060000000" remote="133849203000000000" Dst="0" />
+<file name="show.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="133855114174270179" remote="133857037800000000" Dst="0" />
+<file name="blog.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="133783274960000000" remote="133849203000000000" Dst="0" />
 </dwsync>

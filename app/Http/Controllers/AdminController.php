@@ -82,24 +82,19 @@ class AdminController extends Controller
     public function alumnos(Request $request)
     {
         $query = Alumno::query();
-
-        // Excluir completamente los usuarios que tienen el rol "inhabilitado"
         $query->whereHas('user', function ($subQuery) {
             $subQuery->whereDoesntHave('roles', function ($roleQuery) {
                 $roleQuery->where('name', 'inhabilitado');
             });
         });
-
         $withUser = $request->get('with_user');
 
-        // Filtrar por alumnos que tienen o no tienen usuario según el filtro "with_user"
         if ($withUser === '1') {
             $query->has('user');
         } elseif ($withUser === '0') {
             $query->doesntHave('user');
         }
 
-        // Búsqueda personalizada
         if ($request->has('search')) {
             $searchTerms = explode(' ', $request->input('search'));
             $query->where(function ($subquery) use ($searchTerms) {
@@ -124,7 +119,6 @@ class AdminController extends Controller
         if ($alumnos->isEmpty() && !$request->has('search_page')) {
             session()->flash('error', 'No se han encontrado resultados. Se ha buscado un total de ' . $totalRecords . ' registros.');
         }
-
         return view('alumnos.index', compact('alumnos', 'totalRecords'));
     }
 
@@ -232,6 +226,17 @@ class AdminController extends Controller
                     $user->cursos()->attach($request->input('cursos'));
                 }
             }
+
+            if ($roleName === 'alumnoB') {
+                dd($request->all());
+                $user->programa()->associate($request->input('programa_id'));
+                $user->ciclo()->associate($request->input('ciclo_id'));
+                $user->save();
+
+                if ($request->has('cursos')) {
+                    $user->cursos()->attach($request->input('cursos'));
+                }
+            }
         }
         return redirect()->route('admin')->with('success', 'Nuevo usuario creado exitosamente');
     }
@@ -248,8 +253,8 @@ class AdminController extends Controller
             'email' => 'required|email|unique:users,email,' . $id,
             'password' => 'nullable|string|min:7|confirmed',
             'role' => 'required|string|in:admin,docente,alumno,adminB,alumnoB,inhabilitado',
-            'programa_id' => 'required_if:role,alumno|exists:programas,id',
-            'ciclo_id' => 'required_if:role,alumno|exists:ciclos,id',
+            'programa_id' => 'required_if:role,alumno,alumnoB|exists:programas,id',
+            'ciclo_id' => 'required_if:role,alumno,alumnoB|exists:ciclos,id',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 
@@ -291,7 +296,7 @@ class AdminController extends Controller
                 $docente->save();
             }
 
-            if ($roleName === 'alumno') {
+            if ($roleName === 'alumno' || $roleName === 'alumnoB') {
                 $user->programa()->associate($request->input('programa_id'));
                 $user->ciclo()->associate($request->input('ciclo_id'));
             }
@@ -317,7 +322,6 @@ class AdminController extends Controller
                     $alumno->delete();
                 }
             }
-
             // Eliminar el usuario
             $admin->delete();
 

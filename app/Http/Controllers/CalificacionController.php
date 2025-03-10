@@ -130,9 +130,66 @@ class CalificacionController extends Controller
         $cursoId = $request->input('curso_id');
         $curso = Curso::findOrFail($cursoId);
 
-        // Procesar cada alumno y guardar su calificación
         foreach ($request->input('alumnos') as $data) {
             Calificacion::updateOrCreate(
+                [
+                    'alumno_id' => $data['alumno_id'], 
+                    'curso_id' => $cursoId,
+                ],
+                [
+                    'valoracion_1' => $data['valoracion_1'] ?? null,
+                    'valoracion_2' => $data['valoracion_2'] ?? null,
+                    'valoracion_3' => $data['valoracion_3'] ?? null,
+                    'valoracion_curso' => $data['valoracion_curso'] ?? null,
+                    'calificacion_curso' => $data['calificacion_curso'] ?? null,
+                    'calificacion_sistema' => $data['calificacion_sistema'] ?? null,
+                ]
+            );
+        }
+
+        session()->flash('success', 'Calificaciones guardadas exitosamente.');
+        $competenciasIds = [];
+        foreach ($request->input('alumnos') as $data) {
+            if (isset($data['competencias'])) {
+                $competenciasIds = array_merge($competenciasIds, $data['competencias']);
+            }
+        }
+
+        $competenciasIds = array_unique($competenciasIds);
+        $competenciasSeleccionadas = Competencia::whereIn('id', $competenciasIds)->get();
+        $alumnos = $curso->ciclo->alumnos()->whereHas('user.roles', function ($query) {
+            $query->where('name', '!=', 'inhabilitado');
+        })->orderBy('apellidos')->get();
+        $mostrarBotonDesempeno = $alumnos->contains(function ($alumno) {
+            return $alumno->periodos->isNotEmpty() && $alumno->calificaciones->isNotEmpty();
+        });
+        return view('docentes.calificaciones.alumnos', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos', 'mostrarBotonDesempeno'));
+    }
+
+    public function guardarPeriodoTres(Request $request)
+    {
+        $request->validate([
+            'curso_id' => 'required|exists:cursos,id',
+            'docente_id' => 'required|exists:docentes,id',
+            'alumnos' => 'required|array',
+            'alumnos.*.valoracion_curso' => 'nullable|string',
+            'alumnos.*.calificacion_curso' => 'nullable|string',
+            'alumnos.*.calificacion_sistema' => 'nullable|string',
+            'alumnos.*.valoracion_1' => 'nullable|string',
+            'alumnos.*.valoracion_2' => 'nullable|string',
+            'alumnos.*.valoracion_3' => 'nullable|string',
+            'alumnos.*.competencias' => 'required|array|min:1|max:3',
+        ]);
+
+        $docenteId = $request->input('docente_id');
+        $docente = Docente::findOrFail($docenteId);
+
+        $cursoId = $request->input('curso_id');
+        $curso = Curso::findOrFail($cursoId);
+
+        // Procesar cada alumno y guardar su calificación
+        foreach ($request->input('alumnos') as $data) {
+            PeriodoTres::updateOrCreate(
                 [
                     'alumno_id' => $data['alumno_id'], // Ahora accederás correctamente al ID del alumno.
                     'curso_id' => $cursoId,
@@ -161,7 +218,10 @@ class CalificacionController extends Controller
         $alumnos = $curso->ciclo->alumnos()->whereHas('user.roles', function ($query) {
             $query->where('name', '!=', 'inhabilitado');
         })->orderBy('apellidos')->get();
-        return view('docentes.calificaciones.alumnos', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos'));
+        $mostrarBotonDesempeno = $alumnos->contains(function ($alumno) {
+            return $alumno->periodos->isNotEmpty() && $alumno->calificaciones->isNotEmpty();
+        });
+        return view('docentes.calificaciones.alumnos', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos', 'mostrarBotonDesempeno'));
     }
     /* public function guardarCalificaciones(Request $request)
     {

@@ -3,11 +3,9 @@
     <div class="container-fluid bg-white pt-2">
         @role('admin')
             <div class="d-sm-flex align-items-center justify-content-between mb-4">
-                <h1 class="h3 mb-0 text-gray-800">
-                    <small>Alumnos registrados: {{ $totalAlumnos }}</small>
-                </h1>
+                <h3 class="mb-0 text-primary font-weight-bold"> Registros: {{ $totalAlumnos }} </h3>
                 <a href="{{ route('registerAdmin') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
-                    Nuevo Administrador <i class="fa fa-plus fa-sm"></i>
+                    Nuevo Registro <i class="fa fa-plus fa-sm"></i>
                 </a>
             </div>
         @endrole
@@ -55,6 +53,7 @@
                     <div class="row">
                         <div class="col-lg-6 mb-3">
                             <button class="btn btn-primary btn-sm" onclick="mostrarTabla('admins')">Alumnos</button>
+                            <button class="btn btn-secondary btn-sm" onclick="mostrarTabla('alumnosppd')">Alumnos PPD</button>
                             <button class="btn btn-info btn-sm" onclick="mostrarTabla('docentes')">Docentes</button>
                             <button class="btn btn-danger btn-sm" onclick="mostrarTabla('inhabilitados')">Inhabilitados
                             </button>
@@ -100,6 +99,71 @@
                             <tbody>
                                 @foreach ($admins as $key => $admin)
                                     @if ($admin->hasRole('alumno'))
+                                        <tr class="alumno-row">
+                                            <td>{{ $admin->apellidos }}, {{ $admin->name }}</td>
+                                            <td>{{ $admin->email }}</td>
+                                            <td>{{ optional($admin->programa)->nombre ?? 'N/A' }}</td>
+                                            <td style="font-family: serif">{{ optional($admin->ciclo)->nombre ?? 'N/A' }}</td>
+                                            {{-- <td>@if ($admin->beca == 1)
+                                                Sí
+                                            @else
+                                                No
+                                            @endif</td> --}}
+                                            <td>{{ $admin->dni }}</td>
+                                            <td>
+                                                <a href="{{ route('adminEdit', ['id' => $admin->id]) }}"
+                                                    class="btn btn-info btn-sm" title="Editar"><i class="fa fa-pen"></i></a>
+                                                <a onclick="confirmarEliminacion('{{ route('adminDestroy', ['id' => $admin->id]) }}')"
+                                                    class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></a>
+                                            </td>
+                                            <script>
+                                                function confirmarEliminacion(url) {
+                                                    if (confirm('¿Estás seguro de que deseas eliminar este administrador?')) {
+                                                        window.location.href = url;
+                                                    }
+                                                }
+                                            </script>
+                                        </tr>
+                                    @endif
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="table-responsive">
+                        <table id="alumnosppd" class="table table-hover" style="display: none">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>Nombres ppd
+                                        <button class="arrow-icon btn btn-link" data-column="1">
+                                            <span class="fa fa-caret-up text-white" style="font-size: 12px"></span>
+                                        </button>
+                                    </th>
+                                    <th>Correo
+                                        <button class="arrow-icon btn btn-link sort-btn" data-column="2">
+                                            <span class="fa fa-caret-up text-white" style="font-size: 12px"></span>
+                                        </button>
+                                    </th>
+                                    <th>Programa
+                                        <button class="arrow-icon btn btn-link sort-btn" data-column="3">
+                                            <span class="fa fa-caret-up text-white" style="font-size: 12px"></span>
+                                        </button>
+                                    </th>
+                                    <th>Ciclo
+                                        <button class="arrow-icon btn btn-link sort-btn" data-column="4">
+                                            <span class="fa fa-caret-up text-white" style="font-size: 12px"></span>
+                                        </button>
+                                    </th>
+                                    <th>DNI
+                                        <button class="arrow-icon btn btn-link sort-btn" data-column="6">
+                                            <span class="fa fa-caret-up text-white" style="font-size: 12px"></span>
+                                        </button>
+                                    </th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($admins as $key => $admin)
+                                    @if ($admin->hasRole('alumnoB'))
                                         <tr class="alumno-row">
                                             <td>{{ $admin->apellidos }}, {{ $admin->name }}</td>
                                             <td>{{ $admin->email }}</td>
@@ -289,153 +353,6 @@
             </div>
         @endrole
 
-        {{-- @role('alumno')
-            <div class="row bg-white" id="contenido-alumno">
-                <div class="col-12">
-                    @if (Session::has('success'))
-                        <div class="alert alert-success alert-dismissible fade show text-center" role="alert">
-                            {{ Session::get('success') }}
-                            <a type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </a>
-                        </div>
-                    @endif
-                    @if (auth()->user()->alumno)
-                        <div class="alert alert-warning alert-dismissible fade show text-center" role="alert">
-                            {{ Session::get('success') }} Botón de actualización de datos de ficha de matricula habilitado
-                            hasta el 16 de agosto, de no tener datos para
-                            actualizar solo llenar el <strong> Número de boleta electrónica emitida por la EES para el ciclo
-                                2024 II y guardar el registro. De ser becado, solo guardar registro. </strong>
-                            <a type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </a>
-                        </div>
-                    @endif
-                </div>
-                @if (auth()->user()->alumno)
-                    <div class="col-lg-12">
-                        <div class="p-2 table-responsive">
-                            <table class="table table-bordered">
-                                <tbody>
-                                    <tr>
-                                        <td colspan="4" class="table-dark">Carrera</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="font-weight-bold">Programa:</th>
-                                        <td>
-                                            <ul>
-                                                <li>
-                                                    {{ $alumno->programa->nombre }}
-                                                </li>
-                                            </ul>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="font-weight-bold">Ciclo:</th>
-                                        <td>
-                                            @if ($alumno->ciclo)
-                                                <ul>
-                                                    <li
-                                                        style="font-family: 'Courier New', Courier, monospace; font-weight:600">
-                                                        {{ $alumno->ciclo->nombre }}
-                                                    </li>
-                                                </ul>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="font-weight-bold">Cursos del semestre:</td>
-                                        <td>
-                                            @foreach ($alumno->ciclo->cursos as $curso)
-                                                <li class="d-flex align-items-center justify-content-between curso-item"
-                                                    style="border-bottom: 1px dashed rgba(128, 128, 128, 0.452)">
-                                                    <a href="{{ route('curso.show', $curso->id) }}"
-                                                        class="mr-2">{{ $curso->nombre }}</a>
-                                                    <div class="d-flex align-items-center">
-                                                        @if ($curso->docente)
-                                                            <small class="mr-2">
-                                                                <strong>Docente:</strong> {{ $curso->docente->nombre }}
-                                                            </small>
-                                                        @endif |
-                                                        @if ($curso->silabo)
-                                                            <a class="btn btn-success btn-sm d-inline-block"
-                                                                href="{{ asset('docentes/silabo/' . $curso->silabo) }}"
-                                                                target="_blank" title="Ver Sílabo">
-                                                                Ver sílabo <i class="fa fa-eye fa-sm"></i>
-                                                            </a>
-                                                        @endif |
-                                                        @if ($curso->classroom)
-                                                            <div class="ml-2">
-                                                                <a href="{{ $curso->classroom }}" target="_blank">Link
-                                                                    <small><i
-                                                                            class="fa fa-sm fa-external-link-alt"></i></small></a>
-                                                                →
-                                                                {{ $curso->clave }} <i class="fa fa-sm fa-lock"></i>
-                                                            </div>
-                                                        @else
-                                                            <div class="ml-2">
-                                                                No tiene asignado un Classroom
-                                                            </div>
-                                                        @endif
-                                                    </div>
-                                                </li>
-                                            @endforeach
-                                        </td>
-                                    </tr>
-
-                                    @if (isset($alumno->user->pendiente))
-                                        <tr class="bg-danger text-white">
-                                            <td>Curso(s) a cargo: <br> <small>*Es responsabilidad del estudiante solicitar la
-                                                    subsanación de cursos pendientes.</small></td>
-                                            <td>
-                                                @php
-                                                    $cursos = explode(',', $alumno->user->pendiente);
-                                                @endphp
-                                                @foreach ($cursos as $curso)
-                                                    <li>{{ trim($curso) }}</li>
-                                                @endforeach
-                                            </td>
-                                        </tr>
-                                    @endif
-                                    <tr>
-                                        <td colspan="4" class="table-dark">Datos Personales</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="font-weight-bold">Nombre Completo:</th>
-                                        <td>{{ $alumno->nombres }} {{ $alumno->apellidos }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="font-weight-bold">DNI:</th>
-                                        <td>{{ $alumno->dni }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="font-weight-bold">Correo:</th>
-                                        <td>{{ $alumno->email }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="font-weight-bold">Número:</th>
-                                        <td>{{ $alumno->numero }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="font-weight-bold">Número de referencia:</th>
-                                        <td>{{ $alumno->numero_referencia }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="font-weight-bold">Domicilio:</th>
-                                        <td>{{ $alumno->direccion }}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                @else
-                    <div class="col-lg-12">
-                        <a class="btn btn-primary" href="{{ route('vistAlumno') }}">Por favor completa tu formulario</a>
-                    </div>
-                @endif
-            </div>
-        @endrole --}}
-
     </div>
 
     <!-- Modal de Confirmación -->
@@ -459,8 +376,6 @@
             </div>
         </div>
     </div>
-
-
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script>
         $('#confirmDeleteModal').on('show.bs.modal', function(e) {
@@ -474,7 +389,6 @@
     {{-- Script para mostrar contenido de alumnos --}}
     <script>
         document.getElementById('mostrar-contenido')?.addEventListener('click', function() {
-
             this.style.display = 'none';
             fetch("{{ route('mostrar-contenido') }}", {
                 method: "POST",
@@ -504,13 +418,10 @@
         document.addEventListener('DOMContentLoaded', function() {
             const searchBox = document.getElementById('search-box');
             const tables = document.querySelectorAll('.table');
-
             searchBox.addEventListener('keyup', function() {
                 const searchTerm = searchBox.value.toLowerCase();
-
                 tables.forEach(table => {
                     const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
-
                     for (let i = 0; i < rows.length; i++) {
                         let rowText = rows[i].innerText.toLowerCase();
                         if (rowText.includes(searchTerm)) {
@@ -529,12 +440,14 @@
             if (tipo === 'admins') {
                 document.getElementById('admins-table').style.display = 'table';
                 document.getElementById('alumnos-table').style.display = 'none';
+                document.getElementById('alumnosppd').style.display = 'none';
                 document.getElementById('adminsB-table').style.display = 'none';
                 document.getElementById('docentes-table').style.display = 'none';
                 document.getElementById('inhabilitado-table').style.display = 'none';
             } else if (tipo === 'alumnos') {
                 document.getElementById('admins-table').style.display = 'none';
                 document.getElementById('alumnos-table').style.display = 'table';
+                document.getElementById('alumnosppd').style.display = 'none';
                 document.getElementById('adminsB-table').style.display = 'none';
                 document.getElementById('docentes-table').style.display = 'none';
                 document.getElementById('inhabilitado-table').style.display = 'none';
@@ -544,21 +457,33 @@
                 document.getElementById('adminsB-table').style.display = 'table';
                 document.getElementById('docentes-table').style.display = 'none';
                 document.getElementById('inhabilitado-table').style.display = 'none';
+                document.getElementById('alumnosppd').style.display = 'none';
             } else if (tipo === 'docentes') {
                 document.getElementById('admins-table').style.display = 'none';
                 document.getElementById('alumnos-table').style.display = 'none';
                 document.getElementById('adminsB-table').style.display = 'none';
                 document.getElementById('docentes-table').style.display = 'table';
                 document.getElementById('inhabilitado-table').style.display = 'none';
+                document.getElementById('alumnosppd').style.display = 'none';
             } else if (tipo === 'inhabilitados') {
                 document.getElementById('admins-table').style.display = 'none';
                 document.getElementById('alumnos-table').style.display = 'none';
                 document.getElementById('adminsB-table').style.display = 'none';
                 document.getElementById('docentes-table').style.display = 'none';
                 document.getElementById('inhabilitado-table').style.display = 'table';
+                document.getElementById('alumnosppd').style.display = 'none';
+            }
+            else if (tipo === 'alumnosppd') {
+                document.getElementById('admins-table').style.display = 'none';
+                document.getElementById('alumnos-table').style.display = 'none';
+                document.getElementById('adminsB-table').style.display = 'none';
+                document.getElementById('docentes-table').style.display = 'none';
+                document.getElementById('inhabilitado-table').style.display = 'none';
+                document.getElementById('alumnosppd').style.display = 'table';
             }
         }
     </script>
+
     <style>
         .curso-item {
             transition: background-color 0.3s ease;

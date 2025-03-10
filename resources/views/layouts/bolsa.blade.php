@@ -172,12 +172,12 @@
                             <span>Ficha técnica</span>
                         </a>
                     </li>
-                    <li class="nav-item">
+                    {{-- <li class="nav-item">
                         <a class="nav-link collapsed" href="{{ route('calificaciones', $alumno->id) }}">
                             <i class="fas fa-fw fa-newspaper"></i>
                             <span>Calificaciones</span>
                         </a>
-                    </li>
+                    </li> --}}
                     <li class="nav-item">
                         <a class="nav-link collapsed" href="{{ route('postulante.index') }}">
                             <i class="fas fa-fw fa-money-bill"></i>
@@ -197,17 +197,7 @@
                 </ul>
             @endrole
             @role('alumnoB')
-                <ul class="navbar-nav bg-gradient-info sidebar sidebar-dark accordion" id="accordionSidebar">
-                    {{-- <a class="sidebar-brand d-flex align-items-center justify-content-center mb-3"
-                    href="{{ route('index') }}">
-                    <div class="sidebar-brand-icon">
-                        <img class="pt-3" src="{{ asset('admin/img/Logo-Pukllasunchis-blanco.png') }}"
-                            alt="Logo Pukllasunchis" width="100%">
-                    </div>
-                    <div class="sidebar-brand-text mx-3">
-                        <!---Contenido solo para estilo a logo--->
-                    </div>
-                </a> --}}
+                <ul class="navbar-nav bg-gradient-info sidebar sidebar-dark accordion" id="accordionSidebar">                   
                     <hr class="sidebar-divider">
                     <div class="sidebar-heading">
                         Dashboard
@@ -219,11 +209,17 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link collapsed" href="">
+                            <i class="fas fa-fw fa-graduation-cap"></i>
+                            <span>Calificaciones</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link collapsed" href="{{ route('postulante.index') }}">
                             <i class="fas fa-fw fa-money-bill"></i>
                             <span>Bolsa de trabajo</span>
                         </a>
-                    </li>
+                    </li>                    
                     <li class="nav-item">
                         <a class="nav-link collapsed" href="{{ route('index') }}">
                             <i class="fas fa-fw fa-graduation-cap"></i>

@@ -61,7 +61,7 @@
                                 name="password_confirmation" required>
                         </div>
 
-                        <div class="col-lg-12 mb-3"> 
+                        <div class="col-lg-12 mb-3">
                             <label for="role" class="form-label">Asignar Rol:</label>
                             <select id="role" name="role"
                                 class="form-control form-control-sm @error('role') is-invalid @enderror">
@@ -70,10 +70,12 @@
                                 </option>
                                 <option value="docente" {{ old('role') === 'docente' ? 'selected' : '' }}>Docente</option>
                                 <option value="alumno" {{ old('role') === 'alumno' ? 'selected' : '' }}>Alumno</option>
-                                <option value="adminB" {{ old('role') === 'adminB' ? 'selected' : '' }}>Administrador Bolsa</option>
-                                <option value="inhabilitado" {{ old('role') === 'inhabilitado' ? 'selected' : '' }}>Inhabilitado</option>
-                                {{-- 
-                                <option value="alumnoB" {{ old('role') === 'alumnoB' ? 'selected' : '' }}>Postulante Bolsa de Trabajo</option> --}}
+                                <option value="adminB" {{ old('role') === 'adminB' ? 'selected' : '' }}>Administrador Bolsa
+                                </option>
+                                <option value="inhabilitado" {{ old('role') === 'inhabilitado' ? 'selected' : '' }}>
+                                    Inhabilitado</option>
+                                <option value="alumnoB" {{ old('role') === 'alumnoB' ? 'selected' : '' }}>Alumno PPD
+                                </option>
                             </select>
                             @error('role')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -118,18 +120,25 @@
                                     @enderror
                                 </div>
                                 <div class="col-lg-3 mb-2">
-                                    <label for="perfil">Perfil: <small>Este campo se usa para bolsa de trabajo  </small></label>
-                                    <select class="form-control form-control-sm @error('perfil') is-invalid @enderror" id="perfil" name="perfil">
-                                        <option value="" disabled {{ old('perfil') ? '' : 'selected' }}>Seleccionar Perfil</option>
-                                        <option value="Estudiante" {{ old('perfil') == 'Estudiante' ? 'selected' : '' }}>Estudiante</option>
-                                        <option value="Bachiller" {{ old('perfil') == 'Bachiller' ? 'selected' : '' }}>Bachiller</option>
-                                        <option value="Titulado" {{ old('perfil') == 'Titulado' ? 'selected' : '' }}>Titulado</option>
-                                        <option value="Egresado" {{ old('perfil') == 'Egresado' ? 'selected' : '' }}>Egresado</option>
+                                    <label for="perfil">Perfil: <small>Este campo se usa para bolsa de trabajo
+                                        </small></label>
+                                    <select class="form-control form-control-sm @error('perfil') is-invalid @enderror"
+                                        id="perfil" name="perfil">
+                                        <option value="" disabled {{ old('perfil') ? '' : 'selected' }}>Seleccionar
+                                            Perfil</option>
+                                        <option value="Estudiante" {{ old('perfil') == 'Estudiante' ? 'selected' : '' }}>
+                                            Estudiante</option>
+                                        <option value="Bachiller" {{ old('perfil') == 'Bachiller' ? 'selected' : '' }}>
+                                            Bachiller</option>
+                                        <option value="Titulado" {{ old('perfil') == 'Titulado' ? 'selected' : '' }}>
+                                            Titulado</option>
+                                        <option value="Egresado" {{ old('perfil') == 'Egresado' ? 'selected' : '' }}>
+                                            Egresado</option>
                                     </select>
                                     @error('perfil')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
-                                </div>                               
+                                </div>
 
                                 <div class="col-lg-2 mb-4">
                                     <label for="beca" class="form-label">Beca:</label>
@@ -183,14 +192,17 @@
                                         id="condicion" name="condicion">
                                         <option value="" disabled {{ old('condicion') ? '' : 'selected' }}>
                                             Seleccionar Condición</option>
-                                        <option value="Practicante" {{ old('condicion') == 'Practicante' ? 'selected' : '' }}>
+                                        <option value="PPD"
+                                            {{ old('condicion') == 'PPD' ? 'selected' : '' }}>
+                                            Estudiante PPD</option>
+                                        <option value="Practicante"
+                                            {{ old('condicion') == 'Practicante' ? 'selected' : '' }}>
                                             Practicante</option>
-                                        <option value="Egresado"
-                                            {{ old('condicion') == 'Egresado' ? 'selected' : '' }}>Egresado
+                                        <option value="Egresado" {{ old('condicion') == 'Egresado' ? 'selected' : '' }}>
+                                            Egresado
                                         </option>
-                                       
-                                        <option value="Titulado"
-                                            {{ old('condicion') == 'Titulado' ? 'selected' : '' }}>Titulado</option>
+                                        <option value="Titulado" {{ old('condicion') == 'Titulado' ? 'selected' : '' }}>
+                                            Titulado</option>
                                     </select>
                                     @error('condicion')
                                         <div class="invalid-feedback">{{ $message }}</div>

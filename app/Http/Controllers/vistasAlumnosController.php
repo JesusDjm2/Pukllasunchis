@@ -15,7 +15,10 @@ class vistasAlumnosController extends Controller
         $programas = Programa::all();
         $ciclos = Ciclo::all();
         $user = auth()->user();
-        return view('alumnos.vistasAlumnos.formulario', compact('programas', 'ciclos', 'user'));
+        if ($user) {
+            return view('alumnos.vistasAlumnos.formulario', compact('programas', 'ciclos', 'user'));
+        }
+        return view('alumnos.vistasAlumnos.postulantes');
     }
     public function obtenerCiclos($programaId)
     {

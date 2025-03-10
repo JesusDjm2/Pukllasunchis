@@ -11,7 +11,6 @@ class EnlacesController extends Controller
     {
         return view('nosotros');
     }
-    //programas
     public function inicial()
     {
         return view('programas.educacion-inicial');
@@ -135,6 +134,10 @@ class EnlacesController extends Controller
         $postulantes1 = Postulante::where('programa_id', 1)->get();
         $postulantes2 = Postulante::where('programa_id', 2)->get();
         return view('informacion.bolsa-de-trabajo', compact('postulantes', 'postulantes1', 'postulantes2'));
+    }
+    public function conv()
+    {
+        return view('informacion.convocatoria');
     }
 
     //Foot

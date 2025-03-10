@@ -17,7 +17,7 @@ class AlumnoController extends Controller
     public function index(Request $request)
     {
         if (!auth()->check()) {
-            return redirect()->route('login'); 
+            return redirect()->route('login');
         }
 
         $alumno = auth()->user()->alumno;
@@ -91,6 +91,7 @@ class AlumnoController extends Controller
         if (empty($bienes_vivienda)) {
             return redirect()->back()->withInput()->withErrors(['bienes_vivienda' => 'Debe seleccionar al menos un bien de vivienda.']);
         }
+        
         $bienes = implode(',', $bienes_vivienda);
 
         $otros_servicios = $request->input('otros_servicios', []);
@@ -424,14 +425,31 @@ class AlumnoController extends Controller
         return redirect()->route('adminAlumnos')->with('success', 'El alumno ha sido eliminado correctamente.');
     }
 
-    public function calificaciones($id)
+    /* public function calificaciones($id)
     {
         $alumno = Alumno::with(['ciclo.cursos.periodos'])->findOrFail($id);
 
-        // Obtiene el periodoUno del primer curso asociado al alumno
         $periodoUno = $alumno->ciclo->cursos->flatMap(function ($curso) use ($alumno) {
             return $curso->periodos()->where('alumno_id', $alumno->id)->get();
         })->first();
         return view('alumnos.vistasAlumnos.calificaciones', compact('alumno', 'periodoUno'));
+    } */
+    public function calificaciones($id)
+    {
+        $alumno = Alumno::with(['ciclo.cursos.periodos', 'ciclo.cursos.periododos', 'ciclo.cursos.periodotres'])->findOrFail($id);
+
+        $periodoUno = $alumno->ciclo->cursos->flatMap(function ($curso) use ($alumno) {
+            return $curso->periodos()->where('alumno_id', $alumno->id)->get();
+        });
+
+        $periodoDos = $alumno->ciclo->cursos->flatMap(function ($curso) use ($alumno) {
+            return $curso->periododos()->where('alumno_id', $alumno->id)->get();
+        });
+
+        $periodoTres = $alumno->ciclo->cursos->flatMap(function ($curso) use ($alumno) {
+            return $curso->periodotres()->where('alumno_id', $alumno->id)->get();
+        });
+
+        return view('alumnos.vistasAlumnos.calificaciones', compact('alumno', 'periodoUno', 'periodoDos', 'periodoTres'));
     }
 }

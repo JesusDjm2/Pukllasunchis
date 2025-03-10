@@ -104,6 +104,7 @@
                             andinas.
                         </p>
                         <a href="{{ route('nosotros') }}" class="boxed-btn3-white-2">Leer más</a>
+                        <a href="{{ route('ordinario') }}" class="boxed-btn3-white-2">Postular</a>
                     </div>
                 </div>
                 <div class="col-xl-6 col-lg-6 mt-4" style="width: 100%; height: 380px; background: #d59d52; padding:0.2em">

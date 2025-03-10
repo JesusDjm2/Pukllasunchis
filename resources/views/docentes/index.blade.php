@@ -127,6 +127,15 @@
                                         <ul>
                                             <li>{{ $docente->email }}</li>
                                             <li>{{ $docente->dni }}</li>
+
+                                            @if ($docente->blog)
+                                                <li>
+                                                    <a href="{{ route('docente.blog.show', ['docente' => $docente->id]) }}">
+                                                        Ver Blog
+                                                    </a>
+                                                </li>
+                                            @endif
+                                            </li>
                                         </ul>
                                     </td>
                                     <td>
@@ -176,7 +185,6 @@
                                                                 </li>
                                                             </ul>
                                                         @endif
-
                                                         <ul>
                                                             <form
                                                                 action="{{ route('competencias.calificar', ['docente' => $docente->id, 'curso' => $curso->id]) }}"
@@ -207,7 +215,7 @@
                                                                 <li>
                                                                     <button type="submit" class="text-primary"
                                                                         id="{{ $curso->id }}"
-                                                                        style="background: none; border: none; font-size:14px; margin-left: -6px">
+                                                                        style="background: none; border: none; font-size:14px; margin-left: -6px; ">
                                                                         Ver calificaciones
                                                                     </button>
                                                                 </li>

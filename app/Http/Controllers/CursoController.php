@@ -84,6 +84,7 @@ class CursoController extends Controller
             'programa_id' => 'required|exists:programas,id',
             'ciclo_id' => 'required|exists:ciclos,id',
             'nombre' => 'required|string',
+            'sumilla'=>'required|string',
             'cc' => 'required|string',
             'horas' => 'required|string',
             'creditos' => 'required|string',
@@ -135,6 +136,7 @@ class CursoController extends Controller
             'programa_id' => 'required|exists:programas,id',
             'ciclo_id' => 'required|exists:ciclos,id',
             'nombre' => 'required|string',
+            'sumilla'=>'required|string',
             'cc' => 'required|string',
             'horas' => 'required|string',
             'creditos' => 'required|string',
@@ -147,6 +149,7 @@ class CursoController extends Controller
             'programa_id' => $request->input('programa_id'),
             'ciclo_id' => $request->input('ciclo_id'),
             'nombre' => $request->input('nombre'),
+            'sumilla' => $request->input('sumilla'),
             'cc' => $request->input('cc'),
             'horas' => $request->input('horas'),
             'creditos' => $request->input('creditos'),
@@ -167,10 +170,12 @@ class CursoController extends Controller
             ->orderBy('apellidos')
             ->get();
         $cantidadAlumnos = $alumnos->count();
-
-        // Cargar los docentes del curso
         $docentes = $curso->docentes;
 
+        // Verificar si el usuario está autenticado y tiene el rol 'alumnoB'
+        if (auth()->check() && auth()->user()->hasRole('alumnoB')) {
+            return view('alumnos.ppd.curso', compact('curso', 'docentes', 'cantidadAlumnos'));
+        }
         return view('admin.curso.show', compact('curso', 'alumnos', 'cantidadAlumnos', 'docentes'));
     }
     public function destroy(Curso $curso)

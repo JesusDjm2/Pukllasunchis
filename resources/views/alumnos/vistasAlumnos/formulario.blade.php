@@ -19,87 +19,174 @@
                             @endif
                         </div>
                         <div class="card-body">
-                            <form action="{{ route('alumnos.store') }}" method="POST">
-                                @csrf
-                                <div class="container mt-3">
-                                    <ul class="nav nav-tabs nav-pills nav-justified flex-column flex-sm-row" id="myTab"
-                                        role="tablist">
-                                        <li class="nav-item">
-                                            <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home"
-                                                role="tab" aria-controls="home" aria-selected="true">Datos
-                                                Personales</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile"
-                                                role="tab" aria-controls="profile"
-                                                aria-selected="false">Familiares/Educativos</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" id="contact-tab" data-toggle="tab" href="#contact"
-                                                role="tab" aria-controls="contact"
-                                                aria-selected="false">Socioeconómicos</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" id="socioeconomico-tab" data-toggle="tab"
-                                                href="#socioeconomico" role="tab" aria-controls="socioeconomico"
-                                                aria-selected="false">
-                                                Aspectos Vivienda</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" id="vivienda-tab" data-toggle="tab" href="#vivienda"
-                                                role="tab" aria-controls="vivienda" aria-selected="false">Salud y
-                                                Adicionales</a>
-                                        </li>
-                                    </ul>
-                                    <div class="tab-content mt-2">
-                                        <div class="tab-pane fade show active" id="home" role="tabpanel"
-                                            aria-labelledby="home-tab">
-                                            @include('alumnos.datos-personales')
-                                            <div class="mt-4">
-                                                <button type="button" class="btn btn-primary mt-4 next-tab"
-                                                    data-tab="profile">Siguiente</button>
-                                            </div>
-                                        </div>
-                                        <div class="tab-pane fade" id="profile" role="tabpanel"
-                                            aria-labelledby="profile-tab">
-                                            @include('alumnos.caracteristicas-familiares')
-                                            <div class="mt-4">
-                                                <button type="button" class="btn btn-secondary mt-4 prev-tab"
-                                                    data-tab="home">Anterior</button>
-                                                <button type="button" class="btn btn-primary mt-4 next-tab"
-                                                    data-tab="contact">Siguiente</button>
-                                            </div>
-                                        </div>
-                                        <div class="tab-pane fade" id="contact" role="tabpanel"
-                                            aria-labelledby="contact-tab">
-                                            @include('alumnos.aspectos-socioeconomico')
-                                            <button type="button" class="btn btn-secondary mt-4 prev-tab"
-                                                data-tab="profile">Anterior</button>
-                                            <button type="button" class="btn btn-primary mt-4 next-tab"
-                                                data-tab="socioeconomico">Siguiente</button>
-                                        </div>
-                                        <div class="tab-pane fade" id="socioeconomico" role="tabpanel"
-                                            aria-labelledby="socioeconomico-tab">
-                                            @include('alumnos.aspectos-vivienda')
-                                            <button type="button" class="btn btn-secondary mt-4 prev-tab"
-                                                data-tab="contact">Anterior</button>
-                                            <button type="button" class="btn btn-primary mt-4 next-tab"
-                                                data-tab="vivienda">Siguiente</button>
-                                        </div>
-                                        <div class="tab-pane fade" id="vivienda" role="tabpanel"
-                                            aria-labelledby="vivienda-tab">
-                                            @include('alumnos.aspectos-salud-culturales')
-                                            <button type="button" class="btn btn-secondary mt-4 prev-tab"
-                                                data-tab="socioeconomico">Anterior</button>
+                            @auth
+                                @if (auth()->user()->hasRole('alumno'))
+                                    <form action="{{ route('alumnos.store') }}" method="POST">
+                                        @csrf
+                                        <div class="container mt-3">
+                                            <ul class="nav nav-tabs nav-pills nav-justified flex-column flex-sm-row"
+                                                id="myTab" role="tablist">
+                                                <li class="nav-item">
+                                                    <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home"
+                                                        role="tab" aria-controls="home" aria-selected="true">Datos
+                                                        Personales</a>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile"
+                                                        role="tab" aria-controls="profile"
+                                                        aria-selected="false">Familiares/Educativos</a>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a class="nav-link" id="contact-tab" data-toggle="tab" href="#contact"
+                                                        role="tab" aria-controls="contact"
+                                                        aria-selected="false">Socioeconómicos</a>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a class="nav-link" id="socioeconomico-tab" data-toggle="tab"
+                                                        href="#socioeconomico" role="tab" aria-controls="socioeconomico"
+                                                        aria-selected="false">
+                                                        Aspectos Vivienda</a>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a class="nav-link" id="vivienda-tab" data-toggle="tab" href="#vivienda"
+                                                        role="tab" aria-controls="vivienda" aria-selected="false">Salud y
+                                                        Adicionales</a>
+                                                </li>
+                                            </ul>
+                                            <div class="tab-content mt-2">
+                                                <div class="tab-pane fade show active" id="home" role="tabpanel"
+                                                    aria-labelledby="home-tab">
+                                                    @include('alumnos.datos-personales')
+                                                    <div class="mt-4">
+                                                        <button type="button" class="btn btn-primary mt-4 next-tab"
+                                                            data-tab="profile">Siguiente</button>
+                                                    </div>
+                                                </div>
+                                                <div class="tab-pane fade" id="profile" role="tabpanel"
+                                                    aria-labelledby="profile-tab">
+                                                    @include('alumnos.caracteristicas-familiares')
+                                                    <div class="mt-4">
+                                                        <button type="button" class="btn btn-secondary mt-4 prev-tab"
+                                                            data-tab="home">Anterior</button>
+                                                        <button type="button" class="btn btn-primary mt-4 next-tab"
+                                                            data-tab="contact">Siguiente</button>
+                                                    </div>
+                                                </div>
+                                                <div class="tab-pane fade" id="contact" role="tabpanel"
+                                                    aria-labelledby="contact-tab">
+                                                    @include('alumnos.aspectos-socioeconomico')
+                                                    <button type="button" class="btn btn-secondary mt-4 prev-tab"
+                                                        data-tab="profile">Anterior</button>
+                                                    <button type="button" class="btn btn-primary mt-4 next-tab"
+                                                        data-tab="socioeconomico">Siguiente</button>
+                                                </div>
+                                                <div class="tab-pane fade" id="socioeconomico" role="tabpanel"
+                                                    aria-labelledby="socioeconomico-tab">
+                                                    @include('alumnos.aspectos-vivienda')
+                                                    <button type="button" class="btn btn-secondary mt-4 prev-tab"
+                                                        data-tab="contact">Anterior</button>
+                                                    <button type="button" class="btn btn-primary mt-4 next-tab"
+                                                        data-tab="vivienda">Siguiente</button>
+                                                </div>
+                                                <div class="tab-pane fade" id="vivienda" role="tabpanel"
+                                                    aria-labelledby="vivienda-tab">
+                                                    @include('alumnos.aspectos-salud-culturales')
+                                                    <button type="button" class="btn btn-secondary mt-4 prev-tab"
+                                                        data-tab="socioeconomico">Anterior</button>
 
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <button style="float:right; position: relative; bottom: 3em" type="submit"
+                                                    class="btn btn-primary mt-3">Registrar</button>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div>
-                                        <button style="float:right; position: relative; bottom: 3em" type="submit"
-                                            class="btn btn-primary mt-3">Registrar</button>
-                                    </div>
-                                </div>
-                            </form>
+                                    </form>
+                                @elseif(auth()->user()->hasRole('alumnoB'))
+                                    <form action="{{ route('ppd.store') }}" method="POST">
+                                        @csrf
+                                        <div class="container mt-3">
+                                            <ul class="nav nav-tabs nav-pills nav-justified flex-column flex-sm-row"
+                                                id="myTab" role="tablist">
+                                                <li class="nav-item">
+                                                    <a class="nav-link active" id="home-tab" data-toggle="tab"
+                                                        href="#home" role="tab" aria-controls="home"
+                                                        aria-selected="true">Datos
+                                                        Personales</a>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile"
+                                                        role="tab" aria-controls="profile"
+                                                        aria-selected="false">Familiares/Educativos</a>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a class="nav-link" id="contact-tab" data-toggle="tab" href="#contact"
+                                                        role="tab" aria-controls="contact"
+                                                        aria-selected="false">Socioeconómicos</a>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a class="nav-link" id="socioeconomico-tab" data-toggle="tab"
+                                                        href="#socioeconomico" role="tab" aria-controls="socioeconomico"
+                                                        aria-selected="false">
+                                                        Aspectos Vivienda</a>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a class="nav-link" id="vivienda-tab" data-toggle="tab" href="#vivienda"
+                                                        role="tab" aria-controls="vivienda" aria-selected="false">Salud y
+                                                        Adicionales</a>
+                                                </li>
+                                            </ul>
+                                            <div class="tab-content mt-2">
+                                                <div class="tab-pane fade show active" id="home" role="tabpanel"
+                                                    aria-labelledby="home-tab">
+                                                    @include('alumnos.datos-personales')
+                                                    <div class="mt-4">
+                                                        <button type="button" class="btn btn-primary mt-4 next-tab"
+                                                            data-tab="profile">Siguiente</button>
+                                                    </div>
+                                                </div>
+                                                <div class="tab-pane fade" id="profile" role="tabpanel"
+                                                    aria-labelledby="profile-tab">
+                                                    @include('alumnos.ppd.form.educativos')
+                                                    <div class="mt-4">
+                                                        <button type="button" class="btn btn-secondary mt-4 prev-tab"
+                                                            data-tab="home">Anterior</button>
+                                                        <button type="button" class="btn btn-primary mt-4 next-tab"
+                                                            data-tab="contact">Siguiente</button>
+                                                    </div>
+                                                </div>
+                                                <div class="tab-pane fade" id="contact" role="tabpanel"
+                                                    aria-labelledby="contact-tab">
+                                                    @include('alumnos.aspectos-socioeconomico')
+                                                    <button type="button" class="btn btn-secondary mt-4 prev-tab"
+                                                        data-tab="profile">Anterior</button>
+                                                    <button type="button" class="btn btn-primary mt-4 next-tab"
+                                                        data-tab="socioeconomico">Siguiente</button>
+                                                </div>
+                                                <div class="tab-pane fade" id="socioeconomico" role="tabpanel"
+                                                    aria-labelledby="socioeconomico-tab">
+                                                    @include('alumnos.aspectos-vivienda')
+                                                    <button type="button" class="btn btn-secondary mt-4 prev-tab"
+                                                        data-tab="contact">Anterior</button>
+                                                    <button type="button" class="btn btn-primary mt-4 next-tab"
+                                                        data-tab="vivienda">Siguiente</button>
+                                                </div>
+                                                <div class="tab-pane fade" id="vivienda" role="tabpanel"
+                                                    aria-labelledby="vivienda-tab">
+                                                    @include('alumnos.aspectos-salud-culturales')
+                                                    <button type="button" class="btn btn-secondary mt-4 prev-tab"
+                                                        data-tab="socioeconomico">Anterior</button>
+
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <button style="float:right; position: relative; bottom: 3em" type="submit"
+                                                    class="btn btn-primary mt-3">Registrar</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                @endif
+                            @endauth
                         </div>
                     </div>
                 </div>

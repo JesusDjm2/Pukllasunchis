@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="author" content="David Jesús Miranda">
-    @yield('titulo')
+    <title>@yield('titulo')</title>
     <link rel="shortcut icon" type="image/x-icon" href="{{ asset('img/logoiesp.ico') }}">
     <link href="{{ asset('admin/vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" type="text/css">
     <link
@@ -43,6 +43,10 @@
                             <a class="collapse-item" href="{{ route('ciclo.index') }}">Ciclos</a>
                             <a class="collapse-item" href="{{ route('curso.index') }}">Cursos</a>
                             <a class="collapse-item" href="{{ route('competencias.index') }}">Competencias</a>
+                            <a class="collapse-item" href="{{ route('estandares.index') }}">Estándares</a>
+                            <a class="collapse-item" href="{{ route('capacidades.index') }}">Capacidades</a>
+                            <a class="collapse-item" href="{{ route('enfoques.index') }}">Enfoques</a>
+                            <a class="collapse-item" href="{{ route('proyectos.index') }}">Proyectos Integradores</a>
                             <a class="collapse-item" href="{{ route('periodos.index') }}">Periodos</a>
                         </div>
                     </div>
@@ -108,6 +112,22 @@
                             <h6 class="collapse-header">Gestionar usuarios:</h6>
                             <a class="collapse-item" href="{{ route('listaPostulantes') }}">Registrados</a>
                             <a class="collapse-item" href="{{ route('trabajo.create') }}">Ingresar nuevo</a>
+                        </div>
+                    </div>
+                </li>
+                <!-- Divider -->
+                <hr class="sidebar-divider d-none d-md-block">
+                <li class="nav-item">
+                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#fid"
+                        aria-expanded="true" aria-controls="bolsa">
+                        <i class="fas fa-fw fa-users"></i>
+                        <span>Postulantes FID</span>
+                    </a>
+                    <div id="fid" class="collapse" aria-labelledby="headingAlumnos"
+                        data-parent="#accordionSidebar">
+                        <div class="bg-white py-2 collapse-inner rounded">
+                            <h6 class="collapse-header">Gestionar usuarios:</h6>
+                            <a class="collapse-item" href="{{ route('regulares.index') }}">Registrados</a>
                         </div>
                     </div>
                 </li>
@@ -268,6 +288,7 @@
             <div id="content">
                 <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
                     <!-- Sidebar Toggle (Topbar) -->
+                    <h5 class="font-weight-bold text-primary">Administrador</h5>
                     <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
                         <i class="fa fa-bars"></i>
                     </button>
@@ -301,7 +322,7 @@
                     <div class="copyright text-center my-auto">
                         <span>Copyright &copy; {{ date('Y') }} | Hecho por <a class="text-primary"
                                 href="https://www.facebook.com/DjmWebMaster" target="_blank"
-                                rel="noopener noreferrer"> DJM2 </a> | Versión 2024.5</span>
+                                rel="noopener noreferrer"> DJM2 </a> | Versión 2025.1</span>
                     </div>
                 </div>
             </footer>

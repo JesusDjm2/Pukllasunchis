@@ -80,8 +80,95 @@
                         </div>
                     </div>
                 </div>
+
+
+                {{-- Convocatorias laborales --}}
+                <div class="container mt-5">
+                    <h2 class="linea-debajo">Convocatorias Laborales</h2>
+                    <div class="row justify-content-center align-items-center">
+                        <!-- Card 1 -->
+                        <div class="col-lg-6 col-md-6 col-12 mb-4">
+                            <div class="card shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title">Personal para el año Escolar 2025</h5>
+                                    <p class="card-text">
+                                        UNSAAC - Facultad de Educación, Institución Educativa de Aplicación Fortunato L.
+                                        Herrera
+                                        <br>
+                                        Del 11 al 16 de febrero del 2025
+                                    </p>
+                                    <p><strong>Contacto:</strong> <a
+                                            href="mailto:convocatoria1@institucion.com">facebook.com/UNSAACPag.Oficial</a>
+                                    </p>
+                                    {{-- <a href="{{route('conv')}}">Ver convocatoria</a> --}}
+                                    <button class="boton-puklla" data-bs-toggle="modal"
+                                        data-bs-target="#modalConvocatoria1">Ver Detalles</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 2 -->
+                        <div class="col-lg-6 col-md-6 col-12 mb-4">
+                            <div class="card shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title">Asistente de Investigación</h5>
+                                    <p class="card-text">Convocatoria laboral tiempo
+                                        completo para "Asistente de investigación".<br>
+                                        <strong>Fin de convocatoria: viernes 21 de febrero</strong>
+                                    </p>
+                                    <p><strong>Contacto:</strong> <a href="mailto:u.investigacion.eesp@pukllavirtual.edu.pe">u.investigacion.eesp@pukllavirtual.edu.pe</a></p>
+                                    {{-- <button class="boton-puklla" data-bs-toggle="modal"
+                                        data-bs-target="#modalConvocatoria2">Ver Detalles</button> --}}
+                                        <a href="{{route('conv')}}" class="boton-puklla">Ver convocatoria</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal 1 -->
+                    <div class="modal fade" id="modalConvocatoria1" tabindex="-1" aria-labelledby="modalConvocatoria1Label"
+                        aria-hidden="true">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="modalConvocatoria1Label">Convocatoria Personal para el año
+                                        Escolar 2025</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <img src="{{ asset('img/convocatorias/Convocatoria-unsaac.jpg') }}" class="img-fluid"
+                                        alt="Convocatoria 1 Detalles">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal 2 -->
+                    <div class="modal fade" id="modalConvocatoria2" tabindex="-1" aria-labelledby="modalConvocatoria2Label"
+                        aria-hidden="true">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="modalConvocatoria2Label">Convocatoria de Asistente
+                                        Administrativo - Detalles</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <img src="{{ asset('img/convocatorias/asistente-investigacion.jpg') }}"
+                                        class="img-fluid" alt="Convocatoria 2 Detalles">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+
                 <div class="row mt-3">
                     <div class="col-lg-12 mb-3">
+                        <h2 class="linea-debajo">Postulantes Bolsa de trabajo</h2>
                         <div id="accordion" class="collapseBolsa">
                             <div class="card">
                                 <div class="card-header" id="headingOne">
@@ -107,7 +194,7 @@
                                                     onclick="filtrarPorPerfil('Titulado')">Titulados</button>
                                                 <button class="btn btn-info btn-sm mb-2"
                                                     onclick="filtrarPorPerfil('Egresado')">Egresados</button>
-                                            </div> 
+                                            </div>
                                             @foreach ($postulantes1 as $postulante)
                                                 <div
                                                     class="col-lg-4 mb-3 tarjeta-usuario {{ strtolower($postulante->user->perfil) }}">
@@ -167,7 +254,8 @@
                                                                         style="color: red">&times;</span>
                                                                 </button>
                                                                 <div class="img text-center">
-                                                                    <img loading="lazy" src="{{ asset($postulante->img) }}"
+                                                                    <img loading="lazy"
+                                                                        src="{{ asset($postulante->img) }}"
                                                                         alt="{{ $postulante->nombre }}">
                                                                 </div>
                                                                 <h5 class="modal-title text-center mt-2 mb-2"
@@ -233,7 +321,6 @@
                                     </div>
                                 </div>
                             </div>
-
                             <div class="card">
                                 <div class="card-header" id="headingTwo">
                                     <h5 class="mb-0">
@@ -385,7 +472,6 @@
                                 </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>
@@ -394,7 +480,15 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous">
     </script>
-    <script>
-        
-    </script>
+    <style>
+        .boton-puklla {
+            background: #cb8b39;
+            color: #fff;
+            border: 1px solid #cb8b39;
+            padding: 5px 14px;
+            border-radius: 4px;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+    </style>
 @endsection

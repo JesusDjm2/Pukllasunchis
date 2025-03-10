@@ -48,6 +48,15 @@
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
+                                <div class="col-lg-12 mb-3">
+                                    <label for="sumilla">Sumilla:</label>
+                                    <textarea name="sumilla" 
+                                        class="form-control form-control-sm @error('sumilla') is-invalid @enderror" 
+                                        rows="4">{{ old('sumilla') }}</textarea>
+                                    @error('sumilla')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
                                 <div class="col-lg-4 mb-3">
                                     <label for="cc">Componente Curricular:</label>
                                     <select name="cc" class="form-control form-control-sm @error('cc') is-invalid @enderror" required>
@@ -61,9 +70,7 @@
                                     @error('cc')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
-                                </div>
-                                
-                                
+                                </div>  
                                 <div class="col-lg-4 mb-3">
                                     <label for="horas">Horas:</label>
                                     <input type="text" name="horas"

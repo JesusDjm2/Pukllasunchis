@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('cursos', function (Blueprint $table) {
             $table->id();
             $table->string('nombre');
+            $table->text('sumilla')->nullable();
             $table->string('cc');
             $table->string('horas');
             $table->string('creditos');
@@ -21,7 +22,6 @@ return new class extends Migration
             $table->string('silabo')->nullable();
             $table->string('classroom')->nullable();
             $table->string('clave')->nullable();
-
             $table->timestamps();
         });
     }

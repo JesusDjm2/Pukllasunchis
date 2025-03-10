@@ -93,18 +93,6 @@
                 @endif
             @endforeach
         </div>
-        {{-- <div class="col-lg-12 text-center mt-3 mb-3">
-            <div class="col-lg-12 text-center mt-3">
-                <button type="button" class="btn btn-sm btn-primary mx-1" onclick="mostrarTabla('tablaCalificaciones')">Ver
-                    calificaciones</button>
-                <button type="button" class="btn btn-sm btn-info mx-1" onclick="mostrarTabla('tablaPeriodo1')">Periodo
-                    1</button>
-                <button type="button" class="btn btn-sm btn-info mx-1" onclick="mostrarTabla('tablaPeriodo2')">Periodo
-                    2</button>
-                <button type="button" class="btn btn-sm btn-success mx-1"
-                    onclick="mostrarTabla('tablaDesempeno')">Desempeño</button>
-            </div>
-        </div> --}}
         <div class="row bg-white">
             <div class="col-12">
                 @if (Session::has('success'))
@@ -126,16 +114,16 @@
                     </li>
                     <li class="nav-item" role="presentation">
                         <a class="nav-link" id="longer-tab" data-bs-toggle="tab" href="#longer" role="tab"
-                            aria-controls="longer" aria-selected="false">Periodo 1</a>
+                            aria-controls="longer" aria-selected="false">Periodos</a>
                     </li>
-                    <li class="nav-item" role="presentation">
+                    {{-- <li class="nav-item" role="presentation">
                         <a class="nav-link" id="link-tab" data-bs-toggle="tab" href="#link" role="tab"
                             aria-controls="link" aria-selected="false">Periodo 2</a>
                     </li>
                     <li class="nav-item" role="presentation">
                         <a class="nav-link" id="disabled-tab" data-bs-toggle="tab" href="#desempeno" role="tab"
                             aria-controls="disabled" aria-selected="false" tabindex="-1" aria-disabled="true">Desempeño</a>
-                    </li>
+                    </li> --}}
                 </ul>
 
                 <div class="tab-content" id="myTabContent">
@@ -145,11 +133,11 @@
                                 <thead class="thead-dark">
                                     <tr>
                                         <th rowspan="2" class="text-center align-middle sortable">#</th>
-                                        <th rowspan="2" class="text-center align-middle sortable">Alumno</th>
+                                        <th rowspan="2" class="text-center align-middle sortable">Alusdsmno</th>
                                         @foreach ($competenciasSeleccionadas as $competencia)
                                             <th rowspan="2" class="text-center align-middle sortable"
                                                 style="font-size: 14px">
-                                                {{ $competencia->nombre }}                                                
+                                                {{ $competencia->nombre }}
                                             </th>
                                         @endforeach
                                     </tr>
@@ -165,7 +153,6 @@
                                             <td>{{ $index + 1 }}</td>
                                             <td style="text-align: left">{{ $alumno->apellidos }}, {{ $alumno->nombres }}
                                             </td>
-
                                             @php
                                                 $calificacion = $alumno
                                                     ->calificaciones()
@@ -228,14 +215,16 @@
                             style="font-size: 13px">
                             <thead class="thead-dark">
                                 <tr>
-                                    <th>#</th>
-                                    <th>Apellidos, Nombres</th>
+                                    <th class="sortable">#</th>
+                                    <th class="sortable">Apellidos, Nombres</th>
+									<th class="sortable">Periodo</th>
                                     @foreach ($competenciasSeleccionadas as $index => $competencia)
-                                        <th>{{ $competencia->nombre }}</th>
+                                        <th class="sortable">{{ $competencia->nombre }}</th>
                                     @endforeach
-                                    <th>Valoración Curso</th>
-                                    <th>Calificación Curso</th>
-                                    <th>Calificación Sistema</th>
+                                    
+                                    <th class="sortable">Valoración Curso</th>
+                                    <th class="sortable">Calificación Curso</th>
+                                    <th class="sortable">Calificación Sistema</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -245,12 +234,23 @@
                                         @php
                                             $periodo = $alumno->periodos->firstWhere('curso_id', $curso->id);
                                         @endphp
-                                        @if ($periodo)
-                                            <tr>
-                                                <td>{{ $alumnoIndex++ }}</td>
-                                                <td style="text-align: left">{{ $alumno->apellidos }},
-                                                    {{ $alumno->nombres }}
-                                                </td>
+                                        @php
+                                            $periodoDos = $alumno->periododos->firstWhere('curso_id', $curso->id);
+                                        @endphp
+                                        @php
+                                            $periodoTres = $alumno->periodotres->firstWhere('curso_id', $curso->id);
+                                        @endphp
+                                        <tr>
+
+                                            <td rowspan="3" class="align-middle text-center font-weight-bold"
+                                                style="border-left: #165874 1px solid; border-bottom: #165874 1px solid">
+                                                {{ $alumnoIndex++ }}</td>
+                                            <td rowspan="3" class="align-middle text-center font-weight-bold"
+                                                style="border-bottom: #165874 1px solid">{{ $alumno->apellidos }},
+                                                {{ $alumno->nombres }}
+                                            </td>
+                                            <td class="text-primary font-weight-bold">Parcial 1</td>
+                                            @if ($periodo)
                                                 @foreach ($competenciasSeleccionadas as $compIndex => $competencia)
                                                     <td>
                                                         @php
@@ -263,11 +263,11 @@
                                                             @break
 
                                                             @case(2)
-                                                                En Proceso
+                                                                Inicio
                                                             @break
 
                                                             @case(3)
-                                                                Procesando
+                                                                En Proceso
                                                             @break
 
                                                             @case(4)
@@ -286,8 +286,94 @@
                                                 <td>{{ $periodo->valoracion_curso ?? '-' }}</td>
                                                 <td>{{ $periodo->calificacion_curso ?? '-' }}</td>
                                                 <td>{{ $periodo->calificacion_sistema ?? '-' }}</td>
-                                            </tr>
-                                        @endif
+                                            @endif
+                                        </tr>
+
+                                        <tr>
+                                            <td class="text-info font-weight-bold">Parcial 2</td>
+                                            @if ($periodoDos)
+                                                @foreach ($competenciasSeleccionadas as $compIndex => $competencia)
+                                                    <td>
+                                                        @php
+                                                            $valoracionKey = 'valoracion_' . ($compIndex + 1);
+                                                            $valoracion = $periodoDos->$valoracionKey;
+                                                        @endphp
+                                                        @switch($valoracion)
+                                                            @case(1)
+                                                                Previo al Inicio
+                                                            @break
+
+                                                            @case(2)
+                                                                Inicio
+                                                            @break
+
+                                                            @case(3)
+                                                                En Proceso
+                                                            @break
+
+                                                            @case(4)
+                                                                Logrado
+                                                            @break
+
+                                                            @case(5)
+                                                                Destacado
+                                                            @break
+
+                                                            @default
+                                                                Sin Valoración
+                                                        @endswitch
+                                                    </td>
+                                                @endforeach
+                                                <td>{{ $periodoDos->valoracion_curso ?? '-' }}</td>
+                                                <td>{{ $periodoDos->calificacion_curso ?? '-' }}</td>
+                                                <td>{{ $periodoDos->calificacion_sistema ?? '-' }}</td>
+                                            @endif
+
+                                        </tr>
+                                        <tr>
+                                            <td style="border-bottom: #165874 1px solid"
+                                                class="text-success font-weight-bold">Promedio</td>
+                                            @if ($periodoTres)
+                                                @foreach ($competenciasSeleccionadas as $compIndex => $competencia)
+                                                    <td style="border-bottom: #165874 1px solid">
+                                                        @php
+                                                            $valoracionKey = 'valoracion_' . ($compIndex + 1);
+                                                            $valoracion = $periodoTres->$valoracionKey;
+                                                        @endphp
+                                                        @switch($valoracion)
+                                                            @case(1)
+                                                                Previo al Inicio
+                                                            @break
+
+                                                            @case(2)
+                                                                Inicio
+                                                            @break
+
+                                                            @case(3)
+                                                                En Proceso
+                                                            @break
+
+                                                            @case(4)
+                                                                Logrado
+                                                            @break
+
+                                                            @case(5)
+                                                                Destacado
+                                                            @break
+
+                                                            @default
+                                                                Sin Valoración
+                                                        @endswitch
+                                                    </td>
+                                                @endforeach
+                                                <td style="border-bottom: #165874 1px solid">
+                                                    {{ $periodoTres->valoracion_curso ?? '-' }}</td>
+                                                <td style="border-bottom: #165874 1px solid">
+                                                    {{ $periodoTres->calificacion_curso ?? '-' }}</td>
+                                                <td style="border-bottom: #165874 1px solid">
+                                                    {{ $periodoTres->calificacion_sistema ?? '-' }}</td>
+                                            @endif
+                                        </tr>
                                     @endforeach
                                 @else
                                     <p>No hay periodos publicados.</p>
@@ -295,7 +381,7 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="tab-pane fade" id="link" role="tabpanel" aria-labelledby="link-tab">
+                    {{-- <div class="tab-pane fade" id="link" role="tabpanel" aria-labelledby="link-tab">
                         <table class="table table-hover table-bordered text-center" id="tablaPeriodo2"
                             style="font-size: 13px">
                             <thead class="thead-dark">
@@ -438,10 +524,10 @@
                                 @endif
                             </tbody>
                         </table>
-                    </div>
+                    </div> --}}
                 </div>
             </div>
-        </div>       
+        </div>
     </div>
     <div id="competenciaModal" class="modal" onclick="closeModal(event)">
         <div class="modal-content" onclick="event.stopPropagation();">
@@ -464,7 +550,6 @@
             document.getElementById("competenciaNombre").innerText = nombre;
             document.getElementById("competenciaDescripcion").innerText = descripcion;
             document.getElementById("competenciaCapacidades").innerHTML = capacidades; // Texto enriquecido
-
             // Muestra el modal
             document.getElementById("competenciaModal").style.display = "block";
         }

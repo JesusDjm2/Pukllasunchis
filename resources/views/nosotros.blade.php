@@ -65,10 +65,7 @@
                         <h3>Misión</h3>
                         <div class="linea-medio"></div>
                         <p class="text-justify">
-                            Somos una Escuela de Educación Superior que forma profesionales capaces de promover propuestas
-                            educativas creativas e inclusivas que afirman la identidad, promueven la equidad y se
-                            comprometen
-                            con la diversidad y la vida.
+                            Somos una Escuela de Educación Superior Pedagógico cusqueña que, a través del actuar afectivo, la reflexión crítica, la investigación vivencial, la construcción de aprendizajes interculturales y el trabajo colaborativo, forma profesionales competentes y capaces de promover propuestas educativas innovadoras, inclusivas que afirman la identidad, promueven la equidad y el compromiso con la diversidad y con la vida.
                         </p>
                     </div>
                 </div>
@@ -77,11 +74,7 @@
                         <h3>Visión</h3>
                         <div class="linea-medio"></div>
                         <p class="text-justify">
-                            Somos una Escuela de Educación Superior Pedagógica referente en la región y el país, que forma
-                            docentes interculturales, reflexivos con su práctica, críticos, propositivos y comprometidos con
-                            una
-                            educación que afirma a la niñez en su cultura, desarrolla sus potencialidades y educa para una
-                            convivencia que celebra la vida y la diversidad.
+                            Ser una escuela modelo de educación superior Pedagógica en la región y el país, reconocida por formar docentes interculturales, reflexivos, críticos, una educación comprometida con el desarrollo de los talentos y habilidades individuales, afirmando la identidad y los derechos culturales de los estudiantes, e incentivando la participación integral de las comunidades, Asumiendo el compromiso comunitario de todos los factores educativos que promueven el desarrollo nacional y la convivencia armoniosa que protegen la vida y la diversidad.
                         </p>
                     </div>
                 </div>

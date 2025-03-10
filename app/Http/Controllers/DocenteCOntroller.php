@@ -117,26 +117,19 @@ class DocenteCOntroller extends Controller
         return redirect()->route('docente.show', $docente->id)
             ->with('success', 'Perfil actualizado correctamente.');
     }
-    /* public function showAlumnos(Curso $curso, Docente $docente)
+
+    public function showBlog($docenteId)
     {
-        $programa = $curso->ciclo->programa;
-        $ciclo = $curso->ciclo;
-
-        $alumnos = $programa->alumnos() 
-            ->where('ciclo_id', $ciclo->id)
-            ->orderBy('apellidos')
-            ->get();
-        $cantidadAlumnos = $alumnos->count();
-
-        return view('docentes.alumnos', compact('curso', 'alumnos', 'cantidadAlumnos', 'ciclo', 'docente'));
-    } */
+        $docente = Docente::findOrFail($docenteId);
+        $blog = $docente->blog;
+        return view('docentes.blog', compact('docente', 'blog'));
+    }
 
     public function showAlumnos(Curso $curso, Docente $docente)
     {
         $programa = $curso->ciclo->programa;
         $ciclo = $curso->ciclo;
 
-        // Filtrar los alumnos del programa excluyendo los que tienen el rol "inhabilitado"
         $alumnos = $programa->alumnos()
             ->where('ciclo_id', $ciclo->id)
             ->whereHas('user', function ($query) {
@@ -180,19 +173,7 @@ class DocenteCOntroller extends Controller
         $docente = Docente::findOrFail($id);
         return view('docentes.calificaciones.index', compact('docente'));
     }
-    /* public function calificarCurso(Request $request, $docenteId, $cursoId)
-    {
-        $curso = Curso::findOrFail($cursoId);
-        $docente = Docente::findOrFail($docenteId);
-        $competenciasSeleccionadas = Competencia::whereIn('id', $request->input('competencias'))->get();
-        $alumnos = $curso->ciclo->alumnos()->orderBy('apellidos')->get();
 
-        if (auth()->user()->hasRole('admin')) {
-            return view('admin.curso.calificaciones', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos'));
-        }
-
-        return view('docentes.calificaciones.alumnos', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos'));
-    } */
     public function calificarCurso(Request $request, $docenteId, $cursoId)
     {
         $curso = Curso::findOrFail($cursoId);
@@ -206,14 +187,18 @@ class DocenteCOntroller extends Controller
                 });
             })
             ->orderBy('apellidos')
-            ->with(['periodos', 'periododos', 'periodotres']) 
+            ->with(['periodos', 'periododos', 'periodotres'])
             ->get();
 
+        $mostrarBotonDesempeno = $alumnos->contains(function ($alumno) {
+            return $alumno->periodos->isNotEmpty() && $alumno->calificaciones->isNotEmpty();
+        });
+
         if (auth()->user()->hasRole('admin')) {
-            return view('admin.curso.calificaciones', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos'));
+            return view('admin.curso.calificaciones', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos', 'mostrarBotonDesempeno'));
         }
 
-        return view('docentes.calificaciones.alumnos', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos'));
+        return view('docentes.calificaciones.alumnos', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos', 'mostrarBotonDesempeno'));
     }
 
     public function updateBlog(Request $request, $id)
@@ -256,8 +241,12 @@ class DocenteCOntroller extends Controller
                 })
                 ->orderBy('apellidos')
                 ->get();
+            $mostrarBotonDesempeno = $alumnos->contains(function ($alumno) {
+                return $alumno->periodos->isNotEmpty() && $alumno->calificaciones->isNotEmpty();
+            });
 
-            return view('docentes.calificaciones.alumnos', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos'));
+
+            return view('docentes.calificaciones.alumnos', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos', 'mostrarBotonDesempeno'));
         }
 
         return $response;

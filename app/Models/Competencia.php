@@ -25,4 +25,16 @@ class Competencia extends Model
     {
         return $this->belongsToMany(Curso::class, 'curso_competencia_seleccionada');
     }
+    public function capacidad()
+    {
+        return $this->hasMany(Capacidades::class, 'competencia_id');
+    }
+    
+    public function estandares()
+    {
+        return $this->belongsToMany(Estandares::class, 'ciclo_competencia_estandar', 'competencia_id', 'estandar_id')
+                    ->withPivot('ciclo_id')
+                    ->withTimestamps();
+    }
+    
 }

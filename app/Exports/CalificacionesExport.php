@@ -44,7 +44,7 @@ class CalificacionesExport implements FromCollection, WithHeadings, WithCustomCs
             3 => 'En Proceso',
             2 => 'Inicio',
             1 => 'Previo al Inicio',
-            0 => '-' // O cualquier texto que desees para un valor no evaluado
+            0 => '-' 
         ];
 
         $data = [];
@@ -54,45 +54,25 @@ class CalificacionesExport implements FromCollection, WithHeadings, WithCustomCs
                 "{$alumno->apellidos}, {$alumno->nombres}", // Alumno
             ];
 
-            $calificacion = $alumno->calificaciones()->where('curso_id', $this->cursoId)->first();
-
+            $periodoTres = $alumno->periodotres()->where('curso_id', $this->cursoId)->first();
+            
             foreach ($this->competencias as $index => $competencia) {
                 $valoracionKey = 'valoracion_' . ($index + 1); // Clave de la columna
-                $valoracion = $calificacion ? $calificacion->$valoracionKey : 0; // Obtén el valor de la valoración
+                $valoracion = $periodoTres ? $periodoTres->$valoracionKey : 0; // Obtén el valor de la valoración
 
                 $row[] = isset($valoracionTextos[$valoracion]) ? $valoracionTextos[$valoracion] : 'N/A';
             }
-
+           
             // Agregar las calificaciones adicionales
-            $row[] = $calificacion ? $calificacion->valoracion_curso : 'N/A';
-            $row[] = $calificacion ? $calificacion->calificacion_curso : 'N/A';
-            $row[] = $calificacion ? $calificacion->calificacion_sistema : 'N/A';
+            $row[] = $periodoTres ? $periodoTres->valoracion_curso : 'N/A';
+            $row[] = $periodoTres ? $periodoTres->calificacion_curso : 'N/A';
+            $row[] = $periodoTres ? $periodoTres->calificacion_sistema : 'N/A';
 
             $data[] = $row;
         }
 
         return collect($data);
     }
-
-    /* public function headings(): array
-    {
-        $headers = [
-            '#',
-            'Alumno',
-        ];
-
-        // Agregar encabezados para las competencias
-        foreach ($this->competencias as $competencia) {
-            $headers[] = "{$competencia->nombre}"; // Nombre de la competencia
-        }
-
-        // Agregar encabezados para calificaciones adicionales
-        $headers[] = 'Valoración del Curso';
-        $headers[] = 'Calificación del Curso';
-        $headers[] = 'Calificación para el Sistema';
-
-        return $headers;
-    } */
 
     public function headings(): array
     {

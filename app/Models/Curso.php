@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Curso extends Model
 {
     use HasFactory;
-    protected $fillable = ['nombre', 'cc', 'horas', 'creditos', 'ciclo_id', 'silabo', 'classroom', 'clave'];
+    protected $fillable = ['nombre', 'sumilla', 'cc', 'horas', 'creditos', 'ciclo_id', 'silabo', 'classroom', 'clave'];
 
     public function ciclo()
     {
@@ -38,8 +38,24 @@ class Curso extends Model
     {
         return $this->hasMany(PeriodoUno::class);
     }
+    public function periododos()
+    {
+        return $this->hasMany(PeriodoDos::class);
+    }
+    public function periodotres()
+    {
+        return $this->hasMany(PeriodoTres::class);
+    }
     public function periodo()
     {
         return $this->hasMany(Periodo::class);
+    }
+    public function relacionsilabo()
+    {
+        return $this->hasOne(Silabo::class, 'curso_id');
+    }    
+    public function enfoques()
+    {
+        return $this->hasMany(Enfoques::class);
     }
 }

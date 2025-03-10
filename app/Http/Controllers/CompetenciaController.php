@@ -69,14 +69,15 @@ class CompetenciaController extends Controller
         $competencia = Competencia::findOrFail($id);
         $user = Auth::user();
         $docente = $user->docente;
-        $alumno = $user->alumno; 
+        $alumno = $user->alumno;
+        $capacidades = $competencia->capacidad()->orderBy('created_at', 'asc')->get();
 
         if ($user->hasRole('docente')) {
-            return view('docentes.competencias.showDocente', compact('competencia', 'docente'));
+            return view('docentes.competencias.showDocente', compact('competencia', 'docente', 'capacidades'));
         } elseif ($user->hasRole('admin')) {
-            return view('docentes.competencias.show', compact('competencia', 'docente'));
+            return view('docentes.competencias.show', compact('competencia', 'docente', 'capacidades'));
         } elseif ($user->hasRole('alumno')) {
-            return view('docentes.competencias.showAlumno', compact('competencia', 'docente', 'alumno'));
+            return view('docentes.competencias.showAlumno', compact('competencia', 'docente', 'alumno', 'capacidades'));
         } else {
             return abort(403, 'Acceso denegado.');
         }

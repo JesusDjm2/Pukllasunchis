@@ -9,6 +9,97 @@
         integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
 @endsection
 @section('contenido')
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 20px;
+            z-index: 2000;
+            width: 80%;
+            margin: 1em auto;
+            height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            /* Fondo oscuro */
+            z-index: 1999;
+            /* Un poco menor que el modal */
+        }
+
+        .modal-header {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .modal-body {
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .modal-body li {
+            margin-bottom: 12px;
+        }
+
+        .modal-body .span {
+            background: #cd9244;
+            border-radius: 50%;
+            padding: 3px 10px;
+            color: #fff;
+            margin-right: 5px;
+            position: relative;
+            /* Necesario para ::after */
+        }
+
+        .modal-body .span::after {
+            content: '';
+            display: block;
+            width: 2px;
+            height: 20px;
+            background: #cd9244;
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .modal-body ul li:last-child .span::after {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+
+            .modal-body .span::after {
+                display: none;
+            }
+        }
+
+
+        .modal-close {
+            background-color: #38496b;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: inline-block;
+            margin-top: 10px;
+        }
+    </style>
     <div class="bradcam_area admision bradcam_overlay">
         <div class="container">
             <div class="row">
@@ -32,6 +123,11 @@
                         <li><a href="{{ route('tesis') }}"><i class="fa fa-caret-right fa-sm"></i> Tesis</a></li>
                         <li><a href="{{ route('tramites') }}"><i class="fa fa-caret-right fa-sm"></i> Trámites
                                 presenciales</a></li>
+                        <li>
+                            <a href="#" onclick="openModal()"> <i class="fa fa-caret-right fa-sm"></i> ¿Cómo pagar en
+                                Caja Cusco?
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -108,21 +204,18 @@
                     <li>
                         Para la Aplicación de Trabajo de Investigación
                         <ul>
-                            <li>Llenar el Formato Único de Trámite (FUT): <small>
-								<a href="{{route('partes')}}" class="text-info">Ir a formato <i class="fa fa-eye"></i> </a> |
-								<a href="{{ asset('pdf/fut.docx') }}" target="_blank" class="text-primary"> Descargar FUT</a>        
-                                </small>
-                            </a>
-							</li>
                             <ul>
-                                <li>Hacer el pago de S/ 10 soles <strong>como pago ordinario</strong> en las oficinas de Caja Cusco. <small class="text-info">(Concepto: Carta de presentación para INV / Codigo: 10 )</small></li>
-                                <li>Presentar FUT en la Secretaría o llenar el formulario. <small><a href="https://forms.gle/LFwgrVfQ7XYPCDSm8" target="_blank" class="text-primary">
-									Formulario <i class="fa fa-external-link"></i> </a></small></li>
+                                <li>Hacer el pago de S/ 10 soles <strong>como pago ordinario</strong> en las oficinas de
+                                    Caja Cusco. <small class="text-info">(Concepto: Carta de presentación para INV / Codigo:
+                                        31 )</small></li>
+                                <li>Llenar el formulario. <small><a href="https://forms.gle/LFwgrVfQ7XYPCDSm8"
+                                            target="_blank" class="text-primary">
+                                            Link <i class="fa fa-external-link"></i> </a></small></li>
                                 <li>Como resultado de este trámite recibirás la carta de aplicación de Trabajo de
-                                    Investigación y una carta modelo de Aceptación de Trabajo de Investigación. </li>                                
+                                    Investigación y una carta modelo de Aceptación de Trabajo de Investigación. </li>
                             </ul>
                         </ul>
-                       
+
                     </li>
                     <li>Solicitar revisión de originalidad (Turnitin):
                         <ul>
@@ -130,7 +223,7 @@
                                 oficinas de Caja Cusco.</li>
                             <li>Llenar <a
                                     href="https://docs.google.com/forms/d/e/1FAIpQLSc1Bam9QlzjkT66NYeKMxS-xyoU4MchYtYiGCMmtvKVbHiCjg/viewform"
-                                    target="_blank" class="text-primary"> FORMULARIO DE REVISIÓN DE ORIGINALIDAD.</a></li>
+                                    target="_blank" class="text-primary"> FORMULARIO DE REVISIÓN DE ORIGINALIDAD. <i class="fa fa-external-link"></i></a></li>
                             <li>Adjuntar:
                                 <ul>
                                     <li>Versión final del TI en formato WORD</li>
@@ -139,7 +232,10 @@
                             </li>
                             <li>Como resultado de este trámite, recibirás en tu correo institucional el Reporte de
                                 originalidad (Turnitin), en un plazo no mayor a 10 días hábiles.</li>
-							<small style="color: #000; font-style: italic;">Nota: el porcentaje máximo para aprobar el reporte de originalidad debe ser 20%, de lo contrario, debe corregir el documento y solicitar nuevamente la revisión. Con el pago que usted realiza puede hacer 3 revisiones de originalidad en un plazo no mayor a 20 días.</small>
+                            <small style="color: #000; font-style: italic;">Nota: el porcentaje máximo para aprobar el
+                                reporte de originalidad debe ser 20%, de lo contrario, debe corregir el documento y
+                                solicitar nuevamente la revisión. Con el pago que usted realiza puede hacer 3 revisiones de
+                                originalidad en un plazo no mayor a 20 días.</small>
                         </ul>
                     </li>
                     <li>Solicitar la revisión del TI:
@@ -173,7 +269,7 @@
                                 </ul>
                             </li>
                             <li>Como resultado de este trámite, recibirás en tu correo institucional la RD de asignación de
-                                fecha de exposición de TI, en un plazo no mayor a 3 días hábiles.</li>
+                                fecha de exposición de TI, en un plazo no mayor a <strong>5 días hábiles. </strong></li>
                         </ul>
                     </li>
                     <li>Después de la exposición del TI, solicitar RD de aprobación del TI:
@@ -198,7 +294,8 @@
                     <li>Armar expediente de graduación:
                         <ul>
                             <li>Este trámite solo se realiza de manera presencial en la oficina de secretaría de la EESP
-                                Pukllasunchis. <a href="{{ route('tramites') }}#derecho"> <small class="text-primary">Ir a
+                                Pukllasunchis. <a href="{{ route('tramites') }}#derecho"> <small class="text-primary">Ir
+                                        a
                                         trámite
                                         <i class="fa fa-arrow-right"></i> </small></a></li>
                         </ul>
@@ -339,7 +436,7 @@
                         <p>
                             Los pagos ordinarios <strong>SOLO SE PUEDEN PAGAR EN VENTANILLAS</strong> de cualquier agencia a
                             nivel nacional de CAJA CUSCO. <a class="text-primary" target="_blank"
-                                href="{{ asset('pdf/PAGOS-ORDINARIOS-CAJA-CUSCO-2.pdf') }}">Ver PDF para
+                                href="{{ asset('pdf/Conceptos-ordinarios-caja-cusco-4.pdf') }}">Ver PDF para
                                 pagos<small><i class="fa fa-eye"></i></small></a>
                         </p>
                     </div>
@@ -347,16 +444,71 @@
 
                 <p class="generic-blockquote">
                     <strong>OJO:</strong><br>
-					- Cliente debe indicar <span class="text-danger font-weight-bold">PAGO ORDINARIO</span> de la
-                                <span class="text-danger font-weight-bold">ASOCIACIÓN PUKLLASUNCHIS - EESPP</span><br>
-					- Cliente debe indicar el concepto a pagar (ejemplo: Aprobación de PTI, Cambio de tema, cambio de asesor, disolucion de grupo, extensión de plazo.<br>
-					- El representante del servicio realizará la búsqueda y le indicará el monto del concepto ordinario para la validación del cliente.<br> 
-					- Finalmente el Cliente deberá dictar el código (DNI), el nombre y apellidos completos del
-                                alumno.
+                    - Cliente debe indicar <span class="text-danger font-weight-bold">PAGO ORDINARIO</span> de la
+                    <span class="text-danger font-weight-bold">ASOCIACIÓN PUKLLASUNCHIS - EESPP</span><br>
+                    - Cliente debe indicar el concepto a pagar (ejemplo: Aprobación de PTI, Cambio de tema, cambio de
+                    asesor, disolucion de grupo, extensión de plazo.<br>
+                    - El representante del servicio realizará la búsqueda y le indicará el monto del concepto ordinario para
+                    la validación del cliente.<br>
+                    - Finalmente el Cliente deberá dictar el código (DNI), el nombre y apellidos completos del
+                    alumno.
                 </p>
             </div>
         </div>
     </div>
+    <!-- Pop-up Modal -->
+    <div class="modal-overlay" id="modalOverlay"></div>
+    <div class="modal" id="modal">
+        <div class="modal-header text-center">
+            <h4 class="mx-auto font-weight-bold">¿Cómo pagar en Caja Cusco?</h4>
+        </div>
+        <div class="modal-body">
+            <p class="font-weight-bold">Todos los pagos del proceso de titulación son pagos ordinarios. <small
+                    class="text-danger">
+                    <i class="font-weight-bold">(No se considera pago ordinario matriculas ni cuotas semestrales.)</i>
+                </small></p>
+
+            <ul>
+                <li> <span class="span">1</span>
+                    Acercarse a las oficinas de <span class="text-danger font-weight-bold">Caja Cusco</span> e indicar que
+                    realizarás un pago ordinario de la Asociación
+                    Pukllasunchis.
+                </li>
+                <li><span class="span">2</span>
+                    Indicar el concepto y código de pago.<a class="text-primary" target="_blank"
+                        href="{{ asset('pdf/Conceptos-ordinarios-caja-cusco-4.pdf') }}"> Ver PDF para
+                        pagos<small><i class="fa fa-eye"></i></small></a>
+                </li>
+                <li><span class="span">3</span>
+                    Indicar en ventanilla el número de DNI y nombre del estudiante.
+                </li>
+                <li><span class="span">4</span>
+                    <strong>NO</strong> es necesario enviar el voucher ya que en el lapso de <strong>2 días hábiles</strong>
+                    le llegará la boleta electrónica
+                    emitida por la EESPP a tu correo institucional.
+                </li>
+                <li><span class="span">5</span>
+                    Con esta boleta electrónica podrás realizar tu trámite correspondiente.
+                </li>
+            </ul>
+            <div class="mx-auto text-center mt-3" style="width: 100%;">
+                <button class="btn btn-sm btn-primary" onclick="closeModal()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Función para abrir el modal
+        function openModal() {
+            document.getElementById('modal').style.display = 'block';
+            document.getElementById('modalOverlay').style.display = 'block';
+        }
+
+        // Función para cerrar el modal
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+            document.getElementById('modalOverlay').style.display = 'none';
+        }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous">
     </script>

@@ -55,6 +55,7 @@ Route::get('informacion/articulos', [EnlacesController::class, 'articulos'])->na
 Route::get('informacion/proyectos-académicos', [EnlacesController::class, 'proyectos'])->name('proyectos');
 Route::get('informacion/innovaciones', [EnlacesController::class, 'innovaciones'])->name('innovaciones');
 Route::get('informacion/bolsa-de-trabajo', [EnlacesController::class, 'bolsa'])->name('bolsa');
+Route::get('informacion/convocatorias', [EnlacesController::class, 'conv'])->name('conv');
 
 //Foot
 Route::get('informacion-institucional', [EnlacesController::class, 'informacion'])->name('informacion');

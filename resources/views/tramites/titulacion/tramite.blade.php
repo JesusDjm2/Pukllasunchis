@@ -9,6 +9,93 @@
         integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
 @endsection
 @section('contenido')
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 20px;
+            z-index: 2000;
+            width: 80%;
+            margin: 1em auto;
+            height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1999;
+        }
+
+        .modal-header {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .modal-body {
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .modal-body li {
+            margin-bottom: 12px;
+        }
+
+        .modal-body .span {
+            background: #cd9244;
+            border-radius: 50%;
+            padding: 3px 10px;
+            color: #fff;
+            margin-right: 5px;
+            position: relative;
+        }
+
+        .modal-body .span::after {
+            content: '';
+            display: block;
+            width: 2px;
+            height: 20px;
+            background: #cd9244;
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .modal-body ul li:last-child .span::after {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+
+            .modal-body .span::after {
+                display: none;
+            }
+        }
+
+        .modal-close {
+            background-color: #38496b;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: inline-block;
+            margin-top: 10px;
+        }
+    </style>
     <div class="bradcam_area admision bradcam_overlay">
         <div class="container">
             <div class="row">
@@ -33,11 +120,16 @@
                         <li><a href="{{ route('tesis') }}"><i class="fa fa-caret-right fa-sm"></i> Tesis</a></li>
                         <li><a href="{{ route('tramites') }}"><i class="fa fa-caret-right fa-sm"></i> Trámites
                                 presenciales</a></li>
+                        <li>
+                            <a href="#" onclick="openModal()"> <i class="fa fa-caret-right fa-sm"></i> ¿Cómo pagar en
+                                Caja Cusco?
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </div>
             <div class="col-lg-9">
-                <h2 class="linea-debajo" id="planTrabajo"> Trámites Presenciales</h2>
+                <h3 class="linea-debajo"> Trámites Presenciales</h3>
                 <p>
                     Los siguientes trámites forman parte del proceso de titulación y se deben realizar de manera presencial
                     por los requisitos que se necesitan presentar.
@@ -54,9 +146,8 @@
                             </a>
                         </div>
                     </div>
-                </div><br><br>
-
-
+                </div><br>
+                <h3 class="linea-debajo mb-4">Armado de expediente de graduación</h3>
                 {{-- Prueba con Acordeon --}}
                 <div id="accordion" class="collapseBolsa">
                     <div class="card">
@@ -65,7 +156,7 @@
                                 <button class="btn btn-link" data-toggle="collapse" data-target="#collapseOne"
                                     aria-expanded="true" aria-controls="collapseOne" onclick="toggleArrow('arrowOne')">
                                     <span id="arrowOne" class="arrow fa fa-caret-down fa-sm"></span>
-                                    Derecho de obtención de grado de Bachiller Carreras Regulares
+                                    Para estudiantes de formación inicial Docente (5 años).
                                 </button>
                             </h5>
                         </div>
@@ -84,13 +175,13 @@
                                                         class="fa fa-arrow-down"></i></a></small>
                                         </li>
                                         <li>Una fotocopia de DNI ampliado y legalizado. </li>
-                                       
+
                                         <li>Ocho (8) fondo blanco, papel mate, con terno de color negro.</li>
                                         <li>Una copia de RD de haber aprobado las prácticas pre profesionales. → s/50.00
                                         </li>
                                         <li>Carta de aceptación de la I.E. donde se realiza la investigación, original.</li>
                                         <li>Constancia de no deudor original.</li>
-                                        <li>Constancia de egresado original.</li>                                       
+                                        <li>Constancia de egresado original.</li>
                                         <li>Resolución Directoral de Aprobación de PTI y asignación de asesor original.</li>
                                         <li>Informe de Trabajo de Investigación Apto original.</li>
                                         <li>Resolución Directoral de aprobación de Trabajo de Investigación original.</li>
@@ -98,7 +189,8 @@
                                             Inicial o Primaria.</li>
                                         <li>Una copia del Certificado de conocimiento de lengua originaria, para Primaria
                                             EIB.</li>
-                                        <li>Comprobante de pago por Derecho de obtención de grado de Bachiller original.</li>
+                                        <li>Comprobante de pago por Derecho de obtención de grado de Bachiller original.
+                                        </li>
                                     </ul>
                                     <p class="mt-2">
                                         Como resultado de este trámite obtendrás una Carta de aceptación de Expediente de
@@ -115,63 +207,44 @@
                                 <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseTwo"
                                     aria-expanded="false" aria-controls="collapseTwo" onclick="toggleArrow('arrowTwo')">
                                     <span id="arrowTwo" class="arrow fa fa-caret-down fa-sm"></span>
-                                    Derecho de obtención de grado de Bachiller para
-                                        Profesionalización Docente
+                                    Para estudiantes de Profesionalización docente (1 año).
                                 </button>
                             </h5>
                         </div>
                         <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
                             <div class="card-body">
                                 <div class="row">
-                                    <ul style="color:#4D4D4D;" class="listasDecimal">
-                                        <li>Solicitar la aprobación del Plan de Trabajo de Investigación: s/50.00</li>
-                                        <li>Solicitar revisión de originalidad (Turnitin): s/50.00</li>
-                                        <li>Solicitar la revisión de TI: s/100.00</li>
-                                        <li>Solicitar fecha de exposición del TI</li>
-                                        <li>Después de la exposición del TI, solicitar RD de aprobación del TI: s/50.00</li>
-                                        <li>Constancia de primera matrícula. → s/50.00</li>
-                                        <li>Armar expediente de graduación. → s/500.00
-                                            <ul class="listasCuerpo">
-                                                <li>FUT debidamente llenado. Puedes solicitarlo en la oficina secretaría o  descargarlo de la
-                                                    página web. <small><a href="{{ asset('pdf/fut.docx') }}"
-                                                            class="text-primary">Descargar
-                                                            <i class="fa fa-arrow-down"></i></a></small></li>
-                                                <li>Una fotocopia de DNI ampliado y legalizado.</li>
-                                                <li>Cuatro (4) fotos tamaño pasaporte en fondo blanco y con terno en papel mate.</li>
-                                                <li>Carta de aceptación de la I.E. donde se realiza la investigación,
-                                                    original y una copia.</li>
-                                                <li>Constancia de no deudor original y una copia.</li>
-                                                <li>Constancia de egresado original y una copia.</li>
+                                    <ul class="listasDecimal">
 
-                                                <li>Certificado original de Estudios Superiores.
-                                                    <ul>
-                                                        <li>Para estudiantes provenientes de Institutos (IESP): Certificado
-                                                            de Estudios
-                                                            original, visado por la DREC.
-                                                        </li>
-														<li>Certificado de Estudios de Universidad. Legalizado por notaria o Fedatado por la misma Universidad.</li>
-                                                    </ul>
+                                        <li>Pago por derecho de expediente de de graduación. → s/500.00 </li>
+                                        <li>Una fotocopia de DNI ampliado y legalizado.</li>
+                                        <li>Cuatro (4) fotos tamaño pasaporte en fondo blanco y con terno en papel mate.
+                                        </li>
+                                        <li>Carta de aceptación de la I.E. donde se realiza la investigación,
+                                            original.</li>
+                                        <li>Constancia de no deudor original.</li>
+                                        <li>Constancia de egresado original.</li>
+
+                                        <li>Certificado original de Estudios Superiores.
+                                            <ul>
+                                                <li>Para estudiantes provenientes de Institutos (IESP): Certificado
+                                                    de Estudios
+                                                    original, visado por la DREC.
                                                 </li>
-                                                <li>RD de Aprobación de PTI y asignación de asesor, original y una copia.
-                                                </li>
-                                                <li>Informe de Trabajo de Investigación Apto, original y una copia.</li>
-                                                <li>RD de aprobación de Trabajo de Investigación original y una copia.</li>
-                                                <li>Una copia legalizada de certificado de conocimiento de idioma extranjero
-                                                    Nivel A2 ( solo
-                                                    para egresados Educación Inicial o Primaria)</li>
-                                                <li>Una copia del Certificado de conocimiento de lengua originaria (solo
-                                                    para egresados de
-                                                    Educación Primaria EIB.)</li>
-                                                <li>Comprobantes de pago por Derecho de obtención de grado de Bachiller
-                                                    original y una copia.
-                                                </li>
+                                                <li>Para estudiantes provenientes de Universidad. Legalizado por notaria o
+                                                    Fedatado por la misma Universidad.</li>
                                             </ul>
                                         </li>
-                                        <li>Solicitar registro de TI en repositorio institucional: s/50.00 (45 días
-                                            hábiles).</li>
-                                        <li>Solicitar emisión de diploma de grado de Bachiller: s/400.00</li>
-                                        <li>Solicitar inscripción de pago por Derecho de obtención de grado de Bachiller,
-                                            original y copia.</li>
+                                        <li>RD de Aprobación de PTI y asignación de asesor.
+                                        </li>
+                                        <li>Informe de Trabajo de Investigación Apto.</li>
+                                        <li>RD de aprobación de Trabajo de Investigación.</li>
+                                        <li>Una copia legalizada de certificado de conocimiento de idioma extranjero
+                                            Nivel A2 ( solo
+                                            para egresados Educación Inicial o Primaria)</li>
+                                        <li>Una copia legalizada del Certificado de conocimiento de lengua originaria (solo
+                                            para egresados de
+                                            Educación Primaria EIB.)</li>
                                     </ul>
                                     <p class="mt-2">
                                         Como resultado de este trámite obtendrás una Carta de aceptación de Expediente de
@@ -267,8 +340,8 @@
                         web.</li>
                     <li>Copia legalizada del Grado de Bachiller.</li>
                     <!----<li>Copia de Acta de aprobación de sustentación.</li>
-                            <li>Copia de RD de aprobación de sustentación.</li>
-                            <li>Constancia de inscripción en SUNEDU del Grado de Bachiller.</li>---->
+                                                                                                                                    <li>Copia de RD de aprobación de sustentación.</li>
+                                                                                                                                    <li>Constancia de inscripción en SUNEDU del Grado de Bachiller.</li>---->
                     <li>Un ejemplar empastado por grupo y/o tema de investigación de la versión final de la Tesis.</li>
                     <li>Comprobante de pago por Emisión de Título de Licenciado.</li>
                 </ul>
@@ -282,10 +355,7 @@
                 </p>
                 <ul class="listasCuerpo">
                     <li>FUT debidamente llenado. Puedes solicitarlo en la oficina de secretaría o descargarlo de la página
-                        web.</li>
-                    <li>Diploma de Bachiller o Título de Licenciado original.</li>
-                    <li>Diploma de Bachiller o Título de Licenciado escaneado en anverso y reverso en archivo PDF con
-                        resolución de 200 x 100 dpi.</li>
+                        web.</li>                    
                     <li>Copia de Constancia de primera matrícula.</li>
                     <li>Copia de Constancia de Egresado.</li>
                     <li>Comprobante de pago por Inscripción del Grado de Bachiller o Título de Licenciado.</li>
@@ -297,7 +367,8 @@
                 <p>SOLO SE PUEDEN PAGAR EN VENTANILLAS de cualquier agencia a nivel nacional.</p>
                 <ul class="listasDecimal">
                     <li>Cliente debe indicar PAGO ORDINARIO de la ASOCIACION PUKLLASUNCHIS – EESPP</li>
-                    <li>Cliente debe indicar el concepto a pagar ejemplo: Aprobación de PTI, Cambio de tema, cambio de asesor, disolucion de grupo, extensión de plazo.</li>
+                    <li>Cliente debe indicar el concepto a pagar ejemplo: Aprobación de PTI, Cambio de tema, cambio de
+                        asesor, disolucion de grupo, extensión de plazo.</li>
                     <li>El representante del servicio realizará la búsqueda y le indicará el monto del concepto ordinario
                         para la validación del cliente</li>
                     <li>Finalmente el Cliente deberá dictar el código(DNI), el nombre y apellidos completos del alumno.</li>
@@ -305,10 +376,64 @@
                 <p>
                     Estos pagos ordinarios SOLO SE PUEDEN PAGAR EN VENTANILLAS de cualquier agencia a nivel nacional.
                 </p>
-                
+
             </div>
         </div>
     </div>
+
+    <!-- Pop-up Modal -->
+    <div class="modal-overlay" id="modalOverlay"></div>
+    <div class="modal" id="modal">
+        <div class="modal-header text-center">
+            <h4 class="mx-auto font-weight-bold">¿Cómo pagar en Caja Cusco?</h4>
+        </div>
+        <div class="modal-body">
+            <p class="font-weight-bold">Todos los pagos del proceso de titulación son pagos ordinarios. <small
+                    class="text-danger">
+                    <i class="font-weight-bold">(No se considera pago ordinario matriculas ni cuotas semestrales.)</i>
+                </small></p>
+
+            <ul>
+                <li><span class="span">1</span>
+                    Acercarse a las oficinas de <span class="text-danger font-weight-bold">Caja Cusco</span> e indicar que
+                    realizarás un pago ordinario de la Asociación
+                    Pukllasunchis.
+                </li>
+                <li><span class="span">2</span>
+                    Indicar el concepto y código de pago.<a class="text-primary" target="_blank"
+                        href="{{ asset('pdf/Conceptos-ordinarios-caja-cusco-4.pdf') }}"> Ver PDF para
+                        pagos<small><i class="fa fa-eye"></i></small></a>
+                </li>
+                <li><span class="span">3</span>
+                    Indicar en ventanilla el número de DNI y nombre del estudiante.
+                </li>
+                <li><span class="span">4</span>
+                    <strong>NO</strong> es necesario enviar el voucher ya que en el lapso de <strong>2 días hábiles</strong>
+                    le llegará la boleta electrónica
+                    emitida por la EESPP a tu correo institucional.
+                </li>
+                <li><span class="span">5</span>
+                    Con esta boleta electrónica podrás realizar tu trámite correspondiente.
+                </li>
+            </ul>
+            <div class="mx-auto text-center mt-3" style="width: 100%;">
+                <button class="btn btn-sm btn-primary" onclick="closeModal()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Función para abrir el modal
+        function openModal() {
+            document.getElementById('modal').style.display = 'block';
+            document.getElementById('modalOverlay').style.display = 'block';
+        }
+
+        // Función para cerrar el modal
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+            document.getElementById('modalOverlay').style.display = 'none';
+        }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous">
     </script>

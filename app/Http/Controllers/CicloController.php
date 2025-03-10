@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Alumno;
 use App\Models\Ciclo;
 use App\Models\Programa;
+use App\Models\Proyecto;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -13,8 +14,8 @@ class CicloController extends Controller
 {
     public function index()
     {
-        $ciclos = Ciclo::withCount('alumnos')
-            ->whereIn('programa_id', [1, 2])
+        $ciclos = Ciclo::withCount(['alumnos', 'alumnosB']) // Cargar ambas relaciones
+            ->whereIn('programa_id', [1, 2, 3, 4, 5])
             ->get();
         return view('admin.ciclo.index', compact('ciclos'));
     }
@@ -44,12 +45,11 @@ class CicloController extends Controller
     public function show(Ciclo $ciclo)
     {
         $alumnos = $ciclo->alumnos()->orderBy('apellidos')->get();
+        $alumnosB = $ciclo->alumnosB()->orderBy('apellidos')->get();
         $ciclosDisponibles = Ciclo::where('programa_id', $ciclo->programa_id)
             ->get();
-
         $cantidadAlumnos = $alumnos->count();
-
-        return view('admin.ciclo.show', compact('ciclo', 'alumnos', 'cantidadAlumnos', 'ciclosDisponibles'));
+        return view('admin.ciclo.show', compact('ciclo', 'alumnos', 'cantidadAlumnos', 'ciclosDisponibles', 'alumnosB'));
     }
 
     public function updateCicloAlumnos(Request $request)
@@ -76,16 +76,27 @@ class CicloController extends Controller
     {
         $ciclo->load('programa');
         $programas = Programa::all();
-        return view('admin.ciclo.edit', compact('ciclo', 'programas'));
+        $proyectos=Proyecto::all(); 
+        return view('admin.ciclo.edit', compact('ciclo', 'programas', 'proyectos'));
     }
 
     public function update(Request $request, Ciclo $ciclo)
     {
         $request->validate([
             'nombre' => 'required|string|max:255',
+            'programa_id' => 'required|exists:programas,id',
         ]);
-
-        $ciclo->update($request->all());
+    
+        $ciclo->update([
+            'nombre' => $request->nombre,
+            'programa_id' => $request->programa_id,
+        ]);
+    
+        if ($request->proyecto_id) {
+            $ciclo->proyectos()->sync([$request->proyecto_id]);
+        } else {
+            $ciclo->proyectos()->detach(); 
+        }
 
         return redirect()->route('ciclo.index')->with('success', 'Ciclo actualizado exitosamente');
     }

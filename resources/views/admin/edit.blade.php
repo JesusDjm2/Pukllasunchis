@@ -153,6 +153,7 @@
                                 </option>
                                 <option value="docente" {{ $currentRole === 'docente' ? 'selected' : '' }}>Docente</option>
                                 <option value="alumno" {{ $currentRole === 'alumno' ? 'selected' : '' }}>Alumno</option>
+                                <option value="alumnoB" {{ $currentRole === 'alumnoB' ? 'selected' : '' }}>Alumno PPD</option>
                                 <option value="adminB" {{ $currentRole === 'adminB' ? 'selected' : '' }}>Administrador
                                     Bolsa</option>
                                 <option value="inhabilitado" {{ $currentRole === 'inhabilitado' ? 'selected' : '' }}>
@@ -306,12 +307,22 @@
             var roleSelect = document.getElementById('role');
             var adminFields = document.getElementById('admin-fields');
 
-            roleSelect.addEventListener('change', function() {
+            /* roleSelect.addEventListener('change', function() {
                 adminFields.style.display = this.value === 'alumno' ? 'block' : 'none';
             });
             if (roleSelect.value === 'alumno') {
                 adminFields.style.display = 'block';
-            }
+            } */
+            function toggleFields() {
+        if (roleSelect.value === 'alumno' || roleSelect.value === 'alumnoB') {
+            adminFields.style.display = 'block';
+        } else {
+            adminFields.style.display = 'none';
+        }
+    }
+
+    roleSelect.addEventListener('change', toggleFields);
+    toggleFields();
         });
     </script>
     <script>

@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class PostulanteController extends Controller
-{
+{    
     public function index()
     {
         $user = auth()->user();

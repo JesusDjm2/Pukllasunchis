@@ -101,7 +101,7 @@
                                             <li><a href="{{ route('adminB') }}"> <i class="fa fa-download"></i> Intranet</a>
                                             </li>
                                         @elseif ($user->hasRole('alumnoB'))
-                                            <li><a href="{{ route('alumnoB') }}"> <i class="fa fa-download"></i> Intranet</a>
+                                            <li><a href="{{ route('ppd.index') }}"> <i class="fa fa-download"></i> Intranet</a>
                                             </li>
                                         @elseif ($user->hasRole('alumno'))
                                             <li><a href="{{ route('alumnos.index') }}"> <i class="fa fa-download"></i>
@@ -137,7 +137,7 @@
                                             <li><a href="{{ route('adminB') }}"> <i class="fa fa-user"></i> Matrícula</a>
                                             </li>
                                         @elseif ($user->hasRole('alumnoB'))
-                                            <li><a href="{{ route('alumnoB') }}"> <i class="fa fa-user"></i> Matrícula</a>
+                                            <li><a href="{{ route('ppd.index') }}"> <i class="fa fa-user"></i> Matrícula</a>
                                             </li>
                                         @elseif ($user->hasRole('alumno'))
                                             <li><a href="{{ route('alumnos.index') }}"> <i class="fa fa-user"></i>
@@ -253,7 +253,7 @@
                             <div class="footer_logo">
                                 <a href="#">
                                     <img src="{{ asset('img/Logo-Pukllasunchis-blanco.png') }}"
-                                        alt="Lgo blanco Pukllasunchis" width="300px">
+                                        alt="Lgo blanco Pukllasunchis" width="280px">
                                 </a>
                             </div>
                             <ul>
@@ -263,14 +263,19 @@
                                     </p>
                                 </li>
                                 <li>
-                                    <p><span class="fa fa-phone"></span> +51 (84) 237918 -
-                                        261431 - 243308</p>
+                                    <p><span class="fa fa-phone"></span> Informes: +51 984 529 158</p>
+                                </li>
+                                <li>
+                                    <p><span class="fa-solid fa-user-graduate"></span> Secretaria: +51 969 572 566</p>
+                                </li>
+                                <li>
+                                    <p><span class="fa fa-coins"></span> Cobranzas: +51 992 676 676</p>
                                 </li>
                                 <li><a href="mailto:corporate-mail@support.com" class="mail"><span
                                             class="fa-solid fa-envelope"></span> eespp@pukllasunchis.org</a>
                                 </li>
                             </ul>
-                            <div class="socail_links">
+                            <div class="socail_links" style="margin-top: 30px">
                                 <ul>
                                     <li> <a href="https://www.facebook.com/eesp.pukllasunchis" target="_blank">
                                             <i class="fa-brands fa-facebook-f"></i>

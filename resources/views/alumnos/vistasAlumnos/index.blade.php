@@ -16,9 +16,12 @@
                     </a>
                 </span>
             @endif --}}
-            <span>
-                <a class="btn btn-sm btn-info" href="{{ route('ficha-matricula', ['alumno' => $alumno->id]) }}">Ficha de matricula</a>
-            </span>
+            @if (auth()->user()->alumno)            
+                <span>
+                    <a class="btn btn-sm btn-info" href="{{ route('ficha-matricula', ['alumno' => $alumno->id]) }}">Ficha de
+                        matricula</a>
+                </span>
+            @endif
         </div>
 
         <div class="row bg-white" id="contenido-alumno">
@@ -151,7 +154,7 @@
                 </div>
             @else
                 <div class="col-lg-12">
-                    <a class="btn btn-primary" href="{{ route('vistAlumno') }}">Por favor completa tu formulario</a>
+                    <a class="btn btn-primary btn-sm" href="{{ route('vistAlumno') }}">Por favor completa tu formulario</a>
                 </div>
             @endif
         </div>
@@ -218,9 +221,6 @@
             });
         });
     </script>
-
-
-
     <style>
         .curso-item {
             transition: background-color 0.3s ease;

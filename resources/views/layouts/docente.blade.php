@@ -6,7 +6,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="author" content="David Jesús Miranda">
-    @yield('titulo')
+    <title >@yield('titulo')</title>
+
     <link rel="shortcut icon" type="image/x-icon" href="{{ asset('img/logoiesp.ico') }}">
     <link href="{{ asset('admin/vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" type="text/css">
     <link

@@ -109,10 +109,9 @@
                     para la obtención del grado de bachiller mediante un PPD deben estar previamente registrados.
                 </p>
                 <ul class="listasCuerpo">
-                    <li>Por la SUNEDU (para grados y títulos otorgados por universidades o instituciones con rango
-                        universitario).</li>
-                    <li>En la DRE correspondiente (para los títulos de profesor).</li>
-                    <li>En el Minedu (para los grados bachiller técnico o título profesional técnico).</li>
+                    <li>Para estudiantes provenientes de Universidades, por la SUNEDU (para grados y títulos otorgados por universidades o instituciones con rango universitario).
+</li>
+                    <li>Para estudiantes provenientes de Instituciones de Educación Superior Pedagógica, en la DRE correspondiente (para los títulos de profesor).</li>
                 </ul>
                 <p>
                     Al respecto, se precisa que el literal a) del numeral 15 2 del artículo 15 de la Ley Nº 30512 no recoge

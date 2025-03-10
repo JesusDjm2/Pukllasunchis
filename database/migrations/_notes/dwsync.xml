@@ -8,7 +8,7 @@
 <file name="2024_02_21_170516_create_permission_tables.php" server="ftp.eesppukllasunchis.edu.pe" local="133530087180000000" remote="133766292000000000" Dst="0" />
 <file name="2024_02_21_171436_create_roles_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133682185840907816" remote="133766292000000000" Dst="0" />
 <file name="2024_02_22_164640_create_programas_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133531091920000000" remote="133766292000000000" Dst="0" />
-<file name="2024_02_22_200242_create_ciclos_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133531092060000000" remote="133766292000000000" Dst="0" />
+<file name="2024_02_22_200242_create_ciclos_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133856793678872423" remote="133857021000000000" Dst="0" />
 <file name="2024_02_22_200309_create_alumnos_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133585430395732935" remote="133766292000000000" Dst="0" />
 <file name="2024_02_23_181340_create_cursos_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133716721741401883" remote="133766292000000000" Dst="0" />
 <file name="2024_03_07_152857_add_programa_ciclo_to_users_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133543012186294962" remote="133766292000000000" Dst="0" />
@@ -22,4 +22,18 @@
 <file name="2024_09_26_213823_create_periodouno_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133754685331044979" remote="133766292000000000" Dst="0" />
 <file name="2024_11_14_172936_create_periodo_dos_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133760791393429979" remote="133766292000000000" Dst="0" />
 <file name="2024_11_14_180842_create_periodo_tres_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133760813585038978" remote="133766292000000000" Dst="0" />
+<file name="2024_11_25_203435_create_periodos_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133770404807772050" remote="133790331000000000" Dst="0" />
+<file name="2024_12_16_155357_create_postulantes_regulars_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133819487951746453" remote="133819699200000000" Dst="0" />
+<file name="2025_02_19_210024_create_silabos_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133856861579511713" remote="133861072800000000" Dst="0" />
+<file name="2025_02_19_221032_create_capacidades_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133846282975438326" remote="133846489200000000" Dst="0" />
+<file name="2025_02_21_200748_create_enfoques_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133848930112550388" remote="133849199400000000" Dst="0" />
+<file name="2024_02_21_163719_create_proyectos_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133856817814652144" remote="133857021000000000" Dst="0" />
+<file name="2025_03_06_174131_create_estandares_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133857569029404721" remote="133857852000000000" Dst="0" />
+<file name="2025_03_06_174853_create_ciclo_competencia_estandar_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133857588267250831" remote="133857852000000000" Dst="0" />
+<file name="2025_02_28_151856_create_enfoque_silabos_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133855748349014544" remote="133861072800000000" Dst="0" />
+<file name="2025_03_03_161203_create_text_capacidads_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133854920666858349" remote="133861072800000000" Dst="0" />
+<file name="2025_02_28_203707_create_competencia_textos_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133852493041071588" remote="133861072800000000" Dst="0" />
+<file name="2025_03_03_172511_create_unidades_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133854964808689612" remote="133861072800000000" Dst="0" />
+<file name="2025_03_03_173854_create_rubricas_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133854973540124503" remote="133861072800000000" Dst="0" />
+<file name="2025_03_05_183439_create_ciclo_proyecto_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133856733400428870" remote="133861072800000000" Dst="0" />
 </dwsync>

@@ -21,7 +21,6 @@
     </div>
 
     @if (auth()->check())
-        {{-- Con Auth --}}
         <div class="col-lg-6 mb-2">
             <label for="programa_id">Programa:</label>
             <select id="programa_selector" name="programa_id" class="form-control form-control-sm" required readonly>
@@ -65,7 +64,6 @@
             });
         </script>
     @else
-        {{-- Sin Auth --}}
         <div class="col-lg-6 mb-2">
             <label for="programa_id">Programa:</label>
             <select id="programa_selector" name="programa_id" class="form-control form-control-sm" required>
@@ -204,7 +202,7 @@
         @error('lengua_1')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
-    </div>    
+    </div>
 
     <div class="col-lg-6 mb-2">
         <label for="lengua_2">Lengua 2:</label>
@@ -307,7 +305,7 @@
         aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
-               <img src="{{asset('img/novedades/Voucher-cajaCusco.jpg')}}" alt="">
+                <img src="{{ asset('img/novedades/Voucher-cajaCusco.jpg') }}" alt="">
             </div>
         </div>
     </div>

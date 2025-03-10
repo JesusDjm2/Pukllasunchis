@@ -43,6 +43,7 @@
                         <thead style="background: #205070; color:#fff">
                             <tr>
                                 <td>Datos del Curso</td>
+                                <td>Docente(s)</td>
                                 <td>Competencias</td>
                                 <td>Acciones</td>
                             </tr>
@@ -66,6 +67,11 @@
                                             <li><span class="font-weight-bold">Horas:</span> {{ $curso->horas }}</li>
                                             <li><span class="font-weight-bold">Créditos:</span> {{ $curso->creditos }}</li>
                                         </ul>
+                                    </td>
+                                    <td>
+                                        @foreach ($curso->docentes as $docente)
+                                            <li> {{ $docente->nombre }}</li>
+                                        @endforeach
                                     </td>
                                     <td>
                                         <ul>
@@ -94,7 +100,7 @@
                                                 <i class="fa fa-sm fa-trash"></i>
                                             </button>
                                         </form>
-                                        
+
                                     </td>
                                 </tr>
                             @endforeach
@@ -104,10 +110,11 @@
             </div>
             <div class="col-lg-12">
                 <div id="tablaInicial" class="table-responsive" style="display: none;">
-                    <table class="table table-hover" style="font-size: 15px">
+                    <table class="table table-hover table-bordered" style="font-size: 15px">
                         <thead style="background: #205070; color:#fff">
                             <tr>
                                 <th>Datos del Curso</th>
+                                <th>Docente(s)</th>
                                 <th>Competencias</th>
                                 <th>Acciones</th>
                             </tr>
@@ -132,12 +139,18 @@
                                         </ul>
                                     </td>
                                     <td>
+                                        @foreach ($curso->docentes as $docente)
+                                            <li> {{ $docente->nombre }}</li>
+                                        @endforeach
+                                    </td>
+                                    <td>
                                         <ul>
                                             @foreach ($curso->competencias as $competencia)
                                                 <li>{{ $competencia->nombre }}</li>
                                             @endforeach
                                         </ul>
                                     </td>
+                                    
                                     <td>
                                         <a href="{{ route('curso.show', $curso->id) }}" class="btn btn-sm btn-info"
                                             title="Ver Curso"><i class="fa fa-eye fa-sm"></i> </a>
@@ -161,20 +174,19 @@
             </div>
             <div class="col-lg-12">
                 <div id="tablaEib" class="table-responsive" style="display: none">
-                    <table class="table table-hover" style="font-size: 14px">
+                    <table class="table table-hover table-bordered" style="font-size: 14px">
                         <thead style="background: #205070; color:#fff">
                             <tr>
                                 <th>Datos del Curso</th>
+                                <th>Docente(s)</th>
                                 <th>Competencias</th>
-                                <th>Comp. a Calificar</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($cursosEib as $curso)
                                 <tr>
-                                    <td><span class="font-weight-bold"
-                                            style="font-size: 16px">{{ $curso->nombre }}</span>
+                                    <td><span class="font-weight-bold" style="font-size: 16px">{{ $curso->nombre }}</span>
                                         <ul>
                                             <li><span class="font-weight-bold">Programa/Ciclo:</span>
                                                 @if (str_contains($curso->ciclo->programa->nombre, 'Programa Primaria EIB'))
@@ -192,13 +204,17 @@
                                         </ul>
                                     </td>
                                     <td>
+                                        @foreach ($curso->docentes as $docente)
+                                            <li> {{ $docente->nombre }}</li>
+                                        @endforeach
+                                    </td>
+                                    <td>
                                         <ul>
                                             @foreach ($curso->competencias as $competencia)
                                                 <li>{{ $competencia->nombre }}</li>
                                             @endforeach
                                         </ul>
                                     </td>
-                                    <td>Vista ejemplo</td>
                                     <td>
                                         <a href="{{ route('curso.show', $curso->id) }}" class="btn btn-sm btn-info"
                                             title="Ver Curso"><i class="fa fa-eye fa-sm"></i> </a>

@@ -10,8 +10,9 @@
                 Volver 
             </a> --}}
         </div>
+
         <div class="row bg-white">
-            <div class="col-12">
+            <div class="col-lg-12">
                 @if (Session::has('success'))
                     <div class="alert alert-success alert-dismissible fade show" role="alert">
                         {{ Session::get('success') }}
@@ -23,14 +24,16 @@
             </div>
         </div>
         <div class="row pb-5">
-            <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                <strong>Estimado/a docente,</strong>
-                Estamos mejorando nuestro panel de administración. Pronto tendrá acceso a nuevas y mejoradas funcionalidades.
-
-                Gracias por su paciencia.
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+            <div class="col-lg-12">
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    <strong>Estimado/a docente,</strong>
+                    Estamos mejorando nuestro panel de administración. Pronto tendrá acceso a nuevas y mejoradas
+                    funcionalidades.
+                    Gracias por su paciencia.
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
             </div>
 
             <div class="col-lg-12 table-responsive">
@@ -88,69 +91,73 @@
                                     @endif
                                 </td>
                                 <td>
-                                    @if ($curso->silabo)
-                                        <!-- Formulario para actualizar el Sílabo -->
+                                    @if (!$curso->relacionsilabo && !$curso->silabo)
+                                        <a href="{{ route('silabos.create', ['curso_id' => $curso->id, 'docente_id' => $docente->id]) }}"
+                                            class="btn btn-primary btn-sm mb-2">Crear Sílabo</a> <br>
+
                                         <form action="{{ route('cursos.uploadSilabo', ['curso' => $curso->id]) }}"
                                             method="POST" enctype="multipart/form-data" style="display:inline-block;">
                                             @csrf
                                             <div class="input-group mb-2">
-                                                <!-- Botón personalizado para seleccionar el archivo -->
+                                                <button type="button" class="btn btn-secondary btn-sm"
+                                                    onclick="document.getElementById('file-input-{{ $curso->id }}').click();">
+                                                    Seleccionar archivo
+                                                </button>
+                                                <input type="file" id="file-input-{{ $curso->id }}" name="silabo"
+                                                    accept=".pdf" style="display: none;" aria-label="Subir sílabo"
+                                                    onchange="updateFileName(this, 'file-name-{{ $curso->id }}')">
+
+                                                <button type="submit" class="btn btn-primary btn-sm">
+                                                    Subir sílabo en PDF
+                                                </button>
+                                            </div>
+                                            <div id="file-name-{{ $curso->id }}" class="mt-2 text-muted"></div>
+                                        </form>
+                                    @elseif ($curso->relacionsilabo)
+                                        <a href="{{ route('silabos.show', $curso->relacionsilabo->id) }}"
+                                            class="btn btn-success btn-sm mb-2">
+                                            <i class="fa fa-eye"></i> Ver Sílabo</a>
+                                             <a href="{{ route('silabos.edit', ['silabo' => $curso->relacionsilabo->id, 'curso_id' => $curso->id, 'docente_id' => $docente->id]) }}"
+                                                class="btn btn-warning btn-sm mb-2">
+                                                <i class="fa fa-edit"></i> Editar Sílabo
+                                             </a>
+                                             
+                                    @elseif ($curso->silabo)
+                                        <form action="{{ route('cursos.uploadSilabo', ['curso' => $curso->id]) }}"
+                                            method="POST" enctype="multipart/form-data" style="display:inline-block;">
+                                            @csrf
+                                            <div class="input-group mb-2">
                                                 <button type="button" class="btn btn-secondary btn-sm"
                                                     onclick="document.getElementById('file-input-{{ $curso->id }}').click();">
                                                     Actualizar
                                                 </button>
-                                                <!-- Input de archivo oculto -->
-                                                <input type="file" id="file-input-{{ $curso->id }}" name="silabo" accept=".pdf"
-                                                    style="display: none;" aria-label="Subir sílabo" onchange="updateFileName(this, 'file-name-{{ $curso->id }}')">
-                                                <!-- Botón para enviar el formulario -->
+                                                <input type="file" id="file-input-{{ $curso->id }}" name="silabo"
+                                                    accept=".pdf" style="display: none;" aria-label="Subir sílabo"
+                                                    onchange="updateFileName(this, 'file-name-{{ $curso->id }}')">
                                                 <button type="submit" class="btn btn-primary btn-sm" title="Editar">
                                                     <i class="fa fa-upload fa-sm"></i>
                                                 </button>
                                             </div>
                                         </form>
-                                        <!-- Botón para ver el Sílabo -->
                                         <a class="btn btn-success btn-sm d-inline-block"
                                             href="{{ asset('docentes/silabo/' . $curso->silabo) }}" target="_blank"
                                             title="Ver Sílabo">
                                             <i class="fa fa-eye fa-sm"></i>
                                         </a>
-                                
-                                        <!-- Botón de Eliminar con Modal -->
                                         <a href="#" class="btn btn-danger btn-sm" data-toggle="modal"
                                             data-target="#confirmDeleteModal"
                                             data-href="{{ route('cursos.destroySilabo', ['curso' => $curso->id]) }}"
                                             title="Eliminar sílabo">
                                             <i class="fa fa-trash fa-sm"></i>
                                         </a>
-                                    @else
-                                        <!-- Formulario para subir el Sílabo -->
-                                        <form action="{{ route('cursos.uploadSilabo', ['curso' => $curso->id]) }}"
-                                            method="POST" enctype="multipart/form-data" style="display:inline-block;">
-                                            @csrf
-                                            <div class="input-group mb-2">
-                                                <!-- Botón personalizado para seleccionar el archivo -->
-                                                <button type="button" class="btn btn-secondary btn-sm"
-                                                    onclick="document.getElementById('file-input-{{ $curso->id }}').click();">
-                                                    Seleccionar archivo
-                                                </button>
-                                                <!-- Input de archivo oculto -->
-                                                <input type="file" id="file-input-{{ $curso->id }}" name="silabo"
-                                                    accept=".pdf" style="display: none;" aria-label="Subir sílabo" onchange="updateFileName(this, 'file-name-{{ $curso->id }}')">
-                                                <!-- Botón para enviar el formulario -->
-                                                <button type="submit" class="btn btn-primary btn-sm">
-                                                    Subir
-                                                </button>
-                                            </div>
-                                            <!-- Contenedor para mostrar el nombre del archivo seleccionado -->
-                                            <div id="file-name-{{ $curso->id }}" class="mt-2 text-muted"></div>
-                                        </form>
                                     @endif
+
                                 </td>
                                 <script>
                                     function updateFileName(input, elementId) {
                                         const fileInput = input;
                                         const fileNameDisplay = document.getElementById(elementId);
-                                
+
                                         if (fileInput.files.length > 0) {
                                             fileNameDisplay.textContent = fileInput.files[0].name;
                                         } else {
@@ -158,13 +165,7 @@
                                         }
                                     }
                                 </script>
-                                {{-- Ver lista de alumnos para calificar --}}
-                                {{-- <td>                                    
-                                    <a href="{{ route('docentes.cursos.alumnos', ['curso' => $curso->id, 'docente' => $docente->id]) }}"
-                                        class="btn btn-sm btn-info">
-                                        Ver<i class="fa fa-sm fa-eye"></i>
-                                    </a>
-                                </td> --}}
+
                                 <td>
                                     <form action="{{ route('cursos.classroomClaveCRUD', ['curso' => $curso->id]) }}"
                                         method="POST">
@@ -199,8 +200,8 @@
         </div>
     </div>
     <!-- Modal de Confirmación -->
-    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteModalLabel"
-        aria-hidden="true">
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog"
+        aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -252,5 +253,4 @@
             });
         });
     </script>
-
 @endsection
