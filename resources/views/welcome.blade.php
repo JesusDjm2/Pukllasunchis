@@ -91,7 +91,7 @@
     <div class="welcome_docmed_area">
         <div class="container">
             <div class="row">
-                <div class="col-xl-6 col-lg-6">
+                {{-- <div class="col-xl-7 col-lg-7">
                     <div class="welcome_docmed_info">
                         <h2>¿Quienes somos?</h2>
                         <h3>EESP PUKLLASUNCHIS</h3>
@@ -106,8 +106,42 @@
                         <a href="{{ route('nosotros') }}" class="boxed-btn3-white-2">Leer más</a>
                         <a href="{{ route('ordinario') }}" class="boxed-btn3-white-2">Postular</a>
                     </div>
+                </div> --}}
+                <div class="col-xl-7 col-lg-7">
+                    <div class="welcome_docmed_info">
+                        <h2>¿Quiénes somos?</h2>
+                        <h3>EESP PUKLLASUNCHIS</h3>
+                        <p class="text-justify">
+                            La EESP Pukllasunchis es una institución que asume un serio compromiso con la educación del Perú
+                            y es sensible a las diferencias culturales, principalmente de la región y el país. Es un
+                            proyecto alternativo que busca revisar los paradigmas tradicionales para reconstruir una
+                            educación que sea inclusiva e intercultural. Desde esa perspectiva atendemos a una población
+                            diversa entre la que se incluye a estudiantes de beca 18 procedentes de distintas comunidades
+                            andinas.
+                        </p>
+
+                        <!-- Nuevo bloque agregado -->
+                        <div class="row mb-3">
+                            <div class="col-2">
+                                <img width="100%" src="{{ asset('img/min/Icono-discapacidad.jpg') }}" alt="">
+                            </div>
+                            <div class="col-10">
+                                <p>
+                                    Brindamos apoyo a personas con discapacidad. Si necesitas asistencia para tu ingreso
+                                    a la escuela, contáctanos al
+                                    <a class="fa-brands fa-whatsapp" style="font-size:12px;color: #128C7E;"
+                                        href="https://wa.me/51984529158/?text=Buen%20día,%20me%20gustaría%20más%20información%20por%20favor."
+                                        target="_blank"> +51 984 529 158.</a>
+                                </p>
+                            </div>
+                        </div>
+
+                        <a href="{{ route('nosotros') }}" class="boxed-btn3-white-2">Leer más</a>
+                        <a href="{{ route('ordinario') }}" class="boxed-btn3-white-2">Postular</a>
+                    </div>
                 </div>
-                <div class="col-xl-6 col-lg-6 mt-4" style="width: 100%; height: 380px; background: #d59d52; padding:0.2em">
+
+                <div class="col-xl-5 col-lg-5 mt-4" style="width: 100%; height: 380px; background: #d59d52; padding:0.2em">
                     <iframe width="100%" height="100%" src="https://www.youtube.com/embed/74k-QFuO2oo"
                         title="EESP Pukllasunchis" frameborder="0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -167,7 +201,7 @@
                         completar su expediente para obtener el grado de bachiller.</p>
 
                 </ul>
-                <a href="{{ route('tinvestigacion') }}" class="boxed-btn3">Requisitos grado de  Bachiller</a>
+                <a href="{{ route('tinvestigacion') }}" class="boxed-btn3">Requisitos grado de Bachiller</a>
             </div>
         </div>
     </div>

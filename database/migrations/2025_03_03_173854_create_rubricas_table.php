@@ -13,11 +13,11 @@ return new class extends Migration
     {
         Schema::create('rubricas', function (Blueprint $table) {
             $table->id();$table->foreignId('silabo_id')->constrained('silabos')->onDelete('cascade');
-            $table->text('criterio');
-            $table->text('destacado');
-            $table->text('logrado');
-            $table->text('proceso');
-            $table->text('inicio');
+            $table->text('criterio')->nullable();
+            $table->text('destacado')->nullable();
+            $table->text('logrado')->nullable();
+            $table->text('proceso')->nullable();
+            $table->text('inicio')->nullable();
             $table->timestamps();
         });
     }

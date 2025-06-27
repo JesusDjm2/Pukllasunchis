@@ -1,15 +1,156 @@
 <div class="row">
-    <div class="col-lg-6 mb-2">
+    <div class="col-lg-12">
+        <div class="card p-4 bg-white">
+            <div class="row">
+                <div class="col-lg-12">
+                    <h5 class="mt-2 mb-1 text-info font-weight-bold">Por favor completar estos datos nuevos:</h5>
+                </div>
+                <div class="col-lg-6 mb-2">
+                    <label for="sector_laboral"><strong>¿En qué sector trabajas?</strong> <span
+                            class="text-danger">*</span></label>
+                    <select class="form-control form-control-sm @error('sector_laboral') is-invalid @enderror"
+                        id="sector_laboral_select" onchange="toggleOtroSector()" required>
+                        <option selected disabled>Elegir</option>
+                        <option value="Sector educativo"
+                            {{ old('sector_laboral', isset($alumno) ? $alumno->sector_laboral : '') == 'Sector educativo' ? 'selected' : '' }}>
+                            Sector educativo
+                        </option>
+                        <option value="Otro"
+                            {{ old('sector_laboral', isset($alumno) ? $alumno->sector_laboral : '') != 'Sector educativo' && isset($alumno) && $alumno->sector_laboral ? 'selected' : '' }}>
+                            Otro: (especificar)
+                        </option>
+                    </select>
+
+                    @php
+                        $mostrarInput =
+                            old('sector_laboral', isset($alumno) ? $alumno->sector_laboral : '') !=
+                                'Sector educativo' &&
+                            old('sector_laboral', isset($alumno) ? $alumno->sector_laboral : '') != '';
+                    @endphp
+
+                    <input type="text"
+                        class="form-control form-control-sm mt-2 @error('sector_laboral') is-invalid @enderror"
+                        id="sector_laboral_otro" placeholder="Especifica el sector"
+                        style="display: {{ $mostrarInput ? 'block' : 'none' }};"
+                        value="{{ old('sector_laboral', isset($alumno) && $alumno->sector_laboral != 'Sector educativo' ? $alumno->sector_laboral : '') }}">
+
+                    <input type="hidden" name="sector_laboral" id="sector_laboral_hidden"
+                        value="{{ old('sector_laboral', isset($alumno) ? $alumno->sector_laboral : '') }}">
+
+                    @error('sector_laboral')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="col-lg-6">
+                    <label for="lugar_nacimiento"><strong>Lugar de Nacimiento:</strong> <span
+                            class="text-danger">*</span>
+                        <small>(Detallar: Región, Provincia, Distrito y dirección)</small>
+                    </label>
+                    <input type="text"
+                        class="form-control form-control-sm mb-2 @error('lugar_nacimiento') is-invalid @enderror"
+                        name="lugar_nacimiento" value="{{ old('lugar_nacimiento', $alumno->lugar_nacimiento) }}"
+                        placeholder="Ejemplo: Cusco, Cusco, Santiago, Urb, BloqueA-2" required>
+                    @error('lugar_nacimiento')
+                        <span class="invalid-feedback" role="alert">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                <div class="col-lg-6">
+                    <label for="permanencia_vivienda"><strong>Permanencia en la vivienda:</strong> <span
+                            class="text-danger">*</span>
+                        <small>(Selecciona la opción que mejor describa tu situación)</small>
+                    </label>
+                    <select
+                        class="form-control form-control-sm mb-2 @error('permanencia_vivienda') is-invalid @enderror"
+                        name="permanencia_vivienda" required>
+                        <option value="" disabled selected>Selecciona una opción</option>
+                        <option value="Vivo permanentemente en Cusco ciudad"
+                            {{ old('permanencia_vivienda', $alumno->permanencia_vivienda) == 'Vivo permanentemente en Cusco ciudad' ? 'selected' : '' }}>
+                            Vivo permanentemente en Cusco ciudad</option>
+                        <option value="Vivo en comunidad y me traslado al Cusco todos los días para estudiar"
+                            {{ old('permanencia_vivienda', $alumno->permanencia_vivienda) == 'Vivo en comunidad y me traslado al Cusco todos los días para estudiar' ? 'selected' : '' }}>
+                            Vivo en comunidad y me traslado al Cusco todos los días para estudiar</option>
+                        <option value="Estoy en Cusco de lunes a viernes y los fines de semana en mi comunidad"
+                            {{ old('permanencia_vivienda', $alumno->permanencia_vivienda) == 'Estoy en Cusco de lunes a viernes y los fines de semana en mi comunidad' ? 'selected' : '' }}>
+                            Estoy en Cusco de lunes a viernes y los fines de semana en mi comunidad</option>
+                    </select>
+                    @error('permanencia_vivienda')
+                        <span class="invalid-feedback" role="alert">{{ $message }}</span>
+                    @enderror
+                </div>
+                <script>
+                    function toggleOtroSector() {
+                        var select = document.getElementById("sector_laboral_select");
+                        var inputOtro = document.getElementById("sector_laboral_otro");
+                        var hiddenInput = document.getElementById("sector_laboral_hidden");
+
+                        if (select.value === "Otro") {
+                            inputOtro.style.display = "block";
+                            inputOtro.required = true;
+                            hiddenInput.value = inputOtro.value;
+                        } else {
+                            inputOtro.style.display = "none";
+                            inputOtro.required = false;
+                            inputOtro.value = "";
+                            hiddenInput.value = select.value;
+                        }
+                    }
+
+                    document.getElementById("sector_laboral_otro").addEventListener("input", function() {
+                        document.getElementById("sector_laboral_hidden").value = this.value;
+                    });
+
+                    document.addEventListener("DOMContentLoaded", function() {
+                        toggleOtroSector();
+                    });
+                </script>
+                <div class="col-lg-6 mb-2 mt-2">
+                    <label for="egreso"><strong>¿Cuál es tu egreso mensual promedio?</strong> <span
+                            class="text-danger">*</span></label>
+                    <select class="form-control form-control-sm @error('egreso') is-invalid @enderror" id="egreso" name="egreso"
+                        required>
+                        <option value="" disabled selected>Selecciona una opción</option>
+                        <option value="Menos de 500"
+                            {{ old('egreso', isset($alumno) ? $alumno->egreso : '') == 'Menos de 500' ? 'selected' : '' }}>
+                            Menos de 500
+                        </option>
+                        <option value="De 501 a 900"
+                            {{ old('egreso', isset($alumno) ? $alumno->egreso : '') == 'De 501 a 900' ? 'selected' : '' }}>
+                            De 501 a 900
+                        </option>
+                        <option value="De 901 a 1200"
+                            {{ old('egreso', isset($alumno) ? $alumno->egreso : '') == 'De 901 a 1200' ? 'selected' : '' }}>
+                            De 901 a 1200
+                        </option>
+                        <option value="De 1201 a 1500"
+                            {{ old('egreso', isset($alumno) ? $alumno->egreso : '') == 'De 1201 a 1500' ? 'selected' : '' }}>
+                            De 1201 a 1500
+                        </option>
+                        <option value="Más de 1500"
+                            {{ old('egreso', isset($alumno) ? $alumno->egreso : '') == 'Más de 1500' ? 'selected' : '' }}>
+                            Más de 1500
+                        </option>
+                    </select>
+                    @error('egreso')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6 mb-2 mt-2">
         <div class="form-group">
             <label for="email">Email:</label>
-            <input type="email" class="form-control form-control-sm @error('email') is-invalid @enderror" id="email"
-                name="email" value="{{ old('email', $alumno->email) }}" readonly required>
+            <input type="email" class="form-control form-control-sm @error('email') is-invalid @enderror"
+                id="email" name="email" value="{{ old('email', $alumno->email) }}" readonly required>
             @error('email')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
         </div>
     </div>
-    <div class="col-lg-6 mb-2">
+    <div class="col-lg-6 mb-2 mt-2">
         <label for="dni">DNI:</label>
         <input type="text" class="form-control form-control-sm @error('dni') is-invalid @enderror" id="dni"
             name="dni" value="{{ old('dni', $alumno->dni) }}" readonly required>
@@ -17,6 +158,7 @@
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
     </div>
+
     <div class="col-lg-6 mb-2">
         <label for="nombres">Nombres:</label>
         <input type="text" class="form-control form-control-sm @error('nombres') is-invalid @enderror" id="nombres"
@@ -25,6 +167,7 @@
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
     </div>
+    
     <div class="col-lg-6 mb-2">
         <label for="apellidos">Apellidos:</label>
         <input type="text" class="form-control form-control-sm @error('apellidos') is-invalid @enderror"
@@ -34,7 +177,7 @@
         @enderror
     </div>
     <div class="col-lg-6 mb-2">
-        <label for="programa_id">Programa:</label>
+        <label for="programa_id">Programa de estudios:</label>
         <select id="programa_id" name="programa_id" class="form-control form-control-sm" required readonly>
             <option value="{{ $alumno->programa->id }}">{{ $alumno->programa->nombre }}</option>
         </select>
@@ -90,9 +233,42 @@
         @enderror
     </div>
 
+    {{--  <div class="col-lg-6">
+        <label for="lugar_nacimiento">Lugar de Nacimiento: <small> (Detallar: Región, Provincia, Distrito y
+                dirección)</small></label>
+        <input type="text" class="form-control form-control-sm mb-2 @error('lugar_nacimiento') is-invalid @enderror"
+            name="lugar_nacimiento" value="{{ old('lugar_nacimiento', $alumno->lugar_nacimiento) }}"
+            placeholder="Cusco, Cusco, Santiago, Urb, BloqueA-2" required>
+        @error('lugar_nacimiento')
+            <span class="invalid-feedback" role="alert">{{ $message }}</span>
+        @enderror
+    </div> --}}
+
+    {{-- <div class="col-lg-6">
+        <label for="permanencia_vivienda">Permanencia en la vivienda: <small>(Selecciona la opción que mejor describa tu
+                situación)</small></label>
+        <select class="form-control form-control-sm mb-2 @error('permanencia_vivienda') is-invalid @enderror"
+            name="permanencia_vivienda" required>
+            <option value="" disabled selected>Selecciona una opción</option>
+            <option value="Vivo permanentemente en Cusco ciudad"
+                {{ old('permanencia_vivienda', $alumno->permanencia_vivienda) == 'Vivo permanentemente en Cusco ciudad' ? 'selected' : '' }}>
+                Vivo permanentemente en Cusco ciudad</option>
+            <option value="Vivo en comunidad y me traslado al Cusco todos los días para estudiar"
+                {{ old('permanencia_vivienda', $alumno->permanencia_vivienda) == 'Vivo en comunidad y me traslado al Cusco todos los días para estudiar' ? 'selected' : '' }}>
+                Vivo en comunidad y me traslado al Cusco todos los días para estudiar</option>
+            <option value="Estoy en Cusco de lunes a viernes y los fines de semana en mi comunidad"
+                {{ old('permanencia_vivienda', $alumno->permanencia_vivienda) == 'Estoy en Cusco de lunes a viernes y los fines de semana en mi comunidad' ? 'selected' : '' }}>
+                Estoy en Cusco de lunes a viernes y los fines de semana en mi comunidad</option>
+        </select>
+        @error('permanencia_vivienda')
+            <span class="invalid-feedback" role="alert">{{ $message }}</span>
+        @enderror
+    </div> --}}
+
+
     <div class="col-lg-6">
-        <label for="direccion">Domicilio: <small> (Comunidad, distrito y provincia. Detalla:
-                calle-número/barrio-lote)</small></label>
+        <label for="direccion">Domicilio actual: <small> (Detallar: Región, Provincia, Distrito) y
+                dirección,</small></label>
         <input type="text" class="form-control form-control-sm mb-2 @error('direccion') is-invalid @enderror"
             name="direccion" value="{{ old('direccion', $alumno->direccion) }}" required>
         @error('direccion')
@@ -133,21 +309,29 @@
     </div>
 
     <div class="col-lg-6 mb-2">
-        <label for="lengua_1">Lengua 1:</label>
-        <select class="form-control form-control-sm @error('lengua_1') is-invalid @enderror" id="lengua_1"
+        <label for="lengua_1">¿Qué lengua hablas?</label>
+        {{-- <select class="form-control form-control-sm @error('lengua_1') is-invalid @enderror" id="lengua_1"
             name="lengua_1" required>
             <option value="" disabled>Selecciona una opción</option>
             <option value="Quechua" {{ $alumno->lengua_1 == 'Quechua' ? 'selected' : '' }}>Quechua</option>
             <option value="Castellano" {{ $alumno->lengua_1 == 'Castellano' ? 'selected' : '' }}>Castellano</option>
             <option value="Otro" {{ $alumno->lengua_1 == 'Otro' ? 'selected' : '' }}>Otro</option>
+        </select> --}}
+        <select class="form-control form-control-sm @error('lengua_1') is-invalid @enderror" id="lengua_1"
+            name="lengua_1" required>
+            <option value="" disabled>Selecciona una opción</option>
+            <option value="Castellano" {{ $alumno->lengua_1 == 'Castellano' ? 'selected' : '' }}>Castellano</option>
+            <option value="Castellano y Quechua" {{ $alumno->lengua_1 == 'Castellano y Quechua' ? 'selected' : '' }}>
+                Castellano y Quechua</option>
         </select>
+
         @error('lengua_1')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
     </div>
 
     <div class="col-lg-6 mb-2">
-        <label for="lengua_2">Lengua 2:</label>
+        <label for="lengua_2">¿Cuál fue la segunda lengua aprendiste a hablar?:</label>
         <select class="form-control form-control-sm @error('lengua_2') is-invalid @enderror" id="lengua_2"
             name="lengua_2" required>
             <option value="" disabled>Selecciona una opción</option>

@@ -33,7 +33,7 @@ class Curso extends Model
     public function calificaciones()
     {
         return $this->hasMany(Calificacion::class);
-    }
+    }    
     public function periodos()
     {
         return $this->hasMany(PeriodoUno::class);
@@ -57,5 +57,10 @@ class Curso extends Model
     public function enfoques()
     {
         return $this->hasMany(Enfoques::class);
+    }
+    //Calificaciones PPD
+    public function calificacionesppd()
+    {
+        return $this->hasMany(Calificacionesppd::class);
     }
 }

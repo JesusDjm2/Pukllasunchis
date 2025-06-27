@@ -11,7 +11,6 @@
                 Nuevo Periodo <i class="fa fa-plus fa-sm"></i>
             </a>
         </div>
-
         <!-- Alertas -->
         <div class="row">
             <div class="col-12">

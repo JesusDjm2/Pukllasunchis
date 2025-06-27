@@ -4,26 +4,29 @@
         <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3 pb-3"
             style="border-bottom: 1px dashed #80808078">
             <h3 class="mb-2 text-primary font-weight-bold">Ficha Técnica: </h3>
-            {{-- @if (auth()->user()->alumno)
+            @php
+                $alumno = auth()->user()->alumno ?? auth()->user()->alumnoB;
+            @endphp
+
+            {{-- @if ($alumno)
                 @if (!Session::has('mostrar_contenido'))
                     <button type="button" class="btn btn-info btn-sm mb-2" id="mostrar-contenido">
                         Notificar que he terminado con mi registro. <i class="fa fa-smile"></i>
                     </button>
                 @endif
-                 <span>
-                    <a href="{{ route('alumnos.edit', ['alumno' => $alumno->id]) }}" class="btn btn-sm btn-primary">Actualizar
-                        Matricula
+                <span>
+                    <a href="{{ route('alumnos.edit', ['alumno' => $alumno->id]) }}" class="btn btn-sm btn-primary">
+                        Actualizar Matrícula
                     </a>
                 </span>
             @endif --}}
-            @if (auth()->user()->alumno)            
+            {{-- @if (auth()->user()->alumno)
                 <span>
                     <a class="btn btn-sm btn-info" href="{{ route('ficha-matricula', ['alumno' => $alumno->id]) }}">Ficha de
                         matricula</a>
                 </span>
-            @endif
+            @endif --}}
         </div>
-
         <div class="row bg-white" id="contenido-alumno">
             <div class="col-12">
                 @if (Session::has('success'))
@@ -34,17 +37,6 @@
                         </a>
                     </div>
                 @endif
-                {{-- @if (auth()->user()->alumno)
-                    <div class="alert alert-warning alert-dismissible fade show text-center" role="alert">
-                        {{ Session::get('success') }} Botón de actualización de datos de ficha de matricula habilitado
-                        hasta el 16 de agosto, de no tener datos para
-                        actualizar solo llenar el <strong> Número de boleta electrónica emitida por la EES para el ciclo
-                            2024 II y guardar el registro. De ser becado, solo guardar registro. </strong>
-                        <a type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </a>
-                    </div>
-                @endif --}}
             </div>
             @if (auth()->user()->alumno)
                 <div class="col-lg-12">
@@ -52,11 +44,52 @@
                         <table class="table table-bordered">
                             <tbody>
                                 <tr>
-                                    <td colspan="4" class="table-dark">Carrera</td>
+                                    <td colspan="3" class="table-dark font-weight-bold">Datos Personales</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold">Nombre Completo:</td>
+                                    <td>{{ $alumno->nombres }} {{ $alumno->apellidos }}</td>
+                                    <!-- Celda de imagen solo a partir de aquí -->
+                                    <td rowspan="6" colspan="2" class="text-center align-middle">
+                                        @if ($alumno->user && $alumno->user->foto)
+                                            <img src="{{ asset('img/estudiantes/' . $alumno->user->foto) }}"
+                                                alt="Foto de {{ $alumno->nombres }}" class="img-thumbnail"
+                                                style="width: 250px; height: auto; object-fit: cover;">
+                                        @else
+                                            <div class="d-flex flex-column align-items-center mx-auto justify-content-center"
+                                                style="width: 150px; height: 150px; border: 1px solid #ccc; border-radius: 0.5rem;">
+                                                <i class="fa fa-user fa-5x text-muted"></i>
+                                                <small class="text-muted mt-2">Sin foto</small>
+                                            </div>
+                                        @endif
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold">DNI:</td>
+                                    <td colspan="1">{{ $alumno->dni }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold">Correo:</td>
+                                    <td>{{ $alumno->email }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold">Número:</td>
+                                    <td>{{ $alumno->numero }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold">Número de referencia:</td>
+                                    <td>{{ $alumno->numero_referencia }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold">Domicilio:</td>
+                                    <td>{{ $alumno->direccion }}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" class="table-dark font-weight-bold">Carrera</td>
                                 </tr>
                                 <tr>
                                     <td class="font-weight-bold">Programa:</th>
-                                    <td>
+                                    <td colspan="2">
                                         <ul>
                                             <li>
                                                 {{ $alumno->programa->nombre }}
@@ -66,7 +99,7 @@
                                 </tr>
                                 <tr>
                                     <td class="font-weight-bold">Ciclo:</th>
-                                    <td>
+                                    <td colspan="2">
                                         @if ($alumno->ciclo)
                                             <ul>
                                                 <li style="font-family: 'Courier New', Courier, monospace; font-weight:600">
@@ -78,28 +111,34 @@
                                 </tr>
                                 <tr>
                                     <td class="font-weight-bold">Cursos del semestre:</td>
-                                    <td>
+                                    <td colspan="2">
                                         @foreach ($alumno->ciclo->cursos as $curso)
                                             <li class="d-flex align-items-center justify-content-between curso-item"
                                                 style="border-bottom: 1px dashed rgba(128, 128, 128, 0.526)">
                                                 <a href="{{ route('curso.show', $curso->id) }}"
                                                     class="mr-2">{{ $curso->nombre }}</a>
                                                 <div class="d-flex align-items-center">
-                                                    {{-- @if ($curso->docentes->count() > 0)
-                                                        <div class="mr-1">
-                                                            <ul><strong>Docentes:</strong>
-                                                                @foreach ($curso->docentes as $docente)
-                                                                    {{ $docente->nombre }}
-                                                                @endforeach
-                                                            </ul>
-                                                        </div>
-                                                    @endif --}}
-                                                    @if ($curso->silabo)
-                                                        <a class="btn btn-success btn-sm d-inline-block"
-                                                            href="{{ asset('docentes/silabo/' . $curso->silabo) }}"
-                                                            target="_blank" title="Ver Sílabo">
-                                                            Ver sílabo <i class="fa fa-eye fa-sm"></i>
-                                                        </a>
+                                                    @if (str_contains($curso->cc, 'Extracurricular') === false)
+                                                        @if ($curso->relacionsilabo || $curso->silabo)
+                                                            <!-- Si existe un sílabo asignado o relacionado, mostramos el botón para ver -->
+                                                            @php
+                                                                // Determinamos la URL del sílabo (tabla Silabo o archivo del curso)
+                                                                $sílaboURL = $curso->relacionsilabo
+                                                                    ? route('silabos.show', $curso->relacionsilabo->id)
+                                                                    : asset('docentes/silabo/' . $curso->silabo);
+
+                                                            @endphp
+
+                                                            <!-- Botón para ver el sílabo -->
+                                                            <a href="{{ $sílaboURL }}"
+                                                                class="btn btn-success btn-sm mb-2">
+                                                                <i class="fa fa-eye"></i> Ver Sílabo
+                                                            </a>
+                                                        @else
+                                                            <span>No hay sílabo </span>
+                                                        @endif
+                                                    @else
+                                                        <span>No disponible</span>
                                                     @endif
                                                 </div>
                                             </li>
@@ -121,35 +160,11 @@
                                         </td>
                                     </tr>
                                 @endif
-                                <tr>
-                                    <td colspan="4" class="table-dark">Datos Personales</td>
-                                </tr>
-                                <tr>
-                                    <td class="font-weight-bold">Nombre Completo:</th>
-                                    <td>{{ $alumno->nombres }} {{ $alumno->apellidos }}</td>
-                                </tr>
-                                <tr>
-                                    <td class="font-weight-bold">DNI:</th>
-                                    <td>{{ $alumno->dni }}</td>
-                                </tr>
-                                <tr>
-                                    <td class="font-weight-bold">Correo:</th>
-                                    <td>{{ $alumno->email }}</td>
-                                </tr>
-                                <tr>
-                                    <td class="font-weight-bold">Número:</th>
-                                    <td>{{ $alumno->numero }}</td>
-                                </tr>
-                                <tr>
-                                    <td class="font-weight-bold">Número de referencia:</th>
-                                    <td>{{ $alumno->numero_referencia }}</td>
-                                </tr>
-                                <tr>
-                                    <td class="font-weight-bold">Domicilio:</th>
-                                    <td>{{ $alumno->direccion }}</td>
-                                </tr>
+                                
+
                             </tbody>
                         </table>
+                        
                     </div>
                 </div>
             @else
@@ -186,17 +201,16 @@
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script>
         $('#confirmDeleteModal').on('show.bs.modal', function(e) {
-            var button = $(e.relatedTarget); // Botón que activó el modal
-            var url = button.data('href'); // Obtiene la URL del atributo data-href
+            var button = $(e.relatedTarget);
+            var url = button.data('href');
             var modal = $(this);
-            modal.find('#confirm-delete').attr('href', url); // Configura el enlace de eliminación
+            modal.find('#confirm-delete').attr('href', url);
         });
     </script>
 
-    {{-- Script para mostrar contenido de alumnos --}}
+    {{-- Script para enviar correo de notificación --}}
     <script>
         document.getElementById('mostrar-contenido')?.addEventListener('click', function() {
-
             this.style.display = 'none';
             fetch("{{ route('mostrar-contenido') }}", {
                 method: "POST",
@@ -221,6 +235,7 @@
             });
         });
     </script>
+
     <style>
         .curso-item {
             transition: background-color 0.3s ease;

@@ -2,10 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Ciclo;
 use App\Models\PostulantesRegular;
+use App\Models\Programa;
+use App\Models\User;
 use Illuminate\Http\Request;
 use App\Exports\PostulantesRegularExport;
+use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Facades\Excel;
+use Spatie\Permission\Contracts\Role;
 
 class PostulantesRegularController extends Controller
 {
@@ -1066,17 +1071,96 @@ class PostulantesRegularController extends Controller
 
         return redirect()->route('regulares.index')->with('success', 'Inscripción actualizada con éxito.');
     }
-
     public function destroy($id)
     {
         $postulante = PostulantesRegular::findOrFail($id);
         $postulante->delete();
         return redirect()->back()->with('success', 'Postulante eliminado correctamente.');
     }
-
     public function exportarCSV()
     {
         return Excel::download(new PostulantesRegularExport, 'postulantes.csv');
+    }
+    public function crearIngresantes()
+    {
+        $postulantesInicial = PostulantesRegular::where('programa', 'Educación Inicial')
+            ->orderBy('apellidos', 'asc')
+            ->get();
+
+        $postulantesPrimaria = PostulantesRegular::where('programa', 'Educación Primaria EIB')
+            ->orderBy('apellidos', 'asc')
+            ->get();
+
+        return view('alumnos.postulantes.ingresantes', compact('postulantesInicial', 'postulantesPrimaria'));
+    }
+
+    /* public function guardarIngresantes(Request $request)
+    {
+        if (!$request->has('postulantesSeleccionados')) {
+            return back()->with('error', 'No seleccionaste ningún postulante.');
+        }
+
+        $postulantesSeleccionados = $request->input('postulantesSeleccionados');
+        $postulantes = PostulantesRegular::whereIn('id', $postulantesSeleccionados)->get();
+
+        foreach ($postulantes as $postulante) {
+            User::create([
+                'name' => $postulante->nombres,
+                'apellidos' => $postulante->apellidos,
+                'dni' => $postulante->dni,
+                'condicion' => $postulante->estudio_beca ? 'Regular' : 'Beca',
+                'pendiente' => 'No',
+                'perfil' => 'Estudiante',
+                'email' => $postulante->email,
+                'password' => Hash::make($postulante->dni), 
+            ]);
+        }
+        return back()->with('success', 'Ingresantes guardados correctamente.');
+    } */
+
+    public function guardarIngresantes(Request $request)
+    {
+        $request->validate([
+            'postulantesSeleccionados' => 'required|array',
+            'postulantesSeleccionados.*' => 'exists:postulantes_regulars,id',
+        ]);
+
+        $postulantesSeleccionados = $request->input('postulantesSeleccionados');
+
+        $postulantes = PostulantesRegular::whereIn('id', $postulantesSeleccionados)->get();
+
+        foreach ($postulantes as $postulante) {
+            $programa = Programa::where('nombre', $postulante->programa)->first();
+
+            if (!$programa) {
+                return back()->with('error', "El programa '{$postulante->programa}' no existe en la base de datos.");
+            }
+            $ciclo = Ciclo::where('nombre', 'I')->where('programa_id', $programa->id)->first();
+
+            if (!$ciclo) {
+                return back()->with('error', "No se encontró el ciclo 'I' para el programa '{$postulante->programa}'.");
+            }
+            $user = User::create([
+                'name' => $postulante->nombres,
+                'apellidos' => $postulante->apellidos,
+                'dni' => $postulante->dni,
+                'condicion' => $postulante->estudio_beca ? 'Regular' : 'Beca',
+                'pendiente' => 'No',
+                'perfil' => 'Estudiante',
+                'beca' => !$postulante->estudio_beca, 
+                'email' => $postulante->email,
+                'password' => Hash::make($postulante->dni),
+            ]);
+            $role = Role::where('name', 'alumno')->first();
+            if ($role) {
+                $user->assignRole($role);
+            }
+            $user->programa()->associate($programa->id);
+            $user->ciclo()->associate($ciclo->id);
+            $user->save();
+        }
+
+        return redirect()->route('admin')->with('success', 'Ingresantes guardados correctamente.');
     }
 
 }

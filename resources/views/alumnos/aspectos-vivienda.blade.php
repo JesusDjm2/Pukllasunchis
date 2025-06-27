@@ -1,4 +1,7 @@
 <div class="row">
+    <div class="col-lg-12">
+        <h4 class="mb-2 mt-4">Aspectos Vivienda</h4>
+    </div>
     <div class="col-lg-6 mb-2 mt-2">
         <label for="tipo_vivienda">Tipo de vivienda:</label>
         <select class="form-control form-control-sm @error('tipo_vivienda') is-invalid @enderror" id="tipo_vivienda"

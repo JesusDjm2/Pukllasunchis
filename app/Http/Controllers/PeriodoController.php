@@ -6,6 +6,7 @@ use App\Models\Alumno;
 use App\Models\Periodo;
 use App\Models\PeriodoTres;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class PeriodoController extends Controller
 {
@@ -20,74 +21,70 @@ class PeriodoController extends Controller
     {
         return view('admin.periodos.create');
     }
-
     public function store(Request $request)
     {
-        $existenDatos = PeriodoTres::exists();
-
-        if (!$existenDatos) {
-            return back()->with('error', 'No se encontraron registros en PeriodoTres para generar los periodos.');
-        }
-
         $nombrePeriodo = $request->input('nombre');
 
         if (!$nombrePeriodo) {
             return back()->with('error', 'Debes proporcionar un nombre para el período.');
         }
 
-        $alumnos = Alumno::whereHas('user.roles', function ($query) {
+        // Verificar que no existan registros duplicados con ese nombre
+        $yaHayPeriodoConEseNombre = Periodo::where('nombre', $nombrePeriodo)->exists();
+        if ($yaHayPeriodoConEseNombre) {
+            return back()->with('error', "Ya existe un período con el nombre '$nombrePeriodo'. Elige otro nombre.");
+        }
+
+        // ⚠️ Verificamos que exista al menos un registro en PeriodoTres
+        $datosPeriodoTres = PeriodoTres::whereHas('alumno.user.roles', function ($query) {
             $query->where('name', '!=', 'inhabilitado');
         })->get();
 
-        foreach ($alumnos as $alumno) {
-            foreach ($alumno->ciclo->cursos as $curso) {
-                // Obtenemos las competencias asociadas al curso
-                $competencias = $curso->competencias;
-
-                if ($competencias->count() < 3) {
-                    $comp1 = $competencias->get(0)->nombre ?? null;
-                    $comp2 = $competencias->get(1)->nombre ?? null;
-                    $comp3 = $competencias->get(2)->nombre ?? null;
-                } else {
-                    $competenciasSeleccionadas = $curso->competenciasSeleccionadas;
-                    $comp1 = $competenciasSeleccionadas->get(0)->nombre ?? null;
-                    $comp2 = $competenciasSeleccionadas->get(1)->nombre ?? null;
-                    $comp3 = $competenciasSeleccionadas->get(2)->nombre ?? null;
-                }
-
-                $calificacion = PeriodoTres::where('alumno_id', $alumno->id)
-                    ->where('curso_id', $curso->id)
-                    ->first();
-
-                if (!$calificacion) {
-                    continue;
-                }
-
-                Periodo::updateOrCreate(
-                    [
-                        'alumno_id' => $alumno->id,
-                        'curso_id' => $curso->id,
-                    ],
-                    [
-                        'nombre' => $nombrePeriodo,
-                        'valoracion_curso' => $calificacion->valoracion_curso,
-                        'calificacion_curso' => $calificacion->calificacion_curso,
-                        'calificacion_sistema' => $calificacion->calificacion_sistema,
-                    ]
-                );
-            }
+        if ($datosPeriodoTres->isEmpty()) {
+            return back()->with('error', 'No se encontraron registros válidos en PeriodoTres.');
         }
 
-        return view('admin.periodos.index')->with('success', 'Períodos generados correctamente.');
+        foreach ($datosPeriodoTres as $registro) {
+            $alumnoId = $registro->alumno_id;
+            $cursoId = $registro->curso_id;
+
+            // Verificar si ya existe un Periodo con ese alumno, curso y nombre
+            $existe = Periodo::where('nombre', $nombrePeriodo)
+                ->where('alumno_id', $alumnoId)
+                ->where('curso_id', $cursoId)
+                ->exists();
+
+            if ($existe) {
+                continue;
+            }
+
+            // Crear el nuevo registro en la tabla Periodo
+            Periodo::create([
+                'nombre' => $nombrePeriodo,
+                'valoracion_curso' => $registro->valoracion_curso,
+                'calificacion_curso' => $registro->calificacion_curso,
+                'calificacion_sistema' => $registro->calificacion_sistema,
+                'alumno_id' => $alumnoId,
+                'curso_id' => $cursoId,
+            ]);
+        }
+
+        $periodos = Periodo::select('nombre')->distinct()->get();
+
+        return view('admin.periodos.index', compact('periodos'))->with('success', 'Períodos generados correctamente.');
     }
     public function show($nombre)
     {
-        /* $periodos = Periodo::where('nombre', $nombre)->get(); */
         $periodos = Periodo::where('nombre', $nombre)
-        ->whereHas('alumno') // Asegura que exista la relación
-        ->with('alumno') // Carga la relación para evitar múltiples queries
-        ->get()
-        ->sortBy(fn($periodo) => $periodo->alumno->apellidos ?? '');
+            ->whereHas('alumno') // Asegura que existe el alumno
+            ->with(['alumno.ciclo', 'alumno.programa', 'curso']) // Carga todo lo necesario
+            ->get()
+            ->sortBy([
+                fn($a, $b) => ($a->alumno->ciclo->nombre ?? '') <=> ($b->alumno->ciclo->nombre ?? ''),
+                fn($a, $b) => ($a->alumno->apellidos ?? '') <=> ($b->alumno->apellidos ?? '')
+            ])
+            ->groupBy('alumno_id'); 
+
         return view('admin.periodos.show', compact('periodos', 'nombre'));
-    }
+    }    
 }

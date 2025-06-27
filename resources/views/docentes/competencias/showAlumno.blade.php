@@ -13,9 +13,7 @@
             <div class="card-body">
                 <h4 class="card-title font-weight-bold">{{ $competencia->nombre }}</h4>
                 <p class="card-text"><strong>Descripción:</strong><br> {{ $competencia->descripcion }}</p>
-                <p class="card-text"><strong>Capacidades:</strong> {!! $competencia->capacidades !!}</p>
-                {{-- <a href="{{ route('competencias.index') }}" class="btn btn-primary">Volver a la lista</a>
-                <a href="{{ route('competencias.edit', $competencia->id) }}" class="btn btn-info">Editar</a> --}}
+                <p class="card-text"><strong>Capacidades:</strong> {!! $competencia->capacidades !!}</p>                
             </div>
         </div>
     </div>

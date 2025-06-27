@@ -55,12 +55,22 @@ Route::get('informacion/articulos', [EnlacesController::class, 'articulos'])->na
 Route::get('informacion/proyectos-académicos', [EnlacesController::class, 'proyectos'])->name('proyectos');
 Route::get('informacion/innovaciones', [EnlacesController::class, 'innovaciones'])->name('innovaciones');
 Route::get('informacion/bolsa-de-trabajo', [EnlacesController::class, 'bolsa'])->name('bolsa');
-Route::get('informacion/convocatorias', [EnlacesController::class, 'conv'])->name('conv');
 
 //Foot
 Route::get('informacion-institucional', [EnlacesController::class, 'informacion'])->name('informacion');
 Route::get('politica-de-privacidad', [EnlacesController::class, 'politica'])->name('politica');
 Route::get('terminos-y-condiciones', [EnlacesController::class, 'terminos'])->name('terminos');
+
+//bolsa de trabajo sin base de datos
+Route::get('informacion/convocatorias', [EnlacesController::class, 'conv'])->name('conv');
+Route::get('informacion/convocatorias-2', [EnlacesController::class, 'conv2'])->name('conv2');
+Route::get('informacion/convocatorias-2', [EnlacesController::class, 'conv2'])->name('conv2');
+
+//Videos
+Route::get('La-pulga-aventura', [EnlacesController::class, 'video1'])->name('video1');
+Route::get('luis-pescetti-el-nino-canibal', [EnlacesController::class, 'video2'])->name('video2');
+Route::get('El-negrito-aquel', [EnlacesController::class, 'video3'])->name('video3');
+Route::get('La-flor-de-la-canela', [EnlacesController::class, 'video4'])->name('video4');
 
 Route::get('/clear-cache', function () {
     $exitCode = Artisan::call('cache:clear');

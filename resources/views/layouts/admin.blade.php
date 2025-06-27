@@ -18,6 +18,9 @@
 
 <body id="page-top">
     <div id="wrapper">
+        <div id="preloader">
+            <div class="loader"></div>
+        </div>
         @role('admin')
             <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
                 <a class="sidebar-brand d-flex align-items-center justify-content-center mb-3" href="{{ route('index') }}">
@@ -43,8 +46,8 @@
                             <a class="collapse-item" href="{{ route('ciclo.index') }}">Ciclos</a>
                             <a class="collapse-item" href="{{ route('curso.index') }}">Cursos</a>
                             <a class="collapse-item" href="{{ route('competencias.index') }}">Competencias</a>
-                            <a class="collapse-item" href="{{ route('estandares.index') }}">Estándares</a>
                             <a class="collapse-item" href="{{ route('capacidades.index') }}">Capacidades</a>
+                            <a class="collapse-item" href="{{ route('estandares.index') }}">Estándares</a>
                             <a class="collapse-item" href="{{ route('enfoques.index') }}">Enfoques</a>
                             <a class="collapse-item" href="{{ route('proyectos.index') }}">Proyectos Integradores</a>
                             <a class="collapse-item" href="{{ route('periodos.index') }}">Periodos</a>
@@ -77,7 +80,7 @@
                         data-parent="#accordionSidebar">
                         <div class="bg-white py-2 collapse-inner rounded">
                             <h6 class="collapse-header">Gestionar Docentes:</h6>
-                            <a class="collapse-item" href="{{route('docente.index')}}">Lista de Docentes</a>
+                            <a class="collapse-item" href="{{ route('docente.index') }}">Lista de Docentes</a>
                         </div>
                     </div>
                 </li>
@@ -92,9 +95,10 @@
                         data-parent="#accordionSidebar">
                         <div class="bg-white py-2 collapse-inner rounded">
                             <h6 class="collapse-header">Gestionar alumnos:</h6>
-                            <a class="collapse-item" href="{{ route('adminAlumnos') }}">Alumnos</a>
-                            <a class="collapse-item" href="{{ route('vistAlumno') }}">Ingresar nuevo</a>
-                            <a class="collapse-item" href="{{ route('filtro') }}">Filtrar por campos</a>
+                            <a class="collapse-item" href="{{ route('adminAlumnos') }}">Alumnos FID</a>
+                            <a class="collapse-item" href="{{ route('alumnosppd') }}">Alumnos PPD</a>
+                            {{-- <a class="collapse-item" href="{{ route('vistAlumno') }}">Ingresar nuevo</a>
+                            <a class="collapse-item" href="{{ route('filtro') }}">Filtrar por campos</a> --}}
                         </div>
                     </div>
                 </li>
@@ -130,6 +134,15 @@
                             <a class="collapse-item" href="{{ route('regulares.index') }}">Registrados</a>
                         </div>
                     </div>
+                </li>
+                <!-- Divider -->
+                <hr class="sidebar-divider d-none d-md-block">
+                <li class="nav-item">
+                    <a class="nav-link collapsed"
+                        href="https://sites.google.com/pukllavirtual.edu.pe/bibliotecaeesppuklla/inicio" target="_blank">
+                        <i class="fas fa-book-open"></i>
+                        <span>Biblioteca</span>
+                    </a>
                 </li>
                 <!-- Divider -->
                 <hr class="sidebar-divider d-none d-md-block">
@@ -261,7 +274,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link collapsed" href="{{route('calificaciones', $alumno->id)}}">
+                    <a class="nav-link collapsed" href="{{ route('calificaciones', $alumno->id) }}">
                         <i class="fas fa-fw fa-newspaper"></i>
                         <span>Calificaciones</span>
                     </a>
@@ -332,6 +345,12 @@
     <a class="scroll-to-top rounded" href="#page-top">
         <i class="fas fa-angle-up"></i>
     </a>
+    <script>
+        window.addEventListener('load', function() {
+            const preloader = document.getElementById('preloader');
+            if (preloader) preloader.style.display = 'none';
+        });
+    </script>
 
     <script src="{{ asset('admin/vendor/jquery/jquery.min.js') }}"></script>
     <script src="{{ asset('admin/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>

@@ -293,6 +293,19 @@
                         </div>
                     </div>
                 </div>
+                {{-- Politica de pagos --}}
+                <div class="modal" id="politicaPagos">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-body">
+                                <button type="button" class="close text-danger" data-dismiss="modal">&times;</button>
+                                <img class="text-center img-fluid" width="100%"
+                                    src="{{ asset('img/novedades/politica-pagos.webp') }}"
+                                    alt="Polìtica de Pagos">
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="modal" id="lugaresPago">
                     <div class="modal-dialog modal-lg">
                         <div class="modal-content">

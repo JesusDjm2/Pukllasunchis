@@ -15,12 +15,12 @@ return new class extends Migration
             $table->id();
             $table->foreignId('silabo_id')->constrained('silabos')->onDelete('cascade');
             $table->string('titulo');
-            $table->text('situacion');
-            $table->text('duracion');
-            $table->text('desempeno');
-            $table->text('ejes');
-            $table->text('evidencia');
-            $table->text('final');
+            $table->text('situacion')->nullable();
+            $table->text('duracion')->nullable();
+            $table->text('desempeno')->nullable();
+            $table->text('ejes')->nullable();
+            $table->text('evidencia')->nullable();
+            $table->text('final')->nullable();
             $table->timestamps();
         });
     }

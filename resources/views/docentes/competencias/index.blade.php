@@ -56,9 +56,9 @@
                                         <a href="{{ route('competencias.edit', $competencia->id) }}"
                                             class="btn btn-info btn-sm"><i class="fa fa-pen fa-sm" title="Editar"></i>
                                         </a>
-                                        <a href="{{ route('competencias.show', $competencia->id) }}" title="Ver Competencia" class="btn btn-sm btn-success">
+                                        {{-- <a href="{{ route('competencias.show', $competencia->id) }}" title="Ver Competencia" class="btn btn-sm btn-success">
                                             <i
-                                                class="fa fa-eye fa-sm"></i></a>
+                                                class="fa fa-eye fa-sm"></i></a> --}}
                                         <form action="{{ route('competencias.destroy', $competencia->id) }}" title="Eliminar" method="POST"
                                             style="display:inline;">
                                             @csrf

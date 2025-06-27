@@ -17,6 +17,58 @@
         table select {
             pointer-events: auto;
         }
+
+        /* .btn-flotante {
+                position: fixed;
+                top: 50%;
+                right: -2px;
+                transform: translateY(-50%);
+                z-index: 9999;
+                box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+                transition: 0.4s ease;
+            }
+            .btn-flotante:hover {
+                padding: 0.7em;
+                transition: 0.2s ease;
+            } */
+        .btn-flotante {
+            position: fixed;
+            top: 50%;
+            right: -2px;
+            transform: translateY(-50%);
+            z-index: 9999;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+            transition: 0.4s ease;
+
+            animation: entradaBoton 1s ease-out;
+        }
+
+        /* Hover suave como lo pediste */
+        .btn-flotante:hover {
+            padding: 0.7em;
+            transition: 0.2s ease;
+        }
+
+        /* Animación personalizada */
+        @keyframes entradaBoton {
+            0% {
+                opacity: 0;
+                transform: translate(100%, -50%) scale(0.6) rotate(10deg);
+            }
+
+            60% {
+                opacity: 1;
+                transform: translate(-10px, -50%) scale(1.05);
+            }
+
+            80% {
+                transform: translate(5px, -50%) scale(0.98);
+            }
+
+            100% {
+                transform: translateY(-50%) scale(1);
+            }
+        }
     </style>
     <div class="container-fluid bg-white">
         <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3">
@@ -120,9 +172,11 @@
                     <tr>
                         <td style="font-weight: 600; padding: 2px;">1.10 <span style="margin-left:0.4em">Correo
                                 Institucional</span></td>
-                        <td style="padding: 2px;">: correomuestra@pukllavirtual.edu.pe</td>
+                        <td style="padding: 2px;">
+                            {{ $curso->docentes->first()->email ?? 'Sin datos' }}
+                        </td>
                     </tr>
-                    <tr>
+                    {{-- <tr>
                         <td style="font-weight: 600; padding: 2px;">1.11 <span style="margin-left:0.4em">Fecha de
                                 inicio</span></td>
                         <td style="padding: 2px;">:
@@ -139,6 +193,16 @@
                                 class="form-control form-control-sm d-inline-block"
                                 value="{{ old('fecha2', $silabo->fecha2 ?? '') }}" style="max-width: 150px; padding: 2px;">
                         </td>
+                    </tr> --}}
+                    <tr>
+                        <td style="font-weight: 600; padding: 2px;">1.11 <span style="margin-left:0.4em">Fecha de
+                                inicio</span></td>
+                        <td style="padding: 2px;">: 24 de marzo de 2025</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 600; padding: 2px;">1.12 <span style="margin-left:0.4em">Fecha de
+                                término</span></td>
+                        <td style="padding: 2px;">: 18 de julio de 2025</td>
                     </tr>
                 </tbody>
             </table>
@@ -174,9 +238,8 @@
             </div>
             <div class="col-lg-12 mb-3">
                 <label for="producto_proyecto">Producto del Proyecto:</label>
-                <input type="text" id="producto_proyecto" name="producto_proyecto"
-                    class="form-control form-control-sm" required
-                    value="{{ old('producto_proyecto', $curso->ciclo->proyecto->producto ?? '') }}">
+                <input type="text" id="producto_proyecto" name="producto_proyecto" class="form-control form-control-sm"
+                    required value="{{ old('producto_proyecto', $curso->ciclo->proyecto->producto ?? '') }}">
             </div>
             <div class="col-lg-12 mb-3">
                 <label for="descripcion_proyecto">Propósito del Proyecto Integrador:</label>
@@ -206,7 +269,8 @@
                 <select id="enfoque_id" class="form-control form-control-sm">
                     <option selected disabled>Elegir un Enfoque</option>
                     @foreach ($enfoques as $enfoque)
-                        <option value="{{ $enfoque->id }}" data-nombre="{{ $enfoque->nombre }}" data-descripcion="{{ $enfoque->descripcion }}" 
+                        <option value="{{ $enfoque->id }}" data-nombre="{{ $enfoque->nombre }}"
+                            data-descripcion="{{ $enfoque->descripcion }}"
                             data-observables="{{ $enfoque->observables }}" data-concretas="{{ $enfoque->concretas }}">
                             {{ $enfoque->nombre }}
                         </option>
@@ -231,14 +295,44 @@
                         </tr>
                     </thead>
                     <tbody id="tablaEnfoques">
-                        @if ($silabo->enfoques)
+                        {{-- @if ($silabo->enfoques)
                             @foreach ($silabo->enfoques as $enfoque)
                                 <tr data-id="{{ $enfoque->id }}">
                                     <td style="width: 30%">
                                         <input type="hidden" name="enfoques[]" value="{{ $enfoque->id }}">
                                         <input style="font-weight:800; border:none; background:transparent" type="text"
                                             class="form-control form-control-sm" value="{{ $enfoque->nombre }}" readonly>
-                                        <small style="display:block; color:gray; text-align: justify;">{{ $enfoque->descripcion }}</small>
+                                        <small
+                                            style="display:block; color:gray; text-align: justify;">{{ $enfoque->descripcion }}</small>
+                                        
+                                    </td>
+                                    <td>
+                                        <textarea name="observables[]" class="form-control form-control-sm" rows="3">{{ $enfoque->enfoque_observables }}</textarea>
+                                    </td>
+                                    <td>
+                                        <textarea name="concretas[]" class="form-control form-control-sm" rows="3">{{ $enfoque->silabo_concretas }}</textarea>
+                                    </td>
+                                    <td class="text-center" id="acciones">
+                                        <button type="button"
+                                            class="btn btn-sm btn-danger eliminarEnfoque">Eliminar</button>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        @endif --}}
+                        @if ($silabo->enfoques)
+                            @foreach ($silabo->enfoques as $enfoque)
+                                <tr data-id="{{ $enfoque->id }}">
+                                    <td style="width: 30%">
+                                        <input type="hidden" name="enfoques[]" value="{{ $enfoque->id }}">
+                                        <input type="hidden" name="nombres[]" value="{{ $enfoque->nombre }}">
+                                        <!-- ✅ Input oculto para nombre -->
+                                        <input type="hidden" name="descripciones[]"
+                                            value="{{ $enfoque->descripcion }}"> <!-- ✅ Input oculto para descripción -->
+
+                                        <input style="font-weight:800; border:none; background:transparent" type="text"
+                                            class="form-control form-control-sm" value="{{ $enfoque->nombre }}" readonly>
+                                        <small
+                                            style="display:block; color:gray; text-align: justify;">{{ $enfoque->descripcion }}</small>
                                     </td>
                                     <td>
                                         <textarea name="observables[]" class="form-control form-control-sm" rows="3">{{ $enfoque->enfoque_observables }}</textarea>
@@ -253,6 +347,7 @@
                                 </tr>
                             @endforeach
                         @endif
+
                     </tbody>
                 </table>
             </div>
@@ -328,10 +423,7 @@
                         </tbody>
                     </table>
                 @endforeach
-
             </div>
-
-
 
             {{-- <div class="col-lg-12 mb-3">
                 <h4 style="font-weight: 600; color: #c78d40">VI. Organización de Unidades de aprendizaje:</h4>
@@ -524,32 +616,30 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @if ($silabo->rubricas)
-                        @foreach ($silabo->rubricas as $rubrica)
-                            <tr>
-                                <td>
-                                    <textarea name="criterio[]" class="form-control form-control-sm" rows="2">{{ $rubrica->criterio }}</textarea>
-                                </td>
-                                <td>
-                                    <textarea name="destacado[]" class="form-control form-control-sm" rows="2">{{ $rubrica->destacado }}</textarea>
-                                </td>
-                                <td>
-                                    <textarea name="logrado[]" class="form-control form-control-sm" rows="2">{{ $rubrica->logrado }}</textarea>
-                                </td>
-                                <td>
-                                    <textarea name="proceso[]" class="form-control form-control-sm" rows="2">{{ $rubrica->proceso }}</textarea>
-                                </td>
-                                <td>
-                                    <textarea name="inicio[]" class="form-control form-control-sm" rows="2">{{ $rubrica->inicio }}</textarea>
-                                </td>
-                                <td>
-                                    <button type="button" class="btn btn-danger btn-sm btn-eliminar-fila">
-                                        Eliminar
-                                    </button>
-                                </td>
-                            </tr>
-                        @endforeach
-                    @else
+                    @forelse ($silabo->rubricas as $rubrica)
+                        <tr>
+                            <td>
+                                <textarea name="criterio[]" class="form-control form-control-sm" rows="2">{{ $rubrica->criterio }}</textarea>
+                            </td>
+                            <td>
+                                <textarea name="destacado[]" class="form-control form-control-sm" rows="2">{{ $rubrica->destacado }}</textarea>
+                            </td>
+                            <td>
+                                <textarea name="logrado[]" class="form-control form-control-sm" rows="2">{{ $rubrica->logrado }}</textarea>
+                            </td>
+                            <td>
+                                <textarea name="proceso[]" class="form-control form-control-sm" rows="2">{{ $rubrica->proceso }}</textarea>
+                            </td>
+                            <td>
+                                <textarea name="inicio[]" class="form-control form-control-sm" rows="2">{{ $rubrica->inicio }}</textarea>
+                            </td>
+                            <td id="acciones">
+                                <button type="button" class="btn btn-danger btn-sm btn-eliminar-fila">
+                                    Eliminar
+                                </button>
+                            </td>
+                        </tr>
+                    @empty
                         <tr>
                             <td>
                                 <textarea name="criterio[]" class="form-control form-control-sm" rows="2"></textarea>
@@ -566,16 +656,17 @@
                             <td>
                                 <textarea name="inicio[]" class="form-control form-control-sm" rows="2"></textarea>
                             </td>
-                            <td>
+                            <td id="acciones">
                                 <button type="button" class="btn btn-danger btn-sm btn-eliminar-fila"
                                     style="display: none;">
                                     Eliminar
                                 </button>
                             </td>
                         </tr>
-                    @endif
+                    @endforelse
                 </tbody>
             </table>
+
 
             <button type="button" class="btn btn-primary btn-sm mb-4" id="btn-agregar-fila">Agregar Criterio +</button>
 
@@ -596,61 +687,10 @@
             <div class="col-lg-12 mb-3">
                 <textarea id="referencias" name="referencias" class="ckeditor form-control form-control-sm" rows="6">{{ old('referencias', $silabo->referencias ?? '') }}</textarea>
             </div>
-            <button type="submit" class="btn btn-primary mb-4">Actualizar Sílabo</button>
+            <button type="submit" class="btn btn-primary btn-flotante">Actualizar Sílabo</button>
         </form>
 
         <!-- Script para agregar enfoques dinámicamente -->
-        {{--  <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                var selectEnfoque = document.getElementById('enfoque_id');
-                var btnAgregar = document.getElementById('agregarEnfoque');
-                var tablaEnfoques = document.getElementById('tablaEnfoques');
-
-                btnAgregar.addEventListener('click', function() {
-                    var selectedOption = selectEnfoque.options[selectEnfoque.selectedIndex];
-                    if (selectedOption.value === "" || selectedOption.value === "Elegir un Enfoque") {
-                        alert("Por favor, seleccione un enfoque válido.");
-                        return;
-                    }
-
-                    var enfoqueId = selectedOption.value;
-                    var nombre = selectedOption.getAttribute('data-nombre');
-                    var observables = selectedOption.getAttribute('data-observables');
-                    var concretas = selectedOption.getAttribute('data-concretas');
-
-                    if (document.querySelector(`tr[data-id="${enfoqueId}"]`)) {
-                        alert("Este enfoque ya ha sido agregado.");
-                        return;
-                    }
-
-                    var fila = `
-                        <tr data-id="${enfoqueId}">
-                            <td>
-                                <input type="hidden" name="enfoques[]" value="${enfoqueId}">
-                                <input style="font-weight:800; border:none; background:transparent" type="text" class="form-control form-control-sm" value="${nombre}" readonly>
-                            </td>
-                            <td>
-                                <textarea name="observables[]" class="form-control form-control-sm" rows="3">${observables}</textarea>
-                            </td>
-                            <td>
-                                <textarea name="concretas[]" class="form-control form-control-sm" rows="3">${concretas}</textarea>
-                            </td>
-                            <td class="text-center" id="acciones">
-                                <button type="button" class="btn btn-sm btn-danger eliminarEnfoque">Eliminar</button>
-                            </td>
-                        </tr>
-                    `;
-                    tablaEnfoques.insertAdjacentHTML('beforeend', fila);
-                });
-
-                // Evento para eliminar enfoque seleccionado
-                tablaEnfoques.addEventListener('click', function(e) {
-                    if (e.target.classList.contains('eliminarEnfoque')) {
-                        e.target.closest('tr').remove();
-                    }
-                });
-            });
-        </script> --}}
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 var selectEnfoque = document.getElementById('enfoque_id');
@@ -667,8 +707,8 @@
                     var enfoqueId = selectedOption.value;
                     var nombre = selectedOption.getAttribute('data-nombre');
                     var descripcion = selectedOption.getAttribute('data-descripcion') || 'Sin descripción';
-                    var observables = selectedOption.getAttribute('data-observables');
-                    var concretas = selectedOption.getAttribute('data-concretas');
+                    var observables = selectedOption.getAttribute('data-observables') || '';
+                    var concretas = selectedOption.getAttribute('data-concretas') || '';
 
                     // Verificar si el enfoque ya está agregado
                     if (document.querySelector(`tr[data-id="${enfoqueId}"]`)) {
@@ -680,6 +720,9 @@
                         <tr data-id="${enfoqueId}">
                             <td>
                                 <input type="hidden" name="enfoques[]" value="${enfoqueId}">
+                                <input type="hidden" name="nombres[]" value="${nombre}"> <!-- ✅ Se agrega nombre -->
+                                <input type="hidden" name="descripciones[]" value="${descripcion}"> <!-- ✅ Se agrega descripción -->
+            
                                 <div>
                                     <input style="font-weight:800; border:none; background:transparent;" 
                                         type="text" class="form-control form-control-sm" value="${nombre}" readonly>
@@ -708,7 +751,6 @@
                 });
             });
         </script>
-
         <!---script para unidades-------->
         <script>
             document.addEventListener('DOMContentLoaded', function() {
@@ -806,30 +848,32 @@
                     });
                 }
 
-                function agregarEventoEliminar(fila) {
-                    let btnEliminar = fila.querySelector('.btn-eliminar-fila');
-                    btnEliminar.addEventListener('click', function() {
-                        fila.remove();
-                        actualizarBotonesEliminar();
-                    });
-                }
-
+                // Evento para agregar nuevas filas
                 btnAgregarFila.addEventListener('click', function() {
                     let filaOriginal = tablaRubricas.querySelector('tbody tr');
                     let nuevaFila = filaOriginal.cloneNode(true);
 
+                    // Limpiar los valores de los inputs clonados
                     nuevaFila.querySelectorAll('textarea').forEach(textarea => textarea.value = '');
-                    tablaRubricas.querySelector('tbody').appendChild(nuevaFila);
 
-                    agregarEventoEliminar(nuevaFila);
+                    tablaRubricas.querySelector('tbody').appendChild(nuevaFila);
                     actualizarBotonesEliminar();
                 });
 
-                let filaInicial = tablaRubricas.querySelector('tbody tr');
-                agregarEventoEliminar(filaInicial);
+                // Delegación de eventos para eliminar filas
+                tablaRubricas.querySelector('tbody').addEventListener('click', function(event) {
+                    if (event.target.classList.contains('btn-eliminar-fila')) {
+                        let fila = event.target.closest('tr');
+                        fila.remove();
+                        actualizarBotonesEliminar();
+                    }
+                });
+
+                // Asegurar que los botones se actualicen al cargar la página
                 actualizarBotonesEliminar();
             });
         </script>
+
         <!-- Script para manejar checkboxs en Matriz de planificacion -->
         <script>
             document.addEventListener("DOMContentLoaded", function() {

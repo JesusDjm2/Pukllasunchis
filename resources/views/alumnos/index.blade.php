@@ -22,7 +22,7 @@
             <div class="col-lg-12">
                 <div class="row">
                     <div class="col-lg-4 mt-3">
-                        <form action="{{ route('adminAlumnos') }}" method="GET" class="form-inline mt-2">
+                        {{-- <form action="{{ route('adminAlumnos') }}" method="GET" class="form-inline mt-2">
                             <label for="perPageSelect" class="mr-2">Resultados:</label>
                             <select name="perPage" id="perPageSelect" class="form-control form-control-sm"
                                 onchange="this.form.submit()">
@@ -30,14 +30,14 @@
                                 <option value="20" {{ request('perPage') == 20 ? 'selected' : '' }}>20</option>
                                 <option value="50" {{ request('perPage') == 50 ? 'selected' : '' }}>50</option>
                             </select>
-                        </form>
+                        </form> --}}
                     </div>
                     <div class="col-lg-4 mt-3">
-                        <a href="{{ route('adminAlumnos') }}" class="btn btn-sm btn-primary">Todos</a>
-                        <a href="{{ route('adminAlumnos', ['with_user' => 1]) }}" class="btn btn-sm btn-success">Con
-                            Login</a>
-                        <a href="{{ route('adminAlumnos', ['with_user' => 0]) }}" class="btn btn-sm btn-danger">Sin
-                            Login</a>
+                        {{-- <a href="{{ route('adminAlumnos') }}" class="btn btn-sm btn-primary">Todos</a> --}}
+                        {{-- <a href="{{ route('adminAlumnos', ['with_user' => 1]) }}" class="btn btn-sm btn-success">Con
+                            Login</a> --}}
+                        {{-- <a href="{{ route('adminAlumnos', ['with_user' => 0]) }}" class="btn btn-sm btn-danger">Sin
+                            Login</a> --}}
                     </div>
                     <div class="col-lg-4 mt-3">
                         <form id="searchForm" action="{{ route('adminAlumnos') }}" method="GET">
@@ -56,7 +56,7 @@
             </div>
             <div class="col-lg-12">
                 <div class="table-responsive">
-                    <table id="miTabla" class="table table-hover" style="font-size: 14px">
+                    <table {{-- id="miTabla" --}} class="table table-hover" style="font-size: 14px">
                         <thead class="thead-dark">
                             <tr>
                                 <th scope="col">Nombre
@@ -64,7 +64,7 @@
                                         <span class="fa fa-caret-up text-white" style="font-size: 12px"></span>
                                     </button>
                                 </th>
-                                <th scope="col" id="fieldHeader">Correo
+                                {{-- <th scope="col" id="fieldHeader">Correo
                                     <button class="arrow-icon btn btn-link sort-btn" data-column="2">
                                         <span class="fa fa-caret-up text-white" style="font-size: 12px"></span>
                                     </button>
@@ -73,8 +73,8 @@
                                     <button class="arrow-icon btn btn-link sort-btn" data-column="3">
                                         <span class="fa fa-caret-up text-white" style="font-size: 12px"></span>
                                     </button>
-                                </th>
-                                <th scope="col">Programa
+                                </th> --}}
+                                <th scope="col">Detalles académicos
                                     <button class="arrow-icon btn btn-link sort-btn" data-column="4">
                                         <span class="fa fa-caret-up text-white" style="font-size: 12px"></span>
                                     </button>
@@ -90,10 +90,29 @@
                         <tbody>
                             @forelse ($alumnos as $alumno)
                                 <tr>
-                                    <td>{{ $alumno->apellidos }}, {{ $alumno->nombres }}</td>
-                                    <td>{{ $alumno->email }}</td>
-                                    <td>{{ $alumno->ciclo->nombre }}</td>
-                                    <td>{{ $alumno->programa->nombre }}</td>
+                                    <td><strong>{{ $alumno->apellidos }}, {{ $alumno->nombres }}</strong>
+                                        <ul>
+                                            <li> Trabajas:
+                                                @if ($alumno->trabajas === 1 || $alumno->trabajas === '1')
+                                               Sí
+                                            @elseif ($alumno->trabajas === 0 || $alumno->trabajas === '0')
+                                                No
+                                            @else
+                                                {{ $alumno->trabajas }}
+                                            @endif
+                                            </li>
+                                            <li>Donde trabajas: {{ $alumno->donde_trabajas ?? 'NULL' }}</li>
+
+                                        </ul>
+                                    </td>
+                                    <td>
+                                        <ul>
+                                            <li>{{ $alumno->programa->nombre }} - {{ $alumno->ciclo->nombre }}</li>
+                                            <li>{{ $alumno->email }}</li>
+                                        </ul>
+                                    </td>
+                                    {{-- <td></td>
+                                    <td></td> --}}
                                     <td>{{ $alumno->dni }}</td>
                                     <td>
                                         <a href="{{ route('alumnos.edit', ['alumno' => $alumno->id]) }}"
@@ -160,7 +179,7 @@
                             {{ session('error') }}
                         </span>
                     @endif
-                    {{ $alumnos->appends(request()->except('page'))->links() }}
+                    {{-- {{ $alumnos->appends(request()->except('page'))->links() }} --}}
                 </div>
             </div>
         </div>

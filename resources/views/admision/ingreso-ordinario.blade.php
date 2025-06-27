@@ -208,7 +208,7 @@
                     </div>
                     <div class="col-lg-2 col-6">
                         <div class="card">
-                            <a href="{{ asset('pdf/Prospecto-de-Admision-2025.pdf') }}" target="_blank">
+                            <a href="{{ asset('pdf/Prospecto-de-Admision-2025-2.pdf') }}" target="_blank">
                                 <div style="height: 100px">
                                     <img height="100%" src="{{ asset('img/min/Prospecto-Pukllasunchis.png') }}"
                                         alt="Prospecto Pukllasunchis">

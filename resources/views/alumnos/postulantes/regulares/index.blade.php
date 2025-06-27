@@ -4,30 +4,7 @@
         <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3 pb-3"
             style="border-bottom: 1px dashed #80808078">
             <h3 class="text-primary font-weight-bold">Postulantes Regulares:</h3>
-            {{--  @php
-                $conteoProgramas = $postulantes->groupBy('programa')->map->count();
-                $totalSinBeca = $postulantes->reject(fn($postulante) => $postulante->estudio_beca)->count();
-                $conteoBecas = $postulantes->filter(fn($postulante) => $postulante->estudio_beca)->count();
-                $conteoProgramas = $postulantes->groupBy('programa')->map->count();
-                $postulantesSinBeca = $postulantes->reject(fn($postulante) => $postulante->estudio_beca);
-                $conteoFiltrado = $postulantesSinBeca->groupBy('programa')->map->count();
-            @endphp
-
-            <span class="badge bg-primary text-white p-2">
-                Total de registros: {{ $postulantes->count() }}
-            </span>
-
-
-            @foreach ($conteoProgramas as $programa => $cantidad)
-                <span class="badge bg-info text-white p-2">{{ $programa }}: {{ $cantidad }}</span>
-            @endforeach
-
-            @foreach ($conteoFiltrado as $programa => $cantidad)
-                <span class="badge bg-info text-white p-2">{{ $programa }} sin Beca: {{ $cantidad }}</span>
-            @endforeach
-            <span class="badge bg-warning text-white p-2">Becas: {{ $conteoBecas }}</span>
- --}}
-            
+            <a href="{{ route('postulantes.ingresantes') }}" class="btn btn-sm btn-primary">Crear ingresantes</a>
             <div class="div">
                 <form action="{{ route('postulantes.exportar') }}" method="GET">
                     @csrf
@@ -40,40 +17,42 @@
         <div class="row">
             <div class="col-lg-12">
                 @php
-                $conteoProgramas = $postulantes->groupBy('programa')->map->count();
-                $totalSinBeca = $postulantes->reject(fn($postulante) => $postulante->estudio_beca)->count();
-                $conteoBecas = $postulantes->filter(fn($postulante) => $postulante->estudio_beca)->count();
-                $postulantesSinBeca = $postulantes->reject(fn($postulante) => $postulante->estudio_beca);
-                $conteoFiltrado = $postulantesSinBeca->groupBy('programa')->map->count();
-                $totalSinBeca = $postulantes->reject(fn($postulante) => $postulante->estudio_beca)->count();
+                    $conteoProgramas = $postulantes->groupBy('programa')->map->count();
+                    $totalSinBeca = $postulantes->reject(fn($postulante) => $postulante->estudio_beca)->count();
+                    $conteoBecas = $postulantes->filter(fn($postulante) => $postulante->estudio_beca)->count();
+                    $postulantesSinBeca = $postulantes->reject(fn($postulante) => $postulante->estudio_beca);
+                    $conteoFiltrado = $postulantesSinBeca->groupBy('programa')->map->count();
+                    $totalSinBeca = $postulantes->reject(fn($postulante) => $postulante->estudio_beca)->count();
 
-            @endphp
-
-            <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th>Programa</th>
-                        <th>Total Postulantes</th>
-                        <th>Postulantes sin Beca</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($conteoProgramas as $programa => $cantidad)
+                @endphp
+                <table class="table table-bordered">
+                    <thead>
                         <tr>
-                            <td>{{ $programa }}</td>
-                            <td>{{ $cantidad }}</td>
-                            <td>{{ $conteoFiltrado[$programa] ?? 0 }}</td>
+                            <th>Programa</th>
+                            <th>Total Postulantes</th>
+                            <th>Postulantes sin Beca</th>
+                            <th>Becas</th>
                         </tr>
-                    @endforeach
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <td><strong>Total de registros</strong></td>
-                        <td>{{ $postulantes->count() }}</td>
-                        <td>{{ $totalSinBeca }} -  <small>(BECAS: {{ $conteoBecas }} registros)</small></td>
-                    </tr>
-                </tfoot>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach ($conteoProgramas as $programa => $cantidad)
+                            <tr>
+                                <td>{{ $programa }}</td>
+                                <td>{{ $cantidad }}</td>
+                                <td>{{ $conteoFiltrado[$programa] ?? 0 }}</td>
+                                <td>{{ $cantidad - ($conteoFiltrado[$programa] ?? 0) }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td><strong>Total de registros</strong></td>
+                            <td>{{ $postulantes->count() }}</td>
+                            <td>{{ $totalSinBeca }}</td>
+                            <td>{{ $conteoBecas }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
             </div>
             <div class="col-lg-12">
                 @if (session('success'))

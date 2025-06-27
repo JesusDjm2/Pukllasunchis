@@ -9,7 +9,7 @@ return new class extends Migration {
     {
         Schema::create('periodouno', function (Blueprint $table) {
             $table->id();
-            $table->string('nombre')->nullable();
+            $table->string('nombre')->nullable(); 
             $table->date('fecha')->nullable();
             $table->string('comp1')->nullable();
             $table->string('comp2')->nullable();
@@ -20,6 +20,9 @@ return new class extends Migration {
             $table->string('valoracion_curso')->nullable();
             $table->string('calificacion_curso')->nullable();
             $table->string('calificacion_sistema')->nullable();
+
+            //Observaciones
+            $table->text('observaciones')->nullable();
 
             $table->foreignId('alumno_id')->constrained('alumnos')->onDelete('cascade');
             $table->foreignId('curso_id')->constrained('cursos')->onDelete('cascade');

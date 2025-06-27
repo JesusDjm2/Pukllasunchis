@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class ppd extends Model
 {
     use HasFactory;
-    protected $table = 'ppds'; // Especificamos la tabla (opcional si sigue la convención)
+    protected $table = 'ppds';
 
     public function user()
     {
@@ -21,6 +21,10 @@ class ppd extends Model
     public function ciclo()
     {
         return $this->belongsTo(Ciclo::class);
+    }
+    public function calificaciones()
+    {
+        return $this->hasMany(Calificacionesppd::class);
     }
     /* public function calificaciones()
     {
@@ -64,6 +68,12 @@ class ppd extends Model
         'programa_id',
         'ciclo_id',
         'procedencia_familiar',
+
+        //campos nuevos
+        'permanencia_vivienda',
+        'lugar_nacimiento',
+        'sector_laboral',
+
         'direccion',
         'te_consideras',
         'lengua_1',
@@ -139,19 +149,22 @@ class ppd extends Model
         'habilidades',
         'tiempo_libre',
     ];
-
     public static function getValidationRules($updating = false, $id = null)
     {
         $rules = [
             'programa_id' => 'required|exists:programas,id',
             'ciclo_id' => 'required|exists:ciclos,id',
-            'email' => 'required|email|unique:alumnos,email',
-            'dni' => 'required|unique:alumnos,dni',
+            'email' => 'required|email|unique:ppds,email',
+            'dni' => 'required|unique:ppds,dni',
             'nombres' => 'required',
             'apellidos' => 'required',
             'numero' => 'required|string|max:255',
             'numero_referencia' => 'required|string|max:255',
             'procedencia_familiar' => 'required',
+            'permanencia_vivienda' => 'nullable|string|max:255',
+            'sector_laboral' => 'nullable|string|max:255',
+            'otro_sector' => 'nullable|string|max:255',
+            'lugar_nacimiento' => 'required|string|max:255',
             'direccion' => 'required|string|max:255',
             'te_consideras' => 'required',
             'lengua_1' => 'required',
@@ -167,13 +180,6 @@ class ppd extends Model
             'cant_dependientes_old' => 'required|string|max:255',
             'cant_dependientes_otros' => 'required|string|max:255',
             //Datos Educativos
-            'carrera_procedencia'=> 'required|string|max:255',
-            'ano_culminaste' => 'required|string|max:255',
-            'institucion_procedencia' => 'required|string|max:255',
-            'gestion_institucion' => 'required|string|max:255',
-            'direccion_institucion' => 'required|string|max:255',
-            'dep_dist_prov_institucion' => 'required|string|max:255',
-
             'estudio_beca' => 'required',
             'origen_beca' => 'nullable|string|max:255',
             'postulaciones_eesp' => 'nullable|string|max:255',
@@ -192,7 +198,7 @@ class ppd extends Model
             'num_hrs_estudio' => 'required|integer',
             'forma_estudio' => 'required|string|max:255',
             //Aspectos Socioeconómicos
-            'trabajas' => 'required|boolean',
+            'trabajas' => 'required|string|max:255',
             'donde_trabajas' => 'nullable|string|max:255',
             'ingreso_mensual' => 'nullable|string|max:255',
             'egreso' => 'required|string|max:255',
@@ -234,4 +240,5 @@ class ppd extends Model
 
         return $rules;
     }
+
 }

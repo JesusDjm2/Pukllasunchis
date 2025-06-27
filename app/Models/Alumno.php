@@ -64,6 +64,11 @@ class Alumno extends Model
         'programa_id',
         'ciclo_id',
         'procedencia_familiar',
+        //campos nuevos
+        'permanencia_vivienda',
+        'lugar_nacimiento',
+        'sector_laboral',
+
         'direccion',
         'te_consideras',
         'lengua_1',
@@ -132,6 +137,7 @@ class Alumno extends Model
         'habilidades',
         'tiempo_libre',
     ];
+
     public static function getValidationRules($updating = false, $id = null)
     {
         $rules = [
@@ -144,6 +150,10 @@ class Alumno extends Model
             'numero' => 'required|string|max:255',
             'numero_referencia' => 'required|string|max:255',
             'procedencia_familiar' => 'required',
+            'permanencia_vivienda' => 'nullable|string|max:255',
+            'sector_laboral' => 'nullable|string|max:255',
+            'otro_sector' => 'nullable|string|max:255',
+            'lugar_nacimiento' => 'required|string|max:255',
             'direccion' => 'required|string|max:255',
             'te_consideras' => 'required',
             'lengua_1' => 'required',
@@ -152,6 +162,7 @@ class Alumno extends Model
             'p_m_soltero' => 'required|boolean',
             'num_hijos' => 'required|integer',
             'sector_socioeconomico' => 'required',
+            'foto'=>'nullable|image|mimes:jpg,jpeg,png,webp|max:3048',
             //Datos Familiares
             'convivientes' => 'required|string|max:255',
             'quien_mantiene' => 'required|string|max:255',
@@ -177,7 +188,7 @@ class Alumno extends Model
             'num_hrs_estudio' => 'required|integer',
             'forma_estudio' => 'required|string|max:255',
             //Aspectos Socioeconómicos
-            'trabajas' => 'required|boolean',
+            'trabajas' => 'required|string|max:255',
             'donde_trabajas' => 'nullable|string|max:255',
             'ingreso_mensual' => 'nullable|string|max:255',
             'egreso' => 'required|string|max:255',

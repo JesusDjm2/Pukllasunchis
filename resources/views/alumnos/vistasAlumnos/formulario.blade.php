@@ -6,7 +6,8 @@
             <div class="row justify-content-center">
                 <div class="col-lg-12">
                     <div class="card mt-3 mb-3">
-                        <div class="card-header">Registro de matrícula</div>
+                        <div class="card-header text-white text-center"
+                            style="background-color: rgb(194 141 74); font-weight: bold;">Registro de matrícula</div>
                         <div class="mt-2">
                             @if ($errors->any())
                                 <div class="alert alert-danger">
@@ -21,7 +22,7 @@
                         <div class="card-body">
                             @auth
                                 @if (auth()->user()->hasRole('alumno'))
-                                    <form action="{{ route('alumnos.store') }}" method="POST">
+                                    <form action="{{ route('alumnos.store') }}" method="POST" enctype="multipart/form-data">
                                         @csrf
                                         <div class="container mt-3">
                                             <ul class="nav nav-tabs nav-pills nav-justified flex-column flex-sm-row"
@@ -105,7 +106,16 @@
                                 @elseif(auth()->user()->hasRole('alumnoB'))
                                     <form action="{{ route('ppd.store') }}" method="POST">
                                         @csrf
-                                        <div class="container mt-3">
+                                        @include('alumnos.datos-personales')
+                                        @include('alumnos.ppd.form.educativos')
+                                        @include('alumnos.aspectos-socioeconomico')
+                                        @include('alumnos.aspectos-vivienda')
+                                        @include('alumnos.aspectos-salud-culturales')
+                                        <div class="text-center">
+                                            <button style="position: relative; bottom: 3em" type="submit"
+                                                class="btn btn-primary mt-5 btn-lg">Registrar</button>
+                                        </div>
+                                        {{-- <div class="container mt-3">
                                             <ul class="nav nav-tabs nav-pills nav-justified flex-column flex-sm-row"
                                                 id="myTab" role="tablist">
                                                 <li class="nav-item">
@@ -183,7 +193,7 @@
                                                 <button style="float:right; position: relative; bottom: 3em" type="submit"
                                                     class="btn btn-primary mt-3">Registrar</button>
                                             </div>
-                                        </div>
+                                        </div> --}}
                                     </form>
                                 @endif
                             @endauth

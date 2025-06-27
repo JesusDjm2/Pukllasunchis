@@ -21,7 +21,6 @@ class Periodo extends Model
     {
         return $this->belongsTo(Alumno::class, 'alumno_id');
     }
-
     public function curso()
     {
         return $this->belongsTo(Curso::class);

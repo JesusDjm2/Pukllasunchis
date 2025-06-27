@@ -13,8 +13,10 @@ use App\Models\Rubricas;
 use App\Models\Silabo;
 use App\Models\TextCapacidad;
 use App\Models\Unidades;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class SilaboController extends Controller
 {
@@ -152,27 +154,31 @@ class SilaboController extends Controller
         }
         // Guardar unidades
         foreach ($request->titulo_unidad as $key => $titulo) {
-            Unidades::create([
-                'silabo_id' => $silabo->id,
-                'titulo' => $titulo,
-                'situacion' => $request->situacion_aprendizaje[$key],
-                'duracion' => $request->duracion[$key],
-                'desempeno' => $request->desempeno_especifico[$key],
-                'ejes' => $request->ejes_tematicos[$key],
-                'evidencia' => $request->evidencia_proceso[$key],
-                'final' => $request->evidencia_final[$key],
-            ]);
+            if (!empty($titulo)) {
+                Unidades::create([
+                    'silabo_id' => $silabo->id,
+                    'titulo' => $titulo,
+                    'situacion' => $request->situacion_aprendizaje[$key] ?? null,
+                    'duracion' => $request->duracion[$key] ?? null,
+                    'desempeno' => $request->desempeno_especifico[$key] ?? null,
+                    'ejes' => $request->ejes_tematicos[$key] ?? null,
+                    'evidencia' => $request->evidencia_proceso[$key] ?? null,
+                    'final' => $request->evidencia_final[$key] ?? null,
+                ]);
+            }
         }
-        //Rúbricas
+        //Rúbricas        
         foreach ($request->criterio as $index => $criterio) {
-            Rubricas::create([
-                'silabo_id' => $silabo->id,
-                'criterio' => $criterio,
-                'destacado' => $request->destacado[$index],
-                'logrado' => $request->logrado[$index],
-                'proceso' => $request->proceso[$index],
-                'inicio' => $request->inicio[$index]
-            ]);
+            if (!empty($criterio)) { // Verifica que el criterio no sea null o vacío
+                Rubricas::create([
+                    'silabo_id' => $silabo->id,
+                    'criterio' => $criterio,
+                    'destacado' => $request->destacado[$index] ?? null,
+                    'logrado' => $request->logrado[$index] ?? null,
+                    'proceso' => $request->proceso[$index] ?? null,
+                    'inicio' => $request->inicio[$index] ?? null,
+                ]);
+            }
         }
         if (auth()->user()->hasRole('docente')) {
             return redirect()->route('vistaDocente', ['docente' => $docente->id])
@@ -206,7 +212,20 @@ class SilaboController extends Controller
         }
 
         $silabo->load(['enfoques', 'unidades', 'rubricas']);
-        return view('admin.curso.silabos.show', compact('silabo', 'curso', 'docentes', 'competencias'));
+        if (Auth::user()->hasRole('alumno')) {
+            $alumno = Auth::user()->alumno;
+            return view('alumnos.vistasAlumnos.silabos', compact('silabo', 'curso', 'docentes', 'competencias', 'alumno'));
+
+        } elseif (Auth::user()->hasRole('alumnoB')) {
+            $alumno = Auth::user()->alumnoB;
+            return view('alumnos.ppd.silabo', compact('silabo', 'curso', 'docentes', 'competencias', 'alumno'));
+
+        } elseif (Auth::user()->hasRole('admin')) {
+            return view('admin.silabo', compact('silabo', 'curso', 'docentes', 'competencias'));
+
+        } else {
+            return view('admin.curso.silabos.show', compact('silabo', 'curso', 'docentes', 'competencias'));
+        }
     }
 
     public function edit($id, Request $request)
@@ -240,179 +259,6 @@ class SilaboController extends Controller
 
         return view('admin.curso.silabos.edit', compact('silabo', 'curso', 'docente', 'proyectos', 'enfoques', 'competencias'));
     }
-    /*  public function update(Request $request, $id)
-     {
-         $silabo = Silabo::findOrFail($id);
-         $curso = Curso::findOrFail($request->curso_id);
-         $docente = Docente::findOrFail($request->docente_id);
-         $proyecto = Proyecto::findOrFail($request->proyecto_id);
-         $request->validate([
-             'curso_id' => 'required|exists:cursos,id',
-             'sumilla' => 'nullable|string',
-             'proyecto_id' => 'required|exists:proyectos,id',
-             'descripcion_proyecto' => 'nullable|string',
-             'vinculacion_pi' => 'nullable|string',
-             'producto_curso' => 'nullable|string',
-
-             'capacidad_id' => 'array',
-             'capacidad_id.*' => 'exists:capacidades,id',
-             'descripcion' => 'array',
-             'descripcion.*' => 'nullable|string',
-
-             'capacidad1' => 'nullable|string',
-             'desempeno1' => 'nullable|string',
-             'criterio1' => 'nullable|string',
-             'evidencia1' => 'nullable|string',
-             'instrumento1' => 'nullable|string',
-
-             'capacidad2' => 'nullable|string',
-             'desempeno2' => 'nullable|string',
-             'criterio2' => 'nullable|string',
-             'evidencia2' => 'nullable|string',
-             'instrumento2' => 'nullable|string',
-
-             'capacidad3' => 'nullable|string',
-             'desempeno3' => 'nullable|string',
-             'criterio3' => 'nullable|string',
-             'evidencia3' => 'nullable|string',
-             'instrumento3' => 'nullable|string',
-
-             'organizacion' => 'nullable|string',
-             'modelos_metodologicos' => 'nullable|string',
-             'recursos' => 'nullable|string',
-             'referencias' => 'nullable|string',
-             'fecha1' => 'nullable|date',
-             'fecha2' => 'nullable|date',
-         ]);
-
-         $curso = Curso::findOrFail($request->curso_id);
-         $proyecto = Proyecto::findOrFail($request->proyecto_id);
-
-         $silabo->update([
-             'curso_id' => $curso->id,
-             'fecha1' => $request->fecha1,
-             'fecha2' => $request->fecha2,
-             'nombre' => $curso->nombre,
-             'sumilla' => $request->sumilla,
-             'proyecto_integrador' => $proyecto->nombre,
-             'descripcion_proyecto_integrador' => $proyecto->descripcion,
-             'vinculacion_pi' => $request->vinculacion_pi,
-             'producto_curso' => $request->producto_curso,
-
-             'capacidad1' => $request->capacidad1,
-             'desempeno1' => $request->desempeno1,
-             'criterio1' => $request->criterio1,
-             'evidencia1' => $request->evidencia1,
-             'instrumento1' => $request->instrumento1,
-
-             'capacidad2' => $request->capacidad2,
-             'desempeno2' => $request->desempeno2,
-             'criterio2' => $request->criterio2,
-             'evidencia2' => $request->evidencia2,
-             'instrumento2' => $request->instrumento2,
-
-             'capacidad3' => $request->capacidad3,
-             'desempeno3' => $request->desempeno3,
-             'criterio3' => $request->criterio3,
-             'evidencia3' => $request->evidencia3,
-             'instrumento3' => $request->instrumento3,
-
-             'organizacion' => $request->organizacion,
-             'modelos_metodologicos' => $request->modelos_metodologicos,
-             'recursos' => $request->recursos,
-             'referencias' => $request->referencias,
-         ]);
-         if ($request->has('titulo_unidad')) {
-             foreach ($request->titulo_unidad as $key => $titulo) {
-                 if (!empty($titulo)) {
-                     $unidad = $silabo->unidades()->updateOrCreate(
-                         ['id' => $request->unidad_id[$key] ?? null], // Si existe un ID, lo actualiza
-                         [
-                             'titulo' => $titulo,
-                             'situacion' => $request->situacion_aprendizaje[$key] ?? '',
-                             'duracion' => $request->duracion[$key] ?? '',
-                             'desempeno' => $request->desempeno_especifico[$key] ?? '',
-                             'ejes' => $request->ejes_tematicos[$key] ?? '',
-                             'evidencia' => $request->evidencia_proceso[$key] ?? '',
-                             'final' => $request->evidencia_final[$key] ?? '',
-                         ]
-                     );
-                 }
-             }
-         }
-
-         // ================================
-         // ACTUALIZAR RÚBRICAS
-         // ================================
-         if ($request->has('criterio')) {
-             foreach ($request->criterio as $index => $criterio) {
-                 if (!empty($criterio)) {
-                     $rubrica = $silabo->rubricas()->updateOrCreate(
-                         ['id' => $request->rubrica_id[$index] ?? null], // Si existe un ID, lo actualiza
-                         [
-                             'criterio' => $criterio,
-                             'destacado' => $request->destacado[$index] ?? '',
-                             'logrado' => $request->logrado[$index] ?? '',
-                             'proceso' => $request->proceso[$index] ?? '',
-                             'inicio' => $request->inicio[$index] ?? ''
-                         ]
-                     );
-                 }
-             }
-         }
-         if (is_array($request->enfoques)) {
-             
-             $silabo->enfoques()->delete();
-
-             foreach ($request->enfoques as $key => $enfoqueId) {
-                 $enfoque = Enfoques::find($enfoqueId);
-
-                 EnfoqueSilabo::create([
-                     'silabo_id' => $silabo->id,
-                     'nombre' => $enfoque ? $enfoque->nombre : 'Desconocido',
-                     'descripcion' => $enfoque ? $enfoque->descripcion : 'Sin descripción',
-                     'enfoque_observables' => $request->observables[$key] ?? '',
-                     'silabo_concretas' => $request->concretas[$key] ?? '',
-                 ]);
-             }
-         }
-
-          if ($request->has('capacidad_id')) {
-              foreach ($request->capacidad_id as $key => $capacidadId) {
-                  if (!empty($request->descripcion[$key])) {
-                      TextCapacidad::updateOrCreate(
-                          ['capacidad_id' => $capacidadId], 
-                          ['descripcion' => $request->descripcion[$key]]
-                      );
-                  }
-              }
-          }
-
-         $capacidadSeleccionadas = $request->capacidad_seleccionada ?? [];
-
-         foreach ($request->capacidad_id as $key => $capacidadId) {
-             $descripcion = $request->descripcion[$key] ?? null;
-
-             if (in_array($capacidadId, $capacidadSeleccionadas) && !empty($descripcion)) {
-                 
-                 TextCapacidad::updateOrCreate(
-                     ['capacidad_id' => $capacidadId],
-                     ['descripcion' => $descripcion]
-                 );
-             } else {
-                 
-                 TextCapacidad::where('capacidad_id', $capacidadId)->delete();
-             }
-         }
-
-
-         if (auth()->user()->hasRole('docente')) {
-             return redirect()->route('vistaDocente', ['docente' => $docente->id])
-                 ->with('success', 'Sílabo creado correctamente.');
-         }
-
-         return redirect()->route('silabos.index')->with('success', 'Sílabo actualizado correctamente.');
-     } */
 
     public function update(Request $request, Silabo $silabo)
     {
@@ -486,10 +332,26 @@ class SilaboController extends Controller
             'referencias' => $request->referencias,
         ]);
 
-        // Eliminar enfoques anteriores del sílabo
+
+        // 🗑️ Eliminar todos los registros EnfoqueSilabo asociados al silabo
+        // 🗑️ Eliminar los enfoques actuales del silabo para reemplazarlos con los nuevos
         EnfoqueSilabo::where('silabo_id', $silabo->id)->delete();
 
-        // Volver a crear los enfoques
+        // ✅ Recorrer los datos del formulario
+        if (!empty($request->enfoques) && is_array($request->enfoques)) {
+            foreach ($request->enfoques as $key => $enfoqueId) {
+                EnfoqueSilabo::create([
+                    'silabo_id' => $silabo->id,
+                    'nombre' => $request->nombres[$key] ?? 'Desconocido', // ✅ Ahora toma nombre de la vista
+                    'descripcion' => $request->descripciones[$key] ?? 'Sin descripción', // ✅ Ahora toma descripción de la vista
+                    'enfoque_observables' => $request->observables[$key] ?? '',
+                    'silabo_concretas' => $request->concretas[$key] ?? '',
+                ]);
+            }
+        }
+
+
+        /* EnfoqueSilabo::where('silabo_id', $silabo->id)->delete();
         if (!empty($request->enfoques) && is_array($request->enfoques)) {
             foreach ($request->enfoques as $key => $enfoqueId) {
                 $enfoque = Enfoques::find($enfoqueId);
@@ -502,41 +364,98 @@ class SilaboController extends Controller
                     'silabo_concretas' => $request->concretas[$key] ?? '',
                 ]);
             }
-        }
-        
-        // Actualizar unidades (eliminamos las existentes y creamos nuevas)
-        Unidades::where('silabo_id', $silabo->id)->delete();
-        foreach ($request->titulo_unidad as $key => $titulo) {
-            Unidades::create([
-                'silabo_id' => $silabo->id,
-                'titulo' => $titulo,
-                'situacion' => $request->situacion_aprendizaje[$key],
-                'duracion' => $request->duracion[$key],
-                'desempeno' => $request->desempeno_especifico[$key],
-                'ejes' => $request->ejes_tematicos[$key],
-                'evidencia' => $request->evidencia_proceso[$key],
-                'final' => $request->evidencia_final[$key],
-            ]);
-        }
-        // Actualizar rúbricas (eliminamos las existentes y creamos nuevas)
-        Rubricas::where('silabo_id', $silabo->id)->delete();
-        foreach ($request->criterio as $index => $criterio) {
-            Rubricas::create([
-                'silabo_id' => $silabo->id,
-                'criterio' => $criterio,
-                'destacado' => $request->destacado[$index],
-                'logrado' => $request->logrado[$index],
-                'proceso' => $request->proceso[$index],
-                'inicio' => $request->inicio[$index]
-            ]);
+        } */
+
+        if (!empty($request->titulo_unidad) && is_array($request->titulo_unidad)) {
+            // Eliminamos las unidades existentes antes de insertar las nuevas
+            Unidades::where('silabo_id', $silabo->id)->delete();
+
+            foreach ($request->titulo_unidad as $key => $titulo) {
+                Unidades::create([
+                    'silabo_id' => $silabo->id,
+                    'titulo' => $titulo,
+                    'situacion' => $request->situacion_aprendizaje[$key] ?? null,
+                    'duracion' => $request->duracion[$key] ?? null,
+                    'desempeno' => $request->desempeno_especifico[$key] ?? null,
+                    'ejes' => $request->ejes_tematicos[$key] ?? null,
+                    'evidencia' => $request->evidencia_proceso[$key] ?? null,
+                    'final' => $request->evidencia_final[$key] ?? null,
+                ]);
+            }
         }
 
+
+        if (!empty($request->criterio) && is_array($request->criterio)) {
+            // Eliminamos las rúbricas existentes antes de insertar las nuevas
+            Rubricas::where('silabo_id', $silabo->id)->delete();
+
+            foreach ($request->criterio as $index => $criterio) {
+                // Verificar que el criterio no sea nulo o vacío
+                if (!empty($criterio)) {
+                    Rubricas::create([
+                        'silabo_id' => $silabo->id,
+                        'criterio' => $criterio,
+                        'destacado' => $request->destacado[$index] ?? null,
+                        'logrado' => $request->logrado[$index] ?? null,
+                        'proceso' => $request->proceso[$index] ?? null,
+                        'inicio' => $request->inicio[$index] ?? null,
+                    ]);
+                }
+            }
+        }
+
+        /* if (!empty($request->criterio) && is_array($request->criterio)) {
+            // Eliminamos las rúbricas existentes antes de insertar las nuevas
+            Rubricas::where('silabo_id', $silabo->id)->delete();
+
+            foreach ($request->criterio as $index => $criterio) {
+                Rubricas::create([
+                    'silabo_id' => $silabo->id,
+                    'criterio' => $criterio,
+                    'destacado' => $request->destacado[$index] ?? null,
+                    'logrado' => $request->logrado[$index] ?? null,
+                    'proceso' => $request->proceso[$index] ?? null,
+                    'inicio' => $request->inicio[$index] ?? null,
+                ]);
+            }
+        } */
         if (auth()->user()->hasRole('docente')) {
             return redirect()->route('vistaDocente', ['docente' => $docente->id])
                 ->with('success', 'Sílabo actualizado correctamente.');
         }
 
         return redirect()->route('silabos.index')->with('success', 'Sílabo actualizado correctamente.');
+    }
+
+    public function exportarPDF(Silabo $silabo)
+    {
+        $curso = $silabo->curso;
+        $docentes = $curso->docentes;
+        $competencias = $curso->competenciasSeleccionadas()->with([
+            'capacidad',
+            'estandares' => function ($query) use ($curso) {
+                $query->whereHas('ciclos', function ($q) use ($curso) {
+                    $q->where('ciclo_id', $curso->ciclo_id);
+                });
+            }
+        ])->get();
+
+        if ($competencias->isEmpty()) {
+            $competencias = $curso->competencias()->with([
+                'capacidad',
+                'estandares' => function ($query) use ($curso) {
+                    $query->whereHas('ciclos', function ($q) use ($curso) {
+                        $q->where('ciclo_id', $curso->ciclo_id);
+                    });
+                }
+            ])->get();
+        }
+
+        $silabo->load(['enfoques', 'unidades', 'rubricas']);
+        $pdf = Pdf::loadView('admin.curso.silabos.pdf', compact('silabo', 'curso', 'docentes', 'competencias'));
+        /* return $pdf->download('silabo_' . $silabo->id . '.pdf'); */
+        return $pdf->download('silabo_' . Str::slug($silabo->nombre) . '.pdf');
+
     }
 
 }

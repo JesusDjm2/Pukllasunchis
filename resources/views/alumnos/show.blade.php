@@ -71,7 +71,6 @@
                             <td class="font-weight-bold">DNI:</th>
                             <td>{{ $alumno->dni }}</td>
                         </tr>
-
                         <tr>
                             <td class="font-weight-bold">Número:</td>
                             <td>{{ $alumno->numero }}</td>
@@ -80,7 +79,7 @@
                         </tr>
                         <tr>
                             <td class="font-weight-bold">Procedencia Familiar:</td>
-                            <td>{{ $procedencia[$alumno->procedencia_familiar] }}</td>
+                            <td>{{-- {{ $procedencia[$alumno->procedencia_familiar] }} --}}{{ $alumno->procedencia_familiar }}</td>
                             <td class="font-weight-bold">Domicilio:</td>
                             <td>{{ $alumno->direccion }}</td>
                         </tr>

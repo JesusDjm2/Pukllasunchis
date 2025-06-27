@@ -52,6 +52,13 @@
                     <span>Bolsa de trabajo</span>
                 </a>
             </li>
+            <hr class="sidebar-divider d-none d-md-block">
+            <li class="nav-item">
+                <a class="nav-link collapsed" target="_blank" href="https://sites.google.com/pukllavirtual.edu.pe/bibliotecaeesppuklla/inicio">
+                    <i class="fas fa-book-open"></i>
+                    <span>Biblioteca</span>
+                </a>
+            </li> 
             <li class="nav-item">
                 <a class="nav-link collapsed" href="{{ route('index') }}">
                     <i class="fas fa-fw fa-graduation-cap"></i>
@@ -99,7 +106,7 @@
                     <div class="copyright text-center my-auto">
                         <span>Copyright &copy; {{ date('Y') }} | Hecho por <a class="text-primary"
                                 href="https://www.facebook.com/DjmWebMaster" target="_blank" rel="noopener noreferrer">
-                                DJM2 </a> | Versión 2024.2</span>
+                                DJM2 </a> | Versión 2025.2</span>
                     </div>
                 </div>
             </footer>

@@ -2,20 +2,59 @@
 
 @section('contenido')
     <style>
-        #acciones {
-            pointer-events: visible;
-        }
-
         table tr,
         table td,
         table th {
             pointer-events: none;
         }
 
+        #acciones {
+            pointer-events: auto;
+        }
+
         table input,
         table textarea,
         table select {
             pointer-events: auto;
+        }
+
+        .btn-flotante {
+            position: fixed;
+            top: 50%;
+            right: -2px;
+            transform: translateY(-50%);
+            z-index: 9999;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+            transition: 0.4s ease;
+
+            animation: entradaBoton 1s ease-out;
+        }
+
+        /* Hover suave como lo pediste */
+        .btn-flotante:hover {
+            padding: 0.7em;
+            transition: 0.2s ease;
+        }
+
+        /* Animación personalizada */
+        @keyframes entradaBoton {
+            0% {
+                opacity: 0;
+                transform: translate(100%, -50%) scale(0.6) rotate(10deg);
+            }
+
+            60% {
+                opacity: 1;
+                transform: translate(-10px, -50%) scale(1.05);
+            }
+
+            80% {
+                transform: translate(5px, -50%) scale(0.98);
+            }
+
+            100% {
+                transform: translateY(-50%) scale(1);
+            }
         }
     </style>
     <div class="container-fluid bg-white">
@@ -137,20 +176,12 @@
                     <tr>
                         <td style="font-weight: 600; padding: 2px;">1.11 <span style="margin-left:0.4em">Fecha de
                                 inicio</span></td>
-                        <td style="padding: 2px;">:
-                            <input type="date" id="fecha1" class="form-control form-control-sm d-inline-block"
-                                value="{{ old('fecha1', $silabo->fecha1 ?? '') }}" style="max-width: 150px; padding: 2px;"
-                                oninput="document.getElementById('hidden_fecha1').value = this.value;">
-                        </td>
+                        <td style="padding: 2px;">: 24 de marzo de 2025</td>
                     </tr>
                     <tr>
                         <td style="font-weight: 600; padding: 2px;">1.12 <span style="margin-left:0.4em">Fecha de
                                 término</span></td>
-                        <td style="padding: 2px;">:
-                            <input type="date" id="fecha2" class="form-control form-control-sm d-inline-block"
-                                value="{{ old('fecha2', $silabo->fecha2 ?? '') }}" style="max-width: 150px; padding: 2px;"
-                                oninput="document.getElementById('hidden_fecha2').value = this.value;">
-                        </td>
+                        <td style="padding: 2px;">: 18 de julio de 2025</td>
                     </tr>
                 </tbody>
             </table>
@@ -160,8 +191,10 @@
             <input type="hidden" name="curso_id" value="{{ $curso->id }}">
             <input type="hidden" name="docente_id" value="{{ $docente->id }}">
             <!-- Inputs ocultos para enviar las fechas -->
-            <input type="hidden" id="hidden_fecha1" name="fecha1" value="{{ old('fecha1', $silabo->fecha1 ?? '') }}">
-            <input type="hidden" id="hidden_fecha2" name="fecha2" value="{{ old('fecha2', $silabo->fecha2 ?? '') }}">
+            {{-- <input type="hidden" id="hidden_fecha1" name="fecha1" value="{{ old('fecha1', $silabo->fecha1 ?? '') }}">
+            <input type="hidden" id="hidden_fecha2" name="fecha2" value="{{ old('fecha2', $silabo->fecha2 ?? '') }}"> --}}
+            <input type="hidden" id="hidden_fecha1" name="fecha1" value="2025-03-24">
+            <input type="hidden" id="hidden_fecha2" name="fecha2" value="2025-07-18">
 
             <div class="col-lg-12 mb-3">
                 <h4 style="font-weight: 600; color: #c78d40;" class="mt-5">II. Sumilla:</h4>
@@ -392,141 +425,73 @@
                 </div>
             </div>
             <button type="button" class="btn btn-primary mt-2 btn-sm mb-3" id="btn-agregar">Agregar Unidad +</button>
-           
 
-        <h4 style="font-weight: 600; color: #c78d40" class="mt-4">VII. RÚBRICAS DE EVALUACIÓN</h4>
-        <table class="table table-bordered" id="tabla-rubricas">
-            <thead>
-                <tr>
-                    <th>Criterio de Evaluación</th>
-                    <th>Destacado</th>
-                    <th>Logrado</th>
-                    <th>En Proceso</th>
-                    <th>En Inicio</th>
-                    <th>Acción</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>
-                        <textarea name="criterio[]" class="form-control form-control-sm" rows="2"></textarea>
-                    </td>
-                    <td>
-                        <textarea name="destacado[]" class="form-control form-control-sm" rows="2"></textarea>
-                    </td>
-                    <td>
-                        <textarea name="logrado[]" class="form-control form-control-sm" rows="2"></textarea>
-                    </td>
-                    <td>
-                        <textarea name="proceso[]" class="form-control form-control-sm" rows="2"></textarea>
-                    </td>
-                    <td>
-                        <textarea name="inicio[]" class="form-control form-control-sm" rows="2"></textarea>
-                    </td>
-                    <td id="acciones">
-                        <button type="button" class="btn btn-danger btn-sm btn-eliminar-fila" style="display: none;">
-                            Eliminar
-                        </button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <button type="button" class="btn btn-primary btn-sm mb-4" id="btn-agregar-fila">Agregar Criterio +</button>
-        
-        <h4 style="font-weight: 600; color: #c78d40" class="mt-3">VIII. MODELOS METODOLÓGICOS (METODOLOGÍA)</h4>
 
-        <div class="col-lg-12 mb-3">
-            <textarea id="modelos_metodologicos" name="modelos_metodologicos" class="ckeditor form-control form-control-sm"
-                rows="6"></textarea>
-        </div>
+            <h4 style="font-weight: 600; color: #c78d40" class="mt-4">VII. RÚBRICAS DE EVALUACIÓN</h4>
+            <table class="table table-bordered" id="tabla-rubricas">
+                <thead>
+                    <tr>
+                        <th>Criterio de Evaluación</th>
+                        <th>Destacado</th>
+                        <th>Logrado</th>
+                        <th>En Proceso</th>
+                        <th>En Inicio</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <textarea name="criterio[]" class="form-control form-control-sm" rows="2"></textarea>
+                        </td>
+                        <td>
+                            <textarea name="destacado[]" class="form-control form-control-sm" rows="2"></textarea>
+                        </td>
+                        <td>
+                            <textarea name="logrado[]" class="form-control form-control-sm" rows="2"></textarea>
+                        </td>
+                        <td>
+                            <textarea name="proceso[]" class="form-control form-control-sm" rows="2"></textarea>
+                        </td>
+                        <td>
+                            <textarea name="inicio[]" class="form-control form-control-sm" rows="2"></textarea>
+                        </td>
+                        <td id="acciones">
+                            <button type="button" class="btn btn-danger btn-sm btn-eliminar-fila"
+                                style="display: none;">
+                                Eliminar
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <button type="button" class="btn btn-primary btn-sm mb-4" id="btn-agregar-fila">Agregar Criterio +</button>
 
-        <h4 style="font-weight: 600; color: #c78d40" class="mt-3">IX. RECURSOS Y MATERIALES DIDÁCTICOS</h4>
+            <h4 style="font-weight: 600; color: #c78d40" class="mt-3">VIII. MODELOS METODOLÓGICOS (METODOLOGÍA)</h4>
 
-        <div class="col-lg-12 mb-3">
-            <textarea id="recursos" name="recursos" class="ckeditor form-control form-control-sm" rows="6"></textarea>
-        </div>
-        <h4 style="font-weight: 600; color: #c78d40" class="mt-3">X. Referencias</h4>
+            <div class="col-lg-12 mb-3">
+                <textarea id="modelos_metodologicos" name="modelos_metodologicos" class="ckeditor form-control form-control-sm"
+                    rows="6"></textarea>
+            </div>
 
-        <div class="col-lg-12 mb-3">
-            <textarea id="referencias" name="referencias" class="ckeditor form-control form-control-sm" rows="6"></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary mb-4">Guardar Sílabo</button>
-    </form>
-        <!-- Script para agregar enfoques dinámicamente -->
+            <h4 style="font-weight: 600; color: #c78d40" class="mt-3">IX. RECURSOS Y MATERIALES DIDÁCTICOS</h4>
+
+            <div class="col-lg-12 mb-3">
+                <textarea id="recursos" name="recursos" class="ckeditor form-control form-control-sm" rows="6"></textarea>
+            </div>
+            <h4 style="font-weight: 600; color: #c78d40" class="mt-3">X. Referencias</h4>
+
+            <div class="col-lg-12 mb-3">
+                <textarea id="referencias" name="referencias" class="ckeditor form-control form-control-sm" rows="6"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary btn-flotante">Guardar Sílabo</button>
+        </form>
+        <!-- Enfoques -->
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 var selectEnfoque = document.getElementById('enfoque_id');
                 var btnAgregar = document.getElementById('agregarEnfoque');
                 var tablaEnfoques = document.getElementById('tablaEnfoques');
-
-                btnAgregar.addEventListener('click', function() {
-                    var selectedOption = selectEnfoque.options[selectEnfoque.selectedIndex];
-                    if (selectedOption.value === "" || selectedOption.value === "Elegir un Enfoque") {
-                        alert("Por favor, seleccione un enfoque válido.");
-                        return;
-                    }
-
-                    var enfoqueId = selectedOption.value;
-                    var nombre = selectedOption.getAttribute('data-nombre');
-                    var descripcion = selectedOption.getAttribute('data-descripcion') || 'Sin descripción';
-                    var observables = selectedOption.getAttribute('data-observables');
-                    var concretas = selectedOption.getAttribute('data-concretas');
-
-                    // Verificar si el enfoque ya está agregado
-                    if (document.querySelector(`tr[data-id="${enfoqueId}"]`)) {
-                        alert("Este enfoque ya ha sido agregado.");
-                        return;
-                    }
-
-                    var fila = `
-                        <tr data-id="${enfoqueId}">
-                            <td>
-                                <input type="hidden" name="enfoques[]" value="${enfoqueId}">
-                                <div>
-                                    <input style="font-weight:800; border:none; background:transparent" 
-                                        type="text" class="form-control form-control-sm" value="${nombre}" readonly>
-                                    <small style="display:block; color:gray;">${descripcion}</small>
-                                </div>
-                            </td>
-                            <td>
-                                <textarea name="observables[]" class="form-control form-control-sm" rows="3">${observables}</textarea>
-                            </td>
-                            <td>
-                                <textarea name="concretas[]" class="form-control form-control-sm" rows="3">${concretas}</textarea>
-                            </td>
-                            <td class="text-center">
-                                <button type="button" class="btn btn-sm btn-danger eliminarEnfoque">Eliminar</button>
-                            </td>
-                        </tr>
-                    `;
-                    tablaEnfoques.insertAdjacentHTML('beforeend', fila);
-                });
-
-                // Evento para eliminar enfoque seleccionado
-                tablaEnfoques.addEventListener('click', function(e) {
-                    if (e.target.classList.contains('eliminarEnfoque')) {
-                        e.target.closest('tr').remove();
-                    }
-                });
-            });
-        </script>
-        <!----Enfoques------>
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                var selectEnfoque = document.getElementById('enfoque_id');
-                var btnAgregar = document.getElementById('agregarEnfoque');
-                var tablaEnfoques = document.getElementById('tablaEnfoques');
-                var inputEnfoques = document.getElementById(
-                    'enfoques');
-                /
-
-                function actualizarInputEnfoques() {
-                    var enfoquesSeleccionados = [];
-                    document.querySelectorAll('tr[data-id]').forEach(function(row) {
-                        enfoquesSeleccionados.push(row.getAttribute('data-id'));
-                    });
-                    inputEnfoques.value = enfoquesSeleccionados.join(',');
-                }
 
                 btnAgregar.addEventListener('click', function() {
                     var selectedOption = selectEnfoque.options[selectEnfoque.selectedIndex];
@@ -569,14 +534,12 @@
                         </tr>
                     `;
                     tablaEnfoques.insertAdjacentHTML('beforeend', fila);
-                    actualizarInputEnfoques(); // Actualizar el campo oculto
                 });
 
-                // Evento delegado para eliminar enfoque seleccionado
+                // Evento para eliminar enfoque seleccionado
                 tablaEnfoques.addEventListener('click', function(e) {
                     if (e.target.classList.contains('eliminarEnfoque')) {
-                        e.target.closest('tr').remove(); // Eliminar la fila completa
-                        actualizarInputEnfoques(); // Actualizar el campo oculto después de eliminar
+                        e.target.closest('tr').remove();
                     }
                 });
             });

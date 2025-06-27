@@ -69,7 +69,7 @@ class CompetenciaController extends Controller
         $competencia = Competencia::findOrFail($id);
         $user = Auth::user();
         $docente = $user->docente;
-        $alumno = $user->alumno;
+        $alumno = $user->alumnoB;
         $capacidades = $competencia->capacidad()->orderBy('created_at', 'asc')->get();
 
         if ($user->hasRole('docente')) {
@@ -78,6 +78,8 @@ class CompetenciaController extends Controller
             return view('docentes.competencias.show', compact('competencia', 'docente', 'capacidades'));
         } elseif ($user->hasRole('alumno')) {
             return view('docentes.competencias.showAlumno', compact('competencia', 'docente', 'alumno', 'capacidades'));
+        } elseif ($user->hasRole('alumnoB')) {
+            return view('alumnos.ppd.competencias', compact('competencia', 'docente', 'alumno', 'capacidades'));
         } else {
             return abort(403, 'Acceso denegado.');
         }

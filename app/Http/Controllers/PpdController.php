@@ -2,7 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Calificacion;
+use App\Models\Calificacionesppd;
 use App\Models\Ciclo;
+use App\Models\Competencia;
+use App\Models\Curso;
+use App\Models\Docente;
 use App\Models\ppd;
 use App\Models\Programa;
 use Illuminate\Http\Request;
@@ -12,14 +17,9 @@ class PpdController extends Controller
     public function index(Request $request)
     {
         $alumno = auth()->user()->alumnoB;
-        $alumno->load('programa', 'ciclo.cursos.docentes');
-        /* 
-
         if ($alumno) {
-            $usuario = $alumno->user;
-            $alumno->load('programa', 'ciclo.cursos.docentes'); */
-        /* $alumno = ppd::orderBy("id", "desc"); */
-        
+            $alumno->load('programa', 'ciclo.cursos.docentes');
+        }
         return view('alumnos.ppd.index', compact('alumno'));
     }
     public function form()
@@ -39,11 +39,79 @@ class PpdController extends Controller
         $user = auth()->user();
         return view('alumnos.vistasAlumnos.formulario', compact('user', 'programas', 'ciclos'));
     }
+    /* public function calificacionesppd($alumno)
+    {
+        $alumno = auth()->user()->alumnoB;
+        if ($alumno) {
+            $alumno->load('programa', 'ciclo.cursos.docentes');
+        }
+        return view('alumnos.ppd.calificaciones', compact('alumno'));
+
+    } */
+    /* public function calificacionesppd($alumno)
+    {
+        $alumno = auth()->user()->alumnoB;
+
+        if ($alumno) {
+            $alumno->load('programa');
+
+            $ciclosConCursos = Ciclo::where('programa_id', $alumno->programa_id)
+                ->whereHas('cursos.calificaciones', function ($q) use ($alumno) {
+                    $q->where('ppd_id', $alumno->id); // ← Aquí usamos correctamente la relación
+                })
+                ->with([
+                    'cursos' => function ($q) use ($alumno) {
+                        $q->whereHas('calificaciones', function ($q2) use ($alumno) {
+                            $q2->where('ppd_id', $alumno->id);
+                        })->with([
+                                    'competencias',
+                                    'calificaciones' => function ($q3) use ($alumno) {
+                                        $q3->where('ppd_id', $alumno->id);
+                                    }
+                                ]);
+                    }
+                ])
+                ->orderBy('nombre')
+                ->get();
+        } else {
+            $ciclosConCursos = collect(); // En caso no haya alumno logueado
+        }
+
+        return view('alumnos.ppd.calificaciones', compact('alumno', 'ciclosConCursos'));
+    } */
+    public function calificacionesppd()
+    {
+        $alumno = auth()->user()->alumnoB;
+
+        if (!$alumno || !$alumno->ciclo) {
+            return view('alumnos.ppd.calificaciones')->with('mensaje', 'No tienes ciclo asignado.');
+        }
+
+        $programaId = $alumno->ciclo->programa_id;
+
+        $ciclosConCursos = Ciclo::where('programa_id', $programaId)
+            ->with([
+                'cursos' => function ($query) use ($alumno) {
+                    $query->with([
+                        'competencias',
+                        'docentes',
+                        'calificacionesppd' => function ($q) use ($alumno) {
+                            $q->where('ppd_id', $alumno->id);
+                        }
+                    ]);
+                }
+            ])
+            ->orderBy('nombre')
+            ->get();
+
+        return view('alumnos.ppd.calificaciones', compact('alumno', 'ciclosConCursos'));
+    }
     public function store(Request $request)
     {
-        // Validar los datos del formulario
         $validator = \Validator::make($request->all(), ppd::getValidationRules());
-        // Realizar verificación adicional antes de almacenar en la base de datos
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
         $numero = $request->input('numero');
         $numero_referencia = $request->input('numero_referencia');
         $lengua_1 = $request->input('lengua_1');
@@ -113,7 +181,11 @@ class PpdController extends Controller
                 'user_id',
                 'programa_id',
                 'ciclo_id',
+
                 'procedencia_familiar',
+                'sector_laboral',
+                'lugar_nacimiento',
+                'permanencia_vivienda',
                 'direccion',
                 'te_consideras',
                 'lengua_1',
@@ -234,6 +306,91 @@ class PpdController extends Controller
             'procedencia' => $procedencia,
             'consideras' => $consideras,
             'sector' => $sector,
+        ]);
+    }
+    public function calificar(Request $request)
+    {
+        $request->validate([
+            'curso_id' => 'required|exists:cursos,id',
+            'docente_id' => 'required|exists:docentes,id',
+            'alumnos' => 'required|array',
+
+            'alumnos.*.proceso.*.indicador_1' => 'nullable|integer|min:0|max:20',
+            'alumnos.*.proceso.*.indicador_2' => 'nullable|integer|min:0|max:20',
+            'alumnos.*.proceso.*.indicador_3' => 'nullable|integer|min:0|max:20',
+            'alumnos.*.proceso.*.indicador_4' => 'nullable|integer|min:0|max:20',
+
+            'alumnos.*.final.*.indicador_1' => 'nullable|integer|min:0|max:20',
+            'alumnos.*.final.*.indicador_2' => 'nullable|integer|min:0|max:20',
+            'alumnos.*.final.*.indicador_3' => 'nullable|integer|min:0|max:20',
+
+            'alumnos.*.nivel_desempeno' => 'nullable|string',
+            'alumnos.*.calificacion_curso' => 'nullable|string',
+            'alumnos.*.calificacion_sistema' => 'nullable|string',
+
+            'alumnos.*.observaciones' => 'nullable|string|max:1000',
+        ]);
+        $curso = Curso::findOrFail($request->curso_id);
+        $docente = Docente::findOrFail($request->docente_id);
+        $primerNombre = explode(' ', trim($docente->nombre))[0];
+
+        foreach ($request->input('alumnos') as $data) {
+            $proceso = $data['proceso'] ?? [];
+            $final = $data['final'] ?? [];
+            $promedios = $data['promedios'] ?? [];
+            $pp = $pf = $pg = [];
+
+            foreach (range(0, 2) as $i) {
+                $key = array_keys($proceso)[$i] ?? null;
+
+                if ($key) {
+                    $pp["pp_c" . ($i + 1) . "_1"] = $proceso[$key]['indicador_1'] ?? null;
+                    $pp["pp_c" . ($i + 1) . "_2"] = $proceso[$key]['indicador_2'] ?? null;
+                    $pp["pp_c" . ($i + 1) . "_3"] = $proceso[$key]['indicador_3'] ?? null;
+                    $pp["pp_c" . ($i + 1) . "_4"] = $proceso[$key]['indicador_4'] ?? null;
+
+                    $pf["pf_c" . ($i + 1) . "_1"] = $final[$key]['indicador_1'] ?? null;
+                    $pf["pf_c" . ($i + 1) . "_2"] = $final[$key]['indicador_2'] ?? null;
+                    $pf["pf_c" . ($i + 1) . "_3"] = $final[$key]['indicador_3'] ?? null;
+                }
+            }
+            Calificacionesppd::updateOrCreate(
+                [
+                    'ppd_id' => $data['alumno_id'],
+                    'curso_id' => $curso->id,
+                ],
+                array_merge([
+                    'nombre' => $data['nombre'] ?? 'Periodo 1',
+                    'fecha' => $data['fecha'] ?? now(),
+                    'nivel_desempeno' => $data['nivel_desempeno'] ?? null,
+                    'calificacion_curso' => $data['calificacion_curso'] ?? null,
+                    'calificacion_sistema' => $data['calificacion_sistema'] ?? null,
+                    'observaciones' => $data['observaciones'] ?? null,
+                ], $pp, $pf, $pg)
+            );
+        }
+
+        $competenciasSeleccionadas = Competencia::whereIn('id', $request->input('competencias'))->get();
+        $alumnos = $curso->ciclo->alumnosB()
+            ->with([
+                'user.alumnoB.calificaciones' => function ($query) use ($curso) {
+                    $query->where('curso_id', $curso->id);
+                }
+            ])
+            ->whereHas('user.roles', function ($query) {
+                $query->where('name', '!=', 'inhabilitado');
+            })
+            ->orderBy('apellidos')
+            ->get();
+
+        /* session()->flash('success', '¡Las calificaciones se guardaron exitosamente!'); */
+        session()->flash('success', "¡Felicidades $primerNombre! Las calificaciones se guardaron exitosamente.");
+
+        return view('docentes.calificaciones.alumnosppd', [
+            'curso' => $curso,
+            'docente' => $docente,
+            'competenciasSeleccionadas' => $competenciasSeleccionadas,
+            'alumnos' => $alumnos,
         ]);
     }
 }

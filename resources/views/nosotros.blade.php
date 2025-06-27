@@ -363,7 +363,7 @@
                     </ul>
                 </div>
                 <div class="col-lg-6">
-                    <img width="100%" src="{{ asset('img/Pages/Personal-Directivo-Pukllasunchis.webp') }}"
+                    <img width="100%" src="{{ asset('img/Pages/Fondo-ampliada.webp') }}"
                         alt="Equipo Directivo de Pukllasunchis">
                 </div>
             </div>

@@ -20,7 +20,7 @@ class Ciclo extends Model
     }
     public function alumnosB()
     {
-        return $this->hasMany(ppd::class);
+        return $this->hasMany(ppd::class, 'ciclo_id');
     }
     public function cursos()
     {

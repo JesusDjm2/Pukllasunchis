@@ -1,4 +1,7 @@
 <div class="row">
+    <div class="col-lg-12">
+        <h4 class="mb-2 mt-2">Datos Personales</h4>
+    </div>
     <div class="col-lg-6 mb-2">
         <div class="form-group">
             <label for="email">Email:</label>
@@ -52,7 +55,6 @@
             @enderror
         </div>
         <script>
-            // Desactivar la capacidad de cambio en los selects
             document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('programa_selector').addEventListener('mousedown', function(event) {
                     event.preventDefault();
@@ -93,7 +95,6 @@
         </div>
     @endif
 
-
     <div class="col-lg-6 mb-2">
         <label for="nombres">Nombres:</label>
         <input type="text" class="form-control form-control-sm @error('nombres') is-invalid @enderror" id="nombres"
@@ -128,27 +129,33 @@
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
     </div>
+
     <div class="col-lg-6 mb-2">
         <label for="procedencia_familiar">¿Tu familia o tú proceden de alguna comunidad?:</label>
         <select class="form-control form-control-sm @error('procedencia_familiar') is-invalid @enderror"
             id="procedencia_familiar" name="procedencia_familiar" required>
             <option value="" disabled {{ old('procedencia_familiar') ? '' : 'selected' }}>Selecciona una opción
             </option>
-            <option value="vivo_en_comunidad"
-                {{ old('procedencia_familiar') == 'vivo_en_comunidad' ? 'selected' : '' }}>Sí, yo aún vivo en la
-                comunidad</option>
-            <option value="padres_viven_en_comunidad"
-                {{ old('procedencia_familiar') == 'padres_viven_en_comunidad' ? 'selected' : '' }}>Sí, mis padres aún
-                viven en la comunidad</option>
-            <option value="abuelos_viven_en_comunidad"
-                {{ old('procedencia_familiar') == 'abuelos_viven_en_comunidad' ? 'selected' : '' }}>Sí, mis abuelos aún
-                viven en la comunidad</option>
-            <option value="no_vivimos_en_comunidad"
-                {{ old('procedencia_familiar') == 'no_vivimos_en_comunidad' ? 'selected' : '' }}>Sí, pero ya no vivimos
-                en la comunidad</option>
-            <option value="familia_de_zona_urbana"
-                {{ old('procedencia_familiar') == 'familia_de_zona_urbana' ? 'selected' : '' }}>No, mi familia procede
-                de una zona urbana</option>
+            <option value="Sí, yo aún vivo en la comunidad"
+                {{ old('procedencia_familiar') == 'Sí, yo aún vivo en la comunidad' ? 'selected' : '' }}>
+                Sí, yo aún vivo en la comunidad
+            </option>
+            <option value="Sí, mis padres aún viven en la comunidad"
+                {{ old('procedencia_familiar') == 'Sí, mis padres aún viven en la comunidad' ? 'selected' : '' }}>
+                Sí, mis padres aún viven en la comunidad
+            </option>
+            <option value="Sí, mis abuelos aún viven en la comunidad"
+                {{ old('procedencia_familiar') == 'Sí, mis abuelos aún viven en la comunidad' ? 'selected' : '' }}>
+                Sí, mis abuelos aún viven en la comunidad
+            </option>
+            <option value="Sí, pero ya no vivimos en la comunidad"
+                {{ old('procedencia_familiar') == 'Sí, pero ya no vivimos en la comunidad' ? 'selected' : '' }}>
+                Sí, pero ya no vivimos en la comunidad
+            </option>
+            <option value="No, mi familia procede de una zona urbana"
+                {{ old('procedencia_familiar') == 'No, mi familia procede de una zona urbana' ? 'selected' : '' }}>
+                No, mi familia procede de una zona urbana
+            </option>
         </select>
         @error('procedencia_familiar')
             <div class="invalid-feedback">{{ $message }}</div>
@@ -166,6 +173,68 @@
             </span>
         @enderror
     </div>
+
+    <div class="col-lg-6">
+        <label for="lugar_nacimiento">Lugar de Nacimiento:<span class="text-danger">*</span>
+            <small>(Detallar: Región, Provincia, Distrito y dirección)</small>
+        </label>
+        <input type="text"
+            class="form-control form-control-sm mb-2 @error('lugar_nacimiento') is-invalid @enderror"
+            name="lugar_nacimiento" value="{{ old('lugar_nacimiento') }}"
+            placeholder="Ejemplo: Cusco, Cusco, Santiago, Urb, BloqueA-2" required>
+        @error('lugar_nacimiento')
+            <span class="invalid-feedback" role="alert">{{ $message }}</span>
+        @enderror
+    </div>
+
+    <div class="col-lg-6">
+        <label for="permanencia_vivienda">Permanencia en la vivienda:<span class="text-danger">*</span>
+            <small>(Selecciona la opción que mejor describa tu situación)</small>
+        </label>
+        <select class="form-control form-control-sm mb-2 @error('permanencia_vivienda') is-invalid @enderror"
+            name="permanencia_vivienda" required>
+            <option value="" disabled selected>Selecciona una opción</option>
+            <option value="Vivo permanentemente en Cusco ciudad"
+                {{ old('permanencia_vivienda') == 'Vivo permanentemente en Cusco ciudad' ? 'selected' : '' }}>Vivo
+                permanentemente en Cusco ciudad</option>
+            <option value="Vivo en comunidad y me traslado al Cusco todos los días para estudiar"
+                {{ old('permanencia_vivienda') == 'Vivo en comunidad y me traslado al Cusco todos los días para estudiar' ? 'selected' : '' }}>
+                Vivo en comunidad y me traslado al Cusco todos los días para estudiar</option>
+            <option value="Estoy en Cusco de lunes a viernes y los fines de semana en mi comunidad"
+                {{ old('permanencia_vivienda') == 'Estoy en Cusco de lunes a viernes y los fines de semana en mi comunidad' ? 'selected' : '' }}>
+                Estoy en Cusco de lunes a viernes y los fines de semana en mi comunidad</option>
+        </select>
+        @error('permanencia_vivienda')
+            <span class="invalid-feedback" role="alert">{{ $message }}</span>
+        @enderror
+    </div>
+    <script>
+        function toggleOtroSector() {
+            var select = document.getElementById("sector_laboral_select");
+            var inputOtro = document.getElementById("sector_laboral_otro");
+            var hiddenInput = document.getElementById("sector_laboral_hidden");
+
+            if (select.value === "Otro") {
+                inputOtro.style.display = "block";
+                inputOtro.required = true;
+                hiddenInput.value = inputOtro.value;
+            } else {
+                inputOtro.style.display = "none";
+                inputOtro.required = false;
+                inputOtro.value = "";
+                hiddenInput.value = select.value;
+            }
+        }
+
+        document.getElementById("sector_laboral_otro").addEventListener("input", function() {
+            document.getElementById("sector_laboral_hidden").value = this.value;
+        });
+
+        document.addEventListener("DOMContentLoaded", function() {
+            toggleOtroSector();
+        });
+    </script>
+
     <div class="col-lg-6 mb-2">
         <label for="te_consideras">Por tus antepasados y de acuerdo a tus costumbres, te consideras:</label>
         <select class="form-control form-control-sm @error('te_consideras') is-invalid @enderror" id="te_consideras"
@@ -208,10 +277,10 @@
         <label for="lengua_2">Lengua 2:</label>
         <select class="form-control form-control-sm @error('lengua_2') is-invalid @enderror" id="lengua_2"
             name="lengua_2" required>
-            <option value="" disabled {{ old('lengua_2') ? '' : 'selected' }}>Selecciona una opción</option>
-            <option value="Quechua" {{ old('lengua_2') == 'quechua' ? 'selected' : '' }}>Quechua</option>
-            <option value="Castellano" {{ old('lengua_2') == 'castellano' ? 'selected' : '' }}>Castellano</option>
-            <option value="Otro" {{ old('lengua_2') == 'otro' ? 'selected' : '' }}>Otro</option>
+            <option value="" disabled>Selecciona una opción</option>           
+            <option value="Quechua" {{ old('lengua_2') == 'Quechua' ? 'selected' : '' }}>Quechua</option>
+            <option value="Castellano" {{ old('lengua_2') == 'Castellano' ? 'selected' : '' }}>Castellano</option>
+            <option value="Otro" {{ old('lengua_2') == 'Otro' ? 'selected' : '' }}>Otro</option>
         </select>
         @error('lengua_2')
             <div class="invalid-feedback">{{ $message }}</div>
@@ -300,6 +369,20 @@
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
     </div>
+    {{-- Fotografía User --}}
+    {{-- <div class="col-lg-12 mb-2">
+        <label for="foto">Foto:
+            <small class="text-primary">Esta foto debe de ser tipo pasaporte con fondo blanco. Importante!</small>
+        </label>
+        <div class="input-group">
+            <input type="file" class="form-control form-control-sm"
+                id="foto" name="foto" required>
+        </div>
+        @error('foto')
+            <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+    </div> --}}
+
     <!-- Modal -->
     <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
         aria-hidden="true">

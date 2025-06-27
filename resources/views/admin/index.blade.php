@@ -1,5 +1,14 @@
 @extends('layouts.admin')
 @section('contenido')
+    <style>
+        .curso-item {
+            transition: background-color 0.3s ease;
+        }
+
+        .curso-item:hover {
+            background-color: #e7e7e7;
+        }
+    </style>
     <div class="container-fluid bg-white pt-2">
         @role('admin')
             <div class="d-sm-flex align-items-center justify-content-between mb-4">
@@ -100,7 +109,15 @@
                                 @foreach ($admins as $key => $admin)
                                     @if ($admin->hasRole('alumno'))
                                         <tr class="alumno-row">
-                                            <td>{{ $admin->apellidos }}, {{ $admin->name }}</td>
+                                            <td>
+                                                {{ $admin->apellidos }}, {{ $admin->name }} -
+                                                @if ($admin->foto && file_exists(public_path('img/estudiantes/' . $admin->foto)))
+                                                    <img width="50px" src="{{ asset('img/estudiantes/' . $admin->foto) }}"
+                                                        alt="Foto del usuario" class="img-fluid" loading="lazy">
+                                                @else
+                                                    N/A
+                                                @endif
+                                            </td>
                                             <td>{{ $admin->email }}</td>
                                             <td>{{ optional($admin->programa)->nombre ?? 'N/A' }}</td>
                                             <td style="font-family: serif">{{ optional($admin->ciclo)->nombre ?? 'N/A' }}</td>
@@ -352,7 +369,6 @@
                 </div>
             </div>
         @endrole
-
     </div>
 
     <!-- Modal de Confirmación -->
@@ -472,8 +488,7 @@
                 document.getElementById('docentes-table').style.display = 'none';
                 document.getElementById('inhabilitado-table').style.display = 'table';
                 document.getElementById('alumnosppd').style.display = 'none';
-            }
-            else if (tipo === 'alumnosppd') {
+            } else if (tipo === 'alumnosppd') {
                 document.getElementById('admins-table').style.display = 'none';
                 document.getElementById('alumnos-table').style.display = 'none';
                 document.getElementById('adminsB-table').style.display = 'none';
@@ -484,13 +499,5 @@
         }
     </script>
 
-    <style>
-        .curso-item {
-            transition: background-color 0.3s ease;
-        }
 
-        .curso-item:hover {
-            background-color: #e7e7e7;
-        }
-    </style>
 @endsection

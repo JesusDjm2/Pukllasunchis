@@ -29,8 +29,20 @@ class CursoController extends Controller
         $EIB = Curso::whereHas('ciclo', function ($query) {
             $query->where('programa_id', 2);
         })->count();
+        $inicialPPD = Curso::whereHas('ciclo', function ($query) {
+            $query->where('programa_id', 3);
+        })->get();
+        $iniPPD = Curso::whereHas('ciclo', function ($query) {
+            $query->where('programa_id', 3);
+        })->count();
+        $primariaPPD = Curso::whereHas('ciclo', function ($query) {
+            $query->where('programa_id', 4);
+        })->get();
+        $priPPD = Curso::whereHas('ciclo', function ($query) {
+            $query->where('programa_id', 4);
+        })->count();
         $competencias = Competencia::all();
-        return view('admin.curso.index', compact('cursos', 'cant', 'inicial', 'cursosInicial', 'EIB', 'cursosEib', 'competencias'));
+        return view('admin.curso.index', compact('cursos', 'cant', 'inicial', 'cursosInicial', 'EIB', 'cursosEib', 'competencias', 'inicialPPD', 'primariaPPD', 'iniPPD', 'priPPD'));
     }
     public function create()
     {
@@ -42,8 +54,15 @@ class CursoController extends Controller
     }
     public function uploadSilabo(Request $request, Curso $curso)
     {
+        /* $request->validate([
+            'silabo' => 'required|mimes:pdf|max:2048', // Validar el archivo PDF
+        ]); */
         $request->validate([
-            'silabo' => 'nullable|mimes:pdf|max:2048', // Validar el archivo PDF
+            'silabo' => 'required|mimes:pdf|max:2048',
+        ], [
+            'silabo.required' => 'Debes seleccionar un archivo PDF antes de subirlo.',
+            'silabo.mimes' => 'El archivo debe ser un PDF válido.',
+            'silabo.max' => 'El archivo no debe exceder los 2MB.',
         ]);
 
         if ($request->hasFile('silabo')) {
@@ -84,7 +103,7 @@ class CursoController extends Controller
             'programa_id' => 'required|exists:programas,id',
             'ciclo_id' => 'required|exists:ciclos,id',
             'nombre' => 'required|string',
-            'sumilla'=>'required|string',
+            'sumilla' => 'required|string',
             'cc' => 'required|string',
             'horas' => 'required|string',
             'creditos' => 'required|string',
@@ -136,7 +155,7 @@ class CursoController extends Controller
             'programa_id' => 'required|exists:programas,id',
             'ciclo_id' => 'required|exists:ciclos,id',
             'nombre' => 'required|string',
-            'sumilla'=>'required|string',
+            'sumilla' => 'required|string',
             'cc' => 'required|string',
             'horas' => 'required|string',
             'creditos' => 'required|string',
@@ -164,7 +183,8 @@ class CursoController extends Controller
     {
         $programa = $curso->ciclo->programa;
         $ciclo = $curso->ciclo;
-
+        /* $alumno = auth()->user()->ppd; */
+        $alumno = auth()->user()->alumnoB;
         $alumnos = $programa->alumnos()
             ->where('ciclo_id', $ciclo->id)
             ->orderBy('apellidos')
@@ -172,9 +192,8 @@ class CursoController extends Controller
         $cantidadAlumnos = $alumnos->count();
         $docentes = $curso->docentes;
 
-        // Verificar si el usuario está autenticado y tiene el rol 'alumnoB'
         if (auth()->check() && auth()->user()->hasRole('alumnoB')) {
-            return view('alumnos.ppd.curso', compact('curso', 'docentes', 'cantidadAlumnos'));
+            return view('alumnos.ppd.curso', compact('curso', 'alumnos', 'docentes', 'cantidadAlumnos', 'alumno'));
         }
         return view('admin.curso.show', compact('curso', 'alumnos', 'cantidadAlumnos', 'docentes'));
     }

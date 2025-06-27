@@ -3,21 +3,24 @@
         <h4 class="mb-2 mt-4">Aspectos Familiares</h4>
     </div>
     <div class="col-lg-6 mb-2 mt-2">
-        <label for="convivientes">¿Con quién(es) vive(s)?:</label>
+        <label for="convivientes">¿Con quién(es) vives?</label>
         <select class="form-control @error('convivientes') is-invalid @enderror" id="convivientes" name="convivientes">
             <option value="" disabled selected>Selecciona una opción</option>
             <option value="Solo" {{ old('convivientes') == 'Solo' ? 'selected' : '' }}>Solo</option>
             <option value="Padre" {{ old('convivientes') == 'Padre' ? 'selected' : '' }}>Padre</option>
             <option value="Madre" {{ old('convivientes') == 'Madre' ? 'selected' : '' }}>Madre</option>
-            <option value="Padre y Madre" {{ old('convivientes') == 'Padre y Madre' ? 'selected' : '' }}>Padre y Madre
-            </option>
-            <option value="Esposo/Cónyuge" {{ old('convivientes') == 'Esposo/Cónyuge' ? 'selected' : '' }}>
-                Esposo/Cónyuge</option>
+            <option value="Padre y Madre" {{ old('convivientes') == 'Padre y Madre' ? 'selected' : '' }}>Padre y Madre</option>
+            <option value="Esposo/Cónyuge" {{ old('convivientes') == 'Esposo/Cónyuge' ? 'selected' : '' }}>Esposo/Cónyuge</option>
             <option value="Otro" {{ old('convivientes') == 'Otro' ? 'selected' : '' }}>Otro</option>
         </select>
-        <input type="text" class="form-control mt-2 @if (old('convivientes') != 'Otro') d-none @endif"
-            id="otro_conviviente" name="convivientes" value="{{ old('otro_conviviente') }}"
+    
+        <input type="text" class="form-control mt-2 @error('convivientes') is-invalid @enderror 
+            {{ old('convivientes') && !in_array(old('convivientes'), ['Solo', 'Padre', 'Madre', 'Padre y Madre', 'Esposo/Cónyuge']) ? '' : 'd-none' }}" 
+            id="otro_conviviente" 
+            name="otro_conviviente" 
+            value="{{ old('convivientes') && !in_array(old('convivientes'), ['Solo', 'Padre', 'Madre', 'Padre y Madre', 'Esposo/Cónyuge']) ? old('convivientes') : '' }}"
             placeholder="Especificar otro">
+    
         @error('convivientes')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
@@ -33,20 +36,12 @@
                     otroConvivienteInput.classList.remove('d-none');
                     otroConvivienteInput.setAttribute('required', 'required');
                     otroConvivienteInput.setAttribute('name',
-                        'convivientes'); // Establecer el nombre como 'convivientes'
-                    otroConvivienteInput.setAttribute('id',
-                        'convivientes'); // Establecer el ID como 'convivientes'
+                    'convivientes'); // Asigna el valor al mismo campo del select
                 } else {
                     otroConvivienteInput.classList.add('d-none');
                     otroConvivienteInput.removeAttribute('required');
-                    otroConvivienteInput.removeAttribute('name');
-                    otroConvivienteInput.removeAttribute('id');
-                }
-            });
-
-            otroConvivienteInput.addEventListener('input', function() {
-                if (convivientesSelect.value === 'Otro') {
-                    convivientesSelect.value = otroConvivienteInput.value;
+                    otroConvivienteInput.setAttribute('name',
+                    'otro_conviviente'); // Nombre diferente para no afectar el select
                 }
             });
         });
@@ -141,7 +136,8 @@
     </div>
 
     <div class="col-lg-4 mb-2 mt-2">
-        <label for="postulaciones_inst_uni">Número de veces que postuló a <strong> educación</strong> en otras instituciones:        </label>
+        <label for="postulaciones_inst_uni">Número de veces que postuló a <strong> educación</strong> en otras
+            instituciones: </label>
         <input type="number" class="form-control form-control-sm @error('postulaciones_inst_uni') is-invalid @enderror"
             id="postulaciones_inst_uni" name="postulaciones_inst_uni" placeholder="Ingrese la cantidad"
             value="{{ old('postulaciones_inst_uni') }}">

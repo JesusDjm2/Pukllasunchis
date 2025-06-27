@@ -127,9 +127,7 @@
                         </div>
                         <div class="col-lg-6 mb-3">
                             <label for="password">Nueva Contraseña (opcional):</label>
-                            <input type="password" name="password" id="password" class="form-control form-control-sm"
-                                placeholder="Nueva contraseña">
-
+                            <input type="password" name="password" id="password" class="form-control form-control-sm">
                             @if ($errors->has('password'))
                                 <span class="text-danger">{{ $errors->first('password') }}</span>
                             @endif
@@ -153,7 +151,8 @@
                                 </option>
                                 <option value="docente" {{ $currentRole === 'docente' ? 'selected' : '' }}>Docente</option>
                                 <option value="alumno" {{ $currentRole === 'alumno' ? 'selected' : '' }}>Alumno</option>
-                                <option value="alumnoB" {{ $currentRole === 'alumnoB' ? 'selected' : '' }}>Alumno PPD</option>
+                                <option value="alumnoB" {{ $currentRole === 'alumnoB' ? 'selected' : '' }}>Alumno PPD
+                                </option>
                                 <option value="adminB" {{ $currentRole === 'adminB' ? 'selected' : '' }}>Administrador
                                     Bolsa</option>
                                 <option value="inhabilitado" {{ $currentRole === 'inhabilitado' ? 'selected' : '' }}>
@@ -314,15 +313,15 @@
                 adminFields.style.display = 'block';
             } */
             function toggleFields() {
-        if (roleSelect.value === 'alumno' || roleSelect.value === 'alumnoB') {
-            adminFields.style.display = 'block';
-        } else {
-            adminFields.style.display = 'none';
-        }
-    }
+                if (roleSelect.value === 'alumno' || roleSelect.value === 'alumnoB') {
+                    adminFields.style.display = 'block';
+                } else {
+                    adminFields.style.display = 'none';
+                }
+            }
 
-    roleSelect.addEventListener('change', toggleFields);
-    toggleFields();
+            roleSelect.addEventListener('change', toggleFields);
+            toggleFields();
         });
     </script>
     <script>

@@ -64,7 +64,6 @@
                         </div>
 
                         <div class="row mt-3">
-                            <!-- Segunda parte con datos en 2 columnas -->
                             <div class="col-lg-6">
                                 <div class="table-responsive">
                                     <table class="table table-bordered tabla-sin-eventos">

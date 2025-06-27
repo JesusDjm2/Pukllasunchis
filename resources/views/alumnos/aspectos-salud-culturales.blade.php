@@ -3,7 +3,7 @@
         <h4>Aspectos de la Salud</h4>
     </div>
     <div class="col-lg-6 mb-2 mt-2">
-        <label for="problemas_salud">¿Presenta algún problema de salud? Sí su respuesta es Sí, continue con la
+        <label for="problemas_salud">1. ¿Presenta algún problema de salud? Sí su respuesta es Sí, continue con la
             pregunta 2. Caso contrario, continúe con la pregunta 4.:</label><br>
         <div class="form-check form-check-inline">
             <input class="form-check-input @error('problemas_salud') is-invalid @enderror" type="radio"
@@ -23,7 +23,7 @@
     </div>
 
     <div class="col-lg-6 mb-2 mt-2">
-        <label>¿En los últimos 12 meses ha tenido alguna consulta para el cuidado de su salud? Si su respuesta es No,
+        <label>2. ¿En los últimos 12 meses ha tenido alguna consulta para el cuidado de su salud? Si su respuesta es No,
             pasar a la pregunta 3. Caso contrario, continúe con la pregunta 4.</label><br>
         <div class="form-check form-check-inline">
             <input class="form-check-input @error('ultima_consulta') is-invalid @enderror" type="radio"
@@ -43,7 +43,7 @@
     </div>
 
     <div class="col-lg-6 mb-2">
-        <label for="ultima_consulta">¿Por qué motivo no ha tenido consultas médicas en los últimos 12 meses?</label>
+        <label for="ultima_consulta">3. ¿Por qué motivo no ha tenido consultas médicas en los últimos 12 meses?</label>
         <select class="form-control form-control-sm @error('ultima_consulta') is-invalid @enderror"
             name="ultima_consulta">
             <option selected disabled>Seleccione una opción:</option>
@@ -70,7 +70,7 @@
     </div>  --}}
 
     <div class="col-lg-6 mb-2">
-        <label for="tipo_seguro">¿Con qué tipo de seguro de salud cuenta?</label>
+        <label for="tipo_seguro">4. ¿Con qué tipo de seguro de salud cuenta?</label>
         <select class="form-control form-control-sm @error('tipo_seguro') is-invalid @enderror" name="tipo_seguro">
             <option selected disabled>Seleccionar</option>
             <option value="EsSalud" {{ old('tipo_seguro') == 'EsSalud' ? 'selected' : '' }}>EsSalud</option>
@@ -91,7 +91,7 @@
     </div>
 
     <div class="col-lg-6 mb-2 mt-2">
-        <label for="familiar_salud">¿Algún miembro que conforma su hogar presenta un problema de salud
+        <label for="familiar_salud">5. ¿Algún miembro que conforma su hogar presenta un problema de salud
             grave?</label><br>
         <div class="form-check form-check-inline">
             <input class="form-check-input @error('familiar_salud') is-invalid @enderror" type="radio"
@@ -114,7 +114,7 @@
         <h4>Aspectos Culturales</h4>
     </div>
     <div class="col-lg-6 mb-2 mt-2">
-        <label for="frecuencia_lectura">Sin considerar textos académicos o manuales de estudio, ¿con qué frecuencia
+        <label for="frecuencia_lectura">1. Sin considerar textos académicos o manuales de estudio, ¿con qué frecuencia
             usted acostumbra a leer revistas/libros?</label>
         <select class="form-control form-control-sm @error('frecuencia_lectura') is-invalid @enderror"
             name="frecuencia_lectura">
@@ -136,7 +136,7 @@
     </div>
 
     <div class="col-lg-6 mb-2 mt-2">
-        <label for="acceso_lectura">¿De qué manera accede a las revistas/libros que lee habitualmente?</label>
+        <label for="acceso_lectura">2. ¿De qué manera accede a las revistas/libros que lee habitualmente?</label>
         <select class="form-control form-control-sm @error('acceso_lectura') is-invalid @enderror"
             name="acceso_lectura">
             <option value="" selected disabled>Seleccionar</option>
@@ -153,7 +153,7 @@
     </div>
 
     <div class="col-lg-6 mb-2 mt-2">
-        <label for="visitas_museos">¿Ha asistido a museos?</label>
+        <label for="visitas_museos">3. ¿Ha asistido a museos?</label>
         <select class="form-control form-control-sm @error('visitas_museos') is-invalid @enderror"
             name="visitas_museos">
             <option value="" selected disabled>Seleccionar</option>
@@ -181,7 +181,7 @@
     </div>
 
     <div class="col-lg-6 mb-2 mt-2">
-        <label for="actividades_internet">¿Qué actividades son las que más realiza usted a través de internet?</label>
+        <label for="actividades_internet">1. ¿Qué actividades son las que más realiza usted a través de internet?</label>
         <select class="form-control form-control-sm @error('actividades_internet') is-invalid @enderror"
             name="actividades_internet">
             <option value="" selected disabled>Seleccionar</option>
@@ -205,7 +205,7 @@
     </div>
 
     <div class="col-lg-6 mb-2 mt-2">
-        <label>¿Ha desarrollado alguna de las siguientes habilidades?</label><br>
+        <label>2. ¿Ha desarrollado alguna de las siguientes habilidades?</label><br>
 
         <label class="form-check">
             <input class="form-check-input" type="checkbox" name="habilidades[]"
@@ -239,7 +239,7 @@
     </div>
 
     <div class="col-lg-6 mb-2 mt-2">
-        <label for="tiempo_libre">¿Usted considera que dispone de tiempo libre para realizar diversas actividades que
+        <label for="tiempo_libre">3. ¿Usted considera que dispone de tiempo libre para realizar diversas actividades que
             le gusten?</label>
         <div class="form-check">
             <input class="form-check-input" type="radio" name="tiempo_libre" id="tiempo_libre_si" value="1"

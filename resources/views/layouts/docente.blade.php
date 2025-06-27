@@ -7,7 +7,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="author" content="David Jesús Miranda">
     <title >@yield('titulo')</title>
-
     <link rel="shortcut icon" type="image/x-icon" href="{{ asset('img/logoiesp.ico') }}">
     <link href="{{ asset('admin/vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" type="text/css">
     <link
@@ -82,7 +81,10 @@
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Ver alumnos</h6>
                         <a class="collapse-item" href="{{ route('vistaAlumnos', ['docente' => $docente->id]) }}">
-                            Ver mis alumnos
+                            Alumnos FID
+                        </a>
+                        <a class="collapse-item" href="{{ route('alumnosppd2', $docente->id) }}">
+                            Alumnos PPD
                         </a>
                     </div>
                 </div>
@@ -103,7 +105,27 @@
                     </div>
                 </div>
             </li>
+             <hr class="sidebar-divider d-none d-md-block">
+            {{--<li class="nav-item">
+                <a class="nav-link collapsed" href="{{ route('index') }}">
+                    <i class="fas fa-file-pdf"></i>
+                    <span>Repositorio de sílabos</span>
+                </a>
+            </li> --}}
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="{{ route('repositorio', $docente->id) }}">
+                    <i class="fas fa-file-pdf"></i>
+                    <span>Repositorio de Sílabos</span>
+                </a>
+            </li>
+            <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block">
+            <li class="nav-item">
+                <a class="nav-link collapsed" target="_blank" href="https://sites.google.com/pukllavirtual.edu.pe/bibliotecaeesppuklla/inicio">
+                    <i class="fas fa-book-open"></i>
+                    <span>Biblioteca</span>
+                </a>
+            </li>            
 
             <div class="text-center d-none d-md-inline">
                 <button class="rounded-circle border-0" id="sidebarToggle"></button>
@@ -145,7 +167,7 @@
                     <div class="copyright text-center my-auto">
                         <span>Copyright &copy; {{ date('Y') }} | Hecho por <a class="text-primary"
                                 href="https://www.facebook.com/DjmWebMaster" target="_blank"
-                                rel="noopener noreferrer"> DJM2 </a> | Versión 2024.2</span>
+                                rel="noopener noreferrer"> DJM2 </a> | Versión 2025.2</span>
                     </div>
                 </div>
             </footer>
@@ -154,7 +176,6 @@
     <a class="scroll-to-top rounded" href="#page-top">
         <i class="fas fa-angle-up"></i>
     </a>
-
     <!-- Burbuja flotante con editor de texto -->
     <div id="floating-bubble-editor" class="floating-bubble-editor" onclick="openTextEditor()">
         ✎

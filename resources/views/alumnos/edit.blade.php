@@ -21,11 +21,13 @@
                 @endif
                 @if (stripos($alumno->num_comprobante, 'beca') !== false)
                     <div class="alert alert-info text-center" role="alert">
-                        De no tener ningun dato para actualizar, solo guardar el formulario.
-                    </div>
+                        <strong>Llenar los nuevos campos y de no tener ningun dato para actualizar, solo guardar el
+                            formulario. Seguidamente strong>NOTIFICAR</strong> que terminaste tu ficha de matrícula.
+                    </div></strong>
                 @else
                     <div class="alert alert-info text-center" role="alert">
-                        De no tener ningun dato para actualizar, solo completar número de voucher y guardar el formulario.
+                        Por favor <strong>completar los nuevos campos</strong> y actualizar datos de ser necesario.
+                        Seguidamente <strong>NOTIFICAR</strong> que terminaste tu ficha de matrícula.
                     </div>
                 @endif
             </div>

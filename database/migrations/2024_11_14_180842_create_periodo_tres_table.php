@@ -25,6 +25,9 @@ return new class extends Migration
             $table->string('calificacion_curso')->nullable();
             $table->string('calificacion_sistema')->nullable();
 
+            //Observaciones
+            $table->text('observaciones')->nullable();
+
             $table->foreignId('alumno_id')->constrained('alumnos')->onDelete('cascade');
             $table->foreignId('curso_id')->constrained('cursos')->onDelete('cascade');
             $table->foreignId('calificacion_id')->nullable()->constrained('calificacions')->onDelete('set null');

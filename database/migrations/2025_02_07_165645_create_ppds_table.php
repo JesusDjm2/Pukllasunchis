@@ -20,6 +20,11 @@ return new class extends Migration {
             $table->string('numero');
             $table->string('numero_referencia');
             $table->string('procedencia_familiar');
+            //Nuevos campos:
+            $table->string('lugar_nacimiento')->nullable();
+            $table->string('permanencia_vivienda')->nullable();
+            $table->string('sector_laboral')->nullable();
+
             $table->string('direccion');
             $table->string('te_consideras');
             $table->string('lengua_1');
@@ -62,7 +67,7 @@ return new class extends Migration {
             $table->bigInteger('num_hrs_estudio');
             $table->string('forma_estudio');
             //Aspectos socioeconomicos
-            $table->boolean('trabajas');
+            $table->string('trabajas');
             $table->string('donde_trabajas')->nullable();
             $table->string('ingreso_mensual')->nullable();
             $table->string('egreso');

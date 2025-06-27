@@ -47,13 +47,7 @@ class LoginController extends Controller
         } elseif ($user->hasRole('alumnoB')) {
             return redirect()->route('ppd.index')->with('userData', $user);
         } elseif ($user->hasRole('alumno')) {
-            return redirect()->route('alumnos.index')->with('userData', $user);
-            /* $alumno = $user->alumno;
-            if ($alumno) {
-                return redirect()->route('alumnos.index')->with('userData', $user)->with('alumno', $alumno);
-            } else {
-                return redirect()->route('alumnos.index')->with('userData', $user);
-            } */
+            return redirect()->route('alumnos.index')->with('userData', $user);            
         } elseif ($user->hasRole('docente')) {
             return redirect()->route('vistaDocente', ['docente' => $user->docente->id]);
         } elseif ($user->hasRole('inhabilitado')) {

@@ -12,7 +12,83 @@
             </a>
         </div>
         <div class="row mb-4">
-            <div class="col-lg-12">
+            <div class="col-lg-12">              
+
+                @if ($periodosAgrupados->isNotEmpty())
+                    <div class="container d-flex justify-content-center my-2">
+                        <div class="col-md-6">
+                            <label for="selectorPeriodo" class="form-label fw-bold text-center w-100 mb-2">
+                                Calificaciones de periodos anteriores
+                            </label>
+                            <select id="selectorPeriodo" class="form-select form-control form-control-sm text-center"
+                                onchange="mostrarPeriodoAgrupado(this.value)">
+                                <option selected disabled>-- Selecciona un período --</option>
+                                @foreach ($periodosAgrupados as $nombrePeriodo => $grupos)
+                                    <option value="periodo-{{ Str::slug($nombrePeriodo) }}">{{ $nombrePeriodo }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    @foreach ($periodosAgrupados as $nombrePeriodo => $grupos)
+                        <div id="periodo-{{ Str::slug($nombrePeriodo) }}" class="tabla-periodo d-none table-responsive">
+                            <h5 class="mt-3 font-weight-bold">Período: {{ $nombrePeriodo }}</h5>
+                            <table class="table table-bordered table-hover">
+                                <thead class="table-secondary thead-dark">
+                                    <tr>
+                                        <th>Cursos</th>
+                                        <th>Valoración del curso</th>
+                                        <th>Calificación del curso</th>
+                                        <th>Calificación del sistema</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($grupos as $periodo)
+                                        @php
+                                            $bgColor = is_null($periodo->calificacion_sistema)
+                                                ? '#fff3cd'
+                                                : ($periodo->calificacion_sistema > 11
+                                                    ? '#d4edda'
+                                                    : '#f8d7da');
+                                        @endphp
+                                        <tr>
+                                            <td>
+                                                <span
+                                                    class="font-weight-bold">{{ $periodo->curso->nombre ?? 'No asignado' }}</span>
+                                                <span style="font-size: 12px">
+                                                    ({{ $periodo->curso->ciclo->programa->nombre ?? 'No asignado' }} -
+                                                    {{ $periodo->curso->ciclo->nombre ?? 'No asignado' }})
+                                                </span>
+                                            </td>
+                                            <td style="text-align: center; background-color: {{ $bgColor }};">
+                                                {{ $periodo->valoracion_curso ?? 'Sin datos' }}
+                                            </td>
+                                            <td style="text-align: center; background-color: {{ $bgColor }};">
+                                                {{ $periodo->calificacion_curso ?? 'Sin datos' }}
+                                            </td>
+                                            <td style="text-align: center; background-color: {{ $bgColor }};">
+                                                {{ $periodo->calificacion_sistema ?? 'Sin datos' }}
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @endforeach
+
+                    <script>
+                        function mostrarPeriodoAgrupado(id) {
+                            document.querySelectorAll('.tabla-periodo').forEach(div => {
+                                div.classList.add('d-none');
+                            });
+
+                            const seleccionado = document.getElementById(id);
+                            if (seleccionado) {
+                                seleccionado.classList.remove('d-none');
+                            }
+                        }
+                    </script>
+                @endif
+
                 @if ($alumno->ciclo->cursos->isNotEmpty())
                     <div class="p-2 table-responsive">
                         <table class="table table-bordered table-hover">
@@ -25,49 +101,13 @@
                                     <td class="font-weight-bold align-middle text-center">Calificación Sistema</td>
                                 </tr>
                             </thead>
-                            {{-- <tbody>
-                                @foreach ($alumno->ciclo->cursos as $curso)
-                                    @php
-                                        $periodoUno = $curso
-                                            ->periodos()
-                                            ->where('alumno_id', $alumno->id)
-                                            ->first();
-                                    @endphp
-                                    <tr>
-                                        <td class="align-middle bg-light">
-                                            <a href="{{ route('curso.show', $curso->id) }}">{{ $curso->nombre }}</a>
-                                        </td>
-                                        @if ($periodoUno)
-                                            <td class="text-center align-middle bg-success text-white">
-                                                {{ $periodoUno->valoracion_curso }}</td>
-                                            <td class="text-center align-middle bg-success text-white">
-                                                {{ $periodoUno->calificacion_curso }}</td>
-                                            <td class="text-center align-middle bg-success text-white">
-                                                {{ $periodoUno->calificacion_sistema }}</td>
-                                        @else
-                                            <td colspan="6" class="text-center">No hay calificaciones disponibles</td>
-                                        @endif     
-                                                                    
-
-                                    </tr>
-                                @endforeach
-                            </tbody> --}}
                             <tbody>
                                 @foreach ($alumno->ciclo->cursos as $curso)
                                     @php
                                         // Encuentra el periodo asociado al curso actual
-                                        $periodoUno = $curso
-                                            ->periodos()
-                                            ->where('alumno_id', $alumno->id)
-                                            ->first();
-                                        $periodoDos = $curso
-                                            ->periododos()
-                                            ->where('alumno_id', $alumno->id)
-                                            ->first();
-                                        $periodoTres = $curso
-                                            ->periodotres()
-                                            ->where('alumno_id', $alumno->id)
-                                            ->first();
+                                        $periodoUno = $curso->periodos()->where('alumno_id', $alumno->id)->first();
+                                        $periodoDos = $curso->periododos()->where('alumno_id', $alumno->id)->first();
+                                        $periodoTres = $curso->periodotres()->where('alumno_id', $alumno->id)->first();
                                     @endphp
                                     <tr>
                                         <!-- Nombre del curso con rowspan -->
@@ -134,7 +174,6 @@
                                     </tr>
                                 @endforeach
                             </tbody>
-
                         </table>
                     </div>
                 @else

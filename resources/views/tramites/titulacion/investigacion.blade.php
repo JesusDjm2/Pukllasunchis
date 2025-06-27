@@ -159,7 +159,7 @@
                     </div>
                     <div class="col-lg-3 col-6 text-center">
                         <div class="card">
-                            <a href="{{ asset('pdf/CaratulaTI.docx') }}" target="_blank">
+                            <a href="{{ asset('pdf/CaratulaTI-2025.docx') }}" target="_blank">
                                 <div style="height: 100px">
                                     <img height="100%" src="{{ asset('img/min/caratula.png') }}" alt="">
                                 </div>
@@ -183,7 +183,7 @@
                     </div>
                     <div class="col-lg-3 col-6 text-center">
                         <div class="card">
-                            <a href="{{ asset('pdf/Guia-de-redaccion.pdf') }}" target="_blank">
+                            <a href="{{ asset('pdf/Guia-de-Investigacion-2025.pdf') }}" target="_blank">
                                 <div style="height: 100px">
                                     <img height="100%" src="{{ asset('img/min/Tesis-Pukllasunchis.png') }}"
                                         alt="">
@@ -201,29 +201,15 @@
                     pasos:
                 </p>
                 <ul class="listasDecimal">
-                    <li>
-                        Para la Aplicación de Trabajo de Investigación
-                        <ul>
-                            <ul>
-                                <li>Hacer el pago de S/ 10 soles <strong>como pago ordinario</strong> en las oficinas de
-                                    Caja Cusco. <small class="text-info">(Concepto: Carta de presentación para INV / Codigo:
-                                        31 )</small></li>
-                                <li>Llenar el formulario. <small><a href="https://forms.gle/LFwgrVfQ7XYPCDSm8"
-                                            target="_blank" class="text-primary">
-                                            Link <i class="fa fa-external-link"></i> </a></small></li>
-                                <li>Como resultado de este trámite recibirás la carta de aplicación de Trabajo de
-                                    Investigación y una carta modelo de Aceptación de Trabajo de Investigación. </li>
-                            </ul>
-                        </ul>
-
-                    </li>
                     <li>Solicitar revisión de originalidad (Turnitin):
                         <ul>
                             <li>Hacer el pago correspondiente por derecho de revisión de originalidad ( Turnitin) en las
-                                oficinas de Caja Cusco.</li>
+                                oficinas de Caja Cusco. <small class="text-info">Monto: s/30.00 | Código: 16 | Concepto:
+                                    Revisión Turnitin de TI</small></li>
                             <li>Llenar <a
                                     href="https://docs.google.com/forms/d/e/1FAIpQLSc1Bam9QlzjkT66NYeKMxS-xyoU4MchYtYiGCMmtvKVbHiCjg/viewform"
-                                    target="_blank" class="text-primary"> FORMULARIO DE REVISIÓN DE ORIGINALIDAD. <i class="fa fa-external-link"></i></a></li>
+                                    target="_blank" class="text-primary"> FORMULARIO DE REVISIÓN DE ORIGINALIDAD. <i
+                                        class="fa fa-external-link"></i></a></li>
                             <li>Adjuntar:
                                 <ul>
                                     <li>Versión final del TI en formato WORD</li>
@@ -238,9 +224,11 @@
                                 originalidad en un plazo no mayor a 20 días.</small>
                         </ul>
                     </li>
-                    <li>Solicitar la revisión del TI:
+                    <li>Solicitar la revisión del TI por asesor/a:
                         <ul>
-                            <li>Hacer el pago de S/100 soles por derecho de revisión del TI en las oficinas de Caja Cusco.
+                            <li>Hacer el pago por derecho de revisión del TI en las oficinas de Caja Cusco.
+                                <small class="text-info">Monto: s/100.00 | Código: 15 | Concepto: Revisión de Trabajo de
+                                    Investigación</small>
                             </li>
                             <li>Llenar <a
                                     href="https://docs.google.com/forms/d/e/1FAIpQLSfr-AXQ-NLEpO_2PGr8E8MVvHp8Cw8ook1hfqVB_WFlYpRw1Q/viewform"
@@ -261,7 +249,8 @@
                             <li>Llenar <a
                                     href="https://docs.google.com/forms/d/e/1FAIpQLSfyasqxxCR72v7aSnmtpISOedxYQzqV11igfLnegIr_biXIew/viewform"
                                     target="_blank" class="text-primary"> FORMULARIO DE SOLICITUD DE FECHA DE EXPOSICIÓN DE
-                                    TI.</a></li>
+                                    TI.</a> <small class="text-info">Monto: s/50.00 | Código: 55 | Concepto: Fecha de
+                                    Exposición de TI</small></li>
                             <li>Adjuntar:
                                 <ul>
                                     <li>Informe de TI apto en formato PDF</li>
@@ -274,8 +263,9 @@
                     </li>
                     <li>Después de la exposición del TI, solicitar RD de aprobación del TI:
                         <ul>
-                            <li>Hacer el pago de S/50 soles por derecho de RD de aprobación del TI en las oficinas de
-                                Caja Cusco.</li>
+                            <li>Hacer el pago por derecho de RD de aprobación del TI en las oficinas de
+                                Caja Cusco. <small class="text-info">Monto: s/50.00 | Código: 17 | Concepto: RD de
+                                    aprobación de TI</small></li>
                             <li>Llenar <a
                                     href="https://docs.google.com/forms/d/e/1FAIpQLSeGQ3XQAjWD2IPRUQnHIGfreOzNmgs-GceyKXgaGPsRg4EngQ/viewform"
                                     target="_blank" class="text-primary"> FORMULARIO DE APROBACIÓN DE TI.</a></li>
@@ -297,13 +287,16 @@
                                 Pukllasunchis. <a href="{{ route('tramites') }}#derecho"> <small class="text-primary">Ir
                                         a
                                         trámite
-                                        <i class="fa fa-arrow-right"></i> </small></a></li>
+                                        <i class="fa fa-external-link"></i> </small> | <small class="text-info">Monto:
+                                        s/500.00
+                                        | Código: 18 | Concepto: Armar expediente de titulación</small></a></li>
                         </ul>
                     </li>
                     <li>Solicitar registro de TI en repositorio institucional:
                         <ul>
-                            <li>Hacer el pago de S/50 soles por derecho de registro de TI en repositorio institucional en
-                                las oficinas de Caja Cusco.</li>
+                            <li>Hacer el pago por derecho de registro de TI en repositorio institucional en
+                                las oficinas de Caja Cusco. <small class="text-info">Monto: s/50.00 | Código: 19 |
+                                    Concepto: Registro de TI al repositorio</small></li>
                             <li>Descargar, completar y firmar la <a href="{{ asset('pdf/Autorizacion-Puklla.docx') }}"
                                     target="_blank" class="text-primary"> AUTORIZACIÓN DE REGISTRO EN
                                     REPOSITORIO.</a></li>
@@ -329,26 +322,39 @@
                             class="text-danger font-weight-bold">Caja Cusco:</span>
                         <ul>
                             <li>Este trámite solo se realiza de manera presencial en la oficina de secretaría de la EESP
-                                Pukllasunchis.</li>
+                                Pukllasunchis. <small class="text-info">Monto:
+                                    s/400.00 | Código: 22 | Concepto: Emisión Diploma de Bachiller</small></li>
                         </ul>
                     </li>
                     <li>Solicitar inscripción de grado de bachiller en SUNEDU previo pago de s/200.00 en las oficinas de
                         <span class="text-danger font-weight-bold">Caja Cusco:</span>
+
+
+                        <p>
+                            Este trámite permite que el Grado de Bachiller sea reconocido
+                            oficialmente en SUNEDU. Se deben entregar los siguientes documentos:
+                        </p>
                         <ul>
-                            <li>Este trámite solo se realiza de manera presencial en la oficina de secretaría de la EESP
-                                Pukllasunchis</li>
+                            <li>Pagar en Caja Cusco con el siguiente concepto:  <small class="text-info">Monto:
+                                    s/200.00 | Código: 20 | Concepto: Inscripción Bachiller a SUNEDU</small></li>
+                            <li>Llenar formulario de inscripción de grado de bachiller en SUNEDU.<small><a
+                                        class="text-primary" target="_blank"
+                                        href="https://forms.gle/L7WHbS67NKYnWug69"> Formulario <i
+                                            class="fa fa-external-link"></i> (Solo permite llenar con correo
+                                        institucional)</a></small></li>
+
+                            <li>Comprobante de pago por Inscripción del Grado de Bachiller.</li>
                         </ul>
                     </li>
-                </ul>
+                </ul><br>
 
-                <p class="generic-blockquote mt-4">
+                {{--  <p class="generic-blockquote mt-4">
                     <strong>Nota:</strong><br>
                     Los pagos se realizan por cualquier plataforma disponible de Caja Cusco al mismo número de cuenta.
-                </p><br><br>
+                </p><br><br> --}}
 
-                <h2 class="mt-4 scroolOk linea-debajo" id="investigacion">Documentos para el proceso de obtención del
-                    Grado
-                    de Bachiller </h2>
+                <h2 class="mt-4 linea-debajo" id="investigacion">Documentos para el proceso de obtención del
+                    Grado de Bachiller </h2>
                 <div class="row justify-content-center align-items-center fichas mt-4">
                     <div class="col-lg-12 mb-4">
                     </div>
@@ -428,7 +434,21 @@
                             </a>
                         </div>
                     </div>
-
+                </div>
+                <div class="row justify-content-center align-items-center fichas mt-4">
+                    <div class="col-lg-12 mb-4">
+                    </div>
+                    <div class="col-lg-4 col-6 text-center">
+                        <div class="card">
+                            <a href="{{ route('tramites') }}" target="_blank">
+                                <div style="height: 100px">
+                                    <img class="mt-3" height="80%" src="{{ asset('img/min/anulacion-rd.png') }}"
+                                        alt="Ficha de Inscrición Pukllasunchis">
+                                </div>
+                                <p class="text-center">Anulación de (RD) Plan de<br> trabajo de Investigfacion.</p>
+                            </a>
+                        </div>
+                    </div>
                 </div>
                 <div class="row mb-3 mt-4">
                     <div class="col-lg-12">
@@ -436,7 +456,7 @@
                         <p>
                             Los pagos ordinarios <strong>SOLO SE PUEDEN PAGAR EN VENTANILLAS</strong> de cualquier agencia a
                             nivel nacional de CAJA CUSCO. <a class="text-primary" target="_blank"
-                                href="{{ asset('pdf/Conceptos-ordinarios-caja-cusco-4.pdf') }}">Ver PDF para
+                                href="{{ asset('pdf/Conceptos-ordinarios-caja-cusco-2025-2.pdf') }}">Ver PDF para
                                 pagos<small><i class="fa fa-eye"></i></small></a>
                         </p>
                     </div>
@@ -476,7 +496,7 @@
                 </li>
                 <li><span class="span">2</span>
                     Indicar el concepto y código de pago.<a class="text-primary" target="_blank"
-                        href="{{ asset('pdf/Conceptos-ordinarios-caja-cusco-4.pdf') }}"> Ver PDF para
+                        href="{{ asset('pdf/Conceptos-ordinarios-caja-cusco-2025-2.pdf') }}"> Ver PDF para
                         pagos<small><i class="fa fa-eye"></i></small></a>
                 </li>
                 <li><span class="span">3</span>

@@ -63,7 +63,7 @@
                 @endphp
                 @foreach ($cursosOrdenados as $curso)
                     <div class="col-lg-4 mb-2 mt-2">
-                        <div class="card" style="height: 100px">
+                        <div class="card" style="height: 110px">
                             <div class="card-body text-center">
                                 <a href="{{ route('curso.show', $curso->id) }}">
                                     <h6>
@@ -110,54 +110,49 @@
                                             <th scope="col">Pendiente</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody>                                       
                                         @foreach ($alumnos as $alumno)
-                                            <tr>
-                                                <td class="text-center">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="checkbox" name="alumnos[]"
-                                                            value="{{ $alumno->id }}" id="alumno{{ $alumno->id }}"
-                                                            style="width: 15px;height: 15px; cursor: pointer;">
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <label class="form-check-label" for="alumno{{ $alumno->id }}">
-                                                        {{ $alumno->apellidos }}, {{ $alumno->nombres }}
-                                                    </label>
-                                                </td>
-                                                <td>{{ $alumno->dni }}</td>
-                                                <td>
-                                                    @if (isset($alumno->user->pendiente))
-                                                        {{ $alumno->user->pendiente }}
-                                                    @else
-                                                        ---
-                                                    @endif
-                                                </td>
-                                            </tr>
+                                            @if ($alumno->user)
+                                                <tr>
+                                                    <td class="text-center">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" name="alumnos[]"
+                                                                value="{{ $alumno->user->id }}"
+                                                                id="alumno{{ $alumno->id }}"
+                                                                style="width: 15px;height: 15px; cursor: pointer;">
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <label class="form-check-label" for="alumno{{ $alumno->id }}">
+                                                            {{ $alumno->apellidos }}, {{ $alumno->nombres }}
+                                                        </label>
+                                                    </td>
+                                                    <td>{{ $alumno->dni }}</td>
+                                                    <td>{{ $alumno->user->pendiente ?? '---' }}</td>
+                                                </tr>
+                                            @endif
                                         @endforeach
+
                                         @foreach ($alumnosB as $alumno)
-                                            <tr>
-                                                <td class="text-center">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="checkbox" name="alumnos[]"
-                                                            value="{{ $alumno->id }}" id="alumno{{ $alumno->id }}"
-                                                            style="width: 15px;height: 15px; cursor: pointer;">
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <label class="form-check-label" for="alumno{{ $alumno->id }}">
-                                                        {{ $alumno->apellidos }}, {{ $alumno->nombres }}
-                                                    </label>
-                                                </td>
-                                                <td>{{ $alumno->dni }}</td>
-                                                <td>
-                                                    @if (isset($alumno->user->pendiente))
-                                                        {{ $alumno->user->pendiente }}
-                                                    @else
-                                                        ---
-                                                    @endif
-                                                </td>
-                                            </tr>
+                                            @if ($alumno->user)
+                                                <tr>
+                                                    <td class="text-center">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" name="alumnos[]"
+                                                                value="{{ $alumno->user->id }}"
+                                                                id="alumno{{ $alumno->id }}"
+                                                                style="width: 15px;height: 15px; cursor: pointer;">
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <label class="form-check-label" for="alumno{{ $alumno->id }}">
+                                                            {{ $alumno->apellidos }}, {{ $alumno->nombres }}
+                                                        </label>
+                                                    </td>
+                                                    <td>{{ $alumno->dni }}</td>
+                                                    <td>{{ $alumno->user->pendiente ?? '---' }}</td>
+                                                </tr>
+                                            @endif
                                         @endforeach
                                     </tbody>
                                 </table>

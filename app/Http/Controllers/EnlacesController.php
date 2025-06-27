@@ -7,6 +7,24 @@ use Illuminate\Http\Request;
 
 class EnlacesController extends Controller
 {
+    public function video1()
+    {
+        return view('videos.video1');
+    }
+    public function video2()
+    {
+        return view('videos.video2');
+    }
+    public function video3()
+    {
+        return view('videos.video3');
+    }
+    public function video4()
+    {
+        return view('videos.video4');
+    }
+    
+    
     public function nosotros()
     {
         return view('nosotros');
@@ -139,6 +157,10 @@ class EnlacesController extends Controller
     {
         return view('informacion.convocatoria');
     }
+    public function conv2()
+    {
+        return view('informacion.convocatoria-2');
+    }
 
     //Foot
     public function informacion()
@@ -153,9 +175,6 @@ class EnlacesController extends Controller
     {
         return view('foot.terminos-y-condiciones');
     }
-
-
-
 
     public function pandero()
     {

@@ -86,7 +86,25 @@
                 <div class="container mt-5">
                     <h2 class="linea-debajo">Convocatorias Laborales</h2>
                     <div class="row justify-content-center align-items-center">
-                        <!-- Card 1 -->
+                        <div class="col-lg-6 col-md-6 col-12 mb-4">
+                            <div class="card shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title">Profesional en Educación Intercultural</h5>
+                                    <p class="card-text">
+                                        Programa: mejoramiento de la calidad de vida de las familias, niñeces y adolescentes
+                                        de comunidades rurales en Acomayo, Anta y Quispicanchis.
+                                        <br>
+                                        Hasta el 31 de marzo
+                                    </p>
+                                    <p><strong>Contacto:</strong> <a
+                                            href="mailto:edelgado@kallpa.org.pe">edelgado@kallpa.org.pe</a>
+                                    </p>
+                                    {{-- <button class="boton-puklla" data-bs-toggle="modal"
+                                        data-bs-target="{{ route('conv2') }}">Ver Detalles</button> --}}
+                                        <a href="{{ route('conv2') }}" class="boton-puklla">Ver convocatoria</a>
+                                </div>
+                            </div>
+                        </div>
                         <div class="col-lg-6 col-md-6 col-12 mb-4">
                             <div class="card shadow-sm">
                                 <div class="card-body">
@@ -100,7 +118,6 @@
                                     <p><strong>Contacto:</strong> <a
                                             href="mailto:convocatoria1@institucion.com">facebook.com/UNSAACPag.Oficial</a>
                                     </p>
-                                    {{-- <a href="{{route('conv')}}">Ver convocatoria</a> --}}
                                     <button class="boton-puklla" data-bs-toggle="modal"
                                         data-bs-target="#modalConvocatoria1">Ver Detalles</button>
                                 </div>
@@ -116,10 +133,11 @@
                                         completo para "Asistente de investigación".<br>
                                         <strong>Fin de convocatoria: viernes 21 de febrero</strong>
                                     </p>
-                                    <p><strong>Contacto:</strong> <a href="mailto:u.investigacion.eesp@pukllavirtual.edu.pe">u.investigacion.eesp@pukllavirtual.edu.pe</a></p>
-                                    {{-- <button class="boton-puklla" data-bs-toggle="modal"
-                                        data-bs-target="#modalConvocatoria2">Ver Detalles</button> --}}
-                                        <a href="{{route('conv')}}" class="boton-puklla">Ver convocatoria</a>
+                                    <p><strong>Contacto:</strong> <a
+                                            href="mailto:u.investigacion.eesp@pukllavirtual.edu.pe">u.investigacion.eesp@pukllavirtual.edu.pe</a>
+                                    </p>
+                                    
+                                    <a href="{{ route('conv') }}" class="boton-puklla">Ver convocatoria</a>
                                 </div>
                             </div>
                         </div>
@@ -145,8 +163,8 @@
                     </div>
 
                     <!-- Modal 2 -->
-                    <div class="modal fade" id="modalConvocatoria2" tabindex="-1" aria-labelledby="modalConvocatoria2Label"
-                        aria-hidden="true">
+                    <div class="modal fade" id="modalConvocatoria2" tabindex="-1"
+                        aria-labelledby="modalConvocatoria2Label" aria-hidden="true">
                         <div class="modal-dialog modal-lg">
                             <div class="modal-content">
                                 <div class="modal-header">

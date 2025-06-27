@@ -240,7 +240,7 @@
         });
     </script>
 
-    <script>
+    {{-- <script>
         document.addEventListener('DOMContentLoaded', function() {
             var roleSelect = document.getElementById('role');
             var adminFields = document.getElementById('admin-fields');
@@ -263,6 +263,36 @@
             if (roleSelect.value === 'alumnoB') {
                 adminFields.style.display = 'block';
             }
+        });
+    </script> --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const roleSelect = document.getElementById('role');
+            const adminFields = document.getElementById('admin-fields');
+            const adminBolsa = document.getElementById('admin-bolsa');
+    
+            function toggleFields() {
+                const role = roleSelect.value;
+    
+                // Mostrar adminFields si el rol es alumno o alumnoB
+                if (role === 'alumno' || role === 'alumnoB') {
+                    adminFields.style.display = 'block';
+                } else {
+                    adminFields.style.display = 'none';
+                }
+    
+                // Mostrar admin-bolsa solo si el rol es alumnoB
+                if (role === 'alumnoB') {
+                    adminBolsa.style.display = 'block';
+                } else {
+                    adminBolsa.style.display = 'none';
+                }
+            }
+    
+            roleSelect.addEventListener('change', toggleFields);
+    
+            // Ejecutar al cargar la página
+            toggleFields();
         });
     </script>
     <script>

@@ -106,7 +106,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> 
     </div>
     <div class="container pt-5 pb-5">
         <div class="row">
@@ -182,6 +182,7 @@
                                         <li>Carta de aceptación de la I.E. donde se realiza la investigación, original.</li>
                                         <li>Constancia de no deudor original.</li>
                                         <li>Constancia de egresado original.</li>
+                                        <li>Constancia de primera matrícula.</li>
                                         <li>Resolución Directoral de Aprobación de PTI y asignación de asesor original.</li>
                                         <li>Informe de Trabajo de Investigación Apto original.</li>
                                         <li>Resolución Directoral de aprobación de Trabajo de Investigación original.</li>
@@ -203,6 +204,60 @@
 
                     <div class="card">
                         <div class="card-header" id="headingTwo">
+                            <h5 class="mb-0">
+                                <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseTwo"
+                                    aria-expanded="false" aria-controls="collapseTwo" onclick="toggleArrow('arrowTwo')">
+                                    <span id="arrowTwo" class="arrow fa fa-caret-down fa-sm"></span>
+                                    Para estudiantes de Profesionalización docente (1 año).
+                                </button>
+                            </h5>
+                        </div>
+                        <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
+                            <div class="card-body">
+                                <div class="row">
+                                    <ul class="listasDecimal">
+
+                                        <li>Pago por derecho de expediente de de graduación. → s/500.00 </li>
+                                        <li>Una fotocopia de DNI ampliado y legalizado.</li>
+                                        <li>Cuatro (4) fotos tamaño pasaporte en fondo blanco y con terno en papel mate.
+                                        </li>
+                                        <li>Carta de aceptación de la I.E. donde se realiza la investigación,
+                                            original.</li>
+                                        <li>Constancia de no deudor original.</li>
+                                        <li>Constancia de egresado original.</li>
+                                        <li>Constancia de primera matrícula.</li>
+
+                                        <li>Certificado original de Estudios Superiores.
+                                            <ul>
+                                                <li>Para estudiantes provenientes de Institutos (IESP): Certificado
+                                                    de Estudios
+                                                    original, visado por la DREC.
+                                                </li>
+                                                <li>Para estudiantes provenientes de Universidad. Legalizado por notaria o
+                                                    Fedatado por la misma Universidad.</li>
+                                            </ul>
+                                        </li>
+                                        <li>RD de Aprobación de PTI y asignación de asesor.
+                                        </li>
+                                        <li>Informe de Trabajo de Investigación Apto.</li>
+                                        <li>RD de aprobación de Trabajo de Investigación.</li>
+                                        <li>Una copia legalizada de certificado de conocimiento de idioma extranjero
+                                            Nivel A2 ( solo
+                                            para egresados Educación Inicial o Primaria)</li>
+                                        <li>Una copia legalizada del Certificado de conocimiento de lengua originaria (solo
+                                            para egresados de
+                                            Educación Primaria EIB.)</li>
+                                    </ul>
+                                    <p class="mt-2">
+                                        Como resultado de este trámite obtendrás una Carta de aceptación de Expediente de
+                                        Graduación completo.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {{-- <div class="card">
+                        <div class="card-header" id="headingTree">
                             <h5 class="mb-0">
                                 <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseTwo"
                                     aria-expanded="false" aria-controls="collapseTwo" onclick="toggleArrow('arrowTwo')">
@@ -253,7 +308,7 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div> --}}
                 </div>
 
                 <h3 class="mt-4"> Carta de presentación para solicitar autorización de investigación:</h3>
@@ -348,21 +403,7 @@
                 <p>
                     Como resultado de este trámite obtendrás el Título de Licenciado.
                 </p>
-                <h3 class="mt-4">Inscripción del Grado de Bachiller o Título de Licenciado en SUNEDU:</h3>
-                <p>
-                    Este trámite permite que el Grado de Bachiller o el Título de Licenciado sea reconocido oficialmente en
-                    SUNEDU. Tiene un costo de S/200 soles. Se deben entregar los siguientes documentos:
-                </p>
-                <ul class="listasCuerpo">
-                    <li>FUT debidamente llenado. Puedes solicitarlo en la oficina de secretaría o descargarlo de la página
-                        web.</li>                    
-                    <li>Copia de Constancia de primera matrícula.</li>
-                    <li>Copia de Constancia de Egresado.</li>
-                    <li>Comprobante de pago por Inscripción del Grado de Bachiller o Título de Licenciado.</li>
-                </ul>
-                <p>
-                    Como resultado de este trámite obtendrás el Diploma de Bachiller.
-                </p>
+                
                 <h3 class="mt-4">Pagos para la realización de los Trámites Presenciales </h3>
                 <p>SOLO SE PUEDEN PAGAR EN VENTANILLAS de cualquier agencia a nivel nacional.</p>
                 <ul class="listasDecimal">
@@ -401,7 +442,7 @@
                 </li>
                 <li><span class="span">2</span>
                     Indicar el concepto y código de pago.<a class="text-primary" target="_blank"
-                        href="{{ asset('pdf/Conceptos-ordinarios-caja-cusco-4.pdf') }}"> Ver PDF para
+                        href="{{ asset('pdf/Conceptos-ordinarios-caja-cusco-2025.pdf') }}"> Ver PDF para
                         pagos<small><i class="fa fa-eye"></i></small></a>
                 </li>
                 <li><span class="span">3</span>

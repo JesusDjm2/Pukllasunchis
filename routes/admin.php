@@ -35,6 +35,7 @@ Route::put('/admin/update/{id}', [AdminController::class, 'update'])->name('admi
 Route::get('/registro', [AdminController::class, 'create'])->name('registerAdmin');
 Route::post('/admin/store', [AdminController::class, 'store'])->name('adminStore');
 Route::get('/admin/alumnos', [AdminController::class, 'alumnos'])->name('adminAlumnos');
+Route::get('/admin/alumnosPPD', [AdminController::class, 'alumnosppd'])->name('alumnosppd');
 Route::post('/relacionar-usuario/{alumno}', [AdminController::class, 'relacionarUsuario'])->name('relacionarUsuario');
 Route::post('/asignar-rol-alumno/{alumno}', [AdminController::class, 'asignarRolAlumno'])->name('asignarRolAlumno');
 Route::get('/inhabilitado', function () {
@@ -61,7 +62,10 @@ Route::resource('docente', DocenteCOntroller::class)->names('docente')->middlewa
 Route::get('Dashboard-Docente/{docente}', [DocenteCOntroller::class, 'vistaDocente'])->name('vistaDocente')->middleware('auth');
 Route::get('asignar-cursos/{id}', [DocenteCOntroller::class, 'asignar'])->name('asignar')->middleware('auth');
 Route::post('/asignar-curso/{docenteId}', [DocenteCOntroller::class, 'asignarCurso'])->name('cursos.asignar');
-Route::get('/ver-mis-alumnos/{docente}', [DocenteCOntroller::class, 'alumnos'])->name('vistaAlumnos')->middleware('auth');
+Route::get('/Alumnos-fid/{docente}', [DocenteCOntroller::class, 'alumnos'])->name('vistaAlumnos')->middleware('auth');
+Route::get('/alumnos-ppd/{docente}', [DocenteController::class, 'alumnosppd'])->name('alumnosppd2');
+
+Route::get('repositorio-de-silabos/{docente}', [DocenteCOntroller::class, 'repositorio'])->name('repositorio')->middleware('auth');
 
 //Periodos
 Route::post('/publicar-periodo-uno', [CalificacionController::class, 'publicarPeriodoUno'])->name('publicar.periodo.uno');
@@ -75,8 +79,10 @@ Route::delete('/eliminar-periodo-dos', [CalificacionController::class, 'eliminar
 Route::post('/periodotres/storeBloque', [CalificacionController::class, 'storePeriodoTres'])->name('storePeriodoTres');
 Route::delete('/eliminar-periodo-tres', [CalificacionController::class, 'eliminarPeriodoTres'])->name('periodotres.eliminar');
 
+
 Route::resource('periodos', PeriodoController::class)->middleware('auth')->names('periodos');
 Route::get('/periodos/{nombre}', [PeriodoController::class, 'show'])->name('periodos.show');
+
 
 //Blog de notas docentes
 /* Route::get('/docente/{id}/blog', [DocenteController::class, 'showBlog'])->name('docente.blog.show'); */
@@ -106,6 +112,7 @@ Route::post('/cursos/{curso}/classroomClaveCRUD', [CursoController::class, 'clas
 //Calificaciones
 Route::get('calificar/{id}', [DocenteCOntroller::class, 'calificar'])->name('calificar')->middleware('auth');
 Route::post('docentes/{docente}/cursos/{curso}/calificar', [DocenteController::class, 'calificarCurso'])->name('competencias.calificar')->middleware('auth');
+Route::post('docentes/{docente}/cursosPPD/{curso}/calificar', [DocenteController::class, 'calificarCursoPPD'])->name('competencias.calificar.ppd')->middleware('auth');
 //Guardar Calificacion de alumnos
 Route::post('/calificaciones/store', [CalificacionController::class, 'nuevaCalificacion'])->name('guardarCalificacion');
 Route::post('/guardar-calificaciones', [CalificacionController::class, 'guardarCalificacionesEnBloque'])->name('guardarCalificacionesEnBloque');
@@ -119,11 +126,12 @@ Route::get('/calificaciones/eliminar-todas', [CalificacionController::class, 'bo
 
 //Sílabos y desgloses 
 Route::resource('silabos', SilaboController::class)->names('silabos')->middleware('auth');
+Route::get('/silabo/{silabo}/pdf', [SilaboController::class, 'exportarPDF'])->name('silabo.pdf');
 Route::resource('competencias', CompetenciaController::class)->middleware('auth')->names('competencias');
 Route::resource('capacidades', CapacidadesController::class)->middleware('auth')->names('capacidades');
 Route::resource('enfoques', EnfoquesController::class)->middleware('auth')->names('enfoques');
 Route::resource('proyectos', ProyectoController::class)->names('proyectos')->middleware('auth');
-Route::resource('estandares',  EstandaresController::class)->middleware('auth')->names('estandares');
+Route::resource('estandares', EstandaresController::class)->middleware('auth')->names('estandares');
 
 /* Route::get('/docente', [DocenteCOntroller::class, 'showDocente'])->name('docente')->middleware('auth'); */
 //Alumnos
@@ -139,7 +147,13 @@ Route::prefix('alumnos')->group(function () {
 });
 
 Route::resource('profesionalización-docente', PpdController::class)->middleware('auth')->names('ppd');
-Route::get('form-PPD', [PpdController::class,'form'])->name('formPPD')->middleware('auth');
+Route::get('calificacionesppd/{alumno}', [PpdController::class, 'calificacionesppd'])->name('calificacionesppd');
+
+/* Route::post('calificar-PPD/', [PpdController::class, 'calificar'])->name('calificarppd')->middleware('auth'); */
+Route::post('/Calificar-Profesionalizacion-Docente', [PpdController::class, 'calificar'])->name('calificarppd')->middleware('auth');
+
+Route::get('calificaciones-PPD/{alumno}', [PpdController::class, 'calificaciones'])->name('calificacionesPPD')->middleware('auth');
+Route::get('form-PPD', [PpdController::class, 'form'])->name('formPPD')->middleware('auth');
 Route::post('/mostrar-contenido', [AlumnoController::class, 'mostrarContenido'])->name('mostrar-contenido');
 Route::get('ficha-matricula/{alumno}', [AlumnoController::class, 'ficha'])->name('ficha-matricula')->middleware('auth');
 Route::put('/ciclo/update-alumnos', [CicloController::class, 'updateCicloAlumnos'])->name('ciclo.updateAlumnos');
@@ -150,7 +164,7 @@ Route::get('Alumnos-Formulario', [vistasAlumnosController::class, 'form'])->name
 Route::get('/obtener-ciclos/{programa}', [vistasAlumnosController::class, 'obtenerCiclos']);
 Route::get('/obtener-cursos/{cicloId}', [vistasAlumnosController::class, 'getCursos'])->name('obtener.cursos');
 
-Route::resource('trabajo', BolsaController::class);
+Route::resource('trabajo', BolsaController::class)->middleware('auth')->names('trabajo');
 Route::resource('postulante', PostulanteController::class);
 Route::get('lista-postulantes', [PostulanteController::class, 'lista'])->middleware('auth')->name('listaPostulantes');
 
@@ -161,6 +175,10 @@ Route::resource('inscripcion-regulares-fits', PostulantesRegularController::clas
     ->only(['index', 'edit', 'update', 'destroy', 'show'])
     ->middleware('auth')
     ->names('regulares');
+Route::get('/postulantes/ingresantes', [PostulantesRegularController::class, 'crearIngresantes'])->name('postulantes.ingresantes');
+Route::post('/guardar-ingresantes', [PostulantesRegularController::class, 'guardarIngresantes'])->name('postulantes.guardarIngresantes');
+
+
 
 Route::resource('inscripcion-regulares', PostulantesRegularController::class)
     ->only(['create', 'store'])

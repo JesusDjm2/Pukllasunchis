@@ -102,7 +102,7 @@
         <div class="row">
             <div class="col-lg-12">
                 <div class="table-responsive">
-                    <table class="table table-hover table-bordered" id="docentes-table">
+                    <table class="table table-bordered" id="docentes-table">
                         <thead class="thead-dark">
                             <tr>
                                 <th>ID</th>
@@ -120,7 +120,7 @@
                                 @php
                                     $docenteCount++;
                                 @endphp
-                                <tr>
+                                <tr style="border-bottom: 2.2px solid #919191 !important">
                                     <td>{{ $docente->id }}</td>
                                     <td>
                                         <strong>{{ $docente->nombre }}</strong>
@@ -130,7 +130,8 @@
 
                                             @if ($docente->blog)
                                                 <li>
-                                                    <a href="{{ route('docente.blog.show', ['docente' => $docente->id]) }}">
+                                                    <a
+                                                        href="{{ route('docente.blog.show', ['docente' => $docente->id]) }}">
                                                         Ver Blog
                                                     </a>
                                                 </li>
@@ -145,21 +146,48 @@
                                                     $cursosOrdenados = $docente->cursos->sortBy('nombre');
                                                 @endphp
                                                 @foreach ($cursosOrdenados as $curso)
-                                                    <li>
+                                                    @php
+                                                        $esPPD = str_contains(
+                                                            $curso->ciclo->programa->nombre ?? '',
+                                                            'PPD',
+                                                        );
+                                                        $bgCurso = $esPPD ? 'background-color: #fff1e0;' : '';
+                                                    @endphp
+                                                    <li style="{{ $bgCurso }}" class="mb-2">
                                                         <strong>{{ $curso->nombre }}</strong> (
                                                         {{ $curso->ciclo->programa->nombre }} -
                                                         {{ $curso->ciclo->nombre }})
-
                                                         <ul>
                                                             <li>
-                                                                @if ($curso->silabo)
-                                                                    <a style="font-size: 13px"
-                                                                        href="{{ asset('docentes/silabo/' . $curso->silabo) }}"
-                                                                        target="_blank" title="Ver Sílabos">
-                                                                        Ver sílabo <i class="fa fa-file-pdf"></i>
-                                                                    </a>
+                                                                @if (str_contains($curso->cc, 'Extracurricular') === false)
+                                                                    @if ($curso->relacionsilabo || $curso->silabo)
+                                                                        <!-- Si existe un sílabo asignado o relacionado, mostramos el botón para ver -->
+                                                                        @php
+                                                                            $sílaboURL = $curso->relacionsilabo
+                                                                                ? route(
+                                                                                    'silabos.show',
+                                                                                    $curso->relacionsilabo->id,
+                                                                                )
+                                                                                : asset(
+                                                                                    'docentes/silabo/' . $curso->silabo,
+                                                                                );
+                                                                            $tipoSílabo = $curso->relacionsilabo
+                                                                                ? 'Relación con tabla silabo'
+                                                                                : 'Campo del curso';
+                                                                        @endphp
+                                                                        <a href="{{ $sílaboURL }}" class="mb-2"
+                                                                            style="font-size: 13px" target="_blank">
+                                                                            Ver Sílabo <i class="fa fa-pdf"></i>
+                                                                        </a>
+                                                                        <small
+                                                                            class="text-muted">({{ $tipoSílabo }})</small>
+                                                                    @else
+                                                                        <span style="font-size: 13px">No hay sílabo
+                                                                            disponible.</span>
+                                                                    @endif
                                                                 @else
-                                                                    <small class="text-muted">Sin Sílabo</small>
+                                                                    <span style="font-size: 13px">Sin sílabo por
+                                                                        Extracurricular!</span>
                                                                 @endif
                                                             </li>
                                                         </ul>

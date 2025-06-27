@@ -1,23 +1,68 @@
 <div class="row">
+    {{-- <div class="col-lg-6 mb-2 mt-2">
+        <label for="trabajas">¿Trabajas actualmente?:</label>
+        <select class="form-control form-control-sm @error('trabajas') is-invalid @enderror" name="trabajas"
+            id="trabajas">
+            <option value="" disabled selected>Selecciona una opción</option>
+            <option value="Sí" {{ isset($alumno) && $alumno->trabajas == 'Sí' ? 'selected' : '' }}>Sí</option>
+            <option value="No" {{ isset($alumno) && $alumno->trabajas == 'No' ? 'selected' : '' }}>No</option>
+            <option value="Todavía no" {{ isset($alumno) && $alumno->trabajas == 'Todavía no' ? 'selected' : '' }}>
+                Todavía no</option>
+        </select>
+
+        @error('trabajas')
+            <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+    </div> --}}
+    <div class="col-lg-12">
+        <h4 class="mb-2 mt-4">Socioeconómicos</h4>
+    </div>
     <div class="col-lg-6 mb-2 mt-2">
-        <label for="trabajas">¿Trabajas actualmente?:</label><br>
-        <div class="form-check form-check-inline">
-            <input class="form-check-input @error('trabajas') is-invalid @enderror" type="radio" name="trabajas"
-                id="trabajas_si" value="1" {{ old('trabajas') == 1 ? 'checked' : '' }}>
-            <label class="form-check-label" for="trabajas_si">Sí</label>
-        </div>
-        <div class="form-check form-check-inline">
-            <input class="form-check-input @error('trabajas') is-invalid @enderror" type="radio" name="trabajas"
-                id="trabajas_no" value="0" {{ old('trabajas') == 0 ? 'checked' : '' }}>
-            <label class="form-check-label" for="trabajas_no">No</label>
-        </div>
+        <label for="trabajas">1. ¿Trabajas actualmente?:</label>
+        <select class="form-control form-control-sm @error('trabajas') is-invalid @enderror" name="trabajas"
+            id="trabajas">
+            <option value="" disabled
+                {{ old('trabajas', isset($alumno) ? $alumno->trabajas : '') == '' ? 'selected' : '' }}>Selecciona una
+                opción</option>
+            <option value="Sí"
+                {{ old('trabajas', isset($alumno) ? $alumno->trabajas : '') == 'Sí' ? 'selected' : '' }}>Sí</option>
+            <option value="No"
+                {{ old('trabajas', isset($alumno) ? $alumno->trabajas : '') == 'No' ? 'selected' : '' }}>No</option>
+            <option value="Todavía no"
+                {{ old('trabajas', isset($alumno) ? $alumno->trabajas : '') == 'Todavía no' ? 'selected' : '' }}>Todavía
+                no</option>
+        </select>
         @error('trabajas')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
     </div>
 
+    <!-- SECTOR LABORAL -->
+    <div class="col-lg-6 mb-2">
+        <label for="sector_laboral">2. ¿En qué sector trabajas? <span class="text-danger">*</span></label>
+        <select class="form-control form-control-sm @error('sector_laboral') is-invalid @enderror"
+            id="sector_laboral_select" onchange="toggleOtroSector()" required>
+            <option selected disabled>Elegir</option>
+            <option value="Sector educativo" {{ old('sector_laboral') == 'Sector educativo' ? 'selected' : '' }}>Sector
+                educativo</option>
+            <option value="Otro"
+                {{ old('sector_laboral') != 'Sector educativo' && old('sector_laboral') ? 'selected' : '' }}>Otro:
+                (especificar)</option>
+        </select>
+
+        <input type="text" class="form-control form-control-sm mt-2 @error('sector_laboral') is-invalid @enderror"
+            id="sector_laboral_otro" placeholder="Especifica el sector" style="display: none;"
+            value="{{ old('sector_laboral') }}">
+
+        <input type="hidden" name="sector_laboral" id="sector_laboral_hidden" value="{{ old('sector_laboral') }}">
+
+        @error('sector_laboral')
+            <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+    </div>
+
     <div class="col-lg-6 mb-2 mt-2">
-        <label for="donde_trabajas">¿Dónde trabajas?:</label>
+        <label for="donde_trabajas">3. ¿Dónde trabajas?:</label>
         <input type="text" class="form-control form-control-sm @error('donde_trabajas') is-invalid @enderror"
             id="donde_trabajas" name="donde_trabajas" value="{{ old('donde_trabajas') }}">
         @error('donde_trabajas')
@@ -25,7 +70,7 @@
         @enderror
     </div>
     <div class="col-lg-6 mb-2 mt-2">
-        <label for="ingreso_mensual">¿Cuánto es su ingreso mensual promedio?:</label>
+        <label for="ingreso_mensual">4. ¿Cuánto es su ingreso mensual promedio?:</label>
         <select class="form-control form-control-sm @error('ingreso_mensual') is-invalid @enderror" id="ingreso_mensual"
             name="ingreso_mensual">
             <option value="" disabled selected>Selecciona una opción</option>
@@ -35,7 +80,8 @@
                 s/501 a s/930</option>
             <option value="De s/931 a s/1200" {{ old('ingreso_mensual') == 'De s/931 a s/1200' ? 'selected' : '' }}>De
                 s/931 a s/1200</option>
-            <option value="De s/1201 a s/2000" {{ old('ingreso_mensual') == 'De s/1201 a s/2000' ? 'selected' : '' }}>De
+            <option value="De s/1201 a s/2000" {{ old('ingreso_mensual') == 'De s/1201 a s/2000' ? 'selected' : '' }}>
+                De
                 s/1201 a s/2000</option>
             <option value="Más de s/2000" {{ old('ingreso_mensual') == 'Más de s/2000' ? 'selected' : '' }}>Más de
                 s/2000</option>
@@ -46,7 +92,7 @@
     </div>
 
     <div class="col-lg-6 mb-2 mt-2">
-        <label for="egreso">¿Cuál es tu egreso mensual promedio?:</label>
+        <label for="egreso">5. ¿Cuál es tu egreso mensual promedio?:</label>
         <input type="text" class="form-control  form-control-sm @error('egreso') is-invalid @enderror" id="egreso"
             name="egreso" value="{{ old('egreso') }}" required>
         @error('egreso')
@@ -55,7 +101,7 @@
     </div>
 
     <div class="col-lg-6 mb-2 mt-2">
-        <label for="hrs_laboradas_sem">Número de horas que labora a la semana:</label>
+        <label for="hrs_laboradas_sem">6.Número de horas que labora a la semana:</label>
         <input type="number" class="form-control form-control-sm @error('hrs_laboradas_sem') is-invalid @enderror"
             id="hrs_laboradas_sem" name="hrs_laboradas_sem" value="{{ old('hrs_laboradas_sem') }}" required>
         @error('hrs_laboradas_sem')

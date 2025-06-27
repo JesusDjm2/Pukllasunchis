@@ -33,11 +33,6 @@ class User extends Authenticatable
         'foto',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
@@ -58,8 +53,8 @@ class User extends Authenticatable
     }
     public function alumnoB()
     {
-        return $this->hasOne(Ppd::class);
-    }
+        return $this->hasOne(ppd::class);
+    }   
     public function programa()
     {
         return $this->belongsTo(Programa::class);
@@ -68,7 +63,6 @@ class User extends Authenticatable
     {
         return $this->hasOne(Docente::class);
     }
-
     public function ciclo()
     {
         return $this->belongsTo(Ciclo::class);

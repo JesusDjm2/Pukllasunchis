@@ -110,7 +110,7 @@
                 <table border="1" style="border-collapse: collapse; width: 100%;">
                     <tr>
                         <td style="padding: 8px;border-left: 3px solid #c78d40;font-weight:bold">Periodo Académico</td>
-                        <td style="padding: 8px;">2024-II </td>
+                        <td style="padding: 8px;">2025-I </td>
                     </tr>
                     <tr>
                         <td style="padding: 8px;border-left: 3px solid #c78d40;font-weight:bold">Ciclo - Sección</td>

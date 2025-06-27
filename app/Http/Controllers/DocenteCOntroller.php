@@ -117,14 +117,12 @@ class DocenteCOntroller extends Controller
         return redirect()->route('docente.show', $docente->id)
             ->with('success', 'Perfil actualizado correctamente.');
     }
-
     public function showBlog($docenteId)
     {
         $docente = Docente::findOrFail($docenteId);
         $blog = $docente->blog;
         return view('docentes.blog', compact('docente', 'blog'));
     }
-
     public function showAlumnos(Curso $curso, Docente $docente)
     {
         $programa = $curso->ciclo->programa;
@@ -148,21 +146,22 @@ class DocenteCOntroller extends Controller
     public function show($id)
     {
         $docente = Docente::findOrFail($id);
-        $alumno = auth()->user()->alumno;
+        $alumno = auth()->user()->alumnoB;
+
         if (auth()->user()->hasRole('alumno')) {
             return view('alumnos.vistasAlumnos.docente', compact('docente', 'alumno'));
+        } elseif (auth()->user()->hasRole('alumnoB')) {
+            return view('alumnos.ppd.docente', compact('docente', 'alumno'));
         }
         return view('docentes.perfil', compact('docente'));
     }
     public function destroy($id)
     {
         $docente = Docente::findOrFail($id);
-
         // Eliminar el usuario relacionado
         if ($docente->user) {
             $docente->user->delete();
         }
-
         // Eliminar el docente
         $docente->delete();
 
@@ -173,7 +172,6 @@ class DocenteCOntroller extends Controller
         $docente = Docente::findOrFail($id);
         return view('docentes.calificaciones.index', compact('docente'));
     }
-
     public function calificarCurso(Request $request, $docenteId, $cursoId)
     {
         $curso = Curso::findOrFail($cursoId);
@@ -190,6 +188,7 @@ class DocenteCOntroller extends Controller
             ->with(['periodos', 'periododos', 'periodotres'])
             ->get();
 
+
         $mostrarBotonDesempeno = $alumnos->contains(function ($alumno) {
             return $alumno->periodos->isNotEmpty() && $alumno->calificaciones->isNotEmpty();
         });
@@ -200,7 +199,32 @@ class DocenteCOntroller extends Controller
 
         return view('docentes.calificaciones.alumnos', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos', 'mostrarBotonDesempeno'));
     }
+    public function calificarCursoPPD(Request $request, $docenteId, $cursoId)
+    {
+        $curso = Curso::findOrFail($cursoId);
+        $docente = Docente::findOrFail($docenteId);
+        $competenciasSeleccionadas = Competencia::whereIn('id', $request->input('competencias'))->get();
 
+        $alumnos = $curso->ciclo->alumnosB()
+            ->with([
+                'user.alumnoB.calificaciones' => function ($query) use ($cursoId) {
+                    $query->where('curso_id', $cursoId);
+                }
+            ])
+            ->whereHas('user', function ($query) {
+                $query->whereDoesntHave('roles', function ($roleQuery) {
+                    $roleQuery->where('name', 'inhabilitado');
+                });
+            })
+            ->orderBy('apellidos')
+            ->get();
+
+        if (auth()->user()->hasRole('admin')) {
+            return view('admin.curso.calificaciones', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos'));
+        }
+
+        return view('docentes.calificaciones.alumnosppd', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos'));
+    }
     public function updateBlog(Request $request, $id)
     {
         // Validar la entrada
@@ -251,21 +275,73 @@ class DocenteCOntroller extends Controller
 
         return $response;
     }
-
     public function alumnos($id)
     {
-        $docente = Docente::findOrFail($id);
+        $docente = Docente::with('cursos.ciclo.alumnos.user.roles', 'cursos.ciclo.programa')->findOrFail($id);
         $cursos = $docente->cursos;
         $alumnosPorCurso = [];
+
         foreach ($cursos as $curso) {
-            /* $alumnosOrdenados = $curso->ciclo->alumnos->sortBy('apellidos'); */
-            $alumnosOrdenados = $curso->ciclo->alumnos
-                ->filter(function ($alumno) {
-                    return $alumno->user && !$alumno->user->hasRole('inhabilitado');
-                })
-                ->sortBy('apellidos');
-            $alumnosPorCurso[$curso->id] = $alumnosOrdenados;
+            if ($curso->ciclo && in_array($curso->ciclo->programa_id, [1, 2])) {
+                $alumnosOrdenados = $curso->ciclo->alumnos
+                    ->filter(function ($alumno) {
+                        return $alumno->user
+                            && $alumno->user->hasRole('alumno')
+                            && !$alumno->user->hasRole('alumnoB')
+                            && !$alumno->user->hasRole('inhabilitado');
+                    })
+                    ->sortBy('apellidos');
+
+                $alumnosPorCurso[$curso->id] = $alumnosOrdenados;
+            }
         }
         return view('docentes.alumnos.index', compact('docente', 'alumnosPorCurso'));
+    }
+    /* public function alumnosppd($id)
+    {
+        $docente = Docente::with('cursos')->findOrFail($id);
+
+        $alumnosPorCurso = User::with(['ciclo', 'programa'])
+            ->whereHas('roles', function ($query) {
+                $query->where('name', 'alumnoB');
+            })
+            ->whereHas('ciclo.cursos', function ($query) use ($docente) {
+                $query->whereIn('cursos.id', $docente->cursos->pluck('id'));
+            })
+            ->get()
+            ->groupBy(function ($user) {
+                return optional($user->ciclo->cursos->first())->id; 
+            });
+            dd($alumnosPorCurso);
+        return view('docentes.alumnos.alumnos-ppd', compact('docente', 'alumnosPorCurso'));
+    } */
+    public function alumnosppd($id)
+    {
+        $docente = Docente::with('cursos')->findOrFail($id);
+        // Traer los cursos del docente
+        $cursos = $docente->cursos;
+        // Inicializar un array vacío para almacenar los alumnos por curso
+        $alumnosPorCurso = [];
+        foreach ($cursos as $curso) {
+            // Buscar alumnos que tengan el rol alumnoB y pertenezcan al ciclo del curso actual
+            $alumnos = User::with(['ciclo', 'programa'])
+                ->whereHas('roles', function ($query) {
+                    $query->where('name', 'alumnoB');
+                })
+                ->whereHas('ciclo.cursos', function ($query) use ($curso) {
+                    $query->where('cursos.id', $curso->id);
+                })
+                ->get();
+            // Agrupar por el ID del curso
+            $alumnosPorCurso[$curso->id] = $alumnos;
+        }
+        return view('docentes.alumnos.alumnos-ppd', compact('docente', 'alumnosPorCurso'));
+    }
+
+    public function repositorio($docente)
+    {
+        $docente = Docente::findOrFail($docente);
+        $cursos = Curso::all();
+        return view('docentes.silabos', compact('docente', 'cursos'));
     }
 }

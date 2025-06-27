@@ -6,9 +6,11 @@ use App\Mail\NotificacionRegistro;
 use App\Models\Alumno;
 use App\Models\Calificacion;
 use App\Models\Ciclo;
+use App\Models\ppd;
 use App\Models\Programa;
 use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Mail;
 
@@ -35,14 +37,46 @@ class AlumnoController extends Controller
     {
         return view('alumnos.ficha', compact('alumno'));
     }
-    public function mostrarContenido(Request $request)
+    /* public function mostrarContenido(Request $request)
     {
         $request->validate([
             'alumno_id' => 'required|exists:alumnos,id',
         ]);
         $alumno = Alumno::find($request->alumno_id);
         session(['mostrar_contenido' => true]);
-        Mail::to('davidmiranda.puk@gmail.com')->send(new NotificacionRegistro($alumno));
+        Mail::to('mirandadjmdjm@gmail.com')->send(new NotificacionRegistro($alumno));
+        return redirect()->back()->with('success', 'Correo enviado correctamente.');
+    } */
+    public function mostrarContenido(Request $request)
+    {
+        $request->validate([
+            'alumno_id' => 'required|integer',
+        ]);
+
+        $user = Auth::user();
+        $alumno_id = $request->input('alumno_id');
+
+        if ($user->hasRole('alumno')) {
+            $alumno = Alumno::find($alumno_id);
+            if (!$alumno) {
+                return redirect()->back()->with('error', 'Alumno no encontrado.');
+            }
+        } elseif ($user->hasRole('alumnoB')) {
+            $alumno = ppd::find($alumno_id);
+            if (!$alumno) {
+                return redirect()->back()->with('error', 'AlumnoB no encontrado.');
+            }
+        } else {
+            return redirect()->back()->with('error', 'Rol no autorizado.');
+        }
+
+        session(['mostrar_contenido' => true]);
+        Mail::to([
+            'davidmiranda.puk@gmail.com',
+            'cobranzas.eesp@pukllavirtual.edu.pe'
+        ])
+            ->send(new NotificacionRegistro($alumno));
+
         return redirect()->back()->with('success', 'Correo enviado correctamente.');
     }
     public function create()
@@ -63,6 +97,7 @@ class AlumnoController extends Controller
     {
         // Validar los datos del formulario
         $validator = \Validator::make($request->all(), Alumno::getValidationRules());
+
         // Realizar verificación adicional antes de almacenar en la base de datos
         $numero = $request->input('numero');
         $numero_referencia = $request->input('numero_referencia');
@@ -91,7 +126,7 @@ class AlumnoController extends Controller
         if (empty($bienes_vivienda)) {
             return redirect()->back()->withInput()->withErrors(['bienes_vivienda' => 'Debe seleccionar al menos un bien de vivienda.']);
         }
-        
+
         $bienes = implode(',', $bienes_vivienda);
 
         $otros_servicios = $request->input('otros_servicios', []);
@@ -134,6 +169,9 @@ class AlumnoController extends Controller
                 'programa_id',
                 'ciclo_id',
                 'procedencia_familiar',
+                'sector_laboral',
+                'permanencia_vivienda',
+                'lugar_nacimiento',
                 'direccion',
                 'te_consideras',
                 'lengua_1',
@@ -204,6 +242,19 @@ class AlumnoController extends Controller
                 'habilidades' => $talentos,
             ]
         );
+
+        // Manejo de la imagen
+        if ($request->hasFile('foto')) {
+            $foto = $request->file('foto');
+            $nombreFoto = $foto->getClientOriginalName();
+            $foto->move(public_path('img/estudiantes'), $nombreFoto);
+
+            if (auth()->check()) {
+                $user = auth()->user();
+                $user->foto = $nombreFoto;
+                $user->save();
+            }
+        }
 
         // Asociar por email si el usuario está autenticado
         if (auth()->check()) {
@@ -295,13 +346,9 @@ class AlumnoController extends Controller
     }
     public function update(Request $request, Alumno $alumno)
     {
-        // Obtener el ID del alumno
         $id = $alumno->id;
-
-        // Validar los datos del formulario
         $validator = \Validator::make($request->all(), Alumno::getValidationRules(true, $id));
 
-        // Realizar verificación adicional antes de actualizar en la base de datos
         $numero = $request->input('numero');
         $numero_referencia = $request->input('numero_referencia');
         $lengua_1 = $request->input('lengua_1');
@@ -346,6 +393,9 @@ class AlumnoController extends Controller
                 'programa_id',
                 'ciclo_id',
                 'procedencia_familiar',
+                'permanencia_vivienda',
+                'sector_laboral',
+                'lugar_nacimiento',
                 'direccion',
                 'te_consideras',
                 'lengua_1',
@@ -424,32 +474,25 @@ class AlumnoController extends Controller
 
         return redirect()->route('adminAlumnos')->with('success', 'El alumno ha sido eliminado correctamente.');
     }
-
-    /* public function calificaciones($id)
-    {
-        $alumno = Alumno::with(['ciclo.cursos.periodos'])->findOrFail($id);
-
-        $periodoUno = $alumno->ciclo->cursos->flatMap(function ($curso) use ($alumno) {
-            return $curso->periodos()->where('alumno_id', $alumno->id)->get();
-        })->first();
-        return view('alumnos.vistasAlumnos.calificaciones', compact('alumno', 'periodoUno'));
-    } */
     public function calificaciones($id)
     {
         $alumno = Alumno::with(['ciclo.cursos.periodos', 'ciclo.cursos.periododos', 'ciclo.cursos.periodotres'])->findOrFail($id);
+        // Agrupar periodos anteriores por nombre único con cursos
+        $periodosAgrupados = $alumno->periodo()
+            ->with('curso')
+            ->get()
+            ->groupBy('nombre');
 
         $periodoUno = $alumno->ciclo->cursos->flatMap(function ($curso) use ($alumno) {
             return $curso->periodos()->where('alumno_id', $alumno->id)->get();
         });
-
         $periodoDos = $alumno->ciclo->cursos->flatMap(function ($curso) use ($alumno) {
             return $curso->periododos()->where('alumno_id', $alumno->id)->get();
         });
-
         $periodoTres = $alumno->ciclo->cursos->flatMap(function ($curso) use ($alumno) {
             return $curso->periodotres()->where('alumno_id', $alumno->id)->get();
         });
 
-        return view('alumnos.vistasAlumnos.calificaciones', compact('alumno', 'periodoUno', 'periodoDos', 'periodoTres'));
+        return view('alumnos.vistasAlumnos.calificaciones', compact('alumno', 'periodoUno', 'periodoDos', 'periodoTres', 'periodosAgrupados'));
     }
 }

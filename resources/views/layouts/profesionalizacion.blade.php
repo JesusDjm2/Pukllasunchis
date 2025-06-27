@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="author" content="David Jesús Miranda">
     @yield('titulo')
@@ -26,32 +27,56 @@
                         alt="Logo Pukllasunchis" width="100%">
                 </div>
                 <div class="sidebar-brand-text mx-3">
-                    <!---Contenido solo para estilo a logo--->
                 </div>
             </a>
-            
+
             <li class="nav-item">
                 <a class="nav-link collapsed" href="{{ route('ppd.index') }}">
                     <i class="fas fa-cog"></i>
                     <span>Ficha Técnica</span>
                 </a>
-                {{-- <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">Ver mi perfil</h6>
-                        <a class="collapse-item" href="">Lista de registros</a>
-                    </div>
-                </div> --}}
             </li>
             <hr class="sidebar-divider d-none d-md-block">
-           
+            {{-- <a style="color: rgba(255, 255, 255, .8); margin-left: 1em; font-size: .85rem" class="nav-link collapsed {{ !$alumno ? 'disabled' : '' }}"
+                @if ($alumno) href="{{ route('calificacionesppd', $alumno->id) }}" @endif>
+                <i class="fas fa-fw fa-book"></i>
+                <span>Calificaciones</span>
+            </a> --}}
+            {{-- @if ($alumno)
+                <li class="nav-item">
+                    <a class="nav-link collapsed" href="{{ route('calificacionesppd', $alumno->id) }}">
+                        <i class="fas fa-fw fa-book"></i>
+                        <span>Calificaciones</span>
+                    </a>
+                </li>
+                <hr class="sidebar-divider d-none d-md-block">
+            @endif --}}
+            @if ($alumno)
+                <li class="nav-item">
+                    <a class="nav-link collapsed" href="{{ route('calificacionesppd', $alumno->id) }}">
+                        <i class="fas fa-fw fa-book"></i>
+                        <span>Calificaciones</span>
+                    </a>
+                </li>
+                <hr class="sidebar-divider d-none d-md-block">
+            @endif
+
+            {{-- <li class="nav-item">
+                <a class="nav-link collapsed" href="{{ route('postulante.index') }}">
+                    <i class="fas fa-fw fa-money-bill"></i>
+                    <span>Bolsa de trabajo</span>
+                </a>
+            </li>
+            <hr class="sidebar-divider d-none d-md-block"> --}}
             <li class="nav-item">
-                <a class="nav-link collapsed" href="#">
-                    <i class="fas fa-fw fa-book"></i>
-                    <span>Calificaciones</span>
+                <a class="nav-link collapsed" target="_blank"
+                    href="https://sites.google.com/pukllavirtual.edu.pe/bibliotecaeesppuklla/inicio">
+                    <i class="fas fa-book-open"></i>
+                    <span>Biblioteca</span>
                 </a>
             </li>
             <hr class="sidebar-divider d-none d-md-block">
-           
+
             <li class="nav-item">
                 <a class="nav-link collapsed" href="{{ route('index') }}">
                     <i class="fas fa-fw fa-book"></i>
@@ -69,7 +94,8 @@
             <div id="content">
                 <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
                     <!-- Sidebar Toggle (Topbar) -->
-                    <h5 class="text-primary">Programa de Profesionalización Docente {{ date('Y') }}</h5>
+                    <h5 class="text-primary font-weight-bold">Programa de PPD Presencial y Semipresencial
+                        {{ date('Y') }}</h5>
                     <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
                         <i class="fa fa-bars"></i>
                     </button>
@@ -101,8 +127,8 @@
                 <div class="container my-auto">
                     <div class="copyright text-center my-auto">
                         <span>Copyright &copy; {{ date('Y') }} | Hecho por <a class="text-primary"
-                                href="https://www.facebook.com/DjmWebMaster" target="_blank"
-                                rel="noopener noreferrer"> DJM2</a></span>
+                                href="https://www.facebook.com/DjmWebMaster" target="_blank" rel="noopener noreferrer">
+                                DJM2</a></span>
                     </div>
                 </div>
             </footer>

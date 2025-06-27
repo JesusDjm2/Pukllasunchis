@@ -160,7 +160,7 @@
                     </div>
                     <div class="col-lg-3 col-6 text-center">
                         <div class="card">
-                            <a href="{{ asset('pdf/CaratulaTesis.docx') }}" target="_blank">
+                            <a href="{{ asset('pdf/CaratulaTesis-2025.docx') }}" target="_blank">
                                 <div style="height: 100px">
                                     <img height="100%" src="{{ asset('img/min/caratula.png') }}" alt="">
                                 </div>
@@ -183,7 +183,7 @@
                     </div>
                     <div class="col-lg-3 col-6 text-center">
                         <div class="card">
-                            <a href="{{ asset('pdf/Guia-de-redaccion.pdf') }}" target="_blank">
+                            <a href="{{ asset('pdf/Guia-de-Investigacion-2025.pdf') }}" target="_blank">
                                 <div style="height: 100px">
                                     <img height="100%" src="{{ asset('img/min/Bachillerato-Pukllasunchis.png') }}"
                                         alt="">
@@ -194,6 +194,10 @@
                         </div>
                     </div>
                 </div><br>
+
+
+
+
                 <h3>Requisitos para la obtención del Título de Licenciado: </h3>
                 <p>Una vez terminada la Tesis, para la obtención del Título de Licenciado se siguen estos pasos:
                 </p>
@@ -221,10 +225,11 @@
                     <li>Solicitar la revisión de la Tesis (Dictaminantes):
                         <ul>
                             <li> Hacer el pago de S/100 soles por derecho de revisión de Tesis en las oficinas de
-                                Caja Cusco. </li>
+                                Caja Cusco. <small class="text-info">(Concepto: REVISIÓN DE TESIS /
+                                    Codigo: 32 / Costo: s/100.00)</small></li>
                             <li>Llenar <a
                                     href="https://docs.google.com/forms/d/e/1FAIpQLSfU1nSpAs5WnyxP6rcmsQ8DIZlwetYSLyWRTqJ1srFtVCo5HQ/viewform"
-                                    target="_blank" class="text-primary"></a> FORMULARIO DE REVISIÓN DE TESIS.</li>
+                                    target="_blank" class="text-primary"> FORMULARIO DE REVISIÓN DE TESIS.</a></li>
                             <li>Adjuntar:
                                 <ul>
                                     <li>Tesis en formato WORD</li>
@@ -238,8 +243,9 @@
                     </li>
                     <li>Solicitar sustentación de Tesis:
                         <ul>
-                            <li> Hacer el pago de S/50 soles por derecho de RD de sustentación de Tesis en las oficinas de
-                                Caja Cusco. </li>
+                            <li> Hacer el pago por derecho de RD de sustentación de Tesis en las oficinas de
+                                Caja Cusco. <small class="text-info">(Concepto: Fecha de sustentación de Tesis /
+                                    Codigo: 21 / Costo: s/100.00)</small></li>
                             <li>Llenar <a
                                     href="https://docs.google.com/forms/d/e/1FAIpQLSf4DRlwjTV-vK5FVud94tUxTHi8h61brejjn9bzxBpv7ouqpQ/viewform"
                                     target="_blank" class="text-primary"> FORMULARIO DE ASIGNACIÓN DE FECHA DE
@@ -250,7 +256,7 @@
                                     <li>Reporte de originalidad Turnitin (con máximo 20% de similitud en Turnitin)</li>
                                     <li>Versión final de la Tesis en formato WORD</li>
                                     <li>Diapositivas para sustentación de Tesis en formato PPT</li>
-                                    <li>Constancia de inscripción en SUNEDU del diploma de  Bachiller en formato PDF
+                                    <li>Constancia de inscripción en SUNEDU del diploma de Bachiller en formato PDF
                                     </li>
                                     <li>Comprobante de pago por derecho de sustentación de Tesis</li>
                                 </ul>
@@ -262,7 +268,10 @@
                     </li>
                     <li> Solicitar Resolución Directoral (RD) de aprobación de sustentación
                         <ul>
-                            <li>Solicitar Resolución Directoral (RD) de aprobación de sustentación</li>
+                            <li>Solicitar Resolución Directoral (RD) de aprobación de sustentación.
+                                <small class="text-info">(Concepto: RD de aprobación de Tesis /
+                                    Codigo: 33 / Costo: s/50.00)</small>
+                            </li>
                             <li>Hacer el pago de S/50 soles por derecho de RD de aprobación de sustentación de Tesis en las
                                 oficinas de Caja Cusco.</li>
                             <li>Llenar el formulario de <a
@@ -279,8 +288,10 @@
                     </li>
                     <li>Solicitar registro de Tesis en repositorio institucional:
                         <ul>
-                            <li>Hacer el pago de S/50 soles por derecho de registro de Tesis en repositorio institucional en
-                                las oficinas de Caja Cusco.</li>
+                            <li>Hacer el pago por derecho de registro de Tesis en repositorio institucional en
+                                las oficinas de Caja Cusco. <small class="text-info">(Concepto: Registro de Tesis en
+                                    repositorio /
+                                    Codigo: 34 / Costo: s/50.00)</small></li>
                             <li>Descargar, completar y firmar la <a href="{{ asset('pdf/Autorizacion-Puklla.docx') }}"
                                     target="_blank" class="text-primary"> AUTORIZACIÓN DE REGISTRO EN
                                     REPOSITORIO.</a></li>
@@ -308,17 +319,37 @@
                             Cusco:</span>
                         <ul>
                             <li>Este trámite solo se realiza de manera presencial en la oficina de secretaría de la EESP
-                                Pukllasunchis.</li>
+                                Pukllasunchis. <small class="text-info">(Concepto: Emisión título de Licenciado /
+                                    Codigo: 35 / Costo: s/400.00)</small></li>
                         </ul>
                     </li>
                     <li>Solicitar inscripción de Licenciado en SUNEDU previo pago de s/200.00 en las oficinas de
                         <span class="text-danger font-weight-bold">Caja Cusco:</span>
+                        <p>
+                            Este trámite permite que el Título de Licenciado sea reconocido oficialmente en SUNEDU. Se deben
+                            entregar los siguientes documentos:
+                        </p>
                         <ul>
-                            <li>Este trámite solo se realiza de manera presencial en la oficina de secretaría de la EESP
-                                Pukllasunchis</li>
+                            <li>Pagar en Caja Cusco con el sigiente concepto:  <small class="text-info">(Concepto: Inscripción título a SUNEDU /
+                                    Codigo: 36 / Costo: s/200.00)</small></li>
+                        </ul>
+
+
+                        <ul class="listasCuerpo">
+                            <li>FUT debidamente llenado. Puedes solicitarlo en la oficina de secretaría o descargarlo de la
+                                página
+                                web. <small><a class="text-primary" target="_blank"
+                                        href="https://forms.gle/L7WHbS67NKYnWug69">Formulario <i
+                                            class="fa fa-external-link"></i> (Solo permite llenar con correo
+                                        institucional)</a></small></li>
+                           
+                            <li>Comprobante de pago por Inscripción de Título de Licenciado.</li>
                         </ul>
                     </li>
                 </ul>
+
+
+
 
                 <h3 class="linea-debajo">Documentos para el proceso de obtención del Título de Licenciado </h3>
                 <div class="row justify-content-center align-items-center fichas mt-4">
@@ -409,7 +440,7 @@
                         <p>
                             Los pagos ordinarios <strong>SOLO SE PUEDEN PAGAR EN VENTANILLAS</strong> de cualquier agencia a
                             nivel nacional de CAJA CUSCO. <a class="text-primary" target="_blank"
-                                href="{{ asset('pdf/Conceptos-ordinarios-caja-cusco-4.pdf') }}">Ver PDF para
+                                href="{{ asset('pdf/Conceptos-ordinarios-caja-cusco-2025-2.pdf') }}">Ver PDF para
                                 pagos<small><i class="fa fa-eye"></i></small></a>
                         </p>
                     </div>
@@ -448,7 +479,7 @@
                 </li>
                 <li><span class="span">2</span>
                     Indicar el concepto y código de pago.<a class="text-primary" target="_blank"
-                        href="{{ asset('pdf/Conceptos-ordinarios-caja-cusco-4.pdf') }}"> Ver PDF para
+                        href="{{ asset('pdf/Conceptos-ordinarios-caja-cusco-2025-2.pdf') }}"> Ver PDF para
                         pagos<small><i class="fa fa-eye"></i></small></a>
                 </li>
                 <li><span class="span">3</span>

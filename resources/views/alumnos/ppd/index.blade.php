@@ -4,15 +4,38 @@
         <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3 pb-1"
             style="border-bottom: 1px dashed #80808078">
             <h3 class="mb-2 text-primary font-weight-bold">Ficha Técnica: </h3>
+
+            <form id="notificar-form" action="{{ route('mostrar-contenido') }}" method="POST" style="display: none;">
+                @csrf
+                <input type="hidden" name="alumno_id" value="{{ optional(auth()->user()->alumnoB)->id }}">
+            </form>
+            
+            @if (auth()->user()->alumnoB)
+                @if (!Session::has('mostrar_contenido'))
+                    <button type="button" class="btn btn-info btn-sm mb-2" id="mostrar-contenido">
+                        Notificar que he terminado con mi registro. <i class="fa fa-smile"></i>
+                    </button>
+                @endif
+            @endif
         </div>
         <div class="row bg-white" id="contenido-alumno">
+            <div class="col-12">
+                @if (Session::has('success'))
+                    <div class="alert alert-success alert-dismissible fade show text-center" role="alert">
+                        {{ Session::get('success') }}
+                        <a type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </a>
+                    </div>
+                @endif
+            </div>
             @if (auth()->user()->alumnoB)
                 <div class="col-lg-12">
                     <div class="p-2 table-responsive">
                         <table class="table table-bordered">
                             <tbody>
                                 <tr>
-                                    <td colspan="4" class="table-dark">Infromación del Programa</td>
+                                    <td colspan="4" class="table-dark">Información del Programa</td>
                                 </tr>
                                 <tr>
                                     <td class="font-weight-bold">Programa:</th>
@@ -37,15 +60,6 @@
                                                 <a href="{{ route('curso.show', $curso->id) }}"
                                                     class="mr-2">{{ $curso->nombre }}</a>
                                                 <div class="d-flex align-items-center">
-                                                    {{-- @if ($curso->docentes->count() > 0)
-                                                    <div class="mr-1">
-                                                        <ul><strong>Docentes:</strong>
-                                                            @foreach ($curso->docentes as $docente)
-                                                                {{ $docente->nombre }}
-                                                            @endforeach
-                                                        </ul>
-                                                    </div>
-                                                @endif --}}
                                                     @if ($curso->silabo)
                                                         <a class="btn btn-success btn-sm d-inline-block"
                                                             href="{{ asset('docentes/silabo/' . $curso->silabo) }}"
@@ -106,10 +120,68 @@
                 </div>
             @else
                 <div class="col-lg-12">
-                    {{-- <a class="btn btn-primary" href="{{ route('vistAlumno') }}">Por favor completa tu formulario</a> --}}
                     <a href="{{ route('formPPD') }}" class="btn btn-primary btn-sm">Por favor complete su formulario</a>
                 </div>
             @endif
         </div>
     </div>
+    {{-- Script para enviar correo de notificación --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const boton = document.getElementById('mostrar-contenido');
+            if (boton) {
+                boton.addEventListener('click', function() {
+                    this.style.display = 'none';
+                    document.getElementById('notificar-form').submit();
+                });
+            }
+        });
+    </script>
+    {{-- <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const alumnoId = {{ optional(auth()->user()->alumnoB)->id ?? 'null' }};
+            const rol = 'alumnoB';
+
+            const boton = document.getElementById('mostrar-contenido');
+            if (boton) {
+                boton.addEventListener('click', function() {
+                    this.style.display = 'none';
+
+                    fetch("{{ route('mostrar-contenido') }}", {
+                            method: "POST",
+                            headers: {
+                                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')
+                                    .getAttribute('content'),
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                alumno_id: alumnoId,
+                                rol: rol
+                            }),
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert('Correo enviado correctamente.');
+                            } else {
+                                alert(data.message || 'Error al enviar el correo.');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Error al enviar el correo.');
+                        });
+                });
+            }
+        });
+    </script> --}}
+    <style>
+        .curso-item {
+            transition: background-color 0.3s ease;
+        }
+
+        .curso-item:hover {
+            background-color: #e7e7e7;
+        }
+    </style>
 @endsection

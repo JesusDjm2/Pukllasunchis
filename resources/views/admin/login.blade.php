@@ -34,7 +34,7 @@
                                         @enderror
                                     </div>
                                 </div>
-                                <div class="row mb-3">
+                                {{-- <div class="row mb-3">
                                     <label for="password"
                                         class="col-md-4 col-form-label text-md-end">{{ __('Password') }}</label>
                                     <div class="col-md-6">
@@ -47,7 +47,44 @@
                                             </span>
                                         @enderror
                                     </div>
+                                </div> --}}
+                                <div class="row mb-3">
+                                    <label for="password"
+                                        class="col-md-4 col-form-label text-md-end">{{ __('Password') }}</label>
+                                    <div class="col-md-6">
+                                        <div class="input-group">
+                                            <input id="password" type="password"
+                                                class="form-control @error('password') is-invalid @enderror" name="password"
+                                                required autocomplete="current-password">
+                                            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                                <i class="fa fa-sm fa-eye"></i>
+                                            </button>
+                                        </div>
+                                        @error('password')
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                        @enderror
+                                    </div>
                                 </div>
+                                <script>
+                                    document.getElementById('togglePassword').addEventListener('click', function() {
+                                        const passwordInput = document.getElementById('password');
+                                        const icon = this.querySelector('i');
+                                        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+
+                                        passwordInput.setAttribute('type', type);
+
+                                        // Cambiar el ícono
+                                        if (type === 'password') {
+                                            icon.classList.remove('fa-eye-slash');
+                                            icon.classList.add('fa-eye');
+                                        } else {
+                                            icon.classList.remove('fa-eye');
+                                            icon.classList.add('fa-eye-slash');
+                                        }
+                                    });
+                                </script>
                                 <div class="row mb-3">
                                     <div class="col-md-6 offset-md-4">
                                         <div class="form-check">
@@ -64,7 +101,7 @@
                                     <div class="col-md-8 offset-md-4">
                                         <button type="submit" class="btn btn-primary">
                                             {{ __('Login') }}
-                                        </button>                                        
+                                        </button>
                                     </div>
                                 </div>
                             </form>

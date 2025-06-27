@@ -3,7 +3,7 @@
         <h4 class="mb-2 mt-4">Aspectos Familiares</h4>
     </div>
     <div class="col-lg-6 mb-2 mt-2">
-        <label for="convivientes">¿Con quién(es) vive(s)?:</label>
+        <label for="convivientes">1. ¿Con quién(es) vive(s)?:</label>
         <select class="form-control @error('convivientes') is-invalid @enderror" id="convivientes" name="convivientes">
             <option value="" disabled selected>Selecciona una opción</option>
             <option value="Solo" {{ old('convivientes') == 'Solo' ? 'selected' : '' }}>Solo</option>
@@ -51,7 +51,7 @@
         });
     </script>
     <div class="col-lg-6 mb-2 mt-2">
-        <label for="quien_mantiene">Persona que mantiene el hogar:</label>
+        <label for="quien_mantiene">2. Persona que mantiene el hogar:</label>
         <select class="form-control form-control-sm @error('quien_mantiene') is-invalid @enderror" id="quien_mantiene"
             name="quien_mantiene" required>
             <option value="" disabled selected>Selecciona una opción</option>
@@ -69,7 +69,7 @@
         @enderror
     </div>
     <div class="col-lg-6 mb-2">
-        <label for="cant_dependientes_child">Cantidad de dependientes en el hogar (niños):</label>
+        <label for="cant_dependientes_child">3. Cantidad de dependientes en el hogar (niños):</label>
         <input type="text"
             class="form-control form-control-sm @error('cant_dependientes_child') is-invalid @enderror"
             id="cant_dependientes_child" name="cant_dependientes_child" value="{{ old('cant_dependientes_child') }}"
@@ -79,7 +79,7 @@
         @enderror
     </div>
     <div class="col-lg-6 mb-2">
-        <label for="cant_dependientes_old">Cantidad de dependientes en el hogar (tercera edad):</label>
+        <label for="cant_dependientes_old">4. Cantidad de dependientes en el hogar (tercera edad):</label>
         <input type="text" class="form-control form-control-sm @error('cant_dependientes_old') is-invalid @enderror"
             id="cant_dependientes_old" name="cant_dependientes_old" value="{{ old('cant_dependientes_old') }}"
             required>
@@ -88,7 +88,7 @@
         @enderror
     </div>
     <div class="col-lg-6 mb-2">
-        <label for="cant_dependientes_otros">Cantidad de dependientes en el hogar (otros):</label>
+        <label for="cant_dependientes_otros">5. Cantidad de dependientes en el hogar (otros):</label>
         <input type="text"
             class="form-control form-control-sm @error('cant_dependientes_otros') is-invalid @enderror"
             id="cant_dependientes_otros" name="cant_dependientes_otros" value="{{ old('cant_dependientes_otros') }}"
@@ -103,7 +103,7 @@
     </div>
     {{-- Nuevos campos PPD --}}
     <div class="col-lg-4 mb-2 mt-2">
-        <label for="carrera_procedencia">Carrera de Procedencia:</label>
+        <label for="carrera_procedencia">1. Carrera de Procedencia:</label>
         <input type="text" class="form-control form-control-sm @error('carrera_procedencia') is-invalid @enderror"
             id="carrera_procedencia" name="carrera_procedencia" placeholder="Ingrese la carrera de procedencia"
             value="{{ old('carrera_procedencia') }}">
@@ -112,7 +112,7 @@
         @enderror
     </div>
     <div class="col-lg-4 mb-2 mt-2">
-        <label for="ano_culminaste">Año en que culminaste:</label>
+        <label for="ano_culminaste">2. Año en que culminaste:</label>
         <input type="number" class="form-control form-control-sm @error('ano_culminaste') is-invalid @enderror"
             id="ano_culminaste" name="ano_culminaste" placeholder="Ingrese el año que culmino sus estudios superiores" value="{{ old('ano_culminaste') }}">
         @error('ano_culminaste')
@@ -120,7 +120,7 @@
         @enderror
     </div>
     <div class="col-lg-4 mb-2 mt-2">
-        <label for="institucion_procedencia">Institución de Procedencia:</label>
+        <label for="institucion_procedencia">3. Institución Educativa de Procedencia:</label>
         <input type="text"
             class="form-control form-control-sm @error('institucion_procedencia') is-invalid @enderror"
             id="institucion_procedencia" name="institucion_procedencia" placeholder="Ingrese la institución"
@@ -130,7 +130,7 @@
         @enderror
     </div>
     <div class="col-lg-4 mb-2 mt-2">
-        <label for="gestion_institucion">Gestión de la Institución:</label>
+        <label for="gestion_institucion">4. Gestión de la I.E. de Procedencia:</label>
         <select class="form-control form-control-sm @error('gestion_institucion') is-invalid @enderror"
             id="gestion_institucion" name="gestion_institucion">
             <option value="" disabled selected>Seleccione</option>
@@ -142,7 +142,7 @@
         @enderror
     </div>
     <div class="col-lg-4 mb-2 mt-2">
-        <label for="direccion_institucion">Dirección de la Institución:</label>
+        <label for="direccion_institucion">5. Dirección de la I.E. de Procedencia:</label>
         <input type="text"
             class="form-control form-control-sm @error('direccion_institucion') is-invalid @enderror"
             id="direccion_institucion" name="direccion_institucion" placeholder="Ingrese la dirección"
@@ -152,7 +152,7 @@
         @enderror
     </div>
     <div class="col-lg-4 mb-2 mt-2">
-        <label for="dep_dist_prov_institucion">Departamento, Distrito y Provincia de la Institución:</label>
+        <label for="dep_dist_prov_institucion">6. Departamento, Distrito y Prov. de la I.E. de Procedencia:</label>
         <input type="text"
             class="form-control form-control-sm @error('dep_dist_prov_institucion') is-invalid @enderror"
             id="dep_dist_prov_institucion" name="dep_dist_prov_institucion" placeholder="Ejemplo: (Cusco - Cusco - Jan Jerónimo)"
@@ -162,11 +162,8 @@
         @enderror
     </div>
 
-
-
-
     <div class="col-lg-6 mb-2 mt-2">
-        <label for="estudio_beca">En la etapa escolar, ¿estudiaste con Beca? </label>
+        <label for="estudio_beca">7. En la etapa escolar, ¿estudiaste con Beca? </label>
         <select class="form-control form-control-sm @error('estudio_beca') is-invalid @enderror" id="estudio_beca"
             name="estudio_beca" required>
             <option disabled selected>Selecciona una opción</option>
@@ -184,7 +181,7 @@
     </div>
 
     <div class="col-lg-6 mb-2 mt-2">
-        <label for="origen_beca">Origen Beca:</label>
+        <label for="origen_beca">8. Origen Beca:</label>
         <input type="text" class="form-control form-control-sm @error('origen_beca') is-invalid @enderror"
             id="origen_beca" name="origen_beca" placeholder="Ingrese el origen de la beca (opcional)"
             value="{{ old('origen_beca') }}">
@@ -194,7 +191,7 @@
     </div>
 
     <div class="col-lg-4 mb-2 mt-2">
-        <label for="postulaciones_eesp">Número de veces que postuló a EESP Pukllasunchis:</label>
+        <label for="postulaciones_eesp">9. Número de veces que postuló a EESP Pukllasunchis:</label><br><br>
         <input type="number" class="form-control form-control-sm @error('postulaciones_eesp') is-invalid @enderror"
             id="postulaciones_eesp" name="postulaciones_eesp" placeholder="Ingrese la cantidad"
             value="{{ old('postulaciones_eesp') }}">
@@ -204,7 +201,7 @@
     </div>
 
     <div class="col-lg-4 mb-2 mt-2">
-        <label for="postulaciones_inst_uni">Número de veces que postuló a <strong> educación</strong> en otras
+        <label for="postulaciones_inst_uni">10. Número de veces que postuló a <strong> educación</strong> en otras
             instituciones: </label>
         <input type="number"
             class="form-control form-control-sm @error('postulaciones_inst_uni') is-invalid @enderror"
@@ -216,7 +213,7 @@
     </div>
 
     <div class="col-lg-4 mb-2 mt-2">
-        <label for="postulaciones_otros">Número de veces que postuló a otras carreras en otras Instituciones:</label>
+        <label for="postulaciones_otros">11.Número de veces que postuló a otras carreras en otras Instituciones:</label>
         <input type="number" class="form-control form-control-sm @error('postulaciones_otros') is-invalid @enderror"
             id="postulaciones_otros" name="postulaciones_otros" placeholder="Ingrese la cantidad"
             value="{{ old('postulaciones_otros') }}">
@@ -225,8 +222,8 @@
         @enderror
     </div>
 
-    <div class="col-lg-6 mb-2 mt-2">
-        <label for="tipo_preparacion">Tipo de Preparación para postular a la EESPP Pukllasunchis:</label>
+    <div class="col-lg-4 mb-2 mt-2">
+        <label for="tipo_preparacion">12. Tipo de Preparación para postular a la EESPP Pukllasunchis:</label>
         <select class="form-control form-control-sm @error('tipo_preparacion') is-invalid @enderror"
             id="tipo_preparacion" name="tipo_preparacion" required>
             <option disabled selected>Selecciona una opción</option>
@@ -243,8 +240,8 @@
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
     </div>
-    <div class="col-lg-6 mb-2 mt-2">
-        <label for="motivo_estudio_eesp">Motivo por el cual elegiste estudiar en la EESP Pukllasunchis:</label>
+    <div class="col-lg-4 mb-2 mt-2">
+        <label for="motivo_estudio_eesp">13. Motivo por el cual elegiste estudiar en la EESP Pukllasunchis:</label>
         <select class="form-control form-control-sm @error('motivo_estudio_eesp') is-invalid @enderror"
             id="motivo_estudio_eesp" name="motivo_estudio_eesp" required>
             <option value="" disabled selected>Selecciona una opción</option>
@@ -270,8 +267,8 @@
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
     </div>
-    <div class="col-lg-6 mb-2 mt-2">
-        <label for="motivo_docencia">Motivo para seguir estudios de docencia:</label>
+    <div class="col-lg-4 mb-2 mt-2">
+        <label for="motivo_docencia">14. Motivo para seguir estudios de docencia:</label> <br><br>
         <select class="form-control form-control-sm @error('motivo_docencia') is-invalid @enderror"
             id="motivo_docencia" name="motivo_docencia" required>
             <option value="" disabled selected>Selecciona una opción</option>
@@ -294,8 +291,8 @@
         @enderror
     </div>
 
-    <div class="col-lg-6 mb-2 mt-2">
-        <label for="motivo_especialidad">Motivo por el cual elegiste tu especialidad:</label>
+    <div class="col-lg-4 mb-2 mt-2">
+        <label for="motivo_especialidad"> 15. Motivo por el cual elegiste tu especialidad:</label>
         <select class="form-control form-control-sm @error('motivo_especialidad') is-invalid @enderror"
             id="motivo_especialidad" name="motivo_especialidad" required>
             <option value="" disabled selected>Selecciona una opción</option>
@@ -322,8 +319,8 @@
         @enderror
     </div>
 
-    <div class="col-lg-6 mb-2 mt-2">
-        <label class="d-block">¿Tienes acceso a internet en casa?</label>
+    <div class="col-lg-4 mb-2 mt-2">
+        <label class="d-block">16. ¿Tienes acceso a internet en casa?</label>
         <div class="form-check form-check-inline">
             <input class="form-check-input @error('internet') is-invalid @enderror" type="radio" name="internet"
                 id="internet_si" value="1" {{ old('internet') == '1' ? 'checked' : '' }}>
@@ -339,8 +336,8 @@
         @enderror
     </div>
 
-    <div class="col-lg-6 mb-2 mt-2">
-        <label for="internet_lugar">En caso la respuesta anterior haya sido No, ¿desde qué lugar se conecta Ud. a
+    <div class="col-lg-4 mb-2 mt-2">
+        <label for="internet_lugar">17. En caso la respuesta anterior haya sido No, ¿desde qué lugar se conecta Ud. a
             internet?</label>
         <select class="form-control form-control-sm @error('internet_lugar') is-invalid @enderror"
             id="internet_lugar" name="internet_lugar">
@@ -358,7 +355,7 @@
     </div>
 
     <div class="col-lg-6 mb-2 mt-2">
-        <label for="servicio_internet">Principal servicio de internet usado:</label>
+        <label for="servicio_internet">18. Principal servicio de internet usado:</label>
         <select class="form-control form-control-sm @error('servicio_internet') is-invalid @enderror"
             id="servicio_internet" name="servicio_internet" required>
             <option value="" disabled selected>Selecciona una opción</option>
@@ -375,7 +372,7 @@
         @enderror
     </div>
     <div class="col-lg-6 mb-2 mt-2">
-        <label for="dispositivo_internet">Que dispositivo emplea para conectarse al internet para actividades
+        <label for="dispositivo_internet">19. Que dispositivo emplea para conectarse al internet para actividades
             académicas?</label>
         <select class="form-control form-control-sm @error('dispositivo_internet') is-invalid @enderror"
             id="dispositivo_internet" name="dispositivo_internet" required>
@@ -393,7 +390,7 @@
     </div>
 
     <div class="col-lg-6 mb-2 mt-2">
-        <label class="d-block">¿Cómo utiliza el dispositivo para conectarse a internet para actividades
+        <label class="d-block">20. ¿Cómo utiliza el dispositivo para conectarse a internet para actividades
             académicas?</label>
         <div class="form-check form-check-inline">
             <input class="form-check-input @error('propio_compartido') is-invalid @enderror" type="radio"
@@ -413,7 +410,7 @@
     </div>
 
     <div class="col-lg-6 mb-2 mt-2">
-        <label for="correo">¿Utiliza el correo electrónico?</label><br>
+        <label for="correo">21. ¿Utiliza el correo electrónico?</label><br>
         <div class="form-check form-check-inline">
             <input class="form-check-input @error('correo') is-invalid @enderror" type="radio" name="correo"
                 id="correo_si" value="1" {{ old('correo') == '1' ? 'checked' : '' }}>
@@ -430,7 +427,7 @@
     </div>
 
     <div class="col-lg-6 mb-2 mt-2">
-        <label for="num_hrs_estudio">Número de horas dedicadas al estudio:</label>
+        <label for="num_hrs_estudio">22. Número de horas dedicadas al estudio:</label>
         <input type="number" class="form-control @error('num_hrs_estudio') is-invalid @enderror"
             id="num_hrs_estudio" name="num_hrs_estudio" value="{{ old('num_hrs_estudio') }}" required>
         @error('num_hrs_estudio')
@@ -439,7 +436,7 @@
     </div>
 
     <div class="col-lg-6 mb-2 mt-2">
-        <label for="forma_estudio">Forma que prefiere estudiar:</label>
+        <label for="forma_estudio">23. Forma que prefiere estudiar:</label>
         <select class="form-control form-control-sm @error('forma_estudio') is-invalid @enderror" id="forma_estudio"
             name="forma_estudio" required>
             <option value="" disabled selected>Selecciona una opción</option>

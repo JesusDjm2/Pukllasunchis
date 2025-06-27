@@ -20,9 +20,11 @@ class PeriodoUno extends Model
         'valoracion_curso',
         'calificacion_curso',
         'calificacion_sistema',
+        'observaciones',
         'alumno_id',
         'curso_id',
         'calificacion_id',
+        
     ];
     public function alumno()
     {

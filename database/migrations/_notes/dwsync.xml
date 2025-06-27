@@ -33,7 +33,9 @@
 <file name="2025_02_28_151856_create_enfoque_silabos_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133855748349014544" remote="133861072800000000" Dst="0" />
 <file name="2025_03_03_161203_create_text_capacidads_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133854920666858349" remote="133861072800000000" Dst="0" />
 <file name="2025_02_28_203707_create_competencia_textos_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133852493041071588" remote="133861072800000000" Dst="0" />
-<file name="2025_03_03_172511_create_unidades_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133854964808689612" remote="133861072800000000" Dst="0" />
+<file name="2025_03_03_172511_create_unidades_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133881743077581789" remote="133881926400000000" Dst="0" />
 <file name="2025_03_03_173854_create_rubricas_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133854973540124503" remote="133861072800000000" Dst="0" />
 <file name="2025_03_05_183439_create_ciclo_proyecto_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133856733400428870" remote="133861072800000000" Dst="0" />
+<file name="2025_02_07_165645_create_ppds_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133867246950875409" remote="133882096800000000" Dst="0" />
+<file name="2025_05_05_214836_create_calificacionesppds_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133916329171595906" remote="133923308400000000" Dst="0" />
 </dwsync>

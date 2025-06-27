@@ -1,20 +1,94 @@
 <div class="row">
     <div class="col-lg-6 mb-2 mt-2">
-        <label for="trabajas">¿Trabajas actualmente?:</label><br>
-        <div class="form-check form-check-inline">
-            <input class="form-check-input @error('trabajas') is-invalid @enderror" type="radio" name="trabajas"
-                id="trabajas_si" value="1" {{ isset($alumno) && $alumno->trabajas == 1 ? 'checked' : '' }}>
-            <label class="form-check-label" for="trabajas_si">Sí</label>
-        </div>
-        <div class="form-check form-check-inline">
-            <input class="form-check-input @error('trabajas') is-invalid @enderror" type="radio" name="trabajas"
-                id="trabajas_no" value="0" {{ isset($alumno) && $alumno->trabajas == 0 ? 'checked' : '' }}>
-            <label class="form-check-label" for="trabajas_no">No</label>
-        </div>
+        <label for="trabajas">¿Trabajas actualmente?:</label>
+        <select class="form-control form-control-sm @error('trabajas') is-invalid @enderror" name="trabajas"
+            id="trabajas">
+            <option value="" disabled
+                {{ old('trabajas', isset($alumno) ? $alumno->trabajas : '') == '' ? 'selected' : '' }}>
+                Selecciona una opción
+            </option>
+            <option value="Sí"
+                {{ old('trabajas', isset($alumno) ? $alumno->trabajas : '') == 'Sí' ? 'selected' : '' }}>Sí</option>
+            <option value="No"
+                {{ old('trabajas', isset($alumno) ? $alumno->trabajas : '') == 'No' ? 'selected' : '' }}>No</option>
+            <option value="Todavía no"
+                {{ old('trabajas', isset($alumno) ? $alumno->trabajas : '') == 'Todavía no' ? 'selected' : '' }}>Todavía
+                no</option>
+        </select>
+
         @error('trabajas')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
     </div>
+
+    {{-- <div class="col-lg-6 mb-2 mt-2">
+        <label for="sector_laboral">¿En qué sector trabajas?:</label>
+        <select class="form-control form-control-sm @error('sector_laboral') is-invalid @enderror"
+            id="sector_laboral_select" onchange="toggleOtroSector()">
+            <option selected disabled>Elegir</option>
+            <option value="Sector educativo"
+                {{ old('sector_laboral', isset($alumno) ? $alumno->sector_laboral : '') == 'Sector educativo' ? 'selected' : '' }}>
+                Sector educativo
+            </option>
+            <option value="Otro"
+                {{ old('sector_laboral', isset($alumno) ? $alumno->sector_laboral : '') != 'Sector educativo' && isset($alumno) && $alumno->sector_laboral ? 'selected' : '' }}>
+                Otro: (especificar)
+            </option>
+        </select>
+    
+        @php
+            $mostrarInput =
+                old('sector_laboral', isset($alumno) ? $alumno->sector_laboral : '') != 'Sector educativo' &&
+                old('sector_laboral', isset($alumno) ? $alumno->sector_laboral : '') != '';
+        @endphp
+    
+        <input type="text" class="form-control form-control-sm mt-2 @error('sector_laboral') is-invalid @enderror"
+            id="sector_laboral_otro" 
+            placeholder="Especifica el sector" 
+            style="display: {{ $mostrarInput ? 'block' : 'none' }};"
+            value="{{ old('sector_laboral', isset($alumno) && $alumno->sector_laboral != 'Sector educativo' ? $alumno->sector_laboral : '') }}">
+    
+        <!-- Campo oculto que se enviará en el formulario -->
+        <input type="hidden" name="sector_laboral" id="sector_laboral_hidden"
+            value="{{ old('sector_laboral', isset($alumno) ? $alumno->sector_laboral : '') }}">
+    
+        @error('sector_laboral')
+            <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+    </div>    
+    <script>
+        function toggleOtroSector() {
+            var select = document.getElementById("sector_laboral_select");
+            var inputOtro = document.getElementById("sector_laboral_otro");
+            var hiddenInput = document.getElementById("sector_laboral_hidden");
+    
+            if (select.value === "Otro") {
+                inputOtro.style.display = "block";
+                inputOtro.required = true;
+                hiddenInput.value = inputOtro.value; // Al seleccionar "Otro", se usa el valor del input de texto
+            } else {
+                inputOtro.style.display = "none";
+                inputOtro.required = false;
+                inputOtro.value = "";
+                hiddenInput.value = select.value; // Si elige otra opción, se guarda directamente el valor del select
+            }
+        }
+    
+        // Asegurar que el campo oculto se actualice cuando el usuario escriba en el input de texto
+        document.getElementById("sector_laboral_otro").addEventListener("input", function() {
+            document.getElementById("sector_laboral_hidden").value = this.value;
+        });
+    
+        // Mantener el estado correcto cuando la página carga
+        document.addEventListener("DOMContentLoaded", function() {
+            toggleOtroSector();
+        });
+    </script> --}}
+
+
+
+
+
 
 
     <div class="col-lg-6 mb-2 mt-2">
@@ -53,19 +127,52 @@
         @enderror
     </div>
 
-    <div class="col-lg-6 mb-2 mt-2">
+   {{--  <div class="col-lg-6 mb-2 mt-2">
         <label for="egreso">¿Cuál es tu egreso mensual promedio?:</label>
         <input type="text" class="form-control form-control-sm @error('egreso') is-invalid @enderror" id="egreso"
             name="egreso" value="{{ isset($alumno) ? $alumno->egreso : old('egreso') }}" required>
         @error('egreso')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
-    </div>
+    </div> --}}
+    {{-- <div class="col-lg-6 mb-2 mt-2">
+        <label for="egreso"><strong>¿Cuál es tu egreso mensual promedio?</strong> <span
+                class="text-danger">*</span></label>
+        <select class="form-control form-control-sm @error('egreso') is-invalid @enderror" id="egreso" name="egreso"
+            required>
+            <option value="" disabled selected>Selecciona una opción</option>
+            <option value="Menos de 500"
+                {{ old('egreso', isset($alumno) ? $alumno->egreso : '') == 'Menos de 500' ? 'selected' : '' }}>
+                Menos de 500
+            </option>
+            <option value="De 501 a 900"
+                {{ old('egreso', isset($alumno) ? $alumno->egreso : '') == 'De 501 a 900' ? 'selected' : '' }}>
+                De 501 a 900
+            </option>
+            <option value="De 901 a 1200"
+                {{ old('egreso', isset($alumno) ? $alumno->egreso : '') == 'De 901 a 1200' ? 'selected' : '' }}>
+                De 901 a 1200
+            </option>
+            <option value="De 1201 a 1500"
+                {{ old('egreso', isset($alumno) ? $alumno->egreso : '') == 'De 1201 a 1500' ? 'selected' : '' }}>
+                De 1201 a 1500
+            </option>
+            <option value="Más de 1500"
+                {{ old('egreso', isset($alumno) ? $alumno->egreso : '') == 'Más de 1500' ? 'selected' : '' }}>
+                Más de 1500
+            </option>
+        </select>
+        @error('egreso')
+            <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+    </div> --}}
+
 
     <div class="col-lg-6 mb-2 mt-2">
         <label for="hrs_laboradas_sem">¿Número de horas que labora a la semana:</label>
         <input type="number" class="form-control form-control-sm @error('hrs_laboradas_sem') is-invalid @enderror"
-            id="hrs_laboradas_sem" name="hrs_laboradas_sem" value="{{ isset($alumno) ? $alumno->hrs_laboradas_sem : old('hrs_laboradas_sem') }}" required>
+            id="hrs_laboradas_sem" name="hrs_laboradas_sem"
+            value="{{ isset($alumno) ? $alumno->hrs_laboradas_sem : old('hrs_laboradas_sem') }}" required>
         @error('hrs_laboradas_sem')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror

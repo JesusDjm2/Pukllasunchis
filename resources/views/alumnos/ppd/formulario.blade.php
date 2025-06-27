@@ -19,7 +19,8 @@
                             @endif
                         </div>
                         <div class="card-body">
-                            <form action="{{ route('alumnos.store') }}" method="POST">
+                            {{-- <form action="{{ route('alumnos.store') }}" method="POST"> --}}
+                            <form action="{{ route('ppd.store') }}" method="POST">
                                 @csrf
                                 <div class="container mt-3">
                                     <ul class="nav nav-tabs nav-pills nav-justified flex-column flex-sm-row" id="myTab"

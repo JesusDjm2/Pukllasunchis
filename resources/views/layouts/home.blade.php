@@ -98,7 +98,7 @@
                                                 </a>
                                             </li>
                                         @elseif ($user->hasRole('adminB'))
-                                            <li><a href="{{ route('adminB') }}"> <i class="fa fa-download"></i> Intranet</a>
+                                            <li><a href="{{ route('trabajo.index') }}"> <i class="fa fa-download"></i> Intranet</a>
                                             </li>
                                         @elseif ($user->hasRole('alumnoB'))
                                             <li><a href="{{ route('ppd.index') }}"> <i class="fa fa-download"></i> Intranet</a>
@@ -134,7 +134,7 @@
                                                 </a>
                                             </li>
                                         @elseif ($user->hasRole('adminB'))
-                                            <li><a href="{{ route('adminB') }}"> <i class="fa fa-user"></i> Matrícula</a>
+                                            <li><a href="{{ route('trabajo.index') }}"> <i class="fa fa-user"></i> Matrícula</a>
                                             </li>
                                         @elseif ($user->hasRole('alumnoB'))
                                             <li><a href="{{ route('ppd.index') }}"> <i class="fa fa-user"></i> Matrícula</a>
@@ -206,7 +206,7 @@
                                                 <li><a href="{{ route('Ttraslado') }}">Traslado</a></li>
                                                 <li><a href="{{ route('licencia') }}">Licencia de estudios</a></li>
                                                 <li><a href="{{ route('partes') }}">Mesa de partes</a></li>
-                                                <li><a href="{{ asset('pdf/TUPA-EESPP-2024-08022024-2.pdf') }}"
+                                                <li><a href="{{ asset('pdf/TUPA-EESPP-2025-2-08022024.pdf') }}" 
                                                         target="_blank">Pagos (TUPA)</a></li>
                                             </ul>
                                         </li>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Alumno;
 use App\Models\Ciclo;
 use App\Models\Docente;
+use App\Models\ppd;
 use App\Models\Programa;
 use App\Models\User;
 use App\Models\Curso;
@@ -32,53 +33,10 @@ class AdminController extends Controller
         $totalAlumnos = User::whereHas('roles', function ($query) {
             $query->where('name', 'alumno');
         })->count();
-        // Filtrar los usuarios que tengan el rol "adminB"
-        /* $adminsB = $admins->filter(function ($user) {
-            return $user->hasRole('adminB');
-        }); */
         $totalRecords = Alumno::count();
         return view('admin.index', compact('alumno', 'admins', 'totalAlumnos', 'totalRecords'));
     }
-    /* public function alumnos(Request $request)
-    {
-        $query = Alumno::query();
-        $alumno = null;
-        $withUser = $request->get('with_user');
-        if ($withUser === '1') {
-            $query->has('user');
-        } elseif ($withUser === '0') {
-            $query->doesntHave('user');
-        }
 
-        if ($request->has('search')) {
-            $searchTerms = explode(' ', $request->input('search'));
-            $query->where(function ($subquery) use ($searchTerms) {
-                foreach ($searchTerms as $term) {
-                    $subquery->where(function ($nameOrApellidoQuery) use ($term) {
-                        $nameOrApellidoQuery->where('nombres', 'like', '%' . $term . '%')
-                            ->orWhere('apellidos', 'like', '%' . $term . '%');
-                    })
-                        ->orWhere('dni', 'like', '%' . $term . '%')
-                        ->orWhereHas('programa', function ($programaQuery) use ($term) {
-                            $programaQuery->where('nombre', 'like', '%' . $term . '%');
-                        });
-                }
-            });
-            $alumno = $query->first();
-        }
-
-        $perPage = $request->input('perPage', 10);
-        $alumnos = $query->paginate($perPage);
-        $alumnos->appends($request->all());
-        $totalRecords = Alumno::count();
-
-
-        if ($alumnos->isEmpty() && !$request->has('search_page')) {
-            session()->flash('error', 'No se han encontrado resultados. Se ha buscado un total de ' . $totalRecords . ' registros.');
-        }
-
-        return view('alumnos.index', compact('alumno', 'alumnos', 'totalRecords'));
-    } */
     public function alumnos(Request $request)
     {
         $query = Alumno::query();
@@ -110,18 +68,20 @@ class AdminController extends Controller
                 }
             });
         }
-
-        $perPage = $request->input('perPage', 10);
-        $alumnos = $query->paginate($perPage);
-        $alumnos->appends($request->all());
-        $totalRecords = Alumno::count();
+        $alumnos = $query->get();
+        $totalRecords = $alumnos->count();
 
         if ($alumnos->isEmpty() && !$request->has('search_page')) {
             session()->flash('error', 'No se han encontrado resultados. Se ha buscado un total de ' . $totalRecords . ' registros.');
         }
         return view('alumnos.index', compact('alumnos', 'totalRecords'));
     }
-
+    public function alumnosppd()
+    {
+        $alumnos = ppd::all();
+        $totalRecords = ppd::count();
+        return view('alumnos.ppd.lista', compact('alumnos', 'totalRecords'));
+    }
 
 
     public function relacionarUsuario($alumnoId)
@@ -228,7 +188,6 @@ class AdminController extends Controller
             }
 
             if ($roleName === 'alumnoB') {
-                dd($request->all());
                 $user->programa()->associate($request->input('programa_id'));
                 $user->ciclo()->associate($request->input('ciclo_id'));
                 $user->save();

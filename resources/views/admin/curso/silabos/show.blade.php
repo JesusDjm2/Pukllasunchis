@@ -17,97 +17,58 @@
             font-weight: 600;
         }
 
-        .print-btn {
+        th,
+        td {
+            text-align: justify;
+            vertical-align: top;
+        }
+
+
+        .btn-flotante {
             position: fixed;
-            bottom: 30%;
-            right: 20px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 15px 20px;
-            font-size: 16px;
-            border-radius: 50%;
-            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-            cursor: pointer;
-            transition: background 0.3s;
+            top: 50%;
+            right: -2px;
+            transform: translateY(-50%);
+            z-index: 9999;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+            transition: 0.4s ease;
+
+            animation: entradaBoton 1s ease-out;
         }
 
-        .print-btn:hover {
-            background-color: #0056b3;
+        /* Hover suave como lo pediste */
+        .btn-flotante:hover {
+            padding: 0.7em;
+            transition: 0.2s ease;
         }
 
-        @media print {
-            header,
-            footer,
-            .sidebar,
-            .navbar,
-            .boton-volver,
-            .print-btn,
-            .floating-bubble-editor {
-                display: none !important;
-            }
-            thead {
-                background-color: #c78d40 !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-                color: #858796 !important;
+        /* Animación personalizada */
+        @keyframes entradaBoton {
+            0% {
+                opacity: 0;
+                transform: translate(100%, -50%) scale(0.6) rotate(10deg);
             }
 
-            thead>tr>th {
-                color: #c78d40 !important;
-            }           
-
-            @page {
-                margin: 20mm;
-                /* Ajusta márgenes para evitar espacio extra */
+            60% {
+                opacity: 1;
+                transform: translate(-10px, -50%) scale(1.05);
             }
 
-            a[href]:after {
-                content: none !important;
-                /* Oculta los enlaces */
+            80% {
+                transform: translate(5px, -50%) scale(0.98);
             }
 
-            header,
-            footer {
-                display: none !important;
+            100% {
+                transform: translateY(-50%) scale(1);
             }
-
-            h4,
-            {
-            font-family: 'EB Garamond', serif !important;
-            font-size: 20px !important;
-            font-weight: normal !important;
-            color: #ffa537 !important;
-        }
-
-        body,
-        table,
-        p,
-        span,
-        h1,
-        h3,
-        h5,
-        h6 {
-            font-family: 'EB Garamond', serif !important;
-            font-size: 14px !important;
-            font-weight: normal !important;
-        }
-
-        h3 {
-            font-size: 16px !important;
-            color: #ffa537 !important;
-        }
-
-
-        h2 {
-            font-family: 'EB Garamond', serif !important;
-            font-size: 18px !important;
-            font-weight: 600 !important;
-            color: #ffa537 !important;
-        }
         }
     </style>
-
+    <div class="container-fluid mb-3 p-3 bg-white m-auto">
+        <!-----Boton exportar como PDF------------->
+        <a href="{{ route('silabo.pdf', $silabo->id) }}" class="btn btn-primary btn-flotante">
+            <i class="fas fa-file-pdf"></i> Descargar PDF
+        </a>
+    </div> 
     <div class="container-fluid bg-white">
         <div class="container">
             <table style="width: 100%; border-collapse: collapse; margin-bottom: 1em;">
@@ -129,9 +90,9 @@
 
             <div style="width: 100%; height: 2px; border-top: 1px dashed #c78d40;"></div>
             <!---Boton flotante de impresión------->
-            <button id="printButton" onclick="window.print()" class="btn btn-primary print-btn">
+            {{--  <button id="printButton" onclick="window.print()" class="btn btn-primary print-btn">
                 <i class="fa fa-file-export"></i>
-            </button>
+            </button> --}}
 
             <!-- Información del Curso -->
             <div class="mb-4 mt-2">
@@ -211,7 +172,7 @@
                             </td>
                         </tr>
 
-                        <tr>
+                        {{-- <tr>
                             <td style="font-weight: 600; padding: 2px;">1.11 <span style="margin-left:0.4em">Fecha de
                                     inicio</span></td>
                             <td style="padding: 2px;">:
@@ -228,6 +189,16 @@
                                     {{ $silabo->fecha2 ? $silabo->fecha2 : 'Sin datos' }}
                                 </span>
                             </td>
+                        </tr> --}}
+                        <tr>
+                            <td style="font-weight: 600; padding: 2px;">1.11 <span style="margin-left:0.4em">Fecha de
+                                    inicio</span></td>
+                            <td style="padding: 2px;">: 24 de marzo de 2025</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 600; padding: 2px;">1.12 <span style="margin-left:0.4em">Fecha de
+                                    término</span></td>
+                            <td style="padding: 2px;">: 18 de julio de 2025</td>
                         </tr>
 
                     </tbody>
@@ -302,7 +273,8 @@
                 <tbody>
                     @forelse ($silabo->enfoques as $enfoque)
                         <tr>
-                            <td style="text-align: justify"><strong style="color: #c78d40">{{ $enfoque->nombre }}</strong><br>
+                            <td style="text-align: justify"><strong
+                                    style="color: #c78d40">{{ $enfoque->nombre }}</strong><br>
                                 {{ $enfoque->descripcion }}
                             </td>
                             <td style="text-align: justify">{{ $enfoque->enfoque_observables }}</td>
@@ -458,11 +430,9 @@
             </div>
         </div>
     </div>
-    {{-- <a href="{{ route('vistaDocente', ['docente' => $docente->id]) }}"
-        class="btn btn-secondary float-right boton-volver">Volver</a> --}}
-        <a href="{{ route('vistaDocente', ['docente' => $docente->id]) }}"
-            class="btn btn-danger boton-volver"
-            style="position: fixed; top: 120px; right: 20px; z-index: 1000;">
-            Volver
-         </a>         
+    <a href="{{ url()->previous() }}" class="btn btn-danger boton-volver"
+        style="position: fixed; top: 120px; right: 20px; z-index: 1000;">
+        Volver
+    </a>
 @endsection
+ 
