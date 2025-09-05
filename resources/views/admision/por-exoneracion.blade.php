@@ -22,15 +22,7 @@
     <div class="container pt-5 pb-5">
         <div class="row">
             <div class="col-lg-3">
-                <div class="pegajoso">
-                    <h3 class="linea-debajo">Admisión</h3>
-                    <ul class="submenu2">
-                        <li><a href="{{route('ordinario')}}"><i class="fa fa-caret-right fa-sm"></i> Ingreso Ordinario</a></li>
-                        <li><a href="{{route('exoneracion')}}"><i class="fa fa-caret-right fa-sm"></i> Por Exoneración</a></li>
-                        <li><a href="{{route('traslado')}}"><i class="fa fa-caret-right fa-sm"></i> Traslado Externo</a></li>
-                        <li><a href="{{route('resultados')}}"><i class="fa fa-caret-right fa-sm"></i> Resultados</a></li>
-                    </ul>
-                </div>
+                @include('admision.menu-lateral')
             </div>
             <div class="col-lg-9">
                 <h2 class="linea-debajo">{{ $titulo }}</h2>
@@ -49,7 +41,7 @@
                 <p>
                     Constancia emitida por la Dirección Nacional de Deporte de Afiliados del Instituto Peruano del Deporte,
                     que lo acredite como miembro de la federación nacional y/o constancia de haber participado en certámenes
-                    nacionales e internacionales..
+                    nacionales e internacionales.
                 </p>
                 <h3 class="mt-3 mb-2"><i class="fa fa-caret-right" style="color:#cd9244"></i> Beneficiarios del Programa
                     Integral de Reparaciones en Educación:</h3>
@@ -69,7 +61,7 @@
                 </p>
                 <ul class="listasCuerpo">
                     <li>
-                        Hacer el pago de S/150 soles por derecho a la inscripción en las oficinas de Scotiabank.
+                        Hacer el pago de S/150.00 por derecho a la inscripción en las oficinas de Scotiabank.
                     </li>
                     <li> Llenar FICHA DE INSCRIPCIÓN</li>
                     <li>
@@ -77,7 +69,7 @@
                         <ul>
                             <li>Partida de nacimiento</li>
                             <li>Certificado de estudios de Educación Secundaria</li>
-                            <li>Copia simple del documento nacional de identidad (DNI)</li>
+                            <li>Copia ampliada del documento nacional de identidad (DNI)</li>
                             <li> Dos fotografías recientes e iguales, tamaño carné, de frente, a color y en fondo blanco.
                             </li>
                             <li> Comprobante de pago del derecho de inscripción. </li>
@@ -92,7 +84,7 @@
                                 target="_blank">
                                 <img width="80%" src="{{ asset('img/min/Ficha-de-inscripcion-Pukllasunchis.png') }}"
                                     alt="Ficha de Inscrición Pukllasunchis">
-                                <p>Ficha de inscripción</p>
+                                <p class="text-center">Ficha de inscripción</p>
                             </a>
                         </div>
                     </div>

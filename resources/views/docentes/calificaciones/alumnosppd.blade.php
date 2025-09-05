@@ -4,7 +4,7 @@
         .highlighted {
             background-color: #d4edda;
             transition: background-color 0.5s ease;
-        }
+        } 
 
         th.sortable {
             pointer-events: none;
@@ -313,7 +313,6 @@
                     </div>
                 </form>
             </div>
-
         </div>
     </div>
 

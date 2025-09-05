@@ -6,7 +6,7 @@
             position: fixed;
             right: 20px;
             bottom: 20px;
-            padding: 25px 20px;
+            padding: 30px 20px;
             background-color: #007bff;
             color: white;
             border-radius: 50%;
@@ -110,7 +110,7 @@
                 <table border="1" style="border-collapse: collapse; width: 100%;">
                     <tr>
                         <td style="padding: 8px;border-left: 3px solid #c78d40;font-weight:bold">Periodo Académico</td>
-                        <td style="padding: 8px;">2025-I </td>
+                        <td style="padding: 8px;">2025-II </td>
                     </tr>
                     <tr>
                         <td style="padding: 8px;border-left: 3px solid #c78d40;font-weight:bold">Ciclo - Sección</td>
@@ -155,11 +155,15 @@
                         @php
                             $totalHoras = 0;
                             $totalCreditos = 0;
+                            $cursos = $alumno->cursos->isNotEmpty() ? $alumno->cursos : $alumno->ciclo->cursos;
                         @endphp
-                        @foreach ($alumno->ciclo->cursos as $index => $curso)
+
+                        @foreach ($cursos as $index => $curso)
                             <tr>
                                 <td style="padding: 8px; text-align: center;">{{ $index + 1 }}</td>
-                                <td style="padding: 8px;">{{ $curso->nombre }}</td>
+                                <td style="padding: 8px;">
+                                    {{ $curso->nombre }}
+                                </td>
                                 <td style="padding: 8px; text-align: center;">{{ $curso->horas }}</td>
                                 <td style="padding: 8px; text-align: center;">{{ $curso->creditos }}</td>
                             </tr>
@@ -168,12 +172,14 @@
                                 $totalCreditos += $curso->creditos;
                             @endphp
                         @endforeach
+
                         <tr>
                             <td colspan="2" style="padding: 8px; text-align: right; font-weight: bold;">Total</td>
                             <td style="padding: 8px; text-align: center; font-weight: bold;">{{ $totalHoras }}</td>
                             <td style="padding: 8px; text-align: center; font-weight: bold;">{{ $totalCreditos }}</td>
                         </tr>
                     @endif
+
                 </tbody>
             </table>
         </div>
@@ -187,7 +193,10 @@
             </div>
         </div>
     </div>
-    <button class="imprimir" onclick="window.print()">
+    {{-- <button class="imprimir" onclick="window.print()">
         Guardar /<br> Imprimir
-    </button>
+    </button> --}}
+    <a class="imprimir text-center" href="{{ route('alumno.ficha.pdf', $alumno->id) }}" class="btn btn-danger">
+        Descargar <br> PDF
+    </a>
 @endsection

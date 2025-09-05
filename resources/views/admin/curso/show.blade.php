@@ -26,7 +26,7 @@
                             @role('alumno')
                                 {{ $curso->ciclo->programa->nombre }}
                             @endrole
-                        </td>   
+                        </td>
                     </tr>
                     <tr>
                         <td class="font-weight-bold">Sumilla:</td>
@@ -111,29 +111,30 @@
                     </tr>
                     <tr>
                         <td class="font-weight-bold">Alumnos registrados:</td>
-                        <td>{{ $cantidadAlumnos }}</td>
+                        <td>{{ $cantidadAlumnos }}                        </td>
                     </tr>
                     <tr>
                         <td class="font-weight-bold">Alumnos:</td>
                         <td>
                             <ul>
-                                @role('admin')
-                                    @foreach ($alumnos as $alumno)
-                                        <li>
+                                @foreach ($alumnos as $alumno)
+                                    <li>
+                                        @role('admin')
                                             <a href="{{ route('alumnos.show', ['alumno' => $alumno->id]) }}">
                                                 {{ $alumno->apellidos }}, {{ $alumno->nombres }}
-                                            </a>
-                                        </li>
-                                    @endforeach
-                                @endrole
-                                @role('alumno')
-                                    @foreach ($alumnos as $alumno)
-                                        <li>
+                                            </a> &nbsp;&nbsp;
+                                            <small>{{ $alumno->email }} → {{ $alumno->dni }}</small>
+                                        @endrole
+
+                                        @role('alumno')
                                             {{ $alumno->apellidos }}, {{ $alumno->nombres }}
-                                        </li>
-                                    @endforeach
-                                @endrole
-                            </ul>
+                                        @endrole
+                                        @if ($alumno->ciclo_id !== $curso->ciclo_id)
+                                            <span class="badge badge-info">Ciclo {{ $alumno->ciclo->nombre }}</span>
+                                        @endif
+                                    </li>
+                                @endforeach
+
                         </td>
                     </tr>
                 </table>
@@ -156,14 +157,5 @@
                 </div>
             </div>
         @endrole
-        {{-- <div class="d-sm-flex align-items-center justify-content-between mb-2 pb-2"
-            style="border-bottom: 1px dashed #80808078">
-            <h5 class="mb-0 text-uppercase font-weight-bold">Competencias Modulares</h5>
-        </div>
-        <p class="mt-3 text-success">En proceso...</p>
-        <div class="progress">
-            <div class="progress-bar" role="progressbar" style="width: 75%;" aria-valuenow="25" aria-valuemin="0"
-                aria-valuemax="100">75%</div>
-        </div> --}}
     </div>
 @endsection

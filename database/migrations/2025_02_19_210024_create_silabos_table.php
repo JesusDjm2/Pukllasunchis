@@ -15,6 +15,8 @@ return new class extends Migration {
             $table->foreignId('curso_id')->constrained()->onDelete('cascade');
             $table->string('nombre');
             $table->text('sumilla')->nullable();
+            //Nueva tabla Periodo
+            $table->string('periodo');
 
              /*Proyecto Integrador*/
             $table->string('proyecto_integrador')->nullable();

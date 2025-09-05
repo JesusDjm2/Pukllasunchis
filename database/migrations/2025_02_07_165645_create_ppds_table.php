@@ -17,10 +17,19 @@ return new class extends Migration {
             $table->string('dni');
             $table->string('apellidos');
             $table->string('nombres');
+            //Gènero nuevo!
+            $table->string('genero')->nullable();
             $table->string('numero');
             $table->string('numero_referencia');
+            $table->string('fecha_nacimiento');
             $table->string('procedencia_familiar');
-            //Nuevos campos:
+            
+            //Campos nuevos
+            $table->string('departamento')->nullable();
+            $table->string('provincia')->nullable();
+            $table->string('distrito')->nullable();
+            
+            
             $table->string('lugar_nacimiento')->nullable();
             $table->string('permanencia_vivienda')->nullable();
             $table->string('sector_laboral')->nullable();
@@ -33,14 +42,14 @@ return new class extends Migration {
             $table->boolean('p_m_soltero');
             $table->bigInteger('num_hijos');
             $table->string('sector_socioeconomico');
-            $table->string('num_comprobante');
+            $table->string('num_comprobante');            
             //Caracteristicas Familiares
             $table->string('convivientes');
             $table->string('quien_mantiene');
             $table->string('cant_dependientes_child');
             $table->string('cant_dependientes_old');
             $table->string('cant_dependientes_otros');
-            //aspectos educativos
+
             //Educativos solo PPD
             $table->string('carrera_procedencia');
             $table->integer('ano_culminaste');
@@ -100,9 +109,7 @@ return new class extends Migration {
             $table->string('actividades_internet');
             $table->string('habilidades')->nullable();
             $table->boolean('tiempo_libre');
-            /*      
-             */
-
+            
             //Relaciones
             $table->unsignedBigInteger('user_id')->nullable();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
@@ -111,12 +118,8 @@ return new class extends Migration {
             $table->unsignedBigInteger('ciclo_id');
             $table->foreign('ciclo_id')->references('id')->on('ciclos')->onDelete('cascade');
             $table->timestamps();
-        });
+        }); 
     }
-
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('ppds');

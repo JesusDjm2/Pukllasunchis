@@ -8,14 +8,23 @@
         .curso-item:hover {
             background-color: #e7e7e7;
         }
+
+        .becado {
+            background-color: #e6f4ea;
+            /* Verde suave */
+        }
     </style>
     <div class="container-fluid bg-white pt-2">
         @role('admin')
             <div class="d-sm-flex align-items-center justify-content-between mb-4">
-                <h3 class="mb-0 text-primary font-weight-bold"> Registros: {{ $totalAlumnos }} </h3>
+                <h3 class="mb-0 text-primary font-weight-bold"> Registros: {{ $totalRecords }} </h3>
+                <p class="text-info">Becas: <strong>{{ $alumnosConBeca }} - <small
+                            class="font-weight-bold">({{ round(($alumnosConBeca / $totalAlumnos) * 100, 1) }}%)</small></strong>
+                </p>
                 <a href="{{ route('registerAdmin') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
                     Nuevo Registro <i class="fa fa-plus fa-sm"></i>
                 </a>
+
             </div>
         @endrole
         @role('alumno')
@@ -61,12 +70,17 @@
                 <div class="col-lg-12">
                     <div class="row">
                         <div class="col-lg-6 mb-3">
-                            <button class="btn btn-primary btn-sm" onclick="mostrarTabla('admins')">Alumnos</button>
-                            <button class="btn btn-secondary btn-sm" onclick="mostrarTabla('alumnosppd')">Alumnos PPD</button>
-                            <button class="btn btn-info btn-sm" onclick="mostrarTabla('docentes')">Docentes</button>
+                            <button class="btn btn-primary btn-sm" onclick="mostrarTabla('admins')">Alumnos
+                                <small>{{ $conteoAlumnos }}</small></button>
+                            <button class="btn btn-secondary btn-sm" onclick="mostrarTabla('alumnosppd')">Alumnos PPD
+                                <small>{{ $conteoPpd }}</small></button>
+                            <button class="btn btn-info btn-sm" onclick="mostrarTabla('docentes')">Docentes
+                                <small>{{ $conteoDocentes }}</small></button>
                             <button class="btn btn-danger btn-sm" onclick="mostrarTabla('inhabilitados')">Inhabilitados
+                                <small>{{ $conteoInhabilitados }}</small>
                             </button>
-                            <button class="btn btn-warning btn-sm" onclick="mostrarTabla('alumnos')">Administradores</button>
+                            <button class="btn btn-warning btn-sm" onclick="mostrarTabla('alumnos')">Administradores
+                                <small>{{ $conteoAdmin }}</small></button>
                             <button class="btn btn-success btn-sm" onclick="mostrarTabla('adminsB')">Admins Bolsa</button>
                         </div>
                         <div class="col-lg-6 mb-3" style="float: right">
@@ -82,23 +96,19 @@
                                             <span class="fa fa-caret-up text-white" style="font-size: 12px"></span>
                                         </button>
                                     </th>
-                                    <th>Correo
+                                    <th>Editar Cursos
                                         <button class="arrow-icon btn btn-link sort-btn" data-column="2">
                                             <span class="fa fa-caret-up text-white" style="font-size: 12px"></span>
                                         </button>
                                     </th>
-                                    <th>Programa
+
+                                    <th>Foto
                                         <button class="arrow-icon btn btn-link sort-btn" data-column="3">
                                             <span class="fa fa-caret-up text-white" style="font-size: 12px"></span>
                                         </button>
                                     </th>
-                                    <th>Ciclo
-                                        <button class="arrow-icon btn btn-link sort-btn" data-column="4">
-                                            <span class="fa fa-caret-up text-white" style="font-size: 12px"></span>
-                                        </button>
-                                    </th>
-                                    <th>DNI
-                                        <button class="arrow-icon btn btn-link sort-btn" data-column="6">
+                                    <th width="30%">Cursos pendientes
+                                        <button class="arrow-icon btn btn-link sort-btn" data-column="2">
                                             <span class="fa fa-caret-up text-white" style="font-size: 12px"></span>
                                         </button>
                                     </th>
@@ -108,25 +118,64 @@
                             <tbody>
                                 @foreach ($admins as $key => $admin)
                                     @if ($admin->hasRole('alumno'))
-                                        <tr class="alumno-row">
+                                        <tr class="alumno-row {{ $admin->beca == 1 ? 'becado' : '' }}">
                                             <td>
-                                                {{ $admin->apellidos }}, {{ $admin->name }} -
-                                                @if ($admin->foto && file_exists(public_path('img/estudiantes/' . $admin->foto)))
-                                                    <img width="50px" src="{{ asset('img/estudiantes/' . $admin->foto) }}"
-                                                        alt="Foto del usuario" class="img-fluid" loading="lazy">
+                                                <span class="font-weight-bold">{{ $admin->apellidos }},
+                                                    {{ $admin->name }}</span>
+                                                <ul>
+                                                    <li>Beca:
+                                                        @if ($admin->beca == 1)
+                                                            Sí
+                                                        @else
+                                                            No
+                                                        @endif
+                                                    </li>
+                                                    <li>Correo: {{ $admin->email }}</li>
+                                                    <li>{{ optional($admin->programa)->nombre ?? 'N/A' }} -
+                                                        Ciclo {{ optional($admin->ciclo)->nombre ?? 'N/A' }}
+                                                    </li>
+                                                    <li>DNI: {{ $admin->dni }}</li>
+                                                    {{-- <li>Número: {{ $admin->alumno?->numero ?? 'No tiene número asignado' }} | </li> --}}
+                                                    <li>
+                                                        Número: {{ $admin->alumno?->numero ?? 'No tiene número asignado' }} |
+                                                        Referencia:
+                                                        {{ $admin->alumno?->numero_referencia ?? 'No tiene referencia' }}
+                                                    </li>
+
+                                                </ul>
+                                            </td>
+
+                                            <td>
+                                                <a href="{{ route('asignar.cursos', ['id' => $admin->id]) }}"
+                                                    class="btn btn-primary btn-sm"><i class="fa fa-books"></i> Asignar
+                                                    Cursos</a>
+                                            </td>
+                                            <td>
+                                                @if ($admin->foto)
+                                                    <img src="{{ asset('img/estudiantes/' . $admin->foto) }}"
+                                                        alt="Foto de {{ $admin->nombre }}" loading="lazy" class="img-fluid"
+                                                        style="width: 40px; height: 40px; border-radius: 50%; cursor: pointer;"
+                                                        onclick="openModal('{{ asset('img/estudiantes/' . $admin->foto) }}')"
+                                                        oncontextmenu="return false;">
                                                 @else
-                                                    N/A
+                                                    <span class="text-muted">Sin foto</span>
                                                 @endif
                                             </td>
-                                            <td>{{ $admin->email }}</td>
-                                            <td>{{ optional($admin->programa)->nombre ?? 'N/A' }}</td>
-                                            <td style="font-family: serif">{{ optional($admin->ciclo)->nombre ?? 'N/A' }}</td>
-                                            {{-- <td>@if ($admin->beca == 1)
-                                                Sí
-                                            @else
-                                                No
-                                            @endif</td> --}}
-                                            <td>{{ $admin->dni }}</td>
+                                            <td>
+                                                @php
+                                                    $cursos = array_map('trim', explode(',', $admin->pendiente ?? ''));
+                                                @endphp
+
+                                                @if (!empty($cursos[0]))
+                                                    <ol class="mb-0" style="padding-left:4px">
+                                                        @foreach ($cursos as $curso)
+                                                            <li>{{ $curso }}</li>
+                                                        @endforeach
+                                                    </ol>
+                                                @else
+                                                    Sin cursos pendientes
+                                                @endif
+                                            </td>
                                             <td>
                                                 <a href="{{ route('adminEdit', ['id' => $admin->id]) }}"
                                                     class="btn btn-info btn-sm" title="Editar"><i class="fa fa-pen"></i></a>
@@ -350,6 +399,7 @@
                                                     <li>{{ $admin->ciclo->programa->nombre }} -
                                                         {{ $admin->ciclo->nombre }}
                                                     </li>
+                                                    <li>Inhabilitado por: {{ $admin->perfil }}</li>
                                                 </ul>
                                             </td>
                                             <td>{{ $admin->email }}</td>

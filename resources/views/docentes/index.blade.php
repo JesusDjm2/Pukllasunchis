@@ -22,16 +22,24 @@
                 class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm float-right">
                 Crear nuevo Docente <i class="fa fa-plus fa-sm"></i>
             </a>
-            <a href="{{ route('calificaciones.eliminarTodas') }}" class="btn btn-sm btn-info"
+            {{-- <a href="{{ route('calificaciones.eliminarTodas') }}" class="btn btn-sm btn-info"
                 onclick="return confirm('¿Estás seguro de que deseas eliminar todas las calificaciones?')">
                 <i class="fa fa-trash"></i> Eliminar calificaciones
-            </a>
+            </a> --}}
         </div>
         <div class="row bg-white">
             <div class="col-12">
                 @if (Session::has('success'))
                     <div class="alert alert-success alert-dismissible fade show" role="alert">
                         {{ Session::get('success') }}
+                        <a type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </a>
+                    </div>
+                @endif
+                @if (Session::has('error'))
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{ Session::get('error') }}
                         <a type="button" class="close" data-dismiss="alert" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </a>
@@ -46,6 +54,7 @@
                             <th>Periodo 1</th>
                             <th>Periodo 2</th>
                             <th>Desempeño Final</th>
+                            <th><i class="fa fa-unlink text-danger"></i> Quitar Asignaciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -86,6 +95,17 @@
                                     <button type="submit" class="btn btn-sm btn-danger mt-2">Eliminar Desempeño</button>
                                 </form>
                             </td>
+                            <td class="text-center">
+                                <form action="{{ route('docente.cursos.eliminarTodosGlobal') }}" method="POST"
+                                    style="display:inline;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger"
+                                        onclick="return confirm('⚠️ Esto quitará TODOS los cursos de TODOS los docentes. ¿Estás 100% seguro?')">
+                                        Quitar TODOS los cursos asignados <i class="fa fa-unlink text-danger"></i>
+                                    </button>
+                                </form>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -101,7 +121,7 @@
         </div>
         <div class="row">
             <div class="col-lg-12">
-                <div class="table-responsive">
+                <div class="table-responsive table-container">
                     <table class="table table-bordered" id="docentes-table">
                         <thead class="thead-dark">
                             <tr>
@@ -123,21 +143,21 @@
                                 <tr style="border-bottom: 2.2px solid #919191 !important">
                                     <td>{{ $docente->id }}</td>
                                     <td>
-                                        <strong>{{ $docente->nombre }}</strong>
-                                        <ul>
-                                            <li>{{ $docente->email }}</li>
-                                            <li>{{ $docente->dni }}</li>
-
-                                            @if ($docente->blog)
-                                                <li>
-                                                    <a
-                                                        href="{{ route('docente.blog.show', ['docente' => $docente->id]) }}">
-                                                        Ver Blog
-                                                    </a>
-                                                </li>
-                                            @endif
-                                            </li>
-                                        </ul>
+                                        <div class="div" style="position: sticky;top:2em">
+                                            <strong>{{ $docente->nombre }}</strong>
+                                            <ul>
+                                                <li>{{ $docente->email }}</li>
+                                                <li>{{ $docente->dni }}</li>
+                                                {{-- @if ($docente->blog)
+                                                    <li>
+                                                        <a
+                                                            href="{{ route('docente.blog.show', ['docente' => $docente->id]) }}">
+                                                            Ver Blog
+                                                        </a>
+                                                    </li>
+                                                @endif --}}
+                                            </ul>
+                                        </div>
                                     </td>
                                     <td>
                                         @if ($docente->cursos->count() > 0)
@@ -152,6 +172,15 @@
                                                             'PPD',
                                                         );
                                                         $bgCurso = $esPPD ? 'background-color: #fff1e0;' : '';
+                                                        $rutaCompetencias = $esPPD
+                                                            ? route('competencias.calificar.ppd', [
+                                                                'docente' => $docente->id,
+                                                                'curso' => $curso->id,
+                                                            ])
+                                                            : route('competencias.calificar', [
+                                                                'docente' => $docente->id,
+                                                                'curso' => $curso->id,
+                                                            ]);
                                                     @endphp
                                                     <li style="{{ $bgCurso }}" class="mb-2">
                                                         <strong>{{ $curso->nombre }}</strong> (
@@ -161,7 +190,6 @@
                                                             <li>
                                                                 @if (str_contains($curso->cc, 'Extracurricular') === false)
                                                                     @if ($curso->relacionsilabo || $curso->silabo)
-                                                                        <!-- Si existe un sílabo asignado o relacionado, mostramos el botón para ver -->
                                                                         @php
                                                                             $sílaboURL = $curso->relacionsilabo
                                                                                 ? route(
@@ -214,9 +242,7 @@
                                                             </ul>
                                                         @endif
                                                         <ul>
-                                                            <form
-                                                                action="{{ route('competencias.calificar', ['docente' => $docente->id, 'curso' => $curso->id]) }}"
-                                                                method="POST">
+                                                            <form action="{{ $rutaCompetencias }}" method="POST">
                                                                 @csrf
                                                                 <input type="hidden" name="docente_id"
                                                                     value="{{ $docente->id }}">
@@ -246,10 +272,82 @@
                                                                         style="background: none; border: none; font-size:14px; margin-left: -6px; ">
                                                                         Ver calificaciones
                                                                     </button>
+                                                                    @if (!$esPPD)
+                                                                        <ul>
+                                                                            <li>
+                                                                                <div class="d-flex align-items-center flex-wrap"
+                                                                                    style="gap: 12px; width: 100%; max-width: 500px;">
+                                                                                    <!-- Parcial 1 -->
+                                                                                    <div class="d-flex align-items-center"
+                                                                                        style="gap: 6px; flex: 1;">
+                                                                                        <span class="fw-bold text-primary"
+                                                                                            style="font-size: 12px; width: 70px;">Parcial
+                                                                                            1:</span>
+                                                                                        <div class="progress flex-fill"
+                                                                                            style="height: 8px;">
+                                                                                            <div class="progress-bar bg-primary"
+                                                                                                role="progressbar"
+                                                                                                style="width: {{ $curso->porcentajePeriodo(1) }}%;"
+                                                                                                aria-valuenow="{{ $curso->porcentajePeriodo(1) }}"
+                                                                                                aria-valuemin="0"
+                                                                                                aria-valuemax="100">
+                                                                                            </div>
+                                                                                        </div>
+                                                                                        <small
+                                                                                            style="width: 40px; text-align: right;">
+                                                                                            {{ $curso->porcentajePeriodo(1) }}%
+                                                                                        </small>
+                                                                                    </div>
+
+                                                                                    <!-- Parcial 2 -->
+                                                                                    <div class="d-flex align-items-center"
+                                                                                        style="gap: 6px; flex: 1;">
+                                                                                        <span class="fw-bold text-success"
+                                                                                            style="font-size: 12px; width: 70px;">Parcial
+                                                                                            2:</span>
+                                                                                        <div class="progress flex-fill"
+                                                                                            style="height: 8px;">
+                                                                                            <div class="progress-bar bg-success"
+                                                                                                role="progressbar"
+                                                                                                style="width: {{ $curso->porcentajePeriodo(2) }}%;"
+                                                                                                aria-valuenow="{{ $curso->porcentajePeriodo(2) }}"
+                                                                                                aria-valuemin="0"
+                                                                                                aria-valuemax="100">
+                                                                                            </div>
+                                                                                        </div>
+                                                                                        <small
+                                                                                            style="width: 40px; text-align: right;">
+                                                                                            {{ $curso->porcentajePeriodo(2) }}%
+                                                                                        </small>
+                                                                                    </div>
+
+                                                                                    <!-- Desempeño -->
+                                                                                    <div class="d-flex align-items-center"
+                                                                                        style="gap: 6px; flex: 1;">
+                                                                                        <span class="fw-bold text-info"
+                                                                                            style="font-size: 12px; width: 70px;">Desempeño:</span>
+                                                                                        <div class="progress flex-fill"
+                                                                                            style="height: 8px;">
+                                                                                            <div class="progress-bar bg-info"
+                                                                                                role="progressbar"
+                                                                                                style="width: {{ $curso->porcentajePeriodo(3) }}%;"
+                                                                                                aria-valuenow="{{ $curso->porcentajePeriodo(3) }}"
+                                                                                                aria-valuemin="0"
+                                                                                                aria-valuemax="100">
+                                                                                            </div>
+                                                                                        </div>
+                                                                                        <small
+                                                                                            style="width: 40px; text-align: right;">
+                                                                                            {{ $curso->porcentajePeriodo(3) }}%
+                                                                                        </small>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </li>
+                                                                        </ul>
+                                                                    @endif
                                                                 </li>
                                                             </form>
                                                         </ul>
-
                                                         <ul>
                                                             <li>
                                                                 <form
@@ -266,6 +364,8 @@
                                                                 </form>
                                                             </li>
                                                         </ul>
+
+
                                                     </li>
                                                 @endforeach
                                             </ul>

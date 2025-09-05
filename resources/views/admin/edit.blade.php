@@ -59,7 +59,7 @@
                     @method('PUT')
                     <div class="row">
                         <!-- Campo para subir la foto -->
-                        <div class="col-lg-8 mb-3">
+                        <div class="col-lg-2 mb-3">
                             <label for="foto" class="form-label">Subir Foto:</label>
                             <input type="file" name="foto" id="foto" accept="image/*"
                                 class="form-control form-control-sm @error('foto') is-invalid @enderror"
@@ -92,7 +92,7 @@
                                 }
                             }
                         </script>
-                        <div class="col-lg-6 mb-3">
+                        <div class="col-lg-4 mb-3">
                             <label for="name" class="form-label">Nombre:</label>
                             <input type="text" class="form-control form-control-sm @error('name') is-invalid @enderror"
                                 id="name" name="name" value="{{ $admin->name }}" required>
@@ -100,7 +100,7 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-                        <div class="col-lg-6 mb-3">
+                        <div class="col-lg-4 mb-3">
                             <label for="apellidos" class="form-label">Apellidos:</label>
                             <input type="text"
                                 class="form-control form-control-sm @error('apellidos') is-invalid @enderror" id="apellidos"
@@ -109,7 +109,7 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-                        <div class="col-lg-6 mb-3">
+                        <div class="col-lg-2 mb-3">
                             <label for="dni" class="form-label">DNI:</label>
                             <input type="text" class="form-control form-control-sm @error('dni') is-invalid @enderror"
                                 id="dni" name="dni" value="{{ $admin->dni }}" required>
@@ -117,7 +117,7 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-                        <div class="col-lg-6 mb-3">
+                        <div class="col-lg-3 mb-3">
                             <label for="email" class="form-label">Correo electrónico:</label>
                             <input type="email" class="form-control form-control-sm @error('email') is-invalid @enderror"
                                 id="email" name="email" value="{{ $admin->email }}" required>
@@ -125,14 +125,14 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-                        <div class="col-lg-6 mb-3">
+                        <div class="col-lg-3 mb-3">
                             <label for="password">Nueva Contraseña (opcional):</label>
                             <input type="password" name="password" id="password" class="form-control form-control-sm">
                             @if ($errors->has('password'))
                                 <span class="text-danger">{{ $errors->first('password') }}</span>
                             @endif
                         </div>
-                        <div class="col-lg-6 mb-3">
+                        <div class="col-lg-4 mb-3">
                             <label for="password_confirmation">Confirmar Contraseña (opcional):</label>
                             <input type="password" name="password_confirmation" id="password_confirmation"
                                 class="form-control form-control-sm" placeholder="Confirmar contraseña">
@@ -142,7 +142,7 @@
                             @endif
                         </div>
 
-                        <div class="col-lg-12 mb-3">
+                        <div class="col-lg-6 mb-3">
                             <label for="role" class="form-label">Asignar Rol:</label>
                             <select id="role" name="role"
                                 class="form-control form-control-sm @error('role') is-invalid @enderror">
@@ -156,11 +156,30 @@
                                 <option value="adminB" {{ $currentRole === 'adminB' ? 'selected' : '' }}>Administrador
                                     Bolsa</option>
                                 <option value="inhabilitado" {{ $currentRole === 'inhabilitado' ? 'selected' : '' }}>
-                                    Inhabilitado</option>
+                                    Inhabilitado
+                                </option>
                             </select>
                             @error('role')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
+                        </div>
+                        <div class="col-lg-6">
+                            <div id="motivo-inhabilitado-container" style="display: none;">
+                                <label for="perfil">Motivo de inhabilitación</label>
+                                <select name="perfil" id="perfil"
+                                    class="form-control form-control-sm @error('perfil') is-invalid @enderror">
+                                    <option value="Deuda"
+                                        {{ old('perfil', $admin->perfil) == 'Deuda' ? 'selected' : '' }}>Deuda</option>
+                                    <option value="Sin matrícula"
+                                        {{ old('perfil', $admin->perfil) == 'Sin matrícula' ? 'selected' : '' }}>Sin
+                                        Matrícula</option>
+                                    <option value="Licencia"
+                                        {{ old('perfil', $admin->perfil) == 'Licencia' ? 'selected' : '' }}>Licencia
+                                    </option>
+                                    <option value="Reserva"
+                                        {{ old('perfil', $admin->perfil) == 'Reserva' ? 'selected' : '' }}>Reserva</option>
+                                </select>
+                            </div>
                         </div>
                         <div class="col-lg-12" id="admin-fields" style="display: none;">
                             <div class="row">
@@ -301,17 +320,75 @@
         });
     </script>
 
+    {{-- <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var roleSelect = document.getElementById('role');
+            var adminFields = document.getElementById('admin-fields');
+            var motivoInhabilitadoContainer = document.getElementById('motivo-inhabilitado-container');
+
+            function toggleFields() {
+                var selectedRole = roleSelect.value;
+                // Mostrar campos si es alumno o alumnoB
+                adminFields.style.display = (selectedRole === 'alumno' || selectedRole === 'alumnoB') ?
+                    'block' :
+                    'none';
+                // Mostrar motivo solo si es inhabilitado
+                motivoInhabilitadoContainer.style.display = (selectedRole === 'inhabilitado') ?
+                    'block' :
+                    'none';
+            }
+            roleSelect.addEventListener('change', toggleFields);
+            toggleFields(); // Ejecutar al cargar
+        });
+    </script> --}}
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const roleSelect = document.getElementById('role');
+            const adminFields = document.getElementById('admin-fields');
+            const motivoInhabilitadoContainer = document.getElementById('motivo-inhabilitado-container');
+            const selectPerfilBolsa = document.querySelector('#admin-fields select[name="perfil"]');
+            const selectPerfilInhabilitado = document.querySelector('#motivo-inhabilitado-container select');
+
+            function toggleFields() {
+                const selectedRole = roleSelect.value;
+
+                // Mostrar campos según el rol
+                if (selectedRole === 'alumno' || selectedRole === 'alumnoB') {
+                    adminFields.style.display = 'block';
+                    motivoInhabilitadoContainer.style.display = 'none';
+
+                    // Asignar name dinámicamente
+                    selectPerfilBolsa.name = 'perfil';
+                    selectPerfilInhabilitado.removeAttribute('name');
+                } else if (selectedRole === 'inhabilitado') {
+                    adminFields.style.display = 'none';
+                    motivoInhabilitadoContainer.style.display = 'block';
+
+                    // Asignar name dinámicamente
+                    selectPerfilInhabilitado.name = 'perfil';
+                    selectPerfilBolsa.removeAttribute('name');
+                } else {
+                    adminFields.style.display = 'none';
+                    motivoInhabilitadoContainer.style.display = 'none';
+
+                    // Quitar ambos name por seguridad
+                    selectPerfilBolsa.removeAttribute('name');
+                    selectPerfilInhabilitado.removeAttribute('name');
+                }
+            }
+
+            roleSelect.addEventListener('change', toggleFields);
+            toggleFields(); // Ejecutar al cargar
+        });
+    </script>
+
+
+
+    {{-- <script>
         document.addEventListener('DOMContentLoaded', function() {
             var roleSelect = document.getElementById('role');
             var adminFields = document.getElementById('admin-fields');
 
-            /* roleSelect.addEventListener('change', function() {
-                adminFields.style.display = this.value === 'alumno' ? 'block' : 'none';
-            });
-            if (roleSelect.value === 'alumno') {
-                adminFields.style.display = 'block';
-            } */
             function toggleFields() {
                 if (roleSelect.value === 'alumno' || roleSelect.value === 'alumnoB') {
                     adminFields.style.display = 'block';
@@ -323,7 +400,7 @@
             roleSelect.addEventListener('change', toggleFields);
             toggleFields();
         });
-    </script>
+    </script> --}}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             var programaSelector = document.getElementById('programa_id');

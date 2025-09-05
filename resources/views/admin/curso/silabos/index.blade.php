@@ -39,13 +39,10 @@
                                     <td>{{ $silabo->nombre }}</td>
                                     <td>{{ Str::limit($silabo->contenido, 50) }}</td>
                                     <td>
-                                            <a href="{{ route('silabos.show', ['silabo' => $silabo->id]) }}" 
-                                                class="btn btn-sm btn-info" title="Ver Sílabo">
-                                                <i class="fa fa-eye"></i>
-                                             </a>
-                                             
-
-
+                                        <a href="{{ route('silabos.show', ['silabo' => $silabo->id]) }}"
+                                            class="btn btn-sm btn-info" title="Ver Sílabo">
+                                            <i class="fa fa-eye"></i>
+                                        </a>
                                         <a href="{{ route('silabos.edit', $silabo->id) }}" class="btn btn-sm btn-primary"
                                             title="Editar Sílabo"><i class="fa fa-pen"></i></a>
                                         <form action="{{ route('silabos.destroy', $silabo->id) }}" method="POST"

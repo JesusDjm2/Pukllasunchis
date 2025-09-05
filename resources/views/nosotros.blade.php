@@ -26,12 +26,11 @@
                         <h2>EESP PUKLLASUNCHIS</h2>
                         <h3>¿Quienes somos?</h3>
                         <p class="text-justify">
-                            a EESP Pukllasunchis es una institución que asume un serio compromiso con la educación del Perú
-                            y es sensible a las diferencias culturales, principalmente de la región y el país. Es un
-                            proyecto alternativo que busca revisar los paradigmas tradicionales para reconstruir una
-                            educación que sea inclusiva e intercultural. Desde esa perspectiva atendemos a una población
-                            diversa entre la que se incluye a estudiantes de beca 18 procedentes de distintas comunidades
-                            andinas.
+                            La EESP Pukllasunchis es una institución comprometida seriamente con la educación del Perú,
+                            sensible a las diferencias culturales tanto de la región como del país. Se trata de un proyecto
+                            de formación alternativo que busca cuestionar los paradigmas tradicionales y construir una
+                            educación inclusiva e intercultural. Desde esa perspectiva, atendemos a una población diversa,
+                            que incluye a estudiantes de Beca 18 provenientes de distintas comunidades andinas.
                         </p>
                     </div>
                 </div>
@@ -51,11 +50,11 @@
                         Durante muchos años, hemos promovido proyectos de educación. Tenemos un colegio que acoge a niños,
                         niñas y adolescentes de diversos sectores sociales y culturales, y desarrollamos programas de
                         formación y capacitación de docentes.<br>
+                        En el 2015, la experiencia acumulada nos permitió la creación de un Instituto de Educación Superior
+                        Pedagógico. Hoy, gracias al licenciamiento obtenido, se ha convertido en Escuela de Educación
+                        Superior en la que hemos depositado el saber institucional y todo el conocimiento acumulado en
+                        pedagogía activa e intercultural.
 
-                        En el 2015, la experiencia acumulada nos permitió la inauguración de un Instituto de Educación
-                        Superior Pedagógico. Hoy, gracias al licenciamiento obtenido, se ha convertido en Escuela de
-                        Educación Superior en la que hemos depositado el saber institucional y todo el conocimiento
-                        acumulado en pedagogía intercultural.
                     </p>
                 </div>
             </div>
@@ -65,7 +64,11 @@
                         <h3>Misión</h3>
                         <div class="linea-medio"></div>
                         <p class="text-justify">
-                            Somos una Escuela de Educación Superior Pedagógico cusqueña que, a través del actuar afectivo, la reflexión crítica, la investigación vivencial, la construcción de aprendizajes interculturales y el trabajo colaborativo, forma profesionales competentes y capaces de promover propuestas educativas innovadoras, inclusivas que afirman la identidad, promueven la equidad y el compromiso con la diversidad y con la vida.
+                            Somos una Escuela de Educación Superior Pedagógica cusqueña que, a través del actuar afectivo,
+                            la reflexión crítica, la investigación vivencial, la construcción de aprendizajes
+                            interculturales y el trabajo colaborativo, forma profesionales competentes, capaces de promover
+                            propuestas educativas innovadoras e inclusivas, que afirman la identidad, impulsan la equidad y
+                            fortalecen el compromiso con la diversidad y con la vida.
                         </p>
                     </div>
                 </div>
@@ -74,7 +77,12 @@
                         <h3>Visión</h3>
                         <div class="linea-medio"></div>
                         <p class="text-justify">
-                            Ser una escuela modelo de educación superior Pedagógica en la región y el país, reconocida por formar docentes interculturales, reflexivos, críticos, una educación comprometida con el desarrollo de los talentos y habilidades individuales, afirmando la identidad y los derechos culturales de los estudiantes, e incentivando la participación integral de las comunidades, Asumiendo el compromiso comunitario de todos los factores educativos que promueven el desarrollo nacional y la convivencia armoniosa que protegen la vida y la diversidad.
+                            Ser una Escuela de Educación Superior Pedagógica modelo en la región y el país, reconocida por
+                            formar docentes interculturales, reflexivos y críticos; comprometida con el desarrollo de los
+                            talentos y habilidades individuales, con la afirmación de la identidad y los derechos culturales
+                            de los estudiantes, y con el fomento de la participación integral de las comunidades. Asumimos,
+                            además, el compromiso comunitario de articular todos los factores educativos que promuevan el
+                            desarrollo nacional y una convivencia armoniosa que proteja la vida y la diversidad.
                         </p>
                     </div>
                 </div>
@@ -84,8 +92,8 @@
                         <div class="linea-medio"></div>
                         <p class="text-justify">
                             Buscamos formar profesionales que siembren en el corazón de las nuevas generaciones la
-                            esperanza, la
-                            confianza y la fortaleza para construir nuevos escenarios de convivencia.
+                            esperanza, la confianza y la fortaleza necesarias para construir nuevos escenarios de
+                            convivencia.
                         </p>
                     </div>
                 </div>
@@ -95,18 +103,18 @@
     <section class="mision">
         <div class="row pt-5 pb-5">
             <div class="col-lg-12">
-                <h3>¿Qué significa ser ESCUELA DE EDUCACIÓN SUPERIOR?</h3>
-                <p><i>Artículo 6. Escuelas de Educación Superior (EES) - LEY Nº 30512
+                <h3>¿Qué significa ser ESCUELA DE EDUCACIÓN SUPERIOR PEDAGÓGICA?</h3>
+                <p><i>Artículo 6. Escuelas de Educación Superior Pedagógica (EESP) - LEY N.º 30512
                     </i></p>
                 <p>
-                    Las escuelas de Educación Superior (EES) son instituciones educativas de la segunda etapa del sistema
+                    Las Escuelas de Educación Superior Pedagógica (EESP) son instituciones educativas de la segunda etapa del sistema
                     educativo nacional, que forman personas especializadas en los campos de la docencia, la ciencia y la
                     tecnología, con énfasis en una formación aplicada.<br>
                     Las EES brindan:
                 </p>
                 <ul>
-                    <li>Formación altamente especializada teórica, con aplicación de técnicas para resolver problemas o
-                        proponer nuevas soluciones. Desarrollan investigación y proyectos de innovación.</li>
+                    <li>Formación teórica altamente especializada, con aplicación en técnicas para resolver problemas o
+                        proponer nuevas soluciones. Desarrolla investigación y proyectos de innovación.</li>
                     <li>Estudios de especialización, de perfeccionamiento profesional en áreas específicas y de otros
                         programas de formación continua. Otorgan los respectivos certificados.</li>
                     <li>
@@ -115,7 +123,7 @@
                 </ul>
                 <p>
                     Las Escuelas de Educación Superior Pedagógica (EESP) forman, en base a la investigación y práctica
-                    pedagógica, a los futuros profesores para la educación básica y coadyuvan a su desarrollo profesional en
+                    pedagógica, a las y los futuros profesores para la educación básica y coadyuvan a su desarrollo profesional en
                     la
                     formación continua.<br>
                     Brindan programas de formación pedagógica que responden a las políticas y demandas educativas del país y
@@ -133,7 +141,8 @@
                     <h2 class="text-center typing">Organigrama de la EESP Pukllasunchis</h2>
                 </div>
                 <div class="col-lg-8">
-                    <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="100%" height="152.4mm"
+                    <img src="{{ asset('img/Pages/Organigrama-Pukllsunchis-2025.png') }}" alt="" width="100%">
+                    {{-- <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="100%" height="152.4mm"
                         version="1.1"
                         style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
                         viewBox="0 0 22860 15240" xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -325,7 +334,7 @@
                                 </g>
                             </g>
                         </g>
-                    </svg>
+                    </svg> --}}
                 </div>
             </div>
         </div>
@@ -353,11 +362,11 @@
                         <li>
                             <h4>Coordinación</h4>
                             <ul>
-                                <li>Área de Formación Continua: Ruth Santiesteban M.</li>
-                                <li>Área de práctica Pre Profesional: Cecilia Mar S.</li>
-                                <li>Área de Investigación: Richard Suarez S.</li>
-                                <li>Área de Calidad: Evelyn Guzmán S.</li>
-                                <li>Área de Bienestar y Empleabilidad: Carlos Andrés Guevara Z.</li>
+                                <li>Unidad de Formación Continua: Karen Guzmán</li>
+                                <li>Unidad de Práctica Pre Profesional: Cecilia Mar S.</li>
+                                <li>Unidad de Investigación y práctica Pre Profesional: Carlos Andrés</li>
+                                <li>Unidad de Calidad: María Graciela Guevara Valdivia</li>
+                                <li>Unidad de Bienestar y Empleabilidad: Carlos Andrés Guevara Z.</li>
                             </ul>
                         </li>
                     </ul>
@@ -376,8 +385,8 @@
                     <h2 class="mb-3">Nuestros docentes </h2>
                     <p>
                         La Escuela de Educación Superior Pedagógica Privada Pukllasunchis es un espacio de reflexión, debate
-                        y formación académica, donde estudiantes de diversa procedencia y experiencia cultural, comparten y
-                        adquieren capacidades para proponer estrategias pedagógicas que favorezcan la construcción de una
+                        y formación académica, donde estudiantes de diversa procedencia y experiencia cultural comparten y
+                        desarrollan capacidades para proponer estrategias pedagógicas que favorezcan la construcción de una
                         ciudadanía intercultural.
                     </p>
                 </div>

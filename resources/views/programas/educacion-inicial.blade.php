@@ -34,24 +34,30 @@
                     <ul class="submenu2">
                         {{-- <li><a href="{{ route('inicial') }}"><i class="fa fa-caret-right fa-sm"></i> Educación Inicial</a>
                         </li> --}}
-                        <li><a href="{{ route('primaria') }}"><i class="fa fa-caret-right fa-sm"></i> Educación Primaria</a></li>
-                        <li><a href="{{ route('primariaEIB') }}"><i class="fa fa-caret-right fa-sm"></i> Educación Primaria EIB</a></li>
-                        <li><a href="{{ route('formacion') }}"><i class="fa fa-caret-right fa-sm"></i> Formación Continua</a></li>
-                        <li><a href="{{ route('profesionalizacion') }}"><i class="fa fa-caret-right fa-sm"></i> Profesionalización Docente</a></li>
+                        <li><a href="{{ route('primaria') }}"><i class="fa fa-caret-right fa-sm"></i> Educación Primaria</a>
+                        </li>
+                        <li><a href="{{ route('primariaEIB') }}"><i class="fa fa-caret-right fa-sm"></i> Educación Primaria
+                                EIB</a></li>
+                        <li><a href="{{ route('formacion') }}"><i class="fa fa-caret-right fa-sm"></i> Formación
+                                Continua</a></li>
+                        <li><a href="{{ route('profesionalizacion') }}"><i class="fa fa-caret-right fa-sm"></i>
+                                Profesionalización Docente</a></li>
                     </ul>
                 </div>
             </div>
             <div class="col-lg-9">
                 <h2 class="linea-debajo">Educación Inicial</h2>
                 <p>
-                    Esta especialidad está dirigida a jóvenes, varones y mujeres que se interesan en los niños pequeños y
-                    que tienen disposición para generar espacios de juego, creatividad e imaginación donde los niños
+                    Esta especialidad está dirigida a jóvenes, varones y mujeres que se interesan en las niñas y los niños
+                    pequeños
+                    que tienen disposición para generar espacios de juego, creatividad e imaginación donde las niñas y los
+                    niños
                     desplieguen sus facultades y habilidades para aprender a convivir, y su sensibilidad para vivenciar la
                     naturaleza sintiéndose parte de un colectivo.<br><br>
-                    Por otro lado, además de impulsar estrategias de aprendizaje situadas en la realidad del país, los
+                    Además de impulsar estrategias de aprendizaje situadas en la realidad del país, los
                     egresados de esta especialidad serán capaces de desarrollar proyectos encaminados a la inclusión de
-                    niños y niñas pequeños con habilidades diferentes y, mecanismos de gestión novedosos tendientes a
-                    organizar, de manera alternativa, los servicios educativos para hacerlos más pertinentes a la edad, las
+                    niños y niñas pequeños con alguna discapacidad y mecanismos de gestión novedosos tendientes a
+                    organizar, de manera original los servicios educativos, para hacerlos más pertinentes a la edad, las
                     familias y características del grupo sociocultural al que van dirigidos.
                 </p>
 
@@ -78,13 +84,14 @@
                                 currículo.
                             </th>
                             <td>
-                                Reúne los cursos o áreas que permiten a los futuros docentes, reflexionar sobre los retos de
-                                la educación situándose en el escenario de crisis actual. Los cursos de esta área colocan en
+                                Reúne los cursos o áreas que permiten a futuros docentes reflexionar sobre los retos de
+                                la educación, situándose en el escenario de la crisis actual. Los cursos de esta área
+                                colocan en
                                 perspectiva las dinámicas sociales y culturales de cada período histórico considerando cómo
                                 éstas han influido y delineado los escenarios educativos y las orientaciones curriculares.
                                 Desde situaciones vivenciales y prácticas, los cursos de este eje proponen reflexionar
                                 críticamente sobre los paradigmas de pensamiento que influyen en la educación, considerando
-                                los contextos sociales. Este análisis permitirá a los estudiantes, proponer cambios viables,
+                                los contextos sociales. Este análisis permitirá a estudiantes proponer cambios viables,
                                 considerando todos los factores que influyen en los mismos.
                             </td>
                         </tr>
@@ -110,7 +117,7 @@
                             <th scope="row" class="align-middle">Aprendizaje, educación y gestión para la atención a la
                                 diversidad.</th>
                             <td>
-                                Reúne los cursos que permiten a los estudiantes acercarse a la comprensión de los procesos
+                                Reúne los cursos que permiten a estudiantes acercarse a la comprensión de los procesos
                                 de aprendizaje de niños y niñas de diferentes contextos considerando el impacto de los
                                 cambios sociales en los ámbitos familiares y culturales, y desarrollando capacidades para
                                 proponer didácticas y mecanismos de gestión que promuevan una atención educativa
@@ -130,7 +137,7 @@
                         <tr>
                             <th scope="row" class="align-middle">Orientación y tutoría.</th>
                             <td>
-                                Los cursos de esta área acompañan a los estudiantes en su desenvolvimiento socio-afectivo y
+                                Los cursos de esta área acompañan a estudiantes en su desenvolvimiento socio-afectivo y
                                 su avance académico teniendo como objetivo el potenciar su desarrollo como personas y como
                                 parte de un colectivo.
                             </td>
@@ -170,9 +177,9 @@
                             <td>11/FG</td>
                         </tr>
                         <tr>
-                            <td>Lectura y escritura en la escritura superior</td>
-                            <td>Comunicación oral</td>
-                            <td>Arte, creatividad y Aprendizaje </td>
+                            <td>Lectura y Escritura de la Educación Superior</td>
+                            <td>Comunicación Oral</td>
+                            <td>Arte, Creatividad y Aprendizaje </td>
                             <td>Ciencia y Epistemologías</td>
                         </tr>
                         <tr>
@@ -236,8 +243,8 @@
                             <td>04/FPI </td>
                         </tr>
                         <tr>
-                            <td>Práctica e investigación I</td>
-                            <td>Práctica e investigación II</td>
+                            <td>Práctica e Investigación I</td>
+                            <td>Práctica e Investigación II</td>
                             <td>Práctica e Investigación III </td>
                             <td>Práctica e Investigación IV </td>
                         </tr>
@@ -259,7 +266,7 @@
                         </tr>
                         <tr>
                             <td>Fundamentos de la Educación Inicial </td>
-                            <td>Planificación por competencias y Evaluación para el Aprendizaje I</td>
+                            <td>Planificación por Competencias y Evaluación para el Aprendizaje I</td>
                             <td>Desarrollo Personal y Social en la Primera Infancia</td>
                             <td>Inducción Educativa para la Atención a la Diversidad </td>
                         </tr>
@@ -283,7 +290,7 @@
                             <td>Interacciones de Calidad y Desarrollo en la Primera Infancia II</td>
                             <td>Interacciones de Calidad y Desarrollo en la Primera Infancia II </td>
                             <td>Juego, Desarrollo y Aprendizaje en la Primera Infancia </td>
-                            <td>Planificación por competencias y Evaluación para el Aprendizaje II</td>
+                            <td>Planificación por Competencias y Evaluación para el Aprendizaje II</td>
                         </tr>
                         <tr>
                             <td>6H-5 CR/4T- 2P </td>
@@ -321,9 +328,9 @@
                             <td>08/FPI</td>
                         </tr>
                         <tr>
-                            <td>Literatura y Sociedad en contextos Diversos </td>
-                            <td>Alfabetización científica</td>
-                            <td>Ética y Filosofía en el pensamiento crítico </td>
+                            <td>Literatura y Sociedad en Contextos Diversos </td>
+                            <td>Alfabetización Científica</td>
+                            <td>Ética y Filosofía en el Pensamiento Crítico </td>
                             <td>Práctica e Investigación III</td>
                         </tr>
                         <tr>
@@ -344,9 +351,9 @@
                         </tr>
                         <tr>
                             <td>Inglés para principiantes III / Beginner English III </td>
-                            <td>Inglés para principiantes IV / Beginner English IV</td>
+                            <td>Inglés para Principiantes IV / Beginner English IV</td>
                             <td>Práctica e Investigación VII</td>
-                            <td>Políticas y Gestión para el servicio educativo</td>
+                            <td>Políticas y Gestión para el Servicio Educativo</td>
                         </tr>
                         <tr>
                             <td>4H-3 CR/2T-2P </td>
@@ -366,9 +373,9 @@
                         </tr>
                         <tr>
                             <td>Práctica e Investigación V</td>
-                            <td>Práctica e investigación VI</td>
-                            <td>Gestión de la Atención y cuidado infantil </td>
-                            <td>Planificación por competencias y Evaluaciónpara el Aprendizaje III</td>
+                            <td>Práctica e Investigación VI</td>
+                            <td>Gestión de la Atención y Cuidado Infantil </td>
+                            <td>Planificación por Competencias y Evaluaciónpara el Aprendizaje III</td>
                         </tr>
                         <tr>
                             <td>6H-5 CR/4T- 2P</td>
@@ -387,10 +394,10 @@
                             <td>22/FE</td>
                         </tr>
                         <tr>
-                            <td>Desarrollo del pensamiento </td>
-                            <td>Convivencia y ciudadanía en la primera infancia</td>
-                            <td>Desarrollo de la creatividad en la primera infancia </td>
-                            <td>Atención a las necesidades Educativas Especiales </td>
+                            <td>Desarrollo del Pensamiento </td>
+                            <td>Convivencia y Ciudadanía en la Primera Infancia</td>
+                            <td>Desarrollo de la Creatividad en la Primera Infancia </td>
+                            <td>Atención a las Necesidades Educativas Especiales </td>
                         </tr>
                         <tr>
                             <td>4H-3 CR/2T- 2P</td>
@@ -409,9 +416,9 @@
                             <td></td>
                         </tr>
                         <tr>
-                            <td>Desarrollo de la psicomotricidad en la primera infancia </td>
-                            <td>Desarrollo de la Matemática en la primera infancia</td>
-                            <td>Aprendizaje y Enseñanza de la ciencia en el ciclo II </td>
+                            <td>Desarrollo de la Psicomotricidad en la Primera Infancia </td>
+                            <td>Desarrollo de la Matemática en la Primera Infancia</td>
+                            <td>Aprendizaje y Enseñanza de la Ciencia en el Ciclo II </td>
                             <td></td>
                         </tr>
                         <tr>
@@ -431,8 +438,8 @@
                             <td></td>
                         </tr>
                         <tr>
-                            <td>Desarrollo de la comunicación en la primera infancia </td>
-                            <td>Expresión del Arte en la primera Infancia </td>
+                            <td>Desarrollo de la Comunicación en la Primera Infancia </td>
+                            <td>Expresión del Arte en la Primera Infancia </td>
                             <td> </td>
                             <td></td>
                         </tr>
@@ -456,7 +463,7 @@
                             <th>Ciclo X</th>
                             <th class="table-active" rowspan="8"
                                 style="writing-mode: vertical-rl;transform: rotate(-180deg); ">
-                                Informe de investigación destacada
+                                Informe de Investigación Destacada
                             </th>
                         </tr>
                         <tr>
@@ -479,7 +486,7 @@
                             <td>08/FE</td>
                         </tr>
                         <tr>
-                            <td>Gestión de los servicios Educativos en Educación Inicial </td>
+                            <td>Gestión de los Servicios Educativos en Educación Inicial </td>
                             <td>Escuela, Familia y Comunidad </td>
                         </tr>
                         <tr>
@@ -514,30 +521,30 @@
                 <br><br>
                 <div class="row">
                     <div class="col-lg-12 mb-4">
-                        <a href="{{asset('pdf/Perfil-educacion-inicial.pdf')}}" class="btn btn-sm btn-danger" target="_blank">Descargar PDF <i class="fa fa-file-pdf"></i></a>
+                        <a href="{{ asset('pdf/Perfil-educacion-inicial.pdf') }}" class="btn btn-sm btn-danger"
+                            target="_blank">Descargar PDF <i class="fa fa-file-pdf"></i></a>
                     </div>
                     <div class="col-lg-6 card p-3 border-success">
-                        <h4><i class="fa fa-check fa-sm text-success"></i> Primero los niños</h4>
+                        <h4><i class="fa fa-check fa-sm text-success"></i>Primero los niños y las niñas</h4>
                         <p>
                             Conoce y comprende las características de sus estudiantes, los contenidos disciplinares, los
-                            enfóques y
-                            procesos pedagógicos,con el propósito de promover su formación integral.
+                            enfóques y procesos pedagógicos,con el propósito de promover su formación integral.
                         </p>
                     </div>
                     <div class="col-lg-6 card p-3 border-info">
                         <h4><i class="fa fa-check fa-sm text-success"></i> Colaboración y trabajo en equipo</h4>
                         <p>
-                            Establece relaciones de respeto, colboración y corresponsabilidad con las familias, la comunidad
-                            y otras
-                            instituciones del Estado y la sociedad civil.
+                            Establece relaciones de respeto, colaboración y corresponsabilidad con las familias, la
+                            comunidad
+                            y otras instituciones del Estado y la sociedad civil.
                         </p>
                     </div>
                     <div class="col-lg-6 card p-3 border-success">
                         <h4><i class="fa fa-check fa-sm text-success"></i> Articulación del Currículo</h4>
                         <p>
-                            Planifica la enseñansa de forma colegiada, garantizando coherencia entre los aprendizajes, el
+                            Planifica la enseñanza de forma colegiada, garantizando coherencia entre los aprendizajes, el
                             proceso
-                            pepagógico, el uso de los recursos y la evaluación en una programación curricular en permanente
+                            pedagógico, el uso de los recursos y la evaluación en una programación curricular en permanente
                             revisión.
                         </p>
                     </div>
@@ -561,15 +568,16 @@
                     <div class="col-lg-6 card p-3 border-info">
                         <h4><i class="fa fa-check fa-sm text-success"></i> Ética e Integridad</h4>
                         <p>
-                            Ejerce profesión desde una ética de respeto de los derechos fundamentales de las personas,
+                            Ejerce la profesión desde una ética de respeto de los derechos fundamentales de las personas,
                             demostrando
-                            honestidad, justicia, responsabilidad y compromiso con su funcion social.
+                            honestidad, justicia, responsabilidad y compromiso con su función social.
                         </p>
                     </div>
                     <div class="col-lg-6 card p-3 border-success">
                         <h4><i class="fa fa-check fa-sm text-success"></i> Aprendizajes clave</h4>
                         <p>
-                            Conduce el proceso de enseñanza con dominio de contenidos y el uso de estrategias y recursos
+                            Conduce el proceso de aprendizaje con un dominio de contenidos y el uso de estrategias y
+                            recursos
                             pertinentes
                             para que sus estudiantes aprendan de manera reflexiva y crítica.
                         </p>
@@ -577,15 +585,14 @@
                     <div class="col-lg-6 card p-3 border-info">
                         <h4><i class="fa fa-check fa-sm text-success"></i> Formación Continua</h4>
                         <p>
-                            Gestiona su desarrollo personal demostrando autoconocimiento y autoregulación, ineractuando
-                            asertiva y
-                            empáticamnete para trabajar colaborativamente en diversos contextos.
+                            Gestiona su desarrollo personal demostrando autoconocimiento y autorregulación, e interactúa de
+                            manera asertiva y empática para trabajar colaborativamente en diversos contextos.
                         </p>
                     </div>
                     <div class="col-lg-6 card p-3 border-success">
                         <h4><i class="fa fa-check fa-sm text-success"></i> Evaluación permanente</h4>
                         <p>
-                            Evalua el aprendizaje de acuerdo a los objetivos institucionales para tomar decisiones y
+                            Evalúa el aprendizaje de acuerdo a los objetivos institucionales para tomar decisiones y
                             retroalimentar
                             a sus estudiantes, teniendo en cuenta las diferencias individuales y los diversos contextos
                             culturales.
@@ -595,10 +602,8 @@
                         <h4><i class="fa fa-check fa-sm text-success"></i> Habilidades Digitales</h4>
                         <p>
                             Gestiona los entornos digitales y los aprovecha para su desarrollo profesional y práctica
-                            pedagógica,
-                            correspondiendo a las necesidades de los estudiantes y los contextos socioculturales,
-                            permitiendo el
-                            emprendimiento digital en la comunidad educativa.
+                            pedagógica, respondiendo a las necesidades de los estudiantes y de los contextos
+                            socioculturales, y promoviendo el emprendimiento digital en la comunidad educativa.
                         </p>
                     </div>
                     <div class="col-lg-6 card p-3 border-success">
@@ -613,8 +618,7 @@
                         <h4><i class="fa fa-check fa-sm text-success"></i> Investigación e Innovación</h4>
                         <p>
                             Investiga aspectos críticos de la práctica docente utilizando diversos enfoques y metodologías
-                            para
-                            promover una cultura de investigación e innovación.
+                            para promover una cultura de investigación e innovación.
                         </p>
                     </div>
                 </div>

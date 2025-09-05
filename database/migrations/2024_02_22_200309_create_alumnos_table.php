@@ -16,9 +16,18 @@ return new class extends Migration {
             $table->string('dni');
             $table->string('apellidos');
             $table->string('nombres');
+            //Gènero nuevo!
+            $table->string('genero')->nullable();
             $table->string('numero');
+            $table->string('fecha_nacimiento');
             $table->string('numero_referencia');
             $table->string('procedencia_familiar');
+
+            //Campos nuevos
+            $table->string('departamento')->nullable();
+            $table->string('provincia')->nullable();
+            $table->string('distrito')->nullable();
+
             $table->string('direccion');
             //Nuevos campos:
             $table->string('lugar_nacimiento')->nullable();

@@ -62,18 +62,24 @@
                     $cursosOrdenados = $ciclo->cursos->sortBy('nombre');
                 @endphp
                 @foreach ($cursosOrdenados as $curso)
-                    <div class="col-lg-4 mb-2 mt-2">
-                        <div class="card" style="height: 110px">
+                    <div class="col-lg-4 mb-2 mt-1">
+                        <div class="card" style="height: 140px">
                             <div class="card-body text-center">
                                 <a href="{{ route('curso.show', $curso->id) }}">
-                                    <h6>
+                                    <h5>
                                         {{ $curso->nombre }}
-                                        @if (str_contains($curso->cc, 'Extracurricular'))
-                                            <small class="d-block mt-1 text-muted">(Extracurricular)</small>
-                                        @endif
-                                    </h6>
+                                    </h5>
                                 </a>
-                                <a href="{{ route('curso.show', $curso->id) }}" class="btn btn-sm btn-info"
+                                @foreach ($curso->docentes as $docente)
+                                    <small class="text-info">
+                                        {{ $docente->nombre }} {{ !$loop->last ? ',' : '' }}
+                                    </small>
+                                @endforeach
+                                <br>
+                                @if (str_contains($curso->cc, 'Extracurricular'))
+                                    <small class="d-block text-muted">(Extracurricular)</small>
+                                @endif
+                                <a href="{{ route('curso.show', $curso->id) }}" class="btn btn-sm btn-info mb-4"
                                     title="Ver Curso">
                                     <i class="fa fa-eye fa-sm"></i> Ver Curso
                                 </a>
@@ -110,7 +116,7 @@
                                             <th scope="col">Pendiente</th>
                                         </tr>
                                     </thead>
-                                    <tbody>                                       
+                                    <tbody>
                                         @foreach ($alumnos as $alumno)
                                             @if ($alumno->user)
                                                 <tr>
@@ -133,7 +139,7 @@
                                             @endif
                                         @endforeach
 
-                                        @foreach ($alumnosB as $alumno)
+                                        {{-- @foreach ($alumnosB as $alumno)
                                             @if ($alumno->user)
                                                 <tr>
                                                     <td class="text-center">
@@ -153,6 +159,24 @@
                                                     <td>{{ $alumno->user->pendiente ?? '---' }}</td>
                                                 </tr>
                                             @endif
+                                        @endforeach --}}
+                                        @foreach ($alumnosB as $alumno)
+                                            <tr>
+                                                <td class="text-center">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" name="alumnos[]"
+                                                            value="{{ $alumno->id }}" id="alumnoB{{ $alumno->id }}"
+                                                            style="width: 15px;height: 15px; cursor: pointer;">
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <label class="form-check-label" for="alumnoB{{ $alumno->id }}">
+                                                        {{ $alumno->apellidos }}, {{ $alumno->name }}
+                                                    </label>
+                                                </td>
+                                                <td>{{ $alumno->dni }}</td>
+                                                <td>{{ $alumno->pendiente ?? '---' }}</td>
+                                            </tr>
                                         @endforeach
                                     </tbody>
                                 </table>

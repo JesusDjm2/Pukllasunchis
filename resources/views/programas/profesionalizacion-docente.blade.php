@@ -51,18 +51,15 @@
                     <h2 class="linea-debajo">{{ $titulo }}</h2>
 
                     <p>
-                        Los programas de profesionalización en la Escuela de Educación Superior Pedagógica Pukllasunchis
-                        buscan
-                        desarrollar competencias para una práctica pedagógica abierta, conectada con la vida y la cultura y
-                        con
-                        las necesidades de nuestro tiempo.<br><br>
+                        Los programas de Profesionalización de la Escuela de Educación Superior Pedagógica Pukllasunchis
+                        buscan desarrollar competencias para una práctica pedagógica abierta, vinculada con la vida, la
+                        cultura y las necesidades de nuestro tiempo.<br><br>
 
-                        Ofrecen, a los profesionales que desean ser docentes, la oportunidad de repensar la educación de la
-                        región y el país y con ello, imaginar escenarios educativos de convivencia donde la cooperación, el
-                        inter aprendizaje, el diálogo intercultural y el aprendizaje vivencial son los pilares para
-                        desarrollar
-                        metodologías y didácticas que respondan a las realidades socioculturales de los niños y niñas de
-                        diversos contextos.
+                        Estos programas ofrecen a los profesionales que desean convertirse en docentes la oportunidad de
+                        repensar la educación de la región y del país, e imaginar escenarios educativos de convivencia donde
+                        la cooperación, el interaprendizaje, el diálogo intercultural y el aprendizaje vivencial sean los
+                        pilares para el desarrollo de metodologías y didácticas pertinentes que respondan a las realidades
+                        socioculturales de niños y niñas en diversos contextos.
                     </p>
                     <div class="row pt-3 justify-content-center align-items-center">
                         <div class="col-lg-6 text-center">
@@ -73,22 +70,21 @@
                             </a>
                         </div>
                         <div class="col-lg-6 text-center">
-                            <a href="https://forms.gle/QxnSF7uiC3oHnH5NA"
-                                target="_blank" class="text-center">
+                            <a href="https://forms.gle/QxnSF7uiC3oHnH5NA" target="_blank" class="text-center">
                                 <img width="160px" src="{{ asset('img/min/Ficha-de-inscripcion-Pukllasunchis.png') }}"
                                     alt="Ficha de Inscrición Pukllasunchis" class="img-fluid">
                                 <p class="text-center">¡Inscríbete acá!</p>
                             </a>
                         </div>
                         <!--<div class="col-lg-12 mt-4">
-                            <iframe width="100%" height="480" src="https://www.youtube.com/embed/yXI-Q29iJsE"
-                                title="PROGRAMA DE PROFESIONALIZACION DOCENTE - SPOT ADMISIÓN 2024" frameborder="0"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                allowfullscreen></iframe>
-                        </div>-->
+                                                    <iframe width="100%" height="480" src="https://www.youtube.com/embed/yXI-Q29iJsE"
+                                                        title="PROGRAMA DE PROFESIONALIZACION DOCENTE - SPOT ADMISIÓN 2024" frameborder="0"
+                                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                                        allowfullscreen></iframe>
+                                                </div>-->
                         <div class="col-lg-8 pt-5">
-                            <img src="{{ asset('img/banner/PPD-2025.webp') }}"
-                                width="100%" alt="Programa de profesionalización Pukllasunchis">
+                            <img src="{{ asset('img/banner/PPD-2025.webp') }}" width="100%"
+                                alt="Programa de profesionalización Pukllasunchis">
                         </div>
                     </div><br>
 
@@ -101,7 +97,8 @@
                         <strong>Está dirigido a:</strong>
                     </p>
                     <ul class="listasCuerpo">
-                        <li>Procedentes de programas de estudios distintos a Educación:
+                        <li>Procedentes de programas de estudios distintos a Educación (carreras afines a nivel Inicial y
+                            Primaria):
                             <ul>
                                 <li>Bachilleres o titulados de universidades</li>
                                 <li>Bachilleres o titulados de instituciones con rango universitario</li>
@@ -128,30 +125,25 @@
                     <h3 class="linea-debajo scroolOk" id="requisitos">Requisitos</h3>
                     <p>
                         La exigencia mínima para acceder a un PPD es contar con un grado de bachiller o un título
-                        profesional en
-                        un programa de estudios distinto a Educación por lo que, si una persona cuenta con grado de
-                        bachiller en
-                        Educación supera dicha exigencia mínima.<br><br>
+                        profesional en un programa de estudios distinto a Educación. Por lo tanto, si una persona posee un
+                        grado de bachiller en Educación, supera dicha exigencia mínima.<br><br>
 
-                        Por otro lado, si una persona cumple con el requisito de contar con un grado de bachiller o un
-                        título
-                        profesional en un programa de estudios distinto a Educación, puede acceder a un PPD para la
-                        obtención
-                        del grado de bachiller en pedagogía sin perjuicio de que adicionalmente cuente con un grado de
-                        bachiller
-                        en Educación.<br><br>
+                        Del mismo modo, si una persona cumple con el requisito de contar con un grado de bachiller o un
+                        título profesional en un programa de estudios distinto a Educación, puede acceder a un PPD para la
+                        obtención del grado de bachiller en Pedagogía, aun cuando adicionalmente cuente con un grado de
+                        bachiller en Educación.<br><br>
 
-                        Sobre el particular, es importante tener presente que los grados y/o títulos que constituyen
-                        requisitos
-                        para la obtención del grado de bachiller mediante un PPD deben estar previamente registrados.
+                        Es importante tener presente que los grados y/o títulos que constituyen requisitos para la obtención
+                        del grado de bachiller mediante un PPD deben estar previamente registrados.
                     </p>
-                   
+
                     <div class="accordion mt-4" id="accordionExample">
                         <div class="accordion-item">
                             <h2 class="accordion-header" id="headingOne">
                                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-                                    Por la SUNEDU (para grados y títulos otorgados por universidades o instituciones con rango universitario).
+                                    Por la SUNEDU (para grados y títulos otorgados por universidades o instituciones con
+                                    rango universitario).
                                 </button>
                             </h2>
                             <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne"
@@ -159,14 +151,16 @@
                                 <div class="accordion-body">
                                     <ul class="listasCuerpo">
                                         <li>Copia del grado o título fedateada.</li>
-                                        <li>Constancia del Grado de Bachiller o título profesional que esté debidamente registrado en SUNEDU.</li>
+                                        <li>Constancia del Grado de Bachiller o título profesional que esté debidamente
+                                            registrado en SUNEDU.</li>
                                         <li>Certificados originales de estudios superiores emitidos por su UNIVERSIDAD.</li>
-                                        <li>Constancia de trabajo o un documento que acredite labor como docente en ejercicio o la realización de alguna actividad pedagógica.</li>
+                                        <li>Constancia de trabajo o un documento que acredite labor como docente en
+                                            ejercicio o la realización de alguna actividad pedagógica.</li>
                                         <li>Copia de DNI ampliado.</li>
                                         <li>2 fotos tamaño pasaporte.</li>
                                         <li>Pago por derecho de inscripción.</li>
                                     </ul>
-                                    
+
                                 </div>
                             </div>
                         </div>
@@ -181,12 +175,14 @@
                                 data-bs-parent="#accordionExample">
                                 <div class="accordion-body">
                                     <ul class="listasCuerpo">
-                                        <li>Copia fedateada del Título Pedagógico por la Dirección Regional de Educación (DRE), con su copia respectiva de la Resolución Directoral de Inscripción en su DRE.</li>
+                                        <li>Copia fedateada del Título Pedagógico por la Dirección Regional de Educación
+                                            (DRE), con su copia respectiva de la Resolución Directoral de Inscripción en su
+                                            DRE.</li>
                                         <li>Certificado de estudios superiores original.</li>
                                         <li>Pago por derecho de inscripción.</li>
                                         <li>Copia de DNI ampliado.</li>
                                         <li>2 fotos tamaño pasaporte.</li>
-                                    </ul>                                    
+                                    </ul>
                                 </div>
                             </div>
                         </div>
@@ -218,13 +214,12 @@
                                 <td colspan="7">Ciclo Ordinario</td>
                             </tr>
                             <tr>
-                                <td class="align-middle" rowspan="3">Formación General: Marco socio político cultural.
+                                <td class="align-middle" rowspan="3">Formación General: Marco Socio Político Cultural.
                                 </td>
                                 <td style="background:#fccdff" class="align-middle" rowspan="3">Cultura y Diversidad:
-                                    Retos
-                                    para una educación intercultural.</td>
-                                <td style="background:#fccdff">Circulo Intercultural: Conceptos básicos y nudos
-                                    problemáticos
+                                    Retos para una Educación Intercultural.</td>
+                                <td style="background:#fccdff">Circulo Intercultural: Conceptos Básicos y Nudos
+                                    Problemáticos
                                 </td>
                                 <td style="background:#fccdff">96</td>
                                 <td style="background:#fccdff">3</td>
@@ -239,7 +234,7 @@
                                 <td style="background:#fccdff">32</td>
                             </tr>
                             <tr>
-                                <td style="background:#fccdff">Fundamentos y condiciones para una pedagogía intercultural.
+                                <td style="background:#fccdff">Fundamentos y Condiciones para una Pedagogía Intercultural.
                                 </td>
                                 <td style="background:#fccdff">80</td>
                                 <td style="background:#fccdff">3</td>
@@ -252,27 +247,26 @@
                                 </td>
                                 <td style="background:#fccdff" class="align-middle" rowspan="2">Educación
                                     Intercultural:
-                                    Reflexiones para una práctica intercultural.</td>
-                                <td style="background:#fccdff">Atención a la diversidad en la educación.</td>
+                                    Reflexiones para una Práctica Intercultural.</td>
+                                <td style="background:#fccdff">Atención a la Diversidad en la Educación.</td>
                                 <td style="background:#fccdff">96</td>
                                 <td style="background:#fccdff">4</td>
                                 <td style="background:#fccdff">32</td>
                                 <td style="background:#fccdff">64</td>
                             </tr>
                             <tr>
-                                <td style="background:#fccdff">Planificación de competencias y evaluación para el
-                                    aprendizaje</td>
+                                <td style="background:#fccdff">Planificación de Competencias y Evaluación para el
+                                    Aprendizaje</td>
                                 <td style="background:#fccdff">80</td>
                                 <td style="background:#fccdff">3</td>
                                 <td style="background:#fccdff">16</td>
                                 <td style="background:#fccdff">64</td>
                             </tr>
                             <tr>
-                                <td>Formación en la práctica pedagógica y la investigación educativa.</td>
-                                <td class="align-middle">Investigación e innovación</td>
-                                <td class="align-middle">Investigación/Observación y práctica reflexiva/Escenarios
-                                    alternativos
-                                    Educación I</td>
+                                <td>Formación en la Práctica Pedagógica y la Investigación Educativa.</td>
+                                <td class="align-middle">Investigación e Innovación</td>
+                                <td class="align-middle">Investigación/Observación y Práctica Reflexiva/Escenarios
+                                    Alternativos Educación I</td>
                                 <td class="align-middle">96</td>
                                 <td class="align-middle">4</td>
                                 <td class="align-middle">32</td>
@@ -292,21 +286,19 @@
                     <table class="table table-bordered text-center table-responsive border-dark">
                         <tbody style="background: #e0cdff">
                             <tr>
-                                <td class="align-middle" rowspan="5">Formación Específica: Pedagogía y didáctica
-                                    intercultural</td>
+                                <td class="align-middle" rowspan="5">Formación Específica: Pedagogía y Didáctica
+                                    Intercultural</td>
                                 <td style="background:#dcfdff" rowspan="2" class="align-middle">Metodologías y
-                                    proyectos de
-                                    aprendizaje intercultural</td>
-                                <td style="background:#dcfdff">Proyectos de aprendizaje: competencias identidad/convivencia
-                                    y
-                                    participación</td>
+                                    Proyectos de Aprendizaje Intercultural</td>
+                                <td style="background:#dcfdff">Proyectos de Aprendizaje: Competencias Identidad/Convivencia
+                                    y Participación</td>
                                 <td style="background:#dcfdff">64</td>
                                 <td style="background:#dcfdff">3</td>
                                 <td style="background:#dcfdff">32</td>
                                 <td style="background:#dcfdff">32</td>
                             </tr>
                             <tr style="background:#dcfdff">
-                                <td>Desarrollo de competencias matemáticas y científicas</td>
+                                <td>Desarrollo de Competencias Matemáticas y Científicas</td>
                                 <td>64</td>
                                 <td>3</td>
                                 <td>32</td>

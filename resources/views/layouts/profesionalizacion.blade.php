@@ -94,8 +94,11 @@
             <div id="content">
                 <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
                     <!-- Sidebar Toggle (Topbar) -->
-                    <h5 class="text-primary font-weight-bold">Programa de PPD Presencial y Semipresencial
-                        {{ date('Y') }}</h5>
+                    {{-- <h5 class="text-primary font-weight-bold">Programa de PPD Presencial y Semipresencial
+                        {{ date('Y') }}</h5> --}}
+                    <h5 class="text-primary font-weight-bold d-none d-md-block">
+                        Programa de PPD Presencial y Semipresencial {{ date('Y') }}
+                    </h5>
                     <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
                         <i class="fa fa-bars"></i>
                     </button>

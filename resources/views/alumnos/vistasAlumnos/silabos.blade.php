@@ -152,7 +152,7 @@
                             <td style="font-weight: 600; padding: 2px;">1.8 <span style="margin-left:1em">Horas
                                     Semanales</span>
                             </td>
-                            <td style="padding: 2px;">: {{ $curso->horas }}</td>
+                            <td style="padding: 2px;">: {{ $curso->horas * 16 }}</td>
                         </tr>
                         <tr>
                             <td style="font-weight: 600; padding: 2px;">1.9 <span style="margin-left:1em">Docente(s)</span>

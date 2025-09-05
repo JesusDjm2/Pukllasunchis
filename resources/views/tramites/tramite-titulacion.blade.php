@@ -114,25 +114,7 @@
     </div>
     <div class="container pt-5 pb-5">
         <div class="row">
-            <div class="col-lg-3">
-                <div class="pegajoso">
-                    <h3 class="linea-debajo">Trámites</h3>
-                    <ul class="submenu2">
-                        <li><a href="{{ route('plan') }}"><i class="fa fa-caret-right fa-sm"></i> Plan de Trabajo</a></li>
-                        <li><a href="{{ route('tinvestigacion') }}"><i class="fa fa-caret-right fa-sm"></i> Trabajo de
-                                Investigación</a></li>
-                        <li><a href="{{ route('tesis') }}"><i class="fa fa-caret-right fa-sm"></i> Tesis</a></li>
-                        <li><a href="{{ route('tramites') }}"><i class="fa fa-caret-right fa-sm"></i> Trámites
-                                presenciales</a>
-                        </li>
-                        <li>
-                            <a href="#" onclick="openModal()"> <i class="fa fa-caret-right fa-sm"></i> ¿Cómo pagar en
-                                Caja Cusco?
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
+            @include('tramites.titulacion.tramites-lateral')
             <div class="col-lg-9">
                 <h2 class="linea-debajo">{{ $titulo }}</h2>
                 <h3>Grado de bachiller</h3>
@@ -179,13 +161,12 @@
                         </div>
                     </div>
                 </div>
-                <h3 class="mt-5">Requisitos para solicitar el grado de bachiller:</h3>
+                <h2 class="mt-4 linea-debajo">Requisitos para solicitar el grado de bachiller:</h2>
                 <ul class="listasCuerpo">
                     <li>Solicitud dirigida al Director General de la EESP.</li>
                     <li>Certificado que acredite estudios por un mínimo de diez (10) ciclos académicos y la aprobación de un
                         mínimo de doscientos (200) créditos del PE o del PPD docente correspondiente</li>
-                    <li>Documento que acredite la aprobación del trabajo de investigación para optar el grado de bachiller.
-                    </li>
+                    <li>Aprobar el trabajo de investigación es requisito para optar al grado de bachiller. </li>
                     <li>Documento que acredite conocimiento de un idioma extranjero o de una lengua originaria:
                         En caso de un idioma extranjero, el egresado debe acreditar mediante un certificado expedido por una
                         institución oficial nacional o internacional como mínimo el nivel A2 del MCER (básico).</li>
@@ -202,28 +183,27 @@
                         style="color: #ff5e13"><strong>Niveles de inglés MCER (CEFR)</strong></a>
                 </p>
                 <p>
-                    En caso de una lengua originaria, para la obtención del bachiller es necesario remitirse a los niveles
-                    de desarrollo de competencias comunicativas de los DCBN de Educación Inicial Intercultural Bilingüe y
-                    Educación Primaria Intercultural Bilingüe.
+                    Si optas por una lengua originaria, deberás remitir a los niveles de desarrollo de competencias
+                    comunicativas de los DCBN para Educación Inicial Intercultural Bilingüe o Educación Primaria
+                    Intercultural Bilingüe.
                 </p>
                 <h3 class="mt-4">Trabajo de investigación para obtener el grado de bachiller</h3>
                 <p>La aprobación del trabajo de investigación es una condición para optar el grado de bachiller.
                     <br> <br>
-                    El trabajo de investigación para grado de bachiller es un trabajo que tiene estrecha relación con los
-                    principales ejes planteados en el plan de estudios académico.<br> <br>
-                    A través de este trabajo, el graduando debe demostrar que domina, de manera general, los aspectos
-                    centrales desarrollados en el currículo. Dicho trabajo supone el desarrollo de aptitudes y habilidades
-                    relacionadas con el perfil de egreso, de forma previa a la exigencia profesional, y supone el
-                    planteamiento de un tema preciso a analizar relacionado con situaciones detectadas en la realidad
-                    educativa, preferentemente relacionadas con el programa de estudios cursado.<br> <br>
-                    Las actividades para el desarrollo del trabajo incluyen:<br>
-                    - La revisión de la literatura actualizada<br>
-                    Desarrollo de una metodología de análisis de la información recolectada<br>
-                    - Exposición de resultados.<br><br>
-                    El trabajo de investigación es de elaboración progresiva por parte del estudiante. En el caso de la FID,
-                    se desarrolla en el marco del componente curricular de práctica e investigación de los planes de
-                    estudios. La institución debe designar un docente idóneo para el acompañamiento del estudiante en la
-                    elaboración del trabajo de investigación.
+                    La aprobación del trabajo de investigación es condición para optar el grado de bachiller. Este trabajo
+                    se vincula con los ejes del plan de estudios y demuestra el dominio general de los aspectos centrales
+                    del currículo, desarrollando aptitudes y habilidades alineadas al perfil de egreso.
+                    El tema debe ser preciso y estar relacionado con situaciones de la realidad educativa, preferentemente
+                    vinculadas al programa de estudios cursado.<br>
+                    Actividades sugeridas para su desarrollo:
+                <ul class="listasCuerpo">
+                    <li>Revisión de literatura actualizada.</li>
+                    <li>Diseño y aplicación de una metodología para el análisis de la información recolectada.</li>
+                    <li>Exposición de resultados.</li>
+                </ul>
+                El trabajo es de elaboración progresiva por parte del estudiante. En la FID, se desarrolla dentro del
+                componente de práctica e investigación del plan de estudios. La institución designa un docente idóneo para
+                el acompañamiento.
                 </p>
                 <h2 class="mt-4 linea-debajo">Título profesional de licenciado en educación </h2>
                 <p>

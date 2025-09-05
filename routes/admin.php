@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AlumnoController;
+use App\Http\Controllers\AlumnoCursoController;
 use App\Http\Controllers\BolsaController;
 use App\Http\Controllers\CalificacionController;
 use App\Http\Controllers\CapacidadesController;
@@ -12,6 +13,7 @@ use App\Http\Controllers\DocenteCOntroller;
 use App\Http\Controllers\EnfoquesController;
 use App\Http\Controllers\EstadarController;
 use App\Http\Controllers\EstandaresController;
+use App\Http\Controllers\PeriodoActualController;
 use App\Http\Controllers\PeriodoController;
 use App\Http\Controllers\PostulanteController;
 use App\Http\Controllers\PostulantesRegularController;
@@ -56,6 +58,10 @@ Route::prefix('ciclos')->middleware(['auth'])->group(function () {
 Route::prefix('cursos')->middleware(['auth'])->group(function () {
     Route::resource('curso', CursoController::class);
 });
+//Asignar cursos
+Route::get('/asignar-curso/{id}', [AlumnoCursoController::class, 'asignar'])->name('asignar.cursos');
+Route::post('/guardar-cursos/{id}', [AlumnoCursoController::class, 'guardarCursos'])->name('guardar.cursos');
+
 
 //Docentes
 Route::resource('docente', DocenteCOntroller::class)->names('docente')->middleware('auth');
@@ -79,7 +85,18 @@ Route::delete('/eliminar-periodo-dos', [CalificacionController::class, 'eliminar
 Route::post('/periodotres/storeBloque', [CalificacionController::class, 'storePeriodoTres'])->name('storePeriodoTres');
 Route::delete('/eliminar-periodo-tres', [CalificacionController::class, 'eliminarPeriodoTres'])->name('periodotres.eliminar');
 
+//Quitar relaciones entre docentes/Cursos
+Route::delete(
+    '/docentes/cursos/eliminar-todos-global',
+    [CalificacionController::class, 'eliminarTodosCursosGlobal']
+)->name('docente.cursos.eliminarTodosGlobal');
 
+//Periodos
+Route::resource('Periodo-Actual', PeriodoActualController::class)->middleware('auth')->names('periodoactual')->parameters(['Periodo-Actual' => 'periodoactual']);
+Route::post('Periodo-Actual/{periodoactual}/crear-calificaciones', [PeriodoActualController::class, 'crearCalificaciones'])
+    ->name('periodoactual.crearCalificaciones')->middleware('auth');
+Route::get('Periodo-Actual/{periodoactual}/registros', [PeriodoActualController::class, 'showRegistros'])
+    ->name('periodoactual.showRegistros')->middleware('auth');
 Route::resource('periodos', PeriodoController::class)->middleware('auth')->names('periodos');
 Route::get('/periodos/{nombre}', [PeriodoController::class, 'show'])->name('periodos.show');
 
@@ -90,6 +107,7 @@ Route::get('/docente/{docente}/blog/', [DocenteController::class, 'showBlog'])->
 
 
 Route::get('/exportar-csv/{docenteId}/{cursoId}', [CalificacionController::class, 'exportarCSV'])->name('calificaciones.exportar');
+Route::get('/exportar-csvppd/{docenteId}/{cursoId}', [CalificacionController::class, 'exportarCSVppd'])->name('calificaciones.exportar.ppd');
 
 
 
@@ -162,7 +180,11 @@ Route::get('/filtrar-datos', [AlumnoController::class, 'filtro'])->name('filtro'
 //Vista Alumnos
 Route::get('Alumnos-Formulario', [vistasAlumnosController::class, 'form'])->name('vistAlumno');
 Route::get('/obtener-ciclos/{programa}', [vistasAlumnosController::class, 'obtenerCiclos']);
+Route::get('/get-cursos/{ciclo}', [vistasAlumnosController::class, 'getCursos']);
 Route::get('/obtener-cursos/{cicloId}', [vistasAlumnosController::class, 'getCursos'])->name('obtener.cursos');
+// Ficha de matrículaen PDF
+Route::get('/alumnos/{alumno}/ficha-pdf', [vistasAlumnosController::class, 'exportarFichaPDF'])->name('alumno.ficha.pdf');
+
 
 Route::resource('trabajo', BolsaController::class)->middleware('auth')->names('trabajo');
 Route::resource('postulante', PostulanteController::class);

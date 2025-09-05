@@ -61,11 +61,11 @@
                     fn($curso) => !str_contains($curso->ciclo->programa->nombre ?? '', 'PPD'),
                 );
             @endphp
-            <div class="col-lg-12 table-responsive mb-5" id="tablappd">
-                <h4 class="font-weight-bold text-primary text-center" style="font-size: 20px">Cursos PPD</h4>
-                @if ($cursosPPD->isEmpty())
+            <div class="col-lg-12 table-responsive" id="tablafid">
+                <h4 class="font-weight-bold text-primary text-center" style="font-size: 20px">Cursos FID</h4>
+                @if ($otrosCursos->isEmpty())
                     <div class="text-center text-muted my-4">
-                        <strong>No tiene cursos asignados de Profesionalización Docente</strong>
+                        <strong>No tiene cursos asignados de FID</strong>
                     </div>
                 @else
                     <table class="table table-hover table-bordered">
@@ -82,11 +82,12 @@
                             @php
                                 $contador = 0;
                             @endphp
-                            @foreach ($cursosPPD->values() as $index => $curso)
+                            @foreach ($otrosCursos->values() as $index => $curso)
                                 @php
                                     $contador++;
                                 @endphp
-                                <tr>
+                                <tr @if (str_contains($curso->ciclo->programa->nombre ?? '', 'PPD')) style="background-color: #e7f3ff" @endif>
+
                                     <td>
                                         {{ $contador }}
                                     </td>
@@ -139,7 +140,8 @@
                                                             en
                                                             PDF</button>
                                                     </div>
-                                                    <div id="file-name-{{ $curso->id }}" class="mt-2 text-muted"></div>
+                                                    <div id="file-name-{{ $curso->id }}" class="mt-2 text-muted">
+                                                    </div>
                                                 </form>
                                             @elseif ($curso->relacionsilabo)
                                                 <a href="{{ route('silabos.show', $curso->relacionsilabo->id) }}"
@@ -284,14 +286,14 @@
                     </table>
                 @endif
             </div>
+            <div class="col-lg-12 table-responsive mb-5" id="tablappd" style="display: none;">
 
-            <div class="col-lg-12 table-responsive" id="tablafid" style="display: none;">
-                <h4 class="font-weight-bold text-primary text-center" style="font-size: 20px">Cursos FID</h4>
-                @if ($otrosCursos->isEmpty())
-                    <div class="text-center text-muted my-4">
-                        <strong>No tiene cursos asignados de FID</strong>
+                @if ($cursosPPD->isEmpty())
+                    <div class="alert alert-secondary text-center" role="alert">
+                        No cuenta con ningún curso de <strong>Profesionalización Docente</strong> asignado.
                     </div>
                 @else
+                    <h4 class="font-weight-bold text-primary text-center" style="font-size: 20px">Cursos PPD</h4>
                     <table class="table table-hover table-bordered">
                         <thead class="thead-dark">
                             <tr>
@@ -306,12 +308,11 @@
                             @php
                                 $contador = 0;
                             @endphp
-                            @foreach ($otrosCursos->values() as $index => $curso)
+                            @foreach ($cursosPPD->values() as $index => $curso)
                                 @php
                                     $contador++;
                                 @endphp
-                                <tr @if (str_contains($curso->ciclo->programa->nombre ?? '', 'PPD')) style="background-color: #e7f3ff" @endif>
-
+                                <tr>
                                     <td>
                                         {{ $contador }}
                                     </td>
@@ -510,6 +511,8 @@
                     </table>
                 @endif
             </div>
+
+
             <!-- Modal de Confirmación -->
             <div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog"
                 aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
@@ -531,51 +534,53 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-            <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 
-            <script>
-                $(document).ready(function() {
-                    $('#confirmDeleteModal').on('show.bs.modal', function(e) {
-                        var button = $(e.relatedTarget); // El botón que activó el modal
-                        var url = button.data('href'); // La URL a la que se debe enviar la solicitud DELETE
-                        var modal = $(this);
-                        modal.find('#confirm-delete').data('href',
-                            url); // Configura la URL en el botón de confirmación
-                    });
+    <script>
+        $(document).ready(function() {
+            $('#confirmDeleteModal').on('show.bs.modal', function(e) {
+                var button = $(e.relatedTarget); // El botón que activó el modal
+                var url = button.data('href'); // La URL a la que se debe enviar la solicitud DELETE
+                var modal = $(this);
+                modal.find('#confirm-delete').data('href',
+                    url); // Configura la URL en el botón de confirmación
+            });
 
-                    $('#confirm-delete').click(function() {
-                        var url = $(this).data('href'); // Obtener la URL configurada
-                        var form = $('<form>', {
-                            'method': 'POST',
-                            'action': url
-                        }).append($('<input>', {
-                            'name': '_token',
-                            'value': $('meta[name="csrf-token"]').attr('content'),
-                            'type': 'hidden'
-                        })).append($('<input>', {
-                            'name': '_method',
-                            'value': 'DELETE',
-                            'type': 'hidden'
-                        }));
-                        $('body').append(form);
-                        form.submit();
-                    });
-                });
-            </script>
-            <script>
-                function mostrarTabla(tipo) {
-                    const tablaPPD = document.getElementById('tablappd');
-                    const tablaFID = document.getElementById('tablafid');
+            $('#confirm-delete').click(function() {
+                var url = $(this).data('href'); // Obtener la URL configurada
+                var form = $('<form>', {
+                    'method': 'POST',
+                    'action': url
+                }).append($('<input>', {
+                    'name': '_token',
+                    'value': $('meta[name="csrf-token"]').attr('content'),
+                    'type': 'hidden'
+                })).append($('<input>', {
+                    'name': '_method',
+                    'value': 'DELETE',
+                    'type': 'hidden'
+                }));
+                $('body').append(form);
+                form.submit();
+            });
+        });
+    </script>
+    <script>
+        function mostrarTabla(tipo) {
+            const tablaPPD = document.getElementById('tablappd');
+            const tablaFID = document.getElementById('tablafid');
 
-                    if (tipo === 'ppd') {
-                        tablaPPD.style.display = 'block';
-                        tablaFID.style.display = 'none';
-                    } else if (tipo === 'fid') {
-                        tablaPPD.style.display = 'none';
-                        tablaFID.style.display = 'block';
-                    }
-                }
-            </script>
-        @endsection
+            if (tipo === 'ppd') {
+                tablaPPD.style.display = 'block';
+                tablaFID.style.display = 'none';
+            } else if (tipo === 'fid') {
+                tablaPPD.style.display = 'none';
+                tablaFID.style.display = 'block';
+            }
+        }
+    </script>
+@endsection

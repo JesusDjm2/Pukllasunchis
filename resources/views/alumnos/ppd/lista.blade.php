@@ -8,9 +8,28 @@
                 <small>(Mostrando: <span id="filteredRecords">{{ $alumnos->count() }}</span>)</small>
             </h4>
             <div>
-                <button class="btn btn-primary btn-sm filter-button" data-programa="3">Inicial</button>
-                <button class="btn btn-success btn-sm filter-button" data-programa="4">Primaria</button>
-                <button class="btn btn-danger btn-sm filter-button" data-programa="5">Primaria EIB</button>
+                <button class="btn btn-primary btn-sm filter-button" data-programa="3">
+                    @if ($counts['Inicial'] > 0)
+                        Inicial <small>{{ $counts['Inicial'] }}</small>
+                    @else
+                        <em>Sin registros</em>
+                    @endif
+                </button>
+                <button class="btn btn-success btn-sm filter-button" data-programa="4">
+                    Primaria @if ($counts['Primaria'] > 0)
+                        <small>{{ $counts['Primaria'] }}</small>
+                    @else
+                        <em>Sin registro</em>
+                    @endif
+                </button>
+                <button class="btn btn-danger btn-sm filter-button" data-programa="5">
+                    Primaria EIB
+                    @if ($counts['Primaria EIB'] > 0)
+                        <small>{{ $counts['Primaria EIB'] }}</small>
+                    @else
+                        <small>(0)</small>
+                    @endif
+                </button>
             </div>
         </div>
 
@@ -39,8 +58,8 @@
                 <thead class="thead-dark">
                     <tr>
                         <th>Nombre</th>
-                        <th>Correo</th>
-                        <th>DNI</th>
+                        <th>Programa</th>
+                        {{-- <th>DNI</th> --}}
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -48,14 +67,62 @@
                     @foreach ($alumnos as $alumno)
                         <tr data-programa="{{ $alumno->ciclo->programa->id }}">
                             <td>
-                                <strong>{{ $alumno->apellidos }}, {{ $alumno->nombres }}</strong>
+                                <strong>{{ $alumno->apellidos }}, {{ $alumno->name }}</strong>
                                 <br>
-                                <li class="pl-2">{{ $alumno->ciclo->programa->nombre }} - Ciclo {{ $alumno->ciclo->nombre }}</li>
-                                <li class="pl-2">{{$alumno->numero}}</li>
+                                <li class="pl-2">{{ $alumno->email }}</li>
+                                <li class="pl-2">DNI: {{ $alumno->dni }}</li>
+
+                                <li class="pl-2">
+                                    @if ($alumno->alumnoB)
+                                        Completó matrícula: <small>✅</small>
+                                    @else
+                                        Completó matrícula: <small>❌</small>
+                                    @endif
+                                </li>
+                                <li class="pl-2">
+                                    @if ($alumno->alumnoB)
+                                        Número: {{ $alumno->alumnoB->numero }}
+                                    @else
+                                        <em>Sin número</em>
+                                    @endif
+                                </li>
                             </td>
-                            <td>{{ $alumno->email }}</td>
-                            <td>{{ $alumno->dni }}</td>
-                            <td></td>
+                            <td>{{ $alumno->ciclo->programa->nombre }} - {{ $alumno->ciclo->nombre }}</td>
+
+                            <td>
+                                {{-- @if ($alumno->alumnoB)
+                                    <a href="{{ route('alumnos.show', $alumno->alumnoB->id) }}"
+                                        class="btn btn-sm btn-primary" title="Ver">
+                                        <i class="fa fa-eye"></i>
+                                    </a>
+                                    <a href="{{ route('alumnos.edit', $alumno->alumnoB->id) }}"
+                                        class="btn btn-sm btn-warning" title="Editar">
+                                        <i class="fa fa-edit"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-danger" title="Eliminar"
+                                        onclick="confirmDelete('{{ route('alumnos.destroy', $alumno->alumnoB->id) }}', '{{ $alumno->apellidos }}, {{ $alumno->nombres }}')">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                @else
+                                    <em>Sin matrícula</em>
+                                @endif --}}
+                                @if ($alumno->alumnoB)
+                                    <a href="{{ route('ppd.show', $alumno->alumnoB->id) }}" class="btn btn-sm btn-primary"
+                                        title="Ver">
+                                        <i class="fa fa-eye"></i>
+                                    </a>
+                                    <a href="{{ route('ppd.edit', $alumno->alumnoB->id) }}" class="btn btn-sm btn-warning"
+                                        title="Editar">
+                                        <i class="fa fa-edit"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-danger" title="Eliminar"
+                                        onclick="confirmDelete('{{ route('alumnos.destroy', $alumno->id) }}', '{{ $alumno->apellidos }}, {{ $alumno->nombres }}')">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                @else
+                                    <em>Sin matrícula</em>
+                                @endif
+                            </td>
                         </tr>
                     @endforeach
                 </tbody>

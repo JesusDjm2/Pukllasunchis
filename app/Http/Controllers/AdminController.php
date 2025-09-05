@@ -18,11 +18,6 @@ class AdminController extends Controller
 {
     public function login()
     {
-        /* if (auth()->check()) {
-            if (auth()->user()->hasRole('docente')) {
-                return view('docentes.index', compact('alumno'));
-            }
-        } */
         return view('admin.login');
     }
 
@@ -33,8 +28,20 @@ class AdminController extends Controller
         $totalAlumnos = User::whereHas('roles', function ($query) {
             $query->where('name', 'alumno');
         })->count();
-        $totalRecords = Alumno::count();
-        return view('admin.index', compact('alumno', 'admins', 'totalAlumnos', 'totalRecords'));
+
+        //Conteos
+        $totalRecords = User::count();
+        $conteoDocentes = User::role('docente')->count();
+        $conteoAlumnos = User::role('alumno')->count();
+        $conteoPpd = User::role('alumnoB')->count();
+        $conteoAdmin = User::role('admin')->count();
+        $conteoInhabilitados = User::role('inhabilitado')->count();
+        $alumnosConBeca = User::where('beca', 1)
+            ->whereHas('roles', function ($query) {
+                $query->where('name', 'alumno');
+            })
+            ->count();
+        return view('admin.index', compact('alumno', 'admins', 'totalAlumnos', 'totalRecords', 'alumnosConBeca', 'conteoDocentes', 'conteoAdmin', 'conteoInhabilitados', 'conteoAlumnos', 'conteoPpd'));
     }
 
     public function alumnos(Request $request)
@@ -78,9 +85,18 @@ class AdminController extends Controller
     }
     public function alumnosppd()
     {
-        $alumnos = ppd::all();
+        /* $alumnos = ppd::all();
         $totalRecords = ppd::count();
-        return view('alumnos.ppd.lista', compact('alumnos', 'totalRecords'));
+        return view('alumnos.ppd.lista', compact('alumnos', 'totalRecords')); */
+        $alumnos = User::role('alumnoB')->get();
+        $ppd = ppd::all();
+        $totalRecords = $ppd->count();
+        $counts = [
+        'Inicial'      => $alumnos->filter(fn($a) => Str::contains($a->ciclo->programa->nombre, 'Inicial'))->count(),
+        'Primaria'     => $alumnos->filter(fn($a) => Str::contains($a->ciclo->programa->nombre, 'Primaria') && !Str::contains($a->ciclo->programa->nombre, 'EIB'))->count(),
+        'Primaria EIB' => $alumnos->filter(fn($a) => Str::contains($a->ciclo->programa->nombre, 'Primaria EIB'))->count(),
+    ];
+        return view('alumnos.ppd.lista', compact('alumnos', 'ppd', 'totalRecords', 'counts'));
     }
 
 
@@ -107,13 +123,10 @@ class AdminController extends Controller
     public function asignarRolAlumno($alumnoId)
     {
         $user = User::find($alumnoId);
-
         if (!$user) {
             return response()->json(['error' => 'Usuario no encontrado.'], 404);
         }
-
         $user->assignRole('alumno');
-
         return response()->json(['success' => 'Rol asignado correctamente.']);
     }
     public function create()
@@ -227,12 +240,17 @@ class AdminController extends Controller
         $user->beca = $request->input('beca');
         $user->email = $request->input('email');
 
-        /* if ($request->has('password')) {
+
+        /* if ($request->filled('password')) {
             $user->password = Hash::make($request->input('password'));
         } */
         if ($request->filled('password')) {
+            $request->validate([
+                'password' => ['string', 'min:7', 'confirmed'],
+            ]);
             $user->password = Hash::make($request->input('password'));
         }
+
         // Manejo de la imagen
         if ($request->hasFile('foto')) {
             $foto = $request->file('foto');

@@ -13,6 +13,7 @@ class Silabo extends Model
         'curso_id',
         'nombre',
         'sumilla',
+        'periodo',
 
         'proyecto_integrador',
         'producto_proyecto_integrador',

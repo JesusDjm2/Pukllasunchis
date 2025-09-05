@@ -6,6 +6,7 @@ use App\Models\Ciclo;
 use App\Models\Competencia;
 use App\Models\Curso;
 use App\Models\Programa;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Storage;
@@ -126,14 +127,10 @@ class CursoController extends Controller
     }
     public function classroomClaveCRUD(Request $request, Curso $curso)
     {
-        // Verificar si se debe eliminar
         if ($request->has('delete') && $request->input('delete') === 'true') {
-            // Eliminar valores de classroom y clave
             $curso->update(['classroom' => null, 'clave' => null]);
             return redirect()->back()->with('success', 'Classroom y Clave eliminados correctamente.');
         }
-
-        // Crear o actualizar los valores
         $curso->update([
             'classroom' => $request->input('classroom'),
             'clave' => $request->input('clave')
@@ -179,24 +176,52 @@ class CursoController extends Controller
 
         return redirect()->route('curso.index')->with('success', 'Curso actualizado exitosamente');
     }
-    public function show(Curso $curso)
+    /* public function show(Curso $curso)
     {
         $programa = $curso->ciclo->programa;
         $ciclo = $curso->ciclo;
-        /* $alumno = auth()->user()->ppd; */
         $alumno = auth()->user()->alumnoB;
-        $alumnos = $programa->alumnos()
+
+        // Alumnos del mismo ciclo
+        $alumnosCiclo = $programa->alumnos()
             ->where('ciclo_id', $ciclo->id)
             ->orderBy('apellidos')
             ->get();
-        $cantidadAlumnos = $alumnos->count();
+
+        $alumnosRelacionados = $curso->alumnos()->orderBy('apellidos')->get();
+
+        $alumnos = $alumnosCiclo->merge($alumnosRelacionados)->unique('id')->values();
+
+        $cantidadAlumnos = $alumnos->count() + $alumnosRelacionados->count();
         $docentes = $curso->docentes;
 
         if (auth()->check() && auth()->user()->hasRole('alumnoB')) {
             return view('alumnos.ppd.curso', compact('curso', 'alumnos', 'docentes', 'cantidadAlumnos', 'alumno'));
         }
         return view('admin.curso.show', compact('curso', 'alumnos', 'cantidadAlumnos', 'docentes'));
+    } */
+    public function show(Curso $curso)
+    {
+        $programa = $curso->ciclo->programa;
+        $ciclo = $curso->ciclo;
+        $alumno = auth()->user()->alumnoB;
+
+        $usersPrograma = User::where('programa_id', $programa->id)
+            ->with('alumnoB') 
+            ->orderBy('apellidos')
+            ->get();
+        $alumnosPrograma = $usersPrograma->pluck('alumnoB')->filter();
+        $alumnosRelacionados = $curso->alumnos()->orderBy('apellidos')->get();
+        $alumnos = $alumnosPrograma->merge($alumnosRelacionados)->unique('id')->values();
+        $cantidadAlumnos = $alumnos->count();
+        $docentes = $curso->docentes;
+        if (auth()->check() && auth()->user()->hasRole('alumnoB')) {
+            return view('alumnos.ppd.curso', compact('curso', 'alumnos', 'docentes', 'cantidadAlumnos', 'alumno'));
+        }
+
+        return view('admin.curso.show', compact('curso', 'alumnos', 'cantidadAlumnos', 'docentes'));
     }
+
     public function destroy(Curso $curso)
     {
         $curso->delete();

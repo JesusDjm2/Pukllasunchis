@@ -37,16 +37,6 @@ class AlumnoController extends Controller
     {
         return view('alumnos.ficha', compact('alumno'));
     }
-    /* public function mostrarContenido(Request $request)
-    {
-        $request->validate([
-            'alumno_id' => 'required|exists:alumnos,id',
-        ]);
-        $alumno = Alumno::find($request->alumno_id);
-        session(['mostrar_contenido' => true]);
-        Mail::to('mirandadjmdjm@gmail.com')->send(new NotificacionRegistro($alumno));
-        return redirect()->back()->with('success', 'Correo enviado correctamente.');
-    } */
     public function mostrarContenido(Request $request)
     {
         $request->validate([
@@ -92,7 +82,6 @@ class AlumnoController extends Controller
         $campos = Schema::getColumnListing('alumnos');
         return view('alumnos.filtro', compact('alumnos', 'campos'));
     }
-
     public function store(Request $request)
     {
         // Validar los datos del formulario
@@ -266,7 +255,9 @@ class AlumnoController extends Controller
     }
     public function show($id)
     {
+        /* $alumno = Alumno::with('user')->find($id); */
         $alumno = Alumno::with('user')->find($id);
+
         $procedencia = [
             'vivo_en_comunidad' => 'Yo aún vivo en la comunidad',
             'padres_viven_en_comunidad' => 'Mis padres aún viven en la comunidad',
@@ -342,9 +333,191 @@ class AlumnoController extends Controller
             'Literatura (Poesía, Cuentos, etc)',
             'Otros'
         ];
-        return view('alumnos.edit', compact('alumno', 'programas', 'ciclos', 'user', 'opcionesBienesVivienda', 'opcionesServicios', 'opcionesHabilidades'));
+
+        // 🔹 Ubicación de ejemplo (solo algunos departamentos con provincias y distritos reales para demo)
+        $departamentosData = [
+            'Amazonas' => [
+                'provincia' => [
+                    'Chachapoyas' => ['Chachapoyas', 'Asunción', 'Balsas', 'Cheto', 'Chiliquin', 'Chuquibamba', 'Granada', 'Huancas', 'Jalca Grande', 'Leimebamba', 'Levanto', 'Magdalena', 'Mariscal Castilla', 'Molinopampa', 'Montevideo', 'Olleros', 'Quinjalca', 'San Francisco de Daguas', 'San Isidro de Maino', 'Soloco', 'Sonche'],
+                    'Bagua' => ['Bagua', 'La Peca', 'Aramango', 'Copallín', 'El Parco', 'Imaza'],
+                    'Bongará' => ['Jumbilla', 'Chisquilla', 'Churuja', 'Corosha', 'Cuispes', 'Florida', 'Pedro Ruiz Gallo', 'Recta', 'San Carlos', 'Shipasbamba', 'Valera', 'Yambrasbamba'],
+                    'Condorcanqui' => ['El Cenepa', 'Nieva', 'Río Santiago'],
+                    'Luya' => [
+                        'Camporredondo',
+                        'Cocabamba',
+                        'Colcamar',
+                        'Conila',
+                        'Inguilpata',
+                        'Lámud',
+                        'Longuita',
+                        'Lonya Chico',
+                        'Luya',
+                        'Luya Viejo',
+                        'María',
+                        'Ocalli',
+                        'Ocumal',
+                        'Pisuquía',
+                        'Providencia',
+                        'San Cristóbal',
+                        'San Francisco del Yeso',
+                        'San Jerónimo',
+                        'San Juan de Lopecancha',
+                        'Santa Catalina',
+                        'Santo Tomás',
+                        'Tingo',
+                        'Trita'
+                    ],
+                    'Rodríguez de Mendoza' => [
+                        'San Nicolás',
+                        'Chirimoto',
+                        'Cochamal',
+                        'Huambo',
+                        'Limabamba',
+                        'Longar',
+                        'Mariscal Benavides',
+                        'Mílpuc',
+                        'Omia',
+                        'Santa Rosa',
+                        'Totora',
+                        'Vista Alegre'
+                    ],
+                    'Utcubamba' => ['Bagua Grande', 'Cajaruro', 'Cumba', 'El Milagro', 'Jamalca', 'Lonya Grande', 'Yamón'],
+
+                ]
+            ],
+            'Anchash' => [
+                'provincia' => [
+                    'Huancavelica' => ['Huancavelica', 'Acobamba', 'Angaraes', 'Castrovirreyna', 'Chanchamayo', 'Huancayo', 'Huaytara', 'Tayacaja'],
+                ]
+            ],
+            'Apurímac' => [
+                'provincia' => [
+                    'Abancay' => ['Abancay', 'Chacoche', 'Circa', 'Curahuasi', 'Huanipaca', 'Lambrama', 'Pichirhua', 'San Pedro de Cachora', 'Tamburco'],
+                    'Andahuaylas' => ['Andahuaylas', 'Andarapa', 'Chiara', 'Huancarama', 'Huancaray', 'Huayana', 'Kishuara', 'Pacobamba', 'Pacucha', 'Pampachiri', 'Pomacocha', 'San Antonio de Cachi', 'San Jerónimo', 'San Miguel de Chaccrampa', 'Santa María de Chicmo', 'Talavera', 'Tumay Huaraca', 'Turpo', 'Kaquiabamba', 'José María Arguedas'],
+                    'Antabamba' => ['Antabamba', 'El Oro', 'Huaquirca', 'Juan Espinoza Medrano', 'Oropesa', 'Pachaconas', 'Sabaino'],
+                    'Aymaraes' => ['Chalhuanca', 'Capaya', 'Caraybamba', 'Chapimarca', 'Colcabamba', 'Cotaruse', 'Huayllo', 'Justo Apu Sahuaraura', 'Lucre', 'Pocohuanca', 'San Juan de Chacña', 'Sañayca', 'Soraya', 'Tapairihua', 'Tintay', 'Toraya', 'Yanaca'],
+                    'Cotabambas' => ['Tambobamba', 'Cotabambas', 'Coyllurqui', 'Haquira', 'Mara', 'Challhuahuacho'],
+                    'Chincheros' => ['Chincheros', 'Anco_Huallo', 'Cocharcas', 'Huaccana', 'Ocobamba', 'Ongoy', 'Uranmarca', 'Ranracancha', 'Rocchacc', 'El Porvenir', 'Los Chankas'],
+                    'Grau' => ['Chuquibambilla', 'Curpahuasi', 'Gamarra', 'Huayllati', 'Mamara', 'Micaela Bastidas', 'Pataypampa', 'Progreso', 'San Antonio', 'Santa Rosa', 'Turpay', 'Vilcabamba', 'Virundo', 'Curasco']
+                ]
+            ],
+            'Ayacucho' => [
+                'provincia' => [
+                    'Huamanga' => ['Ayacucho', 'Acocro', 'Acos Vinchos', 'Carmen Alto', 'Chiara', 'Ocros', 'Pacaycasa', 'Quinua', 'San José de Ticllas', 'San Juan Bautista', 'Santiago de Pischa', 'Socos', 'Tambillo', 'Vinchos', 'Jesús Nazareno', 'Andrés Avelino Cáceres Dorregaray'],
+                    'Cangallo' => ['Cangallo', 'Chuschi', 'Los Morochucos', 'María Parado de Bellido', 'Paras', 'Totos'],
+                    'Huanca Sancos' => ['Sancos', 'Carapo', 'Sacsamarca', 'Santiago de Lucanamarca'],
+                    'Huanta' => ['Huanta', 'Ayahuanco', 'Huamanguilla', 'Iguain', 'Luricocha', 'Santillana', 'Sivia', 'Llochegua', 'Canayre', 'Uchuraccay', 'Pucacolpa', 'Chaca'],
+                    'La Mar' => ['San Miguel', 'Anco', 'Ayna', 'Chilcas', 'Chungui', 'Luis Carranza', 'Santa Rosa', 'Tambo', 'Samugari', 'Anchihuay', 'Oronccoy'],
+                    'Lucanas' => ['Puquio', 'Aucara', 'Cabana', 'Carmen Salcedo', 'Chaviña', 'Chipao', 'Huac-Huas', 'Laramate', 'Leoncio Prado', 'Llauta', 'Lucanas', 'Ocaña', 'Otoca', 'Saisa', 'San Cristóbal', 'San Juan', 'San Pedro', 'San Pedro de Palco', 'Sancos', 'Santa Ana de Huaycahuacho', 'Santa Lucia'],
+                    'Parinacochas' => ['Coracora', 'Chumpi', 'Coronel Castañeda', 'Pacapausa', 'Pullo', 'Puyusca', 'San Francisco de Ravacayco', 'Upahuacho'],
+                    'Páucar del Sara Sara' => ['Pausa', 'Colta', 'Corculla', 'Lampa', 'Marcabamba', 'Oyolo', 'Pararca', 'San Javier de Alpabamba', 'San José de Ushua', 'Sara Sara'],
+                    'Sucre' => ['Querobamba', 'Belén', 'Chalcos', 'Chilcayoc', 'Huacaña', 'Morcolla', 'Paico', 'San Pedro de Larcay', 'San Salvador de Quije', 'Santiago de Paucaray', 'Soras'],
+                    'Víctor Fajardo' => ['Huancapi', 'Alcamenca', 'Apongo', 'Asquipata', 'Canaria', 'Cayara', 'Colca', 'Huamanquiquia', 'Huancaraylla', 'Huaya', 'Sarhua', 'Vilcanchos'],
+                    'Vilcas Huamán' => ['Vilcas Huamán', 'Accomarca', 'Carhuanca', 'Concepción', 'Huambalpa', 'Independencia', 'Saurama', 'Vischongo']
+                ]
+            ],
+            'Arequipa' => [
+                'provincia' => [
+                    'Arequipa' => ['Arequipa', 'Alto Selva Alegre', 'Cayma', 'Cerro Colorado', 'Characato', 'Chiguata', 'Jacobo Hunter', 'José Luis Bustamante y Rivero', 'La Joya', 'Mariano Melgar', 'Miraflores', 'Mollebaya', 'Paucarpata', 'Pocsi', 'Polobaya', 'Quequeña', 'Sabandia', 'Sachaca', 'San Juan de Siguas', 'San Juan de Tarucani', 'Santa Isabel de Siguas', 'Santa Rita de Siguas', 'Socabaya', 'Tiabaya', 'Uchumayo', 'Vitor', 'Yanahuara', 'Yarabamba', 'Yura'],
+                    'Camana' => ['Camaná', 'José María Quimper', 'Mariano Nicolás Valcárcel', 'Mariscal Cáceres', 'Nicolás de Pierola', 'Ocoña', 'Quilca', 'Samuel Pastor'],
+                    'Caraveli' => ['Caravelí', 'Acarí', 'Atico', 'Atiquipa', 'Bella Unión', 'Cahuacho', 'Chala', 'Chaparra', 'Huanuhuanu', 'Jaqui', 'Lomas', 'Quicacha', 'Yauca'],
+                    'Castilla' => ['Aplao', 'Andagua', 'Ayo', 'Chachas', 'Chilcaymarca', 'Choco', 'Huancarqui', 'Machaguay', 'Orcopampa', 'Pampacolca', 'Tipan', 'Uñon', 'Uraca', 'Viraco'],
+                    'Caylloma' => ['Chivay', 'Achoma', 'Cabanaconde', 'Callalli', 'Caylloma', 'Coporaque', 'Huambo', 'Huanca', 'Ichupampa', 'Lari', 'Lluta', 'Maca', 'Madrigal', 'San Antonio de Chuca', 'Sibayo', 'Tapay', 'Tisco', 'Tuti', 'Yanque', 'Majes'],
+                    'Condesuyos' => ['Chuquibamba', 'Andaray', 'Cayarani', 'Chichas', 'Iray', 'Río Grande', 'Salamanca', 'Yanaquihua'],
+                    'Islay' => ['Mollendo', 'Cocachacra', 'Dean Valdivia', 'Islay', 'Mejia', 'Punta de Bombón'],
+                    'La Union' => ['Cotahuasi', 'Alca', 'Charcana', 'Huaynacotas', 'Pampamarca', 'Puyca', 'Quechualla', 'Sayla', 'Tauria', 'Tomepampa', 'Toro']
+                ]
+            ],
+            'Cusco' => [
+                'provincia' => [
+                    'Acomayo' => ['Acomayo', 'Acopia', 'Acos', 'Mosoc Llacta', 'Pomacanchi', 'Rondocan',],
+                    'Anta' => ['Anta', 'Ancahuasi', 'Cachimayo', 'Chinchaypujio', 'Huarocondo', 'Limatambo', 'Mollepata', 'Pucyura', 'Zurite'],
+                    'Calca' => ['Calca', 'Coya', 'Lamay', 'Lares', 'Pisac', 'San Salvador', 'Taray', 'Yanatile'],
+                    'Canas' => ['Yanaoca', 'Checca', 'Kunturkanki', 'Langui', 'Layo', 'Pampamarca', 'Quehue', 'Tupac Amaru'],
+                    'Canchis' => ['Sicuani', 'Checacupe', 'Combapata', 'Marangani', 'Pitumarca', 'San Pablo', 'San Pedro', 'Tinta'],
+                    'Chumbivilcas' => ['Santo Tomás', 'Capacmarca', 'Chamaca', 'Colquemarca', 'Livitaca', 'Llusco', 'Quiñota', 'Velille'],
+                    'Cusco' => ['Cusco', 'Ccorca', 'Poroy', 'San Jerónimo', 'San Sebastián', 'Santiago', 'Saylla', 'Wanchaq'],
+                    'Espinar' => ['Espinar', 'Condoroma', 'Coporaque', 'Ocoruro', 'Pallpata', 'Pichigua', 'Suykutambo', 'Alto Pichigua'],
+                    'La Convención' => ['Quillabamba', 'Echarate', 'Huayopata', 'Maranura', 'Ocobamba', 'Quellouno', 'Santa Ana', 'Santa Teresa', 'Vilcabamba'],
+                    'Paruro' => ['Paruro', 'Accha', 'Ccapi', 'Colcha', 'Huanoquite', 'Omacha', 'Paccaritambo', 'Pillpinto', 'Yaurisque'],
+                    'Paucartambo' => ['Paucartambo', 'Caicay', 'Challabamba', 'Colquepata', 'Huancarani', 'Kosñipata'],
+                    'Quispicanchi' => ['Urcos', 'Andahuaylillas', 'Camanti', 'Ccarhuayo', 'Ccatca', 'Cusipata', 'Huaro', 'Lucre', 'Marcapata', 'Ocongate', 'Oropesa', 'Quiquijana'],
+                    'Urubamba' => ['Urubamba', 'Chinchero', 'Huayllabamba', 'Machupicchu', 'Maras', 'Ollantaytambo', 'Yucay']
+                ]
+            ],
+            'Lima' => [
+                'provincia' => [
+                    'Lima' => ['Lima', 'Ancon', 'Ate', 'Barranco', 'Breña', 'Carabayllo', 'Chaclacayo', 'Chorrillos', 'Cieneguilla', 'Comas', 'El Agustino', 'Independencia', 'Jesus Maria', 'La Molina', 'La Victoria', 'Lince', 'Los Olivos', 'Lurigancho', 'Lurin', 'Magdalena del Mar', 'Miraflores', 'Pachacamac', 'Pucusana', 'Pueblo Libre', 'Puente Piedra', 'Punta Hermosa', 'Punta Negra', 'Rimac', 'San Bartolo', 'San Borja', 'San Isidro', 'San Juan de Lurigancho', 'San Juan de Miraflores', 'San Luis', 'San Martin de Porres', 'San Miguel', 'Santa Anita', 'Santa Maria del Mar', 'Santa Rosa', 'Santiago de Surco', 'Surquillo', 'Villa El Salvador', 'Villa Maria del Triunfo'],
+                    'Barranca' => ['Barranca', 'Paramonga', 'Pativilca', 'Supe', 'Supe Puerto'],
+                    'Cajatambo' => ['Cajatambo', 'Copa', 'Gorgor', 'Huancapon', 'Manas'],
+                    'Canta' => ['Canta', 'Arahuay', 'Huamantanga', 'Huaros', 'Lachaqui', 'San Buenaventura', 'Santa Rosa de Quives'],
+                    'Cañete' => ['San Vicente de Cañete', 'Asia', 'Calango', 'Cerro Azul', 'Chilca', 'Coayllo', 'Imperial', 'Lunahuana', 'Mala', 'Nuevo Imperial', 'Pacaran', 'Quilmana', 'San Antonio', 'San Luis', 'Santa Cruz de Flores', 'Zúñiga'],
+                    'Huaral' => ['Huaral', 'Atavillos Alto', 'Atavillos Bajo', 'Aucallama', 'Chancay', 'Ihuari', 'Lampian', 'Pacaraos', 'San Miguel de Acos', 'Santa Cruz de Andamarca', 'Sumbilca', 'Veintisiete de Noviembre'],
+                    'Huarochiri' => ['Matucana', 'Antioquia', 'Callahuanca', 'Carampoma', 'Chicla', 'Cuenca', 'Huachupampa', 'Huanza', 'Huarochiri', 'Lahuaytambo', 'Langa', 'Laraos', 'Mariatana', 'Ricardo Palma', 'San Andrés de Tupicocha', 'San Antonio', 'San Bartolomé', 'San Damian', 'San Juan de Iris', 'San Juan de Tantaranche', 'San Lorenzo de Quinti', 'San Mateo', 'San Mateo de Otao', 'San Pedro de Casta', 'San Pedro de Huancayre', 'Sangallaya', 'Santa Cruz de Cocachacra', 'Santa Eulalia', 'Santiago de Anchucaya', 'Santiago de Tuna', 'Santo Domingo de los Olleros', 'Surco'],
+                    'Huaura' => ['Huacho', 'Ambar', 'Caleta de Carquin', 'Checras', 'Hualmay', 'Huaura', 'Leoncio Prado', 'Paccho', 'Santa Leonor', 'Santa Maria', 'Sayan', 'Vegueta'],
+                    'Oyon' => ['Oyon', 'Andajes', 'Caujul', 'Cochamarca', 'Navan', 'Pachangara'],
+                    'Yauyos' => ['Yauyos', 'Alis', 'Ayauca', 'Ayaviri', 'Azángaro', 'Cacra', 'Carania', 'Catahuasi', 'Chocos', 'Cochas', 'Colonia', 'Hongos', 'Huampara', 'Huancaya', 'Huangascar', 'Huantan', 'Huañec', 'Laraos', 'Lincha', 'Madean', 'Miraflores', 'Omas', 'Putinza', 'Quinches', 'Quinocay', 'San Joaquin', 'San Pedro de Pilas', 'Tanta', 'Tauripampa', 'Tomas', 'Tupe', 'Viñac', 'Vitis']
+                ]
+            ],
+            'Madre de Dios' => [
+                'provincia' => [
+                    'Tambopata' => ['Tambopata', 'Inambari', 'Las Piedras', 'Laberinto'],
+                    'Manu' => ['Manu', 'Fitzcarrald', 'Madre de Dios', 'Huepetuhe'],
+                    'Tahuamanu' => ['Iñapari', 'Iberia', 'Tahuamanu']
+                ]
+            ],
+            'Pasco' => [
+                'provincia' => [
+                    'Pasco' => ['Chaupimarca', 'Huachón', 'Huariaca', 'Huayllay', 'Ninacaca', 'Pallanchacra', 'Paucartambo', 'San Francisco de Asís de Yarusyacán', 'Simón Bolívar', 'Ticlacayan', 'Tinyahuarco', 'Vicco', 'Yanacancha'],
+                    'Daniel Alcides Carrión' => ['Yanahuanca', 'Chacayan', 'Goyllarisquizga', 'Paucar', 'San Pedro de Pillao', 'Santa Ana de Tusi', 'Tapuc', 'Vilcabamba'],
+                    'Oxapampa' => ['Oxapampa', 'Chontabamba', 'Huancabamba', 'Palcazu', 'Pozuzo', 'Puerto Bermúdez', 'Villa Rica', 'Constitución']
+                ]
+            ],
+            'Puno' => [
+                'provincia' => [
+                    'Puno' => ['Puno', 'Acora', 'Amantani', 'Atuncolla', 'Capachica', 'Chucuito', 'Coata', 'Huata', 'Mañazo', 'Paucarcolla', 'Pichacani', 'Plateria', 'San Antonio', 'Tiquillaca', 'Vilque'],
+                    'Azángaro' => ['Azángaro', 'Achaya', 'Arapa', 'Asillo', 'Caminaca', 'Chupa', 'Jose Domingo Choquehuanca', 'Muñani', 'Potoni', 'Saman', 'San Anton', 'San Jose', 'San Juan de Salinas', 'Santiago de Pupuja', 'Tirapata'],
+                    'Carabaya' => ['Macusani', 'Ajoyani', 'Ayapata', 'Coasa', 'Corani', 'Crucero', 'Ituata', 'Ollachea', 'San Gaban', 'Usicayos'],
+                    'Chucuito' => ['Juli', 'Desaguadero', 'Huacullani', 'Kelluyo', 'Pisacoma', 'Pomata', 'Zepita'],
+                    'El Collao' => ['Ilave', 'Capazo', 'Pilcuyo', 'Santa Rosa', 'Conduriri'],
+                    'Huancane' => ['Huancane', 'Cojata', 'Huatasani', 'Inchupalla', 'Pusi', 'Rosaspata', 'Taraco', 'Vilque Chico'],
+                    'Lampa' => ['Lampa', 'Cabanilla', 'Calapuja', 'Nicasio', 'Ocuviri', 'Palca', 'Paratia', 'Pucara', 'Santa Lucia', 'Vilavila'],
+                    'Melgar' => ['Ayaviri', 'Antauta', 'Cupi', 'Llalli', 'Macari', 'Nuñoa', 'Orurillo', 'Santa Rosa', 'Umachiri'],
+                    'Moho' => ['Moho', 'Conima', 'Huayrapata', 'Tilali'],
+                    'San Antonio de Putina' => ['Putina', 'Ananea', 'Pedro Vilca Apaza', 'Quilcapuncu', 'Sina'],
+                    'San Roman' => ['Juliaca', 'Cabana', 'Cabanillas', 'Caracoto'],
+                    'Sandia' => ['Sandia', 'Cuyocuyo', 'Limbani', 'Patambuco', 'Phara', 'Quiaca', 'San Juan del Oro', 'Yanahuaya', 'Alto Inambari', 'San Pedro de Putina Punco'],
+                    'Yunguyo' => ['Yunguyo', 'Anapia', 'Copani', 'Cuturapi', 'Ollaraya', 'Tinicachi', 'Unicachi']
+                ]
+            ],
+        ];
+        return view('alumnos.edit', compact('alumno', 'programas', 'ciclos', 'user', 'opcionesBienesVivienda', 'opcionesServicios', 'opcionesHabilidades', 'departamentosData'));
     }
     public function update(Request $request, Alumno $alumno)
+    {
+        $alumno = Alumno::findOrFail($alumno->id);
+
+        // Validación solo para estos campos
+        $request->validate([
+            'genero' => 'required|string',
+            'numero' => 'required|string|max:20',
+            'numero_referencia' => 'required|string|max:20',
+            'fecha_nacimiento' => 'required|date',
+            'num_hijos' => 'nullable|integer|min:0',
+            'num_comprobante' => 'required|string|max:50',
+            'trabajas' => 'required|string',
+            'departamento' => 'required|string|max:255',
+            'provincia' => 'required|string|max:255',
+            'distrito' => 'required|string|max:255',
+            'direccion' => 'required|string|max:255',
+        ]);
+
+        // Actualización de estos campos
+        $alumno->update($request->all());
+
+        return redirect()->route('alumnos.index', $alumno)->with('success', 'Datos registrados correctamente.');
+    }
+    /* public function update(Request $request, Alumno $alumno)
     {
         $id = $alumno->id;
         $validator = \Validator::make($request->all(), Alumno::getValidationRules(true, $id));
@@ -467,17 +640,50 @@ class AlumnoController extends Controller
             ]
         );
         return redirect()->route('alumnos.index', $alumno)->with('success', 'Datos registrados correctamente.');
-    }
+    } */
     public function destroy(Alumno $alumno)
     {
         $alumno->delete();
 
         return redirect()->route('adminAlumnos')->with('success', 'El alumno ha sido eliminado correctamente.');
     }
+
     public function calificaciones($id)
     {
+        $alumno = Alumno::with(['ciclo.cursos',])->findOrFail($id);
+
+        // Traemos todos los periodos del alumno, con curso y periodoActual
+        $periodos = $alumno->periodo()
+            ->with(['curso.ciclo.programa', 'periodoActual'])
+            ->get();
+
+        // Agrupamos por el nombre del PeriodoActual (ej. 2024-I, 2024-II, etc.)
+        $periodosAgrupados = $periodos->groupBy(function ($p) {
+            return optional($p->periodoActual)->nombre ?? 'Sin periodo';
+        })->sortKeys();
+
+        // Si además quieres los parciales actuales como en tu otra vista:
+        $periodoUno = $alumno->ciclo->cursos->flatMap(function ($curso) use ($alumno) {
+            return $curso->periodos()->where('alumno_id', $alumno->id)->get();
+        });
+
+        $periodoDos = $alumno->ciclo->cursos->flatMap(function ($curso) use ($alumno) {
+            return $curso->periododos()->where('alumno_id', $alumno->id)->get();
+        });
+
+        $periodoTres = $alumno->ciclo->cursos->flatMap(function ($curso) use ($alumno) {
+            return $curso->periodotres()->where('alumno_id', $alumno->id)->get();
+        });
+
+        return view(
+            'alumnos.vistasAlumnos.calificaciones',
+            compact('alumno', 'periodoUno', 'periodoDos', 'periodoTres', 'periodosAgrupados')
+        );
+    }
+
+    /* public function calificaciones($id)
+    {
         $alumno = Alumno::with(['ciclo.cursos.periodos', 'ciclo.cursos.periododos', 'ciclo.cursos.periodotres'])->findOrFail($id);
-        // Agrupar periodos anteriores por nombre único con cursos
         $periodosAgrupados = $alumno->periodo()
             ->with('curso')
             ->get()
@@ -494,5 +700,5 @@ class AlumnoController extends Controller
         });
 
         return view('alumnos.vistasAlumnos.calificaciones', compact('alumno', 'periodoUno', 'periodoDos', 'periodoTres', 'periodosAgrupados'));
-    }
+    } */
 }

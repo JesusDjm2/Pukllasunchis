@@ -22,23 +22,12 @@
     <div class="container pt-5 pb-5">
         <div class="row">
             <div class="col-lg-3">
-                <div class="pegajoso">
-                    <h3 class="linea-debajo">Admisión</h3>
-                    <ul class="submenu2">
-                        <li><a href="{{ route('ordinario') }}"><i class="fa fa-caret-right fa-sm"></i> Ingreso Ordinario</a>
-                        </li>
-                        <li><a href="{{ route('exoneracion') }}"><i class="fa fa-caret-right fa-sm"></i> Por Exoneración</a>
-                        </li>
-                        <li><a href="{{ route('traslado') }}"><i class="fa fa-caret-right fa-sm"></i> Traslado Externo</a>
-                        </li>
-                        <li><a href="{{ route('resultados') }}"><i class="fa fa-caret-right fa-sm"></i> Resultados</a></li>
-                    </ul>
-                </div>
+                @include('admision.menu-lateral')
             </div>
             <div class="col-lg-9">
                 <h2 class="linea-debajo">{{ $titulo }}</h2>
                 <p class="text-justify">
-                    Si eres estudiante de otros centros de educación superior y deseas incorporarte a la Escuela para
+                    Si eres estudiante de otros centros de Educación Superior y deseas incorporarte a la Escuela para
                     culminar tus estudios y graduarte en nuestra Institución, debes ingresar por el proceso de admisión
                     ordinario y presentar los documentos necesarios para hacer la convalidación de tus cursos.
                 </p>
@@ -68,7 +57,7 @@
                     <li>2 fotos tamaño carnet </li>
                     <li>Pago por derecho de armado de expediente por traslado externo (100.00 soles), 
                     </li>
-                    <li>a realizar en Caja Cusco como pago ordinario.</li>
+                    <li>Indicar en Caja Cusco como pago ordinario.</li>
                     
                 </ul>
                 <h3 class="mt-4"><i class="fa fa-caret-right" style="color:#cd9244"></i> Posteriormente, será necesario:

@@ -114,23 +114,7 @@
     </div>
     <div class="container pt-5 pb-5">
         <div class="row">
-            <div class="col-lg-3">
-                <div class="pegajoso">
-                    <ul class="submenu2">
-                        <li><a href="{{ route('plan') }}"><i class="fa fa-caret-right fa-sm"></i> Plan de Trabajo</a></li>
-                        <li><a href="{{ route('tinvestigacion') }}"><i class="fa fa-caret-right fa-sm"></i> Trabajo de
-                                Investigación</a></li>
-                        <li><a href="{{ route('tesis') }}"><i class="fa fa-caret-right fa-sm"></i> Tesis</a></li>
-                        <li><a href="{{ route('tramites') }}"><i class="fa fa-caret-right fa-sm"></i> Trámites
-                                presenciales</a></li>
-                        <li>
-                            <a href="#" onclick="openModal()"> <i class="fa fa-caret-right fa-sm"></i> ¿Cómo pagar en
-                                Caja Cusco?
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
+            @include('tramites.titulacion.tramites-lateral')
             <div class="col-lg-9">
                 <h2 class="linea-debajo" id="planTrabajo">{{ $titulo }}
                 </h2>
@@ -221,7 +205,7 @@
                             <small style="color: #000; font-style: italic;">Nota: el porcentaje máximo para aprobar el
                                 reporte de originalidad debe ser 20%, de lo contrario, debe corregir el documento y
                                 solicitar nuevamente la revisión. Con el pago que usted realiza puede hacer 3 revisiones de
-                                originalidad en un plazo no mayor a 20 días.</small>
+                                originalidad en un plazo no mayor a 30 días.</small>
                         </ul>
                     </li>
                     <li>Solicitar la revisión del TI por asesor/a:
@@ -246,11 +230,12 @@
                     </li>
                     <li>Solicitar fecha de exposición de TI:
                         <ul>
+							<li>Hacer el pago para solicitar fecha de exposición de TI <small class="text-info">Monto: s/50.00 | Código: 55 | Concepto: Fecha de
+                                    Exposición de TI</small></li>
                             <li>Llenar <a
                                     href="https://docs.google.com/forms/d/e/1FAIpQLSfyasqxxCR72v7aSnmtpISOedxYQzqV11igfLnegIr_biXIew/viewform"
                                     target="_blank" class="text-primary"> FORMULARIO DE SOLICITUD DE FECHA DE EXPOSICIÓN DE
-                                    TI.</a> <small class="text-info">Monto: s/50.00 | Código: 55 | Concepto: Fecha de
-                                    Exposición de TI</small></li>
+                                    TI.</a> </li>
                             <li>Adjuntar:
                                 <ul>
                                     <li>Informe de TI apto en formato PDF</li>
@@ -277,8 +262,7 @@
                                 </ul>
                             </li>
                             <li>Como resultado de este trámite, recibirás en tu correo institucional la RD de aprobación del
-                                TI,
-                                en un plazo no mayor a 3 días hábiles.</li>
+                                TI el día lunes de la semana próxima a la que pidió su solicitud. </li>
                         </ul>
                     </li>
                     <li>Armar expediente de graduación:
@@ -326,7 +310,7 @@
                                     s/400.00 | Código: 22 | Concepto: Emisión Diploma de Bachiller</small></li>
                         </ul>
                     </li>
-                    <li>Solicitar inscripción de grado de bachiller en SUNEDU previo pago de s/200.00 en las oficinas de
+                    <li>Solicitar registro e inscripción de grado de bachiller previo pago de s/200.00 en las oficinas de
                         <span class="text-danger font-weight-bold">Caja Cusco:</span>
 
 
@@ -413,7 +397,7 @@
                     </div>
                     <div class="col-lg-4 col-6 text-center">
                         <div class="card">
-                            <a href="{{ asset('pdf/CaratulaTesis.docx') }}" target="_blank">
+                            <a href="{{ asset('pdf/Autorizacion-Puklla.docx') }}" target="_blank">
                                 <div style="height: 100px">
                                     <img height="100%" src="{{ asset('img/min/flujigrama.webp') }}" alt="">
                                 </div>

@@ -121,22 +121,6 @@
 
             <!-- Botones Elegantes -->
             <div class="col-lg-12 mt-3">
-                {{-- <div class="d-flex justify-content-around">
-                    Prácticas Profesionales I.E. 50813 de Zona Rural
-                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modalTrabajo1">
-                        Más Info
-                    </button>
-
-                    <!-- Botón 2 -->
-                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modalTrabajo2">
-                        Prácticas Pre- Profesionales C.E.I.P. San Mateo Dreams
-                    </button>
-
-                    <!-- Botón 3 -->
-                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modalTrabajo3">
-                       Solicitud de Docentes Egresados
-                    </button>
-                </div> --}}
                 <div class="table-responsive">
                     <table class="table table-bordered table-hover">
                         <thead class="thead-dark">
@@ -148,9 +132,96 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <!-- Fila 1 -->
+
+                            <tr>
+                                <td>2</td>
+                                <td>📢 Convocatoria de Capacitación Especializada – Estrategias Didácticas 2025</td>
+                                <td>SEl Gobierno Regional Cusco, a través de la Gerencia Regional de Educación y el Proyecto
+                                    CREE, invita a los docentes de las 14 UGEL de la región Cusco a participar en la
+                                    Capacitación Especializada en Estrategias Didácticas para fortalecer competencias en la
+                                    enseñanza de lenguas originarias y lengua extranjera.<br>
+                                    <strong>Lenguas incluidas:</strong><br>
+                                    <ul>
+                                        <li>Quechua – Módulo I-II: Habilidades comunicativas y Estrategias.</li>
+                                        <li>Asháninka y Matsigenka – Módulo I-II: Estrategias.</li>
+                                        <li>Inglés – Módulo I-II: Habilidades comunicativas y Estrategias.</li>
+                                    </ul>
+                                    <strong>Requisitos:</strong><br>
+                                    <ul>
+                                        <li>Ser docente de la Educación Básica Regular (EBR).</li>
+                                    </ul>
+                                    <strong>Fechas importantes::</strong><br>
+                                    <ul>
+                                        <li>nscripciones: del 11 al 30 de junio de 2025 (en plataforma virtual PLADEC).</li>
+                                        <li>Inicio: 01 de julio de 2025</li>
+                                    </ul>
+                                <td>
+                                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
+                                        data-target="#Trabajoagos1">
+                                        Más Info
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>📢 Oportunidad laboral en CUNAMAS - Urubamba </td>
+                                <td>¿Conoces a algún colega psicólogo o profesional afín que esté interesado en trabajar
+                                    como Acompañante Técnico en el programa CUNAMAS del MIDIS?
+                                    CUNAMAS trabaja con población de 6 a 36 meses, acompañando los procesos de cuidado y
+                                    desarrollo en las cuna.<br>
+                                    <strong>Detalles:</strong>
+                                    <ul>
+                                        <li>📍 Lugar: Urubamba</li>
+                                        <li>📆 Horario: Lunes a viernes, de 8:00 a.m. a 5:00 p.m.</li>
+                                        <li>💰 Honorarios: S/. 3,000 (a todo costo, por Recibo por Honorarios)</li>
+                                    </ul>
+                                    Interesados/as pueden comunicarse 952351727 para más información.
+                                </td>
+                                <td>--
+                                    {{-- <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
+                                        data-target="#modalTrabajo1">
+                                        Más Info
+                                    </button> --}}
+                                </td>
+                            </tr>
                             <tr>
                                 <td>1</td>
+                                <td>📢 Profesores y Voluntarios para el Año Escolar 2025 – Yuyay Qente, Cusco</td>
+                                <td><strong>Detalles:</strong><br>
+                                    <ul>
+                                        <li>Institución: Yuyay Qente, escuela rural integral.</li>
+                                        <li>Ubicación: Fundo Mistiana, distrito de Kosñipata, Paucartambo, Cusco.</li>
+                                        <li>Enfoque educativo: Metodologías Montessori, Waldorf y Aprendizaje Basado en
+                                            Proyectos, con fuerte conexión a la Amazonía y la restauración ecológica.</li>
+                                    </ul>
+                                    <strong>Docente de Primaria/Inicial</strong><br>
+                                    <ul>
+                                        <li>Profesoras tituladas o estudiantes en su último año de prácticas
+                                            preprofesionales.</li>
+                                        <li>Compromiso con metodologías activas y la educación positiva.</li>
+                                    </ul>
+                                    <strong>Contacto:</strong><br>
+                                    <ul>
+                                        <li>Correo: yuyayqente@gmail.com</li>
+                                        <li>Enviar CV para más información.</li>
+                                        <li>Instagram: @yuyayqente</li>
+                                    </ul>
+                                    <strong>Inscripciones:</strong>
+                                    <ul>
+                                        <li><a
+                                                href="https://campusvirtual.gereducusco.gob.pe">www.campusvirtual.gereducusco.gob.pe</a>
+                                        </li>
+                                    </ul>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
+                                        data-target="#Trabajoagos2">
+                                        Más Info
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
                                 <td>Prácticas Profesionales </td>
                                 <td>Solicita estudiantes de la EESP Pukllasunchis para realizar prácticas profesionales en
                                     la I.E. 50813 de Zona Rural</td>
@@ -165,7 +236,8 @@
                             <tr>
                                 <td>2</td>
                                 <td>Prácticas Pre-Profesionales </td>
-                                <td>Estudiantes de la carrera profesional de educación Inicialpara eld esarrollo de práticas pre-profesionales.</td>
+                                <td>Estudiantes de la carrera profesional de educación Inicialpara eld esarrollo de práticas
+                                    pre-profesionales.</td>
                                 <td>
                                     <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
                                         data-target="#modalTrabajo2">
@@ -190,13 +262,63 @@
                 </div>
             </div>
 
-            <!-- Modal 1 -->
-            <div class="modal fade" id="modalTrabajo1" tabindex="-1" role="dialog" aria-labelledby="modalTrabajo1Label"
+            <!-- Modal Agosto -->
+            <div class="modal fade" id="Trabajoagos1" tabindex="-1" role="dialog" aria-labelledby="Trabajoagos1Label"
                 aria-hidden="true">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="modalTrabajo1Label">Prácticas Profesionales I.E. 50813 de Zona Rural
+                            <h3 class="modal-title" id="Trabajoagos1Label">Prácticas Profesionales I.E. 50813 de Zona
+                                Rural
+                            </h3>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <img src="{{ asset('img/convocatorias/oportunidad-01.webp') }}" width="100%"
+                                alt="">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Cerrar</button>
+                            <a href="#" class="btn btn-sm btn-primary">Aplicar</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Modal Agosto 2 -->
+            <div class="modal fade" id="Trabajoagos2" tabindex="-1" role="dialog" aria-labelledby="Trabajoagos1Label"
+                aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            {{-- <h3 class="modal-title" id="Trabajoagos2Label">Prácticas Profesionales I.E. 50813 de Zona
+                                Rural
+                            </h3> --}}
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <img src="{{ asset('img/convocatorias/convocatoria-05.jpeg') }}" width="100%"
+                                alt="">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Cerrar</button>
+                            <a href="#" class="btn btn-sm btn-primary">Aplicar</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal 1 -->
+            <div class="modal fade" id="modalTrabajo1" tabindex="-1" role="dialog"
+                aria-labelledby="modalTrabajo1Label" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalTrabajo1Label">Prácticas Profesionales I.E. 50813 de Zona
+                                Rural
                             </h5>
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                 <span aria-hidden="true">&times;</span>

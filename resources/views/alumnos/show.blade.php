@@ -9,7 +9,7 @@
                 Volver
             </a>
         </div>
-        <div class="row"> 
+        <div class="row">
             <div class="col-lg-12 table-responsive">
                 <table class="table table-bordered bg-white table-striped">
                     <tbody>
@@ -27,16 +27,29 @@
                             </td>
                         </tr>
                         <tr>
-                            <td colspan="2" class="font-weight-bold">Cursos:</td>
-                            <td colspan="2">
-                                @foreach ($alumno->ciclo->cursos as $curso)
-                                    <li>
-                                        <a
-                                            href="{{ route('curso.show', ['curso' => $curso->id]) }}">{{ $curso->nombre }}</a>
-                                    </li>
-                                @endforeach
+                            <td colspan="1" class="font-weight-bold">Cursos:</td>
+                            <td colspan="3">
+                                @if ($alumno->cursos->isNotEmpty())
+                                    @foreach ($alumno->cursos as $curso)
+                                        <li>
+                                            <a
+                                                href="{{ route('curso.show', ['curso' => $curso->id]) }}">{{ $curso->nombre }}</a>
+                                            @if ($curso->ciclo_id != $alumno->ciclo_id)
+                                                <span class="badge badge-info">Ciclo {{ $curso->ciclo->nombre }}</span>
+                                            @endif
+                                        </li>
+                                    @endforeach
+                                @else
+                                    @foreach ($alumno->ciclo->cursos as $curso)
+                                        <li>
+                                            <a
+                                                href="{{ route('curso.show', ['curso' => $curso->id]) }}">{{ $curso->nombre }}</a>
+                                        </li>
+                                    @endforeach
+                                @endif
                             </td>
                         </tr>
+
                         {{-- @if (isset($alumno->user->pendiente))
                             <tr class="bg-danger text-white">
                                 <td colspan="2">Curso a cargo:</td>

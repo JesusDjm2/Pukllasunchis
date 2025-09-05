@@ -8,14 +8,13 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class PostulanteController extends Controller
-{    
+{
     public function index()
     {
         $user = auth()->user();
         $alumno = $user->alumno;
         return view('bolsa.postulante.index', compact('user', 'alumno'));
     }
-
     public function create()
     {
         $user = auth()->user();
@@ -28,7 +27,6 @@ class PostulanteController extends Controller
         $cantidad = $postulantes->count();
         return view('bolsa.lista', compact('postulantes', 'cantidad'));
     }
-
     public function store(Request $request)
     {
         $user = auth()->user();
@@ -215,5 +213,4 @@ class PostulanteController extends Controller
                 ->with('success', '¡Datos del postulante actualizados correctamente!');
         }
     }
-
 }

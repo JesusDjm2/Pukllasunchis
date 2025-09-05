@@ -114,33 +114,24 @@
     </div>
     <div class="container pt-5 pb-5">
         <div class="row">
-            <div class="col-lg-3">
-                <div class="pegajoso">
-                    <ul class="submenu2">
-                        <li><a href="{{ route('plan') }}"><i class="fa fa-caret-right fa-sm"></i> Plan de Trabajo</a></li>
-                        <li><a href="{{ route('tinvestigacion') }}"><i class="fa fa-caret-right fa-sm"></i> Trabajo de
-                                Investigación</a></li>
-                        <li><a href="{{ route('tesis') }}"><i class="fa fa-caret-right fa-sm"></i> Tesis</a></li>
-                        <li><a href="{{ route('tramites') }}"><i class="fa fa-caret-right fa-sm"></i> Trámites
-                                presenciales</a></li>
-                        <li>
-                            <a href="#" onclick="openModal()"> <i class="fa fa-caret-right fa-sm"></i> ¿Cómo pagar en
-                                Caja Cusco?
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
+            @include('tramites.titulacion.tramites-lateral')
             <div class="col-lg-9">
                 <h2 class="mt-4 scroolOk linea-debajo" id="tesis">Tesis</h2>
                 <p>
-                    Es el documento final que el bachiller presenta para obtener la licenciatura. Muestra en detalle la
+                    {{-- Es el documento final que el bachiller presenta para obtener la licenciatura. Muestra en detalle la
                     continuación de la aplicación del trabajo de investigación. Este documento y la sustentación son parte
                     de los requisitos que se presenta como trámites administrativos para la titulación. Mide las
                     competencias profesionales en torno a un área académica o disciplina determinada, en el que se
                     identifica un problema o conjunto de problemas referidos a situaciones educativas detectadas
                     preferentemente en la práctica docente o en otros escenarios de la realidad socioeducativa. Se debe
-                    cumplir con la estructura solicitada por la escuela en su guía de investigación.
+                    cumplir con la estructura solicitada por la escuela en su guía de investigación. --}}
+                    La tesis es el documento culminante que llevas adelante como bachiller para alcanzar tu grado de
+                    Licenciado. En ella demuestras la aplicación avanzada del Trabajo de Investigación: planteas un problema
+                    educativo relevante (preferiblemente surgido de tu práctica docente) y lo analizas con rigor académico,
+                    siguiendo la estructura establecida en nuestra Guía de Investigación. <br><br>
+                    Tu tesis no solo valida tus competencias profesionales, sino que refleja tu compromiso con la mejora
+                    educativa en escenarios reales. La sustentación de este trabajo es tan importante como el documento
+                    mismo, ya que completa el proceso formal de titulación.
                 </p>
                 <div class="row justify-content-center align-items-center fichas mt-4">
                     <div class="col-lg-12 mb-4">
@@ -323,14 +314,15 @@
                                     Codigo: 35 / Costo: s/400.00)</small></li>
                         </ul>
                     </li>
-                    <li>Solicitar inscripción de Licenciado en SUNEDU previo pago de s/200.00 en las oficinas de
+                    <li>Solicitar registro e inscripción de Diploma de Licenciado previo pago de s/200.00 en las oficinas de
                         <span class="text-danger font-weight-bold">Caja Cusco:</span>
                         <p>
                             Este trámite permite que el Título de Licenciado sea reconocido oficialmente en SUNEDU. Se deben
                             entregar los siguientes documentos:
                         </p>
                         <ul>
-                            <li>Pagar en Caja Cusco con el sigiente concepto:  <small class="text-info">(Concepto: Inscripción título a SUNEDU /
+                            <li>Pagar en Caja Cusco con el sigiente concepto: <small class="text-info">(Concepto:
+                                    Inscripción título a SUNEDU /
                                     Codigo: 36 / Costo: s/200.00)</small></li>
                         </ul>
 
@@ -342,15 +334,11 @@
                                         href="https://forms.gle/L7WHbS67NKYnWug69">Formulario <i
                                             class="fa fa-external-link"></i> (Solo permite llenar con correo
                                         institucional)</a></small></li>
-                           
+
                             <li>Comprobante de pago por Inscripción de Título de Licenciado.</li>
                         </ul>
                     </li>
                 </ul>
-
-
-
-
                 <h3 class="linea-debajo">Documentos para el proceso de obtención del Título de Licenciado </h3>
                 <div class="row justify-content-center align-items-center fichas mt-4">
                     <div class="col-lg-12 mb-4">

@@ -133,41 +133,24 @@
     <div class="container pt-5 pb-5">
         <div class="row">
             <div class="col-lg-3">
-                <div class="pegajoso">
-                    <h3 class="linea-debajo">Admisión</h3>
-                    <ul class="submenu2">
-                        <li><a href="{{ route('ordinario') }}"><i class="fa fa-caret-right fa-sm"></i> Ingreso Ordinario</a>
-                        </li>
-                        <li><a href="{{ route('exoneracion') }}"><i class="fa fa-caret-right fa-sm"></i> Por Exoneración</a>
-                        </li>
-                        <li><a href="{{ route('traslado') }}"><i class="fa fa-caret-right fa-sm"></i> Traslado Externo</a>
-                        </li>
-                        <li><a href="{{ route('resultados') }}"><i class="fa fa-caret-right fa-sm"></i> Resultados</a></li>
-                        <li><a href="{{ route('formInscripcionRegular') }}"><i class="fa fa-caret-right fa-sm"></i>
-                                Inscríbete acá</a></li>
-                    </ul>
-                </div>
+                @include('admision.menu-lateral')
             </div>
             <div class="col-lg-9">
                 <h2 class="linea-debajo">{{ $titulo }}</h2>
                 <div class="row">
                     <div class="col-lg-7">
                         <p class="text-justify">
-                            Si eres egresado de un colegio público o privado puedes participar de nuestro proceso de
+                            Si eres egresado de un colegio público o privado, puedes participar en nuestro proceso de
                             admisión.<br><br>
 
-                            La admisión en la Escuela de Educación Superior Privada Pukllasunchis se realiza <strong>una vez
-                                al
-                                año</strong>, a
-                            través de un proceso de <strong>evaluación</strong> (prueba- entrevista y evaluación de
-                            aptitudes) que
-                            se realiza todos
-                            los años <strong>del mes de marzo.</strong>
+                            La admisión en la Escuela de Educación Superior Privada Pukllasunchis se realiza una vez al año,
+                            a través de un proceso de evaluación (prueba, entrevista y evaluación de aptitudes) que tiene
+                            lugar en el <strong>mes de marzo</strong>.
                         </p>
                     </div>
                     <div class="col-lg-5 text-center">
                         <p class="text-center font-weight-bold">¡Inscríbete acá!</p>
-                        <a href="{{ route('formInscripcionRegular') }}" target="_blank">
+                        <a href="{{-- {{ route('formInscripcionRegular') }} --}}" target="_blank">
                             <img class="img-fluid" src="{{ asset('img/min/Ficha-de-inscripcion-Pukllasunchis.png') }}"
                                 alt="Ingreso Ordinario" width="200px">
                         </a>
@@ -198,8 +181,7 @@
                 <div class="row justify-content-center align-items-center fichas">
                     <div class="col-lg-2 col-6 text-center">
                         <div class="card">
-                            <a href="{{ route('formInscripcionRegular') }}"
-                                target="_blank" class="text-center">
+                            <a href="{{ route('formInscripcionRegular') }}" target="_blank" class="text-center">
                                 <img width="80%" src="{{ asset('img/min/Ficha-de-inscripcion-Pukllasunchis.png') }}"
                                     alt="Ficha de Inscrición Pukllasunchis">
                                 <p class="text-center">Ficha de inscripción</p>
@@ -286,8 +268,8 @@
                         <div class="step-content">
                             <h3>Completar el formulario de Inscripción</h3>
                             <p>Ingresa a nuestro formulario: <a class="text-primary"
-                                    href="{{ route('formInscripcionRegular') }}"
-                                    target="_blank">Formulario <i class="fa fa-external-link fa-sm"></i></a> </p>
+                                    href="{{ route('formInscripcionRegular') }}" target="_blank">Formulario <i
+                                        class="fa fa-external-link fa-sm"></i></a> </p>
                             <p>Lee atentamente los enunciados e ingresa los datos solicitados</p>
                         </div>
                     </div>
@@ -309,7 +291,7 @@
                     La EESPP Pukllasunchis ha establecido el siguiente medio de pago:
                 </p> --}}
 
-               {{--  <ul class="listasCuerpo mb-4">
+                {{--  <ul class="listasCuerpo mb-4">
                     <li><strong>En ventanilla</strong> de las agencias de CMAC CUSCO a nivel nacional:
                         <ul>
                             <li>Cliente debe indicar: Pago de convenio</li>

@@ -129,26 +129,7 @@
     </div>
     <div class="container pt-5 pb-5">
         <div class="row">
-            <div class="col-lg-3">
-                <div class="pegajoso">
-                    <h3 class="linea-debajo">Trámites</h3>
-                    <ul class="submenu2">
-                        <li><a href="{{ route('plan') }}"><i class="fa fa-caret-right fa-sm"></i> Plan de Trabajo</a></li>
-                        <li><a href="{{ route('tinvestigacion') }}"><i class="fa fa-caret-right fa-sm"></i> Trabajo de
-                                Investigación</a></li>
-                        <li><a href="{{ route('tesis') }}"><i class="fa fa-caret-right fa-sm"></i> Tesis</a></li>
-                        <li><a href="{{ route('tramites') }}"><i class="fa fa-caret-right fa-sm"></i> Trámites
-                                presenciales</a></li>
-                        <li><a href="#extraordinario"><i class="fa fa-caret-right fa-sm"></i> Trámites
-                                Extraordinarios</a></li>
-                        <li>
-                            <a href="#" onclick="openModal()"> <i class="fa fa-caret-right fa-sm"></i> ¿Cómo pagar en
-                                Caja Cusco?
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
+            @include('tramites.titulacion.tramites-lateral')
             <div class="col-lg-9">
                 <h2 class="linea-debajo">Plan de Trabajo de Investigación (PTI) </h2>
                 <p>
@@ -207,7 +188,7 @@
                             pago ordinario</strong> en las
                         oficinas de Caja Cusco.<small class="text-info">(Concepto: Aprobación de PTI Y Asesor / Codigo: 10 -
                             Costo: s/50.00)</small> </li>
-                    <li>Descargar y completar el Formato del PTI. <a href="{{ asset('pdf/Formato-PTI-2025.docx') }}"
+                    <li>Descarga y completa el Formato del PTI. <a href="{{ asset('pdf/Formato-PTI-2025.docx') }}"
                             target="_blank"></li>
                     <li>Llenar <a
                             href="https://docs.google.com/forms/d/e/1FAIpQLSeErc1rq886EWiuavn27wd5kpCkZ48ntkOrWgNS5uE2XKw5JA/viewform"
@@ -226,7 +207,7 @@
                         </ul>
                     </li>
                 </ul>
-                <h3 class="mt-5">Después de que tengas tu PTI aprobado, recuerda solicitar la aplicación de tu
+                <h3 class="mt-5">Después de que tengas tu PTI aprobado, recuerda solicitar la carta de aplicación de tu
                     Trabajo de investigación, para ello debes seguir los siguientes pasos:</h3>
                 <ul class="listasNuevo">
                     <li>Hacer el pago de S/ 10 soles como pago ordinario en las oficinas de Caja Cusco. <small
@@ -242,130 +223,11 @@
                         carta modelo de Aceptación de Trabajo de Investigación.
                     </li>
                 </ul>
-                <br>
-
-                <h3 class="mt-5 linea-debajo" id="extraordinario" style="scroll-margin-top: 300px;">Trámites extraordinarios</h3>
-                <p>Durante el proceso de investigación, en caso de ser necesario, se pueden realizar los siguientes
-                    trámites:</p>
-                <ul class="listasCuerpo">
-                    <li>Modificación o cambio de tema de investigación. (Costo: S/ 30.00)
-                        <small>
-                            <a href="https://forms.gle/BZkUAmeHVyDfWuvu7" target="_blank" class="text-primary"> Enlace <i
-                                    class="fa fa-external-link"></i></a>
-                        </small>
-                    </li>
-                    <li>Disolución del grupo de investigación. (Costo: S/ 30.00)
-                        <small>
-                            <a href="https://forms.gle/Ud4m3WAprGyAjRSj6" target="_blank" class="text-primary">
-                                Enlace <i class="fa fa-external-link"></i></a>
-                        </small>
-                    </li>
-                    <li>Extensión de plazo. (Costo: S/ 50.00)
-                        <small>
-                            <a href="https://forms.gle/nZFvLRoRLTXbmikp9" target="_blank" class="text-primary">
-                                Enlace <i class="fa fa-external-link"></i></a>
-                        </small>
-                    </li>
-                    <li>Anulacion de Resolución Directoral de PTI. (Costo: S/ 50.00)
-                        <small>
-                            <a href="https://forms.gle/caBr9kMvu5tStzTS8" target="_blank" class="text-primary">
-                                Enlace <i class="fa fa-external-link"></i></a>
-                        </small>
-                    </li>
-                    <li>Asesoría adicional.
-                        <small><a
-                                href="https://docs.google.com/forms/d/18yuH2gbrM5GVr8DHGvYeA7t5hrBIx9aXyIsbAcEdIAs/viewform?edit_requested=true"
-                                target="_blank" class="text-primary">
-                                Enlace <i class="fa fa-external-link"></i>
-                            </a>
-                        </small>
-                    </li>
-                   {{--  <li>Cambio de Asesor
-                        <small><a
-                                href="https://docs.google.com/forms/d/e/1FAIpQLSe95m3LlPs8Ii-ZtWGxCL7ZQktBcu7eEzeMmBFTbIHBl-NclA/viewform"
-                                target="_blank" class="text-primary">
-                                Enlace <i class="fa fa-external-link"></i>
-                            </a>
-                        </small>
-                    </li> --}}
-                    <li>Cambio de tema (Costo: s/30.00)
-                        <small><a
-                                href="https://docs.google.com/forms/d/e/1FAIpQLSdA5VN9oAVh_aetqvoMwoZmuuez42ki3Y0xjQqXTgLygGkbrw/viewform"
-                                target="_blank" class="text-primary">
-                                Enlace <i class="fa fa-external-link"></i>
-                            </a>
-                        </small>
-                    </li>
-                </ul>
-                <br>
-
-                <h2 class="mt-4 linea-debajo">Documentos para el proceso de aprobación de PTI</h2>
-
-                {{-- <div class="row justify-content-center align-items-center fichas mt-4">
-                    <div class="col-lg-2 col-6 text-center">
-                        <div class="card">
-                            <a href="https://docs.google.com/forms/d/e/1FAIpQLSeErc1rq886EWiuavn27wd5kpCkZ48ntkOrWgNS5uE2XKw5JA/viewform"
-                                target="_blank">
-                                <div style="height: 100px">
-                                    <img height="100%" src="{{ asset('img/min/Bachillerato-Pukllasunchis.png') }}"
-                                        alt="Ficha de Inscrición Pukllasunchis">
-                                </div>
-                                <p class="text-center">Formulario de<br> aprobación de PTI</p>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="col-lg-2 col-6 text-center">
-                        <div class="card">
-                            <a href="https://docs.google.com/forms/d/e/1FAIpQLSdA5VN9oAVh_aetqvoMwoZmuuez42ki3Y0xjQqXTgLygGkbrw/viewform"
-                                target="_blank">
-                                <div style="height: 100px">
-                                    <img height="100%" src="{{ asset('img/min/cambio.png') }}"
-                                        alt="Ficha de Inscrición Pukllasunchis">
-                                </div>
-                                <p class="text-center">Cambio de<br>tema</p>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="col-lg-2 col-6 text-center">
-                        <div class="card">
-                            <a href="https://docs.google.com/forms/d/e/1FAIpQLSe95m3LlPs8Ii-ZtWGxCL7ZQktBcu7eEzeMmBFTbIHBl-NclA/viewform"
-                                target="_blank">
-                                <div style="height: 100px">
-                                    <img height="100%" src="{{ asset('img/min/cambio-asesor.png') }}"
-                                        alt="Ficha de Inscrición Pukllasunchis">
-                                </div>
-                                <p class="text-center">Cambio de <br>Asesor</p>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="col-lg-2 col-6 text-center">
-                        <div class="card">
-                            <a href="https://docs.google.com/forms/d/e/1FAIpQLSdmgoFlBMsEoZCkyvGFZqYGC301BkbyZ-wZpGHL5d52_tLbxg/viewform"
-                                target="_blank">
-                                <div style="height: 100px">
-                                    <img height="100%" src="{{ asset('img/min/Disolucion-grupo.png') }}"
-                                        alt="">
-                                </div>
-                                <p class="text-center">Disolución <br>de grupo</p>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="col-lg-2 col-6 text-center">
-                        <div class="card">
-                            <a href="https://docs.google.com/forms/d/e/1FAIpQLSdJizTDL5Z8DAEfiRWSt32GspxaDO3MVQ_JyvpC_Q3sQt7rvQ/viewform"
-                                target="_blank">
-                                <div style="height: 100px">
-                                    <img height="100%" src="{{ asset('img/min/Cronograma-Pukllasunchis.png') }}"
-                                        alt="">
-                                </div>
-                                <p class="text-center">Extensión de <br>Plazo</p>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                <div class="row mb-3 mt-4">
+                
+                
+                <div class="row mb-3">
                     <div class="col-lg-12">
-                        <h3 class="mt-3">Para pagos Ordinarios:</h3>
+                        <h3 class="mt-3 linea-debajo">Para pagos Ordinarios:</h3>
                         <p>
                             Los pagos ordinarios <strong>SOLO SE PUEDEN PAGAR EN VENTANILLAS</strong> de cualquier agencia a
                             nivel nacional de CAJA CUSCO. <a class="text-primary" target="_blank"
@@ -373,7 +235,7 @@
                                 pagos<small><i class="fa fa-eye"></i></small></a>
                         </p>
                     </div>
-                </div> --}}
+                </div>
                 <p class="generic-blockquote">
                     <strong>OJO:</strong><br>
                     - Cliente debe indicar <span class="text-danger font-weight-bold">PAGO ORDINARIO</span> de la

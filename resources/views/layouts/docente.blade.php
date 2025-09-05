@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="author" content="David Jesús Miranda">
-    <title >@yield('titulo')</title>
+    <title>@yield('titulo')</title>
     <link rel="shortcut icon" type="image/x-icon" href="{{ asset('img/logoiesp.ico') }}">
     <link href="{{ asset('admin/vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" type="text/css">
     <link
@@ -14,6 +14,8 @@
         rel="stylesheet">
     <link href="{{ asset('admin/css/sb-admin-2.min.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('admin/css/estilos.css') }}">
+
+    
 </head>
 
 <body id="page-top">
@@ -105,8 +107,8 @@
                     </div>
                 </div>
             </li>
-             <hr class="sidebar-divider d-none d-md-block">
-            {{--<li class="nav-item">
+            <hr class="sidebar-divider d-none d-md-block">
+            {{-- <li class="nav-item">
                 <a class="nav-link collapsed" href="{{ route('index') }}">
                     <i class="fas fa-file-pdf"></i>
                     <span>Repositorio de sílabos</span>
@@ -121,11 +123,12 @@
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block">
             <li class="nav-item">
-                <a class="nav-link collapsed" target="_blank" href="https://sites.google.com/pukllavirtual.edu.pe/bibliotecaeesppuklla/inicio">
+                <a class="nav-link collapsed" target="_blank"
+                    href="https://sites.google.com/pukllavirtual.edu.pe/bibliotecaeesppuklla/inicio">
                     <i class="fas fa-book-open"></i>
                     <span>Biblioteca</span>
                 </a>
-            </li>            
+            </li>
 
             <div class="text-center d-none d-md-inline">
                 <button class="rounded-circle border-0" id="sidebarToggle"></button>
@@ -184,7 +187,7 @@
     <div id="textEditorModalNew" class="modal-editor" style="display:none;"
         onclick="closeModalOnBackgroundClick(event)">
         <div class="modal-editor-content" onclick="event.stopPropagation();">
-            <span class="close-editor" onclick="closeTextEditor()">&times;</span>            
+            <span class="close-editor" onclick="closeTextEditor()">&times;</span>
             <form action="{{ route('docentes.updateBlog', $docente->id) }}" method="POST">
                 @csrf
                 @if (isset($curso) && isset($docente) && isset($competenciasSeleccionadas))
@@ -295,6 +298,7 @@
     <script src="{{ asset('admin/js/demo/chart-area-demo.js') }}"></script>
     <script src="{{ asset('admin/js/demo/chart-pie-demo.js') }}"></script>
     <script src="{{ asset('admin/js/djm.js') }}"></script>
+    
 
 </body>
 

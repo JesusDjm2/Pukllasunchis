@@ -70,6 +70,7 @@ class SilaboController extends Controller
         $request->validate([
             'curso_id' => 'required|exists:cursos,id',
             'sumilla' => 'nullable|string',
+            'periodo' => 'nullable|string',
             'fecha1' => 'nullable|date',
             'fecha2' => 'nullable|date',
 
@@ -108,6 +109,7 @@ class SilaboController extends Controller
         $silabo = Silabo::create([
             'curso_id' => $curso->id,
             'sumilla' => $request->sumilla,
+            'periodo' => $request->periodo,
             'fecha1' => $request->fecha1,
             'fecha2' => $request->fecha2,
             'nombre' => $curso->nombre,
@@ -267,6 +269,7 @@ class SilaboController extends Controller
         $request->validate([
             'curso_id' => 'required|exists:cursos,id',
             'sumilla' => 'nullable|string',
+            'periodo' => 'nullable|string',
             'fecha1' => 'nullable|date',
             'fecha2' => 'nullable|date',
 
@@ -302,6 +305,7 @@ class SilaboController extends Controller
         // Actualizar datos del sílabo
         $silabo->update([
             'sumilla' => $request->sumilla,
+            'periodo' => $request->periodo,
             'fecha1' => $request->fecha1,
             'fecha2' => $request->fecha2,
             'proyecto_integrador' => $request->proyecto_integrador,
@@ -437,7 +441,7 @@ class SilaboController extends Controller
                 $query->whereHas('ciclos', function ($q) use ($curso) {
                     $q->where('ciclo_id', $curso->ciclo_id);
                 });
-            }
+            } 
         ])->get();
 
         if ($competencias->isEmpty()) {

@@ -1,61 +1,24 @@
 @extends('layouts.admin')
 @section('contenido')
-    <div class="container-fluid bg-white">
-        <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3">
-            <h4 class="mb-0 text-primary font-weight-bold">Crear Período</h4>
-            <a href="{{ route('periodos.index') }}" class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm">
-                Volver
-            </a>
-        </div>
-        <div class="row bg-white">
-            <div class="col-12">
-                @if ($errors->any())
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                        <ul>
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
-
-                @if (session('error'))
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        {{ session('error') }}
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                @endif
-
-                @if (session('success'))
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        {{ session('success') }}
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                @endif
-            </div>
-            <div class="col-lg-12">
-                <form method="POST" action="{{ route('periodos.store') }}">
-                    @csrf
-                    <div class="form-group">
-                        <label for="nombre">Nombre del Período:</label>
-                        <input type="text" class="form-control form-control-sm @error('nombre') is-invalid @enderror" id="nombre"
-                            name="nombre" value="{{ old('nombre') }}" required>
-                        @error('nombre')
-                            <span class="invalid-feedback" role="alert">
-                                <strong>{{ $message }}</strong>
-                            </span>
-                        @enderror
-                    </div>
-                    <button type="submit" class="btn btn-primary btn-sm">Generar Periodo</button>
-                </form>
-            </div>
-        </div>
+<div class="container-fluid bg-white">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3">
+        <h4 class="mb-0 text-primary font-weight-bold">Crear Período Actual</h4>
+        <a href="{{ route('periodoactual.index') }}" class="btn btn-sm btn-danger shadow-sm">Volver</a>
     </div>
+
+    <form action="{{ route('periodoactual.store') }}" method="POST">
+        @csrf
+        <div class="form-group">
+            <label for="nombre">Nombre del período</label>
+            <input type="text" name="nombre" class="form-control form-control-sm" value="{{ old('nombre') }}" required>
+        </div>
+
+        <div class="form-check mb-3">
+            <input type="checkbox" name="actual" id="actual" value="1" class="form-check-input">
+            <label for="actual" class="form-check-label">Marcar como período actual</label>
+        </div>
+
+        <button type="submit" class="btn btn-sm btn-primary">Guardar</button>
+    </form>
+</div>
 @endsection

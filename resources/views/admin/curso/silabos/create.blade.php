@@ -140,7 +140,7 @@
                     <tr>
                         <td style="font-weight: 600; padding: 2px;">1.5 <span style="margin-left:1em">Semestre
                                 Académico</span></td>
-                        <td style="padding: 2px;">: 2025 - I</td>
+                        <td style="padding: 2px;">: <span id="periodo">2025 - II</span></td>
                     </tr>
                     <tr>
                         <td style="font-weight: 600; padding: 2px;">1.6 <span style="margin-left:1em">Créditos</span></td>
@@ -154,7 +154,7 @@
                     <tr>
                         <td style="font-weight: 600; padding: 2px;">1.8 <span style="margin-left:1em">Horas Semanales</span>
                         </td>
-                        <td style="padding: 2px;">: {{ $curso->horas }}</td>
+                        <td style="padding: 2px;">: {{ $curso->horas *16}}</td>
                     </tr>
                     <tr>
                         <td style="font-weight: 600; padding: 2px;">1.9 <span style="margin-left:1em">Docente(s)</span></td>
@@ -190,11 +190,18 @@
             @csrf
             <input type="hidden" name="curso_id" value="{{ $curso->id }}">
             <input type="hidden" name="docente_id" value="{{ $docente->id }}">
-            <!-- Inputs ocultos para enviar las fechas -->
-            {{-- <input type="hidden" id="hidden_fecha1" name="fecha1" value="{{ old('fecha1', $silabo->fecha1 ?? '') }}">
-            <input type="hidden" id="hidden_fecha2" name="fecha2" value="{{ old('fecha2', $silabo->fecha2 ?? '') }}"> --}}
             <input type="hidden" id="hidden_fecha1" name="fecha1" value="2025-03-24">
             <input type="hidden" id="hidden_fecha2" name="fecha2" value="2025-07-18">
+
+            <input type="hidden" id="hidden_periodo" name="periodo" value="">
+            
+            <script>
+                // Antes de enviar el form, copiamos el valor del span al hidden
+                document.getElementById('silaboForm').addEventListener('submit', function() {
+                    let periodo = document.getElementById('periodo').textContent.trim();
+                    document.getElementById('hidden_periodo').value = periodo;
+                });
+            </script>
 
             <div class="col-lg-12 mb-3">
                 <h4 style="font-weight: 600; color: #c78d40;" class="mt-5">II. Sumilla:</h4>

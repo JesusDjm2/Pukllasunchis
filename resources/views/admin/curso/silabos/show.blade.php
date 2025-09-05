@@ -68,7 +68,7 @@
         <a href="{{ route('silabo.pdf', $silabo->id) }}" class="btn btn-primary btn-flotante">
             <i class="fas fa-file-pdf"></i> Descargar PDF
         </a>
-    </div> 
+    </div>
     <div class="container-fluid bg-white">
         <div class="container">
             <table style="width: 100%; border-collapse: collapse; margin-bottom: 1em;">
@@ -151,7 +151,7 @@
                             <td style="font-weight: 600; padding: 2px;">1.8 <span style="margin-left:1em">Horas
                                     Semanales</span>
                             </td>
-                            <td style="padding: 2px;">: {{ $curso->horas }}</td>
+                            <td style="padding: 2px;">: {{ $curso->horas * 16 }}</td>
                         </tr>
                         <tr>
                             <td style="font-weight: 600; padding: 2px;">1.9 <span style="margin-left:1em">Docente(s)</span>
@@ -435,4 +435,3 @@
         Volver
     </a>
 @endsection
- 

@@ -9,13 +9,16 @@
                 @csrf
                 <input type="hidden" name="alumno_id" value="{{ optional(auth()->user()->alumnoB)->id }}">
             </form>
-            
             @if (auth()->user()->alumnoB)
                 @if (!Session::has('mostrar_contenido'))
                     <button type="button" class="btn btn-info btn-sm mb-2" id="mostrar-contenido">
-                        Notificar que he terminado con mi registro. <i class="fa fa-smile"></i>
+                        Notificar que he terminado con mi matrícula. <i class="fa fa-smile"></i>
                     </button>
                 @endif
+                <a href="{{ route('ppd.edit', auth()->user()->alumnoB->id) }}" class="btn btn-sm btn-primary"
+                    title="Editar">
+                    Completar Matrícula <i class="fa fa-edit"></i>
+                </a>
             @endif
         </div>
         <div class="row bg-white" id="contenido-alumno">
@@ -40,31 +43,37 @@
                                 <tr>
                                     <td class="font-weight-bold">Programa:</th>
                                     <td>
-                                        {{ $alumno->programa->nombre }}
+                                        {{ $alumno->user->programa->nombre }}
                                     </td>
                                 </tr>
+
+
                                 <tr>
-                                    <td class="font-weight-bold">Ciclo:</th>
+                                    <td class="font-weight-bold">Cursos del Programa:</td>
                                     <td>
-                                        @if ($alumno->ciclo)
-                                            {{ $alumno->ciclo->nombre }}
-                                        @endif
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="font-weight-bold">Cursos del semestre:</td>
-                                    <td>
-                                        @foreach ($alumno->ciclo->cursos as $curso)
+                                        @foreach ($cursos as $curso)                                        
                                             <li class="d-flex align-items-center justify-content-between curso-item"
                                                 style="border-bottom: 1px dashed rgba(128, 128, 128, 0.526)">
-                                                <a href="{{ route('curso.show', $curso->id) }}"
-                                                    class="mr-2">{{ $curso->nombre }}</a>
+
+                                                <a href="{{ route('curso.show', $curso->id) }}" class="mr-2">
+                                                    {{ $loop->iteration }}. {{ $curso->nombre }}
+                                                </a>
+                                                @if ($curso->docentes->count())
+                                                    <small class="text-muted d-block">
+                                                        Docente(s): <strong>{{ $curso->docentes->pluck('nombre')->join(', ') }}</strong>
+                                                    </small>
+                                                @else
+                                                    <small class="text-muted d-block">
+                                                        Docente(s): <strong>No asignado</strong>
+                                                    </small>
+                                                @endif
+
                                                 <div class="d-flex align-items-center">
                                                     @if ($curso->silabo)
                                                         <a class="btn btn-success btn-sm d-inline-block"
                                                             href="{{ asset('docentes/silabo/' . $curso->silabo) }}"
                                                             target="_blank" title="Ver Sílabo">
-                                                            Ver sílabo <i class="fa fa-eye fa-sm"></i>
+                                                            Ver sílabos <i class="fa fa-eye fa-sm"></i>
                                                         </a>
                                                     @endif
                                                 </div>
@@ -112,7 +121,8 @@
                                 </tr>
                                 <tr>
                                     <td class="font-weight-bold">Domicilio:</th>
-                                    <td>{{ $alumno->direccion }}</td>
+                                    <td>{{ $alumno->departamento }} - {{ $alumno->provincia }} - {{ $alumno->distrito }},
+                                        {{ $alumno->direccion }}</td>
                                 </tr>
                             </tbody>
                         </table>

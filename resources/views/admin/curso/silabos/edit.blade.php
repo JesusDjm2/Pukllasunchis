@@ -19,18 +19,18 @@
         }
 
         /* .btn-flotante {
-                position: fixed;
-                top: 50%;
-                right: -2px;
-                transform: translateY(-50%);
-                z-index: 9999;
-                box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
-                transition: 0.4s ease;
-            }
-            .btn-flotante:hover {
-                padding: 0.7em;
-                transition: 0.2s ease;
-            } */
+                        position: fixed;
+                        top: 50%;
+                        right: -2px;
+                        transform: translateY(-50%);
+                        z-index: 9999;
+                        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+                        transition: 0.4s ease;
+                    }
+                    .btn-flotante:hover {
+                        padding: 0.7em;
+                        transition: 0.2s ease;
+                    } */
         .btn-flotante {
             position: fixed;
             top: 50%;
@@ -143,7 +143,7 @@
                     <tr>
                         <td style="font-weight: 600; padding: 2px;">1.5 <span style="margin-left:1em">Semestre
                                 Académico</span></td>
-                        <td style="padding: 2px;">: 2025 - I</td>
+                        <td style="padding: 2px;">: <span id="periodo">{{ $silabo->periodo }}</span></td>
                     </tr>
                     <tr>
                         <td style="font-weight: 600; padding: 2px;">1.6 <span style="margin-left:1em">Créditos</span></td>
@@ -152,7 +152,7 @@
                     <tr>
                         <td style="font-weight: 600; padding: 2px;">1.7 <span style="margin-left:1em">Horas del ciclo</span>
                         </td>
-                        <td style="padding: 2px;">: {{ $curso->horas }}</td>
+                        <td style="padding: 2px;">: {{ $curso->horas * 4 }}</td>
                     </tr>
                     <tr>
                         <td style="font-weight: 600; padding: 2px;">1.8 <span style="margin-left:1em">Horas Semanales</span>
@@ -207,11 +207,20 @@
                 </tbody>
             </table>
         </div>
-        <form action="{{ route('silabos.update', $silabo->id) }}" method="POST">
+        <form id="silaboForm" action="{{ route('silabos.update', $silabo->id) }}" method="POST">
             @csrf
             @method('PUT')
             <input type="hidden" name="curso_id" value="{{ $curso->id }}">
             <input type="hidden" name="docente_id" value="{{ $docente->id }}">
+            <input type="hidden" id="hidden_periodo" name="periodo" value="">
+
+            <script>
+                // Antes de enviar el form, copiamos el valor del span al hidden
+                document.getElementById('silaboForm').addEventListener('submit', function() {
+                    let periodo = document.getElementById('periodo').textContent.trim();
+                    document.getElementById('hidden_periodo').value = periodo;
+                });
+            </script>
 
             <div class="col-lg-12 mb-3">
                 <h4 style="font-weight: 600; color: #c78d40;" class="mt-5">II. Sumilla:</h4>
@@ -238,8 +247,9 @@
             </div>
             <div class="col-lg-12 mb-3">
                 <label for="producto_proyecto">Producto del Proyecto:</label>
-                <input type="text" id="producto_proyecto" name="producto_proyecto" class="form-control form-control-sm"
-                    required value="{{ old('producto_proyecto', $curso->ciclo->proyecto->producto ?? '') }}">
+                <input type="text" id="producto_proyecto" name="producto_proyecto"
+                    class="form-control form-control-sm" required
+                    value="{{ old('producto_proyecto', $curso->ciclo->proyecto->producto ?? '') }}">
             </div>
             <div class="col-lg-12 mb-3">
                 <label for="descripcion_proyecto">Propósito del Proyecto Integrador:</label>

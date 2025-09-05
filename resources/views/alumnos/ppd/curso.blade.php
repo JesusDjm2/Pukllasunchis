@@ -18,13 +18,13 @@
                     <tr>
                         <td class="font-weight-bold">Programa:</td>
                         <td>
-                                {{ $curso->ciclo->programa->nombre }}
+                            {{ $curso->ciclo->programa->nombre }}
                         </td>
                     </tr>
                     <tr>
                         <td class="font-weight-bold">Ciclo:</td>
                         <td>
-                                {{ $curso->ciclo->nombre }}
+                            {{ $curso->ciclo->nombre }}
                         </td>
                     </tr>
                     <tr>
@@ -93,60 +93,19 @@
                         </td>
                     </tr>
                     <tr>
-                        <td class="font-weight-bold">Alumnos registrados:</td>
+                        <td class="font-weight-bold">Alumnos regissstrados:</td>
                         <td>{{ $cantidadAlumnos }}</td>
                     </tr>
                     <tr>
                         <td class="font-weight-bold">Alumnos:</td>
                         <td>
-                            <ul>
-                                @role('admin')
-                                    @foreach ($alumnos as $alumno)
-                                        <li>
-                                            <a href="{{ route('alumnos.show', ['alumno' => $alumno->id]) }}">
-                                                {{ $alumno->apellidos }}, {{ $alumno->nombres }}
-                                            </a>
-                                        </li>
-                                    @endforeach
-                                @endrole
-                                @role('alumno')
-                                    @foreach ($alumnos as $alumno)
-                                        <li>
-                                            {{ $alumno->apellidos }}, {{ $alumno->nombres }}
-                                        </li>
-                                    @endforeach
-                                @endrole
-                            </ul>
+                            @foreach ($alumnos as $alumno)
+                                {{ $loop->iteration }}. {{ $alumno->apellidos }}, {{ $alumno->nombres }}<br>
+                            @endforeach
                         </td>
                     </tr>
                 </table>
             </div>
         </div>
-        @role('alumno')
-            <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3 pb-2"
-                style="border-bottom: 1px dashed #80808078">
-                <h5 class="mb-0 text-uppercase font-weight-bold">Notas</h5>
-            </div>
-            <div class="row mb-4">
-                <div class="col-lg-12">
-
-                    @if ($alumno->calificacion)
-                        {{ $calificacion->valoracion_1 }}
-                    @else
-                        No tiene asignado ningun periodo
-                    @endif
-
-                </div>
-            </div>
-        @endrole
-        {{-- <div class="d-sm-flex align-items-center justify-content-between mb-2 pb-2"
-            style="border-bottom: 1px dashed #80808078">
-            <h5 class="mb-0 text-uppercase font-weight-bold">Competencias Modulares</h5>
-        </div>
-        <p class="mt-3 text-success">En proceso...</p>
-        <div class="progress">
-            <div class="progress-bar" role="progressbar" style="width: 75%;" aria-valuenow="25" aria-valuemin="0"
-                aria-valuemax="100">75%</div>
-        </div> --}}
     </div>
 @endsection

@@ -24,7 +24,7 @@ class PeriodoUno extends Model
         'alumno_id',
         'curso_id',
         'calificacion_id',
-        
+        'periodo_actual_id',
     ];
     public function alumno()
     {

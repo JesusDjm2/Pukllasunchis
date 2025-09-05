@@ -40,6 +40,10 @@ class Alumno extends Model
     {
         return $this->hasMany(Periodo::class);
     }
+    public function cursos()
+    {
+        return $this->belongsToMany(Curso::class, 'alumno_cursos')->withTimestamps();
+    }
     public static function asociarPorEmail($email)
     {
         $alumno = static::where('email', $email)->first();
@@ -58,8 +62,11 @@ class Alumno extends Model
         'dni',
         'apellidos',
         'nombres',
+        'genero',
         'numero',
+        'genero',
         'numero_referencia',
+        'fecha_nacimiento',
         'user_id',
         'programa_id',
         'ciclo_id',
@@ -68,7 +75,9 @@ class Alumno extends Model
         'permanencia_vivienda',
         'lugar_nacimiento',
         'sector_laboral',
-
+        'departamento',
+        'provincia',
+        'distrito',
         'direccion',
         'te_consideras',
         'lengua_1',
@@ -146,6 +155,7 @@ class Alumno extends Model
             'email' => 'required|email|unique:alumnos,email',
             'dni' => 'required|unique:alumnos,dni',
             'nombres' => 'required',
+            'genero' => 'nullable|string',
             'apellidos' => 'required',
             'numero' => 'required|string|max:255',
             'numero_referencia' => 'required|string|max:255',
@@ -162,7 +172,7 @@ class Alumno extends Model
             'p_m_soltero' => 'required|boolean',
             'num_hijos' => 'required|integer',
             'sector_socioeconomico' => 'required',
-            'foto'=>'nullable|image|mimes:jpg,jpeg,png,webp|max:3048',
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:3048',
             //Datos Familiares
             'convivientes' => 'required|string|max:255',
             'quien_mantiene' => 'required|string|max:255',

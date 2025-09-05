@@ -116,7 +116,7 @@
                             y es sensible a las diferencias culturales, principalmente de la región y el país. Es un
                             proyecto alternativo que busca revisar los paradigmas tradicionales para reconstruir una
                             educación que sea inclusiva e intercultural. Desde esa perspectiva atendemos a una población
-                            diversa entre la que se incluye a estudiantes de beca 18 procedentes de distintas comunidades
+                            diversa entre la que incluye a estudiantes de Beca 18 procedentes de distintas comunidades
                             andinas.
                         </p>
 
@@ -155,23 +155,23 @@
         <div class="seccion-left p-5">
             <div class="text-left">
                 <!-- Contenido de la sección derecha -->
-                <h3>Para Realizar las Prácticas Pre Profesionales </h3><br>
+                <h3>Para Realizar las Prácticas Preprofesionales </h3><br>
                 <ul>
                     <li><strong> 1.- Llenar el Formato Único de Trámite (FUT):</strong>
-                        <ul>
-                            <li>• Presentar FUT en la Secretaría o llenar el formulario</li>
+                        <ul style="margin-left:1em">
+                            <li>• Presentar FUT en Secretaría o llenar el formulario.</li>
                             <li>• Costo: Sin costo.</li>
                             <li>• Como resultado de este trámite recibirás el oficio de presentación de prácticas y una
                                 carta modelo de Aceptación.</li>
                             <li class="font-weight-bold">
-                                Nota: Esta carta (modelo) es prueba de que la institución acepta su práctica- entregar en
+                                Nota: Esta carta (modelo) es prueba de que la institución acepta su práctica - entregar en
                                 secretaria
                             </li>
                         </ul>
                     </li><br>
                     <li><strong>2.- Solicitar la Resolución de Aprobación de Prácticas </strong>
-                        <ul>
-                            <li>• Hacer el pago de S/. 50 soles por derecho de RD de aprobación del practicas en Caja Cusco
+                        <ul style="margin-left:1em">
+                            <li>• Hacer el pago de s/50.00 por derecho de RD de aprobación de prácticas en Caja Cusco
                                 como pago ordinario.</li>
                             <li>• Presentar FUT en la Secretaría:
                                 <ul>
@@ -190,15 +190,14 @@
                 <h3>Para la Aplicación de Trabajo de Investigación</h3><br>
                 <ul>
                     <li><strong> 1. Llenar el Formato Único de Trámite (FUT):</strong></li>
-                    <ul>
-                        <li>• Hacer el pago de S/ 10 soles.</li>
-                        <li>• Presentar FUT en la Secretaría o llenar el formulario.</li>
-                        <li>• Como resultado de este trámite recibirás la carta de aplicación de Trabajo de Investigación y
-                            una carta modelo de Aceptación de Trabajo de Investigación. </li>
+                    <ul style="margin-left:1em">
+                        <li>• Hacer el pago de s/10.00.</li>
+                        <li>• Presentar FUT en Secretaría o llenar el formulario.</li>
+                        <li>• Como resultado de este trámite recibirás la carta de aplicación y una carta modelo de aceptación del trabajo de investigación. </li>
                     </ul><br>
-                    <p class="font-weight-bold">Nota : ¿Para qué sirve? La Carta de Aceptación emitida por la institución
+                    <p class="font-weight-bold">Nota: ¿Para qué sirve? La Carta de Aceptación emitida por la institución
                         les ayudará a
-                        completar su expediente para obtener el grado de bachiller.</p>
+                        completar su expediente para obtener el grado de Bachiller.</p>
 
                 </ul>
                 <a href="{{ route('tinvestigacion') }}" class="boxed-btn3">Requisitos grado de Bachiller</a>
@@ -216,7 +215,8 @@
                         </h4>
                         <p>Nuestra finalidad es desarrollar un programa alternativo e interesante, con un enfoque inclusivo
                             e intercultural, que contribuya a la formación de profesionales capaces de aportar, desde el
-                            aula o desde otros ámbitos de trabajo al desarrollo de nuevos escenarios educativos. </p>
+                            aula o desde otros ámbitos de trabajo al desarrollo de nuevos escenarios educativos. 
+                        </p>
                     </div>
                 </div>
             </div>

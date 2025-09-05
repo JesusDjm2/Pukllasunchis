@@ -27,7 +27,7 @@
 
         thead {
             background-color: #c78d40;
-            color: #fff!important;
+            color: #fff !important;
             font-weight: bold;
         }
 
@@ -58,6 +58,7 @@
             font-size: 14px;
             text-align: justify;
         }
+
         .btn-flotante {
             position: fixed;
             top: 50%;
@@ -134,12 +135,14 @@
                             <td style="padding: 2px; border: none;">: {{ $curso->ciclo->programa->nombre }}</td>
                         </tr>
                         <tr>
-                            <td style="font-weight: 600; padding: 2px; border: none;">1.2 <span style="margin-left:1em">Componente
+                            <td style="font-weight: 600; padding: 2px; border: none;">1.2 <span
+                                    style="margin-left:1em">Componente
                                     Curricular</span></td>
                             <td style="padding: 2px; border: none;">: {{ $curso->cc }}</td>
                         </tr>
                         <tr>
-                            <td style="font-weight: 600; padding: 2px; border: none;">1.3 <span style="margin-left:1em">Curso o
+                            <td style="font-weight: 600; padding: 2px; border: none;">1.3 <span
+                                    style="margin-left:1em">Curso o
                                     módulo</span>
                             </td>
                             <td style="padding: 2px; border: none;">: {{ $curso->nombre }}</td>
@@ -160,7 +163,8 @@
                             </td>
                         </tr>
                         <tr>
-                            <td style="font-weight: 600; padding: 2px; border: none;">1.5 <span style="margin-left:1em">Semestre
+                            <td style="font-weight: 600; padding: 2px; border: none;">1.5 <span
+                                    style="margin-left:1em">Semestre
                                     Académico</span></td>
                             <td style="padding: 1px; border: none;">: 2025 - I</td>
                         </tr>
@@ -171,16 +175,18 @@
                             <td style="padding: 2px; border: none;">: {{ $curso->creditos }}</td>
                         </tr>
                         <tr>
-                            <td style="font-weight: 600; padding: 2px; border: none;">1.7 <span style="margin-left:1em">Horas del
+                            <td style="font-weight: 600; padding: 2px; border: none;">1.7 <span
+                                    style="margin-left:1em">Horas del
                                     ciclo</span>
                             </td>
                             <td style="padding: 2px; border: none;">: {{ $curso->horas }}</td>
                         </tr>
                         <tr>
-                            <td style="font-weight: 600; padding: 2px; border: none;">1.8 <span style="margin-left:1em">Horas
+                            <td style="font-weight: 600; padding: 2px; border: none;">1.8 <span
+                                    style="margin-left:1em">Horas
                                     Semanales</span>
                             </td>
-                            <td style="padding: 2px; border: none;">: {{ $curso->horas }}</td>
+                            <td style="padding: 2px; border: none;">: {{ $curso->horas * 16 }}</td>
                         </tr>
                         <tr>
                             <td style="font-weight: 600; padding: 2px; border: none;">1.9 <span
@@ -195,18 +201,21 @@
                             </td>
                         </tr>
                         <tr>
-                            <td style="font-weight: 600; padding: 2px; border: none;">1.10 <span style="margin-left:0.4em">Correo
+                            <td style="font-weight: 600; padding: 2px; border: none;">1.10 <span
+                                    style="margin-left:0.4em">Correo
                                     Institucional</span></td>
                             <td style="padding: 2px; border: none;">:
                                 {{ $curso->docentes->first()->email ?? 'Sin datos' }}
                             </td>
                         </tr>
                         <tr>
-                            <td style="font-weight: 600; padding: 2px; border: none;">1.11 <span style="margin-left:0.4em">Fecha de inicio</span></td>
+                            <td style="font-weight: 600; padding: 2px; border: none;">1.11 <span
+                                    style="margin-left:0.4em">Fecha de inicio</span></td>
                             <td style="padding: 2px; border: none;">: 24 de marzo de 2025</td>
                         </tr>
                         <tr>
-                            <td style="font-weight: 600; padding: 2px; border: none;">1.12 <span style="margin-left:0.4em">Fecha de término</span></td>
+                            <td style="font-weight: 600; padding: 2px; border: none;">1.12 <span
+                                    style="margin-left:0.4em">Fecha de término</span></td>
                             <td style="padding: 2px; border: none;">: 18 de julio de 2025</td>
                         </tr>
 
@@ -420,8 +429,6 @@
                     @endforeach
                 </tbody>
             </table>
-
-
             <div class="col-lg-12 mb-3">
                 <h2 class="mt-3">VIII. MODELOS METODOLÓGICOS (METODOLOGÍA)</h2>
                 <p>{!! $silabo->modelos_metodologicos !!}</p>

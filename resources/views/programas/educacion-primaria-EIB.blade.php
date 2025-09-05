@@ -48,21 +48,21 @@
             <div class="col-lg-9">
                 <h2 class="linea-debajo">{{ $titulo }}</h2>
                 <p>
-                    Esta especialidad está dirigida a jóvenes varones y mujeres, con conocimiento de la lengua quechua,
-                    interesados y con disposición para proponer alternativas educativas que respondan a la realidad social y
-                    lingüística de las poblaciones quechuas en distintos contextos, afirmando el valor de las culturas
-                    tradicionales y potenciando la diversidad.<br><br>
+                    Esta especialidad está dirigida a jóvenes, tanto varones como mujeres, con conocimiento de la lengua
+                    quechua, interesados y con disposición para proponer alternativas educativas que respondan a la realidad
+                    social y lingüística de las poblaciones quechuas en distintos contextos, afirmando el valor de las
+                    culturas tradicionales y potenciando la diversidad.<br><br>
 
-                    Por otro lado, además de impulsar estrategias de aprendizaje situadas en la realidad del país, los
-                    egresados de esta especialidad serán capaces de desarrollar proyectos encaminados a la inclusión de
-                    niños y niñas con habilidades diferentes y, mecanismos de gestión novedosos tendientes a organizar, de
-                    manera alternativa, los servicios educativos para hacerlos más pertinentes a la edad, las familias y
-                    características del grupo sociocultural al que van dirigidos.
+                    Asimismo, además de impulsar estrategias de aprendizaje situadas en la realidad del país, los egresados
+                    de esta especialidad serán capaces de desarrollar proyectos orientados a la inclusión de niños y niñas
+                    con habilidades diferentes, así como mecanismos de gestión innovadores que permitan organizar de manera
+                    alternativa los servicios educativos, haciéndolos más pertinentes a la edad, a las familias y a las
+                    características del grupo sociocultural al que se dirigen.
                 </p>
                 <h3 class="mt-5 linea-debajo scroolOk" id="duracion">Duración</h3>
                 <p>
                     El plan de estudios tiene diez ciclos académicos con un total de 250 créditos. Cada ciclo se desarrolla
-                    en dieciséis (16) semanas, treinta (34) horas semanales. (DCBN 2019)
+                    en dieciséis (16) semanas, treinta y cuatro (34) horas semanales. (DCBN 2019)
                 </p>
                 <ul class="listasCuerpo">
                     <li>Grado al que conduce: Bachiller en Educación.</li>
@@ -71,55 +71,59 @@
 
                 <h3 class="linea-debajo scroolOk" id="ejes">Ejes Temáticos</h3>
                 <p>
-                    Para todos los programas de estudios que la EESP ofrece, los cursos u áreas se han organizado según seis
-                    ejes temáticos que expresan la orientación de los cursos. Los ejes temáticos o campos de estudio en el
-                    caso de todas las carreras, son los siguientes:
+                    Para todos los programas de estudios que ofrece la EESP, los cursos y áreas se han organizado en seis
+                    ejes temáticos, los cuales expresan la orientación formativa de cada asignatura. Estos ejes temáticos o
+                    campos de estudio, comunes a todas las carreras, son los siguientes:
                 </p>
                 <table class="table table-bordered table-hover">
                     <tbody>
                         <tr>
                             <th scope="row" class="align-middle">
-                                Dinámicas socio-políticas culturales y paradigmas de pensamiento en la educación y el
+                                Dinámicas socio-políticas, culturales y paradigmas de pensamiento en la educación y el
                                 currículo.
                             </th>
                             <td>
-                                Reúne los cursos o áreas que permiten a los futuros docentes, reflexionar sobre los retos de
-                                la educación situándose en el escenario de crisis actual. Los cursos de esta área colocan en
-                                perspectiva las dinámicas sociales y culturales de cada período histórico considerando cómo
-                                éstas han influido y delineado los escenarios educativos y las orientaciones curriculares.
-                                Desde situaciones vivenciales y prácticas, los cursos de este eje proponen reflexionar
-                                críticamente sobre los paradigmas de pensamiento que influyen en la educación, considerando
-                                los contextos sociales. Este análisis permitirá a los estudiantes, proponer cambios viables,
-                                considerando todos los factores que influyen en los mismos.
+                                Este eje reúne los cursos o áreas que permiten a los futuros docentes reflexionar sobre los
+                                retos de la educación en el contexto de la crisis actual. Las asignaturas de esta área
+                                colocan en perspectiva las dinámicas sociales y culturales de cada período histórico,
+                                analizando cómo estas han influido y delineado los escenarios educativos y las orientaciones
+                                curriculares.<br>
+
+                                A partir de situaciones vivenciales y prácticas, los cursos proponen una reflexión crítica
+                                sobre los paradigmas de pensamiento que impactan en la educación, siempre en diálogo con los
+                                contextos sociales. Dicho análisis permitirá a los estudiantes plantear cambios viables y
+                                pertinentes, tomando en cuenta la diversidad de factores que intervienen en dichos procesos.
                             </td>
                         </tr>
                         <tr>
-                            <th scope="row" class="align-middle">Comunicación, lenguas y lenguajes expresivos.</th>
+                            <th scope="row" class="align-middle">Comunicación, lenguas y lenguajes expresivos</th>
                             <td>
-                                Los cursos correspondientes a este eje abordan los conceptos claves vinculados a los
-                                distintos códigos de comunicación. Impulsan el despliegue de las capacidades expresivas y el
-                                manejo de recursos diversos entre ellos, de las tecnologías de la información, para fines
-                                educativos.
+                                Los cursos de este eje abordan los conceptos clave vinculados a los distintos códigos de
+                                comunicación, promoviendo el desarrollo de las capacidades expresivas y el manejo de
+                                diversos recursos. Entre estos se incluyen las tecnologías de la información y la
+                                comunicación, orientadas a fortalecer los procesos educativos y a enriquecer la interacción
+                                pedagógica.
                             </td>
                         </tr>
                         <tr>
                             <th scope="row" class="align-middle">Matemática y didáctica.</th>
                             <td>
-                                Los cursos de este eje desarrollan las habilidades básicas para la comprensión del lenguaje
-                                matemático y su uso para la resolución de situaciones. Promueven el conocimiento de los
-                                conceptos curriculares matemáticos y la comprensión de la lógica matemática en otras
-                                culturas.
+                                Los cursos de este eje desarrollan las habilidades fundamentales para la comprensión del
+                                lenguaje matemático y su aplicación en la resolución de diversas situaciones. Asimismo,
+                                promueven el conocimiento de los conceptos curriculares de la matemática y fomentan la
+                                comprensión de la lógica matemática en distintas culturas, favoreciendo una visión amplia e
+                                intercultural de esta disciplina.
                             </td>
                         </tr>
                         <tr>
                             <th scope="row" class="align-middle">Aprendizaje, educación y gestión para la atención a la
                                 diversidad.</th>
                             <td>
-                                Reúne los cursos que permiten a los estudiantes acercarse a la comprensión de los procesos
-                                de aprendizaje de niños y niñas de diferentes contextos considerando el impacto de los
-                                cambios sociales en los ámbitos familiares y culturales, y desarrollando capacidades para
-                                proponer didácticas y mecanismos de gestión que promuevan una atención educativa
-                                participativa y pertinente.
+                                Este eje reúne los cursos que permiten a los estudiantes comprender los procesos de
+                                aprendizaje de niños y niñas en diferentes contextos, considerando el impacto de los cambios
+                                sociales en los ámbitos familiares y culturales. Asimismo, fomenta el desarrollo de
+                                capacidades para diseñar propuestas didácticas y mecanismos de gestión que promuevan una
+                                atención educativa participativa, inclusiva y pertinente.
                             </td>
                         </tr>
                         <tr>
@@ -169,9 +173,9 @@
                                 style="writing-mode: vertical-rl;transform: rotate(-180deg); ">Proyecto Integrado 2</th>
                         </tr>
                         <tr>
-                            <td>Lectura y escritura en la escritura superior</td>
+                            <td>Lectura y Escritura en la Escritura Superior</td>
                             <td>Comunicación oral en la Educación Superior</td>
-                            <td>Arte, creatividad y Aprendizaje </td>
+                            <td>Arte, Creatividad y Aprendizaje </td>
                             <td>Ciencia y Epistemologías</td>
                         </tr>
                         <tr>
@@ -217,8 +221,8 @@
                             <td colspan="2" class="table-active"></td>
                         </tr>
                         <tr style="background:#ffc10778!important">
-                            <td>Práctica e investigación I</td>
-                            <td>Práctica e investigación II</td>
+                            <td>Práctica e Investigación I</td>
+                            <td>Práctica e Investigación II</td>
                             <td style="background: #acacff">Lengua Indigena u Originaria III</td>
                             <td style="background: #acacff">Lengua Indigena u Originaria III</td>
                         </tr>
@@ -251,7 +255,7 @@
                         <tr style="background: #acacff">
                             <td>Desarrollo y Aprendizaje en Contextos Diversos I </td>
                             <td>Planificación por Competencias y Evaluación para el Aprendizaje I </td>
-                            <td>Corporeidad y moticidad para el aprendizaje y autonomía</td>
+                            <td>Corporeidad y Moticidad para el Aprendizaje y Autonomía</td>
                             <td>Relaciones con la Familia y Comunidad </td>
                         </tr>
                         <tr style="background: #acacff">
@@ -316,10 +320,10 @@
                                 style="writing-mode: vertical-rl;transform: rotate(-180deg); ">Proyecto Integrado 4</th>
                         </tr>
                         <tr>
-                            <td>Literatura y Sociedad en contextos Diversos </td>
-                            <td>Alfabetización científica</td>
-                            <td>Ética y Filosofía en el pensamiento crítico </td>
-                            <td>Inglés para principiantes / Beginner English II A1 </td>
+                            <td>Literatura y Sociedad en Contextos Diversos </td>
+                            <td>Alfabetización Científica</td>
+                            <td>Ética y Filosofía en el Pensamiento Crítico </td>
+                            <td>Inglés para Principiantes / Beginner English II A1 </td>
                         </tr>
                         <tr>
                             <td>4H-3 CR/2T-2P</td>
@@ -332,9 +336,9 @@
                             <td colspan="2" class="table-active"></td>
                         </tr>
                         <tr>
-                            <td>Inglés para principiantes / Beginner English A1</td>
-                            <td>Inglés para principiantes / Beginner English II A1</td>
-                            <td>Inglés para principiantes / Beginner English A2</td>
+                            <td>Inglés para Principiantes / Beginner English A1</td>
+                            <td>Inglés para Principiantes / Beginner English II A1</td>
+                            <td>Inglés para Principiantes / Beginner English A2</td>
                             <td style="background:#ffc10778">Práctica e Investigación VIII </td>
                         </tr>
                         <tr>
@@ -349,8 +353,8 @@
                         </tr>
                         <tr>
                             <td style="background:#ffc10778!important">Práctica e Investigación V</td>
-                            <td style="background:#ffc10778!important">Práctica e investigación VI</td>
-                            <td style="background:#ffc10778">Práctica e investigación VII</td>
+                            <td style="background:#ffc10778!important">Práctica e Investigación VI</td>
+                            <td style="background:#ffc10778">Práctica e Investigación VII</td>
                             <td style="background: #acacff">Aprendizaje de las Lenguas en Estudiantes Bilingües II </td>
                         </tr>
                         <tr>
@@ -450,7 +454,7 @@
                             <th>Ciclo X</th>
                             <th class="table-active" rowspan="9"
                                 style="writing-mode: vertical-rl;transform: rotate(-180deg); ">
-                                Informe de investigación Aplicada
+                                Informe de Investigación Aplicada
                             </th>
 
                         </tr>
@@ -495,15 +499,15 @@
                     <tbody>
                         <tr>
                             <td>FG</td>
-                            <td>Formación general</td>
+                            <td>Formación General</td>
                         </tr>
                         <tr style="background:#ffc10778">
                             <td>FPI </td>
-                            <td>Formación en la práctica e investigación</td>
+                            <td>Formación en la Práctica e Investigación</td>
                         </tr>
                         <tr style="background:#acacff">
                             <td>FE</td>
-                            <td>Formación específica</td>
+                            <td>Formación Específica</td>
                         </tr>
                         <tr style="background: #fdbcff">
                             <td>EL</td>

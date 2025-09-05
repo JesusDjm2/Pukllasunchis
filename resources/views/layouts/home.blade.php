@@ -195,7 +195,7 @@
                                                 <li><a href="{{ route('ordinario') }}">Ingreso ordinario</a></li>
                                                 <li><a href="{{ route('exoneracion') }}">Por exoneración</a></li>
                                                 <li><a href="{{ route('traslado') }}">Traslado externo</a></li>
-                                                <li><a href="{{ route('resultados') }}">Resultados</a></li>
+                                                {{-- <li><a href="{{ route('resultados') }}">Resultados</a></li> --}}
                                             </ul>
                                         </li>
                                         <li><a href="{{ route('tramiteTitulacion') }}"

@@ -50,7 +50,7 @@
                             <a class="collapse-item" href="{{ route('estandares.index') }}">Estándares</a>
                             <a class="collapse-item" href="{{ route('enfoques.index') }}">Enfoques</a>
                             <a class="collapse-item" href="{{ route('proyectos.index') }}">Proyectos Integradores</a>
-                            <a class="collapse-item" href="{{ route('periodos.index') }}">Periodos</a>
+                            <a class="collapse-item" href="{{ route('periodoactual.index') }}">Periodos</a>
                         </div>
                     </div>
                 </li>
@@ -98,7 +98,9 @@
                             <a class="collapse-item" href="{{ route('adminAlumnos') }}">Alumnos FID</a>
                             <a class="collapse-item" href="{{ route('alumnosppd') }}">Alumnos PPD</a>
                             {{-- <a class="collapse-item" href="{{ route('vistAlumno') }}">Ingresar nuevo</a>
-                            <a class="collapse-item" href="{{ route('filtro') }}">Filtrar por campos</a> --}}
+                             --}}
+                            {{-- <a class="collapse-item" href="">Datos Demográficos</a> --}}
+                            <a class="collapse-item" href="{{ route('filtro') }}">Filtrar por campos</a>
                         </div>
                     </div>
                 </li>
@@ -268,7 +270,7 @@
                     Dashboard Alumno
                 </div>
                 <li class="nav-item">
-                    <a class="nav-link collapsed" href="{{ route('admin') }}">
+                    <a class="nav-link collapsed" href="{{ route('alumnos.index') }}">
                         <i class="fas fa-fw fa-newspaper"></i>
                         <span>Ficha técnica</span>
                     </a>
@@ -297,11 +299,63 @@
                 </div>
             </ul>
         @endrole
+        @role('alumnoB')
+         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center mb-4" href="{{ route('index') }}">
+                <div class="sidebar-brand-icon">
+                    <img class="pt-4" src="{{ asset('admin/img/Logo-Pukllasunchis-blanco.png') }}"
+                        alt="Logo Pukllasunchis" width="100%">
+                </div>
+                <div class="sidebar-brand-text mx-3">
+                </div>
+            </a>
+            <hr class="sidebar-divider d-none d-md-block"> 
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="{{ route('ppd.index') }}">
+                    <i class="fas fa-cog"></i>
+                    <span>Ficha Técnica</span>
+                </a>
+            </li>
+            <hr class="sidebar-divider d-none d-md-block">            
+            @if ($alumno)
+                <li class="nav-item">
+                    <a class="nav-link collapsed" href="{{ route('calificacionesppd', $alumno->id) }}">
+                        <i class="fas fa-fw fa-book"></i>
+                        <span>Calificaciones</span>
+                    </a>
+                </li>
+                <hr class="sidebar-divider d-none d-md-block">
+            @endif           
+            <li class="nav-item">
+                <a class="nav-link collapsed" target="_blank"
+                    href="https://sites.google.com/pukllavirtual.edu.pe/bibliotecaeesppuklla/inicio">
+                    <i class="fas fa-book-open"></i>
+                    <span>Biblioteca</span>
+                </a>
+            </li>
+            <hr class="sidebar-divider d-none d-md-block">
+
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="{{ route('index') }}">
+                    <i class="fas fa-fw fa-book"></i>
+                    <span>Volver a la página</span>
+                </a>
+            </li>
+
+            <!-- Divider -->
+            <hr class="sidebar-divider d-none d-md-block">
+            <div class="text-center d-none d-md-inline">
+                <button class="rounded-circle border-0" id="sidebarToggle"></button>
+            </div>
+        </ul>        
+        @endrole
         <div id="content-wrapper" class="d-flex flex-column">
             <div id="content">
                 <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
                     <!-- Sidebar Toggle (Topbar) -->
-                    <h5 class="font-weight-bold text-primary">Administrador</h5>
+                    @role('admin')
+                        <h5 class="font-weight-bold text-primary ml-3">Administrador</h5>
+                    @endrole
                     <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
                         <i class="fa fa-bars"></i>
                     </button>
@@ -340,7 +394,6 @@
                 </div>
             </footer>
         </div>
-
     </div>
     <a class="scroll-to-top rounded" href="#page-top">
         <i class="fas fa-angle-up"></i>
@@ -360,6 +413,8 @@
     <script src="{{ asset('admin/js/demo/chart-area-demo.js') }}"></script>
     <script src="{{ asset('admin/js/demo/chart-pie-demo.js') }}"></script>
     <script src="{{ asset('admin/js/djm.js') }}"></script>
+{{-- PORCENTAJE --}}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 </body>
 

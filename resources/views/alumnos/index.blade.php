@@ -111,8 +111,6 @@
                                             <li>{{ $alumno->email }}</li>
                                         </ul>
                                     </td>
-                                    {{-- <td></td>
-                                    <td></td> --}}
                                     <td>{{ $alumno->dni }}</td>
                                     <td>
                                         <a href="{{ route('alumnos.edit', ['alumno' => $alumno->id]) }}"

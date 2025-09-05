@@ -7,6 +7,7 @@ use App\Models\Ciclo;
 use App\Models\Competencia;
 use App\Models\Curso;
 use App\Models\Docente;
+use App\Models\ppd;
 use App\Models\Programa;
 use App\Models\User;
 use Hash;
@@ -39,7 +40,7 @@ class DocenteCOntroller extends Controller
 
         return view('docentes.asignar', compact('docente', 'programas', 'ciclos', 'cursos'));
     }
-    public function asignarCurso(Request $request, $docenteId)
+    /* public function asignarCurso(Request $request, $docenteId)
     {
         $request->validate([
             'programa_id' => 'required',
@@ -50,14 +51,43 @@ class DocenteCOntroller extends Controller
         $docente = Docente::findOrFail($docenteId);
         $curso = Curso::findOrFail($request->curso_id);
         $docente->cursos()->attach($curso->id);
+        if ($docente->cursos()->where('curso_id', $curso->id)->exists()) {
+            return redirect()
+                ->route('docente.index')
+                ->with('error', "El curso {$curso->nombre} ya está asignado a {$docente->nombre}.");
+        }
+        $docente->cursos()->attach($curso->id);
 
-        return redirect()->route('docente.index')->with('success', 'Curso asignado exitosamente.');
+        return redirect()->route('docente.index')->with('success', 'Curso asignado a ' . $docente->nombre . ' correctamente.');
+    } */
+    public function asignarCurso(Request $request, $docenteId)
+    {
+        $request->validate([
+            'programa_id' => 'required',
+            'ciclo_id' => 'required',
+            'curso_id' => 'required|exists:cursos,id',
+        ]);
+
+        $docente = Docente::findOrFail($docenteId);
+        $curso = Curso::findOrFail($request->curso_id);
+
+        // Usamos syncWithoutDetaching
+        $result = $docente->cursos()->syncWithoutDetaching([$curso->id]);
+
+        if (empty($result['attached'])) {
+            return redirect()
+                ->route('docente.index')
+                ->with('error', "El curso {$curso->nombre} ya está asignado a {$docente->nombre}.");
+        }
+
+        return redirect()
+            ->route('docente.index')
+            ->with('success', "Curso {$curso->nombre} asignado a {$docente->nombre} correctamente.");
     }
+
     public function eliminarCurso(Docente $docente, Curso $curso)
     {
-        // Eliminar la relación entre el docente y el curso
         $docente->cursos()->detach($curso->id);
-
         return redirect()->back()->with('success', 'Curso eliminado correctamente.');
     }
     public function edit($id)
@@ -170,7 +200,8 @@ class DocenteCOntroller extends Controller
     public function calificar($id)
     {
         $docente = Docente::findOrFail($id);
-        return view('docentes.calificaciones.index', compact('docente'));
+        $fechaLimite = \Carbon\Carbon::createFromTimeString('16:16')->toDateTimeString();
+        return view('docentes.calificaciones.index', compact('docente', 'fechaLimite'));
     }
     public function calificarCurso(Request $request, $docenteId, $cursoId)
     {
@@ -178,7 +209,16 @@ class DocenteCOntroller extends Controller
         $docente = Docente::findOrFail($docenteId);
         $competenciasSeleccionadas = Competencia::whereIn('id', $request->input('competencias'))->get();
 
-        $alumnos = $curso->ciclo->alumnos()
+        $alumnosRelacionados = $curso->alumnos()
+            ->whereHas('user', function ($query) {
+                $query->whereDoesntHave('roles', function ($roleQuery) {
+                    $roleQuery->where('name', 'inhabilitado');
+                });
+            })
+            ->orderBy('apellidos')
+            ->get();
+
+        $alumnosCiclo = $curso->ciclo->alumnos()
             ->whereHas('user', function ($query) {
                 $query->whereDoesntHave('roles', function ($roleQuery) {
                     $roleQuery->where('name', 'inhabilitado');
@@ -188,16 +228,18 @@ class DocenteCOntroller extends Controller
             ->with(['periodos', 'periododos', 'periodotres'])
             ->get();
 
+        $alumnos = $alumnosCiclo->merge($alumnosRelacionados)->unique('id')->values();
+
 
         $mostrarBotonDesempeno = $alumnos->contains(function ($alumno) {
             return $alumno->periodos->isNotEmpty() && $alumno->calificaciones->isNotEmpty();
         });
 
         if (auth()->user()->hasRole('admin')) {
-            return view('admin.curso.calificaciones', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos', 'mostrarBotonDesempeno'));
+            return view('admin.curso.calificaciones', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos', 'mostrarBotonDesempeno', 'alumnosRelacionados'));
         }
 
-        return view('docentes.calificaciones.alumnos', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos', 'mostrarBotonDesempeno'));
+        return view('docentes.calificaciones.alumnos', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos', 'mostrarBotonDesempeno', 'alumnosRelacionados'));
     }
     public function calificarCursoPPD(Request $request, $docenteId, $cursoId)
     {
@@ -205,11 +247,15 @@ class DocenteCOntroller extends Controller
         $docente = Docente::findOrFail($docenteId);
         $competenciasSeleccionadas = Competencia::whereIn('id', $request->input('competencias'))->get();
 
-        $alumnos = $curso->ciclo->alumnosB()
+        $programa = $curso->ciclo->programa;
+
+
+        // 🔹 Traer todos los alumnos del programa, no solo del curso
+        $alumnos = ppd::whereHas('ciclo', function ($query) use ($programa) {
+            $query->where('programa_id', $programa->id);
+        })
             ->with([
-                'user.alumnoB.calificaciones' => function ($query) use ($cursoId) {
-                    $query->where('curso_id', $cursoId);
-                }
+                'user.alumnoB.calificaciones', // ya no filtramos por curso aquí
             ])
             ->whereHas('user', function ($query) {
                 $query->whereDoesntHave('roles', function ($roleQuery) {
@@ -275,46 +321,137 @@ class DocenteCOntroller extends Controller
 
         return $response;
     }
+    /* public function alumnos($id)
+    {
+        $docente = Docente::with([
+            'cursos.ciclo.alumnos.user.roles',
+            'cursos.ciclo.programa',
+            'cursos.alumnos.user.roles',
+            'cursos.alumnos.ciclo'
+        ])->findOrFail($id);
+        $cursos = $docente->cursos;
+
+        foreach ($cursos as $curso) {
+            if ($curso->ciclo && in_array($curso->ciclo->programa_id, [1, 2])) {
+                $alumnosCiclo = $curso->ciclo->alumnos->filter(function ($alumno) {
+                    $user = $alumno->user;
+
+                    if (!$user || !$user->hasRole('alumno') || $user->hasRole('alumnoB')) {
+                        return false;
+                    }
+                    if (
+                        $user->hasRole('inhabilitado') &&
+                        in_array($user->perfil, ['sin_matricula', 'reserva'])
+                    ) {
+                        return false;
+                    }
+
+                    return true;
+                });
+
+                $alumnosRelacionados = $curso->alumnos->filter(function ($alumno) {
+                    $user = $alumno->user;
+                    if (!$user || !$user->hasRole('alumno') || $user->hasRole('alumnoB')) {
+                        return false;
+                    }
+
+                    if (
+                        $user->hasRole('inhabilitado') &&
+                        in_array($user->perfil, ['sin_matricula', 'reserva'])
+                    ) {
+                        return false;
+                    }
+
+                    return true;
+                });
+
+
+                $alumnosCiclo = $curso->ciclo->alumnos->filter(function ($alumno) {
+                    return $alumno->user
+                        && $alumno->user->hasRole('alumno')
+                        && !$alumno->user->hasRole('alumnoB')
+                        && !$alumno->user->hasRole('inhabilitado');
+                });
+
+                $alumnosRelacionados = $curso->alumnos->filter(function ($alumno) {
+                    return $alumno->user
+                        && $alumno->user->hasRole('alumno')
+                        && !$alumno->user->hasRole('alumnoB')
+                        && !$alumno->user->hasRole('inhabilitado');
+                });
+
+                $alumnosUnificados = $alumnosCiclo
+                    ->merge($alumnosRelacionados)
+                    ->unique('id')
+                    ->sortBy('apellidos');
+
+                $alumnosPorCurso[$curso->id] = $alumnosUnificados;
+            }
+        }
+        return view('docentes.alumnos.index', compact('docente', 'alumnosPorCurso', 'curso'));
+    } */
     public function alumnos($id)
     {
-        $docente = Docente::with('cursos.ciclo.alumnos.user.roles', 'cursos.ciclo.programa')->findOrFail($id);
+        $docente = Docente::with([
+            'cursos.ciclo.alumnos.user.roles',
+            'cursos.ciclo.programa',
+            'cursos.alumnos.user.roles',
+            'cursos.alumnos.ciclo'
+        ])->findOrFail($id);
+
         $cursos = $docente->cursos;
         $alumnosPorCurso = [];
 
         foreach ($cursos as $curso) {
-            if ($curso->ciclo && in_array($curso->ciclo->programa_id, [1, 2])) {
-                $alumnosOrdenados = $curso->ciclo->alumnos
-                    ->filter(function ($alumno) {
-                        return $alumno->user
-                            && $alumno->user->hasRole('alumno')
-                            && !$alumno->user->hasRole('alumnoB')
-                            && !$alumno->user->hasRole('inhabilitado');
-                    })
+            if ($curso->ciclo && in_array($curso->ciclo->programa_id, [1, 2, 3, 4])) {
+
+                $alumnosCiclo = $curso->ciclo->alumnos->filter(function ($alumno) {
+                    $user = $alumno->user;
+
+                    if (!$user) {
+                        return false;
+                    }
+
+                    // Excluir si el usuario tiene rol inhabilitado Y perfil sin_matricula o reserva
+                    if (
+                        $user->hasRole('inhabilitado') &&
+                        in_array($user->perfil, ['sin_matricula', 'reserva'])
+                    ) {
+                        return false;
+                    }
+
+                    return true;
+                });
+
+                $alumnosRelacionados = $curso->alumnos->filter(function ($alumno) {
+                    $user = $alumno->user;
+
+                    if (!$user) {
+                        return false;
+                    }
+
+                    // Mismo filtro que en alumnosCiclo
+                    if (
+                        $user->hasRole('inhabilitado') &&
+                        in_array($user->perfil, ['sin_matricula', 'reserva'])
+                    ) {
+                        return false;
+                    }
+
+                    return true;
+                });
+
+                $alumnosUnificados = $alumnosCiclo
+                    ->merge($alumnosRelacionados)
+                    ->unique('id')
                     ->sortBy('apellidos');
 
-                $alumnosPorCurso[$curso->id] = $alumnosOrdenados;
+                $alumnosPorCurso[$curso->id] = $alumnosUnificados;
             }
         }
-        return view('docentes.alumnos.index', compact('docente', 'alumnosPorCurso'));
-    }
-    /* public function alumnosppd($id)
-    {
-        $docente = Docente::with('cursos')->findOrFail($id);
 
-        $alumnosPorCurso = User::with(['ciclo', 'programa'])
-            ->whereHas('roles', function ($query) {
-                $query->where('name', 'alumnoB');
-            })
-            ->whereHas('ciclo.cursos', function ($query) use ($docente) {
-                $query->whereIn('cursos.id', $docente->cursos->pluck('id'));
-            })
-            ->get()
-            ->groupBy(function ($user) {
-                return optional($user->ciclo->cursos->first())->id; 
-            });
-            dd($alumnosPorCurso);
-        return view('docentes.alumnos.alumnos-ppd', compact('docente', 'alumnosPorCurso'));
-    } */
+        return view('docentes.alumnos.index', compact('docente', 'alumnosPorCurso', 'curso'));
+    }
     public function alumnosppd($id)
     {
         $docente = Docente::with('cursos')->findOrFail($id);

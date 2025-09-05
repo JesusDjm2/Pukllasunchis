@@ -26,26 +26,7 @@ class ppd extends Model
     {
         return $this->hasMany(Calificacionesppd::class);
     }
-    /* public function calificaciones()
-    {
-        return $this->hasMany(Calificacion::class);
-    } */
-    /* public function periodos()
-    {
-        return $this->hasMany(PeriodoUno::class);
-    } */
-    /*  public function periododos()
-     {
-         return $this->hasMany(PeriodoDos::class);
-     } */
-    /* public function periodotres()
-    {
-        return $this->hasMany(PeriodoTres::class);
-    } */
-    /* public function periodo()
-    {
-        return $this->hasMany(Periodo::class);
-    } */
+    
     public static function asociarPorEmail($email)
     {
         $ppd = static::where('email', $email)->first(); // Buscar en la tabla 'ppds'
@@ -63,7 +44,12 @@ class ppd extends Model
         'apellidos',
         'nombres',
         'numero',
+        'genero',
         'numero_referencia',
+        'departamento',
+        'provincia',
+        'distrito',
+        'fecha_nacimiento',
         'user_id',
         'programa_id',
         'ciclo_id',

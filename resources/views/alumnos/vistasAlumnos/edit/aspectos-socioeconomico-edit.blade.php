@@ -86,11 +86,6 @@
     </script> --}}
 
 
-
-
-
-
-
     <div class="col-lg-6 mb-2 mt-2">
         <label for="donde_trabajas">¿Dónde trabajas?:</label>
         <input type="text" class="form-control form-control-sm @error('donde_trabajas') is-invalid @enderror"

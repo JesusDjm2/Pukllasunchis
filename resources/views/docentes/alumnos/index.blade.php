@@ -3,7 +3,7 @@
     <div class="container-fluid bg-light">
         <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3"
             style="border-bottom: 1px dashed #80808078">
-            <h4 class="font-weight-bold text-primary">Alumnos FID: alumnos por Curso            </h4>
+            <h4 class="font-weight-bold text-primary">Alumnos FID: alumnos por Curso </h4>
             <a href="{{ route('calificar', $docente->id) }}"
                 class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm float-right mb-3">
                 Volver
@@ -16,7 +16,7 @@
                         {{ Session::get('success') }}
                         <a type="button" class="close" data-dismiss="alert" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
-                        </a> 
+                        </a>
                     </div>
                 @endif
             </div>
@@ -31,17 +31,18 @@
                                     <button class="btn btn-link text-white" data-toggle="collapse"
                                         data-target="#collapse{{ $loop->index }}" aria-expanded="true"
                                         aria-controls="collapse{{ $loop->index }}">
-                                        <span class="font-weight-bold"> {{ $docente->cursos->find($curso)->nombre }}</span>                                        
+                                        <span class="font-weight-bold"> {{ $docente->cursos->find($curso)->nombre }}</span>
                                         <small>
                                             @if ($alumnos->isNotEmpty())
-                                                ({{ optional($alumnos->first()->ciclo->programa)->nombre ?? 'Sin programa' }} - 
-                                                {{ optional($alumnos->first()->ciclo)->nombre ?? 'Sin ciclo' }}) 
+                                                ({{ optional($alumnos->first()->ciclo->programa)->nombre ?? 'Sin programa' }}
+                                                -
+                                                {{ optional($alumnos->first()->ciclo)->nombre ?? 'Sin ciclo' }})
                                                 - Alumnos: {{ count($alumnos) }}
                                             @else
                                                 No hay alumnos en este curso.
                                             @endif
                                         </small>
-                                     
+
                                     </button>
                                 </h5>
                             </div>
@@ -62,7 +63,20 @@
                                         <tbody>
                                             @foreach ($alumnos as $alumno)
                                                 <tr>
-                                                    <td>{{ $alumno->apellidos }}, {{ $alumno->nombres }}</td>
+                                                    <td>
+                                                        {{ $alumno->apellidos }}, {{ $alumno->nombres }}
+                                                        @php
+                                                            $cicloAlumnoId = $alumno->ciclo_id;
+                                                            $cicloCursoId = $docente->cursos->find($curso)?->ciclo_id;
+                                                        @endphp
+
+                                                        @if ($cicloAlumnoId && $cicloAlumnoId !== $cicloCursoId)
+                                                            <span class="badge badge-info">
+                                                                Ciclo
+                                                                {{ optional($alumno->ciclo)->nombre ?? 'Desconocido' }}
+                                                            </span>
+                                                        @endif
+                                                    </td>
                                                     <td>{{ $alumno->email }}</td>
                                                     <td>{{ $alumno->numero ?? 'N/A' }}</td>
                                                     <td>
@@ -115,6 +129,7 @@
             padding-right: 8px;
             transition: 0.3s ease;
         }
+
         .cerrarBtn:hover {
             color: #000;
             background: #fff;

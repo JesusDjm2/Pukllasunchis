@@ -16,7 +16,6 @@ class Programa extends Model
     {
         return $this->hasMany(Ciclo::class);
     }
-
     public function alumnos()
     {
         return $this->hasMany(Alumno::class);

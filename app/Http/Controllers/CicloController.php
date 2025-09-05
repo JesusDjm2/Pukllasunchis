@@ -13,13 +13,65 @@ use Illuminate\Validation\Rule;
 
 class CicloController extends Controller
 {
+
     public function index()
+    {
+        $ciclos = Ciclo::whereIn('programa_id', [1, 2, 3, 4, 5])->get();
+
+        foreach ($ciclos as $ciclo) {
+            $alumnos = $ciclo->alumnos()
+                ->whereHas('user', function ($query) {
+                    $query->where(function ($q) {
+                        $q->whereDoesntHave('roles', function ($roleQuery) {
+                            $roleQuery->where('name', 'inhabilitado');
+                        })
+                            ->orWhere(function ($subQuery) {
+                                $subQuery->whereHas('roles', function ($roleQuery) {
+                                    $roleQuery->where('name', 'inhabilitado');
+                                })->where('perfil', 'Licencia');
+                            });
+                    });
+                })
+                ->orderBy('apellidos')
+                ->get();
+            $alumnosB = User::whereHas('roles', function ($query) {
+                $query->where('name', 'alumnoB');
+            })
+                ->where('ciclo_id', $ciclo->id) // ← Asegúrate de que User tenga este campo
+                ->where(function ($q) {
+                    $q->whereDoesntHave('roles', function ($roleQuery) {
+                        $roleQuery->where('name', 'inhabilitado');
+                    })
+                        ->orWhere(function ($subQuery) {
+                            $subQuery->whereHas('roles', function ($roleQuery) {
+                                $roleQuery->where('name', 'inhabilitado');
+                            })->where('perfil', 'Licencia');
+                        });
+                })
+                ->orderBy('apellidos')
+                ->get();
+
+
+            // Si necesitas usarlos en la vista, puedes agregarlos al modelo
+            $ciclo->alumnos_validos = $alumnos;
+            $ciclo->alumnos_b_validos = $alumnosB;
+
+            // O contar directamente si solo necesitas la cantidad:
+            $ciclo->alumnos_validos_count = $alumnos->count();
+            $ciclo->alumnos_b_validos_count = $alumnosB->count();
+        }
+
+        return view('admin.ciclo.index', compact('ciclos'));
+    }
+
+
+    /* public function index()
     {
         $ciclos = Ciclo::withCount(['alumnos', 'alumnosB'])
             ->whereIn('programa_id', [1, 2, 3, 4, 5])
             ->get();
         return view('admin.ciclo.index', compact('ciclos'));
-    }
+    } */
 
     public function create()
     {
@@ -42,80 +94,81 @@ class CicloController extends Controller
         Ciclo::create($request->all());
         return redirect()->route('ciclo.index')->with('success', 'Ciclo creado exitosamente');
     }
-    public function show(Ciclo $ciclo)
+    /* public function show(Ciclo $ciclo)
     {
         $alumnos = $ciclo->alumnos()->orderBy('apellidos')->get();
         $alumnosB = $ciclo->alumnosB()->orderBy('apellidos')->get();
         $ciclosDisponibles = Ciclo::where('programa_id', $ciclo->programa_id)
             ->get();
         $cantidadAlumnos = $alumnos->count();
-        return view('admin.ciclo.show', compact('ciclo', 'alumnos', 'cantidadAlumnos', 'ciclosDisponibles', 'alumnosB'));
+        $cursosConDocentes = $ciclo->cursos()->with('docentes')->get();
+        return view('admin.ciclo.show', compact('ciclo', 'alumnos', 'cantidadAlumnos', 'ciclosDisponibles', 'alumnosB', 'cursosConDocentes'));
+    } */
+    public function show(Ciclo $ciclo)
+    {
+        $alumnos = $ciclo->alumnos()
+            ->whereHas('user', function ($query) {
+                $query->where(function ($q) {
+                    $q->whereDoesntHave('roles', function ($roleQuery) {
+                        $roleQuery->where('name', 'inhabilitado');
+                    })
+                        ->orWhere(function ($subQuery) {
+                            $subQuery->whereHas('roles', function ($roleQuery) {
+                                $roleQuery->where('name', 'inhabilitado');
+                            })->whereNotIn('perfil', ['sin_matricula', 'reserva']);
+                        });
+                });
+            })
+            ->orderBy('apellidos')
+            ->get();
+        $alumnosB = User::whereHas('roles', function ($query) {
+            $query->where('name', 'alumnoB');
+        })
+            ->where('ciclo_id', $ciclo->id)
+            ->where(function ($q) {
+                $q->whereDoesntHave('roles', function ($roleQuery) {
+                    $roleQuery->where('name', 'inhabilitado');
+                })
+                    ->orWhere(function ($subQuery) {
+                        $subQuery->whereHas('roles', function ($roleQuery) {
+                            $roleQuery->where('name', 'inhabilitado');
+                        })->where('perfil', 'Licencia');
+                    });
+            })
+            ->orderBy('apellidos')
+            ->get();
+
+        /* $alumnosB = $ciclo->alumnosB()
+            ->whereHas('user', function ($query) {
+                $query->where(function ($q) {
+                    $q->whereDoesntHave('roles', function ($roleQuery) {
+                        $roleQuery->where('name', 'inhabilitado');
+                    })
+                        ->orWhere(function ($subQuery) {
+                            $subQuery->whereHas('roles', function ($roleQuery) {
+                                $roleQuery->where('name', 'inhabilitado');
+                            })->whereNotIn('perfil', ['sin_matricula', 'reserva']);
+                        });
+                });
+            })
+            ->orderBy('apellidos')
+            ->get(); */
+
+
+        $ciclosDisponibles = Ciclo::where('programa_id', $ciclo->programa_id)->get();
+        $cantidadAlumnos = $alumnos->count();
+        $cursosConDocentes = $ciclo->cursos()->with('docentes')->get();
+
+        return view('admin.ciclo.show', compact(
+            'ciclo',
+            'alumnos',
+            'alumnosB',
+            'cantidadAlumnos',
+            'ciclosDisponibles',
+            'cursosConDocentes'
+        ));
     }
 
-    /* public function updateCicloAlumnos(Request $request)
-    {
-        $request->validate([
-            'nuevo_ciclo_id' => 'required|exists:ciclos,id',
-            'alumnos' => 'required|array',
-            'alumnos.*' => 'exists:alumnos,id', 
-        ]);
-
-        $nuevoCicloId = $request->input('nuevo_ciclo_id');
-        $alumnosIds = $request->input('alumnos');
-
-        // Actualizar la tabla 'alumnos'
-        Alumno::whereIn('id', $alumnosIds)->update(['ciclo_id' => $nuevoCicloId]);
-        $usuariosIds = Alumno::whereIn('id', $alumnosIds)->pluck('user_id')->toArray();
-        User::whereIn('id', $usuariosIds)->update(['ciclo_id' => $nuevoCicloId]);
-
-        return redirect()->back()->with('success', 'Ciclo actualizado exitosamente para los alumnos seleccionados.');
-    } */
-    /* public function updateCicloAlumnos(Request $request)
-    {
-        $request->validate([
-            'nuevo_ciclo_id' => 'required|exists:ciclos,id',
-            'alumnos' => 'required|array',
-            'alumnos.*' => 'exists:users,id', // ¡Ahora los IDs son de la tabla `users`!
-        ]);
-
-        $nuevoCicloId = $request->input('nuevo_ciclo_id');
-        $usuariosIds = $request->input('alumnos');
-
-        // Filtrar usuarios por tipo de rol
-        $usuarios = User::whereIn('id', $usuariosIds)->get();
-
-        $alumnosNormalesIds = [];
-        $alumnosPpdIds = [];
-
-        foreach ($usuarios as $user) {
-            if ($user->hasRole('alumno')) {
-                // Tiene relación con la tabla alumnos
-                if ($user->alumno) {
-                    $alumnosNormalesIds[] = $user->alumno->id;
-                }
-            } elseif ($user->hasRole('alumnoB')) {
-                // Tiene relación con la tabla ppd
-                if ($user->alumnoB) {
-                    $alumnosPpdIds[] = $user->alumnoB->id;
-                }
-            }
-        }
-
-        // Actualizar ciclo_id en tabla users
-        User::whereIn('id', $usuariosIds)->update(['ciclo_id' => $nuevoCicloId]);
-
-        // Actualizar también en tabla alumnos (si aplica)
-        if (!empty($alumnosNormalesIds)) {
-            Alumno::whereIn('id', $alumnosNormalesIds)->update(['ciclo_id' => $nuevoCicloId]);
-        }
-
-        // Y en tabla ppd (si aplica)
-        if (!empty($alumnosPpdIds)) {
-            ppd::whereIn('id', $alumnosPpdIds)->update(['ciclo_id' => $nuevoCicloId]);
-        }
-
-        return redirect()->back()->with('success', 'Ciclo actualizado exitosamente para los alumnos seleccionados.');
-    } */
     public function updateCicloAlumnos(Request $request)
     {
         $request->validate([

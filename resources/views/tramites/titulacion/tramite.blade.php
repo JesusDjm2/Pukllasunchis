@@ -78,6 +78,13 @@
             display: none;
         }
 
+        .listanueva li {
+            list-style: decimal !important;
+            margin-left: 1.6em;
+            line-height: 2em;
+            font-weight: 300;
+        }
+
         @media (max-width: 768px) {
 
             .modal-body .span::after {
@@ -106,28 +113,11 @@
                     </div>
                 </div>
             </div>
-        </div> 
+        </div>
     </div>
     <div class="container pt-5 pb-5">
         <div class="row">
-            <div class="col-lg-3">
-                <div class="pegajoso">
-                    <h3 class="linea-debajo">Trámites</h3>
-                    <ul class="submenu2">
-                        <li><a href="{{ route('plan') }}"><i class="fa fa-caret-right fa-sm"></i> Plan de Trabajo</a></li>
-                        <li><a href="{{ route('tinvestigacion') }}"><i class="fa fa-caret-right fa-sm"></i> Trabajo de
-                                Investigación</a></li>
-                        <li><a href="{{ route('tesis') }}"><i class="fa fa-caret-right fa-sm"></i> Tesis</a></li>
-                        <li><a href="{{ route('tramites') }}"><i class="fa fa-caret-right fa-sm"></i> Trámites
-                                presenciales</a></li>
-                        <li>
-                            <a href="#" onclick="openModal()"> <i class="fa fa-caret-right fa-sm"></i> ¿Cómo pagar en
-                                Caja Cusco?
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
+            @include('tramites.titulacion.tramites-lateral')
             <div class="col-lg-9">
                 <h3 class="linea-debajo"> Trámites Presenciales</h3>
                 <p>
@@ -168,35 +158,64 @@
                                         soles. Se deben
                                         entregar los siguientes documentos:
                                     </p>
-                                    <ul style="color:#4D4D4D" class="listasDecimal">
-                                        <li>FUT debidamente llenado. Puedes solicitarlo en la oficina de secretaría o
-                                            descargarlo de la página web. <small><a href="{{ asset('pdf/fut.docx') }}"
-                                                    class="text-primary">Descargar <i
-                                                        class="fa fa-arrow-down"></i></a></small>
-                                        </li>
+                                    <h5>Documentos externos a presentar en la Institución: </h5>
+                                    <ul class="listanueva">
                                         <li>Una fotocopia de DNI ampliado y legalizado. </li>
-
-                                        <li>Ocho (8) fondo blanco, papel mate, con terno de color negro.</li>
-                                        <li>Una copia de RD de haber aprobado las prácticas pre profesionales. → s/50.00
-                                        </li>
-                                        <li>Carta de aceptación de la I.E. donde se realiza la investigación, original.</li>
-                                        <li>Constancia de no deudor original.</li>
-                                        <li>Constancia de egresado original.</li>
-                                        <li>Constancia de primera matrícula.</li>
-                                        <li>Resolución Directoral de Aprobación de PTI y asignación de asesor original.</li>
-                                        <li>Informe de Trabajo de Investigación Apto original.</li>
-                                        <li>Resolución Directoral de aprobación de Trabajo de Investigación original.</li>
-                                        <li>Una copia del Certificado de conocimiento de idioma extranjero Nivel A2, para
-                                            Inicial o Primaria.</li>
-                                        <li>Una copia del Certificado de conocimiento de lengua originaria, para Primaria
-                                            EIB.</li>
-                                        <li>Comprobante de pago por Derecho de obtención de grado de Bachiller original.
+                                        <li>Partida de nacimiento original.</li>
+                                        <li>Certificado de estudios de secundaria original.
+											<ul>
+												· Si este documento ya está en tu expediente de ingreso, no es necesario volver a presentarlo.
+											</ul>
+										</li>
+                                        <li>8 Fotos tamaño pasaporte fondo blanco en papel mate.</li>
+                                        <li>Documento que acredite conocimiento de idioma A2/ lengua originaria primaria EIB
                                         </li>
                                     </ul>
-                                    <p class="mt-2">
+                                    <h5 class="mt-3">Documentos a tramitar con la Institución: </h5>
+                                    <ul class="listanueva">
+                                        <li>FUT debidamente llenado. Puedes solicitarlo en la oficina de secretaría o
+                                            descargarlo de la página web.
+                                            <small>
+                                                <a href="{{ asset('pdf/fut.docx') }}" class="text-primary">
+                                                    Descargar <i class="fa fa-arrow-down"></i>
+                                                </a>
+                                            </small>
+                                        </li>
+                                        <li>Una copia de RD de haber aprobado las prácticas pre profesionales. → s/50.00
+                                        </li>
+                                        <li>Carta de aceptación de la I.E. donde se realiza la investigación, original.
+                                            <small class="text-info">Solicitar modelo en secretaría</small>
+                                        </li>
+                                        <li>Constancia de no deudor original.
+                                            <small class="text-info">Codigo: 28 | Concepto: Constacia de no deudor | Monto:
+                                                s/ 30.00</small>, luego de ello solicitar la constancia con el área de Cobranzas.
+                                        </li>
+                                        <li>Constancia de egresado original.
+                                            <small class="text-info">Codigo: 9 | Concepto: Constacia de Egresado | Monto: s/
+                                                50.00</small>
+                                        </li>
+                                        <li>Constancia de primera matrícula.
+                                            <small class="text-info">Codigo: 29 | Concepto: Constacia de 1ra matrícula |
+                                                Monto: s/ 50.00</small>
+                                        </li>
+                                        <li>Resolución Directoral de Aprobación de PTI y asignación de asesor original.
+                                            <small class="text-info">Codigo: 10 | Concepto: Aprobación de PTI y asesor |
+                                                Monto: s/ 50.00</small>
+                                        </li>
+                                        <li>Informe de Trabajo de Investigación Apto original.</li>
+                                        <li>Resolución Directoral de aprobación de Trabajo de Investigación original.
+                                            <small class="text-info">Codigo: 10 | Concepto: RD de Aprobación TI | Monto: s/
+                                                50.00</small>
+                                        </li>
+                                        <li>Comprobante de pago por Derecho de obtención de grado de Bachiller original.
+                                            <small class="text-info">Codigo: 18 | Concepto: Armado de expediente de
+                                                Titulación | Monto: s/ 500.00</small>
+                                        </li>
+                                    </ul>
+                                    <h5 class="mt-3">
                                         Como resultado de este trámite obtendrás una Carta de aceptación de Expediente de
                                         Graduación completo.
-                                    </p>
+                                    </h5>
                                 </div>
                             </div>
                         </div>
@@ -208,107 +227,69 @@
                                 <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseTwo"
                                     aria-expanded="false" aria-controls="collapseTwo" onclick="toggleArrow('arrowTwo')">
                                     <span id="arrowTwo" class="arrow fa fa-caret-down fa-sm"></span>
-                                    Para estudiantes de Profesionalización docente (1 año).
+                                    Para estudiantes de Profesionalización Docente (1 año).
                                 </button>
                             </h5>
                         </div>
                         <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
                             <div class="card-body">
                                 <div class="row">
-                                    <ul class="listasDecimal">
-
-                                        <li>Pago por derecho de expediente de de graduación. → s/500.00 </li>
-                                        <li>Una fotocopia de DNI ampliado y legalizado.</li>
-                                        <li>Cuatro (4) fotos tamaño pasaporte en fondo blanco y con terno en papel mate.
+                                    <h5>Documentos externos a presentar en la Institución: </h5>
+                                    <ul class="listanueva">
+                                        <li>Una fotocopia de DNI ampliado y legalizado. </li>                                        
+                                        <li>Cuatro (4) Fotos tamaño pasaporte fondo blanco en papel mate.</li>
+                                        <li>Documento que acredite conocimiento de idioma A2/ lengua originaria primaria EIB
                                         </li>
-                                        <li>Carta de aceptación de la I.E. donde se realiza la investigación,
-                                            original.</li>
-                                        <li>Constancia de no deudor original.</li>
-                                        <li>Constancia de egresado original.</li>
-                                        <li>Constancia de primera matrícula.</li>
-
-                                        <li>Certificado original de Estudios Superiores.
+                                    </ul>
+                                    <h5 class="mt-3">Documentos a tramitar con la Institución: </h5>
+                                    <ul class="listanueva">
+                                        <li>Pago por derecho de expediente de de graduación. → s/500.00 </li>
+                                        <li>Carta de aceptación de la I.E. donde se realiza la investigación, original.
+                                            <small class="text-info">Solicitar modelo en secretaría</small>
+                                        </li>
+                                        <li>Constancia de no deudor original.
+                                            <small class="text-info">Codigo: 28 | Concepto: Constacia de no deudor | Monto:
+                                                s/ 30.00</small>, luego de ello solicitar la constancia con el área de Cobranzas.
+                                        </li>
+                                        <li>Constancia de egresado original.
+                                            <small class="text-info">Codigo: 9 | Concepto: Constacia de Egresado | Monto: s/
+                                                50.00</small>
+                                        </li>
+                                        <li>Constancia de primera matrícula.
+                                            <small class="text-info">Codigo: 29 | Concepto: Constacia de 1ra matrícula |
+                                                Monto: s/ 50.00</small>
+                                        </li>
+                                        <li>Certificado original de Estudios Superiores:
                                             <ul>
-                                                <li>Para estudiantes provenientes de Institutos (IESP): Certificado
-                                                    de Estudios
-                                                    original, visado por la DREC.
+                                                <li style="list-style: disc!important">Para estudiantes provenientes de Institutos (IESP): Certificado
+                                                    de Estudios original, visado por la DREC.
                                                 </li>
-                                                <li>Para estudiantes provenientes de Universidad. Legalizado por notaria o
+                                                <li style="list-style: disc!important">Para estudiantes provenientes de Universidad. Legalizado por notaria o
                                                     Fedatado por la misma Universidad.</li>
                                             </ul>
                                         </li>
-                                        <li>RD de Aprobación de PTI y asignación de asesor.
+                                        <li>Resolución Directoral de Aprobación de PTI y asignación de asesor original.
+                                            <small class="text-info">Codigo: 10 | Concepto: Aprobación de PTI y asesor |
+                                                Monto: s/ 50.00</small>
                                         </li>
-                                        <li>Informe de Trabajo de Investigación Apto.</li>
-                                        <li>RD de aprobación de Trabajo de Investigación.</li>
-                                        <li>Una copia legalizada de certificado de conocimiento de idioma extranjero
-                                            Nivel A2 ( solo
-                                            para egresados Educación Inicial o Primaria)</li>
-                                        <li>Una copia legalizada del Certificado de conocimiento de lengua originaria (solo
-                                            para egresados de
-                                            Educación Primaria EIB.)</li>
+                                        <li>Informe de Trabajo de Investigación Apto original.</li>
+                                        <li>Resolución Directoral de aprobación de Trabajo de Investigación original.
+                                            <small class="text-info">Codigo: 10 | Concepto: RD de Aprobación TI | Monto: s/
+                                                50.00</small>
+                                        </li>
+                                        <li>Comprobante de pago por Derecho de obtención de grado de Bachiller original.
+                                            <small class="text-info">Codigo: 18 | Concepto: Armado de expediente de
+                                                Titulación | Monto: s/ 500.00</small>
+                                        </li>
                                     </ul>
-                                    <p class="mt-2">
+                                    <h5 class="mt-">
                                         Como resultado de este trámite obtendrás una Carta de aceptación de Expediente de
                                         Graduación completo.
-                                    </p>
+                                    </h5>                                    
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    {{-- <div class="card">
-                        <div class="card-header" id="headingTree">
-                            <h5 class="mb-0">
-                                <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseTwo"
-                                    aria-expanded="false" aria-controls="collapseTwo" onclick="toggleArrow('arrowTwo')">
-                                    <span id="arrowTwo" class="arrow fa fa-caret-down fa-sm"></span>
-                                    Para estudiantes de Profesionalización docente (1 año).
-                                </button>
-                            </h5>
-                        </div>
-                        <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
-                            <div class="card-body">
-                                <div class="row">
-                                    <ul class="listasDecimal">
-
-                                        <li>Pago por derecho de expediente de de graduación. → s/500.00 </li>
-                                        <li>Una fotocopia de DNI ampliado y legalizado.</li>
-                                        <li>Cuatro (4) fotos tamaño pasaporte en fondo blanco y con terno en papel mate.
-                                        </li>
-                                        <li>Carta de aceptación de la I.E. donde se realiza la investigación,
-                                            original.</li>
-                                        <li>Constancia de no deudor original.</li>
-                                        <li>Constancia de egresado original.</li>
-
-                                        <li>Certificado original de Estudios Superiores.
-                                            <ul>
-                                                <li>Para estudiantes provenientes de Institutos (IESP): Certificado
-                                                    de Estudios
-                                                    original, visado por la DREC.
-                                                </li>
-                                                <li>Para estudiantes provenientes de Universidad. Legalizado por notaria o
-                                                    Fedatado por la misma Universidad.</li>
-                                            </ul>
-                                        </li>
-                                        <li>RD de Aprobación de PTI y asignación de asesor.
-                                        </li>
-                                        <li>Informe de Trabajo de Investigación Apto.</li>
-                                        <li>RD de aprobación de Trabajo de Investigación.</li>
-                                        <li>Una copia legalizada de certificado de conocimiento de idioma extranjero
-                                            Nivel A2 ( solo
-                                            para egresados Educación Inicial o Primaria)</li>
-                                        <li>Una copia legalizada del Certificado de conocimiento de lengua originaria (solo
-                                            para egresados de
-                                            Educación Primaria EIB.)</li>
-                                    </ul>
-                                    <p class="mt-2">
-                                        Como resultado de este trámite obtendrás una Carta de aceptación de Expediente de
-                                        Graduación completo.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div> --}}
+                    </div>                   
                 </div>
 
                 <h3 class="mt-4"> Carta de presentación para solicitar autorización de investigación:</h3>
@@ -378,8 +359,7 @@
                 <ul class="listasCuerpo">
                     <li>FUT debidamente llenado. Puedes solicitarlo en la oficina de secretaría o descargarlo de la página
                         web.</li>
-                    <li>Copia de Carta de aceptación de Expediente de Graduación completo.</li>
-                    <li>Dos ejemplares anillados de la versión final del TI.</li>
+                    <li>Tener expediente de Graduación completo.</li>
                     <li>Comprobante de pago por Emisión de Diploma de Bachiller.</li>
                 </ul>
                 <p>
@@ -394,16 +374,14 @@
                     <li>FUT debidamente llenado. Puedes solicitarlo en la oficina de secretaría o descargarlo de la página
                         web.</li>
                     <li>Copia legalizada del Grado de Bachiller.</li>
-                    <!----<li>Copia de Acta de aprobación de sustentación.</li>
-                                                                                                                                    <li>Copia de RD de aprobación de sustentación.</li>
-                                                                                                                                    <li>Constancia de inscripción en SUNEDU del Grado de Bachiller.</li>---->
+                    <!----<li>Copia de Acta de aprobación de sustentación.</li>-->
                     <li>Un ejemplar empastado por grupo y/o tema de investigación de la versión final de la Tesis.</li>
                     <li>Comprobante de pago por Emisión de Título de Licenciado.</li>
                 </ul>
                 <p>
                     Como resultado de este trámite obtendrás el Título de Licenciado.
                 </p>
-                
+
                 <h3 class="mt-4">Pagos para la realización de los Trámites Presenciales </h3>
                 <p>SOLO SE PUEDEN PAGAR EN VENTANILLAS de cualquier agencia a nivel nacional.</p>
                 <ul class="listasDecimal">
@@ -420,7 +398,7 @@
 
             </div>
         </div>
-    </div>
+    </div> 
 
     <!-- Pop-up Modal -->
     <div class="modal-overlay" id="modalOverlay"></div>

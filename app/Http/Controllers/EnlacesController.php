@@ -7,6 +7,11 @@ use Illuminate\Http\Request;
 
 class EnlacesController extends Controller
 {
+
+    public function tour()
+    {
+        return view('tour01');
+    }
     public function video1()
     {
         return view('videos.video1');
@@ -105,6 +110,10 @@ class EnlacesController extends Controller
     public function partes()
     {
         return view('tramites.Mesa-de-partes');
+    }
+    public function extraordinarios()
+    {
+        return view('tramites.titulacion.extraordinarios');
     }
 
     //Líneas

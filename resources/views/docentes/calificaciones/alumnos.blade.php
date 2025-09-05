@@ -112,7 +112,7 @@
             <div class="col-lg-12">
                 <div class="text-center mb-3">
                     <div class="btn-group" role="group" aria-label="Controles de Periodo">
-                        <button type="button" class="btn btn-outline-primary btn-sm" id="btnPeriodoUno">Parcial 1</button>
+                        <button type="button" class="btn btn-outline-primary btn-sm active" id="btnPeriodoUno">Parcial 1</button>
                         <button type="button" class="btn btn-outline-primary btn-sm" id="btnPeriodoDos">Parcial 2</button>
                         <button type="button" class="btn btn-outline-primary btn-sm" id="btnDesempeno">Desempeño</button>
                     </div>
@@ -145,13 +145,13 @@
                                         </th>
                                     @endforeach
                                     <th colspan="3" class="text-center sortable">Calificación</th>
-                                    <th rowspan="2" class="align-middle sortable">Observaciones</th> 
+                                    <th rowspan="2" class="align-middle sortable">Observaciones</th>
                                 </tr>
                                 <tr>
                                     <th class="align-middle sortable">Valoración del Curso</th>
                                     <th class="align-middle sortable">Calificación del Curso</th>
-                                    <th class="align-middle sortable">Calificación para el Sistema</th>                                  
-                                </tr>                                
+                                    <th class="align-middle sortable">Calificación para el Sistema</th>
+                                </tr>
                             </thead>
                             <tbody>
                                 @foreach ($alumnos as $index => $alumno)
@@ -166,9 +166,11 @@
                                             style="vertical-align: middle; border-bottom: 1px solid #39779b; border-left: 1px solid #39779b; font-weight: bold">
                                             {{ $index + 1 }}
                                         </td>
-                                        <td
-                                            style="vertical-align: middle; border-bottom: 1px solid #39779b; font-weight: bold">
+                                        <td style="vertical-align: middle; border-bottom: 1px solid #39779b; width:200px ">
                                             {{ $alumno->apellidos }}, {{ $alumno->nombres }}
+                                            @if ($alumno->ciclo_id !== $curso->ciclo_id)
+                                                <span class="badge badge-info">Ciclo {{ $alumno->ciclo->nombre }}</span>
+                                            @endif
                                         </td>
 
                                         @foreach ($competenciasSeleccionadas as $index => $competencia)
@@ -191,6 +193,7 @@
                                                 value="{{ $competencia->id }}">
                                             <td style="vertical-align: middle; border-bottom: 1px solid #39779b;">
                                                 <select class="form-control form-control-sm select-competencia"
+                                                    style="font-size: 0.95em"
                                                     name="alumnos[{{ $alumno->id }}][valoracion_{{ $index + 1 }}]">
                                                     <option value="0" selected>Seleccionar</option>
                                                     @foreach ($valoracionTexto as $valor => $texto)
@@ -200,148 +203,6 @@
                                                         </option>
                                                     @endforeach
                                                 </select>
-                                                <input type="text" class="form-control form-control-sm input-competencia"
-                                                    name="alumnos[{{ $alumno->id }}][nota_{{ $competencia->id }}]"
-                                                    value="{{ $calificacion ? $calificacion->nota : '' }}" readonly
-                                                    style="display: none">
-                                            </td>
-                                        @endforeach
-
-                                        <td style="vertical-align: middle; border-bottom: 1px solid #39779b;">
-                                            <input type="text"
-                                                class="form-control form-control-sm valoracion-curso text-center"
-                                                name="alumnos[{{ $alumno->id }}][valoracion_curso]"
-                                                value="{{ $calificacion ? $calificacion->valoracion_curso : '' }}"
-                                                readonly>
-                                        </td>
-                                        <td style="vertical-align: middle; border-bottom: 1px solid #39779b;">
-                                            <input type="text"
-                                                class="form-control form-control-sm calificacion-curso text-center"
-                                                name="alumnos[{{ $alumno->id }}][calificacion_curso]"
-                                                value="{{ $calificacion ? $calificacion->calificacion_curso : '' }}"
-                                                readonly>
-                                        </td>
-                                        <td style="vertical-align: middle; border-bottom: 1px solid #39779b;">
-                                            <input type="text"
-                                                class="form-control form-control-sm calificacion-sistema text-center"
-                                                name="alumnos[{{ $alumno->id }}][calificacion_sistema]"
-                                                value="{{ $calificacion ? $calificacion->calificacion_sistema : '' }}"
-                                                readonly>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-
-                            {{-- <tbody>
-                                @foreach ($alumnos as $index => $alumno)
-                                    <input type="hidden" name="alumnos[{{ $alumno->id }}][alumno_id]"
-                                        value="{{ $alumno->id }}">
-                                    <tr>
-                                        <td rowspan="2"
-                                            style="vertical-align: middle; border-bottom: 1px solid #39779b; border-left: 1px solid #39779b; font-weight: bold">
-                                            {{ $index + 1 }}</td>
-                                        <td rowspan="2"
-                                            style="vertical-align: middle; border-bottom: 1px solid #39779b; font-weight: bold">
-                                            {{ $alumno->apellidos }}, {{ $alumno->nombres }}
-                                        </td>
-                                        <td>
-                                            <p class="mt-1 text-primary mb-0 font-weight-bold">Parcial 1:</p>
-                                        </td>
-                                        @foreach ($competenciasSeleccionadas as $index => $competencia)
-                                            @php
-                                                $valoracionPeriodo1 =
-                                                    $alumno->periodos->where('curso_id', $curso->id)->first()
-                                                        ?->{'valoracion_' . ($index + 1)} ?? null;
-
-                                                $valoracionTexto = [
-                                                    5 => 'Destacado',
-                                                    4 => 'Logrado',
-                                                    3 => 'En Proceso',
-                                                    2 => 'Inicio',
-                                                    1 => 'Previo al Inicio',
-                                                ];
-
-                                                $textoPeriodo1 =
-                                                    $valoracionPeriodo1 !== null
-                                                        ? $valoracionTexto[$valoracionPeriodo1] ?? '-'
-                                                        : '-';
-                                            @endphp
-                                            <td>
-                                                @if ($textoPeriodo1 !== '-')
-                                                    <p class="mt-1 text-primary mb-0 font-weight-bold"
-                                                        style="font-size: 13px">
-                                                        {{ $textoPeriodo1 }}</p>
-                                                @endif
-                                            </td>
-                                        @endforeach
-                                        <td>
-                                            @if ($alumno->periodos->where('curso_id', $curso->id)->isNotEmpty())
-                                                <p class="mt-1 text-primary mb-0 font-weight-bold" style="font-size: 13px">
-                                                    {{ $alumno->periodos->where('curso_id', $curso->id)->first()->valoracion_curso ?? '-' }}
-                                                </p>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            @if ($alumno->periodos->where('curso_id', $curso->id)->isNotEmpty())
-                                                <p class="mt-1 text-primary mb-0 font-weight-bold" style="font-size: 13px">
-                                                    {{ $alumno->periodos->where('curso_id', $curso->id)->first()->calificacion_curso ?? '-' }}
-                                                </p>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            @if ($alumno->periodos->where('curso_id', $curso->id)->isNotEmpty())
-                                                <p class="mt-1 text-primary mb-0 font-weight-bold"
-                                                    style="font-size: 13px">
-                                                    {{ $alumno->periodos->where('curso_id', $curso->id)->first()->calificacion_sistema ?? '-' }}
-                                                </p>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td style="vertical-align: middle; border-bottom: 1px solid #39779b;">
-                                            <p class="mt-1 text-info mb-0 font-weight-bold">Parcial 2</p>
-                                        </td>
-                                        <input type="hidden" name="alumnos[{{ $alumno->id }}][docente_id]"
-                                            value="{{ $docente->id }}">
-                                        <input type="hidden" name="alumnos[{{ $alumno->id }}][curso_id]"
-                                            value="{{ $curso->id }}">
-
-                                        @foreach ($competenciasSeleccionadas as $index => $competencia)
-                                            @php
-                                                $calificacion = $alumno
-                                                    ->calificaciones()
-                                                    ->where('curso_id', $curso->id)
-                                                    ->first();
-                                                $valoracionTexto = [
-                                                    5 => 'Destacado',
-                                                    4 => 'Logrado',
-                                                    3 => 'En Proceso',
-                                                    2 => 'Inicio',
-                                                    1 => 'Previo al Inicio',
-                                                ];
-                                            @endphp
-                                            <input type="hidden" name="alumnos[{{ $alumno->id }}][competencias][]"
-                                                value="{{ $competencia->id }}">
-                                            <td style="vertical-align: middle; border-bottom: 1px solid #39779b;">
-                                                <select class="form-control form-control-sm select-competencia"
-                                                    name="alumnos[{{ $alumno->id }}][valoracion_{{ $index + 1 }}]">
-                                                    <option value="0" selected>Seleccionar</option>
-                                                    <option value="5"
-                                                        {{ $calificacion && $calificacion->{'valoracion_' . ($index + 1)} == 5 ? 'selected' : '' }}>
-                                                        Destacado</option>
-                                                    <option value="4"
-                                                        {{ $calificacion && $calificacion->{'valoracion_' . ($index + 1)} == 4 ? 'selected' : '' }}>
-                                                        Logrado</option>
-                                                    <option value="3"
-                                                        {{ $calificacion && $calificacion->{'valoracion_' . ($index + 1)} == 3 ? 'selected' : '' }}>
-                                                        En Proceso</option>
-                                                    <option value="2"
-                                                        {{ $calificacion && $calificacion->{'valoracion_' . ($index + 1)} == 2 ? 'selected' : '' }}>
-                                                        Inicio</option>
-                                                    <option value="1"
-                                                        {{ $calificacion && $calificacion->{'valoracion_' . ($index + 1)} == 1 ? 'selected' : '' }}>
-                                                        Previo al Inicio</option>
-                                                </select>
                                                 <input type="text"
                                                     class="form-control form-control-sm input-competencia"
                                                     name="alumnos[{{ $alumno->id }}][nota_{{ $competencia->id }}]"
@@ -349,9 +210,11 @@
                                                     style="display: none">
                                             </td>
                                         @endforeach
+
                                         <td style="vertical-align: middle; border-bottom: 1px solid #39779b;">
                                             <input type="text"
                                                 class="form-control form-control-sm valoracion-curso text-center"
+                                                style="font-size: 0.95em"
                                                 name="alumnos[{{ $alumno->id }}][valoracion_curso]"
                                                 value="{{ $calificacion ? $calificacion->valoracion_curso : '' }}"
                                                 readonly>
@@ -359,6 +222,7 @@
                                         <td style="vertical-align: middle; border-bottom: 1px solid #39779b;">
                                             <input type="text"
                                                 class="form-control form-control-sm calificacion-curso text-center"
+                                                style="font-size: 0.95em"
                                                 name="alumnos[{{ $alumno->id }}][calificacion_curso]"
                                                 value="{{ $calificacion ? $calificacion->calificacion_curso : '' }}"
                                                 readonly>
@@ -366,13 +230,19 @@
                                         <td style="vertical-align: middle; border-bottom: 1px solid #39779b;">
                                             <input type="text"
                                                 class="form-control form-control-sm calificacion-sistema text-center"
+                                                style="font-size: 0.95em"
                                                 name="alumnos[{{ $alumno->id }}][calificacion_sistema]"
                                                 value="{{ $calificacion ? $calificacion->calificacion_sistema : '' }}"
                                                 readonly>
                                         </td>
+                                        <td style="width: 400px;vertical-align: middle; border-bottom: 1px solid #39779b;">
+                                            <textarea name="alumnos[{{ $alumno->id }}][observaciones]" class="form-control form-control-sm text-start"
+                                                rows="2" style="resize: vertical; width: 100%;" placeholder="Observaciones (Opcional)">{{ old("alumnos.{$alumno->id}.observaciones", $calificacion?->observaciones) }}
+                                            </textarea>
+                                        </td>
                                     </tr>
                                 @endforeach
-                            </tbody> --}}
+                            </tbody>
                         </table>
                     </div>
                 </form>
@@ -407,6 +277,7 @@
                                         </th>
                                     @endforeach
                                     <th colspan="3" class="text-center sortable">Calificación</th>
+                                    <th rowspan="2" class="align-middle sortable">Observaciones</th>
                                 </tr>
                                 <tr>
                                     <th class="align-middle sortable">Valoración del Curso</th>
@@ -424,7 +295,10 @@
                                             {{ $index + 1 }}</td>
                                         <td rowspan="2"
                                             style="vertical-align: middle; border-bottom: 1px solid #39779b; font-weight: bold">
-                                            {{ $alumno->apellidos }}, {{ $alumno->nombres }}
+                                            {{ $alumno->apellidos }}, {{ $alumno->nombres }}<br>
+                                            @if ($alumno->ciclo_id !== $curso->ciclo_id)
+                                                <span class="badge badge-info">Ciclo {{ $alumno->ciclo->nombre }}</span>
+                                            @endif
                                         </td>
                                         <td>
                                             <p class="mt-1 text-primary mb-0 font-weight-bold">Parcial 1:</p>
@@ -478,6 +352,18 @@
                                                     style="font-size: 13px">
                                                     {{ $alumno->periodos->where('curso_id', $curso->id)->first()->calificacion_sistema ?? '-' }}
                                                 </p>
+                                            @endif
+                                        </td>
+                                        <td style="width: 400px;vertical-align: middle;">
+                                            @php
+                                                $calificacionPeriodo1 = $alumno->periodos
+                                                    ->where('curso_id', $curso->id)
+                                                    ->first();
+                                            @endphp
+                                            @if ($calificacionPeriodo1)
+                                                <textarea class="form-control form-control-sm text-start" readonly rows="2"
+                                                    style="resize: vertical; width: 100%;" placeholder="Observaciones (Opcional)">{{ old("alumnos.{$alumno->id}.observaciones", $calificacionPeriodo1?->observaciones) }}
+                                                </textarea>
                                             @endif
                                         </td>
                                     </tr>
@@ -554,6 +440,11 @@
                                                 value="{{ $calificacion ? $calificacion->calificacion_sistema : '' }}"
                                                 readonly>
                                         </td>
+                                        <td style="width: 400px;vertical-align: middle; border-bottom: 1px solid #39779b;">
+                                            <textarea name="alumnos[{{ $alumno->id }}][observaciones]" class="form-control form-control-sm text-start"
+                                                rows="2" style="resize: vertical; width: 100%;" placeholder="Observaciones (Opcional)"> {{ old("alumnos.{$alumno->id}.observaciones", $calificacion?->observaciones) }}
+                                            </textarea>
+                                        </td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -594,7 +485,7 @@
                                     <th class="align-middle sortable">Valoración del Curso</th>
                                     <th class="align-middle sortable">Calificación del Curso</th>
                                     <th class="align-middle sortable">Calificación para el Sistema</th>
-                                    
+
                                 </tr>
                             </thead>
                             <tbody>
@@ -607,7 +498,10 @@
                                             {{ $index + 1 }}.</td>
                                         <td rowspan="3" class="font-weight-bold text-secondary"
                                             style="vertical-align: middle; border-bottom: 1px solid #39779b">
-                                            {{ $alumno->apellidos }}, {{ $alumno->nombres }}
+                                            {{ $alumno->apellidos }}, {{ $alumno->nombres }}<br>
+                                            @if ($alumno->ciclo_id !== $curso->ciclo_id)
+                                                <span class="badge badge-info">Ciclo {{ $alumno->ciclo->nombre }}</span>
+                                            @endif
                                         </td>
                                         <td>
                                             <p class="mt-1 text-primary mb-0 font-weight-bold" style="font-size: 14px">
@@ -837,7 +731,6 @@
     {{-- Modal --}}
     <script>
         function openModal(element) {
-            // Extraer datos del elemento a partir de los atributos "data-"
             var nombre = element.getAttribute('data-nombre');
             var descripcion = element.getAttribute('data-descripcion');
             var capacidades = element.getAttribute('data-capacidades');
@@ -845,7 +738,7 @@
             // Asigna los valores al modal
             document.getElementById("competenciaNombre").innerText = nombre;
             document.getElementById("competenciaDescripcion").innerText = descripcion;
-            document.getElementById("competenciaCapacidades").innerHTML = capacidades; // Texto enriquecido
+            document.getElementById("competenciaCapacidades").innerHTML = capacidades; 
 
             // Muestra el modal
             document.getElementById("competenciaModal").style.display = "block";
@@ -861,19 +754,17 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            activarBotonYMostrarTabla('btnPeriodoUno', 'tablaPeriodoUno'); // Mostrar Periodo 1 al cargar
+            activarBotonYMostrarTabla('btnPeriodoUno', 'tablaPeriodoUno');
         });
 
         function activarBotonYMostrarTabla(botonId, tablaId) {
             const botones = ['btnPeriodoUno', 'btnPeriodoDos', 'btnDesempeno'];
             const tablas = ['tablaPeriodoUno', 'tablaCalificaciones', 'tablaDesempeno'];
 
-            // Mostrar tabla activa
             tablas.forEach(id => {
                 document.getElementById(id).style.display = (id === tablaId) ? 'block' : 'none';
             });
 
-            // Quitar y agregar clase active a botones
             botones.forEach(id => {
                 document.getElementById(id).classList.remove('active');
             });
@@ -892,31 +783,6 @@
             activarBotonYMostrarTabla('btnDesempeno', 'tablaDesempeno');
         });
     </script>
-
-    {{-- <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            mostrarTabla('tablaPeriodoUno'); // Mostrar Periodo 1 al cargar
-        });
-
-        function mostrarTabla(idTabla) {
-            const tablas = ['tablaPeriodoUno', 'tablaCalificaciones', 'tablaDesempeno'];
-            tablas.forEach(id => {
-                document.getElementById(id).style.display = (id === idTabla) ? 'block' : 'none';
-            });
-        }
-
-        document.getElementById('btnPeriodoUno').addEventListener('click', function() {
-            mostrarTabla('tablaPeriodoUno');
-        });
-
-        document.getElementById('btnPeriodoDos').addEventListener('click', function() {
-            mostrarTabla('tablaCalificaciones');
-        });
-
-        document.getElementById('btnDesempeno').addEventListener('click', function() {
-            mostrarTabla('tablaDesempeno');
-        });
-    </script> --}}
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {

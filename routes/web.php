@@ -41,6 +41,7 @@ Route::get('tramites/matricula', [EnlacesController::class, 'matricula'])->name(
 Route::get('tramites/traslado', [EnlacesController::class, 'Ttraslado'])->name('Ttraslado');
 Route::get('tramites/licencia', [EnlacesController::class, 'licencia'])->name('licencia');
 Route::get('tramites/mesa-de-partes', [EnlacesController::class, 'partes'])->name('partes');
+Route::get('tramites/pagos-extraordinarios', [EnlacesController::class, 'extraordinarios'])->name('extraordinarios');
 
 //Líneas
 Route::get('lineas/tutoria', [EnlacesController::class, 'tutoria'])->name('tutoria');
@@ -71,6 +72,9 @@ Route::get('La-pulga-aventura', [EnlacesController::class, 'video1'])->name('vid
 Route::get('luis-pescetti-el-nino-canibal', [EnlacesController::class, 'video2'])->name('video2');
 Route::get('El-negrito-aquel', [EnlacesController::class, 'video3'])->name('video3');
 Route::get('La-flor-de-la-canela', [EnlacesController::class, 'video4'])->name('video4');
+
+//360
+Route::get('Tour-360', [EnlacesController::class, 'tour'])->name('tour');
 
 Route::get('/clear-cache', function () {
     $exitCode = Artisan::call('cache:clear');

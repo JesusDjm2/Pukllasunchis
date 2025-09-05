@@ -1,6 +1,7 @@
 <div class="row">
     <div class="col-lg-12">
         <div class="card p-4 bg-white">
+
             <div class="row">
                 <div class="col-lg-12">
                     <h5 class="mt-2 mb-1 text-info font-weight-bold">Por favor completar estos datos nuevos:</h5>
@@ -108,8 +109,8 @@
                 <div class="col-lg-6 mb-2 mt-2">
                     <label for="egreso"><strong>¿Cuál es tu egreso mensual promedio?</strong> <span
                             class="text-danger">*</span></label>
-                    <select class="form-control form-control-sm @error('egreso') is-invalid @enderror" id="egreso" name="egreso"
-                        required>
+                    <select class="form-control form-control-sm @error('egreso') is-invalid @enderror" id="egreso"
+                        name="egreso" required>
                         <option value="" disabled selected>Selecciona una opción</option>
                         <option value="Menos de 500"
                             {{ old('egreso', isset($alumno) ? $alumno->egreso : '') == 'Menos de 500' ? 'selected' : '' }}>
@@ -167,7 +168,7 @@
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
     </div>
-    
+
     <div class="col-lg-6 mb-2">
         <label for="apellidos">Apellidos:</label>
         <input type="text" class="form-control form-control-sm @error('apellidos') is-invalid @enderror"
@@ -192,8 +193,8 @@
 
     <div class="col-lg-6 mb-2">
         <label for="numero">Número:</label>
-        <input type="text" class="form-control form-control-sm @error('numero') is-invalid @enderror" id="numero"
-            name="numero" value="{{ old('numero', $alumno->numero) }}" required>
+        <input type="text" class="form-control form-control-sm @error('numero') is-invalid @enderror"
+            id="numero" name="numero" value="{{ old('numero', $alumno->numero) }}" required>
         @error('numero')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
@@ -232,39 +233,6 @@
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
     </div>
-
-    {{--  <div class="col-lg-6">
-        <label for="lugar_nacimiento">Lugar de Nacimiento: <small> (Detallar: Región, Provincia, Distrito y
-                dirección)</small></label>
-        <input type="text" class="form-control form-control-sm mb-2 @error('lugar_nacimiento') is-invalid @enderror"
-            name="lugar_nacimiento" value="{{ old('lugar_nacimiento', $alumno->lugar_nacimiento) }}"
-            placeholder="Cusco, Cusco, Santiago, Urb, BloqueA-2" required>
-        @error('lugar_nacimiento')
-            <span class="invalid-feedback" role="alert">{{ $message }}</span>
-        @enderror
-    </div> --}}
-
-    {{-- <div class="col-lg-6">
-        <label for="permanencia_vivienda">Permanencia en la vivienda: <small>(Selecciona la opción que mejor describa tu
-                situación)</small></label>
-        <select class="form-control form-control-sm mb-2 @error('permanencia_vivienda') is-invalid @enderror"
-            name="permanencia_vivienda" required>
-            <option value="" disabled selected>Selecciona una opción</option>
-            <option value="Vivo permanentemente en Cusco ciudad"
-                {{ old('permanencia_vivienda', $alumno->permanencia_vivienda) == 'Vivo permanentemente en Cusco ciudad' ? 'selected' : '' }}>
-                Vivo permanentemente en Cusco ciudad</option>
-            <option value="Vivo en comunidad y me traslado al Cusco todos los días para estudiar"
-                {{ old('permanencia_vivienda', $alumno->permanencia_vivienda) == 'Vivo en comunidad y me traslado al Cusco todos los días para estudiar' ? 'selected' : '' }}>
-                Vivo en comunidad y me traslado al Cusco todos los días para estudiar</option>
-            <option value="Estoy en Cusco de lunes a viernes y los fines de semana en mi comunidad"
-                {{ old('permanencia_vivienda', $alumno->permanencia_vivienda) == 'Estoy en Cusco de lunes a viernes y los fines de semana en mi comunidad' ? 'selected' : '' }}>
-                Estoy en Cusco de lunes a viernes y los fines de semana en mi comunidad</option>
-        </select>
-        @error('permanencia_vivienda')
-            <span class="invalid-feedback" role="alert">{{ $message }}</span>
-        @enderror
-    </div> --}}
-
 
     <div class="col-lg-6">
         <label for="direccion">Domicilio actual: <small> (Detallar: Región, Provincia, Distrito) y
