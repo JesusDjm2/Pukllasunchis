@@ -166,7 +166,7 @@
                             <td style="font-weight: 600; padding: 2px; border: none;">1.5 <span
                                     style="margin-left:1em">Semestre
                                     Académico</span></td>
-                            <td style="padding: 1px; border: none;">: 2025 - I</td>
+                            <td style="padding: 1px; border: none;">: {{ $periodoActual->nombre }}</td>
                         </tr>
                         <tr>
                             <td style="font-weight: 600; padding: 2px; border: none;">1.6 <span
@@ -211,12 +211,12 @@
                         <tr>
                             <td style="font-weight: 600; padding: 2px; border: none;">1.11 <span
                                     style="margin-left:0.4em">Fecha de inicio</span></td>
-                            <td style="padding: 2px; border: none;">: 24 de marzo de 2025</td>
+                            <td style="padding: 2px; border: none;">: {{ \Carbon\Carbon::parse($periodoActual->fecha_inicio)->translatedFormat('d \d\e F \d\e\l Y') }}</td>
                         </tr>
                         <tr>
                             <td style="font-weight: 600; padding: 2px; border: none;">1.12 <span
                                     style="margin-left:0.4em">Fecha de término</span></td>
-                            <td style="padding: 2px; border: none;">: 18 de julio de 2025</td>
+                            <td style="padding: 2px; border: none;">: {{ \Carbon\Carbon::parse($periodoActual->fecha_cierre)->translatedFormat('d \d\e F \d\e\l Y') }}</td>
                         </tr>
 
                     </tbody>

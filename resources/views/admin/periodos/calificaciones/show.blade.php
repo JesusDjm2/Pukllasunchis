@@ -9,6 +9,7 @@
             background-color: #212529;
             color: #fff;
             z-index: 10;
+            pointer-events: none;
         }
 
         .table-responsive {
@@ -36,6 +37,11 @@
             <h4 class="mb-3 text-primary font-weight-bold">Registros de Calificaciones - {{ $nombre }}</h4>
             <a href="{{ url()->previous() }}" class="btn btn-sm btn-danger shadow-sm"><i class="fa fa-arrow-left fa-sm"></i>
                 Volver</a>
+
+            <a href="{{ route('periodos.export', $periodoActual->id ?? request()->route('id')) }}"
+                class="btn btn-success btn-sm shadow-sm">
+                <i class="fa fa-file-excel"></i> Exportar Excel
+            </a>
         </div>
         <div class="row mb-3">
             <div class="col-md-12 mb-2">
@@ -107,13 +113,12 @@
                                             <li>DNI: {{ $alumno->dni ?? 'N/A' }}</li>
                                             <li>Programa: {{ $alumno->programa->nombre ?? 'N/A' }}</li>
                                             <li>Beca: {{ $alumno->user->beca == 1 ? 'Sí' : 'No' }}</li>
+                                            <li>Id: {{ $alumno->id }}</li>
                                         </ul>
                                     </td>
                                 @endif
-
                                 <td>{{ $cursoNombre }}</td>
                                 <td>{{ $cicloNombre }}</td>
-
                                 <td style="text-align: center; background-color: {{ $bgColor }}">
                                     {{ $periodo->valoracion_curso ?? ($curso ? 'N/A' : '—') }}
                                 </td>
@@ -127,7 +132,6 @@
                         @endforeach
                     @endforeach
                 </tbody>
-
             </table>
         </div>
     </div>
@@ -155,6 +159,7 @@
             }
 
             let grupos = buildGroups();
+
             function filtrar() {
                 const q = (searchInput.value || '').toLowerCase().trim();
                 Object.values(grupos).forEach(gr => {

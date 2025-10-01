@@ -4,7 +4,7 @@
         .highlighted {
             background-color: #d4edda;
             transition: background-color 0.5s ease;
-        } 
+        }
 
         th.sortable {
             pointer-events: none;
@@ -134,7 +134,8 @@
                         <button type="submit" class="btn btn-primary btn-sm mb-2">Guardar/Actualizar</button>
                     </div>
                     <div style="max-height: 800px; overflow-x: auto;">
-                        <table class="table table-hover table-bordered text-center text-dark" style="font-size: 13px; min-width: 4000px;">
+                        <table class="table table-hover table-bordered text-center text-dark"
+                            style="font-size: 13px; min-width: 4000px;">
                             <thead style="color: #000">
                                 <tr>
                                     <th rowspan="3" class="text-center align-middle sortable bg-dark text-white">#</th>
@@ -221,22 +222,36 @@
                             <tbody>
                                 @foreach ($alumnos as $index => $alumno)
                                     @php
-                                        $ppd = $alumno->user->alumnoB ?? null;
+                                        $ppd = $alumno->alumnoB; // <-- en vez de $alumno->ppd
                                         $calificacion = $ppd?->calificaciones->where('curso_id', $curso->id)->first();
+                                        $readonly =
+                                            $alumno->es_inhabilitado || !$alumno->tiene_ppd ? 'readonly disabled' : '';
                                     @endphp
 
-                                    <input type="hidden" name="alumnos[{{ $alumno->id }}][alumno_id]"
-                                        value="{{ $alumno->id }}">
+                                    <input type="hidden" name="alumnos[{{ $alumno->id }}][ppd_id]"
+                                        value="{{ $alumno->alumnoB?->id }}">
                                     <input type="hidden" name="alumnos[{{ $alumno->id }}][docente_id]"
                                         value="{{ $docente->id }}">
                                     <input type="hidden" name="alumnos[{{ $alumno->id }}][curso_id]"
                                         value="{{ $curso->id }}">
 
-                                    <tr>
+                                    <tr class="{{ $alumno->es_inhabilitado ? 'table-secondary' : '' }}"
+                                        style="{{ $alumno->es_inhabilitado ? 'pointer-events: none; cursor: not-allowed;' : '' }}">
                                         <td class="align-middle text-center">{{ $index + 1 }}</td>
-                                        <td class="align-middle sticky-col-left-1">{{ $alumno->apellidos }},
-                                            {{ $alumno->nombres }}</td>
-
+                                        <td class="align-middle sticky-col-left-1">
+                                            <div>
+                                                {{ $alumno->apellidos }}, {{ $alumno->name }}
+                                            </div>
+                                            <div class="mt-1">
+                                                @if ($alumno->es_inhabilitado)
+                                                    <span class="badge bg-danger text-white">Inhabilitado</span>
+                                                @endif
+                                                @unless ($alumno->tiene_ppd)
+                                                    <span class="badge bg-warning text-dark">Sin matrícula</span>
+                                                @endunless
+                                            </div>
+                                        </td>
+                                        {{-- Proceso --}}
                                         @foreach ([1, 2, 3] as $c)
                                             @foreach (range(1, 4) as $i)
                                                 @php $campo = "pp_c{$c}_{$i}"; @endphp
@@ -249,14 +264,14 @@
                                                         data-indicador="{{ $i }}"
                                                         value="{{ old("alumnos.{$alumno->id}.proceso.c{$c}.indicador_{$i}", $calificacion?->$campo) }}"
                                                         min="0" max="20" step="1"
-                                                        {{ $i == 4 ? 'readonly' : '' }}>
+                                                        {{ $i == 4 ? 'readonly' : '' }} {{ $readonly }}>
                                                 </td>
                                             @endforeach
                                         @endforeach
-
+                                        {{-- Final --}}
                                         @foreach ([1, 2, 3] as $c)
                                             @foreach (range(1, 3) as $i)
-                                                @php $campo = "pf_c{$c}_{$i}"; @endphp 
+                                                @php $campo = "pf_c{$c}_{$i}"; @endphp
                                                 <td>
                                                     <input type="number" style="width: 60px"
                                                         name="alumnos[{{ $alumno->id }}][final][c{{ $c }}][indicador_{{ $i }}]"
@@ -266,11 +281,11 @@
                                                         data-indicador="{{ $i }}"
                                                         value="{{ old("alumnos.{$alumno->id}.final.c{$c}.indicador_{$i}", $calificacion?->$campo) }}"
                                                         min="0" max="20" step="1"
-                                                        {{ $i == 3 ? 'readonly' : '' }}>
+                                                        {{ $i == 3 ? 'readonly' : '' }} {{ $readonly }}>
                                                 </td>
                                             @endforeach
                                         @endforeach
-
+                                        {{-- Promedios --}}
                                         @foreach ([1, 2, 3] as $c)
                                             @foreach (range(1, 3) as $i)
                                                 <td>
@@ -280,31 +295,34 @@
                                                         data-alumno="{{ $alumno->id }}"
                                                         data-competencia="{{ $c }}"
                                                         data-indicador="{{ $i }}" min="0"
-                                                        max="20" step="1" readonly>
+                                                        max="20" step="1" readonly {{ $readonly }}>
                                                 </td>
                                             @endforeach
                                         @endforeach
+                                        {{-- Nivel de desempeño --}}
                                         <td>
                                             <input type="number" name="alumnos[{{ $alumno->id }}][nivel_desempeno]"
                                                 class="form-control form-control-sm text-center nivel-desempeno-input"
-                                                min="0" max="20" readonly>
+                                                min="0" max="20" readonly {{ $readonly }}>
                                         </td>
-
+                                        {{-- Calificación curso --}}
                                         <td>
                                             <input type="number" name="alumnos[{{ $alumno->id }}][calificacion_curso]"
                                                 class="form-control form-control-sm text-center calificacion-curso-input"
-                                                min="0" max="20" readonly>
+                                                min="0" max="20" readonly {{ $readonly }}>
                                         </td>
-
+                                        {{-- Calificación sistema --}}
                                         <td>
                                             <input type="number"
                                                 name="alumnos[{{ $alumno->id }}][calificacion_sistema]"
                                                 class="form-control form-control-sm text-center calificacion-sistema-input"
-                                                min="0" max="20" readonly>
+                                                min="0" max="20" readonly {{ $readonly }}>
                                         </td>
+                                        {{-- Observaciones --}}
                                         <td style="width: 950px;">
                                             <textarea name="alumnos[{{ $alumno->id }}][observaciones]" class="form-control form-control-sm text-start"
-                                                rows="2" style="resize: vertical; width: 100%;" placeholder="Observaciones (Opcional)">{{ old("alumnos.{$alumno->id}.observaciones", $calificacion?->observaciones) }}</textarea>
+                                                rows="2" style="resize: vertical; width: 100%;" placeholder="Observaciones (Opcional)"
+                                                {{ $readonly }}>{{ old("alumnos.{$alumno->id}.observaciones", $calificacion?->observaciones) }}</textarea>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -349,7 +367,6 @@
             document.getElementById("competenciaModal").style.display = "none";
         }
     </script>
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const inputs = document.querySelectorAll('.indicador-input.editable');
@@ -386,7 +403,6 @@
             });
         });
     </script>
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const finalInputs = document.querySelectorAll('.final-indicador-input');
@@ -444,18 +460,18 @@
                 });
             }
 
-            manejarInputs('.indicador-input.editable', 4); 
-            manejarInputs('.final-indicador-input', 3); 
-            manejarInputs('.promedio-general-input', 3); 
+            manejarInputs('.indicador-input.editable', 4);
+            manejarInputs('.final-indicador-input', 3);
+            manejarInputs('.promedio-general-input', 3);
         });
     </script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const cache = {};
-
+            // --- utilidades ---
             function getValor(alumnoId, competenciaId, tipo, indicador) {
                 const input = document.querySelector(
-                    `input[name="alumnos[${alumnoId}][${tipo}][c${competenciaId}][indicador_${indicador}]"]`);
+                    `input[name="alumnos[${alumnoId}][${tipo}][c${competenciaId}][indicador_${indicador}]"]`
+                );
                 return parseFloat(input?.value) || 0;
             }
 
@@ -493,6 +509,59 @@
                 return '';
             }
 
+            // --- listeners que calculan i4 (proceso) y i3 (final) al teclear / pegar ---
+            // proceso: inputs .indicador-input.editable --> llenan indicador_4 (readonly)
+            document.querySelectorAll('.indicador-input.editable').forEach(input => {
+                input.addEventListener('input', function() {
+                    // solo dígitos
+                    this.value = this.value.replace(/[^0-9]/g, '');
+                    const alumnoId = this.dataset.alumno;
+                    const competenciaId = this.dataset.competencia;
+                    // obtener inputs 1,2,3
+                    const i1 = document.querySelector(
+                        `input[data-alumno="${alumnoId}"][data-competencia="${competenciaId}"][data-indicador="1"]`
+                    );
+                    const i2 = document.querySelector(
+                        `input[data-alumno="${alumnoId}"][data-competencia="${competenciaId}"][data-indicador="2"]`
+                    );
+                    const i3 = document.querySelector(
+                        `input[data-alumno="${alumnoId}"][data-competencia="${competenciaId}"][data-indicador="3"]`
+                    );
+                    const i4 = document.querySelector(
+                        `input[data-alumno="${alumnoId}"][data-competencia="${competenciaId}"][data-indicador="4"]`
+                    );
+
+                    const v1 = parseInt(i1?.value) || 0;
+                    const v2 = parseInt(i2?.value) || 0;
+                    const v3 = parseInt(i3?.value) || 0;
+                    const promedio = Math.round((v1 + v2 + v3) / 3);
+                    if (i4) i4.value = promedio;
+                });
+            });
+
+            // final: inputs .final-indicador-input -> indicador 3 = round((i1+i2)/2)
+            document.querySelectorAll('.final-indicador-input').forEach(input => {
+                input.addEventListener('input', function() {
+                    this.value = this.value.replace(/[^0-9]/g, '');
+                    const alumnoId = this.dataset.alumno;
+                    const competenciaId = this.dataset.competencia;
+                    const i1 = document.querySelector(
+                        `input.final-indicador-input[data-alumno="${alumnoId}"][data-competencia="${competenciaId}"][data-indicador="1"]`
+                    );
+                    const i2 = document.querySelector(
+                        `input.final-indicador-input[data-alumno="${alumnoId}"][data-competencia="${competenciaId}"][data-indicador="2"]`
+                    );
+                    const i3 = document.querySelector(
+                        `input.final-indicador-input[data-alumno="${alumnoId}"][data-competencia="${competenciaId}"][data-indicador="3"]`
+                    );
+                    const v1 = parseInt(i1?.value) || 0;
+                    const v2 = parseInt(i2?.value) || 0;
+                    const promedio = Math.round((v1 + v2) / 2);
+                    if (i3) i3.value = promedio;
+                });
+            });
+
+            // --- función que actualiza promedios generales y calificaciones del curso/sistema ---
             function actualizarTodo() {
                 document.querySelectorAll('.promedio-general-input').forEach(input => {
                     const alumnoId = input.dataset.alumno;
@@ -502,12 +571,15 @@
                     const pfVal = getValor(alumnoId, competenciaId, 'final', 3);
 
                     const pg1 = document.querySelector(
-                        `input[name="alumnos[${alumnoId}][promedios][c${competenciaId}][indicador_1]"]`);
+                        `input[name="alumnos[${alumnoId}][promedios][c${competenciaId}][indicador_1]"]`
+                    );
                     const pg2 = document.querySelector(
-                        `input[name="alumnos[${alumnoId}][promedios][c${competenciaId}][indicador_2]"]`);
+                        `input[name="alumnos[${alumnoId}][promedios][c${competenciaId}][indicador_2]"]`
+                    );
                     const pg3 = document.querySelector(
-                        `input[name="alumnos[${alumnoId}][promedios][c${competenciaId}][indicador_3]"]`);
-                   
+                        `input[name="alumnos[${alumnoId}][promedios][c${competenciaId}][indicador_3]"]`
+                    );
+
                     setValor(pg1, Math.round(ppVal));
                     setValor(pg2, Math.round(pfVal));
                     setValor(pg3, Math.round(ppVal * 0.4 + pfVal * 0.6));
@@ -517,14 +589,15 @@
                     const nivelInput = tr.querySelector('[name^="alumnos["][name$="[nivel_desempeno]"]');
                     if (!nivelInput) return;
 
-                    const alumnoIdMatch = nivelInput.name.match(/\[(\d+)]/);
+                    const alumnoIdMatch = nivelInput.name.match(/\[(\d+)\]/);
                     if (!alumnoIdMatch) return;
 
                     const alumnoId = alumnoIdMatch[1];
 
                     const getPromedio = (c) => {
                         const input = tr.querySelector(
-                            `.promedio-general-input[data-competencia="${c}"][data-indicador="3"]`);
+                            `.promedio-general-input[data-competencia="${c}"][data-indicador="3"]`
+                        );
                         return input ? parseFloat(input.value) || 0 : 0;
                     };
 
@@ -539,17 +612,96 @@
                     const inputSistema = tr.querySelector(
                         `[name="alumnos[${alumnoId}][calificacion_sistema]"]`);
                     const inputCurso = tr.querySelector(
-                        `[name="alumnos[${alumnoId}][calificacion_curso]"]`);
+                    `[name="alumnos[${alumnoId}][calificacion_curso]"]`);
                     const inputDesempeno = tr.querySelector(
                         `[name="alumnos[${alumnoId}][nivel_desempeno]"]`);
 
-                    // calificacion_sistema como entero
                     setValor(inputSistema, Math.round(promedioSistema));
                     setValor(inputCurso, calificacionCurso, false);
                     setValor(inputDesempeno, nivelDesempeno);
                 });
             }
-            setInterval(actualizarTodo, 200);
+
+            // intervalo para updates (puedes reducir o eliminar si prefieres disparar solo por eventos)
+            const intervalId = setInterval(actualizarTodo, 200);
+
+            // --- manejo del pegado (soporta horizontal y vertical) ---
+            const tbody = document.querySelector('tbody');
+
+            if (tbody) {
+                tbody.addEventListener('paste', function(e) {
+                    const target = e.target;
+                    if (target.tagName !== 'INPUT') return; // sólo inputs
+
+                    e.preventDefault();
+                    const pastedData = (e.clipboardData || window.clipboardData).getData('text').trim();
+                    if (!pastedData) return;
+
+                    const rows = pastedData.split(/\r?\n/); // filas del bloque pegado
+
+                    // selector de celdas "rellenables" por fila (proceso 1..3 y final 1..2 — evitamos readonly calculados)
+                    const fillableSelector = 'input.indicador-input, input.final-indicador-input';
+
+                    // fila inicial y posición inicial
+                    let startRow = target.closest('tr');
+                    if (!startRow) return;
+
+                    // inputs rellenables de la fila inicial (excluimos readonly)
+                    let startFillables = Array.from(startRow.querySelectorAll(fillableSelector)).filter(i =>
+                        !i.readOnly);
+
+                    // índice de la celda inicial dentro de startFillables
+                    let startIndex = startFillables.indexOf(target);
+
+                    // si no encontró el target entre fillables (pegaste en un readonly), buscamos el fillable más cercano a la derecha
+                    if (startIndex === -1) {
+                        const allInputsStartRow = Array.from(startRow.querySelectorAll(
+                            'input[type=number]'));
+                        const startAllIndex = allInputsStartRow.indexOf(target);
+                        startIndex = startFillables.findIndex(i => allInputsStartRow.indexOf(i) >=
+                            startAllIndex);
+                        if (startIndex === -1) startIndex = 0; // fallback
+                    }
+
+                    // todas las filas del tbody (para navegar verticalmente)
+                    const allRows = Array.from(tbody.querySelectorAll('tr'));
+                    let currentRowIndex = allRows.indexOf(startRow);
+
+                    // Recorremos cada fila pegada
+                    rows.forEach((rowData) => {
+                        if (currentRowIndex < 0 || currentRowIndex >= allRows.length) return;
+                        const values = rowData.split(/\t/).map(v => v.trim());
+
+                        const rowElement = allRows[currentRowIndex];
+                        const fillablesInRow = Array.from(rowElement.querySelectorAll(
+                            fillableSelector)).filter(i => !i.readOnly);
+
+                        // Por cada columna en el bloque pegado, asignamos a la celda correspondiente
+                        values.forEach((rawVal, colIndex) => {
+                            const input = fillablesInRow[startIndex + colIndex];
+                            if (!input) return;
+
+                            // limpiamos valor (acepta "18", "18.0", "18,0", etc.) y dejamos entero 0-20
+                            let cleaned = rawVal.replace(',', '.').replace(/[^0-9.-]/g, '');
+                            if (cleaned === '') return;
+                            let num = Math.round(parseFloat(cleaned));
+                            if (isNaN(num)) return;
+                            if (num < 0) num = 0;
+                            if (num > 20) num = 20;
+
+                            input.value = num;
+                            // disparamos input para que otros listeners (i4, i3) reaccionen
+                            input.dispatchEvent(new Event('input', {
+                                bubbles: true
+                            }));
+                        });
+                        // avanzamos a la siguiente fila del tbody
+                        currentRowIndex++;
+                    });
+                    // recalculamos globalmente después del pegado
+                    actualizarTodo();
+                });
+            }
         });
     </script>
 @endsection

@@ -1,5 +1,4 @@
 @extends('layouts.docente')
-
 @section('contenido')
     <style>
         table tr,
@@ -138,9 +137,9 @@
                         </td>
                     </tr>
                     <tr>
-                        <td style="font-weight: 600; padding: 2px;">1.5 <span style="margin-left:1em">Semestre
-                                Académico</span></td>
-                        <td style="padding: 2px;">: <span id="periodo">2025 - II</span></td>
+                        <td style="font-weight: 600; padding: 2px;">1.5 <span style="margin-left:1em">
+                                Semestre Académico</span></td>
+                        <td style="padding: 2px;">: <span id="periodo">{{ $periodoActual->nombre }}</span></td>
                     </tr>
                     <tr>
                         <td style="font-weight: 600; padding: 2px;">1.6 <span style="margin-left:1em">Créditos</span></td>
@@ -154,7 +153,7 @@
                     <tr>
                         <td style="font-weight: 600; padding: 2px;">1.8 <span style="margin-left:1em">Horas Semanales</span>
                         </td>
-                        <td style="padding: 2px;">: {{ $curso->horas *16}}</td>
+                        <td style="padding: 2px;">: {{ $curso->horas * 16 }}</td>
                     </tr>
                     <tr>
                         <td style="font-weight: 600; padding: 2px;">1.9 <span style="margin-left:1em">Docente(s)</span></td>
@@ -176,25 +175,29 @@
                     <tr>
                         <td style="font-weight: 600; padding: 2px;">1.11 <span style="margin-left:0.4em">Fecha de
                                 inicio</span></td>
-                        <td style="padding: 2px;">: 24 de marzo de 2025</td>
+                        <td style="padding: 2px;">:
+                            {{ $periodoActual->fecha_inicio ? \Carbon\Carbon::parse($periodoActual->fecha_inicio)->translatedFormat('d \d\e F \d\e\l Y') : '-' }}
+                        </td>
                     </tr>
                     <tr>
                         <td style="font-weight: 600; padding: 2px;">1.12 <span style="margin-left:0.4em">Fecha de
                                 término</span></td>
-                        <td style="padding: 2px;">: 18 de julio de 2025</td>
+                        <td style="padding: 2px;">:
+                            {{ $periodoActual->fecha_cierre ? \Carbon\Carbon::parse($periodoActual->fecha_cierre)->translatedFormat('d \d\e F \d\e\l Y') : '-' }}
+                        </td>
                     </tr>
                 </tbody>
             </table>
         </div>
-        <form action="{{ route('silabos.store') }}" method="POST">
+        <form action="{{ route('silabos.store') }}" method="POST" id="silaboForm">
             @csrf
             <input type="hidden" name="curso_id" value="{{ $curso->id }}">
             <input type="hidden" name="docente_id" value="{{ $docente->id }}">
-            <input type="hidden" id="hidden_fecha1" name="fecha1" value="2025-03-24">
-            <input type="hidden" id="hidden_fecha2" name="fecha2" value="2025-07-18">
-
+            <input type="hidden" id="hidden_fecha1" name="fecha1"
+                value="{{ old('fecha1', $silabo->fecha1 ?? $periodoActual->fecha_inicio) }}">
+            <input type="hidden" id="hidden_fecha2" name="fecha2"
+                value="{{ old('fecha2', $silabo->fecha2 ?? $periodoActual->fecha_cierre) }}">
             <input type="hidden" id="hidden_periodo" name="periodo" value="">
-            
             <script>
                 // Antes de enviar el form, copiamos el valor del span al hidden
                 document.getElementById('silaboForm').addEventListener('submit', function() {

@@ -113,8 +113,8 @@
                 <div class="text-center mb-3">
                     <div class="btn-group" role="group" aria-label="Controles de Periodo">
                         <button type="button" class="btn btn-outline-primary btn-sm active" id="btnPeriodoUno">Parcial 1</button>
-                        <button type="button" class="btn btn-outline-primary btn-sm" id="btnPeriodoDos">Parcial 2</button>
-                        <button type="button" class="btn btn-outline-primary btn-sm" id="btnDesempeno">Desempeño</button>
+                        {{-- <button type="button" class="btn btn-outline-primary btn-sm" id="btnPeriodoDos">Parcial 2</button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" id="btnDesempeno">Desempeño</button> --}}
                     </div>
                 </div>
             </div>

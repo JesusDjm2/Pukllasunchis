@@ -181,6 +181,10 @@
                                                 </a>
                                             </small>
                                         </li>
+										<li>Certificado de estudios superiores, la duranción del trámite es de 30 días hábiles.
+                                            <small class="text-info">Codigo: 8 | Concepto: Certificado estudios por Ciclo | Precio: s/50.00                                            </small>
+                                        </li>
+										
                                         <li>Una copia de RD de haber aprobado las prácticas pre profesionales. → s/50.00
                                         </li>
                                         <li>Carta de aceptación de la I.E. donde se realiza la investigación, original.

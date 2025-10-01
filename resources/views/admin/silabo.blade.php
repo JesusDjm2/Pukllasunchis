@@ -134,7 +134,7 @@
                         <tr>
                             <td style="font-weight: 600; padding: 2px;">1.5 <span style="margin-left:1em">Semestre
                                     Académico</span></td>
-                            <td style="padding: 1px;">: 2025 - I</td>
+                            <td style="padding: 1px;">: {{ $periodoActual->nombre }}</td>
                         </tr>
                         <tr>
                             <td style="font-weight: 600; padding: 2px;">1.6 <span style="margin-left:1em">Créditos</span>
@@ -171,34 +171,15 @@
                                 {{ $curso->docentes->first()->email ?? 'Sin datos' }}
                             </td>
                         </tr>
-
-                        {{-- <tr>
+                        <tr>
                             <td style="font-weight: 600; padding: 2px;">1.11 <span style="margin-left:0.4em">Fecha de
                                     inicio</span></td>
-                            <td style="padding: 2px;">:
-                                <span>
-                                    {{ $silabo->fecha1 ? $silabo->fecha1 : 'Sin datos' }}
-                                </span>
-                            </td>
+                            <td style="padding: 2px;">: {{ \Carbon\Carbon::parse($periodoActual->fecha_inicio)->translatedFormat('d \d\e F \d\e\l Y') }}</td>
                         </tr>
                         <tr>
                             <td style="font-weight: 600; padding: 2px;">1.12 <span style="margin-left:0.4em">Fecha de
                                     término</span></td>
-                            <td style="padding: 2px;">:
-                                <span>
-                                    {{ $silabo->fecha2 ? $silabo->fecha2 : 'Sin datos' }}
-                                </span>
-                            </td>
-                        </tr> --}}
-                        <tr>
-                            <td style="font-weight: 600; padding: 2px;">1.11 <span style="margin-left:0.4em">Fecha de
-                                    inicio</span></td>
-                            <td style="padding: 2px;">: 24 de marzo de 2025</td>
-                        </tr>
-                        <tr>
-                            <td style="font-weight: 600; padding: 2px;">1.12 <span style="margin-left:0.4em">Fecha de
-                                    término</span></td>
-                            <td style="padding: 2px;">: 18 de julio de 2025</td>
+                            <td style="padding: 2px;">: {{ \Carbon\Carbon::parse($periodoActual->fecha_cierre)->translatedFormat('d \d\e F \d\e\l Y') }}</td>
                         </tr>
 
                     </tbody>

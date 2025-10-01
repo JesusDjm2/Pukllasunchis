@@ -410,7 +410,6 @@
                                             @endif
                                         @else
                                             <span>Extracurricular permite sólo subir archivo en PDF.</span><br>
-
                                             @if ($curso->silabo)
                                                 <form action="{{ route('cursos.uploadSilabo', ['curso' => $curso->id]) }}"
                                                     method="POST" enctype="multipart/form-data"
@@ -477,7 +476,6 @@
                                             }
                                         }
                                     </script>
-
                                     <td>
                                         <form action="{{ route('cursos.classroomClaveCRUD', ['curso' => $curso->id]) }}"
                                             method="POST">

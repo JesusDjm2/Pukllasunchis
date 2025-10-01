@@ -52,21 +52,7 @@
                                                 @if ($curso->silabo || $curso->relacionsilabo)
                                                     <tr>
                                                         <td>{{ $contador++ }}</td>
-                                                        {{-- <td class="text-start curso-nombre">
-                                                            <strong>{{ $curso->nombre }}</strong>
-                                                            <ul class="mb-0 small">
-                                                                <li>Horas: {{ $curso->horas }}</li>
-                                                                <li>Créditos: {{ $curso->creditos }}</li>
-                                                                <li>CC: {{ $curso->cc }}</li>
-                                                            </ul>
-                                                            @if ($curso->relacionsilabo)
-                                                                <span
-                                                                    class="d-none curso-periodo">{{ $curso->relacionsilabo->periodo }}</span>
-                                                            @else
-                                                                <span class="d-none curso-periodo">Sin periodo
-                                                                    disponible</span>
-                                                            @endif
-                                                        </td> --}}
+                                                        
                                                         <td class="text-start curso-nombre">
                                                             <strong>{{ $curso->nombre }}</strong>
                                                             <ul class="mb-0 small">
@@ -97,7 +83,7 @@
                                                             @if ($curso->relacionsilabo)
                                                                 <a href="{{ route('silabos.show', ['silabo' => $curso->relacionsilabo->id]) }}"
                                                                     class="btn btn-info btn-sm" title="Ver Sílabo">
-                                                                    <i class="fa fa-eye"></i> Ver DB
+                                                                    <i class="fa fa-eye"></i> Ver Sílabo
                                                                 </a>
                                                             @endif
                                                         </td>

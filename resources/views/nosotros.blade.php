@@ -24,7 +24,7 @@
                 <div class="col-lg-6">
                     <div class="welcome_docmed_info">
                         <h2>EESP PUKLLASUNCHIS</h2>
-                        <h3>¿Quienes somos?</h3>
+                        <h3>¿Quiénes somos?</h3>
                         <p class="text-justify">
                             La EESP Pukllasunchis es una institución comprometida seriamente con la educación del Perú,
                             sensible a las diferencias culturales tanto de la región como del país. Se trata de un proyecto
@@ -66,7 +66,7 @@
                         <p class="text-justify">
                             Somos una Escuela de Educación Superior Pedagógica cusqueña que, a través del actuar afectivo,
                             la reflexión crítica, la investigación vivencial, la construcción de aprendizajes
-                            interculturales y el trabajo colaborativo, forma profesionales competentes, capaces de promover
+                            interculturales y el trabajo colaborativo, formar profesionales competentes, capaces de promover
                             propuestas educativas innovadoras e inclusivas, que afirman la identidad, impulsan la equidad y
                             fortalecen el compromiso con la diversidad y con la vida.
                         </p>

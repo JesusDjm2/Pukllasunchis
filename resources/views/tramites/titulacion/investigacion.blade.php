@@ -129,7 +129,7 @@
                     su guía de investigación.
                 </p>
                 <div class="row justify-content-center align-items-center fichas mt-4">
-                    <div class="col-lg-3 col-6 text-center">
+                    <div class="col-lg-4 col-6 text-center mb-3">
                         <div class="card">
                             <a href="{{ asset('pdf/FormatoTI.docx') }}" target="_blank">
                                 <div style="height: 100px">
@@ -141,18 +141,29 @@
                             </a>
                         </div>
                     </div>
-                    <div class="col-lg-3 col-6 text-center">
+                    <div class="col-lg-4 col-6 text-center mb-3">
                         <div class="card">
                             <a href="{{ asset('pdf/CaratulaTI-2025.docx') }}" target="_blank">
                                 <div style="height: 100px">
                                     <img height="100%" src="{{ asset('img/min/caratula.png') }}" alt="">
                                 </div>
-                                <p class="text-center">Caratula TI</p>
+                                <p class="text-center">Caratula TI (FID)</p>
                                 <p class="text-center"><i class="fa fa-arrow-circle-right fa-lg"></i></p>
                             </a>
                         </div>
                     </div>
-                    <div class="col-lg-3 col-6 text-center">
+                    <div class="col-lg-4 col-6 text-center mb-3">
+                        <div class="card">
+                            <a href="{{ asset('pdf/CaratulaTI-2025 PPD.docx') }}" target="_blank">
+                                <div style="height: 100px">
+                                    <img height="100%" src="{{ asset('img/min/caratula.png') }}" alt="">
+                                </div>
+                                <p class="text-center">Caratula TI (PPD)</p>
+                                <p class="text-center"><i class="fa fa-arrow-circle-right fa-lg"></i></p>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-6 text-center mb-3">
                         <div class="card">
                             <a href="{{ asset('pdf/Guia-Trabajo-de-Investigacion.pdf') }}" target="_blank">
                                 <div style="height: 100px">
@@ -165,7 +176,7 @@
                             </a>
                         </div>
                     </div>
-                    <div class="col-lg-3 col-6 text-center">
+                    <div class="col-lg-4 col-6 text-center mb-3">
                         <div class="card">
                             <a href="{{ asset('pdf/Guia-de-Investigacion-2025.pdf') }}" target="_blank">
                                 <div style="height: 100px">
@@ -321,7 +332,7 @@
                         <ul>
                             <li>Pagar en Caja Cusco con el siguiente concepto:  <small class="text-info">Monto:
                                     s/200.00 | Código: 20 | Concepto: Inscripción Bachiller a SUNEDU</small></li>
-                            <li>Llenar formulario de inscripción de grado de bachiller en SUNEDU.<small><a
+                            <li>Llenar formulario de inscripción de grado de bachiller.<small><a
                                         class="text-primary" target="_blank"
                                         href="https://forms.gle/L7WHbS67NKYnWug69"> Formulario <i
                                             class="fa fa-external-link"></i> (Solo permite llenar con correo

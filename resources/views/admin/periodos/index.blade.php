@@ -33,6 +33,8 @@
                     <tr>
                         <th>ID</th>
                         <th>Nombre</th>
+                        <th>Fecha de Inicio</th>
+                        <th>Fecha de Cierre</th>
                         <th>Actual</th>
                         <th>Acciones</th>
                     </tr>
@@ -42,6 +44,8 @@
                         <tr>
                             <td>{{ $p->id }}</td>
                             <td>{{ $p->nombre }}</td>
+                            <td>{{ $p->fecha_inicio ? \Carbon\Carbon::parse($p->fecha_inicio)->format('d/m/Y') : '-' }}</td>
+                            <td>{{ $p->fecha_cierre ? \Carbon\Carbon::parse($p->fecha_cierre)->format('d/m/Y') : '-' }}</td>
                             <td>
                                 @if ($p->actual)
                                     <span class="badge badge-success">Sí</span>
@@ -62,19 +66,7 @@
                                         Eliminar <small><i class="fa fa-trash"></i></small>
                                     </button>
                                 </form>
-                                {{-- <form action="{{ route('periodoactual.crearCalificaciones', $p->id) }}" method="POST"
-                                    style="display:inline-block;">
-                                    @csrf
-                                    <button type="submit" class="btn btn-sm btn-success shadow-sm">
-                                        Crear calificaciones <small><i class="fa fa-book fa-sm"></i></small>
-                                    </button>
-                                </form>
-                                <a href="{{ route('periodoactual.showRegistros', $p->id) }}"
-                                    class="btn btn-sm btn-info shadow-sm">
-                                    Ver registros <small><i class="fa fa-list"></i></small>
-                                </a> --}}
                                 @if ($p->periodos->isEmpty())
-                                    {{-- Si no existen registros en periodos, mostrar botón de crear --}}
                                     <form action="{{ route('periodoactual.crearCalificaciones', $p->id) }}" method="POST"
                                         style="display:inline-block;">
                                         @csrf
@@ -83,7 +75,6 @@
                                         </button>
                                     </form>
                                 @else
-                                    {{-- Si ya existen registros, mostrar botón de ver --}}
                                     <a href="{{ route('periodoactual.showRegistros', $p->id) }}"
                                         class="btn btn-sm btn-info shadow-sm">
                                         Ver registros <small><i class="fa fa-list"></i></small>
@@ -93,7 +84,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="text-center">No hay períodos actuales registrados</td>
+                            <td colspan="6" class="text-center">No hay períodos actuales registrados</td>
                         </tr>
                     @endforelse
                 </tbody>

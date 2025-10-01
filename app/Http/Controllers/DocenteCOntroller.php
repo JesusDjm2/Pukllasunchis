@@ -241,7 +241,7 @@ class DocenteCOntroller extends Controller
 
         return view('docentes.calificaciones.alumnos', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos', 'mostrarBotonDesempeno', 'alumnosRelacionados'));
     }
-    public function calificarCursoPPD(Request $request, $docenteId, $cursoId)
+    /* public function calificarCursoPPD(Request $request, $docenteId, $cursoId)
     {
         $curso = Curso::findOrFail($cursoId);
         $docente = Docente::findOrFail($docenteId);
@@ -249,21 +249,48 @@ class DocenteCOntroller extends Controller
 
         $programa = $curso->ciclo->programa;
 
-
-        // 🔹 Traer todos los alumnos del programa, no solo del curso
         $alumnos = ppd::whereHas('ciclo', function ($query) use ($programa) {
             $query->where('programa_id', $programa->id);
         })
             ->with([
-                'user.alumnoB.calificaciones', // ya no filtramos por curso aquí
+                'user.alumnoB.calificaciones',
+                'user.roles' // 👈 importante para identificar si es inhabilitado
             ])
-            ->whereHas('user', function ($query) {
-                $query->whereDoesntHave('roles', function ($roleQuery) {
-                    $roleQuery->where('name', 'inhabilitado');
-                });
+            ->orderBy('apellidos')
+            ->get()
+            ->map(function ($alumno) {
+                $alumno->es_inhabilitado = $alumno->user->roles->contains('name', 'inhabilitado');
+                return $alumno;
+            });
+
+        if (auth()->user()->hasRole('admin')) {
+            return view('admin.curso.calificaciones', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos'));
+        }
+
+        return view('docentes.calificaciones.alumnosppd', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos'));
+    } */
+    public function calificarCursoPPD(Request $request, $docenteId, $cursoId)
+    {
+        $curso = Curso::with('ciclo.programa')->findOrFail($cursoId);
+        $docente = Docente::findOrFail($docenteId);
+        $competenciasSeleccionadas = Competencia::whereIn('id', $request->input('competencias'))->get();
+        $programaId = $curso->ciclo->programa->id;
+        $alumnos = User::whereHas('roles', function ($q) {
+            $q->whereIn('name', ['alumnoB', 'inhabilitado']);
+        })
+            ->whereHas('programa.ciclos.cursos', function ($query) use ($cursoId) {
+                $query->where('id', $cursoId);
             })
+            ->with(['programa.ciclos.cursos', 'roles', 'alumnoB'])
             ->orderBy('apellidos')
             ->get();
+
+        // Seteamos banderas para la vista
+        $alumnos = $alumnos->map(function ($alumno) {
+            $alumno->es_inhabilitado = $alumno->roles->contains('name', 'inhabilitado');
+            $alumno->tiene_ppd = $alumno->alumnoB !== null;
+            return $alumno;
+        });
 
         if (auth()->user()->hasRole('admin')) {
             return view('admin.curso.calificaciones', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos'));
@@ -271,6 +298,9 @@ class DocenteCOntroller extends Controller
 
         return view('docentes.calificaciones.alumnosppd', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos'));
     }
+
+
+
     public function updateBlog(Request $request, $id)
     {
         // Validar la entrada
@@ -284,11 +314,9 @@ class DocenteCOntroller extends Controller
 
         // Encontrar el docente por ID
         $docente = Docente::findOrFail($id);
-
         // Actualizar solo el campo blog
         $docente->blog = $request->input('blog');
         $docente->save();
-
         // Recoger las variables del formulario
         $cursoId = $request->input('curso_id');
         $competenciasSeleccionadas = $request->input('competencias', []);

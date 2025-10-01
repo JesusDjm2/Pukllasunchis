@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\RegistrosExport;
 use App\Models\Alumno;
 use App\Models\Periodo;
 use App\Models\PeriodoTres;
 use Illuminate\Http\Request;
-use Illuminate\Pagination\LengthAwarePaginator;
+use Maatwebsite\Excel\Excel;
 
 class PeriodoController extends Controller
 {
@@ -15,16 +16,19 @@ class PeriodoController extends Controller
         $periodos = Periodo::select('nombre')
             ->distinct()
             ->get();
+
         return view('admin.periodos.calificaciones.index', compact('periodos'));
     }
+
     public function create()
     {
         return view('admin.periodos.calificaciones.create');
     }
+
     public function store(Request $request)
     {
         $nombrePeriodo = $request->input('nombre');
-        if (!$nombrePeriodo) {
+        if (! $nombrePeriodo) {
             return back()->with('error', 'Debes proporcionar un nombre para el período.');
         }
         // Verificar que no existan registros duplicados con ese nombre
@@ -38,7 +42,7 @@ class PeriodoController extends Controller
                 $q->where('name', '!=', 'inhabilitado');
             })
                 ->whereHas('ciclo', function ($q) {
-                    $q->whereRaw("LOWER(TRIM(nombre)) != ?", ['ciclo i']);
+                    $q->whereRaw('LOWER(TRIM(nombre)) != ?', ['ciclo i']);
                 });
         })->get();
 
@@ -68,24 +72,27 @@ class PeriodoController extends Controller
             ]);
         }
         $periodos = Periodo::select('nombre')->distinct()->get();
+
         return view('admin.periodos.calificaciones.index', compact('periodos'))->with('success', 'Períodos generados correctamente.');
     }
+
     public function show($nombre)
     {
         $periodos = Periodo::where('nombre', $nombre)
             ->whereHas('alumno.user.programa.ciclos', function ($q) {
-                $q->whereRaw("LOWER(TRIM(nombre)) != ?", ['ciclo i']);
+                $q->whereRaw('LOWER(TRIM(nombre)) != ?', ['ciclo i']);
             })
             ->with([
                 'alumno.user.programa.ciclos',
-                'curso'
+                'curso',
             ])
             ->get()
             ->sortBy([
-                fn($a, $b) => ($a->alumno->user->programa->ciclo->nombre ?? '') <=> ($b->alumno->user->programa->ciclo->nombre ?? ''),
-                fn($a, $b) => ($a->alumno->apellidos ?? '') <=> ($b->alumno->apellidos ?? '')
+                fn ($a, $b) => ($a->alumno->user->programa->ciclo->nombre ?? '') <=> ($b->alumno->user->programa->ciclo->nombre ?? ''),
+                fn ($a, $b) => ($a->alumno->apellidos ?? '') <=> ($b->alumno->apellidos ?? ''),
             ])
             ->groupBy('alumno_id');
+
         return view('admin.periodos.calificaciones.show', compact('periodos', 'nombre'));
     }
 }

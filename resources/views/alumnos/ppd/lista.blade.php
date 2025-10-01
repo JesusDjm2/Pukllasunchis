@@ -71,7 +71,6 @@
                                 <br>
                                 <li class="pl-2">{{ $alumno->email }}</li>
                                 <li class="pl-2">DNI: {{ $alumno->dni }}</li>
-
                                 <li class="pl-2">
                                     @if ($alumno->alumnoB)
                                         Completó matrícula: <small>✅</small>

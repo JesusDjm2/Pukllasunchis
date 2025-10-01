@@ -189,7 +189,7 @@
                     </div>
                     <div class="col-lg-4 col-6 text-center p-2">
                         <div class="card">
-                            <a href="{{ asset('pdf/TUPA-EESPP-2025-08022024-jul.pdf') }}" target="_blank">
+                            <a href="{{ asset('pdf/TUPA-EESPP-2025-08022024-septiembre.pdf') }}" target="_blank">
                                 <div style="height: 100px">
                                     <img height="100%" src="{{ asset('img/min/Bachillerato-Pukllasunchis.png') }}"
                                         alt="Ficha de Inscrición Pukllasunchis">

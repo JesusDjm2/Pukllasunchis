@@ -17,7 +17,6 @@ class Periodo extends Model
         'curso_id',
         'periodo_actual_id',
     ];
-
     public function alumno()
     {
         return $this->belongsTo(Alumno::class, 'alumno_id');

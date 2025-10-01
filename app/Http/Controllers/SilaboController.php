@@ -8,6 +8,7 @@ use App\Models\Docente;
 use App\Models\Enfoques;
 use App\Models\EnfoqueSilabo;
 use App\Models\Estandares;
+use App\Models\PeriodoActual;
 use App\Models\Proyecto;
 use App\Models\Rubricas;
 use App\Models\Silabo;
@@ -27,10 +28,10 @@ class SilaboController extends Controller
         }
         return view('admin.curso.silabos.index');
     }
-
     public function create(Request $request)
     {
         $proyectos = Proyecto::all();
+        $periodoActual=PeriodoActual::where('actual', true)->first();
         $enfoques = Enfoques::all();
         $curso = Curso::findOrFail($request->curso_id);
         $docente = Docente::findOrFail($request->docente_id);
@@ -55,9 +56,7 @@ class SilaboController extends Controller
                 }
             ])->get();
         }
-
-
-        return view('admin.curso.silabos.create', compact('curso', 'docente', 'proyectos', 'enfoques', 'competencias', 'docente'));
+        return view('admin.curso.silabos.create', compact('curso', 'docente', 'proyectos', 'enfoques', 'competencias', 'docente', 'periodoActual'));
     }
     public function store(Request $request)
     {
@@ -192,6 +191,8 @@ class SilaboController extends Controller
     public function show(Silabo $silabo)
     {
         $curso = $silabo->curso;
+        $periodoActual=PeriodoActual::where('actual', true)->first();
+        /* $periodoActual=$curso->periodoActual()->first(); */
         $docentes = $curso->docentes;
         $competencias = $curso->competenciasSeleccionadas()->with([
             'capacidad',
@@ -216,26 +217,24 @@ class SilaboController extends Controller
         $silabo->load(['enfoques', 'unidades', 'rubricas']);
         if (Auth::user()->hasRole('alumno')) {
             $alumno = Auth::user()->alumno;
-            return view('alumnos.vistasAlumnos.silabos', compact('silabo', 'curso', 'docentes', 'competencias', 'alumno'));
+            return view('alumnos.vistasAlumnos.silabos', compact('silabo', 'curso', 'docentes', 'competencias', 'alumno', 'periodoActual'));
 
         } elseif (Auth::user()->hasRole('alumnoB')) {
             $alumno = Auth::user()->alumnoB;
-            return view('alumnos.ppd.silabo', compact('silabo', 'curso', 'docentes', 'competencias', 'alumno'));
+            return view('alumnos.ppd.silabo', compact('silabo', 'curso', 'docentes', 'competencias', 'alumno', 'periodoActual'));
 
         } elseif (Auth::user()->hasRole('admin')) {
-            return view('admin.silabo', compact('silabo', 'curso', 'docentes', 'competencias'));
+            return view('admin.silabo', compact('silabo', 'curso', 'docentes', 'competencias', 'periodoActual'));
 
         } else {
-            return view('admin.curso.silabos.show', compact('silabo', 'curso', 'docentes', 'competencias'));
+            return view('admin.curso.silabos.show', compact('silabo', 'curso', 'docentes', 'competencias', 'periodoActual'));
         }
     }
-
     public function edit($id, Request $request)
     {
         $silabo = Silabo::with(['unidades', 'rubricas', 'enfoques'])->findOrFail($id);
         $curso = Curso::findOrFail($request->curso_id);
         $docente = Docente::findOrFail($request->docente_id);
-
         $proyectos = Proyecto::all();
         $enfoques = Enfoques::all();
         $competencias = $curso->competenciasSeleccionadas()->with('capacidad')->get();
@@ -261,7 +260,6 @@ class SilaboController extends Controller
 
         return view('admin.curso.silabos.edit', compact('silabo', 'curso', 'docente', 'proyectos', 'enfoques', 'competencias'));
     }
-
     public function update(Request $request, Silabo $silabo)
     {
         $curso = Curso::findOrFail($request->curso_id);
@@ -352,23 +350,7 @@ class SilaboController extends Controller
                     'silabo_concretas' => $request->concretas[$key] ?? '',
                 ]);
             }
-        }
-
-
-        /* EnfoqueSilabo::where('silabo_id', $silabo->id)->delete();
-        if (!empty($request->enfoques) && is_array($request->enfoques)) {
-            foreach ($request->enfoques as $key => $enfoqueId) {
-                $enfoque = Enfoques::find($enfoqueId);
-
-                EnfoqueSilabo::create([
-                    'silabo_id' => $silabo->id,
-                    'nombre' => $enfoque ? $enfoque->nombre : 'Desconocido',
-                    'descripcion' => $enfoque ? $enfoque->descripcion : 'Sin descripción',
-                    'enfoque_observables' => $request->observables[$key] ?? '',
-                    'silabo_concretas' => $request->concretas[$key] ?? '',
-                ]);
-            }
-        } */
+        }       
 
         if (!empty($request->titulo_unidad) && is_array($request->titulo_unidad)) {
             // Eliminamos las unidades existentes antes de insertar las nuevas
@@ -388,7 +370,6 @@ class SilaboController extends Controller
             }
         }
 
-
         if (!empty($request->criterio) && is_array($request->criterio)) {
             // Eliminamos las rúbricas existentes antes de insertar las nuevas
             Rubricas::where('silabo_id', $silabo->id)->delete();
@@ -407,22 +388,7 @@ class SilaboController extends Controller
                 }
             }
         }
-
-        /* if (!empty($request->criterio) && is_array($request->criterio)) {
-            // Eliminamos las rúbricas existentes antes de insertar las nuevas
-            Rubricas::where('silabo_id', $silabo->id)->delete();
-
-            foreach ($request->criterio as $index => $criterio) {
-                Rubricas::create([
-                    'silabo_id' => $silabo->id,
-                    'criterio' => $criterio,
-                    'destacado' => $request->destacado[$index] ?? null,
-                    'logrado' => $request->logrado[$index] ?? null,
-                    'proceso' => $request->proceso[$index] ?? null,
-                    'inicio' => $request->inicio[$index] ?? null,
-                ]);
-            }
-        } */
+       
         if (auth()->user()->hasRole('docente')) {
             return redirect()->route('vistaDocente', ['docente' => $docente->id])
                 ->with('success', 'Sílabo actualizado correctamente.');
@@ -430,10 +396,10 @@ class SilaboController extends Controller
 
         return redirect()->route('silabos.index')->with('success', 'Sílabo actualizado correctamente.');
     }
-
     public function exportarPDF(Silabo $silabo)
     {
         $curso = $silabo->curso;
+        $periodoActual = PeriodoActual::where('actual', true)->first();
         $docentes = $curso->docentes;
         $competencias = $curso->competenciasSeleccionadas()->with([
             'capacidad',
@@ -456,10 +422,7 @@ class SilaboController extends Controller
         }
 
         $silabo->load(['enfoques', 'unidades', 'rubricas']);
-        $pdf = Pdf::loadView('admin.curso.silabos.pdf', compact('silabo', 'curso', 'docentes', 'competencias'));
-        /* return $pdf->download('silabo_' . $silabo->id . '.pdf'); */
+        $pdf = Pdf::loadView('admin.curso.silabos.pdf', compact('silabo', 'curso', 'docentes', 'competencias', 'periodoActual'));
         return $pdf->download('silabo_' . Str::slug($silabo->nombre) . '.pdf');
-
     }
-
 }

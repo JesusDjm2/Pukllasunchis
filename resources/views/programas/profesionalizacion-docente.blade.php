@@ -131,9 +131,9 @@
                         Del mismo modo, si una persona cumple con el requisito de contar con un grado de bachiller o un
                         título profesional en un programa de estudios distinto a Educación, puede acceder a un PPD para la
                         obtención del grado de bachiller en Pedagogía, aun cuando adicionalmente cuente con un grado de
-                        bachiller en Educación.<br><br>
+                        bachiller en Educación. <br><br>
 
-                        Es importante tener presente que los grados y/o títulos que constituyen requisitos para la obtención
+                        Cabe precisar que el programa está dirigido principalmente a profesionales y egresados de carreras universitarias afines al campo de la Educación, no de manera general a cualquier carrera universitaria. Es importante tener presente que los grados y/o títulos que constituyen requisitos para la obtención
                         del grado de bachiller mediante un PPD deben estar previamente registrados.
                     </p>
 

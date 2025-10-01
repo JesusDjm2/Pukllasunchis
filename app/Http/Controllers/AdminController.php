@@ -85,9 +85,6 @@ class AdminController extends Controller
     }
     public function alumnosppd()
     {
-        /* $alumnos = ppd::all();
-        $totalRecords = ppd::count();
-        return view('alumnos.ppd.lista', compact('alumnos', 'totalRecords')); */
         $alumnos = User::role('alumnoB')->get();
         $ppd = ppd::all();
         $totalRecords = $ppd->count();

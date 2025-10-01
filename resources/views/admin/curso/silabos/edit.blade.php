@@ -19,18 +19,18 @@
         }
 
         /* .btn-flotante {
-                        position: fixed;
-                        top: 50%;
-                        right: -2px;
-                        transform: translateY(-50%);
-                        z-index: 9999;
-                        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
-                        transition: 0.4s ease;
-                    }
-                    .btn-flotante:hover {
-                        padding: 0.7em;
-                        transition: 0.2s ease;
-                    } */
+                            position: fixed;
+                            top: 50%;
+                            right: -2px;
+                            transform: translateY(-50%);
+                            z-index: 9999;
+                            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+                            transition: 0.4s ease;
+                        }
+                        .btn-flotante:hover {
+                            padding: 0.7em;
+                            transition: 0.2s ease;
+                        } */
         .btn-flotante {
             position: fixed;
             top: 50%;
@@ -212,7 +212,7 @@
             @method('PUT')
             <input type="hidden" name="curso_id" value="{{ $curso->id }}">
             <input type="hidden" name="docente_id" value="{{ $docente->id }}">
-            <input type="hidden" id="hidden_periodo" name="periodo" value="">
+            <input type="hidden" id="hidden_periodo" name="periodo" value="">           
 
             <script>
                 // Antes de enviar el form, copiamos el valor del span al hidden

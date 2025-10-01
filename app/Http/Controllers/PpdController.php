@@ -10,6 +10,7 @@ use App\Models\Curso;
 use App\Models\Docente;
 use App\Models\ppd;
 use App\Models\Programa;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class PpdController extends Controller
@@ -99,7 +100,6 @@ class PpdController extends Controller
     public function calificacionesppd()
     {
         $alumno = auth()->user()->alumnoB;
-
         if (!$alumno || !$alumno->ciclo) {
             return view('alumnos.ppd.calificaciones')->with('mensaje', 'No tienes ciclo asignado.');
         }
@@ -356,33 +356,38 @@ class PpdController extends Controller
 
             'alumnos.*.observaciones' => 'nullable|string|max:1000',
         ]);
+
         $curso = Curso::findOrFail($request->curso_id);
         $docente = Docente::findOrFail($request->docente_id);
         $primerNombre = explode(' ', trim($docente->nombre))[0];
 
-        foreach ($request->input('alumnos') as $data) {
+        // 🔥 Guardado / actualización de calificaciones
+        foreach ($request->input('alumnos', []) as $alumnoId => $data) {
+            // ignoramos si no tiene matrícula (ppd_id)
+            if (empty($data['ppd_id'])) {
+                continue;
+            }
+
+            $ppdId = $data['ppd_id'];
             $proceso = $data['proceso'] ?? [];
             $final = $data['final'] ?? [];
-            $promedios = $data['promedios'] ?? [];
-            $pp = $pf = $pg = [];
+            $pp = $pf = [];
 
-            foreach (range(0, 2) as $i) {
-                $key = array_keys($proceso)[$i] ?? null;
+            // Competencias 1 a 3
+            foreach ([1, 2, 3] as $c) {
+                $pp["pp_c{$c}_1"] = $proceso["c{$c}"]['indicador_1'] ?? null;
+                $pp["pp_c{$c}_2"] = $proceso["c{$c}"]['indicador_2'] ?? null;
+                $pp["pp_c{$c}_3"] = $proceso["c{$c}"]['indicador_3'] ?? null;
+                $pp["pp_c{$c}_4"] = $proceso["c{$c}"]['indicador_4'] ?? null;
 
-                if ($key) {
-                    $pp["pp_c" . ($i + 1) . "_1"] = $proceso[$key]['indicador_1'] ?? null;
-                    $pp["pp_c" . ($i + 1) . "_2"] = $proceso[$key]['indicador_2'] ?? null;
-                    $pp["pp_c" . ($i + 1) . "_3"] = $proceso[$key]['indicador_3'] ?? null;
-                    $pp["pp_c" . ($i + 1) . "_4"] = $proceso[$key]['indicador_4'] ?? null;
-
-                    $pf["pf_c" . ($i + 1) . "_1"] = $final[$key]['indicador_1'] ?? null;
-                    $pf["pf_c" . ($i + 1) . "_2"] = $final[$key]['indicador_2'] ?? null;
-                    $pf["pf_c" . ($i + 1) . "_3"] = $final[$key]['indicador_3'] ?? null;
-                }
+                $pf["pf_c{$c}_1"] = $final["c{$c}"]['indicador_1'] ?? null;
+                $pf["pf_c{$c}_2"] = $final["c{$c}"]['indicador_2'] ?? null;
+                $pf["pf_c{$c}_3"] = $final["c{$c}"]['indicador_3'] ?? null;
             }
+
             Calificacionesppd::updateOrCreate(
                 [
-                    'ppd_id' => $data['alumno_id'],
+                    'ppd_id' => $ppdId,
                     'curso_id' => $curso->id,
                 ],
                 array_merge([
@@ -392,36 +397,27 @@ class PpdController extends Controller
                     'calificacion_curso' => $data['calificacion_curso'] ?? null,
                     'calificacion_sistema' => $data['calificacion_sistema'] ?? null,
                     'observaciones' => $data['observaciones'] ?? null,
-                ], $pp, $pf, $pg)
+                ], $pp, $pf)
             );
         }
 
+        // 🔥 Recuperar alumnos con la misma lógica de calificarCursoPPD
         $competenciasSeleccionadas = Competencia::whereIn('id', $request->input('competencias'))->get();
-        $ciclosDelPrograma = Ciclo::where('programa_id', $curso->ciclo->programa_id)->pluck('id');
 
-        $alumnos = ppd::whereIn('ciclo_id', $ciclosDelPrograma)
-            ->with([
-                'user.alumnoB.calificaciones' => function ($query) use ($curso) {
-                    $query->where('curso_id', $curso->id);
-                }
-            ])
-            ->whereHas('user.roles', function ($query) {
-                $query->where('name', '!=', 'inhabilitado');
+        $alumnos = User::whereHas('roles', function ($q) {
+            $q->whereIn('name', ['alumnoB', 'inhabilitado']);
+        })
+            ->whereHas('programa.ciclos.cursos', function ($query) use ($curso) {
+                $query->where('id', $curso->id);
             })
+            ->with(['programa.ciclos.cursos', 'roles', 'alumnoB'])
             ->orderBy('apellidos')
-            ->get();
-
-        /* $alumnos = $curso->ciclo->alumnosB()
-            ->with([
-                'user.alumnoB.calificaciones' => function ($query) use ($curso) {
-                    $query->where('curso_id', $curso->id);
-                }
-            ])
-            ->whereHas('user.roles', function ($query) {
-                $query->where('name', '!=', 'inhabilitado');
-            })
-            ->orderBy('apellidos')
-            ->get(); */
+            ->get()
+            ->map(function ($alumno) {
+                $alumno->es_inhabilitado = $alumno->roles->contains('name', 'inhabilitado');
+                $alumno->tiene_ppd = $alumno->alumnoB !== null;
+                return $alumno;
+            });
 
         session()->flash('success', "¡Felicidades $primerNombre! Las calificaciones se guardaron exitosamente.");
 
@@ -432,6 +428,7 @@ class PpdController extends Controller
             'alumnos' => $alumnos,
         ]);
     }
+
     public function edit($id)
     {
         $alumno = ppd::find($id);
@@ -633,27 +630,6 @@ class PpdController extends Controller
         return view('alumnos.ppd.edit', compact('alumno', 'programas', 'ciclos', 'user', 'opcionesBienesVivienda', 'opcionesServicios', 'opcionesHabilidades', 'departamentosData'));
     }
 
-    /* public function update(Request $request, ppd $alumno)
-    {
-        $alumno = ppd::findOrFail($alumno->id);
-        // Validación solo para estos campos
-        $request->validate([
-            'numero' => 'required|string|max:20',
-            'numero_referencia' => 'required|string|max:20',
-            'fecha_nacimiento' => 'required|date',
-            'num_hijos' => 'nullable|integer|min:0',
-            'num_comprobante' => 'required|string|max:50',
-            'trabajas' => 'required|string',
-            'departamento' => 'required|string|max:255',
-            'provincia' => 'required|string|max:255',
-            'distrito' => 'required|string|max:255',
-            'direccion' => 'required|string|max:255',
-        ]);
-
-        $alumno->update($request->all());
-
-        return redirect()->route('ppd.index', $alumno)->with('success', 'Datos registrados correctamente.');
-    } */
     public function update(Request $request, ppd $profesionalización_docente)
     {
         $alumno = $profesionalización_docente;

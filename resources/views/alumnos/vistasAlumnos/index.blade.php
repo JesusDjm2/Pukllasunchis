@@ -135,7 +135,7 @@
                                                                         )
                                                                         : asset('docentes/silabo/' . $curso->silabo);
                                                                 @endphp
-                                                                <a href="{{ $sílaboURL }}"
+                                                                <a href="{{ $sílaboURL }}" target="_blank"
                                                                     class="btn btn-success btn-sm mb-2">
                                                                     <i class="fa fa-eye"></i> Ver Sílabo
                                                                 </a>
@@ -167,7 +167,7 @@
                                                                         )
                                                                         : asset('docentes/silabo/' . $curso->silabo);
                                                                 @endphp
-                                                                <a href="{{ $sílaboURL }}"
+                                                                <a href="{{ $sílaboURL }}" target="_blank"
                                                                     class="btn btn-success btn-sm mb-2">
                                                                     <i class="fa fa-eye"></i> Ver Sílabo
                                                                 </a>
@@ -198,8 +198,6 @@
                                         </td>
                                     </tr>
                                 @endif
-
-
                             </tbody>
                         </table>
                     </div>

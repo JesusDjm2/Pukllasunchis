@@ -136,7 +136,7 @@
                 <div class="row justify-content-center align-items-center fichas mt-4">
                     <div class="col-lg-12 mb-4">
                     </div>
-                    <div class="col-lg-3 col-6 text-center">
+                    <div class="col-lg-4 mb-3 col-6 text-center">
                         <div class="card">
                             <a href="{{ asset('pdf/FormatoTesis.docx') }}" target="_blank">
                                 <div style="height: 100px">
@@ -149,18 +149,29 @@
                             </a>
                         </div>
                     </div>
-                    <div class="col-lg-3 col-6 text-center">
+                    <div class="col-lg-4 mb-3 col-6 text-center">
                         <div class="card">
                             <a href="{{ asset('pdf/CaratulaTesis-2025.docx') }}" target="_blank">
                                 <div style="height: 100px">
                                     <img height="100%" src="{{ asset('img/min/caratula.png') }}" alt="">
                                 </div>
-                                <p class="text-center">Caratula Tesis</p>
+                                <p class="text-center">Caratula Tesis (FID)</p>
                                 <p class="text-center"><i class="fa fa-arrow-circle-right fa-lg"></i></p>
                             </a>
                         </div>
                     </div>
-                    <div class="col-lg-3 col-6 text-center">
+                    <div class="col-lg-4 mb-3 col-6 text-center">
+                        <div class="card">
+                            <a href="{{ asset('pdf/CaratulaTesis-2025-PPD.docx') }}" target="_blank">
+                                <div style="height: 100px">
+                                    <img height="100%" src="{{ asset('img/min/caratula.png') }}" alt="">
+                                </div>
+                                <p class="text-center">Caratula Tesis (PPD)</p>
+                                <p class="text-center"><i class="fa fa-arrow-circle-right fa-lg"></i></p>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 mb-3 col-6 text-center">
                         <div class="card">
                             <a href="{{ asset('pdf/Guia-de-Elaboracion-de-Tesis.pdf') }}" target="_blank">
                                 <div style="height: 100px">
@@ -172,7 +183,7 @@
                             </a>
                         </div>
                     </div>
-                    <div class="col-lg-3 col-6 text-center">
+                    <div class="col-lg-4 mb-3 col-6 text-center">
                         <div class="card">
                             <a href="{{ asset('pdf/Guia-de-Investigacion-2025.pdf') }}" target="_blank">
                                 <div style="height: 100px">

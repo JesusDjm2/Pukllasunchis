@@ -11,7 +11,6 @@ use App\Http\Controllers\CompetenciaController;
 use App\Http\Controllers\CursoController;
 use App\Http\Controllers\DocenteCOntroller;
 use App\Http\Controllers\EnfoquesController;
-use App\Http\Controllers\EstadarController;
 use App\Http\Controllers\EstandaresController;
 use App\Http\Controllers\PeriodoActualController;
 use App\Http\Controllers\PeriodoController;
@@ -62,7 +61,6 @@ Route::prefix('cursos')->middleware(['auth'])->group(function () {
 Route::get('/asignar-curso/{id}', [AlumnoCursoController::class, 'asignar'])->name('asignar.cursos');
 Route::post('/guardar-cursos/{id}', [AlumnoCursoController::class, 'guardarCursos'])->name('guardar.cursos');
 
-
 //Docentes
 Route::resource('docente', DocenteCOntroller::class)->names('docente')->middleware('auth');
 Route::get('Dashboard-Docente/{docente}', [DocenteCOntroller::class, 'vistaDocente'])->name('vistaDocente')->middleware('auth');
@@ -100,16 +98,14 @@ Route::get('Periodo-Actual/{periodoactual}/registros', [PeriodoActualController:
 Route::resource('periodos', PeriodoController::class)->middleware('auth')->names('periodos');
 Route::get('/periodos/{nombre}', [PeriodoController::class, 'show'])->name('periodos.show');
 
+Route::get('/admin/periodos/{id}/export', [PeriodoActualController::class, 'exportExcel'])->name('periodos.export');
 
 //Blog de notas docentes
 /* Route::get('/docente/{id}/blog', [DocenteController::class, 'showBlog'])->name('docente.blog.show'); */
 Route::get('/docente/{docente}/blog/', [DocenteController::class, 'showBlog'])->name('docente.blog.show');
 
-
 Route::get('/exportar-csv/{docenteId}/{cursoId}', [CalificacionController::class, 'exportarCSV'])->name('calificaciones.exportar');
 Route::get('/exportar-csvppd/{docenteId}/{cursoId}', [CalificacionController::class, 'exportarCSVppd'])->name('calificaciones.exportar.ppd');
-
-
 
 //Asignar competencias a calificar
 Route::get('/curso/{cursoId}/competencias', [CalificacionController::class, 'gestionarCompetencias'])
@@ -142,7 +138,7 @@ Route::post('/docentes/blog/{id}', [DocenteController::class, 'updateBlog'])->na
 Route::post('/borrarCalificaciones', [CalificacionController::class, 'borrarCalificaciones'])->name('borrarCalificaciones');
 Route::get('/calificaciones/eliminar-todas', [CalificacionController::class, 'borrarTodasLasCalificaciones'])->name('calificaciones.eliminarTodas');
 
-//Sílabos y desgloses 
+//Sílabos y desgloses
 Route::resource('silabos', SilaboController::class)->names('silabos')->middleware('auth');
 Route::get('/silabo/{silabo}/pdf', [SilaboController::class, 'exportarPDF'])->name('silabo.pdf');
 Route::resource('competencias', CompetenciaController::class)->middleware('auth')->names('competencias');
@@ -185,7 +181,6 @@ Route::get('/obtener-cursos/{cicloId}', [vistasAlumnosController::class, 'getCur
 // Ficha de matrículaen PDF
 Route::get('/alumnos/{alumno}/ficha-pdf', [vistasAlumnosController::class, 'exportarFichaPDF'])->name('alumno.ficha.pdf');
 
-
 Route::resource('trabajo', BolsaController::class)->middleware('auth')->names('trabajo');
 Route::resource('postulante', PostulanteController::class);
 Route::get('lista-postulantes', [PostulanteController::class, 'lista'])->middleware('auth')->name('listaPostulantes');
@@ -200,8 +195,6 @@ Route::resource('inscripcion-regulares-fits', PostulantesRegularController::clas
 Route::get('/postulantes/ingresantes', [PostulantesRegularController::class, 'crearIngresantes'])->name('postulantes.ingresantes');
 Route::post('/guardar-ingresantes', [PostulantesRegularController::class, 'guardarIngresantes'])->name('postulantes.guardarIngresantes');
 
-
-
 Route::resource('inscripcion-regulares', PostulantesRegularController::class)
     ->only(['create', 'store'])
     ->names('regulares');
@@ -210,6 +203,3 @@ Route::get('/postulante/{id}/toggle-observacion', [PostulantesRegularController:
     ->name('postulante.toggleObservacion');
 Route::get('/postulantes/exportar', [PostulantesRegularController::class, 'exportarCSV'])
     ->name('postulantes.exportar');
-
-
-
