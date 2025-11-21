@@ -116,36 +116,5 @@
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
     </div>
-
-    <div class="form-group col-lg-4 mb-2">
-        <label for="distrito_nacimiento">Distrito de Nacimiento:</label>
-        <input type="text" class="form-control form-control-sm @error('distrito_nacimiento') is-invalid @enderror"
-            id="distrito_nacimiento" name="distrito_nacimiento"
-            value="{{ old('distrito_nacimiento', $postulante->distrito_nacimiento) }}">
-        @error('distrito_nacimiento')
-            <div class="invalid-feedback">{{ $message }}</div>
-        @enderror
-    </div>
-
-    <div class="form-group col-lg-4 mb-2">
-        <label for="provincia_nacimiento">Provincia de Nacimiento:</label>
-        <input type="text"
-            class="form-control form-control-sm @error('provincia_nacimiento') is-invalid @enderror"
-            id="provincia_nacimiento" name="provincia_nacimiento"
-            value="{{ old('provincia_nacimiento', $postulante->provincia_nacimiento) }}">
-        @error('provincia_nacimiento')
-            <div class="invalid-feedback">{{ $message }}</div>
-        @enderror
-    </div>
-
-    <div class="form-group col-lg-4 mb-2">
-        <label for="departamento_nacimiento">Departamento de Nacimiento:</label>
-        <input type="text"
-            class="form-control form-control-sm @error('departamento_nacimiento') is-invalid @enderror"
-            id="departamento_nacimiento" name="departamento_nacimiento"
-            value="{{ old('departamento_nacimiento', $postulante->departamento_nacimiento) }}">
-        @error('departamento_nacimiento')
-            <div class="invalid-feedback">{{ $message }}</div>
-        @enderror
-    </div>
+    
 </div>

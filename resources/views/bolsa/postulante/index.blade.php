@@ -1,9 +1,9 @@
-@extends('layouts.bolsa')
+@extends('layouts.alumno')
 @section('contenido')
     <div class="container-fluid bg-white pt-2">
         <div class="row">
             <div class="col-12 mb-3">
-                <h4 class="mt-3 font-weight-bold text-primary">
+                {{-- <h4 class="mt-3 font-weight-bold text-primary">
                     Ficha técnica bolsa de trabajo:
                 </h4>
                 <p>Espacio para postular a la bolsa de trabajo Pukllasunchis, sube tu CV y datos personales para poder ser
@@ -29,9 +29,9 @@
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
-                @endif
+                @endif --}}
             </div>
-            @if (auth()->user()->postulante)
+            {{-- @if (auth()->user()->postulante)
                 <div class="col-lg-12 pb-3 border-bottom d-flex justify-content-center align-items-center pb-2">
                     <div style="height: 180px; width:160px; border:1px solid #80808036">
                         <img src="{{ $user->postulante->img }}" style="object-fit: cover; width:100%; height:100%">
@@ -112,7 +112,7 @@
                         Registrar datos
                     </a>
                 </div>
-            @endif
+            @endif --}}
             <div class="col-lg-12">
                 <h4 class="mt-3 font-weight-bold text-primary">
                     Oportunidades laborales:
@@ -125,16 +125,398 @@
                     <table class="table table-bordered table-hover">
                         <thead class="thead-dark">
                             <tr>
-                                <th scope="col">#</th>
+                                <th scope="col">Mes</th>
                                 <th scope="col">Opción Laboral</th>
                                 <th scope="col">Detalles</th>
                                 <th scope="col">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody>                        
+                            <tr>
+                                <td>Noviembre</td>
+                                <td>📢 CUNAMAS: Convocatoria 2025 – Acompañantes Técnicos, Especialistas en Nutrición,
+                                    Abogados y Otros</td>
+                                <td>
+                                    El Programa Nacional CUNA MÁS anuncia su convocatoria vigente con un total de <strong>34
+                                        vacantes</strong>
+                                    disponibles en diversas regiones del país.<br><br>
+
+                                    <strong>Regiones:</strong><br>
+                                    Amazonas, Arequipa, Cajamarca, Cusco, La Libertad, Lambayeque, Lima, Loreto, Madre de
+                                    Dios, Moquegua,
+                                    Pasco, Piura, Puno, San Martín, Tumbes y Ucayali.<br><br>
+
+                                    <strong>Fecha de publicación:</strong> 15/11/2025<br>
+                                    <strong>Vigente hasta:</strong> 28/11/2025<br>
+                                    <strong>Salario:</strong> Entre S/. 1,764.19 y S/. 9,264.19 Soles<br><br>
+
+                                    <a href="https://www.portaltrabajos.pe/2025/11/cunamas-acompanantes-tecnicos-especialistas-nutricion.html?m=1"
+                                        target="_blank">
+                                        👉 Ver convocatoria completa
+                                    </a>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
+                                        data-target="#cunamas">
+                                        Más Info
+                                    </button>
+                                </td>
+                            </tr>
+                            <div class="modal fade" id="cunamas" tabindex="-1" role="dialog"
+                                aria-labelledby="cunamasLabel" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h3 class="modal-title" id="cunamasLabel">
+                                                Convocatoria CUNAMAS – 34 Vacantes 2025
+                                            </h3>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p>
+                                                El Programa Nacional CUNA MÁS invita a profesionales de distintas
+                                                especialidades
+                                                a postular a las vacantes disponibles en varias regiones del país.
+                                            </p>
+
+                                            <p><strong>Vacantes:</strong> 34</p>
+
+                                            <p><strong>Regiones:</strong><br>
+                                                Amazonas, Arequipa, Cajamarca, Cusco, La Libertad, Lambayeque, Lima, Loreto,
+                                                Madre de Dios, Moquegua, Pasco, Piura, Puno, San Martín, Tumbes, Ucayali.
+                                            </p>
+
+                                            <p><strong>Fechas:</strong><br>
+                                                Publicación: 15/11/2025<br>
+                                                Vigente hasta: 28/11/2025
+                                            </p>
+
+                                            <p><strong>Rango salarial:</strong> S/. 1,764.19 a S/. 9,264.19 Soles</p>
+
+                                            <p>
+                                                Puedes acceder a toda la información y requisitos en el siguiente
+                                                enlace:<br>
+                                                <a href="https://www.portaltrabajos.pe/2025/11/cunamas-acompanantes-tecnicos-especialistas-nutricion.html?m=1"
+                                                    target="_blank">
+                                                    👉 Ir a la convocatoria oficial
+                                                </a>
+                                            </p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-sm btn-secondary"
+                                                data-dismiss="modal">Cerrar</button>
+                                            <a href="https://www.portaltrabajos.pe/2025/11/cunamas-acompanantes-tecnicos-especialistas-nutricion.html?m=1"
+                                                target="_blank" class="btn btn-sm btn-primary">Aplicar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
                             <tr>
-                                <td>2</td>
+                                <td>Noviembre</td>
+                                <td>📢 Convocatoria Docente 2026 – Colegio Pukllasunchis</td>
+                                <td>
+                                    El Colegio Pukllasunchis invita a docentes a participar en su proceso de selección
+                                    2026.<br><br>
+
+                                    <strong>Perfiles requeridos:</strong>
+                                    <ul>
+                                        <li>Docente de Nivel Primario</li>
+                                        <li>Docente de Quechua – Secundaria</li>
+                                        <li>Docente de Inglés – Secundaria</li>
+                                        <li>Docente de Música – Inicial, Primaria y Secundaria</li>
+                                    </ul>
+
+                                    <strong>Convocatoria:</strong><br>
+                                    Inicio: 18/11/2025<br>
+                                    Cierre: 21/11/2025<br><br>
+
+                                    <a href="{{ asset('pdf/bolsa-de-trabajo/Convocatoria-docente-Colegio-Pukllasunchis.pdf') }}"
+                                        target="_blank">👉 Ver convocatoria completa (PDF)</a>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
+                                        data-target="#puk">
+                                        Más Info
+                                    </button>
+                                </td>
+                            </tr>
+                            <div class="modal fade" id="puk" tabindex="-1" role="dialog" aria-labelledby="pukLabel"
+                                aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h3 class="modal-title" id="pukLabel">
+                                                Convocatoria Docente 2026 – Colegio Pukllasunchis
+                                            </h3>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+
+                                        <div class="modal-body">
+                                            <p>
+                                                Proceso de selección para docentes en diversas especialidades.
+                                                Toda la información detallada se encuentra en el PDF adjunto.
+                                            </p>
+
+                                            <p><strong>Perfiles solicitados:</strong></p>
+                                            <ul>
+                                                <li>Docente de Primaria</li>
+                                                <li>Docente de Quechua – Secundaria</li>
+                                                <li>Docente de Inglés – Secundaria</li>
+                                                <li>Docente de Música – Inicial, Primaria y Secundaria</li>
+                                            </ul>
+
+                                            <p><strong>Fechas:</strong><br>
+                                                Inicio: 18/11/2025<br>
+                                                Cierre: 21/11/2025
+                                            </p>
+
+                                            <p>
+                                                Enviar CV documentado a:<br>
+                                                <strong>convocatoria.puk@gmail.com</strong>
+                                            </p>
+
+                                            <a href="#" target="_blank">👉 Descargar PDF completo</a>
+                                        </div>
+
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-sm btn-secondary"
+                                                data-dismiss="modal">Cerrar</button>
+                                            <a href="#" target="_blank" class="btn btn-sm btn-primary">Aplicar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <tr>
+                                <td>Noviembre</td>
+                                <td>📢 Innova Schools – Convocatoria Docente 2026 (Juliaca y Cusco)</td>
+                                <td>
+                                    Vacantes para Juliaca y Cusco en diversas especialidades.<br><br>
+
+                                    <strong>Sedes y especialidades:</strong>
+                                    <ul>
+                                        <li>Juliaca – 3er grado</li>
+                                        <li>Juliaca – Inglés volante</li>
+                                        <li>Cusco Larapa – Comunicación secundaria</li>
+                                        <li>Cusco Huancaro – DPSC + Ciencias primaria</li>
+                                    </ul>
+
+                                    <strong>Postulación:</strong><br>
+                                    Enviar CV documentado al <strong>914711598</strong> (solo WhatsApp).
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
+                                        data-target="#innova">
+                                        Más Info
+                                    </button>
+                                </td>
+                            </tr>
+                            <div class="modal fade" id="innova" tabindex="-1" role="dialog"
+                                aria-labelledby="innovaLabel" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+
+                                        <div class="modal-body">
+                                            <img src="{{ asset('pdf/bolsa-de-trabajo/Docente-para-juliaca.jpeg') }}"
+                                                width="100%" alt="Convocatoria Innova Schools 2026">
+
+                                            <p class="mt-3">
+                                                Vacantes disponibles para las sedes de Juliaca y Cusco.
+                                                Para postular, envía tu CV documentado al número indicado en la imagen.
+                                            </p>
+                                        </div>
+
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-sm btn-secondary"
+                                                data-dismiss="modal">Cerrar</button>
+                                            <a href="#" target="_blank" class="btn btn-sm btn-primary">Aplicar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <tr>
+                                <td>Noviembre</td>
+                                <td>📢 Enseña Perú – Programa de Liderazgo (PDL) 2025</td>
+                                <td>
+                                    Gran oportunidad para jóvenes profesionales que deseen enseñar por dos años en
+                                    escuelas públicas de distintas regiones del país.<br><br>
+
+                                    <strong>Convocatoria ampliada hasta:</strong> 8 de noviembre (23:59 h)<br><br>
+
+                                    El Programa de Liderazgo busca profesionales de cualquier carrera que deseen
+                                    contribuir al país desde el aula, liderando procesos de transformación educativa
+                                    sostenible en comunidades principalmente rurales.<br><br>
+
+                                    <strong>Requisitos principales:</strong>
+                                    <ul>
+                                        <li>Ser profesional técnico o universitario (o culminar estudios hasta dic. 2025).
+                                        </li>
+                                        <li>Disponibilidad para trabajar a tiempo completo (2026–2027).</li>
+                                        <li>Disponibilidad para cambio de residencia.</li>
+                                        <li>Participación obligatoria en ENFOCO (enero–febrero 2026).</li>
+                                    </ul>
+
+                                    <strong>Postula aquí:</strong><br>
+                                    <a href="https://ensenaperu.org/postula" target="_blank">👉
+                                        https://ensenaperu.org/postula</a><br><br>
+
+                                    <strong>Historia inspiradora:</strong><br>
+                                    <a href="https://n9.cl/152jy" target="_blank">🎥 Ver historia de Miguel</a>
+                                </td>
+
+                                <td>
+                                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
+                                        data-target="#pdl">
+                                        Ver Imagen
+                                    </button>
+                                </td>
+                            </tr>
+                            <div class="modal fade" id="pdl" tabindex="-1" role="dialog"
+                                aria-labelledby="pdlLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-lg" role="document">
+                                    <div class="modal-content">
+
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+
+                                        <div class="modal-body">
+                                            <img src="{{ asset('pdf/bolsa-de-trabajo/Programa-de-Liderazgo.png') }}"
+                                                class="img-fluid" alt="Programa de Liderazgo Enseña Perú">
+                                        </div>
+
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-sm btn-secondary"
+                                                data-dismiss="modal">Cerrar</button>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <tr>
+                                <td>Noviembre</td>
+                                <td>🏫 Colegio Gauss – Oportunidad Laboral 2026</td>
+
+                                <td>
+                                    El Colegio Gauss (Urcos) está incorporando a su equipo de trabajo a profesionales
+                                    competentes, motivados y con capacidad creativa y de liderazgo, comprometidos con los
+                                    objetivos institucionales.<br><br>
+
+                                    <strong>Vacantes:</strong>
+                                    <ul>
+                                        <li>Docentes de Inicial, Primaria y Secundaria.</li>
+                                        <li>Psicólogos, auxiliares y secretaria.</li>
+                                    </ul>
+
+                                    <strong>Dirección:</strong> Prolong. Av. Mariano Santos Q-6 (Urcos)<br>
+                                    <strong>Entrega de CV:</strong> 03 al 28 de noviembre 2025<br>
+                                    <strong>Entrevistas:</strong> 01 al 06 de diciembre 2025<br>
+                                    <strong>Contacto:</strong> 989 407 315
+                                </td>
+
+                                <td>
+                                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
+                                        data-target="#gauss">
+                                        Ver Imagen
+                                    </button>
+                                </td>
+                            </tr>
+                            <div class="modal fade" id="gauss" tabindex="-1" role="dialog"
+                                aria-labelledby="gaussLabel" aria-hidden="true">
+
+                                <div class="modal-dialog modal-lg" role="document">
+                                    <div class="modal-content">
+
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+
+                                        <div class="modal-body">
+                                            <img src="{{ asset('pdf/bolsa-de-trabajo/Colegio-gauss-oportunidad-laboral.jpeg') }}"
+                                                class="img-fluid" alt="Oportunidad Laboral Colegio Gauss">
+                                        </div>
+
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-sm btn-secondary"
+                                                data-dismiss="modal">Cerrar</button>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <tr>
+                                <td>Agosto</td>
+                                <td>🎙️ Casting de Voz – Proyecto de Doblaje al Quechua</td>
+                                <td>
+                                    Se buscan actores de voz para un proyecto de doblaje al quechua realizado en
+                                    Cusco.<br><br>
+
+                                    <strong>Requisitos:</strong>
+                                    <ul>
+                                        <li>Varones entre 20 y 60 años.</li>
+                                        <li>Leer y hablar bien el quechua.</li>
+                                        <li>Residir en Cusco.</li>
+                                    </ul>
+
+                                    <strong>Contacto por WhatsApp:</strong><br>
+                                    <span style="font-size: 1.2em; font-weight:bold;">918592861</span>
+                                </td>
+
+                                <td>
+                                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
+                                        data-target="#castingvoz">
+                                        Ver Imagen
+                                    </button>
+                                </td>
+                            </tr>
+                            <div class="modal fade" id="castingvoz" tabindex="-1" role="dialog"
+                                aria-labelledby="castingvozLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-lg" role="document">
+                                    <div class="modal-content">
+
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+
+                                        <div class="modal-body">
+                                            <img src="{{ asset('pdf/bolsa-de-trabajo/casting-voz-quechua.jpg') }}"
+                                                class="img-fluid" alt="Casting voz Quechua">
+                                        </div>
+
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-sm btn-secondary"
+                                                data-dismiss="modal">Cerrar</button>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!--Oportunidades previas-->
+                            <tr>
+                                <td>Agosto</td>
                                 <td>📢 Convocatoria de Capacitación Especializada – Estrategias Didácticas 2025</td>
                                 <td>SEl Gobierno Regional Cusco, a través de la Gerencia Regional de Educación y el Proyecto
                                     CREE, invita a los docentes de las 14 UGEL de la región Cusco a participar en la
@@ -163,7 +545,7 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td>2</td>
+                                <td>Agosto</td>
                                 <td>📢 Oportunidad laboral en CUNAMAS - Urubamba </td>
                                 <td>¿Conoces a algún colega psicólogo o profesional afín que esté interesado en trabajar
                                     como Acompañante Técnico en el programa CUNAMAS del MIDIS?

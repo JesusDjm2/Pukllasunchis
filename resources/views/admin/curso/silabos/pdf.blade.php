@@ -222,12 +222,10 @@
                     </tbody>
                 </table>
             </div>
-
             <div class="col-lg-12">
                 <h2>II. Sumilla:</h2>
                 {!! $silabo->sumilla ?? 'Sin datos' !!}
             </div>
-
             <div class="col-lg-12 mb-1">
                 <h2 class="mt-2">III. Vinculación al Proyecto Integrador:</h2>
             </div>
@@ -254,7 +252,6 @@
                     </tr>
                 </tbody>
             </table>
-
             <div class="col-lg-12 mb-3">
                 <label for="descripcion_proyecto" style="color: #c78d40; font-size:14px; font-weight: 600;">Propósito
                     del Proyecto
@@ -263,20 +260,17 @@
                     {!! $silabo->descripcion_proyecto_integrador ?? 'Sin datos' !!}
                 </div>
             </div>
-
             <div class="col-lg-12 mb-3">
                 <label for="vinculacion_pi" style="color: #c78d40; font-size:14px; font-weight: 600;">Vinculación o
                     aporte del curso con el proyecto integrador:
                 </label>
                 {!! $silabo->vinculacion_pi ?? 'Sin datos' !!}
             </div>
-
             <div class="col-lg-12 mb-3">
                 <label for="producto_curso" style="color: #c78d40; font-size:14px; font-weight: 600;">Producto del
                     Curso:</label>
                 {!! $silabo->producto_curso ?? 'Sin datos' !!}
             </div>
-
             <div class="col-lg-12 mb-3" style="page-break-before: always;">
                 <h2 class="mt-5">IV. Enfoques Transversales:</h2>
             </div>
@@ -305,11 +299,9 @@
                     @endforelse
                 </tbody>
             </table>
-
             <div class="col-lg-12 mb-3">
                 <h2 class="mt-5"> V. Matriz de planificación y evaluación de aprendizaje:</h2>
             </div>
-
             <div class="col-lg-12 mb-4">
                 @foreach ($competencias as $index => $competencia)
                     @php
@@ -336,7 +328,6 @@
                             </tr>
                         </tbody>
                     </table>
-
                     <table class="table table-bordered" style="margin-top: -15px">
                         <thead class="bg-secondary text-white">
                             <tr>
@@ -359,7 +350,6 @@
                     </table>
                 @endforeach
             </div>
-
             <div class="col-lg-12 mb-3" style="page-break-before: always;">
                 <h2 class="mt-5"> VI. Organización de Unidades de aprendizaje:</h2>
             </div>
@@ -379,7 +369,6 @@
                         </tr>
                     </tbody>
                 </table>
-
                 <!-- Segunda tabla con los demás campos -->
                 <table>
                     <thead>
@@ -402,11 +391,9 @@
                     </tbody>
                 </table>
             @endforeach
-
             <div class="col-lg-12 mb-3" style="page-break-before: always;">
                 <h2 class="mt-5"> VII. RÚBRICAS DE EVALUACIÓN</h2>
             </div>
-
             <table class="table table-bordered" id="tabla-rubricas">
                 <thead class="thead-dark">
                     <tr>

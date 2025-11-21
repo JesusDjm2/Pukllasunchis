@@ -37,4 +37,9 @@
 <file name="2025_02_07_165645_create_ppds_table.php" server="ftp.eesppukllasunchis.edu.pe" local="134006291233881845" remote="134006477400000000" Dst="0" />
 <file name="2025_07_21_184957_create_alumno_cursos_table.php" server="ftp.eesppukllasunchis.edu.pe" local="133978476246809410" remote="133978663200000000" Dst="0" />
 <file name="2024_11_20_000000_create_periodo_actual_table.php" server="ftp.eesppukllasunchis.edu.pe" local="134037313818295159" remote="134037571200000000" Dst="0" />
+<file name="2025_05_05_214836_create_calificacionesppds_table.php" server="ftp.eesppukllasunchis.edu.pe" local="134021675587134388" remote="134057474400000000" Dst="0" />
+<file name="2025_10_14_213427_create_silabo_pdf_table.php" server="ftp.eesppukllasunchis.edu.pe" local="134054668261893878" remote="134057474400000000" Dst="0" />
+<file name="2025_10_20_204911_create_departamentos_table.php" server="ftp.eesppukllasunchis.edu.pe" local="134056184941695574" remote="134057474400000000" Dst="0" />
+<file name="2025_10_21_212905_create_provincias_table.php" server="ftp.eesppukllasunchis.edu.pe" local="134056190457174831" remote="134057474400000000" Dst="0" />
+<file name="2025_10_22_151431_create_distritos_table.php" server="ftp.eesppukllasunchis.edu.pe" local="134056198248323043" remote="134057474400000000" Dst="0" />
 </dwsync>

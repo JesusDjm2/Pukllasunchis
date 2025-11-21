@@ -2,48 +2,60 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Alumno extends Model
 {
     use HasFactory;
+
     public function user()
     {
         return $this->belongsTo(User::class);
     }
+
     public function programa()
     {
         return $this->belongsTo(Programa::class);
     }
+
     public function ciclo()
     {
         return $this->belongsTo(Ciclo::class);
     }
+
     public function calificaciones()
     {
         return $this->hasMany(Calificacion::class);
     }
+
     public function periodos()
     {
         return $this->hasMany(PeriodoUno::class);
     }
+
     public function periododos()
     {
         return $this->hasMany(PeriodoDos::class);
     }
+
     public function periodotres()
     {
         return $this->hasMany(PeriodoTres::class);
     }
+
     public function periodo()
     {
         return $this->hasMany(Periodo::class);
     }
+
     public function cursos()
     {
         return $this->belongsToMany(Curso::class, 'alumno_cursos')->withTimestamps();
     }
+
     public static function asociarPorEmail($email)
     {
         $alumno = static::where('email', $email)->first();
@@ -57,6 +69,7 @@ class Alumno extends Model
             }
         }
     }
+
     protected $fillable = [
         'email',
         'dni',
@@ -64,7 +77,6 @@ class Alumno extends Model
         'nombres',
         'genero',
         'numero',
-        'genero',
         'numero_referencia',
         'fecha_nacimiento',
         'user_id',
@@ -234,10 +246,117 @@ class Alumno extends Model
         ];
 
         if ($updating) {
-            $rules['email'] .= ',' . $id;
-            $rules['dni'] .= ',' . $id;
+            $rules['email'] .= ','.$id;
+            $rules['dni'] .= ','.$id;
         }
 
         return $rules;
+    }
+
+    //SCOPES  DE ALUMNOS
+    // 🔹 Calcular edad
+    public function getEdadAttribute()
+    {
+        return Carbon::parse($this->fecha_nacimiento)->age;
+    }
+
+    // 🔹 Scope para filtrar por género
+    public function scopeGenero($query, $genero)
+    {
+        return $query->where('genero', $genero);
+    }
+
+    // 🔹 Scope por rango de edad
+    public function scopeEdadEntre($query, $min, $max)
+    {
+        return $query->whereBetween('fecha_nacimiento', [
+            now()->subYears($max),
+            now()->subYears($min),
+        ]);
+    }
+
+    // 🔹 Scope por sector socioeconómico
+    public function scopeSector($query, $sector)
+    {
+        return $query->where('sector_socioeconomico', $sector);
+    }
+
+    // 🔹 Scopes para datos demográficos
+    public function scopePorProcedenciaFamiliar(Builder $query)
+    {
+        return $query->select('procedencia_familiar')
+            ->whereNotNull('procedencia_familiar')
+            ->groupBy('procedencia_familiar')
+            ->selectRaw('procedencia_familiar, COUNT(*) as total');
+    }
+
+    public function scopePorSectorLaboral(Builder $query)
+    {
+        return $query->select('sector_laboral')
+            ->whereNotNull('sector_laboral')
+            ->groupBy('sector_laboral')
+            ->selectRaw('sector_laboral, COUNT(*) as total');
+    }
+
+    public function scopePorTeConsideras(Builder $query)
+    {
+        return $query->select('te_consideras')
+            ->whereNotNull('te_consideras')
+            ->groupBy('te_consideras')
+            ->selectRaw('te_consideras, COUNT(*) as total');
+    }
+
+    public function scopePorLenguas(Builder $query)
+    {
+        return $query->select('lengua_1', 'lengua_2')
+            ->whereNotNull('lengua_1')
+            ->groupBy('lengua_1', 'lengua_2')
+            ->selectRaw('lengua_1, lengua_2, COUNT(*) as total');
+    }
+
+    public function scopePorEstadoCivil(Builder $query)
+    {
+        return $query->select('estado_civil')
+            ->whereNotNull('estado_civil')
+            ->groupBy('estado_civil')
+            ->selectRaw('estado_civil, COUNT(*) as total');
+    }
+
+    public function scopePorSectorSocioeconomico(Builder $query)
+    {
+        return $query->select('sector_socioeconomico')
+            ->whereNotNull('sector_socioeconomico')
+            ->groupBy('sector_socioeconomico')
+            ->selectRaw('sector_socioeconomico, COUNT(*) as total');
+    }
+
+    public function scopePorQuienMantiene(Builder $query)
+    {
+        return $query->select('quien_mantiene')
+            ->whereNotNull('quien_mantiene')
+            ->groupBy('quien_mantiene')
+            ->selectRaw('quien_mantiene, COUNT(*) as total');
+    }
+
+    public function scopePorTrabajo(Builder $query)
+    {
+        return $query->select('trabajas')
+            ->whereNotNull('trabajas')
+            ->groupBy('trabajas')
+            ->selectRaw('trabajas, COUNT(*) as total');
+    }
+
+    public function scopePorIngresoMensual(Builder $query)
+    {
+        return $query->select('ingreso_mensual')
+            ->whereNotNull('ingreso_mensual')
+            ->groupBy('ingreso_mensual')
+            ->selectRaw('ingreso_mensual, COUNT(*) as total');
+    }
+
+    public function scopePorHabilidades(Builder $query)
+    {
+        return $query->select('habilidades')
+            ->whereNotNull('habilidades');
     }
 }

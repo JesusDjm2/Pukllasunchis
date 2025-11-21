@@ -112,9 +112,13 @@
             <div class="col-lg-12">
                 <div class="text-center mb-3">
                     <div class="btn-group" role="group" aria-label="Controles de Periodo">
-                        <button type="button" class="btn btn-outline-primary btn-sm active" id="btnPeriodoUno">Parcial 1</button>
+                        <button type="button" class="btn btn-outline-primary btn-sm active" id="btnPeriodoUno">Parcial
+                            1</button>
                         {{-- <button type="button" class="btn btn-outline-primary btn-sm" id="btnPeriodoDos">Parcial 2</button>
-                        <button type="button" class="btn btn-outline-primary btn-sm" id="btnDesempeno">Desempeño</button> --}}
+                        @if ($mostrarBotonDesempeno)
+                            <button type="button" class="btn btn-outline-primary btn-sm"
+                                id="btnDesempeno">Desempeño</button>
+                        @endif --}}
                     </div>
                 </div>
             </div>
@@ -155,13 +159,17 @@
                             </thead>
                             <tbody>
                                 @foreach ($alumnos as $index => $alumno)
+                                    @php
+                                        $esInhabilitado = $alumno->user && $alumno->user->hasRole('inhabilitado');
+                                    @endphp
+
                                     <input type="hidden" name="alumnos[{{ $alumno->id }}][alumno_id]"
                                         value="{{ $alumno->id }}">
                                     <input type="hidden" name="alumnos[{{ $alumno->id }}][docente_id]"
                                         value="{{ $docente->id }}">
                                     <input type="hidden" name="alumnos[{{ $alumno->id }}][curso_id]"
                                         value="{{ $curso->id }}">
-                                    <tr>
+                                    <tr style="{{ $esInhabilitado ? 'background-color: #f8d7da;' : '' }}">
                                         <td
                                             style="vertical-align: middle; border-bottom: 1px solid #39779b; border-left: 1px solid #39779b; font-weight: bold">
                                             {{ $index + 1 }}
@@ -170,6 +178,9 @@
                                             {{ $alumno->apellidos }}, {{ $alumno->nombres }}
                                             @if ($alumno->ciclo_id !== $curso->ciclo_id)
                                                 <span class="badge badge-info">Ciclo {{ $alumno->ciclo->nombre }}</span>
+                                            @endif
+                                            @if ($esInhabilitado)
+                                                <span class="badge badge-danger">{{ $alumno->user->perfil }}</span>
                                             @endif
                                         </td>
 
@@ -194,7 +205,8 @@
                                             <td style="vertical-align: middle; border-bottom: 1px solid #39779b;">
                                                 <select class="form-control form-control-sm select-competencia"
                                                     style="font-size: 0.95em"
-                                                    name="alumnos[{{ $alumno->id }}][valoracion_{{ $index + 1 }}]">
+                                                    name="alumnos[{{ $alumno->id }}][valoracion_{{ $index + 1 }}]"
+                                                    {{ $esInhabilitado ? 'disabled' : '' }}>
                                                     <option value="0" selected>Seleccionar</option>
                                                     @foreach ($valoracionTexto as $valor => $texto)
                                                         <option value="{{ $valor }}"
@@ -237,8 +249,9 @@
                                         </td>
                                         <td style="width: 400px;vertical-align: middle; border-bottom: 1px solid #39779b;">
                                             <textarea name="alumnos[{{ $alumno->id }}][observaciones]" class="form-control form-control-sm text-start"
-                                                rows="2" style="resize: vertical; width: 100%;" placeholder="Observaciones (Opcional)">{{ old("alumnos.{$alumno->id}.observaciones", $calificacion?->observaciones) }}
-                                            </textarea>
+                                                rows="2" style="resize: vertical; width: 100%;" placeholder="Observaciones (Opcional)"
+                                                {{ $esInhabilitado ? 'disabled' : '' }}>{{ old("alumnos.{$alumno->id}.observaciones", $calificacion?->observaciones) }}</textarea>
+
                                         </td>
                                     </tr>
                                 @endforeach
@@ -247,6 +260,7 @@
                     </div>
                 </form>
             </div>
+
             <div id="tablaCalificaciones" class="col-lg-12 table-responsive">
                 <form action="{{ route('guardarCalificacionesEnBloque') }}" method="POST">
                     @csrf
@@ -564,7 +578,6 @@
                                                     ->where('curso_id', $curso->id)
                                                     ->first();
 
-                                                // Definir las valoraciones disponibles
                                                 $valoracionTexto = [
                                                     5 => 'Destacado',
                                                     4 => 'Logrado',
@@ -581,9 +594,6 @@
                                                     : 'Seleccionar';
                                             @endphp
                                             <td>
-                                                {{-- <p class="mt-1 text-info mb-0 font-weight-bold" style="font-size: 13px">
-                                                    {{ $textoValoracion }}
-                                                </p> --}}
                                                 @if ($textoValoracion !== '-' && $textoValoracion !== 'Seleccionar')
                                                     <p class="mt-1 text-info mb-0 font-weight-bold"
                                                         style="font-size: 13px">
@@ -636,7 +646,6 @@
                                                 $valoracionPeriodoTres = $periodoTres
                                                     ? $periodoTres->{'valoracion_' . ($index + 1)}
                                                     : null;
-                                                // Definir el texto de la valoración
                                                 $textoPeriodoTres = isset($valoracionTexto[$valoracionPeriodoTres])
                                                     ? $valoracionTexto[$valoracionPeriodoTres]
                                                     : 'Seleccionar';
@@ -718,7 +727,6 @@
             </div>
         </div>
     </div>
-
     <div id="competenciaModal" class="modal" onclick="closeModal(event)">
         <div class="modal-content" onclick="event.stopPropagation();">
             <span class="close" onclick="closeModal(event)">&times;</span>
@@ -734,12 +742,10 @@
             var nombre = element.getAttribute('data-nombre');
             var descripcion = element.getAttribute('data-descripcion');
             var capacidades = element.getAttribute('data-capacidades');
-
             // Asigna los valores al modal
             document.getElementById("competenciaNombre").innerText = nombre;
             document.getElementById("competenciaDescripcion").innerText = descripcion;
-            document.getElementById("competenciaCapacidades").innerHTML = capacidades; 
-
+            document.getElementById("competenciaCapacidades").innerHTML = capacidades;
             // Muestra el modal
             document.getElementById("competenciaModal").style.display = "block";
         }
@@ -751,7 +757,6 @@
             document.getElementById("competenciaModal").style.display = "none";
         }
     </script>
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             activarBotonYMostrarTabla('btnPeriodoUno', 'tablaPeriodoUno');
@@ -760,30 +765,24 @@
         function activarBotonYMostrarTabla(botonId, tablaId) {
             const botones = ['btnPeriodoUno', 'btnPeriodoDos', 'btnDesempeno'];
             const tablas = ['tablaPeriodoUno', 'tablaCalificaciones', 'tablaDesempeno'];
-
             tablas.forEach(id => {
                 document.getElementById(id).style.display = (id === tablaId) ? 'block' : 'none';
             });
-
             botones.forEach(id => {
                 document.getElementById(id).classList.remove('active');
             });
             document.getElementById(botonId).classList.add('active');
         }
-
         document.getElementById('btnPeriodoUno').addEventListener('click', function() {
             activarBotonYMostrarTabla('btnPeriodoUno', 'tablaPeriodoUno');
         });
-
         document.getElementById('btnPeriodoDos').addEventListener('click', function() {
             activarBotonYMostrarTabla('btnPeriodoDos', 'tablaCalificaciones');
         });
-
         document.getElementById('btnDesempeno').addEventListener('click', function() {
             activarBotonYMostrarTabla('btnDesempeno', 'tablaDesempeno');
         });
     </script>
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const competenciaSelects = document.querySelectorAll('.select-competencia');
@@ -791,7 +790,6 @@
             competenciaSelects.forEach(select => {
                 const row = select.closest('tr');
                 const valor = select.value;
-                // Si el valor es diferente de 0, se recalcula
                 if (valor !== "0") {
                     const input = select.nextElementSibling;
                     input.value = valor;
@@ -802,8 +800,6 @@
                 select.addEventListener('change', function() {
                     const row = this.closest('tr');
                     const valor = this.value;
-
-                    // Si el valor es diferente de 0, se recalcula
                     if (valor !== "0") {
                         const input = this.nextElementSibling;
                         input.value = valor;
@@ -829,8 +825,6 @@
                 if (valoracionInput) {
                     valoracionInput.value = promedio;
                 }
-
-                // Calcula la calificación del sistema basada en el promedio en la fila específica
                 const calificacionSistemaInput = row.querySelector('.calificacion-sistema');
                 const valoracionSistema = calcularValoracion(promedio);
                 if (calificacionSistemaInput) {

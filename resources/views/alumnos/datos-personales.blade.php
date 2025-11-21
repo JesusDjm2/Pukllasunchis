@@ -369,21 +369,7 @@
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
     </div>
-    {{-- Fotografía User --}}
-    {{-- <div class="col-lg-12 mb-2">
-        <label for="foto">Foto:
-            <small class="text-primary">Esta foto debe de ser tipo pasaporte con fondo blanco. Importante!</small>
-        </label>
-        <div class="input-group">
-            <input type="file" class="form-control form-control-sm"
-                id="foto" name="foto" required>
-        </div>
-        @error('foto')
-            <div class="invalid-feedback">{{ $message }}</div>
-        @enderror
-    </div> --}}
-
-    <!-- Modal -->
+    
     <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
         aria-hidden="true">
         <div class="modal-dialog" role="document">
@@ -394,3 +380,5 @@
     </div>
 
 </div>
+
+

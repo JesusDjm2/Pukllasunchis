@@ -14,13 +14,11 @@ class Silabo extends Model
         'nombre',
         'sumilla',
         'periodo',
-
         'proyecto_integrador',
         'producto_proyecto_integrador',
         'descripcion_proyecto_integrador',
         'vinculacion_pi',
         'producto_curso',
-
         'capacidad1',
         'desempeno1',
         'criterio1',
@@ -63,4 +61,9 @@ class Silabo extends Model
     {
         return $this->hasMany(Rubricas::class);
     }
+    public function silabosPdf()
+    {
+        return $this->hasMany(SilaboPdf::class);
+    }
 }
+

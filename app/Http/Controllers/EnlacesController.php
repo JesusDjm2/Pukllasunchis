@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AdminFid;
 use App\Models\Postulante;
 use Illuminate\Http\Request;
 
@@ -57,7 +58,8 @@ class EnlacesController extends Controller
     //Ordinario
     public function ordinario()
     {
-        return view('admision.ingreso-ordinario');
+        $periodoAdmision = AdminFid::where('estado', true)->first();
+        return view('admision.ingreso-ordinario', compact('periodoAdmision'));
     }
     public function exoneracion()
     {

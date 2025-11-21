@@ -35,9 +35,7 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.7);
-            /* Fondo oscuro */
             z-index: 1999;
-            /* Un poco menor que el modal */
         }
 
         .modal-header {
@@ -277,7 +275,7 @@
                             </li>
                             <li><span class="span">2</span>
                                 Indicar el concepto y código de pago.<a class="text-primary" target="_blank"
-                                    href="{{ asset('pdf/Conceptos-ordinarios-caja-cusco-2025-2.pdf') }}"> Ver PDF para
+                                    href="{{ asset('pdf/Concepto-de-pagos-caja-Cusco-Pukllasunchis-2025-II-2.pdf') }}"> Ver PDF para
                                     pagos<small><i class="fa fa-eye"></i></small></a>
                             </li>
                             <li><span class="span">3</span>

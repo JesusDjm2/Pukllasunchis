@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Calificacion;
 use App\Models\Calificacionesppd;
 use App\Models\Ciclo;
 use App\Models\Competencia;
@@ -15,25 +14,6 @@ use Illuminate\Http\Request;
 
 class PpdController extends Controller
 {
-    /* public function index(Request $request)
-    {
-        $alumno = auth()->user()->alumnoB;
-        $cursos = Curso::whereHas('ciclo.programa', function ($q) use ($alumno) {
-            $q->where('id', $alumno->user->programa_id);
-        })
-            ->orderBy('nombre', 'asc')
-            ->get();
-        if ($alumno) {
-            $alumno->load([
-                'user.programa.ciclos' => fn($q) => $q->orderBy('nombre', 'asc'),
-                'user.programa.ciclos.cursos' => fn($q) => $q->orderBy('nombre', 'asc'),
-                'ciclo.cursos.docentes' => function ($q) {
-                    $q->orderBy('nombre', 'asc');
-                }
-            ]);
-        }
-        return view('alumnos.ppd.index', compact('alumno'));
-    } */
     public function index(Request $request)
     {
         $alumno = auth()->user()->alumnoB;
@@ -41,7 +21,7 @@ class PpdController extends Controller
         if ($alumno) {
             $alumno->load([
                 'user.programa.ciclos.cursos',
-                'ciclo.cursos.docentes' => fn($q) => $q->orderBy('nombre', 'asc')
+                'ciclo.cursos.docentes' => fn ($q) => $q->orderBy('nombre', 'asc'),
             ]);
 
             // Aplanamos y ordenamos los cursos de todos los ciclos
@@ -57,6 +37,7 @@ class PpdController extends Controller
 
         return view('alumnos.ppd.index', compact('alumno', 'cursos'));
     }
+
     public function form()
     {
         $programas = Programa::all();
@@ -65,15 +46,19 @@ class PpdController extends Controller
         if ($user) {
             return view('alumnos.vistasAlumnos.formulario', compact('programas', 'ciclos', 'user'));
         }
+
         return view('alumnos.vistasAlumnos.postulantes');
     }
+
     public function create()
     {
         $programas = Programa::all();
         $ciclos = Ciclo::all();
         $user = auth()->user();
+
         return view('alumnos.vistasAlumnos.formulario', compact('user', 'programas', 'ciclos'));
     }
+
     /* public function calificacionesppd()
     {
         $alumno = auth()->user()->alumnoB;
@@ -100,12 +85,10 @@ class PpdController extends Controller
     public function calificacionesppd()
     {
         $alumno = auth()->user()->alumnoB;
-        if (!$alumno || !$alumno->ciclo) {
+        if (! $alumno || ! $alumno->ciclo) {
             return view('alumnos.ppd.calificaciones')->with('mensaje', 'No tienes ciclo asignado.');
         }
-
         $programaId = $alumno->ciclo->programa_id;
-
         $ciclosConCursos = Ciclo::where('programa_id', $programaId)
             ->with([
                 'cursos' => function ($query) use ($alumno) {
@@ -114,9 +97,9 @@ class PpdController extends Controller
                         'docentes',
                         'calificacionesppd' => function ($q) use ($alumno) {
                             $q->where('ppd_id', $alumno->id);
-                        }
+                        },
                     ]);
-                }
+                },
             ])
             ->orderBy('nombre')
             ->get();
@@ -145,18 +128,18 @@ class PpdController extends Controller
 
         if (stripos($userInput, 'Beca') !== false) {
             $counter = ppd::where('num_comprobante', 'like', 'Beca%')->count() + 1;
-            $request->merge(['num_comprobante' => 'Beca_' . $counter]);
+            $request->merge(['num_comprobante' => 'Beca_'.$counter]);
         }
 
         if (stripos($userInput, 'AMANTANI') !== false) {
             $counter = ppd::where('num_comprobante', 'like', 'AMANTANI%')->count() + 1;
-            $request->merge(['num_comprobante' => 'AMANTANI_' . $counter]);
+            $request->merge(['num_comprobante' => 'AMANTANI_'.$counter]);
         }
 
         /* if (strtolower($userInput) === 'con deuda') */
         if (stripos($userInput, 'deuda') !== false) {
             $counter = ppd::where('num_comprobante', 'like', 'Deudor%')->count() + 1;
-            $request->merge(['num_comprobante' => 'Deudor_' . $counter]);
+            $request->merge(['num_comprobante' => 'Deudor_'.$counter]);
         }
 
         $bienes_vivienda = $request->input('bienes_vivienda', []);
@@ -291,11 +274,13 @@ class PpdController extends Controller
         // Asociar por email si el usuario está autenticado
         if (auth()->check()) {
             ppd::asociarPorEmail($nuevoAlumno->email);
+
             return redirect()->route('ppd.index')->with('success', 'Alumno registrado exitosamente!');
         } else {
             return redirect()->route('index')->with('success', 'Has sido registrado exitosamente, le enviaremos un correo con sus credenciales de acceso.');
         }
     }
+
     public function show($id)
     {
         /* $alumno = ppd::with(['user', 'ciclo.cursos'])->findOrFail($id); */
@@ -334,6 +319,7 @@ class PpdController extends Controller
             'sector' => $sector,
         ]);
     }
+
     public function calificar(Request $request)
     {
         $request->validate([
@@ -416,6 +402,7 @@ class PpdController extends Controller
             ->map(function ($alumno) {
                 $alumno->es_inhabilitado = $alumno->roles->contains('name', 'inhabilitado');
                 $alumno->tiene_ppd = $alumno->alumnoB !== null;
+
                 return $alumno;
             });
 
@@ -453,7 +440,7 @@ class PpdController extends Controller
             'Motocicleta',
             'Juego de video',
             'Refrigeradora',
-            'Ninguna de las anteriores'
+            'Ninguna de las anteriores',
         ];
         $alumno->otros_servicios = explode(',', $alumno->otros_servicios);
         $opcionesServicios = [
@@ -461,7 +448,7 @@ class PpdController extends Controller
             'Servicio de teléfono',
             'Servicio de cable',
             'Servicio de Internet',
-            'Ninguna de las anteriores'
+            'Ninguna de las anteriores',
         ];
         $alumno->habilidades = explode('-', $alumno->habilidades);
         $opcionesHabilidades = [
@@ -469,7 +456,7 @@ class PpdController extends Controller
             'Artes pláticas (Pintura, Escultura, etc)',
             'Danzas (Danzas folklóricas, Ballet, Etc)',
             'Literatura (Poesía, Cuentos, etc)',
-            'Otros'
+            'Otros',
         ];
         $departamentosData = [
             'Amazonas' => [
@@ -501,7 +488,7 @@ class PpdController extends Controller
                         'Santa Catalina',
                         'Santo Tomás',
                         'Tingo',
-                        'Trita'
+                        'Trita',
                     ],
                     'Rodríguez de Mendoza' => [
                         'San Nicolás',
@@ -515,16 +502,16 @@ class PpdController extends Controller
                         'Omia',
                         'Santa Rosa',
                         'Totora',
-                        'Vista Alegre'
+                        'Vista Alegre',
                     ],
                     'Utcubamba' => ['Bagua Grande', 'Cajaruro', 'Cumba', 'El Milagro', 'Jamalca', 'Lonya Grande', 'Yamón'],
 
-                ]
+                ],
             ],
             'Anchash' => [
                 'provincia' => [
                     'Huancavelica' => ['Huancavelica', 'Acobamba', 'Angaraes', 'Castrovirreyna', 'Chanchamayo', 'Huancayo', 'Huaytara', 'Tayacaja'],
-                ]
+                ],
             ],
             'Apurímac' => [
                 'provincia' => [
@@ -534,8 +521,8 @@ class PpdController extends Controller
                     'Aymaraes' => ['Chalhuanca', 'Capaya', 'Caraybamba', 'Chapimarca', 'Colcabamba', 'Cotaruse', 'Huayllo', 'Justo Apu Sahuaraura', 'Lucre', 'Pocohuanca', 'San Juan de Chacña', 'Sañayca', 'Soraya', 'Tapairihua', 'Tintay', 'Toraya', 'Yanaca'],
                     'Cotabambas' => ['Tambobamba', 'Cotabambas', 'Coyllurqui', 'Haquira', 'Mara', 'Challhuahuacho'],
                     'Chincheros' => ['Chincheros', 'Anco_Huallo', 'Cocharcas', 'Huaccana', 'Ocobamba', 'Ongoy', 'Uranmarca', 'Ranracancha', 'Rocchacc', 'El Porvenir', 'Los Chankas'],
-                    'Grau' => ['Chuquibambilla', 'Curpahuasi', 'Gamarra', 'Huayllati', 'Mamara', 'Micaela Bastidas', 'Pataypampa', 'Progreso', 'San Antonio', 'Santa Rosa', 'Turpay', 'Vilcabamba', 'Virundo', 'Curasco']
-                ]
+                    'Grau' => ['Chuquibambilla', 'Curpahuasi', 'Gamarra', 'Huayllati', 'Mamara', 'Micaela Bastidas', 'Pataypampa', 'Progreso', 'San Antonio', 'Santa Rosa', 'Turpay', 'Vilcabamba', 'Virundo', 'Curasco'],
+                ],
             ],
             'Ayacucho' => [
                 'provincia' => [
@@ -549,8 +536,8 @@ class PpdController extends Controller
                     'Páucar del Sara Sara' => ['Pausa', 'Colta', 'Corculla', 'Lampa', 'Marcabamba', 'Oyolo', 'Pararca', 'San Javier de Alpabamba', 'San José de Ushua', 'Sara Sara'],
                     'Sucre' => ['Querobamba', 'Belén', 'Chalcos', 'Chilcayoc', 'Huacaña', 'Morcolla', 'Paico', 'San Pedro de Larcay', 'San Salvador de Quije', 'Santiago de Paucaray', 'Soras'],
                     'Víctor Fajardo' => ['Huancapi', 'Alcamenca', 'Apongo', 'Asquipata', 'Canaria', 'Cayara', 'Colca', 'Huamanquiquia', 'Huancaraylla', 'Huaya', 'Sarhua', 'Vilcanchos'],
-                    'Vilcas Huamán' => ['Vilcas Huamán', 'Accomarca', 'Carhuanca', 'Concepción', 'Huambalpa', 'Independencia', 'Saurama', 'Vischongo']
-                ]
+                    'Vilcas Huamán' => ['Vilcas Huamán', 'Accomarca', 'Carhuanca', 'Concepción', 'Huambalpa', 'Independencia', 'Saurama', 'Vischongo'],
+                ],
             ],
             'Arequipa' => [
                 'provincia' => [
@@ -561,12 +548,12 @@ class PpdController extends Controller
                     'Caylloma' => ['Chivay', 'Achoma', 'Cabanaconde', 'Callalli', 'Caylloma', 'Coporaque', 'Huambo', 'Huanca', 'Ichupampa', 'Lari', 'Lluta', 'Maca', 'Madrigal', 'San Antonio de Chuca', 'Sibayo', 'Tapay', 'Tisco', 'Tuti', 'Yanque', 'Majes'],
                     'Condesuyos' => ['Chuquibamba', 'Andaray', 'Cayarani', 'Chichas', 'Iray', 'Río Grande', 'Salamanca', 'Yanaquihua'],
                     'Islay' => ['Mollendo', 'Cocachacra', 'Dean Valdivia', 'Islay', 'Mejia', 'Punta de Bombón'],
-                    'La Union' => ['Cotahuasi', 'Alca', 'Charcana', 'Huaynacotas', 'Pampamarca', 'Puyca', 'Quechualla', 'Sayla', 'Tauria', 'Tomepampa', 'Toro']
-                ]
+                    'La Union' => ['Cotahuasi', 'Alca', 'Charcana', 'Huaynacotas', 'Pampamarca', 'Puyca', 'Quechualla', 'Sayla', 'Tauria', 'Tomepampa', 'Toro'],
+                ],
             ],
             'Cusco' => [
                 'provincia' => [
-                    'Acomayo' => ['Acomayo', 'Acopia', 'Acos', 'Mosoc Llacta', 'Pomacanchi', 'Rondocan',],
+                    'Acomayo' => ['Acomayo', 'Acopia', 'Acos', 'Mosoc Llacta', 'Pomacanchi', 'Rondocan'],
                     'Anta' => ['Anta', 'Ancahuasi', 'Cachimayo', 'Chinchaypujio', 'Huarocondo', 'Limatambo', 'Mollepata', 'Pucyura', 'Zurite'],
                     'Calca' => ['Calca', 'Coya', 'Lamay', 'Lares', 'Pisac', 'San Salvador', 'Taray', 'Yanatile'],
                     'Canas' => ['Yanaoca', 'Checca', 'Kunturkanki', 'Langui', 'Layo', 'Pampamarca', 'Quehue', 'Tupac Amaru'],
@@ -578,8 +565,8 @@ class PpdController extends Controller
                     'Paruro' => ['Paruro', 'Accha', 'Ccapi', 'Colcha', 'Huanoquite', 'Omacha', 'Paccaritambo', 'Pillpinto', 'Yaurisque'],
                     'Paucartambo' => ['Paucartambo', 'Caicay', 'Challabamba', 'Colquepata', 'Huancarani', 'Kosñipata'],
                     'Quispicanchi' => ['Urcos', 'Andahuaylillas', 'Camanti', 'Ccarhuayo', 'Ccatca', 'Cusipata', 'Huaro', 'Lucre', 'Marcapata', 'Ocongate', 'Oropesa', 'Quiquijana'],
-                    'Urubamba' => ['Urubamba', 'Chinchero', 'Huayllabamba', 'Machupicchu', 'Maras', 'Ollantaytambo', 'Yucay']
-                ]
+                    'Urubamba' => ['Urubamba', 'Chinchero', 'Huayllabamba', 'Machupicchu', 'Maras', 'Ollantaytambo', 'Yucay'],
+                ],
             ],
             'Lima' => [
                 'provincia' => [
@@ -592,22 +579,22 @@ class PpdController extends Controller
                     'Huarochiri' => ['Matucana', 'Antioquia', 'Callahuanca', 'Carampoma', 'Chicla', 'Cuenca', 'Huachupampa', 'Huanza', 'Huarochiri', 'Lahuaytambo', 'Langa', 'Laraos', 'Mariatana', 'Ricardo Palma', 'San Andrés de Tupicocha', 'San Antonio', 'San Bartolomé', 'San Damian', 'San Juan de Iris', 'San Juan de Tantaranche', 'San Lorenzo de Quinti', 'San Mateo', 'San Mateo de Otao', 'San Pedro de Casta', 'San Pedro de Huancayre', 'Sangallaya', 'Santa Cruz de Cocachacra', 'Santa Eulalia', 'Santiago de Anchucaya', 'Santiago de Tuna', 'Santo Domingo de los Olleros', 'Surco'],
                     'Huaura' => ['Huacho', 'Ambar', 'Caleta de Carquin', 'Checras', 'Hualmay', 'Huaura', 'Leoncio Prado', 'Paccho', 'Santa Leonor', 'Santa Maria', 'Sayan', 'Vegueta'],
                     'Oyon' => ['Oyon', 'Andajes', 'Caujul', 'Cochamarca', 'Navan', 'Pachangara'],
-                    'Yauyos' => ['Yauyos', 'Alis', 'Ayauca', 'Ayaviri', 'Azángaro', 'Cacra', 'Carania', 'Catahuasi', 'Chocos', 'Cochas', 'Colonia', 'Hongos', 'Huampara', 'Huancaya', 'Huangascar', 'Huantan', 'Huañec', 'Laraos', 'Lincha', 'Madean', 'Miraflores', 'Omas', 'Putinza', 'Quinches', 'Quinocay', 'San Joaquin', 'San Pedro de Pilas', 'Tanta', 'Tauripampa', 'Tomas', 'Tupe', 'Viñac', 'Vitis']
-                ]
+                    'Yauyos' => ['Yauyos', 'Alis', 'Ayauca', 'Ayaviri', 'Azángaro', 'Cacra', 'Carania', 'Catahuasi', 'Chocos', 'Cochas', 'Colonia', 'Hongos', 'Huampara', 'Huancaya', 'Huangascar', 'Huantan', 'Huañec', 'Laraos', 'Lincha', 'Madean', 'Miraflores', 'Omas', 'Putinza', 'Quinches', 'Quinocay', 'San Joaquin', 'San Pedro de Pilas', 'Tanta', 'Tauripampa', 'Tomas', 'Tupe', 'Viñac', 'Vitis'],
+                ],
             ],
             'Madre de Dios' => [
                 'provincia' => [
                     'Tambopata' => ['Tambopata', 'Inambari', 'Las Piedras', 'Laberinto'],
                     'Manu' => ['Manu', 'Fitzcarrald', 'Madre de Dios', 'Huepetuhe'],
-                    'Tahuamanu' => ['Iñapari', 'Iberia', 'Tahuamanu']
-                ]
+                    'Tahuamanu' => ['Iñapari', 'Iberia', 'Tahuamanu'],
+                ],
             ],
             'Pasco' => [
                 'provincia' => [
                     'Pasco' => ['Chaupimarca', 'Huachón', 'Huariaca', 'Huayllay', 'Ninacaca', 'Pallanchacra', 'Paucartambo', 'San Francisco de Asís de Yarusyacán', 'Simón Bolívar', 'Ticlacayan', 'Tinyahuarco', 'Vicco', 'Yanacancha'],
                     'Daniel Alcides Carrión' => ['Yanahuanca', 'Chacayan', 'Goyllarisquizga', 'Paucar', 'San Pedro de Pillao', 'Santa Ana de Tusi', 'Tapuc', 'Vilcabamba'],
-                    'Oxapampa' => ['Oxapampa', 'Chontabamba', 'Huancabamba', 'Palcazu', 'Pozuzo', 'Puerto Bermúdez', 'Villa Rica', 'Constitución']
-                ]
+                    'Oxapampa' => ['Oxapampa', 'Chontabamba', 'Huancabamba', 'Palcazu', 'Pozuzo', 'Puerto Bermúdez', 'Villa Rica', 'Constitución'],
+                ],
             ],
             'Puno' => [
                 'provincia' => [
@@ -623,10 +610,11 @@ class PpdController extends Controller
                     'San Antonio de Putina' => ['Putina', 'Ananea', 'Pedro Vilca Apaza', 'Quilcapuncu', 'Sina'],
                     'San Roman' => ['Juliaca', 'Cabana', 'Cabanillas', 'Caracoto'],
                     'Sandia' => ['Sandia', 'Cuyocuyo', 'Limbani', 'Patambuco', 'Phara', 'Quiaca', 'San Juan del Oro', 'Yanahuaya', 'Alto Inambari', 'San Pedro de Putina Punco'],
-                    'Yunguyo' => ['Yunguyo', 'Anapia', 'Copani', 'Cuturapi', 'Ollaraya', 'Tinicachi', 'Unicachi']
-                ]
+                    'Yunguyo' => ['Yunguyo', 'Anapia', 'Copani', 'Cuturapi', 'Ollaraya', 'Tinicachi', 'Unicachi'],
+                ],
             ],
         ];
+
         return view('alumnos.ppd.edit', compact('alumno', 'programas', 'ciclos', 'user', 'opcionesBienesVivienda', 'opcionesServicios', 'opcionesHabilidades', 'departamentosData'));
     }
 
@@ -649,5 +637,10 @@ class PpdController extends Controller
         $alumno->update($request->all());
 
         return redirect()->route('ppd.index')->with('success', 'Datos registrados correctamente.');
+    }
+
+    public function formatos()
+    {
+        return view('alumnos.formatos.formato-ppd');
     }
 }

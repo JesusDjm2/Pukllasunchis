@@ -193,7 +193,8 @@
                     <ul style="margin-left:1em">
                         <li>• Hacer el pago de s/10.00.</li>
                         <li>• Presentar FUT en Secretaría o llenar el formulario.</li>
-                        <li>• Como resultado de este trámite recibirás la carta de aplicación y una carta modelo de aceptación del trabajo de investigación. </li>
+                        <li>• Como resultado de este trámite recibirás la carta de aplicación y una carta modelo de
+                            aceptación del trabajo de investigación. </li>
                     </ul><br>
                     <p class="font-weight-bold">Nota: ¿Para qué sirve? La Carta de Aceptación emitida por la institución
                         les ayudará a
@@ -215,7 +216,7 @@
                         </h4>
                         <p>Nuestra finalidad es desarrollar un programa alternativo e interesante, con un enfoque inclusivo
                             e intercultural, que contribuya a la formación de profesionales capaces de aportar, desde el
-                            aula o desde otros ámbitos de trabajo al desarrollo de nuevos escenarios educativos. 
+                            aula o desde otros ámbitos de trabajo al desarrollo de nuevos escenarios educativos.
                         </p>
                     </div>
                 </div>

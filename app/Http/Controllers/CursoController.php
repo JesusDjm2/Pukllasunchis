@@ -5,11 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Ciclo;
 use App\Models\Competencia;
 use App\Models\Curso;
+use App\Models\PeriodoActual;
 use App\Models\Programa;
+use App\Models\SilaboPdf;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
-use Storage;
 
 class CursoController extends Controller
 {
@@ -43,30 +43,36 @@ class CursoController extends Controller
             $query->where('programa_id', 4);
         })->count();
         $competencias = Competencia::all();
+
         return view('admin.curso.index', compact('cursos', 'cant', 'inicial', 'cursosInicial', 'EIB', 'cursosEib', 'competencias', 'inicialPPD', 'primariaPPD', 'iniPPD', 'priPPD'));
     }
+
     public function create()
     {
         $programas = Programa::all();
         $ciclos = Ciclo::all();
         $cursos = Curso::all();
         $competencias = Competencia::all();
+
         return view('admin.curso.create', compact('programas', 'ciclos', 'cursos', 'competencias'));
     }
+
     public function uploadSilabo(Request $request, Curso $curso)
     {
-        /* $request->validate([
-            'silabo' => 'required|mimes:pdf|max:2048', // Validar el archivo PDF
-        ]); */
         $request->validate([
             'silabo' => 'required|mimes:pdf|max:2048',
         ], [
             'silabo.required' => 'Debes seleccionar un archivo PDF antes de subirlo.',
             'silabo.mimes' => 'El archivo debe ser un PDF válido.',
-            'silabo.max' => 'El archivo no debe exceder los 2MB.',
+            'silabo.max' => 'El archivo no debe exceder los 2 MB.',
         ]);
 
-        if ($request->hasFile('silabo')) {
+        $periodoActual = PeriodoActual::where('actual', true)->first();
+        if (! $periodoActual) {
+            return redirect()->back()->with('error', 'No hay un periodo activo en este momento.');
+        }
+
+        /* if ($request->hasFile('silabo')) {
             if ($curso->silabo) {
                 $oldPath = public_path("docentes/silabo/{$curso->silabo}");
                 if (file_exists($oldPath)) {
@@ -75,18 +81,59 @@ class CursoController extends Controller
             }
             $silabo = $request->file('silabo');
             $nombreSilabo = $silabo->getClientOriginalName();
-            $rutaSilabo = public_path("docentes/silabo/");
+            $rutaSilabo = public_path('docentes/silabo/');
             $silabo->move($rutaSilabo, $nombreSilabo);
 
             $curso->silabo = $nombreSilabo;
             $curso->save();
+        } */
+        if ($request->hasFile('silabo')) {
+            $silabo = $request->file('silabo');
+            $nombreSilabo = $silabo->getClientOriginalName(); // mantiene el nombre original
+            $rutaSilabo = public_path('docentes/silabo/');
+
+            // Crear directorio si no existe
+            if (! file_exists($rutaSilabo)) {
+                mkdir($rutaSilabo, 0777, true);
+            }
+
+            // Si ya existe un archivo con el mismo nombre, se elimina para evitar conflicto
+            $pathExistente = $rutaSilabo.$nombreSilabo;
+            if (file_exists($pathExistente)) {
+                unlink($pathExistente);
+            }
+
+            // Mover archivo
+            $silabo->move($rutaSilabo, $nombreSilabo);
+
+            // Buscar si ya existe un registro para este curso y periodo
+            $silaboExistente = SilaboPdf::where('curso_id', $curso->id)
+                ->where('periodo_actual_id', $periodoActual->id)
+                ->first();
+
+            if ($silaboExistente) {
+                // Eliminar archivo anterior si existe
+                $oldPath = public_path("docentes/silabo/{$silaboExistente->pdf}");
+                if (file_exists($oldPath)) {
+                    unlink($oldPath);
+                }
+
+                $silaboExistente->update(['pdf' => $nombreSilabo]);
+            } else {
+                SilaboPdf::create([
+                    'pdf' => $nombreSilabo,
+                    'curso_id' => $curso->id,
+                    'periodo_actual_id' => $periodoActual->id,
+                ]);
+            }
         }
 
         return redirect()->back()->with('success', 'Sílabo actualizado exitosamente.');
     }
+
     public function destroySilabo(Curso $curso)
     {
-        if ($curso->silabo) {
+        /* if ($curso->silabo) {
             $path = public_path("docentes/silabo/{$curso->silabo}");
             if (file_exists($path)) {
                 unlink($path);
@@ -96,8 +143,21 @@ class CursoController extends Controller
             $curso->save();
         }
 
-        return redirect()->back()->with('success', 'Sílabo eliminado exitosamente.');
+        return redirect()->back()->with('success', 'Sílabo eliminado exitosamente.'); */
+        $silaboPdf = SilaboPdf::where('curso_id', $curso->id)->first();
+
+        if ($silaboPdf) {
+            $path = public_path("docentes/silabo/{$silaboPdf->pdf}");
+            if (file_exists($path)) {
+                unlink($path);
+            }
+
+            $silaboPdf->delete();
+
+            return redirect()->back()->with('success', 'Sílabo en PDF eliminado exitosamente.');
+        }
     }
+
     public function store(Request $request)
     {
         $request->validate([
@@ -125,27 +185,32 @@ class CursoController extends Controller
 
         return redirect()->route('curso.index')->with('success', 'Curso creado exitosamente');
     }
+
     public function classroomClaveCRUD(Request $request, Curso $curso)
     {
         if ($request->has('delete') && $request->input('delete') === 'true') {
             $curso->update(['classroom' => null, 'clave' => null]);
+
             return redirect()->back()->with('success', 'Classroom y Clave eliminados correctamente.');
         }
         $curso->update([
             'classroom' => $request->input('classroom'),
-            'clave' => $request->input('clave')
+            'clave' => $request->input('clave'),
         ]);
 
         return redirect()->back()->with('success', 'Classroom y Clave guardados correctamente.');
     }
+
     public function edit(Curso $curso)
     {
         $programa = $curso->ciclo->programa;
         $programas = Programa::all();
         $ciclos = Ciclo::all();
         $competencias = Competencia::all();
+
         return view('admin.curso.edit', compact('programas', 'curso', 'ciclos', 'competencias', 'programa'));
     }
+
     public function update(Request $request, $id)
     {
         $request->validate([
@@ -156,7 +221,7 @@ class CursoController extends Controller
             'cc' => 'required|string',
             'horas' => 'required|string',
             'creditos' => 'required|string',
-            'competencias' => 'array|exists:competencias,id' // Validar competencias
+            'competencias' => 'array|exists:competencias,id', // Validar competencias
         ]);
 
         $curso = Curso::findOrFail($id);
@@ -176,6 +241,7 @@ class CursoController extends Controller
 
         return redirect()->route('curso.index')->with('success', 'Curso actualizado exitosamente');
     }
+
     /* public function show(Curso $curso)
     {
         $programa = $curso->ciclo->programa;
@@ -207,7 +273,7 @@ class CursoController extends Controller
         $alumno = auth()->user()->alumnoB;
 
         $usersPrograma = User::where('programa_id', $programa->id)
-            ->with('alumnoB') 
+            ->with('alumnoB')
             ->orderBy('apellidos')
             ->get();
         $alumnosPrograma = $usersPrograma->pluck('alumnoB')->filter();

@@ -15,7 +15,8 @@ class PeriodoActualController extends Controller
 {
     public function index()
     {
-        $periodoactuales = PeriodoActual::all();
+        /* $periodoactuales = PeriodoActual::all(); */
+        $periodoactuales = PeriodoActual::orderBy('nombre', 'asc')->get();
 
         return view('admin.periodos.index', compact('periodoactuales'));
     }
@@ -29,6 +30,7 @@ class PeriodoActualController extends Controller
     {
         $request->validate([
             'nombre' => 'required|string|max:255',
+            'horario' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:4096',
             'fecha_inicio' => 'nullable|date',
             'fecha_cierre' => 'nullable|date|after_or_equal:fecha_inicio',
             'actual' => 'nullable|boolean',
@@ -39,8 +41,19 @@ class PeriodoActualController extends Controller
             PeriodoActual::where('actual', true)->update(['actual' => false]);
         }
 
+        $rutaImagen = null;
+
+        // Guardar imagen si se sube
+        if ($request->hasFile('imagen')) {
+            $archivo = $request->file('imagen');
+            $nombreOriginal = $archivo->getClientOriginalName();
+            $archivo->move(public_path('img/horarios'), $nombreOriginal);
+            $rutaImagen = 'img/horarios/'.$nombreOriginal;
+        }
+
         PeriodoActual::create([
             'nombre' => $request->nombre,
+            'horario' => $rutaImagen,
             'fecha_inicio' => $request->fecha_inicio,
             'fecha_cierre' => $request->fecha_cierre,
             'actual' => $request->has('actual') ? 1 : 0,
@@ -58,6 +71,7 @@ class PeriodoActualController extends Controller
     {
         $request->validate([
             'nombre' => 'required|string|max:255',
+            'horario' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:5096',
             'fecha_inicio' => 'nullable|date',
             'fecha_cierre' => 'nullable|date|after_or_equal:fecha_inicio',
             'actual' => 'nullable|boolean',
@@ -66,9 +80,21 @@ class PeriodoActualController extends Controller
         if ($request->has('actual') && $request->actual) {
             PeriodoActual::where('id', '!=', $periodoactual->id)->update(['actual' => false]);
         }
+        $rutaHorario = $periodoactual->horario;
+        if ($request->hasFile('horario')) {
+            if ($periodoactual->horario && file_exists(public_path($periodoactual->horario))) {
+                unlink(public_path($periodoactual->horario)); // elimina anterior
+            }
+
+            $archivo = $request->file('horario');
+            $nombreOriginal = $archivo->getClientOriginalName();
+            $archivo->move(public_path('img/horarios'), $nombreOriginal);
+            $rutaHorario = 'img/horarios/'.$nombreOriginal;
+        }
 
         $periodoactual->update([
             'nombre' => $request->nombre,
+            'horario' => $rutaHorario,
             'fecha_inicio' => $request->fecha_inicio,
             'fecha_cierre' => $request->fecha_cierre,
             'actual' => $request->has('actual') ? 1 : 0,
@@ -86,7 +112,6 @@ class PeriodoActualController extends Controller
 
     public function crearCalificaciones(PeriodoActual $periodoactual)
     {
-        // Traemos datos desde PeriodoTres con tus condiciones
         $datosPeriodoTres = PeriodoTres::whereHas('alumno.user', function ($query) {
             $query->whereHas('roles', function ($q) {
                 $q->where('name', '!=', 'inhabilitado');
@@ -103,25 +128,22 @@ class PeriodoActualController extends Controller
         foreach ($datosPeriodoTres as $registro) {
             $alumnoId = $registro->alumno_id;
             $cursoId = $registro->curso_id;
-
-            // Verificar duplicados dentro del mismo PeriodoActual
             $existe = Periodo::where('periodo_actual_id', $periodoactual->id)
                 ->where('alumno_id', $alumnoId)
                 ->where('curso_id', $cursoId)
                 ->exists();
 
             if ($existe) {
-                continue; // evita duplicar
+                continue;
             }
 
-            // Crear registro en "periodos"
             Periodo::create([
                 'valoracion_curso' => $registro->valoracion_curso,
                 'calificacion_curso' => $registro->calificacion_curso,
                 'calificacion_sistema' => $registro->calificacion_sistema,
                 'alumno_id' => $alumnoId,
                 'curso_id' => $cursoId,
-                'periodo_actual_id' => $periodoactual->id, // relación directa
+                'periodo_actual_id' => $periodoactual->id,
             ]);
         }
 
@@ -176,14 +198,25 @@ class PeriodoActualController extends Controller
                     : Curso::with('ciclo')->whereIn('id', $pivotIds)->get();
 
                 // 🔴 FILTRAMOS → solo los que tengan calificación en periodo
-                $cursosMostrados = $cursosMostrados->filter(function ($curso) use ($grupoPeriodos) {
+                /* $cursosMostrados = $cursosMostrados->filter(function ($curso) use ($grupoPeriodos) {
                     return $grupoPeriodos->firstWhere('curso_id', $curso->id);
-                })->values();
+                })->values(); */
+                $cursosMostrados = $cursosMostrados
+                    ->filter(function ($curso) use ($grupoPeriodos) {
+                        return $grupoPeriodos->firstWhere('curso_id', $curso->id)
+                            && ! str_contains(strtolower($curso->cc ?? ''), 'extracurricular');
+                    })
+                    ->values();
             } else {
                 // Si no hay pivot, tomamos cursos de los periodos directamente
-                $cursosMostrados = $grupoPeriodos
+                /* $cursosMostrados = $grupoPeriodos
                     ->pluck('curso')
                     ->filter(fn ($c) => $c && $c->id)
+                    ->unique('id')
+                    ->values(); */
+                $cursosMostrados = $grupoPeriodos
+                    ->pluck('curso')
+                    ->filter(fn ($c) => $c && $c->id && ! str_contains(strtolower($c->cc ?? ''), 'extracurricular'))
                     ->unique('id')
                     ->values();
             }
@@ -212,11 +245,8 @@ class PeriodoActualController extends Controller
     public function exportExcel($id)
     {
         $periodoActual = PeriodoActual::findOrFail($id);
-
         [$ciclos, $filas] = $this->getDataForRegistros($id);
-
         $nombreArchivo = 'Calificaciones_'.$periodoActual->nombre.'.csv';
-
         return Excel::download(
             new RegistrosExport($ciclos, $filas),
             $nombreArchivo

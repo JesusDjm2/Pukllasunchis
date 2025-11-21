@@ -13,7 +13,6 @@ return new class extends Migration {
             $table->string('valoracion_curso')->nullable();
             $table->string('calificacion_curso')->nullable();
             $table->string('calificacion_sistema')->nullable();
-
             // Relaciones
             $table->foreignId('alumno_id')->constrained('alumnos')->onDelete('cascade');
             $table->foreignId('curso_id')->constrained('cursos')->onDelete('cascade');

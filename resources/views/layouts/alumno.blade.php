@@ -54,11 +54,19 @@
             </li>
             <hr class="sidebar-divider d-none d-md-block">
             <li class="nav-item">
-                <a class="nav-link collapsed" target="_blank" href="https://sites.google.com/pukllavirtual.edu.pe/bibliotecaeesppuklla/inicio">
+                <a class="nav-link collapsed" target="_blank"
+                    href="{{ route('alumno.formatos') }}">
+                    <i class="fas fa-book-open"></i>
+                    <span>Guías de TI y Tesis</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link collapsed" target="_blank"
+                    href="https://sites.google.com/pukllavirtual.edu.pe/bibliotecaeesppuklla/inicio">
                     <i class="fas fa-book-open"></i>
                     <span>Biblioteca</span>
                 </a>
-            </li> 
+            </li>
             <li class="nav-item">
                 <a class="nav-link collapsed" href="{{ route('index') }}">
                     <i class="fas fa-fw fa-graduation-cap"></i>
@@ -77,6 +85,43 @@
                     <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
                         <i class="fa fa-bars"></i>
                     </button>
+                    @if (isset($periodoActual) && $periodoActual->horario)
+                        <!-- Botón para abrir el modal -->
+                        <div class="text-center mt-2">
+                            <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal"
+                                data-bs-target="#modalHorario">
+                                Ver Horario {{ $periodoActual->nombre }}
+                            </button>
+                        </div>
+
+                        <!-- Modal -->
+                        <div class="modal fade" id="modalHorario" tabindex="-1" aria-labelledby="modalHorarioLabel"
+                            aria-hidden="true">
+                            <div class="modal-dialog modal-xl modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-body text-center bg-light position-relative">
+                                        <button type="button" class="btn btn-danger float-right"
+                                            data-bs-dismiss="modal" aria-label="Cerrar">
+                                            ✕
+                                        </button>
+                                        <img src="{{ asset($periodoActual->horario) }}"
+                                            alt="Horario {{ $periodoActual->nombre }}"
+                                            class="img-fluid rounded shadow">
+                                    </div>
+                                    <div class="modal-footer justify-content-center">
+                                        <button type="button" class="btn btn-secondary btn-sm"
+                                            data-bs-dismiss="modal">Cerrar</button>
+                                        <a href="{{ asset($periodoActual->horario) }}" target="_blank"
+                                            class="btn btn-primary btn-sm">
+                                            Ver en nueva pestaña
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @else
+                        <p>Sin Horario asignado a este periodo</p>
+                    @endif
                     <ul class="navbar-nav ml-auto">
                         <div class="topbar-divider d-none d-sm-block"></div>
                         <li class="nav-item dropdown no-arrow">
@@ -92,7 +137,8 @@
                                                     document.getElementById('logout-form').submit();">
                                     {{ __('Logout') }}
                                 </a>
-                                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                                <form id="logout-form" action="{{ route('logout') }}" method="POST"
+                                    class="d-none">
                                     @csrf
                                 </form>
                             </div>
@@ -105,18 +151,18 @@
                 <div class="container my-auto">
                     <div class="copyright text-center my-auto">
                         <span>Copyright &copy; {{ date('Y') }} | Hecho por <a class="text-primary"
-                                href="https://www.facebook.com/DjmWebMaster" target="_blank" rel="noopener noreferrer">
+                                href="https://www.facebook.com/DjmWebMaster" target="_blank"
+                                rel="noopener noreferrer">
                                 DJM2 </a> | Versión 2025.2</span>
                     </div>
                 </div>
             </footer>
         </div>
-
     </div>
     <a class="scroll-to-top rounded" href="#page-top">
         <i class="fas fa-angle-up"></i>
     </a>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('admin/vendor/jquery/jquery.min.js') }}"></script>
     <script src="{{ asset('admin/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('admin/vendor/jquery-easing/jquery.easing.min.js') }}"></script>

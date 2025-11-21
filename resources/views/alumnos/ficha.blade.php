@@ -48,7 +48,7 @@
 
         }
     </style>
-    <div style="width: 95%; margin: 1em;">
+    <div class="container">
         <div style="width: 100%; ">
             <img src="{{ asset('img/logo-iesp-pukllasunchis.png') }}" width="200px"> <span style="float: right;"><a
                     href="javascript:history.back()" class="btn btn-sm btn-primary">Volver</a></span>

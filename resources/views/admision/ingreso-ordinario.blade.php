@@ -150,11 +150,20 @@
                     </div>
                     <div class="col-lg-5 text-center">
                         <p class="text-center font-weight-bold">¡Inscríbete acá!</p>
-                        <a href="{{-- {{ route('formInscripcionRegular') }} --}}" target="_blank">
-                            <img class="img-fluid" src="{{ asset('img/min/Ficha-de-inscripcion-Pukllasunchis.png') }}"
-                                alt="Ingreso Ordinario" width="200px">
-                        </a>
+
+                        @if ($periodoAdmision)
+                            <a href="{{ route('formInscripcionRegular') }}" target="_blank">
+                                <img class="img-fluid" src="{{ asset('img/min/Ficha-de-inscripcion-Pukllasunchis.png') }}"
+                                    alt="Ingreso Ordinario" width="200px">
+                            </a>
+                        @else
+                            <img class="img-fluid opacity-50"
+                                src="{{ asset('img/min/Ficha-de-inscripcion-Pukllasunchis.png') }}"
+                                alt="Inscripción deshabilitada" width="200px">
+                            <p class="text-danger text-center mt-2">Periodo de admisión cerrado</p>
+                        @endif
                     </div>
+
                 </div>
                 <h3 class="linea-debajo">Requisitos de inscripción:</h3>
                 <p>
@@ -267,10 +276,20 @@
                         </div>
                         <div class="step-content">
                             <h3>Completar el formulario de Inscripción</h3>
-                            <p>Ingresa a nuestro formulario: <a class="text-primary"
-                                    href="{{ route('formInscripcionRegular') }}" target="_blank">Formulario <i
-                                        class="fa fa-external-link fa-sm"></i></a> </p>
-                            <p>Lee atentamente los enunciados e ingresa los datos solicitados</p>
+                            @if ($periodoAdmision)
+                                <p>
+                                    Ingresa a nuestro formulario:
+                                    <a class="text-primary" href="{{ route('formInscripcionRegular') }}" target="_blank">
+                                        Formulario <i class="fa fa-external-link fa-sm"></i>
+                                    </a>
+                                </p>
+                                <p>Lee atentamente los enunciados e ingresa los datos solicitados</p>
+                            @else
+                                <p class="text-danger">
+                                    No nos encontramos en periodo de Admisión.
+                                    <br>Publicaremos próximas fechas de admisión por nuestras redes sociales
+                                </p>
+                            @endif
                         </div>
                     </div>
 

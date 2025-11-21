@@ -1,11 +1,11 @@
 <?php
 
-use App\Http\Controllers\AdminController;
 /* use App\Http\Controllers\Auth\RegisterController; */
-use App\Http\Controllers\Auth\RegisterController;
-use App\Http\Controllers\CalificacionController;
+use App\Http\Controllers\AlumnoController;
 use App\Http\Controllers\EnlacesController;
+use App\Http\Controllers\PpdController;
 use Illuminate\Support\Facades\Route;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 Route::get('/', function () {
     return view('welcome');
@@ -67,6 +67,10 @@ Route::get('informacion/convocatorias', [EnlacesController::class, 'conv'])->nam
 Route::get('informacion/convocatorias-2', [EnlacesController::class, 'conv2'])->name('conv2');
 Route::get('informacion/convocatorias-2', [EnlacesController::class, 'conv2'])->name('conv2');
 
+//Formatos de TI y Tesis
+Route::get('/alumnos/formatos', [AlumnoController::class, 'formatos'])->name('alumno.formatos');
+Route::get('/Formatos-de-TI-y-Tesis', [PpdController::class, 'formatos'])->name('ppd.formatos');
+
 //Videos
 Route::get('La-pulga-aventura', [EnlacesController::class, 'video1'])->name('video1');
 Route::get('luis-pescetti-el-nino-canibal', [EnlacesController::class, 'video2'])->name('video2');
@@ -80,12 +84,19 @@ Route::get('/clear-cache', function () {
     $exitCode = Artisan::call('cache:clear');
     $exitCode = Artisan::call('config:cache');
     $exitCode = Artisan::call('config:clear');
-    $exitCode = Artisan::call('view:clear');    
+    $exitCode = Artisan::call('view:clear');
+
     return 'DONE';
 });
 
+Route::get('/logout', function () {
+    Auth::logout();
+    request()->session()->invalidate();
+    request()->session()->regenerateToken();
 
+    return redirect('/'); // Redirige al inicio
+})->name('logout');
 
-
-
-
+Route::get('/test-419', function () {
+    throw new HttpException(419, 'Página expirada');
+});

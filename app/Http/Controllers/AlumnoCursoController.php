@@ -29,7 +29,7 @@ class AlumnoCursoController extends Controller
 
         // Cursos ya asignados del alumno que NO son del ciclo actual
         $otrosCursosAsignados = $alumno->cursos
-            ->filter(fn($curso) => $curso->ciclo_id != $alumno->ciclo_id)
+            ->filter(fn ($curso) => $curso->ciclo_id != $alumno->ciclo_id)
             ->values();
 
         return view('admin.curso.asignarcursos.asignacion', compact(
@@ -47,7 +47,7 @@ class AlumnoCursoController extends Controller
         $cursoIds = $request->input('cursos', []);
 
         $validos = Curso::whereIn('id', $cursoIds)
-            ->whereHas('ciclo', fn($q) => $q->where('programa_id', $alumno->programa_id))
+            ->whereHas('ciclo', fn ($q) => $q->where('programa_id', $alumno->programa_id))
             ->pluck('id')
             ->toArray();
 
@@ -55,7 +55,9 @@ class AlumnoCursoController extends Controller
 
         return redirect()
             ->route('admin', $alumnoId)
-            ->with('success', 'Cursos actualizados correctamente para ' . $alumno->user->name);
+            ->with('success', 'Cursos actualizados correctamente para '.$alumno->user->name);
     }
 
+    //sCOPES DE ALUMNOS:
+    
 }

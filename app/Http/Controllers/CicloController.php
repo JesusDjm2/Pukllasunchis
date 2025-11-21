@@ -13,24 +13,13 @@ use Illuminate\Validation\Rule;
 
 class CicloController extends Controller
 {
-
     public function index()
     {
         $ciclos = Ciclo::whereIn('programa_id', [1, 2, 3, 4, 5])->get();
-
         foreach ($ciclos as $ciclo) {
-            $alumnos = $ciclo->alumnos()
+            $alumnos = $ciclo->alumnos()               
                 ->whereHas('user', function ($query) {
-                    $query->where(function ($q) {
-                        $q->whereDoesntHave('roles', function ($roleQuery) {
-                            $roleQuery->where('name', 'inhabilitado');
-                        })
-                            ->orWhere(function ($subQuery) {
-                                $subQuery->whereHas('roles', function ($roleQuery) {
-                                    $roleQuery->where('name', 'inhabilitado');
-                                })->where('perfil', 'Licencia');
-                            });
-                    });
+                    $query->where('perfil', '!=', 'Sin matrícula');
                 })
                 ->orderBy('apellidos')
                 ->get();
@@ -50,13 +39,8 @@ class CicloController extends Controller
                 })
                 ->orderBy('apellidos')
                 ->get();
-
-
-            // Si necesitas usarlos en la vista, puedes agregarlos al modelo
             $ciclo->alumnos_validos = $alumnos;
             $ciclo->alumnos_b_validos = $alumnosB;
-
-            // O contar directamente si solo necesitas la cantidad:
             $ciclo->alumnos_validos_count = $alumnos->count();
             $ciclo->alumnos_b_validos_count = $alumnosB->count();
         }
@@ -64,18 +48,10 @@ class CicloController extends Controller
         return view('admin.ciclo.index', compact('ciclos'));
     }
 
-
-    /* public function index()
-    {
-        $ciclos = Ciclo::withCount(['alumnos', 'alumnosB'])
-            ->whereIn('programa_id', [1, 2, 3, 4, 5])
-            ->get();
-        return view('admin.ciclo.index', compact('ciclos'));
-    } */
-
     public function create()
     {
         $programas = Programa::all();
+
         return view('admin.ciclo.create', compact('programas'));
     }
 
@@ -90,24 +66,15 @@ class CicloController extends Controller
             ],
             'programa_id' => 'required|exists:programas,id',
         ]);
-
         Ciclo::create($request->all());
+
         return redirect()->route('ciclo.index')->with('success', 'Ciclo creado exitosamente');
     }
-    /* public function show(Ciclo $ciclo)
-    {
-        $alumnos = $ciclo->alumnos()->orderBy('apellidos')->get();
-        $alumnosB = $ciclo->alumnosB()->orderBy('apellidos')->get();
-        $ciclosDisponibles = Ciclo::where('programa_id', $ciclo->programa_id)
-            ->get();
-        $cantidadAlumnos = $alumnos->count();
-        $cursosConDocentes = $ciclo->cursos()->with('docentes')->get();
-        return view('admin.ciclo.show', compact('ciclo', 'alumnos', 'cantidadAlumnos', 'ciclosDisponibles', 'alumnosB', 'cursosConDocentes'));
-    } */
+
     public function show(Ciclo $ciclo)
     {
         $alumnos = $ciclo->alumnos()
-            ->whereHas('user', function ($query) {
+            /* ->whereHas('user', function ($query) {
                 $query->where(function ($q) {
                     $q->whereDoesntHave('roles', function ($roleQuery) {
                         $roleQuery->where('name', 'inhabilitado');
@@ -118,6 +85,9 @@ class CicloController extends Controller
                             })->whereNotIn('perfil', ['sin_matricula', 'reserva']);
                         });
                 });
+            }) */
+            ->whereHas('user', function ($query) {
+                $query->where('perfil', '!=', 'Sin matrícula');
             })
             ->orderBy('apellidos')
             ->get();
@@ -137,23 +107,6 @@ class CicloController extends Controller
             })
             ->orderBy('apellidos')
             ->get();
-
-        /* $alumnosB = $ciclo->alumnosB()
-            ->whereHas('user', function ($query) {
-                $query->where(function ($q) {
-                    $q->whereDoesntHave('roles', function ($roleQuery) {
-                        $roleQuery->where('name', 'inhabilitado');
-                    })
-                        ->orWhere(function ($subQuery) {
-                            $subQuery->whereHas('roles', function ($roleQuery) {
-                                $roleQuery->where('name', 'inhabilitado');
-                            })->whereNotIn('perfil', ['sin_matricula', 'reserva']);
-                        });
-                });
-            })
-            ->orderBy('apellidos')
-            ->get(); */
-
 
         $ciclosDisponibles = Ciclo::where('programa_id', $ciclo->programa_id)->get();
         $cantidadAlumnos = $alumnos->count();
@@ -204,15 +157,15 @@ class CicloController extends Controller
         }
 
         // Actualizar ciclo_id solo para los usuarios válidos
-        if (!empty($usuariosValidos)) {
+        if (! empty($usuariosValidos)) {
             User::whereIn('id', $usuariosValidos)->update(['ciclo_id' => $nuevoCicloId]);
         }
 
-        if (!empty($alumnosNormalesIds)) {
+        if (! empty($alumnosNormalesIds)) {
             Alumno::whereIn('id', $alumnosNormalesIds)->update(['ciclo_id' => $nuevoCicloId]);
         }
 
-        if (!empty($alumnosPpdIds)) {
+        if (! empty($alumnosPpdIds)) {
             ppd::whereIn('id', $alumnosPpdIds)->update(['ciclo_id' => $nuevoCicloId]);
         }
 
@@ -223,13 +176,12 @@ class CicloController extends Controller
         return redirect()->back()->with('success', 'Ciclo actualizado exitosamente para los alumnos válidos.');
     }
 
-
-
     public function edit(Ciclo $ciclo)
     {
         $ciclo->load('programa');
         $programas = Programa::all();
         $proyectos = Proyecto::all();
+
         return view('admin.ciclo.edit', compact('ciclo', 'programas', 'proyectos'));
     }
 
@@ -248,9 +200,8 @@ class CicloController extends Controller
         /* if ($request->proyecto_id) {
             $ciclo->proyectos()->sync([$request->proyecto_id]);
         } else {
-            $ciclo->proyectos()->detach(); 
+            $ciclo->proyectos()->detach();
         } */
-
 
         return redirect()->route('ciclo.index')->with('success', 'Ciclo actualizado exitosamente');
     }

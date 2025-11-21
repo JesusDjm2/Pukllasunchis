@@ -33,6 +33,7 @@
                     <tr>
                         <th>ID</th>
                         <th>Nombre</th>
+                        <th>Horario</th>
                         <th>Fecha de Inicio</th>
                         <th>Fecha de Cierre</th>
                         <th>Actual</th>
@@ -44,6 +45,14 @@
                         <tr>
                             <td>{{ $p->id }}</td>
                             <td>{{ $p->nombre }}</td>
+                            <td>
+                                @if ($p->horario)
+                                    <img src="{{ asset($p->horario) }}" alt="Horario {{ $p->nombre }}"
+                                        class="img-thumbnail" width="100">
+                                @else
+                                    <span class="text-muted">Sin imagen</span>
+                                @endif
+                            </td>
                             <td>{{ $p->fecha_inicio ? \Carbon\Carbon::parse($p->fecha_inicio)->format('d/m/Y') : '-' }}</td>
                             <td>{{ $p->fecha_cierre ? \Carbon\Carbon::parse($p->fecha_cierre)->format('d/m/Y') : '-' }}</td>
                             <td>
@@ -53,10 +62,12 @@
                                     <span class="badge badge-secondary">No</span>
                                 @endif
                             </td>
+
                             <td>
                                 <a href="{{ route('periodoactual.edit', $p) }}" class="btn btn-sm btn-primary">
                                     Editar <small><i class="fa fa-pen"></i></small>
                                 </a>
+
                                 <form action="{{ route('periodoactual.destroy', $p) }}" method="POST"
                                     style="display:inline-block;">
                                     @csrf
@@ -66,21 +77,34 @@
                                         Eliminar <small><i class="fa fa-trash"></i></small>
                                     </button>
                                 </form>
-                                @if ($p->periodos->isEmpty())
-                                    <form action="{{ route('periodoactual.crearCalificaciones', $p->id) }}" method="POST"
-                                        style="display:inline-block;">
-                                        @csrf
-                                        <button type="submit" class="btn btn-sm btn-success shadow-sm">
-                                            Crear calificaciones <small><i class="fa fa-book fa-sm"></i></small>
-                                        </button>
-                                    </form>
+
+                                @if ($p->actual)
+                                    {{-- Solo si es el periodo actual --}}
+                                    @if ($p->periodos->isEmpty())
+                                        <form action="{{ route('periodoactual.crearCalificaciones', $p->id) }}"
+                                            method="POST" style="display:inline-block;">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-success shadow-sm">
+                                                Crear calificaciones <small><i class="fa fa-book fa-sm"></i></small>
+                                            </button>
+                                        </form>
+                                    @else
+                                        <a href="{{ route('periodoactual.showRegistros', $p->id) }}"
+                                            class="btn btn-sm btn-info shadow-sm">
+                                            Ver registros <small><i class="fa fa-list"></i></small>
+                                        </a>
+                                    @endif
                                 @else
-                                    <a href="{{ route('periodoactual.showRegistros', $p->id) }}"
-                                        class="btn btn-sm btn-info shadow-sm">
-                                        Ver registros <small><i class="fa fa-list"></i></small>
-                                    </a>
+                                    {{-- Si no es el periodo actual, solo mostrar Ver registros (si existen) --}}
+                                    @if (!$p->periodos->isEmpty())
+                                        <a href="{{ route('periodoactual.showRegistros', $p->id) }}"
+                                            class="btn btn-sm btn-info shadow-sm">
+                                            Ver registros <small><i class="fa fa-list"></i></small>
+                                        </a>
+                                    @endif
                                 @endif
                             </td>
+
                         </tr>
                     @empty
                         <tr>

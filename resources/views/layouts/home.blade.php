@@ -98,10 +98,12 @@
                                                 </a>
                                             </li>
                                         @elseif ($user->hasRole('adminB'))
-                                            <li><a href="{{ route('trabajo.index') }}"> <i class="fa fa-download"></i> Intranet</a>
+                                            <li><a href="{{ route('trabajo.index') }}"> <i class="fa fa-download"></i>
+                                                    Intranet</a>
                                             </li>
                                         @elseif ($user->hasRole('alumnoB'))
-                                            <li><a href="{{ route('ppd.index') }}"> <i class="fa fa-download"></i> Intranet</a>
+                                            <li><a href="{{ route('ppd.index') }}"> <i class="fa fa-download"></i>
+                                                    Intranet</a>
                                             </li>
                                         @elseif ($user->hasRole('alumno'))
                                             <li><a href="{{ route('alumnos.index') }}"> <i class="fa fa-download"></i>
@@ -115,7 +117,8 @@
                                             </li>
                                         @endif
                                     @else
-                                        <li><a href="{{ route('login') }}"> <i class="fa fa-download"></i> Intranet</a></li>
+                                        <li><a href="{{ route('login') }}"> <i class="fa fa-download"></i> Intranet</a>
+                                        </li>
                                     @endauth
                                     {{-- <li><a href="{{ route('login') }}" class="text-uppercase"><i
                                                 class="fa fa-download"></i>
@@ -134,10 +137,12 @@
                                                 </a>
                                             </li>
                                         @elseif ($user->hasRole('adminB'))
-                                            <li><a href="{{ route('trabajo.index') }}"> <i class="fa fa-user"></i> Matrícula</a>
+                                            <li><a href="{{ route('trabajo.index') }}"> <i class="fa fa-user"></i>
+                                                    Matrícula</a>
                                             </li>
                                         @elseif ($user->hasRole('alumnoB'))
-                                            <li><a href="{{ route('ppd.index') }}"> <i class="fa fa-user"></i> Matrícula</a>
+                                            <li><a href="{{ route('ppd.index') }}"> <i class="fa fa-user"></i>
+                                                    Matrícula</a>
                                             </li>
                                         @elseif ($user->hasRole('alumno'))
                                             <li><a href="{{ route('alumnos.index') }}"> <i class="fa fa-user"></i>
@@ -206,7 +211,7 @@
                                                 <li><a href="{{ route('Ttraslado') }}">Traslado</a></li>
                                                 <li><a href="{{ route('licencia') }}">Licencia de estudios</a></li>
                                                 <li><a href="{{ route('partes') }}">Mesa de partes</a></li>
-                                                <li><a href="{{ asset('pdf/TUPA-EESPP-2025-2-08022024.pdf') }}" 
+                                                <li><a href="{{ asset('pdf/TUPA-EESPP-2025-2-08022024.pdf') }}"
                                                         target="_blank">Pagos (TUPA)</a></li>
                                             </ul>
                                         </li>
@@ -370,7 +375,6 @@
                 </div>
             </div>
         </div>
-
         {{-- <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
             aria-hidden="true">
             <div class="modal-dialog modal-lg" role="document">
@@ -386,20 +390,33 @@
             </div>
         </div> --}}
 
-
         <script>
             document.addEventListener("DOMContentLoaded", function() {
-                // Función para mostrar el pop-up
                 function mostrarComunicado() {
                     $('#exampleModal').modal('show');
                 }
-
-                // Mostrar el pop-up después de 2 segundos (2000 milisegundos) al cargar la página
                 setTimeout(mostrarComunicado, 2000);
             });
         </script>
+    </footer>    
 
-    </footer>
+    <script>
+        var botmanWidget = {
+            title: "Asistente EESP Pukllasunchis 🎓",
+            introMessage: "👋 ¡Hola! Soy el asistente virtual de la EESP Pukllasunchis.",
+            mainColor: "#c78e41", // Color principal
+            bubbleBackground: "transparent", // Color de la burbuja flotante
+            headerTextColor: "#fff", // Color del texto del header
+            aboutText: "ChatBot Institucional",
+            placeholderText: "Escribe tu pregunta...",
+            desktopHeight: 500, 
+            desktopWidth: 350, 
+            bubbleAvatarUrl: "{{ asset('img/PukllaBot.png') }}",
+        };
+    </script>
+    <script src="{{ asset('js/botman.js') }}"></script>
+
+
     <script src="{{ asset('js/vendor/modernizr-3.5.0.min.js') }}"></script>
     <script src="{{ asset('js/vendor/jquery-1.12.4.min.js') }}"></script>
     <script src="{{ asset('js/popper.min.js') }}"></script>

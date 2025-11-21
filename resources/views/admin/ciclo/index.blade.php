@@ -37,7 +37,6 @@
                                 @php
                                     $totalAlumnos = 0;
                                 @endphp
-
                                 @foreach ($ciclos as $ciclo)
                                     @if ($ciclo->programa->id == $programaId)
                                         <div class="col-lg-2">

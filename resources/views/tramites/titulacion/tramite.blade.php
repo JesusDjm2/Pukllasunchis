@@ -43,16 +43,13 @@
             font-weight: bold;
             margin-bottom: 15px;
         }
-
         .modal-body {
             font-size: 14px;
             margin-bottom: 15px;
         }
-
         .modal-body li {
             margin-bottom: 12px;
         }
-
         .modal-body .span {
             background: #cd9244;
             border-radius: 50%;
@@ -61,7 +58,6 @@
             margin-right: 5px;
             position: relative;
         }
-
         .modal-body .span::after {
             content: '';
             display: block;
@@ -163,9 +159,7 @@
                                         <li>Una fotocopia de DNI ampliado y legalizado. </li>
                                         <li>Partida de nacimiento original.</li>
                                         <li>Certificado de estudios de secundaria original.
-											<ul>
-												· Si este documento ya está en tu expediente de ingreso, no es necesario volver a presentarlo.
-											</ul>
+											
 										</li>
                                         <li>8 Fotos tamaño pasaporte fondo blanco en papel mate.</li>
                                         <li>Documento que acredite conocimiento de idioma A2/ lengua originaria primaria EIB
@@ -241,7 +235,7 @@
                                     <h5>Documentos externos a presentar en la Institución: </h5>
                                     <ul class="listanueva">
                                         <li>Una fotocopia de DNI ampliado y legalizado. </li>                                        
-                                        <li>Cuatro (4) Fotos tamaño pasaporte fondo blanco en papel mate.</li>
+                                        <li>Cuatro (4) Fotos tamaño pasaporte fondo blanco, con terno y en papel mate, medidas: 4cm x 5cm.</li>
                                         <li>Documento que acredite conocimiento de idioma A2/ lengua originaria primaria EIB
                                         </li>
                                     </ul>
@@ -268,8 +262,10 @@
                                                 <li style="list-style: disc!important">Para estudiantes provenientes de Institutos (IESP): Certificado
                                                     de Estudios original, visado por la DREC.
                                                 </li>
-                                                <li style="list-style: disc!important">Para estudiantes provenientes de Universidad. Legalizado por notaria o
-                                                    Fedatado por la misma Universidad.</li>
+                                                <li style="list-style: disc!important">Para estudiantes provenientes de Universidad. Legalizado por notaria oFedatado por la misma Universidad.</li>
+												<li style="list-style: disc!important">
+												Si este documento ya está en tu expediente de ingreso, no es necesario volver a presentarlo.
+											</li>
                                             </ul>
                                         </li>
                                         <li>Resolución Directoral de Aprobación de PTI y asignación de asesor original.
@@ -424,7 +420,7 @@
                 </li>
                 <li><span class="span">2</span>
                     Indicar el concepto y código de pago.<a class="text-primary" target="_blank"
-                        href="{{ asset('pdf/Conceptos-ordinarios-caja-cusco-2025.pdf') }}"> Ver PDF para
+                        href="{{ asset('pdf/Concepto-de-pagos-caja-Cusco-Pukllasunchis-2025-II-2.pdf') }}"> Ver PDF para
                         pagos<small><i class="fa fa-eye"></i></small></a>
                 </li>
                 <li><span class="span">3</span>

@@ -19,57 +19,19 @@
                             @endif
                         </div>
                         <div class="card-body">
-                            <form action="{{ route('regulares.update', $postulante->id) }}" method="POST" enctype="multipart/form-data">
+                            <form action="{{ route('regulares.update', $postulante->id) }}" method="POST"
+                                enctype="multipart/form-data">
                                 @csrf
                                 @method('PUT')
                                 <div class="container mt-3">
-                                    <ul class="nav nav-tabs nav-pills nav-justified flex-column flex-sm-row" id="myTab"
-                                        role="tablist">
-                                        <li class="nav-item">
-                                            <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home"
-                                                role="tab" aria-controls="home" aria-selected="true">Datos
-                                                Personales</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile"
-                                                role="tab" aria-controls="profile"
-                                                aria-selected="false">Entidad Educativa y trabajo</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" id="contact-tab" data-toggle="tab" href="#contact"
-                                                role="tab" aria-controls="contact"
-                                                aria-selected="false">Documentos Adjuntos</a>
-                                        </li>
-                                        </li>
-                                    </ul>
-                                    <div class="tab-content mt-2">
-                                        <div class="tab-pane fade show active" id="home" role="tabpanel"
-                                            aria-labelledby="home-tab">
-                                            @include('alumnos.postulantes.regulares.campos.datos-personales-edit')
-                                            <div class="mt-4">
-                                                <button type="button" class="btn btn-primary mt-4 next-tab"
-                                                    data-tab="profile">Siguiente</button>
-                                            </div>
-                                        </div>
-                                        <div class="tab-pane fade" id="profile" role="tabpanel"
-                                            aria-labelledby="profile-tab">
-                                            @include('alumnos.postulantes.regulares.campos.colegio-edit')
-                                            <div class="mt-4">
-                                                <button type="button" class="btn btn-secondary mt-4 prev-tab"
-                                                    data-tab="home">Anterior</button>
-                                                <button type="button" class="btn btn-primary mt-4 next-tab"
-                                                    data-tab="contact">Siguiente</button>
-                                            </div>
-                                        </div>
-                                        <div class="tab-pane fade" id="contact" role="tabpanel"
-                                            aria-labelledby="contact-tab">
-                                            @include('alumnos.postulantes.regulares.campos.documentos-edit')
-                                            <button type="button" class="btn btn-secondary mt-4 prev-tab"
-                                                data-tab="profile">Anterior</button>
-                                            <button type="button" class="btn btn-primary mt-4 next-tab"
-                                                data-tab="socioeconomico">Siguiente</button>
-                                        </div>                                                                            
-                                    </div>
+                                    <h3 style="color: #c78d40; font-weight: 500; font-size: 24px;">Datos Personales:</h3>
+                                    @include('alumnos.postulantes.regulares.campos.datos-personales-edit')
+                                    <h3 class="mt-4" style="color: #c78d40; font-weight: 500; font-size: 24px;">Entidad
+                                        Educativa:</h3>
+                                    @include('alumnos.postulantes.regulares.campos.colegio-edit')
+                                    <h3 class="mt-4" style="color: #c78d40; font-weight: 500; font-size: 24px;">Documentos
+                                        adjuntos:</h3>
+                                    @include('alumnos.postulantes.regulares.campos.documentos-edit')
                                     <div>
                                         <button style="float:right; position: relative; bottom: 3em" type="submit"
                                             class="btn btn-primary mt-3">Actualizar</button>
@@ -83,6 +45,7 @@
         </div>
         <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 
+      
         <script>
             $(document).ready(function() {
                 // Función para avanzar al siguiente tab

@@ -42,34 +42,6 @@
         @enderror
     </div>
     
-    {{-- <div class="form-group col-lg-4 mb-3">
-        <label for="declaracion_jurada_salud_pdf">Declaración Jurada de Salud (PDF):</label>
-        <input type="file"
-            class="form-control form-control-sm @error('declaracion_jurada_salud_pdf') is-invalid @enderror"
-            id="declaracion_jurada_salud_pdf" name="declaracion_jurada_salud_pdf" accept=".pdf">
-        @error('declaracion_jurada_salud_pdf')
-            <div class="invalid-feedback">{{ $message }}</div>
-        @enderror
-    </div> --}}
-    {{-- <div class="form-group col-lg-4 mb-3">
-        <label for="declaracion_jurada_documentos_pdf">Declaración Jurada de Documentos (PDF):</label>
-        <input type="file"
-            class="form-control form-control-sm @error('declaracion_jurada_documentos_pdf') is-invalid @enderror"
-            id="declaracion_jurada_documentos_pdf" name="declaracion_jurada_documentos_pdf" accept=".pdf">
-        @error('declaracion_jurada_documentos_pdf')
-            <div class="invalid-feedback">{{ $message }}</div>
-        @enderror
-    </div> --}}
-    {{-- <div class="form-group col-lg-4 mb-3">
-        <label for="declaracion_jurada_conectividad_pdf">Declaración Jurada de Conectividad (PDF):</label>
-        <input type="file"
-            class="form-control form-control-sm @error('declaracion_jurada_conectividad_pdf') is-invalid @enderror"
-            id="declaracion_jurada_conectividad_pdf" name="declaracion_jurada_conectividad_pdf" accept=".pdf">
-        @error('declaracion_jurada_conectividad_pdf')
-            <div class="invalid-feedback">{{ $message }}</div>
-        @enderror
-    </div> --}}
-    
     <div class="form-group col-lg-12 mb-3 mt-2">
         <div class="form-check">
             <input class="form-check-input @error('declaracion_veracidad') is-invalid @enderror" type="checkbox"

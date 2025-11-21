@@ -20,7 +20,7 @@
     <div class="form-group col-lg-4 mb-3">
         <label for="voucher_pago">Voucher de Pago (JPG, PNG o PDF): <span class="text-danger">*</span></label>
         <input type="file" class="form-control form-control-sm @error('voucher_pago') is-invalid @enderror"
-            id="voucher_pago" name="voucher_pago" accept=".jpg,.jpeg,.png,.pdf" {{ $postulante->voucher_pago ? '' : 'required' }}>
+            id="voucher_pago" name="voucher_pago" accept=".jpg,.jpeg,.png,.pdf" {{ $postulante->voucher_pago }}>
         @error('voucher_pago')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror

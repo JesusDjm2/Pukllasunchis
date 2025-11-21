@@ -9,7 +9,6 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 class RegistrosExport implements FromCollection, WithCustomCsvSettings, WithHeadings
 {
     protected $ciclos;
-
     protected $filas;
 
     public function __construct($ciclos, $filas)
@@ -26,6 +25,8 @@ class RegistrosExport implements FromCollection, WithCustomCsvSettings, WithHead
             $alumno = $entry['alumno'];
             $cursos = $entry['cursos'];
             $periodosAlumno = $entry['periodos'];
+
+            $cursos = $cursos->filter(fn($curso) => ! str_contains(strtolower($curso->cc ?? ''), 'extracurricular'));
 
             foreach ($cursos as $curso) {
                 $periodo = $periodosAlumno->firstWhere('curso_id', $curso->id);

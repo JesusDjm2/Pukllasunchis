@@ -8,8 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Periodo extends Model
 {
     use HasFactory;
-    protected $fillable = [
-        
+    protected $fillable = [        
         'valoracion_curso',
         'calificacion_curso',
         'calificacion_sistema',

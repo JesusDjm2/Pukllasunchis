@@ -8,12 +8,10 @@
                 <button class="btn btn-success mb-2 btn-sm" id="btnFID">Mostrar cursos FID</button>
                 <button class="btn btn-primary mb-2 btn-sm" id="btnPPD">Mostrar cursos PPD</button>
             </div>
-
             <a href="{{ route('vistaDocente', $docente->id) }}"
                 class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm float-right">
                 Volver
             </a>
-
         </div>
         <div class="row bg-white">
             <div class="col-12">
@@ -86,31 +84,10 @@
                                                     id="calificar-btn-{{ $curso->id }}">
                                                     Calificar
                                                 </button>
-                                            @endif
-                                            {{-- @if ($curso->competencias->count() <= 3)
-                                                <button type="submit" class="btn btn-primary btn-sm float-right"
-                                                    id="calificar-btn-{{ $curso->id }}">
-                                                    Calificar
-                                                </button>
-                                            @endif --}}
+                                            @endif                                            
                                         </form>
                                     </td>
-                                    <td>
-                                        {{-- @if ($curso->competenciasSeleccionadas->isNotEmpty())
-                                            <form
-                                                action="{{ route('competencias.calificar', ['docente' => $docente->id, 'curso' => $curso->id]) }}"
-                                                method="POST">
-                                                @csrf
-                                                <ul>
-                                                    @foreach ($curso->competenciasSeleccionadas as $competencia)
-                                                        <li>{{ $competencia->nombre }}</li>
-                                                        <input type="hidden" name="competencias[]"
-                                                            value="{{ $competencia->id }}">
-                                                    @endforeach
-                                                </ul>
-                                                <button type="submit" class="btn btn-primary btn-sm">Calificar</button>
-                                            </form>
-                                        @endif --}}
+                                    <td>                                        
                                         @if ($curso->competenciasSeleccionadas->isNotEmpty() && $mostrarBoton)
                                             <form
                                                 action="{{ route('competencias.calificar', ['docente' => $docente->id, 'curso' => $curso->id]) }}"

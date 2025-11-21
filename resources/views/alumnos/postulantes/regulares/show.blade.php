@@ -82,12 +82,16 @@
                                                 <td>{{ $postulante->lugar_nacimiento }}</td>
                                             </tr>
                                             <tr>
-                                                <th>Departamento de Nacimiento</th>
-                                                <td>{{ $nombre_departamento }}</td>
+                                                <th>Número de Hijos</th>
+                                                <td>{{ $postulante->num_hijos ?? 'N/A' }}</td>
                                             </tr>
                                             <tr>
-                                                <th>Provincia de Nacimiento</th>
-                                                <td>{{ $nombre_provincia }}</td>
+                                                <th>Estado Civil</th>
+                                                <td>{{ ucfirst($postulante->estado_civil ?? 'N/A') }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Departamento de Nacimiento</th>
+                                                <td>{{ $postulante->departamento_nacimiento }}</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -98,25 +102,30 @@
                                 <div class="table-responsive">
                                     <table class="table table-bordered tabla-sin-eventos">
                                         <tbody>
+                                            
+                                            <tr>
+                                                <th>Provincia de Nacimiento</th>
+                                                <td>{{ $postulante->provincia_nacimiento }}</td>
+                                            </tr>
                                             <tr>
                                                 <th>Distrito de Nacimiento</th>
-                                                <td>{{ $nombre_distrito }}</td>
+                                                <td>{{ $postulante->distrito_nacimiento }}</td>
                                             </tr>
                                             <tr>
                                                 <th>Primera Lengua</th>
                                                 <td>{{ $postulante->lengua_1 }}</td>
                                             </tr>
                                             <tr>
-                                                <th>Estado Civil</th>
-                                                <td>{{ ucfirst($postulante->estado_civil ?? 'N/A') }}</td>
-                                            </tr>
-                                            <tr>
                                                 <th>Segunda Lengua</th>
                                                 <td>{{ $postulante->lengua_2 }}</td>
                                             </tr>
                                             <tr>
-                                                <th>Número de Hijos</th>
-                                                <td>{{ $postulante->num_hijos ?? 'N/A' }}</td>
+                                                <th>Nivel de Quechua Escrito</th>
+                                                <td>{{ $postulante->nivel_quechua_hablado ?? '—' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Nivel de Quechua Hablado</th>
+                                                <td>{{ $postulante->nivel_quechua_escrito ?? '—' }}</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -136,33 +145,34 @@
                                     <tr>
                                         <th>Colegio</th>
                                         <td>{{ $postulante->colegio }}</td>
+                                        <th>Gestión</th>
+                                        <td>{{ ucfirst($postulante->gestion_colegio) }}</td>
                                         <th>Código del Colegio</th>
                                         <td>{{ $postulante->codigo_colegio }}</td>
                                     </tr>
                                     <tr>
-                                        <th>Gestión</th>
-                                        <td>{{ ucfirst($postulante->gestion_colegio) }}</td>
+
                                         <th>Dirección del Colegio</th>
-                                        <td>{{ $postulante->direccion_colegio ?? 'N/A' }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Distrito Colegio</th>
-                                        <td>{{ $postulante->distrito_colegio ?? 'N/A' }}</td>
-                                        <th>Provincia Colegio</th>
-                                        <td>{{ $postulante->provincia_colegio ?? 'N/A' }}</td>
+                                        <td colspan="5">{{ $postulante->direccion_colegio ?? 'N/A' }}</td>
                                     </tr>
                                     <tr>
                                         <th>Departamento Colegio</th>
                                         <td>{{ $postulante->departamento_colegio ?? 'N/A' }}</td>
-                                        <th>Año de Término</th>
-                                        <td>{{ $postulante->ano_termino_colegio ?? 'N/A' }}</td>
+                                        <th>Distrito Colegio</th>
+                                        <td>{{ $postulante->distrito_colegio ?? 'N/A' }}</td>
+                                        <th>Provincia Colegio</th>
+                                        <td>{{ $postulante->provincia_colegio ?? 'N/A' }}</td>
+
                                     </tr>
                                     <tr>
+                                        <th>Año de Término</th>
+                                        <td>{{ $postulante->ano_termino_colegio ?? 'N/A' }}</td>
                                         <th>Promedio</th>
                                         <td>{{ $postulante->promedio_colegio ?? 'N/A' }}</td>
                                         <th>¿Trabajas?</th>
                                         <td>{{ $postulante->trabajas ? 'Sí' : 'No' }}</td>
                                     </tr>
+
                                     <tr>
                                         <th>Dónde Trabajas</th>
                                         <td>{{ $postulante->donde_trabajas ?? 'N/A' }}</td>
@@ -170,8 +180,8 @@
                                         <td>{{ $postulante->cargo_trabajas ?? 'N/A' }}</td>
                                     </tr>
                                     <tr>
-                                        <th>Describe tu EESP</th>
-                                        <td colspan="3">{{ $postulante->describe_eespp }}</td>
+                                        <th>Descripción de EESP</th>
+                                        <td colspan="5">{{ $postulante->describe_eespp }}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -230,38 +240,7 @@
                                                 @endif
                                             </td>
                                         </tr>
-                                        <tr>
-                                            <th>Declaración Jurada de Salud</th>
-                                            <td>
-                                                @if ($postulante->declaracion_jurada_salud_pdf)
-                                                    <a href="{{ asset($postulante->declaracion_jurada_salud_pdf) }}"
-                                                        target="_blank">Ver Documento</a>
-                                                @else
-                                                    <em>*Sin archivo adjunto*</em>
-                                                @endif
-                                            </td>
-                                            <th>Declaración Jurada de Documentos</th>
-                                            <td>
-                                                @if ($postulante->declaracion_jurada_documentos_pdf)
-                                                    <a href="{{ asset($postulante->declaracion_jurada_documentos_pdf) }}"
-                                                        target="_blank">Ver Documento</a>
-                                                @else
-                                                    <em>*Sin archivo adjunto*</em>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <th>Declaración Jurada de Conectividad</th>
-                                            <td>
-                                                @if ($postulante->declaracion_jurada_conectividad_pdf)
-                                                    <a href="{{ asset($postulante->declaracion_jurada_conectividad_pdf) }}"
-                                                        target="_blank">Ver Documento</a>
-                                                @else
-                                                    <em>*Sin archivo adjunto*</em>
-                                                @endif
-                                            </td>
 
-                                        </tr>
                                     </tbody>
                                 </table>
                             </div>

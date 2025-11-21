@@ -4,21 +4,21 @@ namespace App\Http\Controllers;
 
 use App\Mail\NotificacionRegistro;
 use App\Models\Alumno;
-use App\Models\Calificacion;
 use App\Models\Ciclo;
+use App\Models\PeriodoActual;
 use App\Models\ppd;
 use App\Models\Programa;
-use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Schema;
 
 class AlumnoController extends Controller
 {
     public function index(Request $request)
     {
-        if (!auth()->check()) {
+        if (! auth()->check()) {
             return redirect()->route('login');
         }
 
@@ -27,16 +27,20 @@ class AlumnoController extends Controller
         if ($alumno) {
             $usuario = $alumno->user;
             $alumno->load('programa', 'ciclo.cursos.docentes');
+            // Obtener el periodo actual marcado como "actual"
+            $periodoActual = PeriodoActual::where('actual', true)->first();
 
-            return view('alumnos.vistasAlumnos.index', compact('alumno', 'usuario'));
+            return view('alumnos.vistasAlumnos.index', compact('alumno', 'usuario', 'periodoActual'));
         } else {
             return view('alumnos.vistasAlumnos.index');
         }
     }
+
     public function ficha(Alumno $alumno)
     {
         return view('alumnos.ficha', compact('alumno'));
     }
+
     public function mostrarContenido(Request $request)
     {
         $request->validate([
@@ -48,12 +52,12 @@ class AlumnoController extends Controller
 
         if ($user->hasRole('alumno')) {
             $alumno = Alumno::find($alumno_id);
-            if (!$alumno) {
+            if (! $alumno) {
                 return redirect()->back()->with('error', 'Alumno no encontrado.');
             }
         } elseif ($user->hasRole('alumnoB')) {
             $alumno = ppd::find($alumno_id);
-            if (!$alumno) {
+            if (! $alumno) {
                 return redirect()->back()->with('error', 'AlumnoB no encontrado.');
             }
         } else {
@@ -63,25 +67,30 @@ class AlumnoController extends Controller
         session(['mostrar_contenido' => true]);
         Mail::to([
             'davidmiranda.puk@gmail.com',
-            'cobranzas.eesp@pukllavirtual.edu.pe'
+            'cobranzas.eesp@pukllavirtual.edu.pe',
         ])
             ->send(new NotificacionRegistro($alumno));
 
         return redirect()->back()->with('success', 'Correo enviado correctamente.');
     }
+
     public function create()
     {
         $programas = Programa::all();
         $ciclos = Ciclo::all();
         $user = auth()->user();
+
         return view('alumnos.vistasAlumnos.formulario', compact('user', 'programas', 'ciclos'));
     }
+
     public function filtro(Request $request)
     {
         $alumnos = Alumno::with('programa', 'ciclo')->get();
         $campos = Schema::getColumnListing('alumnos');
+
         return view('alumnos.filtro', compact('alumnos', 'campos'));
     }
+
     public function store(Request $request)
     {
         // Validar los datos del formulario
@@ -97,18 +106,18 @@ class AlumnoController extends Controller
 
         if (stripos($userInput, 'Beca') !== false) {
             $counter = Alumno::where('num_comprobante', 'like', 'Beca%')->count() + 1;
-            $request->merge(['num_comprobante' => 'Beca_' . $counter]);
+            $request->merge(['num_comprobante' => 'Beca_'.$counter]);
         }
 
         if (stripos($userInput, 'AMANTANI') !== false) {
             $counter = Alumno::where('num_comprobante', 'like', 'AMANTANI%')->count() + 1;
-            $request->merge(['num_comprobante' => 'AMANTANI_' . $counter]);
+            $request->merge(['num_comprobante' => 'AMANTANI_'.$counter]);
         }
 
         /* if (strtolower($userInput) === 'con deuda') */
         if (stripos($userInput, 'deuda') !== false) {
             $counter = Alumno::where('num_comprobante', 'like', 'Deudor%')->count() + 1;
-            $request->merge(['num_comprobante' => 'Deudor_' . $counter]);
+            $request->merge(['num_comprobante' => 'Deudor_'.$counter]);
         }
 
         $bienes_vivienda = $request->input('bienes_vivienda', []);
@@ -248,11 +257,13 @@ class AlumnoController extends Controller
         // Asociar por email si el usuario está autenticado
         if (auth()->check()) {
             Alumno::asociarPorEmail($nuevoAlumno->email);
+
             return redirect()->route('alumnos.index')->with('success', 'Alumno registrado exitosamente!');
         } else {
             return redirect()->route('index')->with('success', 'Has sido registrado exitosamente, le enviaremos un correo con sus credenciales de acceso.');
         }
     }
+
     public function show($id)
     {
         /* $alumno = Alumno::with('user')->find($id); */
@@ -291,6 +302,7 @@ class AlumnoController extends Controller
             'sector' => $sector,
         ]);
     }
+
     public function edit($id)
     {
         $alumno = Alumno::find($id);
@@ -315,7 +327,7 @@ class AlumnoController extends Controller
             'Motocicleta',
             'Juego de video',
             'Refrigeradora',
-            'Ninguna de las anteriores'
+            'Ninguna de las anteriores',
         ];
         $alumno->otros_servicios = explode(',', $alumno->otros_servicios);
         $opcionesServicios = [
@@ -323,7 +335,7 @@ class AlumnoController extends Controller
             'Servicio de teléfono',
             'Servicio de cable',
             'Servicio de Internet',
-            'Ninguna de las anteriores'
+            'Ninguna de las anteriores',
         ];
         $alumno->habilidades = explode('-', $alumno->habilidades);
         $opcionesHabilidades = [
@@ -331,172 +343,17 @@ class AlumnoController extends Controller
             'Artes pláticas (Pintura, Escultura, etc)',
             'Danzas (Danzas folklóricas, Ballet, Etc)',
             'Literatura (Poesía, Cuentos, etc)',
-            'Otros'
+            'Otros',
         ];
 
         // 🔹 Ubicación de ejemplo (solo algunos departamentos con provincias y distritos reales para demo)
-        $departamentosData = [
-            'Amazonas' => [
-                'provincia' => [
-                    'Chachapoyas' => ['Chachapoyas', 'Asunción', 'Balsas', 'Cheto', 'Chiliquin', 'Chuquibamba', 'Granada', 'Huancas', 'Jalca Grande', 'Leimebamba', 'Levanto', 'Magdalena', 'Mariscal Castilla', 'Molinopampa', 'Montevideo', 'Olleros', 'Quinjalca', 'San Francisco de Daguas', 'San Isidro de Maino', 'Soloco', 'Sonche'],
-                    'Bagua' => ['Bagua', 'La Peca', 'Aramango', 'Copallín', 'El Parco', 'Imaza'],
-                    'Bongará' => ['Jumbilla', 'Chisquilla', 'Churuja', 'Corosha', 'Cuispes', 'Florida', 'Pedro Ruiz Gallo', 'Recta', 'San Carlos', 'Shipasbamba', 'Valera', 'Yambrasbamba'],
-                    'Condorcanqui' => ['El Cenepa', 'Nieva', 'Río Santiago'],
-                    'Luya' => [
-                        'Camporredondo',
-                        'Cocabamba',
-                        'Colcamar',
-                        'Conila',
-                        'Inguilpata',
-                        'Lámud',
-                        'Longuita',
-                        'Lonya Chico',
-                        'Luya',
-                        'Luya Viejo',
-                        'María',
-                        'Ocalli',
-                        'Ocumal',
-                        'Pisuquía',
-                        'Providencia',
-                        'San Cristóbal',
-                        'San Francisco del Yeso',
-                        'San Jerónimo',
-                        'San Juan de Lopecancha',
-                        'Santa Catalina',
-                        'Santo Tomás',
-                        'Tingo',
-                        'Trita'
-                    ],
-                    'Rodríguez de Mendoza' => [
-                        'San Nicolás',
-                        'Chirimoto',
-                        'Cochamal',
-                        'Huambo',
-                        'Limabamba',
-                        'Longar',
-                        'Mariscal Benavides',
-                        'Mílpuc',
-                        'Omia',
-                        'Santa Rosa',
-                        'Totora',
-                        'Vista Alegre'
-                    ],
-                    'Utcubamba' => ['Bagua Grande', 'Cajaruro', 'Cumba', 'El Milagro', 'Jamalca', 'Lonya Grande', 'Yamón'],
 
-                ]
-            ],
-            'Anchash' => [
-                'provincia' => [
-                    'Huancavelica' => ['Huancavelica', 'Acobamba', 'Angaraes', 'Castrovirreyna', 'Chanchamayo', 'Huancayo', 'Huaytara', 'Tayacaja'],
-                ]
-            ],
-            'Apurímac' => [
-                'provincia' => [
-                    'Abancay' => ['Abancay', 'Chacoche', 'Circa', 'Curahuasi', 'Huanipaca', 'Lambrama', 'Pichirhua', 'San Pedro de Cachora', 'Tamburco'],
-                    'Andahuaylas' => ['Andahuaylas', 'Andarapa', 'Chiara', 'Huancarama', 'Huancaray', 'Huayana', 'Kishuara', 'Pacobamba', 'Pacucha', 'Pampachiri', 'Pomacocha', 'San Antonio de Cachi', 'San Jerónimo', 'San Miguel de Chaccrampa', 'Santa María de Chicmo', 'Talavera', 'Tumay Huaraca', 'Turpo', 'Kaquiabamba', 'José María Arguedas'],
-                    'Antabamba' => ['Antabamba', 'El Oro', 'Huaquirca', 'Juan Espinoza Medrano', 'Oropesa', 'Pachaconas', 'Sabaino'],
-                    'Aymaraes' => ['Chalhuanca', 'Capaya', 'Caraybamba', 'Chapimarca', 'Colcabamba', 'Cotaruse', 'Huayllo', 'Justo Apu Sahuaraura', 'Lucre', 'Pocohuanca', 'San Juan de Chacña', 'Sañayca', 'Soraya', 'Tapairihua', 'Tintay', 'Toraya', 'Yanaca'],
-                    'Cotabambas' => ['Tambobamba', 'Cotabambas', 'Coyllurqui', 'Haquira', 'Mara', 'Challhuahuacho'],
-                    'Chincheros' => ['Chincheros', 'Anco_Huallo', 'Cocharcas', 'Huaccana', 'Ocobamba', 'Ongoy', 'Uranmarca', 'Ranracancha', 'Rocchacc', 'El Porvenir', 'Los Chankas'],
-                    'Grau' => ['Chuquibambilla', 'Curpahuasi', 'Gamarra', 'Huayllati', 'Mamara', 'Micaela Bastidas', 'Pataypampa', 'Progreso', 'San Antonio', 'Santa Rosa', 'Turpay', 'Vilcabamba', 'Virundo', 'Curasco']
-                ]
-            ],
-            'Ayacucho' => [
-                'provincia' => [
-                    'Huamanga' => ['Ayacucho', 'Acocro', 'Acos Vinchos', 'Carmen Alto', 'Chiara', 'Ocros', 'Pacaycasa', 'Quinua', 'San José de Ticllas', 'San Juan Bautista', 'Santiago de Pischa', 'Socos', 'Tambillo', 'Vinchos', 'Jesús Nazareno', 'Andrés Avelino Cáceres Dorregaray'],
-                    'Cangallo' => ['Cangallo', 'Chuschi', 'Los Morochucos', 'María Parado de Bellido', 'Paras', 'Totos'],
-                    'Huanca Sancos' => ['Sancos', 'Carapo', 'Sacsamarca', 'Santiago de Lucanamarca'],
-                    'Huanta' => ['Huanta', 'Ayahuanco', 'Huamanguilla', 'Iguain', 'Luricocha', 'Santillana', 'Sivia', 'Llochegua', 'Canayre', 'Uchuraccay', 'Pucacolpa', 'Chaca'],
-                    'La Mar' => ['San Miguel', 'Anco', 'Ayna', 'Chilcas', 'Chungui', 'Luis Carranza', 'Santa Rosa', 'Tambo', 'Samugari', 'Anchihuay', 'Oronccoy'],
-                    'Lucanas' => ['Puquio', 'Aucara', 'Cabana', 'Carmen Salcedo', 'Chaviña', 'Chipao', 'Huac-Huas', 'Laramate', 'Leoncio Prado', 'Llauta', 'Lucanas', 'Ocaña', 'Otoca', 'Saisa', 'San Cristóbal', 'San Juan', 'San Pedro', 'San Pedro de Palco', 'Sancos', 'Santa Ana de Huaycahuacho', 'Santa Lucia'],
-                    'Parinacochas' => ['Coracora', 'Chumpi', 'Coronel Castañeda', 'Pacapausa', 'Pullo', 'Puyusca', 'San Francisco de Ravacayco', 'Upahuacho'],
-                    'Páucar del Sara Sara' => ['Pausa', 'Colta', 'Corculla', 'Lampa', 'Marcabamba', 'Oyolo', 'Pararca', 'San Javier de Alpabamba', 'San José de Ushua', 'Sara Sara'],
-                    'Sucre' => ['Querobamba', 'Belén', 'Chalcos', 'Chilcayoc', 'Huacaña', 'Morcolla', 'Paico', 'San Pedro de Larcay', 'San Salvador de Quije', 'Santiago de Paucaray', 'Soras'],
-                    'Víctor Fajardo' => ['Huancapi', 'Alcamenca', 'Apongo', 'Asquipata', 'Canaria', 'Cayara', 'Colca', 'Huamanquiquia', 'Huancaraylla', 'Huaya', 'Sarhua', 'Vilcanchos'],
-                    'Vilcas Huamán' => ['Vilcas Huamán', 'Accomarca', 'Carhuanca', 'Concepción', 'Huambalpa', 'Independencia', 'Saurama', 'Vischongo']
-                ]
-            ],
-            'Arequipa' => [
-                'provincia' => [
-                    'Arequipa' => ['Arequipa', 'Alto Selva Alegre', 'Cayma', 'Cerro Colorado', 'Characato', 'Chiguata', 'Jacobo Hunter', 'José Luis Bustamante y Rivero', 'La Joya', 'Mariano Melgar', 'Miraflores', 'Mollebaya', 'Paucarpata', 'Pocsi', 'Polobaya', 'Quequeña', 'Sabandia', 'Sachaca', 'San Juan de Siguas', 'San Juan de Tarucani', 'Santa Isabel de Siguas', 'Santa Rita de Siguas', 'Socabaya', 'Tiabaya', 'Uchumayo', 'Vitor', 'Yanahuara', 'Yarabamba', 'Yura'],
-                    'Camana' => ['Camaná', 'José María Quimper', 'Mariano Nicolás Valcárcel', 'Mariscal Cáceres', 'Nicolás de Pierola', 'Ocoña', 'Quilca', 'Samuel Pastor'],
-                    'Caraveli' => ['Caravelí', 'Acarí', 'Atico', 'Atiquipa', 'Bella Unión', 'Cahuacho', 'Chala', 'Chaparra', 'Huanuhuanu', 'Jaqui', 'Lomas', 'Quicacha', 'Yauca'],
-                    'Castilla' => ['Aplao', 'Andagua', 'Ayo', 'Chachas', 'Chilcaymarca', 'Choco', 'Huancarqui', 'Machaguay', 'Orcopampa', 'Pampacolca', 'Tipan', 'Uñon', 'Uraca', 'Viraco'],
-                    'Caylloma' => ['Chivay', 'Achoma', 'Cabanaconde', 'Callalli', 'Caylloma', 'Coporaque', 'Huambo', 'Huanca', 'Ichupampa', 'Lari', 'Lluta', 'Maca', 'Madrigal', 'San Antonio de Chuca', 'Sibayo', 'Tapay', 'Tisco', 'Tuti', 'Yanque', 'Majes'],
-                    'Condesuyos' => ['Chuquibamba', 'Andaray', 'Cayarani', 'Chichas', 'Iray', 'Río Grande', 'Salamanca', 'Yanaquihua'],
-                    'Islay' => ['Mollendo', 'Cocachacra', 'Dean Valdivia', 'Islay', 'Mejia', 'Punta de Bombón'],
-                    'La Union' => ['Cotahuasi', 'Alca', 'Charcana', 'Huaynacotas', 'Pampamarca', 'Puyca', 'Quechualla', 'Sayla', 'Tauria', 'Tomepampa', 'Toro']
-                ]
-            ],
-            'Cusco' => [
-                'provincia' => [
-                    'Acomayo' => ['Acomayo', 'Acopia', 'Acos', 'Mosoc Llacta', 'Pomacanchi', 'Rondocan',],
-                    'Anta' => ['Anta', 'Ancahuasi', 'Cachimayo', 'Chinchaypujio', 'Huarocondo', 'Limatambo', 'Mollepata', 'Pucyura', 'Zurite'],
-                    'Calca' => ['Calca', 'Coya', 'Lamay', 'Lares', 'Pisac', 'San Salvador', 'Taray', 'Yanatile'],
-                    'Canas' => ['Yanaoca', 'Checca', 'Kunturkanki', 'Langui', 'Layo', 'Pampamarca', 'Quehue', 'Tupac Amaru'],
-                    'Canchis' => ['Sicuani', 'Checacupe', 'Combapata', 'Marangani', 'Pitumarca', 'San Pablo', 'San Pedro', 'Tinta'],
-                    'Chumbivilcas' => ['Santo Tomás', 'Capacmarca', 'Chamaca', 'Colquemarca', 'Livitaca', 'Llusco', 'Quiñota', 'Velille'],
-                    'Cusco' => ['Cusco', 'Ccorca', 'Poroy', 'San Jerónimo', 'San Sebastián', 'Santiago', 'Saylla', 'Wanchaq'],
-                    'Espinar' => ['Espinar', 'Condoroma', 'Coporaque', 'Ocoruro', 'Pallpata', 'Pichigua', 'Suykutambo', 'Alto Pichigua'],
-                    'La Convención' => ['Quillabamba', 'Echarate', 'Huayopata', 'Maranura', 'Ocobamba', 'Quellouno', 'Santa Ana', 'Santa Teresa', 'Vilcabamba'],
-                    'Paruro' => ['Paruro', 'Accha', 'Ccapi', 'Colcha', 'Huanoquite', 'Omacha', 'Paccaritambo', 'Pillpinto', 'Yaurisque'],
-                    'Paucartambo' => ['Paucartambo', 'Caicay', 'Challabamba', 'Colquepata', 'Huancarani', 'Kosñipata'],
-                    'Quispicanchi' => ['Urcos', 'Andahuaylillas', 'Camanti', 'Ccarhuayo', 'Ccatca', 'Cusipata', 'Huaro', 'Lucre', 'Marcapata', 'Ocongate', 'Oropesa', 'Quiquijana'],
-                    'Urubamba' => ['Urubamba', 'Chinchero', 'Huayllabamba', 'Machupicchu', 'Maras', 'Ollantaytambo', 'Yucay']
-                ]
-            ],
-            'Lima' => [
-                'provincia' => [
-                    'Lima' => ['Lima', 'Ancon', 'Ate', 'Barranco', 'Breña', 'Carabayllo', 'Chaclacayo', 'Chorrillos', 'Cieneguilla', 'Comas', 'El Agustino', 'Independencia', 'Jesus Maria', 'La Molina', 'La Victoria', 'Lince', 'Los Olivos', 'Lurigancho', 'Lurin', 'Magdalena del Mar', 'Miraflores', 'Pachacamac', 'Pucusana', 'Pueblo Libre', 'Puente Piedra', 'Punta Hermosa', 'Punta Negra', 'Rimac', 'San Bartolo', 'San Borja', 'San Isidro', 'San Juan de Lurigancho', 'San Juan de Miraflores', 'San Luis', 'San Martin de Porres', 'San Miguel', 'Santa Anita', 'Santa Maria del Mar', 'Santa Rosa', 'Santiago de Surco', 'Surquillo', 'Villa El Salvador', 'Villa Maria del Triunfo'],
-                    'Barranca' => ['Barranca', 'Paramonga', 'Pativilca', 'Supe', 'Supe Puerto'],
-                    'Cajatambo' => ['Cajatambo', 'Copa', 'Gorgor', 'Huancapon', 'Manas'],
-                    'Canta' => ['Canta', 'Arahuay', 'Huamantanga', 'Huaros', 'Lachaqui', 'San Buenaventura', 'Santa Rosa de Quives'],
-                    'Cañete' => ['San Vicente de Cañete', 'Asia', 'Calango', 'Cerro Azul', 'Chilca', 'Coayllo', 'Imperial', 'Lunahuana', 'Mala', 'Nuevo Imperial', 'Pacaran', 'Quilmana', 'San Antonio', 'San Luis', 'Santa Cruz de Flores', 'Zúñiga'],
-                    'Huaral' => ['Huaral', 'Atavillos Alto', 'Atavillos Bajo', 'Aucallama', 'Chancay', 'Ihuari', 'Lampian', 'Pacaraos', 'San Miguel de Acos', 'Santa Cruz de Andamarca', 'Sumbilca', 'Veintisiete de Noviembre'],
-                    'Huarochiri' => ['Matucana', 'Antioquia', 'Callahuanca', 'Carampoma', 'Chicla', 'Cuenca', 'Huachupampa', 'Huanza', 'Huarochiri', 'Lahuaytambo', 'Langa', 'Laraos', 'Mariatana', 'Ricardo Palma', 'San Andrés de Tupicocha', 'San Antonio', 'San Bartolomé', 'San Damian', 'San Juan de Iris', 'San Juan de Tantaranche', 'San Lorenzo de Quinti', 'San Mateo', 'San Mateo de Otao', 'San Pedro de Casta', 'San Pedro de Huancayre', 'Sangallaya', 'Santa Cruz de Cocachacra', 'Santa Eulalia', 'Santiago de Anchucaya', 'Santiago de Tuna', 'Santo Domingo de los Olleros', 'Surco'],
-                    'Huaura' => ['Huacho', 'Ambar', 'Caleta de Carquin', 'Checras', 'Hualmay', 'Huaura', 'Leoncio Prado', 'Paccho', 'Santa Leonor', 'Santa Maria', 'Sayan', 'Vegueta'],
-                    'Oyon' => ['Oyon', 'Andajes', 'Caujul', 'Cochamarca', 'Navan', 'Pachangara'],
-                    'Yauyos' => ['Yauyos', 'Alis', 'Ayauca', 'Ayaviri', 'Azángaro', 'Cacra', 'Carania', 'Catahuasi', 'Chocos', 'Cochas', 'Colonia', 'Hongos', 'Huampara', 'Huancaya', 'Huangascar', 'Huantan', 'Huañec', 'Laraos', 'Lincha', 'Madean', 'Miraflores', 'Omas', 'Putinza', 'Quinches', 'Quinocay', 'San Joaquin', 'San Pedro de Pilas', 'Tanta', 'Tauripampa', 'Tomas', 'Tupe', 'Viñac', 'Vitis']
-                ]
-            ],
-            'Madre de Dios' => [
-                'provincia' => [
-                    'Tambopata' => ['Tambopata', 'Inambari', 'Las Piedras', 'Laberinto'],
-                    'Manu' => ['Manu', 'Fitzcarrald', 'Madre de Dios', 'Huepetuhe'],
-                    'Tahuamanu' => ['Iñapari', 'Iberia', 'Tahuamanu']
-                ]
-            ],
-            'Pasco' => [
-                'provincia' => [
-                    'Pasco' => ['Chaupimarca', 'Huachón', 'Huariaca', 'Huayllay', 'Ninacaca', 'Pallanchacra', 'Paucartambo', 'San Francisco de Asís de Yarusyacán', 'Simón Bolívar', 'Ticlacayan', 'Tinyahuarco', 'Vicco', 'Yanacancha'],
-                    'Daniel Alcides Carrión' => ['Yanahuanca', 'Chacayan', 'Goyllarisquizga', 'Paucar', 'San Pedro de Pillao', 'Santa Ana de Tusi', 'Tapuc', 'Vilcabamba'],
-                    'Oxapampa' => ['Oxapampa', 'Chontabamba', 'Huancabamba', 'Palcazu', 'Pozuzo', 'Puerto Bermúdez', 'Villa Rica', 'Constitución']
-                ]
-            ],
-            'Puno' => [
-                'provincia' => [
-                    'Puno' => ['Puno', 'Acora', 'Amantani', 'Atuncolla', 'Capachica', 'Chucuito', 'Coata', 'Huata', 'Mañazo', 'Paucarcolla', 'Pichacani', 'Plateria', 'San Antonio', 'Tiquillaca', 'Vilque'],
-                    'Azángaro' => ['Azángaro', 'Achaya', 'Arapa', 'Asillo', 'Caminaca', 'Chupa', 'Jose Domingo Choquehuanca', 'Muñani', 'Potoni', 'Saman', 'San Anton', 'San Jose', 'San Juan de Salinas', 'Santiago de Pupuja', 'Tirapata'],
-                    'Carabaya' => ['Macusani', 'Ajoyani', 'Ayapata', 'Coasa', 'Corani', 'Crucero', 'Ituata', 'Ollachea', 'San Gaban', 'Usicayos'],
-                    'Chucuito' => ['Juli', 'Desaguadero', 'Huacullani', 'Kelluyo', 'Pisacoma', 'Pomata', 'Zepita'],
-                    'El Collao' => ['Ilave', 'Capazo', 'Pilcuyo', 'Santa Rosa', 'Conduriri'],
-                    'Huancane' => ['Huancane', 'Cojata', 'Huatasani', 'Inchupalla', 'Pusi', 'Rosaspata', 'Taraco', 'Vilque Chico'],
-                    'Lampa' => ['Lampa', 'Cabanilla', 'Calapuja', 'Nicasio', 'Ocuviri', 'Palca', 'Paratia', 'Pucara', 'Santa Lucia', 'Vilavila'],
-                    'Melgar' => ['Ayaviri', 'Antauta', 'Cupi', 'Llalli', 'Macari', 'Nuñoa', 'Orurillo', 'Santa Rosa', 'Umachiri'],
-                    'Moho' => ['Moho', 'Conima', 'Huayrapata', 'Tilali'],
-                    'San Antonio de Putina' => ['Putina', 'Ananea', 'Pedro Vilca Apaza', 'Quilcapuncu', 'Sina'],
-                    'San Roman' => ['Juliaca', 'Cabana', 'Cabanillas', 'Caracoto'],
-                    'Sandia' => ['Sandia', 'Cuyocuyo', 'Limbani', 'Patambuco', 'Phara', 'Quiaca', 'San Juan del Oro', 'Yanahuaya', 'Alto Inambari', 'San Pedro de Putina Punco'],
-                    'Yunguyo' => ['Yunguyo', 'Anapia', 'Copani', 'Cuturapi', 'Ollaraya', 'Tinicachi', 'Unicachi']
-                ]
-            ],
-        ];
-        return view('alumnos.edit', compact('alumno', 'programas', 'ciclos', 'user', 'opcionesBienesVivienda', 'opcionesServicios', 'opcionesHabilidades', 'departamentosData'));
+        return view('alumnos.edit', compact('alumno', 'programas', 'ciclos', 'user', 'opcionesBienesVivienda', 'opcionesServicios', 'opcionesHabilidades'));
     }
+
     public function update(Request $request, Alumno $alumno)
     {
         $alumno = Alumno::findOrFail($alumno->id);
-
         // Validación solo para estos campos
         $request->validate([
             'genero' => 'required|string',
@@ -517,130 +374,7 @@ class AlumnoController extends Controller
 
         return redirect()->route('alumnos.index', $alumno)->with('success', 'Datos registrados correctamente.');
     }
-    /* public function update(Request $request, Alumno $alumno)
-    {
-        $id = $alumno->id;
-        $validator = \Validator::make($request->all(), Alumno::getValidationRules(true, $id));
 
-        $numero = $request->input('numero');
-        $numero_referencia = $request->input('numero_referencia');
-        $lengua_1 = $request->input('lengua_1');
-        $lengua_2 = $request->input('lengua_2');
-
-        // Verificar que los valores de 'numero' y 'numero_referencia' sean diferentes
-        if ($numero === $numero_referencia) {
-            return redirect()->back()->withInput()->withErrors(['numero' => 'El campo Número y Número de referencia deben ser diferentes.']);
-        }
-
-        // Verificar que los valores de 'lengua_1' y 'lengua_2' sean diferentes
-        if ($lengua_1 === $lengua_2) {
-            return redirect()->back()->withInput()->withErrors(['lengua_1' => 'La Lengua 1 y Lengua 2 deben ser diferentes.']);
-        }
-        $userInput = $request->input('num_comprobante');
-
-        if (stripos($userInput, 'Beca') !== false) {
-            $counter = Alumno::where('num_comprobante', 'like', 'Beca%')->count() + 1;
-            $request->merge(['num_comprobante' => 'Beca_' . $counter]);
-        }
-
-        if (stripos($userInput, 'AMANTANI') !== false) {
-            $counter = Alumno::where('num_comprobante', 'like', 'AMANTANI%')->count() + 1;
-            $request->merge(['num_comprobante' => 'AMANTANI_' . $counter]);
-        }
-
-        // Comprobar si hay errores en la validación
-        if ($validator->fails()) {
-            return redirect()->back()->withInput()->withErrors($validator);
-        }
-
-        // Actualizar el registro en la base de datos
-        $alumno->update(
-            $request->only([
-                'email',
-                'dni',
-                'nombres',
-                'apellidos',
-                'numero',
-                'numero_referencia',
-                'user_id',
-                'programa_id',
-                'ciclo_id',
-                'procedencia_familiar',
-                'permanencia_vivienda',
-                'sector_laboral',
-                'lugar_nacimiento',
-                'direccion',
-                'te_consideras',
-                'lengua_1',
-                'lengua_2',
-                'estado_civil',
-                'p_m_soltero',
-                'num_hijos',
-                'sector_socioeconomico',
-                'num_comprobante',
-                // Características Familiares
-                'convivientes',
-                'quien_mantiene',
-                'cant_dependientes_child',
-                'cant_dependientes_old',
-                'cant_dependientes_otros',
-                // Aspectos Educativos
-                'estudio_beca',
-                'origen_beca',
-                'postulaciones_eesp',
-                'postulaciones_inst_uni',
-                'postulaciones_otros',
-                'tipo_preparacion',
-                'motivo_estudio_eesp',
-                'motivo_docencia',
-                'motivo_especialidad',
-                'internet',
-                'internet_lugar',
-                'servicio_internet',
-                'dispositivo_internet',
-                'propio_compartido',
-                'correo',
-                'num_hrs_estudio',
-                'forma_estudio',
-                // Aspectos Socioeconómicos
-                'trabajas',
-                'donde_trabajas',
-                'ingreso_mensual',
-                'egreso',
-                'hrs_laboradas_sem',
-                'ayuda_economica',
-                'tiempo_ayuda',
-                'tipo_apoyo_formacion',
-                // Aspectos Vivienda
-                'tipo_vivienda',
-                'situacion_vivienda',
-                'dormitorios_vivienda',
-                'banos_vivienda',
-                'material_vivienda',
-                'hrs_disponibles_agua',
-                'hrs_disponibles_desague',
-                'hrs_disponibles_luz',
-                // Aspectos Salud
-                'problemas_salud',
-                'ultima_consulta',
-                'motivo_consulta',
-                'tipo_seguro',
-                'familiar_salud',
-                // Aspectos Culturales
-                'frecuencia_lectura',
-                'acceso_lectura',
-                'visitas_museos',
-                // Adicionales
-                'actividades_internet',
-                'tiempo_libre',
-            ]) + [
-                'bienes_vivienda' => implode(',', $request->input('bienes_vivienda', [])),
-                'otros_servicios' => implode(',', $request->input('otros_servicios', [])),
-                'habilidades' => implode('-', $request->input('habilidades', [])),
-            ]
-        );
-        return redirect()->route('alumnos.index', $alumno)->with('success', 'Datos registrados correctamente.');
-    } */
     public function destroy(Alumno $alumno)
     {
         $alumno->delete();
@@ -650,7 +384,7 @@ class AlumnoController extends Controller
 
     public function calificaciones($id)
     {
-        $alumno = Alumno::with(['ciclo.cursos',])->findOrFail($id);
+        $alumno = Alumno::with(['ciclo.cursos'])->findOrFail($id);
 
         // Traemos todos los periodos del alumno, con curso y periodoActual
         $periodos = $alumno->periodo()
@@ -681,24 +415,106 @@ class AlumnoController extends Controller
         );
     }
 
-    /* public function calificaciones($id)
+    public function estadisticas()
     {
-        $alumno = Alumno::with(['ciclo.cursos.periodos', 'ciclo.cursos.periododos', 'ciclo.cursos.periodotres'])->findOrFail($id);
-        $periodosAgrupados = $alumno->periodo()
-            ->with('curso')
+        $alumnos = Alumno::all();
+        $totalAlumnos = Alumno::count();
+
+        // --- Programas (sin "egresados") ---
+        $porPrograma = Alumno::with('programa')
             ->get()
-            ->groupBy('nombre');
+            ->filter(fn ($a) => $a->programa && ! str_contains(strtolower($a->programa->nombre), 'egresados'))
+            ->groupBy(fn ($a) => $a->programa?->nombre ?? 'Sin programa')
+            ->map->count();
 
-        $periodoUno = $alumno->ciclo->cursos->flatMap(function ($curso) use ($alumno) {
-            return $curso->periodos()->where('alumno_id', $alumno->id)->get();
-        });
-        $periodoDos = $alumno->ciclo->cursos->flatMap(function ($curso) use ($alumno) {
-            return $curso->periododos()->where('alumno_id', $alumno->id)->get();
-        });
-        $periodoTres = $alumno->ciclo->cursos->flatMap(function ($curso) use ($alumno) {
-            return $curso->periodotres()->where('alumno_id', $alumno->id)->get();
-        });
+        // --- Ciclos (sin "egresados", ordenados I, II, III...) ---
+        $romanoAInt = fn ($r) => ['I' => 1, 'II' => 2, 'III' => 3, 'IV' => 4, 'V' => 5, 'VI' => 6, 'VII' => 7, 'VIII' => 8, 'IX' => 9, 'X' => 10][strtoupper(trim($r))] ?? 0;
 
-        return view('alumnos.vistasAlumnos.calificaciones', compact('alumno', 'periodoUno', 'periodoDos', 'periodoTres', 'periodosAgrupados'));
-    } */
+        $porCiclo = Alumno::with('ciclo')
+            ->get()
+            ->filter(fn ($a) => $a->ciclo && ! str_contains(strtolower($a->ciclo->nombre), 'egresados'))
+            ->groupBy(fn ($a) => $a->ciclo?->nombre ?? 'Sin ciclo')
+            ->map->count()
+            ->sortBy(fn ($count, $nombre) => $romanoAInt($nombre));
+
+        // --- Género ---
+        $generos = Alumno::select('genero')
+            ->whereNotNull('genero')
+            ->get()
+            ->groupBy(fn ($a) => ucfirst(strtolower($a->genero)))
+            ->map->count();
+
+        // --- Rango de edades ---
+        $edad_18_25 = Alumno::edadEntre(18, 25)->count();
+        $edad_26_35 = Alumno::edadEntre(26, 35)->count();
+
+        // --- Sector socioeconómico ---
+        $sectores = Alumno::select('sector_socioeconomico')
+            ->groupBy('sector_socioeconomico')
+            ->selectRaw('sector_socioeconomico, COUNT(*) as total')
+            ->pluck('total', 'sector_socioeconomico');
+
+        // --- NUEVOS DATOS DEMOGRÁFICOS ---
+        $procedencia = Alumno::select('procedencia_familiar')->whereNotNull('procedencia_familiar')
+            ->get()->groupBy('procedencia_familiar')->map->count();
+
+        $sectorLaboral = Alumno::select('sector_laboral')->whereNotNull('sector_laboral')
+            ->get()->groupBy('sector_laboral')->map->count();
+
+        $teConsideras = Alumno::select('te_consideras')->whereNotNull('te_consideras')
+            ->get()->groupBy('te_consideras')->map->count();
+
+        $lenguas = Alumno::select('lengua_1')
+            ->get()
+            ->filter(fn ($a) => trim($a->lengua_1 ?? '') !== '')
+            ->groupBy('lengua_1')
+            ->map->count();
+
+        $estadoCivil = Alumno::select('estado_civil')->whereNotNull('estado_civil')
+            ->get()->groupBy('estado_civil')->map->count();
+
+        $sectorSocio = Alumno::select('sector_socioeconomico')->whereNotNull('sector_socioeconomico')
+            ->get()->groupBy('sector_socioeconomico')->map->count();
+
+        $quienMantiene = Alumno::select('quien_mantiene')
+            ->get()
+            ->filter(fn ($a) => trim($a->quien_mantiene ?? '') !== '')
+            ->groupBy('quien_mantiene')
+            ->map->count();
+
+        $ingresoMensual = Alumno::select('ingreso_mensual')
+            ->get()
+            ->filter(fn ($a) => trim($a->ingreso_mensual ?? '') !== '')
+            ->groupBy('ingreso_mensual')
+            ->map->count();
+
+        $trabajo = Alumno::select('trabajas')->whereNotNull('trabajas')
+            ->get()->groupBy('trabajas')->map->count();
+
+        return view('admin.demograficos.alumnos', compact(
+            'porPrograma',
+            'porCiclo',
+            'generos',
+            'edad_18_25',
+            'edad_26_35',
+            'sectores',
+            'procedencia',
+            'sectorLaboral',
+            'teConsideras',
+            'lenguas',
+            'estadoCivil',
+            'sectorSocio',
+            'quienMantiene',
+            'trabajo',
+            'ingresoMensual',
+            'alumnos',
+            'totalAlumnos'
+        ));
+    }
+
+    //Fortmatos de video para Ti y Tesis
+    public function formatos()
+    {
+        return view('alumnos.formatos.formato');
+    }
 }

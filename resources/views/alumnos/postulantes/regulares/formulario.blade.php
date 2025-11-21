@@ -7,7 +7,8 @@
                 <div class="col-lg-12">
                     <div class="card mt-3 mb-3">
                         <h5 class="text-center mt-3 mb-2">Formulario de Inscripción Regular 2025</h5>
-                        <div class="mx-auto mb-2" style="width: 30px; height: 4px; background-color: #4e73df; border-radius: 5px;"></div>
+                        <div class="mx-auto mb-2"
+                            style="width: 30px; height: 4px; background-color: #4e73df; border-radius: 5px;"></div>
                         <p class="text-center">Los campos con (<span class="text-danger">*</span>) son obligatorios.</p>
                         <div class="mt-2">
                             @if ($errors->any())
@@ -23,57 +24,9 @@
                         <div class="card-body">
                             <form action="{{ route('regulares.store') }}" method="POST" enctype="multipart/form-data">
                                 @csrf
-                                <div class="container mt-3">
-                                    <ul class="nav nav-tabs nav-pills nav-justified flex-column flex-sm-row" id="myTab"
-                                        role="tablist">
-                                        <li class="nav-item">
-                                            <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home"
-                                                role="tab" aria-controls="home" aria-selected="true">Datos
-                                                Personales</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile"
-                                                role="tab" aria-controls="profile"
-                                                aria-selected="false">Entidad Educativa y Trabajo</a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" id="contact-tab" data-toggle="tab" href="#contact"
-                                                role="tab" aria-controls="contact"
-                                                aria-selected="false">Documentos Adjuntos</a>
-                                        </li>
-                                    </ul>
-                                    <div class="tab-content mt-2">
-                                        <div class="tab-pane fade show active" id="home" role="tabpanel"
-                                            aria-labelledby="home-tab">
-                                            @include('alumnos.postulantes.regulares.campos.datos-personales')
-                                            <div class="mt-4">
-                                                <button type="button" class="btn btn-primary mt-4 next-tab"
-                                                    data-tab="profile">Siguiente</button>
-                                            </div>
-                                        </div>
-                                        <div class="tab-pane fade" id="profile" role="tabpanel"
-                                            aria-labelledby="profile-tab">
-                                            @include('alumnos.postulantes.regulares.campos.colegio')
-                                            <div class="mt-4">
-                                                <button type="button" class="btn btn-secondary mt-4 prev-tab"
-                                                    data-tab="home">Anterior</button>
-                                                <button type="button" class="btn btn-primary mt-4 next-tab"
-                                                    data-tab="contact">Siguiente</button>
-                                            </div>
-                                        </div>
-                                        <div class="tab-pane fade" id="contact" role="tabpanel"
-                                            aria-labelledby="contact-tab">
-                                            @include('alumnos.postulantes.regulares.campos.documentos')
-                                            <button type="button" class="btn btn-secondary mt-4 prev-tab"
-                                                data-tab="profile">Anterior</button>
-                                            <button type="button" class="btn btn-primary mt-4 next-tab"
-                                                data-tab="socioeconomico">Siguiente</button>
-                                        </div>                                                                            
-                                    </div>
-                                    <div>
-                                        <button style="float:right; position: relative; bottom: 3em" type="submit"
-                                            class="btn btn-primary mt-3">Registrar</button>
-                                    </div>
+                                @include('alumnos.postulantes.regulares.campos.datos-personales')
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-primary btn-lg mt-3">Registrar</button>
                                 </div>
                             </form>
                         </div>
@@ -82,50 +35,208 @@
             </div>
         </div>
         <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-
         <script>
-            $(document).ready(function() {
-                // Función para avanzar al siguiente tab
-                $('.next-tab').click(function() {
-                    var currentTab = $(this).closest('.tab-pane').attr('id');
-                    var nextTab = $(this).data('tab');
-
-                    // Validar campos requeridos antes de cambiar de tab
-                    if (validateTab(currentTab)) {
-                        $('#' + currentTab).removeClass('show active');
-                        $('#' + nextTab).addClass('show active');
-                        $('#myTab a[href="#' + nextTab + '"]').tab('show');
-                    }
-                });
-
-                // Función para retroceder al tab anterior
-                $('.prev-tab').click(function() {
-                    var currentTab = $(this).closest('.tab-pane').attr('id');
-                    var prevTab = $(this).data('tab');
-
-                    $('#' + currentTab).removeClass('show active');
-                    $('#' + prevTab).addClass('show active');
-                    $('#myTab a[href="#' + prevTab + '"]').tab('show');
-                });
-
-                // Función para validar campos requeridos en el tab actual
-                function validateTab(tabId) {
-                    var isValid = true;
-
-                    $('#' + tabId + ' [required]').each(function() {
-                        if (!$(this).val()) {
-                            isValid = false;
-                            $(this).addClass('is-invalid');
-                        } else {
-                            $(this).removeClass('is-invalid');
-                        }
+            document.getElementById('btn-consultar').addEventListener('click', async () => {
+                const dni = document.getElementById('dni').value;
+                if (dni.length !== 8) {
+                    alert('El DNI debe tener 8 dígitos');
+                    return;
+                }
+                try {
+                    const response = await fetch('{{ route('consulta.dni') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            dni
+                        })
                     });
-
-                    return isValid;
+                    const data = await response.json();                   
+                    if (data.success && data.data) {
+                        document.getElementById('nombres').value = data.data.nombres ?? '';
+                        document.getElementById('apellido_paterno').value = data.data.apellido_paterno ?? '';
+                        document.getElementById('apellido_materno').value = data.data.apellido_materno ?? '';
+                        // 🔹 Combinar los apellidos visibles
+                        const apellidosCompletos = [
+                            data.data.apellido_paterno ?? '',
+                            data.data.apellido_materno ?? ''
+                        ].filter(Boolean).join(' '); // Evita espacios dobles si falta uno
+                        document.getElementById('apellidos').value = apellidosCompletos;
+                    } else {
+                        alert('No se encontró información para ese DNI.');
+                    }
+                } catch (error) {
+                    console.error(error);
+                    alert('Error consultando el DNI');
                 }
             });
         </script>
+        <script>
+            $(document).ready(function() {
+                // 🌎 FUNCIONES REUTILIZABLES
+                function cargarProvincias(departamentoId, provinciaSelectId, distritoSelectId, selectedProvincia = null,
+                    selectedDistrito = null) {
+                    $(`#${provinciaSelectId}`).html('<option>Cargando...</option>').prop('disabled', true);
+                    $(`#${distritoSelectId}`).html('<option>-- Selecciona una provincia --</option>').prop('disabled',
+                        true);
 
+                    if (departamentoId) {
+                        $.get(`/get-provincias/${departamentoId}`, function(data) {
+                            let options = '<option value="">-- Selecciona --</option>';
+                            data.forEach(p => options += `<option value="${p.id}">${p.nombre}</option>`);
+                            $(`#${provinciaSelectId}`).html(options).prop('disabled', false);
+
+                            if (selectedProvincia) {
+                                let provId = data.find(p => p.nombre === selectedProvincia)?.id;
+                                if (provId) {
+                                    $(`#${provinciaSelectId}`).val(provId);
+                                    // Carga distritos solo después de seleccionar la provincia
+                                    cargarDistritos(provId, distritoSelectId, selectedDistrito);
+                                }
+                            }
+                        });
+                    }
+                }
+
+                function cargarDistritos(provinciaId, distritoSelectId, selectedDistrito = null) {
+                    $(`#${distritoSelectId}`).html('<option>Cargando...</option>').prop('disabled', true);
+
+                    if (provinciaId) {
+                        $.get(`/get-distritos/${provinciaId}`, function(data) {
+                            let options = '<option value="">-- Selecciona --</option>';
+                            data.forEach(d => options += `<option value="${d.id}">${d.nombre}</option>`);
+                            $(`#${distritoSelectId}`).html(options).prop('disabled', false);
+
+                            if (selectedDistrito) {
+                                let distId = data.find(d => d.nombre === selectedDistrito)?.id;
+                                if (distId) {
+                                    $(`#${distritoSelectId}`).val(distId);
+                                    $(`#${distritoSelectId}`).trigger('change'); // actualiza hidden
+                                }
+                            }
+                        });
+                    }
+                }
+
+                // 🌱 Recuperar old() para nacimiento
+                const oldDepNac = "{{ old('departamento_nacimiento') }}";
+                const oldProvNac = "{{ old('provincia_nacimiento') }}";
+                const oldDistNac = "{{ old('distrito_nacimiento') }}";
+
+                if (oldDepNac) {
+                    let depId = $('#departamento_nacimiento_select option').filter(function() {
+                        return $(this).text() === oldDepNac;
+                    }).val();
+                    if (depId) {
+                        $('#departamento_nacimiento_select').val(depId);
+                        $('#departamento_nacimiento').val(oldDepNac);
+                        cargarProvincias(depId, 'provincia_nacimiento_select', 'distrito_nacimiento_select', oldProvNac,
+                            oldDistNac);
+                    }
+                }
+
+                // 🌱 Recuperar old() para colegio
+                const oldDepCole = "{{ old('departamento_colegio') }}";
+                const oldProvCole = "{{ old('provincia_colegio') }}";
+                const oldDistCole = "{{ old('distrito_colegio') }}";
+
+                if (oldDepCole) {
+                    let depId = $('#departamento_colegio_select option').filter(function() {
+                        return $(this).text() === oldDepCole;
+                    }).val();
+                    if (depId) {
+                        $('#departamento_colegio_select').val(depId);
+                        $('#departamento_colegio').val(oldDepCole);
+                        cargarProvincias(depId, 'provincia_colegio_select', 'distrito_colegio_select', oldProvCole,
+                            oldDistCole);
+                    }
+                }
+
+                // 🍼 y 🏫 tus eventos onchange siguen igual
+                $('#departamento_nacimiento_select').on('change', function() {
+                    const texto = $(this).find('option:selected').text();
+                    $('#departamento_nacimiento').val(texto);
+                    const id = $(this).val();
+                    cargarProvincias(id, 'provincia_nacimiento_select', 'distrito_nacimiento_select');
+                });
+                $('#provincia_nacimiento_select').on('change', function() {
+                    const texto = $(this).find('option:selected').text();
+                    $('#provincia_nacimiento').val(texto);
+                    const id = $(this).val();
+                    cargarDistritos(id, 'distrito_nacimiento_select');
+                });
+                $('#distrito_nacimiento_select').on('change', function() {
+                    const texto = $(this).find('option:selected').text();
+                    $('#distrito_nacimiento').val(texto);
+                });
+
+                $('#departamento_colegio_select').on('change', function() {
+                    const texto = $(this).find('option:selected').text();
+                    $('#departamento_colegio').val(texto);
+                    const id = $(this).val();
+                    cargarProvincias(id, 'provincia_colegio_select', 'distrito_colegio_select');
+                });
+                $('#provincia_colegio_select').on('change', function() {
+                    const texto = $(this).find('option:selected').text();
+                    $('#provincia_colegio').val(texto);
+                    const id = $(this).val();
+                    cargarDistritos(id, 'distrito_colegio_select');
+                });
+                $('#distrito_colegio_select').on('change', function() {
+                    const texto = $(this).find('option:selected').text();
+                    $('#distrito_colegio').val(texto);
+                });
+
+                //Script para lenguas 1 y 2
+                const lengua1 = document.getElementById('lengua_1');
+                const lengua2 = document.getElementById('lengua_2');
+
+                // Cuando cambia la lengua materna
+                lengua1.addEventListener('change', function() {
+                    const valorSeleccionado = this.value;
+
+                    // Rehabilitar todas las opciones primero
+                    Array.from(lengua2.options).forEach(opt => opt.disabled = false);
+
+                    // Deshabilitar la misma opción en el segundo select
+                    if (valorSeleccionado) {
+                        const opcionIgual = Array.from(lengua2.options).find(opt => opt.value ===
+                            valorSeleccionado);
+                        if (opcionIgual) {
+                            opcionIgual.disabled = true;
+                            // Si estaba seleccionada, la limpiamos
+                            if (lengua2.value === valorSeleccionado) lengua2.value = '';
+                        }
+                    }
+                });
+               
+                function toggleVoucherRequirement() {
+                    const esBeca = $('#estudio_beca').val();
+                    const $voucherInput = $('#voucher_pago');
+                    const $voucherLabel = $('label[for="voucher_pago"]');
+
+                    if (esBeca == '1') {
+                        // 🔹 Si es beca → quitar required y el asterisco
+                        $voucherInput.prop('required', false);
+                        $voucherLabel.find('span.text-danger').remove(); // elimina el *
+                    } else {
+                        // 🔹 Si NO es beca → agregar required y el asterisco si no está
+                        $voucherInput.prop('required', true);
+                        if ($voucherLabel.find('span.text-danger').length === 0) {
+                            $voucherLabel.append(' <span class="text-danger">*</span>');
+                        }
+                    }
+                }
+
+                // Inicializar al cargar
+                toggleVoucherRequirement();
+
+                // Escuchar cambios
+                $('#estudio_beca').on('change', toggleVoucherRequirement);
+            });
+        </script>
         <script>
             $(document).ready(function() {
                 $('#myForm').submit(function(event) {
@@ -141,7 +252,6 @@
                 });
             });
         </script>
-
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 var programaSelector = document.getElementById('programa_selector');

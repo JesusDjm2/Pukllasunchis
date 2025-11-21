@@ -134,7 +134,7 @@
                         <tr>
                             <td style="font-weight: 600; padding: 2px;">1.5 <span style="margin-left:1em">Semestre
                                     Académico</span></td>
-                            <td style="padding: 1px;">: {{ $periodoActual->nombre }}</td>
+                            <td style="padding: 1px;">: {{ $silabo->periodo }}</td>
                         </tr>
                         <tr>
                             <td style="font-weight: 600; padding: 2px;">1.6 <span style="margin-left:1em">Créditos</span>

@@ -11,6 +11,7 @@ return new class extends Migration {
         Schema::create('periodo_actual', function (Blueprint $table) {
             $table->id();
             $table->string('nombre');
+            $table->string('horario')->nullable();
             $table->date('fecha_inicio')->nullable();  // Nueva columna
             $table->date('fecha_cierre')->nullable();
             $table->boolean('actual')->default(false);

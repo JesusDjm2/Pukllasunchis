@@ -211,12 +211,20 @@
                                     <li>Comprobante de pago por derecho de revisión de originalidad</li>
                                 </ul>
                             </li>
-                            <li>Como resultado de este trámite, recibirás en tu correo institucional el Reporte de
-                                originalidad (Turnitin), en un plazo no mayor a 10 días hábiles.</li>
+                            <li>
+                                <span class="text-info ">
+                                    👉 Como resultado de este trámite, recibirás en tu correo institucional el Reporte de
+                                    originalidad (Turnitin), en un plazo no mayor a 10 días hábiles.
+                                    Con el pago que usted realiza puede hacer 3 revisiones de
+                                    originalidad en un plazo no mayor a 30 días.
+                                </span>
+                            </li>
                             <small style="color: #000; font-style: italic;">Nota: el porcentaje máximo para aprobar el
                                 reporte de originalidad debe ser 20%, de lo contrario, debe corregir el documento y
-                                solicitar nuevamente la revisión. Con el pago que usted realiza puede hacer 3 revisiones de
-                                originalidad en un plazo no mayor a 30 días.</small>
+                                solicitar nuevamente la revisión. </small>
+                            {{--  <li>
+                                    <p class="text-info"></p>
+                                </li> --}}
                         </ul>
                     </li>
                     <li>Solicitar la revisión del TI por asesor/a:
@@ -235,13 +243,19 @@
                                     <li>Comprobante de pago por derecho de revisión del TI</li>
                                 </ul>
                             </li>
-                            <li>Como resultado de este trámite, recibirás en tu correo institucional el Informe de TI apto,
-                                en un plazo no mayor a 30 días hábiles.</li>
+                            <li>
+                                <span class="text-info ">
+                                    👉 Como resultado de este trámite, recibirás en tu correo institucional el Informe de TI
+                                    apto,
+                                    en un plazo no mayor a 30 días hábiles.
+                                </span>
+                            </li>
                         </ul>
                     </li>
                     <li>Solicitar fecha de exposición de TI:
                         <ul>
-							<li>Hacer el pago para solicitar fecha de exposición de TI <small class="text-info">Monto: s/50.00 | Código: 55 | Concepto: Fecha de
+                            <li>Hacer el pago para solicitar fecha de exposición de TI <small class="text-info">Monto:
+                                    s/50.00 | Código: 55 | Concepto: Fecha de
                                     Exposición de TI</small></li>
                             <li>Llenar <a
                                     href="https://docs.google.com/forms/d/e/1FAIpQLSfyasqxxCR72v7aSnmtpISOedxYQzqV11igfLnegIr_biXIew/viewform"
@@ -253,8 +267,7 @@
                                     <li>Diapositivas para exposición de TI en formato PPT</li>
                                 </ul>
                             </li>
-                            <li>Como resultado de este trámite, recibirás en tu correo institucional la RD de asignación de
-                                fecha de exposición de TI, en un plazo no mayor a <strong>5 días hábiles. </strong></li>
+                            <li>Este tramite va de frente a tu armado de expediente de titulación.</li>
                         </ul>
                     </li>
                     <li>Después de la exposición del TI, solicitar RD de aprobación del TI:
@@ -272,19 +285,23 @@
                                     <li>Comprobante de pago por derecho de RD de aprobación del TI</li>
                                 </ul>
                             </li>
-                            <li>Como resultado de este trámite, recibirás en tu correo institucional la RD de aprobación del
-                                TI el día lunes de la semana próxima a la que pidió su solicitud. </li>
+                            <li>
+                                <span class="text-info">
+                                    👉 Como resultado de este trámite, recibirás en tu correo institucional la RD de
+                                    aprobación del
+                                    TI el día lunes de la semana próxima a la que pidió su solicitud.</span>
+                            </li>
                         </ul>
-                    </li>
+                    </li>                    
                     <li>Armar expediente de graduación:
                         <ul>
                             <li>Este trámite solo se realiza de manera presencial en la oficina de secretaría de la EESP
-                                Pukllasunchis. <a href="{{ route('tramites') }}#derecho"> <small class="text-primary">Ir
-                                        a
-                                        trámite
-                                        <i class="fa fa-external-link"></i> </small> | <small class="text-info">Monto:
-                                        s/500.00
-                                        | Código: 18 | Concepto: Armar expediente de titulación</small></a></li>
+                                Pukllasunchis. <a href="{{ route('tramites') }}#derecho"> <small class="text-primary">
+                                        Ir a trámite
+                                        <i class="fa fa-external-link"></i> </small> | <small class="text-info">
+                                        Monto: s/500.00
+                                        | Código: 18 | Concepto: Armar expediente de titulación</small></a>
+                            </li>
                         </ul>
                     </li>
                     <li>Solicitar registro de TI en repositorio institucional:
@@ -311,14 +328,27 @@
                             </li>
                             <li>Si es que el TI no tiene ninguna observación, recibirás en tu correo institucional el URL de
                                 registro del TI en el repositorio institucional</li>
+                            <li>
+                                <span class="text-info">
+                                    👉 Este trámite tiene un lapso de duración de 30 días hábiles.
+                                </span>
+                            </li>
                         </ul>
                     </li>
                     <li>Solicitar emisión de diploma de grado de bachiller previo pago de s/400.00 en las oficinas de <span
                             class="text-danger font-weight-bold">Caja Cusco:</span>
                         <ul>
-                            <li>Este trámite solo se realiza de manera presencial en la oficina de secretaría de la EESP
-                                Pukllasunchis. <small class="text-info">Monto:
-                                    s/400.00 | Código: 22 | Concepto: Emisión Diploma de Bachiller</small></li>
+                            <li>Este trámite solo se realiza de manera virtual. Enviar su FUT debidamente llenado al correo
+                                institucional: <a href="mailto:eespp@pukllasunchis.org"
+                                    class="text-primary">eespp@pukllasunchis.org</a>
+                                <br>Adjuntar al FUT la boleta de pago correspondiente.
+                                En el asunto del correo debe consignar:
+                                <strong>“Emisión de diploma de Bachiller”</strong>.
+                                Una vez ingresada la solicitud, se le informará oportunamente la fecha en la que deberá
+                                acudir de forma presencial para la firma del acta correspondiente.<br><small
+                                    class="text-info">Monto:
+                                    s/400.00 | Código: 22 | Concepto: Emisión Diploma de Bachiller</small>
+                            </li>
                         </ul>
                     </li>
                     <li>Solicitar registro e inscripción de grado de bachiller previo pago de s/200.00 en las oficinas de
@@ -330,23 +360,22 @@
                             oficialmente en SUNEDU. Se deben entregar los siguientes documentos:
                         </p>
                         <ul>
-                            <li>Pagar en Caja Cusco con el siguiente concepto:  <small class="text-info">Monto:
+                            <li>Pagar en Caja Cusco con el siguiente concepto: <small class="text-info">Monto:
                                     s/200.00 | Código: 20 | Concepto: Inscripción Bachiller a SUNEDU</small></li>
-                            <li>Llenar formulario de inscripción de grado de bachiller.<small><a
-                                        class="text-primary" target="_blank"
-                                        href="https://forms.gle/L7WHbS67NKYnWug69"> Formulario <i
+                            <li>Llenar formulario de inscripción de grado de bachiller.<small><a class="text-primary"
+                                        target="_blank" href="https://forms.gle/L7WHbS67NKYnWug69"> Formulario <i
                                             class="fa fa-external-link"></i> (Solo permite llenar con correo
                                         institucional)</a></small></li>
-
                             <li>Comprobante de pago por Inscripción del Grado de Bachiller.</li>
+                            <li>
+                                <span class="text-info">
+                                    👉 Este proceso concluye aproximadamente 15 días hábiles después de haber realizado el
+                                    pago correspondiente y haber completado el proceso.
+                                </span>
+                            </li>
                         </ul>
                     </li>
                 </ul><br>
-
-                {{--  <p class="generic-blockquote mt-4">
-                    <strong>Nota:</strong><br>
-                    Los pagos se realizan por cualquier plataforma disponible de Caja Cusco al mismo número de cuenta.
-                </p><br><br> --}}
 
                 <h2 class="mt-4 linea-debajo" id="investigacion">Documentos para el proceso de obtención del
                     Grado de Bachiller </h2>
@@ -451,7 +480,8 @@
                         <p>
                             Los pagos ordinarios <strong>SOLO SE PUEDEN PAGAR EN VENTANILLAS</strong> de cualquier agencia a
                             nivel nacional de CAJA CUSCO. <a class="text-primary" target="_blank"
-                                href="{{ asset('pdf/Conceptos-ordinarios-caja-cusco-2025-2.pdf') }}">Ver PDF para
+                                href="{{ asset('pdf/Concepto-de-pagos-caja-Cusco-Pukllasunchis-2025-II.pdf') }}">Ver PDF
+                                para
                                 pagos<small><i class="fa fa-eye"></i></small></a>
                         </p>
                     </div>
@@ -491,7 +521,7 @@
                 </li>
                 <li><span class="span">2</span>
                     Indicar el concepto y código de pago.<a class="text-primary" target="_blank"
-                        href="{{ asset('pdf/Conceptos-ordinarios-caja-cusco-2025-2.pdf') }}"> Ver PDF para
+                        href="{{ asset('pdf/Concepto-de-pagos-caja-Cusco-Pukllasunchis-2025-II-2.pdf') }}"> Ver PDF para
                         pagos<small><i class="fa fa-eye"></i></small></a>
                 </li>
                 <li><span class="span">3</span>

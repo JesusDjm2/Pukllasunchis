@@ -21,25 +21,7 @@
             </div>
             <div class="col-lg-12">
                 <div class="row">
-                    <div class="col-lg-4 mt-3">
-                        {{-- <form action="{{ route('adminAlumnos') }}" method="GET" class="form-inline mt-2">
-                            <label for="perPageSelect" class="mr-2">Resultados:</label>
-                            <select name="perPage" id="perPageSelect" class="form-control form-control-sm"
-                                onchange="this.form.submit()">
-                                <option value="10" {{ request('perPage') == 10 ? 'selected' : '' }}>10</option>
-                                <option value="20" {{ request('perPage') == 20 ? 'selected' : '' }}>20</option>
-                                <option value="50" {{ request('perPage') == 50 ? 'selected' : '' }}>50</option>
-                            </select>
-                        </form> --}}
-                    </div>
-                    <div class="col-lg-4 mt-3">
-                        {{-- <a href="{{ route('adminAlumnos') }}" class="btn btn-sm btn-primary">Todos</a> --}}
-                        {{-- <a href="{{ route('adminAlumnos', ['with_user' => 1]) }}" class="btn btn-sm btn-success">Con
-                            Login</a> --}}
-                        {{-- <a href="{{ route('adminAlumnos', ['with_user' => 0]) }}" class="btn btn-sm btn-danger">Sin
-                            Login</a> --}}
-                    </div>
-                    <div class="col-lg-4 mt-3">
+                    <div class="col-lg-6 mt-3">
                         <form id="searchForm" action="{{ route('adminAlumnos') }}" method="GET">
                             <div class="input-group mb-3">
                                 <input type="text" class="form-control form-control-sm" placeholder="Buscar..."
@@ -64,16 +46,6 @@
                                         <span class="fa fa-caret-up text-white" style="font-size: 12px"></span>
                                     </button>
                                 </th>
-                                {{-- <th scope="col" id="fieldHeader">Correo
-                                    <button class="arrow-icon btn btn-link sort-btn" data-column="2">
-                                        <span class="fa fa-caret-up text-white" style="font-size: 12px"></span>
-                                    </button>
-                                </th>
-                                <th scope="col" id="fieldHeader">Ciclo
-                                    <button class="arrow-icon btn btn-link sort-btn" data-column="3">
-                                        <span class="fa fa-caret-up text-white" style="font-size: 12px"></span>
-                                    </button>
-                                </th> --}}
                                 <th scope="col">Detalles académicos
                                     <button class="arrow-icon btn btn-link sort-btn" data-column="4">
                                         <span class="fa fa-caret-up text-white" style="font-size: 12px"></span>
@@ -94,12 +66,12 @@
                                         <ul>
                                             <li> Trabajas:
                                                 @if ($alumno->trabajas === 1 || $alumno->trabajas === '1')
-                                               Sí
-                                            @elseif ($alumno->trabajas === 0 || $alumno->trabajas === '0')
-                                                No
-                                            @else
-                                                {{ $alumno->trabajas }}
-                                            @endif
+                                                    Sí
+                                                @elseif ($alumno->trabajas === 0 || $alumno->trabajas === '0')
+                                                    No
+                                                @else
+                                                    {{ $alumno->trabajas }}
+                                                @endif
                                             </li>
                                             <li>Donde trabajas: {{ $alumno->donde_trabajas ?? 'NULL' }}</li>
 
@@ -109,6 +81,7 @@
                                         <ul>
                                             <li>{{ $alumno->programa->nombre }} - {{ $alumno->ciclo->nombre }}</li>
                                             <li>{{ $alumno->email }}</li>
+                                            <li>Teléfono: {{ $alumno->numero }}</li>
                                         </ul>
                                     </td>
                                     <td>{{ $alumno->dni }}</td>

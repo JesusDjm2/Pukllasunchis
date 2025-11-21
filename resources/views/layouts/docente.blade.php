@@ -15,7 +15,7 @@
     <link href="{{ asset('admin/css/sb-admin-2.min.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('admin/css/estilos.css') }}">
 
-    
+
 </head>
 
 <body id="page-top">
@@ -140,6 +140,45 @@
                     <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
                         <i class="fa fa-bars"></i>
                     </button>
+
+                    @if (isset($periodoActual) && $periodoActual->horario)
+                        <!-- Botón para abrir el modal -->
+                        <div class="text-center mt-2">
+                            <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal"
+                                data-bs-target="#modalHorario">
+                                Ver Horario {{ $periodoActual->nombre }}
+                            </button>
+                        </div>
+
+                        <!-- Modal -->
+                        <div class="modal fade" id="modalHorario" tabindex="-1" aria-labelledby="modalHorarioLabel"
+                            aria-hidden="true">
+                            <div class="modal-dialog modal-xl modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-body text-center bg-light position-relative">
+                                        <button type="button" class="btn btn-danger float-right"
+                                            data-bs-dismiss="modal" aria-label="Cerrar">
+                                            ✕
+                                        </button>
+                                        <img src="{{ asset($periodoActual->horario) }}"
+                                            alt="Horario {{ $periodoActual->nombre }}"
+                                            class="img-fluid rounded shadow" loading="lazy">
+                                    </div>
+                                    <div class="modal-footer justify-content-center">
+                                        <button type="button" class="btn btn-secondary btn-sm"
+                                            data-bs-dismiss="modal">Cerrar</button>
+                                        <a href="{{ asset($periodoActual->horario) }}" target="_blank"
+                                            class="btn btn-primary btn-sm">
+                                            Ver en nueva pestaña
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @else
+                        <p>Sin Horario asignado a este periodo</p>
+                    @endif
+
                     <ul class="navbar-nav ml-auto">
                         <div class="topbar-divider d-none d-sm-block"></div>
                         <li class="nav-item dropdown no-arrow">
@@ -179,33 +218,6 @@
     <a class="scroll-to-top rounded" href="#page-top">
         <i class="fas fa-angle-up"></i>
     </a>
-    <!-- Burbuja flotante con editor de texto -->
-    <div id="floating-bubble-editor" class="floating-bubble-editor" onclick="openTextEditor()">
-        ✎
-    </div>
-    <!-- Modal para el editor de texto -->
-    <div id="textEditorModalNew" class="modal-editor" style="display:none;"
-        onclick="closeModalOnBackgroundClick(event)">
-        <div class="modal-editor-content" onclick="event.stopPropagation();">
-            <span class="close-editor" onclick="closeTextEditor()">&times;</span>
-            <form action="{{ route('docentes.updateBlog', $docente->id) }}" method="POST">
-                @csrf
-                @if (isset($curso) && isset($docente) && isset($competenciasSeleccionadas))
-                    <input type="hidden" name="curso_id" value="{{ $curso->id }}">
-                    <input type="hidden" name="docente_id" value="{{ $docente->id }}">
-                    @foreach ($competenciasSeleccionadas as $competencia)
-                        <input type="hidden" name="competencias[]" value="{{ $competencia->id }}">
-                    @endforeach
-                @endif
-                <div class="form-group">
-                    <textarea id="editorNew" name="blog" class="form-control">{{ $docente->blog }}</textarea>
-                </div>
-                <div class="form-group text-center">
-                    <button type="submit" class="btn btn-primary btn-sm">Guardar Blog</button>
-                </div>
-            </form>
-        </div>
-    </div>
 
     <script>
         function openTextEditor() {
@@ -225,70 +237,7 @@
             }
         }
     </script>
-
-    <style>
-        .floating-bubble-editor {
-            position: fixed;
-            bottom: 3em;
-            right: 12px;
-            width: 50px;
-            height: 50px;
-            background-color: #007bff;
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 24px;
-            cursor: pointer;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-            z-index: 1000;
-            transition: 0.4s ease;
-        }
-
-        .floating-bubble-editor:hover {
-            background-color: #0069d9;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.4);
-            transition: background-color 0.3s ease;
-            transition: box-shadow 0.3s ease;
-            transition: transform 0.3s ease;
-            transform: scale(1.1);
-
-        }
-
-        .modal-editor {
-            position: fixed;
-            z-index: 1001;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        /* Contenido del modal del nuevo editor */
-        .modal-editor-content {
-            background-color: white;
-            padding: 20px;
-            border-radius: 5px;
-            width: 80%;
-            max-width: 1200px;
-        }
-
-        /* Botón de cerrar del nuevo editor */
-        .close-editor {
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            color: #ffffff;
-            font-size: 28px;
-            cursor: pointer;
-        }
-    </style>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.9.2/ckeditor.js"></script>
     <script src="{{ asset('admin/vendor/jquery/jquery.min.js') }}"></script>
     <script src="{{ asset('admin/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
@@ -298,7 +247,6 @@
     <script src="{{ asset('admin/js/demo/chart-area-demo.js') }}"></script>
     <script src="{{ asset('admin/js/demo/chart-pie-demo.js') }}"></script>
     <script src="{{ asset('admin/js/djm.js') }}"></script>
-    
 
 </body>
 

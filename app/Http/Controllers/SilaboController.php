@@ -2,17 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Competencia;
 use App\Models\Curso;
 use App\Models\Docente;
 use App\Models\Enfoques;
 use App\Models\EnfoqueSilabo;
-use App\Models\Estandares;
 use App\Models\PeriodoActual;
 use App\Models\Proyecto;
 use App\Models\Rubricas;
 use App\Models\Silabo;
-use App\Models\TextCapacidad;
 use App\Models\Unidades;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -26,12 +23,14 @@ class SilaboController extends Controller
         if (auth()->user()->hasRole('docente')) {
             return redirect()->route('docente.index');
         }
+
         return view('admin.curso.silabos.index');
     }
+
     public function create(Request $request)
     {
         $proyectos = Proyecto::all();
-        $periodoActual=PeriodoActual::where('actual', true)->first();
+        $periodoActual = PeriodoActual::where('actual', true)->first();
         $enfoques = Enfoques::all();
         $curso = Curso::findOrFail($request->curso_id);
         $docente = Docente::findOrFail($request->docente_id);
@@ -43,7 +42,7 @@ class SilaboController extends Controller
                 $query->whereHas('ciclos', function ($q) use ($curso) {
                     $q->where('ciclo_id', $curso->ciclo_id);
                 });
-            }
+            },
         ])->get();
 
         if ($competencias->isEmpty()) {
@@ -53,19 +52,27 @@ class SilaboController extends Controller
                     $query->whereHas('ciclos', function ($q) use ($curso) {
                         $q->where('ciclo_id', $curso->ciclo_id);
                     });
-                }
+                },
             ])->get();
         }
+
         return view('admin.curso.silabos.create', compact('curso', 'docente', 'proyectos', 'enfoques', 'competencias', 'docente', 'periodoActual'));
     }
+
     public function store(Request $request)
     {
-        $existeSilabo = Silabo::where('curso_id', $request->curso_id)->exists();
+        $periodoActual = PeriodoActual::where('actual', true)->first();
 
+        if (! $periodoActual) {
+            return redirect()->back()->with('error', 'No hay un periodo activo configurado.');
+        }
+        // Verificar si ya existe un sílabo para este curso en el mismo periodo actual
+        $existeSilabo = Silabo::where('curso_id', $request->curso_id)
+            ->where('periodo', $periodoActual->nombre)
+            ->exists();
         if ($existeSilabo) {
             return redirect()->back()->with('error', 'Ya existe un sílabo registrado para este curso, solo puede existir 1 sílabo para 1 curso.');
         }
-
         $request->validate([
             'curso_id' => 'required|exists:cursos,id',
             'sumilla' => 'nullable|string',
@@ -155,7 +162,7 @@ class SilaboController extends Controller
         }
         // Guardar unidades
         foreach ($request->titulo_unidad as $key => $titulo) {
-            if (!empty($titulo)) {
+            if (! empty($titulo)) {
                 Unidades::create([
                     'silabo_id' => $silabo->id,
                     'titulo' => $titulo,
@@ -168,9 +175,9 @@ class SilaboController extends Controller
                 ]);
             }
         }
-        //Rúbricas        
+        //Rúbricas
         foreach ($request->criterio as $index => $criterio) {
-            if (!empty($criterio)) { // Verifica que el criterio no sea null o vacío
+            if (! empty($criterio)) { // Verifica que el criterio no sea null o vacío
                 Rubricas::create([
                     'silabo_id' => $silabo->id,
                     'criterio' => $criterio,
@@ -188,10 +195,11 @@ class SilaboController extends Controller
 
         return redirect()->route('silabos.index')->with('success', 'Sílabo creado correctamente.');
     }
+
     public function show(Silabo $silabo)
     {
         $curso = $silabo->curso;
-        $periodoActual=PeriodoActual::where('actual', true)->first();
+        $periodoActual = PeriodoActual::where('actual', true)->first();
         /* $periodoActual=$curso->periodoActual()->first(); */
         $docentes = $curso->docentes;
         $competencias = $curso->competenciasSeleccionadas()->with([
@@ -200,7 +208,7 @@ class SilaboController extends Controller
                 $query->whereHas('ciclos', function ($q) use ($curso) {
                     $q->where('ciclo_id', $curso->ciclo_id);
                 });
-            }
+            },
         ])->get();
 
         if ($competencias->isEmpty()) {
@@ -210,7 +218,7 @@ class SilaboController extends Controller
                     $query->whereHas('ciclos', function ($q) use ($curso) {
                         $q->where('ciclo_id', $curso->ciclo_id);
                     });
-                }
+                },
             ])->get();
         }
 
@@ -230,6 +238,7 @@ class SilaboController extends Controller
             return view('admin.curso.silabos.show', compact('silabo', 'curso', 'docentes', 'competencias', 'periodoActual'));
         }
     }
+
     public function edit($id, Request $request)
     {
         $silabo = Silabo::with(['unidades', 'rubricas', 'enfoques'])->findOrFail($id);
@@ -244,7 +253,7 @@ class SilaboController extends Controller
                 $query->whereHas('ciclos', function ($q) use ($curso) {
                     $q->where('ciclo_id', $curso->ciclo_id);
                 });
-            }
+            },
         ])->get();
 
         if ($competencias->isEmpty()) {
@@ -254,12 +263,13 @@ class SilaboController extends Controller
                     $query->whereHas('ciclos', function ($q) use ($curso) {
                         $q->where('ciclo_id', $curso->ciclo_id);
                     });
-                }
+                },
             ])->get();
         }
 
         return view('admin.curso.silabos.edit', compact('silabo', 'curso', 'docente', 'proyectos', 'enfoques', 'competencias'));
     }
+
     public function update(Request $request, Silabo $silabo)
     {
         $curso = Curso::findOrFail($request->curso_id);
@@ -334,13 +344,12 @@ class SilaboController extends Controller
             'referencias' => $request->referencias,
         ]);
 
-
         // 🗑️ Eliminar todos los registros EnfoqueSilabo asociados al silabo
         // 🗑️ Eliminar los enfoques actuales del silabo para reemplazarlos con los nuevos
         EnfoqueSilabo::where('silabo_id', $silabo->id)->delete();
 
         // ✅ Recorrer los datos del formulario
-        if (!empty($request->enfoques) && is_array($request->enfoques)) {
+        if (! empty($request->enfoques) && is_array($request->enfoques)) {
             foreach ($request->enfoques as $key => $enfoqueId) {
                 EnfoqueSilabo::create([
                     'silabo_id' => $silabo->id,
@@ -350,9 +359,9 @@ class SilaboController extends Controller
                     'silabo_concretas' => $request->concretas[$key] ?? '',
                 ]);
             }
-        }       
+        }
 
-        if (!empty($request->titulo_unidad) && is_array($request->titulo_unidad)) {
+        if (! empty($request->titulo_unidad) && is_array($request->titulo_unidad)) {
             // Eliminamos las unidades existentes antes de insertar las nuevas
             Unidades::where('silabo_id', $silabo->id)->delete();
 
@@ -370,13 +379,13 @@ class SilaboController extends Controller
             }
         }
 
-        if (!empty($request->criterio) && is_array($request->criterio)) {
+        if (! empty($request->criterio) && is_array($request->criterio)) {
             // Eliminamos las rúbricas existentes antes de insertar las nuevas
             Rubricas::where('silabo_id', $silabo->id)->delete();
 
             foreach ($request->criterio as $index => $criterio) {
                 // Verificar que el criterio no sea nulo o vacío
-                if (!empty($criterio)) {
+                if (! empty($criterio)) {
                     Rubricas::create([
                         'silabo_id' => $silabo->id,
                         'criterio' => $criterio,
@@ -388,7 +397,7 @@ class SilaboController extends Controller
                 }
             }
         }
-       
+
         if (auth()->user()->hasRole('docente')) {
             return redirect()->route('vistaDocente', ['docente' => $docente->id])
                 ->with('success', 'Sílabo actualizado correctamente.');
@@ -396,6 +405,7 @@ class SilaboController extends Controller
 
         return redirect()->route('silabos.index')->with('success', 'Sílabo actualizado correctamente.');
     }
+
     public function exportarPDF(Silabo $silabo)
     {
         $curso = $silabo->curso;
@@ -407,7 +417,7 @@ class SilaboController extends Controller
                 $query->whereHas('ciclos', function ($q) use ($curso) {
                     $q->where('ciclo_id', $curso->ciclo_id);
                 });
-            } 
+            },
         ])->get();
 
         if ($competencias->isEmpty()) {
@@ -417,12 +427,12 @@ class SilaboController extends Controller
                     $query->whereHas('ciclos', function ($q) use ($curso) {
                         $q->where('ciclo_id', $curso->ciclo_id);
                     });
-                }
+                },
             ])->get();
         }
-
         $silabo->load(['enfoques', 'unidades', 'rubricas']);
         $pdf = Pdf::loadView('admin.curso.silabos.pdf', compact('silabo', 'curso', 'docentes', 'competencias', 'periodoActual'));
-        return $pdf->download('silabo_' . Str::slug($silabo->nombre) . '.pdf');
+
+        return $pdf->download('silabo_'.Str::slug($silabo->nombre).'.pdf');
     }
 }

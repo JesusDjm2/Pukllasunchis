@@ -97,6 +97,7 @@
                             <h6 class="collapse-header">Gestionar alumnos:</h6>
                             <a class="collapse-item" href="{{ route('adminAlumnos') }}">Alumnos FID</a>
                             <a class="collapse-item" href="{{ route('alumnosppd') }}">Alumnos PPD</a>
+                            <a class="collapse-item" href="{{ route('alumnos.demograficos') }}">Datos demográficos</a>
                             {{-- <a class="collapse-item" href="{{ route('vistAlumno') }}">Ingresar nuevo</a>
                              --}}
                             {{-- <a class="collapse-item" href="">Datos Demográficos</a> --}}
@@ -105,7 +106,7 @@
                     </div>
                 </li>
                 <!-- Divider -->
-                <hr class="sidebar-divider d-none d-md-block">
+                {{-- <hr class="sidebar-divider d-none d-md-block">
                 <li class="nav-item">
                     <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#bolsa"
                         aria-expanded="true" aria-controls="bolsa">
@@ -120,20 +121,22 @@
                             <a class="collapse-item" href="{{ route('trabajo.create') }}">Ingresar nuevo</a>
                         </div>
                     </div>
-                </li>
+                </li> --}}
                 <!-- Divider -->
                 <hr class="sidebar-divider d-none d-md-block">
                 <li class="nav-item">
                     <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#fid"
                         aria-expanded="true" aria-controls="bolsa">
                         <i class="fas fa-fw fa-users"></i>
-                        <span>Postulantes FID</span>
+                        <span>Admisión</span>
                     </a>
                     <div id="fid" class="collapse" aria-labelledby="headingAlumnos"
                         data-parent="#accordionSidebar">
                         <div class="bg-white py-2 collapse-inner rounded">
                             <h6 class="collapse-header">Gestionar usuarios:</h6>
-                            <a class="collapse-item" href="{{ route('regulares.index') }}">Registrados</a>
+                            <a class="collapse-item" href="{{ route('admin-fids.index') }}">Periodos</a>
+                            <a class="collapse-item" href="{{ route('regulares.index') }}">Postulantes FID</a>
+                            <a class="collapse-item" href="">Postulantes PPD</a>
                         </div>
                     </div>
                 </li>
@@ -300,54 +303,55 @@
             </ul>
         @endrole
         @role('alumnoB')
-         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
-            <a class="sidebar-brand d-flex align-items-center justify-content-center mb-4" href="{{ route('index') }}">
-                <div class="sidebar-brand-icon">
-                    <img class="pt-4" src="{{ asset('admin/img/Logo-Pukllasunchis-blanco.png') }}"
-                        alt="Logo Pukllasunchis" width="100%">
-                </div>
-                <div class="sidebar-brand-text mx-3">
-                </div>
-            </a>
-            <hr class="sidebar-divider d-none d-md-block"> 
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="{{ route('ppd.index') }}">
-                    <i class="fas fa-cog"></i>
-                    <span>Ficha Técnica</span>
+            <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+                <a class="sidebar-brand d-flex align-items-center justify-content-center mb-4"
+                    href="{{ route('index') }}">
+                    <div class="sidebar-brand-icon">
+                        <img class="pt-4" src="{{ asset('admin/img/Logo-Pukllasunchis-blanco.png') }}"
+                            alt="Logo Pukllasunchis" width="100%">
+                    </div>
+                    <div class="sidebar-brand-text mx-3">
+                    </div>
                 </a>
-            </li>
-            <hr class="sidebar-divider d-none d-md-block">            
-            @if ($alumno)
+                <hr class="sidebar-divider d-none d-md-block">
                 <li class="nav-item">
-                    <a class="nav-link collapsed" href="{{ route('calificacionesppd', $alumno->id) }}">
-                        <i class="fas fa-fw fa-book"></i>
-                        <span>Calificaciones</span>
+                    <a class="nav-link collapsed" href="{{ route('ppd.index') }}">
+                        <i class="fas fa-cog"></i>
+                        <span>Ficha Técnica</span>
                     </a>
                 </li>
                 <hr class="sidebar-divider d-none d-md-block">
-            @endif           
-            <li class="nav-item">
-                <a class="nav-link collapsed" target="_blank"
-                    href="https://sites.google.com/pukllavirtual.edu.pe/bibliotecaeesppuklla/inicio">
-                    <i class="fas fa-book-open"></i>
-                    <span>Biblioteca</span>
-                </a>
-            </li>
-            <hr class="sidebar-divider d-none d-md-block">
+                @if ($alumno)
+                    <li class="nav-item">
+                        <a class="nav-link collapsed" href="{{ route('calificacionesppd', $alumno->id) }}">
+                            <i class="fas fa-fw fa-book"></i>
+                            <span>Calificaciones</span>
+                        </a>
+                    </li>
+                    <hr class="sidebar-divider d-none d-md-block">
+                @endif
+                <li class="nav-item">
+                    <a class="nav-link collapsed" target="_blank"
+                        href="https://sites.google.com/pukllavirtual.edu.pe/bibliotecaeesppuklla/inicio">
+                        <i class="fas fa-book-open"></i>
+                        <span>Biblioteca</span>
+                    </a>
+                </li>
+                <hr class="sidebar-divider d-none d-md-block">
 
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="{{ route('index') }}">
-                    <i class="fas fa-fw fa-book"></i>
-                    <span>Volver a la página</span>
-                </a>
-            </li>
+                <li class="nav-item">
+                    <a class="nav-link collapsed" href="{{ route('index') }}">
+                        <i class="fas fa-fw fa-book"></i>
+                        <span>Volver a la página</span>
+                    </a>
+                </li>
 
-            <!-- Divider -->
-            <hr class="sidebar-divider d-none d-md-block">
-            <div class="text-center d-none d-md-inline">
-                <button class="rounded-circle border-0" id="sidebarToggle"></button>
-            </div>
-        </ul>        
+                <!-- Divider -->
+                <hr class="sidebar-divider d-none d-md-block">
+                <div class="text-center d-none d-md-inline">
+                    <button class="rounded-circle border-0" id="sidebarToggle"></button>
+                </div>
+            </ul>
         @endrole
         <div id="content-wrapper" class="d-flex flex-column">
             <div id="content">
@@ -359,6 +363,20 @@
                     <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
                         <i class="fa fa-bars"></i>
                     </button>
+
+                    @if (isset($periodoActual) && $periodoActual->horario)
+                        <div class="flex-grow-1 d-flex justify-content-center">
+                            <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal"
+                                data-bs-target="#modalHorario">
+                                Ver Horario {{ $periodoActual->nombre }}
+                            </button>
+                        </div>
+                    @else
+                        <div class="flex-grow-1 d-flex justify-content-center">
+                            <span class="text-muted small">Sin horario asignado</span>
+                        </div>
+                    @endif
+
                     <ul class="navbar-nav ml-auto">
                         <div class="topbar-divider d-none d-sm-block"></div>
                         <li class="nav-item dropdown no-arrow">
@@ -382,6 +400,28 @@
                         </li>
                     </ul>
                 </nav>
+                @if (isset($periodoActual) && $periodoActual->horario)
+                    <div class="modal fade" id="modalHorario" tabindex="-1" aria-labelledby="modalHorarioLabel"
+                        aria-hidden="true">
+                        <div class="modal-dialog modal-xl modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-body text-center bg-light position-relative">
+                                    <button type="button" class="btn btn-danger float-right" data-bs-dismiss="modal"
+                                        aria-label="Cerrar">✕</button>
+                                    <img src="{{ asset($periodoActual->horario) }}"
+                                        alt="Horario {{ $periodoActual->nombre }}" loading="lazy"
+                                        class="img-fluid rounded shadow">
+                                </div>
+                                <div class="modal-footer justify-content-center">
+                                    <button type="button" class="btn btn-secondary btn-sm"
+                                        data-bs-dismiss="modal">Cerrar</button>
+                                    <a href="{{ asset($periodoActual->horario) }}" target="_blank"
+                                        class="btn btn-primary btn-sm">Ver en nueva pestaña</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
                 @yield('contenido')
             </div>
             <footer class="sticky-footer bg-white">
@@ -404,7 +444,7 @@
             if (preloader) preloader.style.display = 'none';
         });
     </script>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('admin/vendor/jquery/jquery.min.js') }}"></script>
     <script src="{{ asset('admin/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('admin/vendor/jquery-easing/jquery.easing.min.js') }}"></script>
@@ -413,7 +453,7 @@
     <script src="{{ asset('admin/js/demo/chart-area-demo.js') }}"></script>
     <script src="{{ asset('admin/js/demo/chart-pie-demo.js') }}"></script>
     <script src="{{ asset('admin/js/djm.js') }}"></script>
-{{-- PORCENTAJE --}}
+    {{-- PORCENTAJE --}}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 </body>

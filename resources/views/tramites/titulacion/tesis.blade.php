@@ -118,13 +118,6 @@
             <div class="col-lg-9">
                 <h2 class="mt-4 scroolOk linea-debajo" id="tesis">Tesis</h2>
                 <p>
-                    {{-- Es el documento final que el bachiller presenta para obtener la licenciatura. Muestra en detalle la
-                    continuación de la aplicación del trabajo de investigación. Este documento y la sustentación son parte
-                    de los requisitos que se presenta como trámites administrativos para la titulación. Mide las
-                    competencias profesionales en torno a un área académica o disciplina determinada, en el que se
-                    identifica un problema o conjunto de problemas referidos a situaciones educativas detectadas
-                    preferentemente en la práctica docente o en otros escenarios de la realidad socioeducativa. Se debe
-                    cumplir con la estructura solicitada por la escuela en su guía de investigación. --}}
                     La tesis es el documento culminante que llevas adelante como bachiller para alcanzar tu grado de
                     Licenciado. En ella demuestras la aplicación avanzada del Trabajo de Investigación: planteas un problema
                     educativo relevante (preferiblemente surgido de tu práctica docente) y lo analizas con rigor académico,
@@ -263,9 +256,7 @@
                                     <li>Comprobante de pago por derecho de sustentación de Tesis</li>
                                 </ul>
                             </li>
-                            <li>Como resultado de este trámite, recibirás en tu correo institucional la RD de designación de
-                                fecha y
-                                hora para sustentación de Tesis, en un plazo no mayor a 5 días hábiles.</li>
+
                         </ul>
                     </li>
                     <li> Solicitar Resolución Directoral (RD) de aprobación de sustentación
@@ -284,6 +275,9 @@
                             <li> Acta de sustentación</li>
                             <li>Informe de apto</li>
                             <li>Comprobante de pago</li>
+                            <li>Tras completar este trámite, recibirás en tu correo institucional la RD de aprobación de la
+                                Sustentación de Tesis el lunes de la semana siguiente a la presentación de tu solicitud.
+                            </li>
                         </ul>
                     </li>
 
@@ -320,9 +314,17 @@
                             class="text-danger font-weight-bold">Caja
                             Cusco:</span>
                         <ul>
-                            <li>Este trámite solo se realiza de manera presencial en la oficina de secretaría de la EESP
-                                Pukllasunchis. <small class="text-info">(Concepto: Emisión título de Licenciado /
-                                    Codigo: 35 / Costo: s/400.00)</small></li>
+                            <li>Este trámite solo se realiza de manera virtual. Enviar su FUT debidamente llenado al correo
+                                institucional: <a href="mailto:eespp@pukllasunchis.org"
+                                    class="text-primary">eespp@pukllasunchis.org</a>
+                                <br>Adjuntar al FUT la boleta de pago correspondiente. 
+                                En el asunto del correo debe consignar:
+                                <strong>“Emisión de diploma de Bachiller”</strong>.
+                                Una vez ingresada la solicitud, se le informará oportunamente la fecha en la que deberá
+                                acudir de forma presencial para la firma del acta correspondiente.<br>
+                                <small class="text-info">(Concepto: Emisión título de Licenciado /
+                                    Codigo: 35 / Costo: s/400.00)</small>
+                            </li>
                         </ul>
                     </li>
                     <li>Solicitar registro e inscripción de Diploma de Licenciado previo pago de s/200.00 en las oficinas de
@@ -439,7 +441,8 @@
                         <p>
                             Los pagos ordinarios <strong>SOLO SE PUEDEN PAGAR EN VENTANILLAS</strong> de cualquier agencia a
                             nivel nacional de CAJA CUSCO. <a class="text-primary" target="_blank"
-                                href="{{ asset('pdf/Conceptos-ordinarios-caja-cusco-2025-2.pdf') }}">Ver PDF para
+                                href="{{ asset('pdf/Concepto-de-pagos-caja-Cusco-Pukllasunchis-2025-II-2.pdf') }}">Ver PDF
+                                para
                                 pagos<small><i class="fa fa-eye"></i></small></a>
                         </p>
                     </div>
@@ -478,7 +481,7 @@
                 </li>
                 <li><span class="span">2</span>
                     Indicar el concepto y código de pago.<a class="text-primary" target="_blank"
-                        href="{{ asset('pdf/Conceptos-ordinarios-caja-cusco-2025-2.pdf') }}"> Ver PDF para
+                        href="{{ asset('pdf/Concepto-de-pagos-caja-Cusco-Pukllasunchis-2025-II.pdf') }}"> Ver PDF para
                         pagos<small><i class="fa fa-eye"></i></small></a>
                 </li>
                 <li><span class="span">3</span>

@@ -141,7 +141,7 @@
                                                         Referencia:
                                                         {{ $admin->alumno?->numero_referencia ?? 'No tiene referencia' }}
                                                     </li>
-
+                                                    <li>ID: {{ $admin->id }}</li>
                                                 </ul>
                                             </td>
 
@@ -451,8 +451,7 @@
             modal.find('#confirm-delete').attr('href', url); // Configura el enlace de eliminación
         });
     </script>
-
-    {{-- Script para mostrar contenido de alumnos --}}
+    
     <script>
         document.getElementById('mostrar-contenido')?.addEventListener('click', function() {
             this.style.display = 'none';
@@ -548,6 +547,4 @@
             }
         }
     </script>
-
-
 @endsection

@@ -12,6 +12,7 @@ class PeriodoActual extends Model
 
     protected $fillable = [
         'nombre',
+        'horario',
         'fecha_inicio',
         'fecha_cierre',
         'actual',

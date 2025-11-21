@@ -22,7 +22,8 @@
             @endif
             @if (auth()->user()->alumno)
                 <span>
-                    <a class="btn btn-sm btn-info mb-2" href="{{ route('ficha-matricula', ['alumno' => $alumno->id]) }}">Ficha de
+                    <a class="btn btn-sm btn-info mb-2"
+                        href="{{ route('ficha-matricula', ['alumno' => $alumno->id]) }}">Ficha de
                         matricula</a>
                 </span>
             @endif
@@ -82,7 +83,8 @@
                                 </tr>
                                 <tr>
                                     <td class="font-weight-bold">Domicilio:</td>
-                                    <td>{{ $alumno->departamento }} - {{ $alumno->provincia }} - {{ $alumno->distrito }}, {{ $alumno->direccion }}</td>
+                                    <td>{{ $alumno->departamento }} - {{ $alumno->provincia }} - {{ $alumno->distrito }},
+                                        {{ $alumno->direccion }}</td>
                                 </tr>
                                 <tr>
                                     <td colspan="3" class="table-dark font-weight-bold">Carrera</td>
@@ -110,6 +112,105 @@
                                     </td>
                                 </tr>
                                 <tr>
+                                    <td class="font-weight-bold">Cursos del semestre:</td>
+                                    <td colspan="2">
+                                        @if ($alumno->cursos->isNotEmpty())
+                                            @foreach ($alumno->cursos as $curso)
+                                                <li class="d-flex align-items-center justify-content-between curso-item"
+                                                    style="border-bottom: 1px dashed rgba(128, 128, 128, 0.526)">
+                                                    <div>
+                                                        <a href="{{ route('curso.show', $curso->id) }}" class="mr-2">
+                                                            {{ $curso->nombre }}
+                                                        </a>
+                                                        @if ($curso->ciclo_id != $alumno->ciclo_id)
+                                                            <span class="badge badge-info">
+                                                                Ciclo {{ $curso->ciclo->nombre }}
+                                                            </span>
+                                                        @endif
+                                                    </div>
+                                                    <div class="d-flex align-items-center">
+                                                        @if (!str_contains($curso->cc, 'Extracurricular'))
+                                                            @if ($curso->relacionsilabo || $curso->silabo)
+                                                                @php
+                                                                    $silaboObj = $curso->relacionsilabo ?? null;
+                                                                    $periodoSilabo = $silaboObj->periodo ?? null;
+                                                                @endphp
+
+                                                                @if ($periodoSilabo === $periodoActual->nombre)
+                                                                    @php
+                                                                        $sílaboURL = $curso->relacionsilabo
+                                                                            ? route(
+                                                                                'silabos.show',
+                                                                                $curso->relacionsilabo->id,
+                                                                            )
+                                                                            : asset(
+                                                                                'docentes/silabo/' . $curso->silabo,
+                                                                            );
+                                                                    @endphp
+                                                                    <a href="{{ $sílaboURL }}" target="_blank"
+                                                                        class="btn btn-success btn-sm mb-2">
+                                                                        <i class="fa fa-eye"></i> Ver Sílabo
+                                                                    </a>
+                                                                @else
+                                                                    <span>No hay sílabo disponible</span>
+                                                                @endif
+                                                            @else
+                                                                <span>No hay sílabo</span>
+                                                            @endif
+                                                        @else
+                                                            <span>No disponible</span>
+                                                        @endif
+                                                    </div>
+                                                </li>
+                                            @endforeach
+                                        @else
+                                            @foreach ($alumno->ciclo->cursos as $curso)
+                                                <li class="d-flex align-items-center justify-content-between curso-item"
+                                                    style="border-bottom: 1px dashed rgba(128, 128, 128, 0.526)">
+                                                    <div>
+                                                        <a href="{{ route('curso.show', $curso->id) }}" class="mr-2">
+                                                            {{ $curso->nombre }}
+                                                        </a>
+                                                    </div>
+                                                    <div class="d-flex align-items-center">
+                                                        @if (!str_contains($curso->cc, 'Extracurricular'))
+                                                            @if ($curso->relacionsilabo || $curso->silabo)
+                                                                @php
+                                                                    $silaboObj = $curso->relacionsilabo ?? null;
+                                                                    $periodoSilabo = $silaboObj->periodo ?? null;
+                                                                @endphp
+
+                                                                @if ($periodoSilabo === $periodoActual->nombre)
+                                                                    @php
+                                                                        $sílaboURL = $curso->relacionsilabo
+                                                                            ? route(
+                                                                                'silabos.show',
+                                                                                $curso->relacionsilabo->id,
+                                                                            )
+                                                                            : asset(
+                                                                                'docentes/silabo/' . $curso->silabo,
+                                                                            );
+                                                                    @endphp
+                                                                    <a href="{{ $sílaboURL }}" target="_blank"
+                                                                        class="btn btn-success btn-sm mb-2">
+                                                                        <i class="fa fa-eye"></i> Ver Sílabo
+                                                                    </a>
+                                                                @else
+                                                                    <span>No hay sílabo disponible</span>
+                                                                @endif
+                                                            @else
+                                                                <span>No hay sílabo</span>
+                                                            @endif
+                                                        @else
+                                                            <span>No disponible</span>
+                                                        @endif
+                                                    </div>
+                                                </li>
+                                            @endforeach
+                                        @endif
+                                    </td>
+                                </tr>
+                                {{-- <tr>
                                     <td class="font-weight-bold">Cursos del semestre:</td>
                                     <td colspan="2">
                                         @if ($alumno->cursos->isNotEmpty())
@@ -182,7 +283,7 @@
                                             @endforeach
                                         @endif
                                     </td>
-                                </tr>
+                                </tr> --}}
 
                                 @if (isset($alumno->user->pendiente))
                                     <tr class="bg-danger text-white">

@@ -37,37 +37,21 @@
                 </a>
             </li>
             <hr class="sidebar-divider d-none d-md-block">
-            {{-- <a style="color: rgba(255, 255, 255, .8); margin-left: 1em; font-size: .85rem" class="nav-link collapsed {{ !$alumno ? 'disabled' : '' }}"
-                @if ($alumno) href="{{ route('calificacionesppd', $alumno->id) }}" @endif>
-                <i class="fas fa-fw fa-book"></i>
-                <span>Calificaciones</span>
-            </a> --}}
-            {{-- @if ($alumno)
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="{{ route('calificacionesppd', $alumno->id) }}">
-                        <i class="fas fa-fw fa-book"></i>
-                        <span>Calificaciones</span>
-                    </a>
-                </li>
-                <hr class="sidebar-divider d-none d-md-block">
-            @endif --}}
-            @if ($alumno)
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="{{ route('calificacionesppd', $alumno->id) }}">
-                        <i class="fas fa-fw fa-book"></i>
-                        <span>Calificaciones</span>
-                    </a>
-                </li>
-                <hr class="sidebar-divider d-none d-md-block">
-            @endif
 
-            {{-- <li class="nav-item">
-                <a class="nav-link collapsed" href="{{ route('postulante.index') }}">
-                    <i class="fas fa-fw fa-money-bill"></i>
-                    <span>Bolsa de trabajo</span>
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="{{ route('calificacionesppd', $alumno->id) }}">
+                    <i class="fas fa-fw fa-book"></i>
+                    <span>Calificaciones</span>
                 </a>
             </li>
-            <hr class="sidebar-divider d-none d-md-block"> --}}
+            <hr class="sidebar-divider d-none d-md-block">
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="{{ route('ppd.formatos') }}">
+                    <i class="fas fa-book-open"></i>
+                    <span>Guías de TI y Tesis</span>
+                </a>
+            </li>
+            <hr class="sidebar-divider d-none d-md-block">
             <li class="nav-item">
                 <a class="nav-link collapsed" target="_blank"
                     href="https://sites.google.com/pukllavirtual.edu.pe/bibliotecaeesppuklla/inicio">
@@ -75,8 +59,8 @@
                     <span>Biblioteca</span>
                 </a>
             </li>
-            <hr class="sidebar-divider d-none d-md-block">
 
+            <hr class="sidebar-divider d-none d-md-block">
             <li class="nav-item">
                 <a class="nav-link collapsed" href="{{ route('index') }}">
                     <i class="fas fa-fw fa-book"></i>

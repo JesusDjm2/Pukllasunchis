@@ -35,13 +35,14 @@
     <div class="container-fluid bg-white pt-3">
         <div class="d-sm-flex align-items-center justify-content-between mb-4">
             <h4 class="mb-3 text-primary font-weight-bold">Registros de Calificaciones - {{ $nombre }}</h4>
-            <a href="{{ url()->previous() }}" class="btn btn-sm btn-danger shadow-sm"><i class="fa fa-arrow-left fa-sm"></i>
-                Volver</a>
-
             <a href="{{ route('periodos.export', $periodoActual->id ?? request()->route('id')) }}"
                 class="btn btn-success btn-sm shadow-sm">
                 <i class="fa fa-file-excel"></i> Exportar Excel
             </a>
+            <a href="{{ url()->previous() }}" class="btn btn-sm btn-danger shadow-sm"><i class="fa fa-arrow-left fa-sm"></i>
+                Volver</a>
+
+            
         </div>
         <div class="row mb-3">
             <div class="col-md-12 mb-2">

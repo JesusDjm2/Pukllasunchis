@@ -1,9 +1,11 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AdminFidController;
 use App\Http\Controllers\AlumnoController;
 use App\Http\Controllers\AlumnoCursoController;
 use App\Http\Controllers\BolsaController;
+use App\Http\Controllers\BotManController;
 use App\Http\Controllers\CalificacionController;
 use App\Http\Controllers\CapacidadesController;
 use App\Http\Controllers\CicloController;
@@ -36,6 +38,7 @@ Route::put('/admin/update/{id}', [AdminController::class, 'update'])->name('admi
 Route::get('/registro', [AdminController::class, 'create'])->name('registerAdmin');
 Route::post('/admin/store', [AdminController::class, 'store'])->name('adminStore');
 Route::get('/admin/alumnos', [AdminController::class, 'alumnos'])->name('adminAlumnos');
+Route::get('/admin/alumnos/demograficos', [AlumnoController::class, 'estadisticas'])->name('alumnos.demograficos');
 Route::get('/admin/alumnosPPD', [AdminController::class, 'alumnosppd'])->name('alumnosppd');
 Route::post('/relacionar-usuario/{alumno}', [AdminController::class, 'relacionarUsuario'])->name('relacionarUsuario');
 Route::post('/asignar-rol-alumno/{alumno}', [AdminController::class, 'asignarRolAlumno'])->name('asignarRolAlumno');
@@ -185,15 +188,24 @@ Route::resource('trabajo', BolsaController::class)->middleware('auth')->names('t
 Route::resource('postulante', PostulanteController::class);
 Route::get('lista-postulantes', [PostulanteController::class, 'lista'])->middleware('auth')->name('listaPostulantes');
 
-//Postulantes
+//Postulantes FID
 Route::get('formulario-de-inscrición-regular', [PostulantesRegularController::class, 'form'])->name('formInscripcionRegular');
+Route::get('/get-provincias/{departamento}', [PostulantesRegularController::class, 'getProvincias']);
+Route::get('/get-distritos/{provincia}', [PostulantesRegularController::class, 'getDistritos']);
 /* Route::resource('inscripcion-regulares', PostulantesRegularController::class)->middleware('auth')->names('regulares');*/
 Route::resource('inscripcion-regulares-fits', PostulantesRegularController::class)
     ->only(['index', 'edit', 'update', 'destroy', 'show'])
     ->middleware('auth')
     ->names('regulares');
+Route::get('/regulares/{id}/enviar-correo', [PostulantesRegularController::class, 'enviarCorreo'])->name('regulares.enviarCorreo');
 Route::get('/postulantes/ingresantes', [PostulantesRegularController::class, 'crearIngresantes'])->name('postulantes.ingresantes');
 Route::post('/guardar-ingresantes', [PostulantesRegularController::class, 'guardarIngresantes'])->name('postulantes.guardarIngresantes');
+//Gestioanr periodos de admisión
+Route::resource('admin-fids', AdminFidController::class);
+Route::post('/admin-fids/{adminFid}/crear-registros', [AdminFidController::class, 'asociarSinRelacion'])->name('admin-fids.asociar-sin-relacion');
+Route::get('/admin-fids/{adminFid}/ver-postulantes', [AdminFidController::class, 'verPostulantes'])->name('admin-fids.ver-postulantes');
+Route::get('/admin-fids/{adminFid}/postulantes', [AdminFidController::class, 'verPostulantes'])
+    ->name('admin-fids.verPostulantes');
 
 Route::resource('inscripcion-regulares', PostulantesRegularController::class)
     ->only(['create', 'store'])
@@ -203,3 +215,9 @@ Route::get('/postulante/{id}/toggle-observacion', [PostulantesRegularController:
     ->name('postulante.toggleObservacion');
 Route::get('/postulantes/exportar', [PostulantesRegularController::class, 'exportarCSV'])
     ->name('postulantes.exportar');
+
+/* Route::get('/consulta-dni', [AdminFidController::class, 'consultar']); */
+Route::post('/consulta-dni', [AdminFidController::class, 'consultar'])->name('consulta.dni');
+
+//Botman pruebas:
+Route::post('/botman', [BotManController::class, 'handle']);

@@ -252,7 +252,7 @@ class AdminController extends Controller
         if ($request->hasFile('foto')) {
             $foto = $request->file('foto');
             $nombreFoto = time() . '_' . $foto->getClientOriginalName();
-            $foto->move(public_path('img/estudiantes'), $nombreFoto);
+            $foto->move(public_path('img/estudiantes'), $nombreFoto); 
             $user->foto = $nombreFoto;
         }
 
