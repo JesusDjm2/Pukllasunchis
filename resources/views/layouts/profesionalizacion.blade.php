@@ -36,14 +36,26 @@
                     <span>Ficha Técnica</span>
                 </a>
             </li>
-            <hr class="sidebar-divider d-none d-md-block">
+            
 
+            {{-- 
+            <hr class="sidebar-divider d-none d-md-block">
             <li class="nav-item">
                 <a class="nav-link collapsed" href="{{ route('calificacionesppd', $alumno->id) }}">
                     <i class="fas fa-fw fa-book"></i>
                     <span>Calificaciones</span>
                 </a>
-            </li>
+            </li> --}}
+            @if (isset($alumno) && $alumno)
+                @if ($alumno->calificaciones()->exists())
+                    <li class="nav-item">
+                        <a class="nav-link collapsed" href="{{ route('calificacionesppd', $alumno->id) }}">
+                            <i class="fas fa-fw fa-book"></i>
+                            <span>Calificaciones</span>
+                        </a>
+                    </li>
+                @endif
+            @endif
             <hr class="sidebar-divider d-none d-md-block">
             <li class="nav-item">
                 <a class="nav-link collapsed" href="{{ route('ppd.formatos') }}">
@@ -67,7 +79,6 @@
                     <span>Volver a la página</span>
                 </a>
             </li>
-
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block">
             <div class="text-center d-none d-md-inline">
@@ -77,12 +88,22 @@
         <div id="content-wrapper" class="d-flex flex-column">
             <div id="content">
                 <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
-                    <!-- Sidebar Toggle (Topbar) -->
-                    {{-- <h5 class="text-primary font-weight-bold">Programa de PPD Presencial y Semipresencial
-                        {{ date('Y') }}</h5> --}}
+
                     <h5 class="text-primary font-weight-bold d-none d-md-block">
                         Programa de PPD Presencial y Semipresencial {{ date('Y') }}
                     </h5>
+                    @if (isset($periodoActualPpd) && $periodoActualPpd->calendario)
+                        <div class="flex-grow-1 d-flex justify-content-center">
+                            <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal"
+                                data-bs-target="#modalHorarioPpd">
+                                Calendario PPD {{ $periodoActualPpd->nombre }}
+                            </button>
+                        </div>
+                    @else
+                        <div class="flex-grow-1 d-flex justify-content-center">
+                            <span class="text-muted small">Sin calendario asignado</span>
+                        </div>
+                    @endif
                     <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
                         <i class="fa fa-bars"></i>
                     </button>
@@ -114,7 +135,8 @@
                 <div class="container my-auto">
                     <div class="copyright text-center my-auto">
                         <span>Copyright &copy; {{ date('Y') }} | Hecho por <a class="text-primary"
-                                href="https://www.facebook.com/DjmWebMaster" target="_blank" rel="noopener noreferrer">
+                                href="https://www.facebook.com/DjmWebMaster" target="_blank"
+                                rel="noopener noreferrer">
                                 DJM2</a></span>
                     </div>
                 </div>

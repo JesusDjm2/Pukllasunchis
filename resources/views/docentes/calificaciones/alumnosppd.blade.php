@@ -69,7 +69,7 @@
             <h4 class="font-weight-bold text-primary">{{ $curso->nombre }}
                 <small class="text-secondary">({{ $curso->ciclo->programa->nombre }} - {{ $curso->ciclo->nombre }})</small>
             </h4>
-            {{-- <form action="{{ route('calificaciones.exportar', ['docenteId' => $docente->id, 'cursoId' => $curso->id]) }}"
+            <form action="{{ route('calificaciones.exportar.ppd', ['docenteId' => $docente->id, 'cursoId' => $curso->id]) }}"
                 method="GET">
                 @csrf
                 @foreach ($competenciasSeleccionadas as $competencia)
@@ -77,7 +77,7 @@
                 @endforeach
                 <div class="text-center"><button type="submit" class="btn btn-primary btn-sm mb-2">Exportar CSV <i
                             class="fa fa-file-csv"></i></button></div>
-            </form> --}}
+            </form>
             <a href="{{ route('calificar', $docente->id) }}"
                 class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm float-right mb-3">
                 <i class="fa fa-arrow-left fa-sm"></i> Volver
@@ -85,15 +85,15 @@
         </div>
         <div class="col-lg-12">
             <p class="text-center" style="color: #000000">
-                <span style="color:#103b86">Destacado: 17 - 20</span>
-                <span>|</span>
-                <span style="color:#0b954e"> Logrado: 14 - 16</span>
-                <span>|</span>
-                <span style="color:#c1ac0f"> En Proceso: 11 - 13</span>
+                <span class="text-danger"> Previo al Inicio: 1- 5</span>
                 <span>|</span>
                 <span class="text-danger"> Inicio: 6 - 10 </span>
                 <span>|</span>
-                <span class="text-danger"> Previo al Inicio: 1- 5</span>
+                <span style="color:#c1ac0f"> En Proceso: 11 - 13</span>
+                <span>|</span>                
+                <span style="color:#0b954e"> Logrado: 14 - 16</span>
+                <span>|</span>
+                <span style="color:#103b86">Destacado: 17 - 20</span>
             </p>
         </div>
         <div class="col-lg-12 text-center mb-2">
@@ -612,7 +612,7 @@
                     const inputSistema = tr.querySelector(
                         `[name="alumnos[${alumnoId}][calificacion_sistema]"]`);
                     const inputCurso = tr.querySelector(
-                    `[name="alumnos[${alumnoId}][calificacion_curso]"]`);
+                        `[name="alumnos[${alumnoId}][calificacion_curso]"]`);
                     const inputDesempeno = tr.querySelector(
                         `[name="alumnos[${alumnoId}][nivel_desempeno]"]`);
 

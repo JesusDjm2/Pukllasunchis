@@ -109,6 +109,8 @@ return new class extends Migration {
             $table->string('actividades_internet');
             $table->string('habilidades')->nullable();
             $table->boolean('tiempo_libre');
+
+            $table->boolean('guardado')->nullable();
             
             //Relaciones
             $table->unsignedBigInteger('user_id')->nullable();

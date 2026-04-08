@@ -38,7 +38,6 @@
             font-weight: bold;
             right: 1em !important;
             position: absolute;
-            font-weight: bold
         }
 
         .close:hover,
@@ -48,72 +47,40 @@
             cursor: pointer;
         }
 
-        .nav-pills .nav-link {
-            background-color: white;
-            color: #0d6efd;
-            border: #00000030 1px solid;
+        /* Estilo para datos en solo lectura */
+        .readonly-data {
+            background-color: #f8f9fa;
         }
-
-        .nav-pills .nav-link.active {
-            background-color: #0d6efd;
-            color: white;
+        
+        .data-label {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-bottom: 0;
+        }
+        
+        .data-value {
+            font-weight: 500;
+            margin-bottom: 0;
         }
     </style>
-    <div class="container-fluid bg-light">
+    
+    <div class="container-fluid bg-light"> 
         <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3"
             style="border-bottom: 1px dashed #80808078">
             <h4 style="font-size: 20px" class="font-weight-bold text-primary">{{ $curso->nombre }}<br> 
                 <small class="text-secondary">({{ $curso->ciclo->programa->nombre }} - {{ $curso->ciclo->nombre }}) <br>
                     <span class="text-primary">Docente: {{ $docente->nombre }} </span></small>
             </h4>
-            {{-- <form action="{{ route('calificaciones.exportar', ['docenteId' => $docente->id, 'cursoId' => $curso->id]) }}"
-                method="GET">
-                @csrf
-                @foreach ($competenciasSeleccionadas as $competencia)
-                    <input type="hidden" name="competencias[]" value="{{ $competencia->id }}">
-                @endforeach
-                <div class="text-center">
-                    <button type="submit" class="btn btn-primary btn-sm mb-2 mr-2">Exportar CSV <i class="fa fa-file-csv"></i>
-                    </button>
-                </div>
-            </form> --}}
-            @php
-                $esPPD = str_contains($curso->ciclo->programa->nombre ?? '', 'PPD');
-            @endphp
-            @if ($esPPD)
-                <form
-                    action="{{ route('calificaciones.exportar.ppd', ['docenteId' => $docente->id, 'cursoId' => $curso->id]) }}"
-                    method="GET">
-                    @csrf
-                    @foreach ($competenciasSeleccionadas as $competencia)
-                        <input type="hidden" name="competencias[]" value="{{ $competencia->id }}">
-                    @endforeach
-                    <div class="text-center">
-                        <button type="submit" class="btn btn-primary btn-sm mb-2 mr-2">
-                            Exportar CSV PPD <i class="fa fa-file-csv"></i>
-                        </button>
-                    </div>
-                </form>
-            @else
-                <form
-                    action="{{ route('calificaciones.exportar', ['docenteId' => $docente->id, 'cursoId' => $curso->id]) }}"
-                    method="GET">
-                    @csrf
-                    @foreach ($competenciasSeleccionadas as $competencia)
-                        <input type="hidden" name="competencias[]" value="{{ $competencia->id }}">
-                    @endforeach
-                    <div class="text-center">
-                        <button type="submit" class="btn btn-primary btn-sm mb-2 mr-2">Exportar CSV <i
-                                class="fa fa-file-csv"></i>
-                        </button>
-                    </div>
-                </form>
-            @endif
-            <a href="{{ route('docente.index') }}"
+            
+            {{-- Admin NO ve botones de exportar --}}
+            
+           {{--  <a href="{{ route('admin.cursos.index') }}" 
                 class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm float-right mb-3">
                 Volver
-            </a>
+            </a> --}}
         </div>
+        
+        <!-- Modal de competencias (se mantiene porque es solo información) -->
         <div class="col-lg-12 text-center mb-2">
             @foreach ($competenciasSeleccionadas as $competencia)
                 <a class="text-center align-middle" style="font-size: 16px; cursor: pointer;"
@@ -127,6 +94,7 @@
                 @endif
             @endforeach
         </div>
+        
         <div class="row bg-white">
             <div class="col-12">
                 @if (Session::has('success'))
@@ -137,10 +105,20 @@
                         </a>
                     </div>
                 @endif
+                
+                {{-- Mensaje informativo para admin --}}
+                <div class="alert alert-info text-center mb-3">
+                    <i class="fa fa-info-circle"></i> Vista de solo lectura - Datos de calificaciones del curso
+                </div>
             </div>
         </div>
+        
         <div class="row">
             <div class="col-12">
+                @php
+                    $esPPD = str_contains($curso->ciclo->programa->nombre ?? '', 'PPD');
+                @endphp
+                
                 @if ($esPPD)
                     <div class="table-responsive p-2">
                         <table class="table table-bordered">
@@ -153,8 +131,7 @@
                                     </th>
                                     <th rowspan="2" class="text-center" style="font-size: 12px;">Nivel de Desempeño</th>
                                     <th rowspan="2" class="text-center" style="font-size: 12px;">Calificación Curso</th>
-                                    <th rowspan="2" class="text-center" style="font-size: 12px;">Calificación Sistema
-                                    </th>
+                                    <th rowspan="2" class="text-center" style="font-size: 12px;">Calificación Sistema</th>
                                 </tr>
                             </thead>
                             <tbody style="color: #000">
@@ -167,68 +144,76 @@
                                             })
                                             ->values();
                                     @endphp
-                                    <tr>
-                                        <td rowspan="2" class="text-center"
-                                            style="border-bottom: 1px solid #b47e37; vertical-align: middle;">
+                                    <tr class="{{ $calif ? '' : 'table-secondary' }}">
+                                        <td rowspan="2" class="text-center align-middle"
+                                            style="border-bottom: 1px solid #b47e37;">
                                             {{ $index + 1 }}
                                         </td>
-                                        <td rowspan="2"
-                                            style="border-bottom: 1px solid #b47e37; vertical-align: middle;">
+                                        <td rowspan="2" class="align-middle"
+                                            style="border-bottom: 1px solid #b47e37;">
                                             {{ $alumno->apellidos }} {{ $alumno->nombres }}
+                                            @if($alumno->es_inhabilitado)
+                                                <span class="badge badge-danger">Inhabilitado</span>
+                                            @endif
                                         </td>
 
                                         @foreach ($competencias as $compIndex => $competencia)
                                             @php
                                                 preg_match('/\d+/', $competencia->nombre, $matches);
                                                 $numero = $matches[0] ?? $compIndex + 1;
+                                                $valor = $calif?->{'comp' . $numero};
                                             @endphp
-                                            <td class="text-center" style="font-size: 12px;">
+                                            <td class="text-center align-middle" style="font-size: 12px;">
                                                 <strong>Comp. {{ $numero }}</strong><br>
-                                                <span>{{ $calif?->{'comp' . $numero} }}</span>
+                                                <span class="{{ $valor ? 'font-weight-bold' : 'text-muted' }}">
+                                                    {{ $valor ?? '—' }}
+                                                </span>
                                             </td>
                                         @endforeach
 
-                                        <td rowspan="2" class="text-center"
-                                            style="font-size: 14px; border-bottom: 1px solid #b47e37; vertical-align: middle;">
-                                            {{ $calif?->nivel_desempeno ?? 'Sin calificar' }}
+                                        <td rowspan="2" class="text-center align-middle"
+                                            style="font-size: 14px; border-bottom: 1px solid #b47e37;">
+                                            <span class="{{ $calif?->nivel_desempeno ? 'badge badge-info' : 'text-muted' }}">
+                                                {{ $calif?->nivel_desempeno ?? 'Sin calificar' }}
+                                            </span>
                                         </td>
-                                        <td rowspan="2" class="text-center"
-                                            style="font-size: 15px; border-bottom: 1px solid #b47e37; vertical-align: middle;">
-                                            {{ $calif?->calificacion_curso ?? 'Sin calificar' }}
+                                        <td rowspan="2" class="text-center align-middle"
+                                            style="font-size: 15px; border-bottom: 1px solid #b47e37;">
+                                            <span class="{{ $calif?->calificacion_curso ? 'font-weight-bold' : 'text-muted' }}">
+                                                {{ $calif?->calificacion_curso ?? '—' }}
+                                            </span>
                                         </td>
-                                        <td rowspan="2" class="text-center"
-                                            style="font-size: 15px; border-bottom: 1px solid #b47e37; vertical-align: middle;">
-                                            {{ $calif?->calificacion_sistema ?? 'Sin calificar' }}
+                                        <td rowspan="2" class="text-center align-middle"
+                                            style="font-size: 15px; border-bottom: 1px solid #b47e37;">
+                                            <span class="{{ $calif?->calificacion_sistema ? 'font-weight-bold' : 'text-muted' }}">
+                                                {{ $calif?->calificacion_sistema ?? '—' }}
+                                            </span>
                                         </td>
-
                                     </tr>
 
-                                    <tr>
+                                    <tr class="{{ $calif ? '' : 'table-secondary' }}">
                                         @foreach ([1, 2, 3] as $c)
                                             @php
                                                 $pp = $calif?->{"pp_c{$c}_4"};
                                                 $pf = $calif?->{"pf_c{$c}_3"};
                                                 $pp_int = is_numeric($pp) ? round($pp) : null;
                                                 $pf_int = is_numeric($pf) ? round($pf) : null;
-                                                $val =
-                                                    is_numeric($pp) && is_numeric($pf)
-                                                        ? round($pp * 0.4 + $pf * 0.6)
-                                                        : '-';
+                                                $val = is_numeric($pp) && is_numeric($pf) ? round($pp * 0.4 + $pf * 0.6) : '—';
                                             @endphp
                                             <td style="font-size: 11px; border-bottom: 1px solid #b47e37;">
-                                                <div
-                                                    style="display: flex; justify-content: space-between; gap: 6px; width: 100%;">
-                                                    <span
-                                                        style="flex: 1; text-align: center; border-right: 1px solid #8f8f8f54; padding-right: 0.6em;">
-                                                        <strong>40%</strong><br> {{ $pp_int ?? '-' }}
-                                                    </span>
-                                                    <span
-                                                        style="flex: 1; text-align: center; border-right: 1px solid #8f8f8f54; padding-right: 0.6em;">
-                                                        <strong>60%</strong><br> {{ $pf_int ?? '-' }}
-                                                    </span>
-                                                    <span style="flex: 1; text-align: center;">
-                                                        <strong>Prom.</strong><br> {{ $val }}
-                                                    </span>
+                                                <div class="d-flex justify-content-between small">
+                                                    <div class="text-center px-1 border-right">
+                                                        <div class="data-label">40%</div>
+                                                        <div class="data-value">{{ $pp_int ?? '—' }}</div>
+                                                    </div>
+                                                    <div class="text-center px-1 border-right">
+                                                        <div class="data-label">60%</div>
+                                                        <div class="data-value">{{ $pf_int ?? '—' }}</div>
+                                                    </div>
+                                                    <div class="text-center px-1">
+                                                        <div class="data-label">Prom.</div>
+                                                        <div class="data-value font-weight-bold">{{ $val }}</div>
+                                                    </div>
                                                 </div>
                                             </td>
                                         @endforeach
@@ -238,123 +223,141 @@
                         </table>
                     </div>
                 @else
-                    <table class="table table-hover table-bordered text-center" id="tablaCalificaciones"
-                        style="font-size: 13px">
-                        <thead class="thead-dark">
-                            <tr>
-                                <th class="sortable">#</th>
-                                <th class="sortable">Apellidos, Nombres</th>
-                                <th class="sortable">Periodo</th>
-                                @foreach ($competenciasSeleccionadas as $index => $competencia)
-                                    <th class="sortable">{{ $competencia->nombre }}</th>
-                                @endforeach
-
-                                <th class="sortable">Valoración Curso</th>
-                                <th class="sortable">Calificación Curso</th>
-                                <th class="sortable">Calificación Sistema</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-
-                            {{-- --}}
-
-                            @if ($alumnos->some(fn($alumno) => $alumno->periodos->isNotEmpty()))
-                                @php $alumnoIndex = 1; @endphp
-                                @foreach ($alumnos as $alumno)
-                                    @php
-                                        $periodos = [
-                                            [
-                                                'label' => 'Parcial 1',
-                                                'data' => $alumno->periodos->firstWhere('curso_id', $curso->id),
-                                                'class' => 'text-primary',
-                                            ],
-                                            [
-                                                'label' => 'Parcial 2',
-                                                'data' => $alumno->periododos->firstWhere('curso_id', $curso->id),
-                                                'class' => 'text-info',
-                                            ],
-                                            [
-                                                'label' => 'Promedio',
-                                                'data' => $alumno->periodotres->firstWhere('curso_id', $curso->id),
-                                                'class' => 'text-success',
-                                            ],
-                                        ];
-                                    @endphp
-
-                                    @foreach ($periodos as $i => $p)
-                                        <tr>
-                                            @if ($i === 0)
-                                                <td rowspan="3" class="align-middle text-center font-weight-bold"
-                                                    style="border-left: #165874 1px solid; border-bottom: #165874 1px solid">
-                                                    {{ $alumnoIndex++ }}
-                                                </td>
-                                                <td rowspan="3" class="align-middle text-center font-weight-bold"
-                                                    style="border-left: #165874 1px solid; border-bottom: #165874 1px solid">
-                                                    {{ $alumno->apellidos }}, {{ $alumno->nombres }}
-                                                    @if ($alumno->ciclo_id !== $curso->ciclo_id)
-                                                        <span class="badge badge-info">Ciclo
-                                                            {{ $alumno->ciclo->nombre }}</span>
-                                                    @endif
-                                                </td>
-                                            @endif
-
-                                            <td class="{{ $p['class'] }} font-weight-bold"
-                                                @if ($i === 2) style="border-bottom: #165874 1px solid" @endif>
-                                                {{ $p['label'] }}
-                                            </td>
-
-                                            @if ($p['data'])
-                                                @foreach ($competenciasSeleccionadas as $compIndex => $competencia)
-                                                    @php
-                                                        $valoracionKey = 'valoracion_' . ($compIndex + 1);
-                                                        $valoracion = $p['data']->$valoracionKey ?? null;
-                                                        $etiquetas = [
-                                                            1 => 'Previo al Inicio',
-                                                            2 => 'Inicio',
-                                                            3 => 'En Proceso',
-                                                            4 => 'Logrado',
-                                                            5 => 'Destacado',
-                                                        ];
-                                                    @endphp
-                                                    <td
-                                                        @if ($i === 2) style="border-bottom: #165874 1px solid" @endif>
-                                                        {{ $etiquetas[$valoracion] ?? '-' }}
-                                                    </td>
-                                                @endforeach
-                                                <td
-                                                    @if ($i === 2) style="border-bottom: #165874 1px solid" @endif>
-                                                    {{ $p['data']->valoracion_curso ?? 'Sin calificar' }}
-                                                </td>
-                                                <td
-                                                    @if ($i === 2) style="border-bottom: #165874 1px solid" @endif>
-                                                    {{ $p['data']->calificacion_curso ?? 'Sin calificar' }}
-                                                </td>
-                                                <td
-                                                    @if ($i === 2) style="border-bottom: #165874 1px solid" @endif>
-                                                    {{ $p['data']->calificacion_sistema ?? 'Sin calificar' }}
-                                                </td>
-                                            @else
-                                                @for ($j = 0; $j < count($competenciasSeleccionadas) + 3; $j++)
-                                                    <td
-                                                        @if ($i === 2) style="border-bottom: #165874 1px solid" @endif>
-                                                        -</td>
-                                                @endfor
-                                            @endif
-                                        </tr>
-                                    @endforeach
-                                @endforeach
-                            @else
+                    <div class="table-responsive">
+                        <table class="table table-hover table-bordered text-center" style="font-size: 13px">
+                            <thead class="thead-dark">
                                 <tr>
-                                    <td colspan="10">No hay periodos publicados.</td>
+                                    <th>#</th>
+                                    <th>Apellidos, Nombres</th>
+                                    <th>Periodo</th>
+                                    @foreach ($competenciasSeleccionadas as $index => $competencia)
+                                        <th>{{ $competencia->nombre }}</th>
+                                    @endforeach
+                                    <th>Valoración Curso</th>
+                                    <th>Calificación Curso</th>
+                                    <th>Calificación Sistema</th>
                                 </tr>
-                            @endif
+                            </thead>
+                            <tbody>
+                                @if ($alumnos->some(fn($alumno) => $alumno->periodos->isNotEmpty() || $alumno->periododos->isNotEmpty() || $alumno->periodotres->isNotEmpty()))
+                                    @php $alumnoIndex = 1; @endphp
+                                    @foreach ($alumnos as $alumno)
+                                        @php
+                                            $periodos = [
+                                                [
+                                                    'label' => 'Parcial 1',
+                                                    'data' => $alumno->periodos->firstWhere('curso_id', $curso->id),
+                                                    'class' => 'text-primary',
+                                                    'bg' => 'bg-light'
+                                                ],
+                                                [
+                                                    'label' => 'Parcial 2',
+                                                    'data' => $alumno->periododos->firstWhere('curso_id', $curso->id),
+                                                    'class' => 'text-info',
+                                                    'bg' => 'bg-white'
+                                                ],
+                                                [
+                                                    'label' => 'Promedio',
+                                                    'data' => $alumno->periodotres->firstWhere('curso_id', $curso->id),
+                                                    'class' => 'text-success font-weight-bold',
+                                                    'bg' => 'bg-light'
+                                                ],
+                                            ];
+                                        @endphp
 
-                        </tbody>
-                    </table>
+                                        @foreach ($periodos as $i => $p)
+                                            <tr class="{{ $p['bg'] }}">
+                                                @if ($i === 0)
+                                                    <td rowspan="3" class="align-middle text-center font-weight-bold"
+                                                        style="border-left: #165874 1px solid; border-bottom: #165874 1px solid">
+                                                        {{ $alumnoIndex++ }}
+                                                    </td>
+                                                    <td rowspan="3" class="align-middle text-center font-weight-bold"
+                                                        style="border-left: #165874 1px solid; border-bottom: #165874 1px solid">
+                                                        {{ $alumno->apellidos }}, {{ $alumno->nombres }}
+                                                        @if ($alumno->ciclo_id !== $curso->ciclo_id)
+                                                            <span class="badge badge-info">Ciclo {{ $alumno->ciclo->nombre }}</span>
+                                                        @endif
+                                                        @if($alumno->es_inhabilitado)
+                                                            <span class="badge badge-danger">Inhabilitado</span>
+                                                        @endif
+                                                    </td>
+                                                @endif
+
+                                                <td class="{{ $p['class'] }} font-weight-bold"
+                                                    @if ($i === 2) style="border-bottom: #165874 1px solid" @endif>
+                                                    {{ $p['label'] }}
+                                                </td>
+
+                                                @if ($p['data'])
+                                                    @foreach ($competenciasSeleccionadas as $compIndex => $competencia)
+                                                        @php
+                                                            $valoracionKey = 'valoracion_' . ($compIndex + 1);
+                                                            $valoracion = $p['data']->$valoracionKey ?? null;
+                                                            $etiquetas = [
+                                                                1 => 'Previo al Inicio',
+                                                                2 => 'Inicio',
+                                                                3 => 'En Proceso',
+                                                                4 => 'Logrado',
+                                                                5 => 'Destacado',
+                                                            ];
+                                                        @endphp
+                                                        <td @if ($i === 2) style="border-bottom: #165874 1px solid" @endif>
+                                                            @if($valoracion)
+                                                                <span class="badge badge-pill {{ 
+                                                                    $valoracion == 5 ? 'badge-success' : 
+                                                                    ($valoracion == 4 ? 'badge-primary' : 
+                                                                    ($valoracion == 3 ? 'badge-warning' : 
+                                                                    ($valoracion == 2 ? 'badge-secondary' : 'badge-dark'))) 
+                                                                }}">
+                                                                    {{ $etiquetas[$valoracion] }}
+                                                                </span>
+                                                            @else
+                                                                <span class="text-muted">—</span>
+                                                            @endif
+                                                        </td>
+                                                    @endforeach
+                                                    <td @if ($i === 2) style="border-bottom: #165874 1px solid" @endif>
+                                                        <span class="{{ $p['data']->valoracion_curso ? 'font-weight-bold' : 'text-muted' }}">
+                                                            {{ $p['data']->valoracion_curso ?? '—' }}
+                                                        </span>
+                                                    </td>
+                                                    <td @if ($i === 2) style="border-bottom: #165874 1px solid" @endif>
+                                                        <span class="{{ $p['data']->calificacion_curso ? 'font-weight-bold' : 'text-muted' }}">
+                                                            {{ $p['data']->calificacion_curso ?? '—' }}
+                                                        </span>
+                                                    </td>
+                                                    <td @if ($i === 2) style="border-bottom: #165874 1px solid" @endif>
+                                                        <span class="{{ $p['data']->calificacion_sistema ? 'font-weight-bold' : 'text-muted' }}">
+                                                            {{ $p['data']->calificacion_sistema ?? '—' }}
+                                                        </span>
+                                                    </td>
+                                                @else
+                                                    @for ($j = 0; $j < count($competenciasSeleccionadas) + 3; $j++)
+                                                        <td @if ($i === 2) style="border-bottom: #165874 1px solid" @endif>
+                                                            <span class="text-muted">—</span>
+                                                        </td>
+                                                    @endfor
+                                                @endif
+                                            </tr>
+                                        @endforeach
+                                    @endforeach
+                                @else
+                                    <tr>
+                                        <td colspan="10" class="text-center text-muted py-4">
+                                            <i class="fa fa-info-circle"></i> No hay periodos publicados para este curso
+                                        </td>
+                                    </tr>
+                                @endif
+                            </tbody>
+                        </table>
+                    </div>
                 @endif
             </div>
         </div>
     </div>
+    
+    <!-- Modal de competencias -->
     <div id="competenciaModal" class="modal" onclick="closeModal(event)">
         <div class="modal-content" onclick="event.stopPropagation();">
             <span class="close" onclick="closeModal(event)">&times;</span>
@@ -364,30 +367,29 @@
             <p id="competenciaCapacidades" class="text-justify"></p>
         </div>
     </div>
-    {{-- Modal --}}
+    
     <script>
         function openModal(element) {
-            // Extraer datos del elemento a partir de los atributos "data-"
             var nombre = element.getAttribute('data-nombre');
             var descripcion = element.getAttribute('data-descripcion');
             var capacidades = element.getAttribute('data-capacidades');
 
-            // Asigna los valores al modal
             document.getElementById("competenciaNombre").innerText = nombre;
             document.getElementById("competenciaDescripcion").innerText = descripcion;
-            document.getElementById("competenciaCapacidades").innerHTML = capacidades; // Texto enriquecido
-            // Muestra el modal
+            document.getElementById("competenciaCapacidades").innerHTML = capacidades;
             document.getElementById("competenciaModal").style.display = "block";
         }
 
         function closeModal(event) {
-            if (event) {
-                event.stopPropagation();
-            }
+            if (event) event.stopPropagation();
             document.getElementById("competenciaModal").style.display = "none";
         }
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous">
+        
+        // Cerrar modal con tecla ESC
+        window.onclick = function(event) {
+            if (event.target == document.getElementById("competenciaModal")) {
+                document.getElementById("competenciaModal").style.display = "none";
+            }
+        }
     </script>
 @endsection

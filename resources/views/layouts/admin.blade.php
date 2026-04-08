@@ -14,6 +14,7 @@
         rel="stylesheet">
     <link href="{{ asset('admin/css/sb-admin-2.min.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('admin/css/estilos.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 </head>
 
 <body id="page-top">
@@ -105,23 +106,7 @@
                         </div>
                     </div>
                 </li>
-                <!-- Divider -->
-                {{-- <hr class="sidebar-divider d-none d-md-block">
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#bolsa"
-                        aria-expanded="true" aria-controls="bolsa">
-                        <i class="fas fa-fw fa-dollar-sign"></i>
-                        <span>Bolsa de trabajo</span>
-                    </a>
-                    <div id="bolsa" class="collapse" aria-labelledby="headingAlumnos"
-                        data-parent="#accordionSidebar">
-                        <div class="bg-white py-2 collapse-inner rounded">
-                            <h6 class="collapse-header">Gestionar usuarios:</h6>
-                            <a class="collapse-item" href="{{ route('listaPostulantes') }}">Registrados</a>
-                            <a class="collapse-item" href="{{ route('trabajo.create') }}">Ingresar nuevo</a>
-                        </div>
-                    </div>
-                </li> --}}
+
                 <!-- Divider -->
                 <hr class="sidebar-divider d-none d-md-block">
                 <li class="nav-item">
@@ -134,9 +119,18 @@
                         data-parent="#accordionSidebar">
                         <div class="bg-white py-2 collapse-inner rounded">
                             <h6 class="collapse-header">Gestionar usuarios:</h6>
-                            <a class="collapse-item" href="{{ route('admin-fids.index') }}">Periodos</a>
+                            {{-- <a class="collapse-item" href="{{ route('regulares.index') }}">Postulantes FID</a> --}}
+                            {{--  @if ($admision) --}}
                             <a class="collapse-item" href="{{ route('regulares.index') }}">Postulantes FID</a>
-                            <a class="collapse-item" href="">Postulantes PPD</a>
+                            {{--  @else
+                                <span class="collapse-item text-muted" style="pointer-events: none; opacity: .5;">
+                                    Postulantes FID
+                                </span>
+                            @endif --}}
+                            <a class="collapse-item" href="{{ route('postulantes.ppd.index') }}">
+                                Postulantes PPD
+                            </a>
+                            <a class="collapse-item" href="{{ route('admin-fids.index') }}">Admisiones</a>
                         </div>
                     </div>
                 </li>
@@ -364,19 +358,6 @@
                         <i class="fa fa-bars"></i>
                     </button>
 
-                    @if (isset($periodoActual) && $periodoActual->horario)
-                        <div class="flex-grow-1 d-flex justify-content-center">
-                            <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal"
-                                data-bs-target="#modalHorario">
-                                Ver Horario {{ $periodoActual->nombre }}
-                            </button>
-                        </div>
-                    @else
-                        <div class="flex-grow-1 d-flex justify-content-center">
-                            <span class="text-muted small">Sin horario asignado</span>
-                        </div>
-                    @endif
-
                     <ul class="navbar-nav ml-auto">
                         <div class="topbar-divider d-none d-sm-block"></div>
                         <li class="nav-item dropdown no-arrow">
@@ -400,7 +381,7 @@
                         </li>
                     </ul>
                 </nav>
-                @if (isset($periodoActual) && $periodoActual->horario)
+                {{-- @if (isset($periodoActual) && $periodoActual->horario)
                     <div class="modal fade" id="modalHorario" tabindex="-1" aria-labelledby="modalHorarioLabel"
                         aria-hidden="true">
                         <div class="modal-dialog modal-xl modal-dialog-centered">
@@ -422,6 +403,34 @@
                         </div>
                     </div>
                 @endif
+                @if (isset($periodoActualPpd) && $periodoActualPpd->calendario)
+                    <div class="modal fade" id="modalHorarioPpd" tabindex="-1"
+                        aria-labelledby="modalHorarioPpdLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-xl modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-body text-center bg-light position-relative">
+                                    <button type="button" class="btn btn-danger float-right" data-bs-dismiss="modal"
+                                        aria-label="Cerrar">✕</button>
+                                    @if (Str::endsWith($periodoActualPpd->calendario, ['.jpg', '.jpeg', '.png', '.webp']))
+                                        <img src="{{ asset($periodoActualPpd->calendario) }}"
+                                            alt="Calendario {{ $periodoActualPpd->nombre }}" loading="lazy"
+                                            class="img-fluid rounded shadow">
+                                    @else
+                                        <iframe src="{{ asset($periodoActualPpd->calendario) }}" class="w-100"
+                                            style="height: 80vh;" frameborder="0"></iframe>
+                                    @endif
+                                </div>
+
+                                <div class="modal-footer justify-content-center">
+                                    <button type="button" class="btn btn-secondary btn-sm"
+                                        data-bs-dismiss="modal">Cerrar</button>
+                                    <a href="{{ asset($periodoActualPpd->calendario) }}" target="_blank"
+                                        class="btn btn-primary btn-sm">Abrir en nueva pestaña</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif --}}
                 @yield('contenido')
             </div>
             <footer class="sticky-footer bg-white">
@@ -455,6 +464,7 @@
     <script src="{{ asset('admin/js/djm.js') }}"></script>
     {{-- PORCENTAJE --}}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 </body>
 

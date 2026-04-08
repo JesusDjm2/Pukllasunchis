@@ -1,0 +1,26 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('periodo_actual_ppds', function (Blueprint $table) {
+            $table->id();
+            $table->string('nombre');
+            $table->string('calendario');
+            $table->date('fecha_inicio')->nullable();
+            $table->date('fecha_cierre')->nullable();
+            $table->boolean('actual')->default(false);
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('periodo_actual_ppds');
+    }
+};

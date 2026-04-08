@@ -34,9 +34,10 @@ return new class extends Migration
             $table->string('provincia_colegio')->nullable();
             $table->string('departamento_colegio')->nullable();
             $table->string('ano_termino_colegio')->nullable();
-            $table->string('promedio_colegio')->nullable();
+            $table->decimal('promedio_colegio', 4, 2)->nullable();
             $table->string('lengua_1');
             $table->string('lengua_2')->nullable();
+            $table->string('etnicoidad')->nullable();
             //Nivel de Quechua
             $table->string('nivel_quechua_hablado')->nullable();
             $table->string('nivel_quechua_escrito')->nullable();
@@ -46,18 +47,21 @@ return new class extends Migration
             $table->boolean('trabajas')->nullable();
             $table->string('donde_trabajas')->nullable();
             $table->string('cargo_trabajas')->nullable();
-            $table->string('describe_eespp');
+            $table->longText('describe_eespp')->nullable();
             //Documentos adjuntos
             $table->string('dni_pdf')->nullable();
             $table->string('partida_nacimiento_pdf')->nullable();
             $table->string('certificado_secundaria_pdf')->nullable();
             $table->string('foto')->nullable();
-            $table->string('declaracion_jurada_salud_pdf')->nullable();
-            $table->string('declaracion_jurada_documentos_pdf')->nullable();
-            $table->string('declaracion_jurada_conectividad_pdf')->nullable();
             $table->string('voucher_pago')->nullable();
             $table->boolean('observaciones')->default(false)->nullable();
             $table->string('constancia')->nullable();
+
+            $table->boolean('apto')->nullable();
+            $table->boolean('apto2')->nullable();
+
+            $table->boolean('convertido')->default(false);
+            
             $table->foreignId('admin_fids_id')->constrained('admin_fids')->onDelete('cascade')->after('id');
             $table->timestamps();
         });

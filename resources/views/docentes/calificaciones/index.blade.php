@@ -71,7 +71,6 @@
                                             @csrf
                                             <input type="hidden" name="docente_id" value="{{ $docente->id }}">
                                             <input type="hidden" name="curso_id" value="{{ $curso->id }}">
-
                                             <ul>
                                                 @foreach ($curso->competencias as $competencia)
                                                     <li>{{ $competencia->nombre }}</li>
@@ -173,7 +172,6 @@
                                                             value="{{ $competencia->id }}">
                                                     @endforeach
                                                 </ul>
-
                                                 @if ($curso->competencias->count() <= 3)
                                                     <button type="submit" class="btn btn-primary btn-sm"
                                                         id="calificar-btn-{{ $curso->id }}">

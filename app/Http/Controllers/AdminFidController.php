@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AdminFid;
+use App\Models\AdminPpd;
 use App\Models\PostulantesRegular;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -13,7 +14,8 @@ class AdminFidController extends Controller
     public function index()
     {
         $adminFids = AdminFid::withCount('postulantes')->orderBy('anio', 'desc')->get();
-        return view('alumnos.postulantes.admision.index', compact('adminFids'));
+        $adminsppd = AdminPpd::all();
+        return view('alumnos.postulantes.admision.index', compact('adminFids', 'adminsppd'));
     }
 
     public function create()
@@ -28,7 +30,7 @@ class AdminFidController extends Controller
             'anio' => 'required|integer|min:2015|max:2100',
             'fecha_inicio' => 'nullable|date',
             'fecha_fin' => 'nullable|date',
-            'estado' => 'nullable|boolean',
+            'actual' => 'nullable|boolean',
         ]);
 
         // Si se marca como activo, desactivar los demás
@@ -99,7 +101,6 @@ class AdminFidController extends Controller
     public function asociarSinRelacion(AdminFid $adminFid)
     {
         $sinRelacion = PostulantesRegular::whereNull('admin_fids_id')->count();
-
         if ($sinRelacion === 0) {
             return redirect()->route('admin-fids.index')
                 ->with('info', 'No hay postulantes sin relación para asociar.');

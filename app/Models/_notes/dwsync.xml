@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <dwsync>
-<file name="User.php" server="ftp.eesppukllasunchis.edu.pe" local="133941313865072481" remote="133949295600000000" Dst="0" />
+<file name="User.php" server="ftp.eesppukllasunchis.edu.pe" local="134184975603507920" remote="134185343400000000" Dst="0" />
 <file name="Alumno.php" server="ftp.eesppukllasunchis.edu.pe" local="134061409154841501" remote="134061646200000000" Dst="0" />
-<file name="Ciclo.php" server="ftp.eesppukllasunchis.edu.pe" local="134013942997622831" remote="134014160400000000" Dst="0" />
-<file name="Curso.php" server="ftp.eesppukllasunchis.edu.pe" local="134050199076123468" remote="134057474400000000" Dst="0" />
-<file name="Programa.php" server="ftp.eesppukllasunchis.edu.pe" local="133996803656531542" remote="134013249000000000" Dst="0" />
+<file name="Ciclo.php" server="ftp.eesppukllasunchis.edu.pe" local="134013942997622831" remote="134185343400000000" Dst="0" />
+<file name="Curso.php" server="ftp.eesppukllasunchis.edu.pe" local="134103703222771662" remote="134123856600000000" Dst="0" />
+<file name="Programa.php" server="ftp.eesppukllasunchis.edu.pe" local="133996803656531542" remote="134185343400000000" Dst="0" />
 <file name="Bolsa.php" server="ftp.eesppukllasunchis.edu.pe" local="133613926720000000" remote="134057474400000000" Dst="0" />
 <file name="Competencia.php" server="ftp.eesppukllasunchis.edu.pe" local="133858381046713822" remote="134057474400000000" Dst="0" />
 <file name="Docente.php" server="ftp.eesppukllasunchis.edu.pe" local="133746118360000000" remote="134049504600000000" Dst="0" />
 <file name="Postulante.php" server="ftp.eesppukllasunchis.edu.pe" local="133614029480000000" remote="134057474400000000" Dst="0" />
 <file name="Calificacion.php" server="ftp.eesppukllasunchis.edu.pe" local="134040065207881718" remote="134049506400000000" Dst="0" />
-<file name="PeriodoUno.php" server="ftp.eesppukllasunchis.edu.pe" local="134007991413083572" remote="134013249000000000" Dst="0" />
-<file name="PeriodoDos.php" server="ftp.eesppukllasunchis.edu.pe" local="133941489395218238" remote="133949295600000000" Dst="0" />
-<file name="PeriodoTres.php" server="ftp.eesppukllasunchis.edu.pe" local="133941511787077996" remote="133949295600000000" Dst="0" />
-<file name="PostulantesRegular.php" server="ftp.eesppukllasunchis.edu.pe" local="134057076873772428" remote="134057474400000000" Dst="0" />
+<file name="PeriodoUno.php" server="ftp.eesppukllasunchis.edu.pe" local="134007991413083572" remote="134185343400000000" Dst="0" />
+<file name="PeriodoDos.php" server="ftp.eesppukllasunchis.edu.pe" local="133941489395218238" remote="134123856600000000" Dst="0" />
+<file name="PeriodoTres.php" server="ftp.eesppukllasunchis.edu.pe" local="133941511787077996" remote="134123856600000000" Dst="0" />
+<file name="PostulantesRegular.php" server="ftp.eesppukllasunchis.edu.pe" local="134184958196809872" remote="134185343400000000" Dst="0" />
 <file name="Capacidades.php" server="ftp.eesppukllasunchis.edu.pe" local="133855939926233426" remote="134057474400000000" Dst="0" />
 <file name="Silabo.php" server="ftp.eesppukllasunchis.edu.pe" local="134049521653551082" remote="134057474400000000" Dst="0" />
 <file name="Enfoques.php" server="ftp.eesppukllasunchis.edu.pe" local="133848929846544794" remote="134057474400000000" Dst="0" />
 <file name="Periodo.php" server="ftp.eesppukllasunchis.edu.pe" local="134049518195658237" remote="134057474400000000" Dst="0" />
-<file name="ppd.php" server="ftp.eesppukllasunchis.edu.pe" local="134006960483191206" remote="134013249000000000" Dst="0" />
+<file name="ppd.php" server="ftp.eesppukllasunchis.edu.pe" local="134191058698504218" remote="134191239600000000" Dst="0" />
 <file name="Proyecto.php" server="ftp.eesppukllasunchis.edu.pe" local="133857717278044795" remote="134057474400000000" Dst="0" />
 <file name="CompetenciaTexto.php" server="ftp.eesppukllasunchis.edu.pe" local="133852486271670517" remote="134057474400000000" Dst="0" />
 <file name="EnfoqueSilabo.php" server="ftp.eesppukllasunchis.edu.pe" local="133855748496055585" remote="134057474400000000" Dst="0" />
@@ -26,12 +26,16 @@
 <file name="TextCapacidad.php" server="ftp.eesppukllasunchis.edu.pe" local="133855940217169765" remote="134057474400000000" Dst="0" />
 <file name="Unidades.php" server="ftp.eesppukllasunchis.edu.pe" local="133854965499557302" remote="134057474400000000" Dst="0" />
 <file name="Estandares.php" server="ftp.eesppukllasunchis.edu.pe" local="133857581855310446" remote="134057474400000000" Dst="0" />
-<file name="Calificacionesppd.php" server="ftp.eesppukllasunchis.edu.pe" local="133941541641499352" remote="133949295600000000" Dst="0" />
-<file name="AlumnoCurso.php" server="ftp.eesppukllasunchis.edu.pe" local="133975973978896685" remote="133978665000000000" Dst="0" />
+<file name="Calificacionesppd.php" server="ftp.eesppukllasunchis.edu.pe" local="133941541641499352" remote="134123856600000000" Dst="0" />
+<file name="AlumnoCurso.php" server="ftp.eesppukllasunchis.edu.pe" local="133975973978896685" remote="134153357400000000" Dst="0" />
 <file name="PeriodoActual.php" server="ftp.eesppukllasunchis.edu.pe" local="134060764462538478" remote="134061793800000000" Dst="0" />
-<file name="AdminFid.php" server="ftp.eesppukllasunchis.edu.pe" local="134052124442930582" remote="134057474400000000" Dst="0" />
+<file name="AdminFid.php" server="ftp.eesppukllasunchis.edu.pe" local="134103705217903178" remote="134123856600000000" Dst="0" />
 <file name="Departamento.php" server="ftp.eesppukllasunchis.edu.pe" local="134056197250627398" remote="134057474400000000" Dst="0" />
 <file name="Distrito.php" server="ftp.eesppukllasunchis.edu.pe" local="134056197566332786" remote="134057474400000000" Dst="0" />
 <file name="Provincia.php" server="ftp.eesppukllasunchis.edu.pe" local="134056197787886161" remote="134057474400000000" Dst="0" />
-<file name="SilaboPdf.php" server="ftp.eesppukllasunchis.edu.pe" local="134049523030932940" remote="134057474400000000" Dst="0" />
+<file name="SilaboPdf.php" server="ftp.eesppukllasunchis.edu.pe" local="134057981003078591" remote="134123856600000000" Dst="0" />
+<file name="AdminPpd.php" server="ftp.eesppukllasunchis.edu.pe" local="134103849131087377" remote="134123856600000000" Dst="0" />
+<file name="PeriodoActualPpd.php" server="ftp.eesppukllasunchis.edu.pe" local="134146294426851629" remote="134153355600000000" Dst="0" />
+<file name="PostulantesPpd.php" server="ftp.eesppukllasunchis.edu.pe" local="134159104766051374" remote="134185343400000000" Dst="0" />
+<file name="PeriodoPpd.php" server="ftp.eesppukllasunchis.edu.pe" local="134147888014337761" remote="134153357400000000" Dst="0" />
 </dwsync>

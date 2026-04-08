@@ -202,7 +202,7 @@
                                         </li>
                                         <li>Informe de Trabajo de Investigación Apto original.</li>
                                         <li>Resolución Directoral de aprobación de Trabajo de Investigación original.
-                                            <small class="text-info">Codigo: 10 | Concepto: RD de Aprobación TI | Monto: s/
+                                            <small class="text-info">Codigo: 17 | Concepto: RD de Aprobación TI | Monto: s/
                                                 50.00</small>
                                         </li>
                                         <li>Comprobante de pago por Derecho de obtención de grado de Bachiller original.

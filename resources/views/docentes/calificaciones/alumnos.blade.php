@@ -13,10 +13,11 @@
             color: white;
         }
 
-        .modal {
+        .modal-competencia {
             display: none;
             position: fixed;
-            z-index: 1000;
+            z-index: 2000;
+            /* más alto que Bootstrap */
             left: 0;
             top: 0;
             width: 100%;
@@ -25,14 +26,12 @@
             background-color: rgba(0, 0, 0, 0.4);
         }
 
-        .modal-content {
+        .modal-competencia .modal-content {
             background-color: #fefefe;
-            margin: 15% auto;
-            /* 15% desde arriba y centrado */
+            margin: 10% auto;
             padding: 20px;
             border: 1px solid #888;
             width: 80%;
-            /* Ancho del modal */
         }
 
         .close {
@@ -114,11 +113,11 @@
                     <div class="btn-group" role="group" aria-label="Controles de Periodo">
                         <button type="button" class="btn btn-outline-primary btn-sm active" id="btnPeriodoUno">Parcial
                             1</button>
-                        {{-- <button type="button" class="btn btn-outline-primary btn-sm" id="btnPeriodoDos">Parcial 2</button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" id="btnPeriodoDos">Parcial 2</button>
                         @if ($mostrarBotonDesempeno)
                             <button type="button" class="btn btn-outline-primary btn-sm"
                                 id="btnDesempeno">Desempeño</button>
-                        @endif --}}
+                        @endif
                     </div>
                 </div>
             </div>
@@ -727,7 +726,8 @@
             </div>
         </div>
     </div>
-    <div id="competenciaModal" class="modal" onclick="closeModal(event)">
+    {{-- <div id="competenciaModal" class="modal" onclick="closeModal(event)"> --}}
+    <div id="competenciaModal" class="modal-competencia" onclick="closeModal(event)">
         <div class="modal-content" onclick="event.stopPropagation();">
             <span class="close" onclick="closeModal(event)">&times;</span>
             <h4 id="competenciaNombre" class="font-weight-bold"></h4>
@@ -737,6 +737,123 @@
         </div>
     </div>
     {{-- Modal --}}
+    <!-- Modal de Comunicado Importante -->
+    <div id="modalAviso" class="modal-aviso" onclick="cerrarAviso(event)">
+        <div class="modal-aviso-content animate" onclick="event.stopPropagation();">
+            <span class="close-aviso" onclick="cerrarAviso(event)">&times;</span>
+            <div class="modal-aviso-header">
+                <i class="fas fa-exclamation-circle icono-aviso"></i>
+                <h3>Comunicado Importante</h3>
+            </div>
+            <p class="modal-aviso-texto">
+                Para asegurar un <strong>promedio final correcto,</strong> es necesario calificar todas las
+                <strong>competencias asignadas</strong> al curso. De lo contrario, el sistema calculará el promedio
+                únicamente con esas calificaciones, lo que va a generar resultados imprecisos.
+            </p>
+            <p class="modal-aviso-texto">
+                Además, el botón de calificaciones de <strong class="btn btn-sm btn-primary">Desempeño</strong>
+                se habilitará cuando las calificaciones del <strong>2º periodo</strong> alcancen al menos un
+                <strong>50%</strong> de avance, evitando confusiones entre periodos.
+            </p>
+            <button class="btn btn-success btn-sm mt-2" onclick="cerrarAviso(event)">Entendido</button>
+        </div>
+    </div>
+    <style>
+        .modal-aviso {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(4px);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-aviso-content {
+            background: #ffffff;
+            width: 40%;
+            max-width: 550px;
+            padding: 25px 30px;
+            border-radius: 15px;
+            position: relative;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+        }
+
+        .animate {
+            animation: fadeInScale 0.4s ease-out;
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.85);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .close-aviso {
+            position: absolute;
+            top: 12px;
+            right: 18px;
+            font-size: 25px;
+            cursor: pointer;
+            color: #555;
+        }
+
+        .modal-aviso-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .icono-aviso {
+            font-size: 30px;
+            color: #d9534f;
+        }
+
+        .modal-aviso-texto {
+            font-size: 15px;
+            color: #333;
+            margin-bottom: 10px;
+            text-align: justify;
+        }
+    </style>
+    <script>
+        function abrirAviso() {
+            document.getElementById("modalAviso").style.display = "flex";
+        }
+
+        function cerrarAviso(event) {
+            if (event) event.stopPropagation();
+            document.getElementById("modalAviso").style.display = "none";
+        }
+        //Correr es script cada vez que se carga la pagina
+        /* document.addEventListener("DOMContentLoaded", function() {
+            abrirAviso();
+        }); */
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const maxVeces = 3; // máximo de veces que se mostrará
+            let contador = localStorage.getItem('popupCompetenciasVisto') || 0;
+
+            if (contador < maxVeces) {
+                abrirAviso(); // usa tu función real del modal
+                localStorage.setItem('popupCompetenciasVisto', Number(contador) + 1);
+            }
+        });
+    </script>
     <script>
         function openModal(element) {
             var nombre = element.getAttribute('data-nombre');

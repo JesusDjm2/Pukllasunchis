@@ -18,7 +18,7 @@
                         <table class="table table-striped table-bordered">
                             <thead class="thead-dark">
                                 <tr>
-                                    <th scope="col">#</th> <!-- Columna de índice -->
+                                    <th scope="col">#</th> 
                                     <th scope="col">Nombres</th>
                                     <th scope="col">Programa</th>
                                     <th scope="col">Teléfono</th>
@@ -27,7 +27,7 @@
                             <tbody>
                                 @foreach ($alumnos as $alumno)
                                     <tr>
-                                        <td>{{ $loop->iteration }}</td> <!-- Número de fila -->
+                                        <td>{{ $loop->iteration }}</td> 
                                         <td>{{ $alumno->nombres }}, {{ $alumno->apellidos }}</td>
                                         <td>{{ $ciclo->programa->nombre }}</td>
                                         <td>{{ $alumno->numero }}</td>
@@ -141,53 +141,6 @@
                     </div>
                 @endforeach
 
-
-                {{-- @foreach ($cursosOrdenados as $curso)
-                    @php
-                        // Colores por tipo de componente curricular
-                        $bgColor = match ($curso->cc) {
-                            'Formacion Práctica e Investigación' => '#ffecb3',
-                            'Formacion Específica' => '#d9b8ff9c',
-                            'Electivo' => '#FFB266',
-                            'Extracurricular' => '#ffddddbd',
-                            default => '#efefef63',
-                        };
-
-                        $textColor = 'black'; // Legibilidad en todos los casos
-                    @endphp
-
-                    <div class="col-lg-4 mb-2 mt-1">
-                        <div class="card shadow-sm border-0"
-                            style="height: 175x; background-color: {{ $bgColor }}; color: {{ $textColor }};">
-                            <div class="card-body text-center d-flex flex-column justify-content-between">
-                                <div>
-                                    <a href="{{ route('curso.show', $curso->id) }}" class="text-dark"
-                                        style="color: inherit;">
-                                        <h5 class="fw-bold" style="font-size: 18px">{{ $curso->nombre }}</h5>
-                                    </a>
-                                    <small class="badge bg-dark text-light px-2 py-1" style="font-size: 0.75rem;">
-                                        {{ $curso->cc }}
-                                    </small>
-                                </div>
-                                <div class="mt-2">
-                                    @foreach ($curso->docentes as $docente)
-                                        <small class="text-dark font-weight-bold">
-                                            {{ $docente->nombre }}{{ !$loop->last ? ',' : '' }}
-                                        </small>
-                                    @endforeach
-                                </div>
-                                <div class="mt-2">
-                                    <a href="{{ route('curso.show', $curso->id) }}" class="btn btn-sm btn-primary"
-                                        title="Ver Curso">
-                                        <i class="fa fa-eye fa-sm"></i> Ver Curso
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                @endforeach --}}
-
-
                 <div class="col-lg-12 mt-4">
                     <h5 class="font-weight-bold">Alumnos:</h5>
                     <form action="{{ route('ciclo.updateAlumnos') }}" method="POST">
@@ -214,8 +167,10 @@
                                             <th scope="col">#</th>
                                             <th scope="col">Seleccionar</th>
                                             <th scope="col">Nombre y Apellido</th>
-                                            <th scope="col">DNI</th>
-                                            <th scope="col">Pendiente</th>
+                                            <th scope="col">Datos</th>
+                                            <th scope="col">
+                                                {{ isset($alumnosB) ? 'Matriculado' : 'Pendiente' }}
+                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -226,24 +181,6 @@
                                                         $alumno->user->hasRole('inhabilitado') &&
                                                         in_array($alumno->user->perfil, ['Licencia', 'Sin reserva']);
                                                 @endphp
-                                                {{-- <tr>
-                                                    <td>{{ $loop->iteration }}</td>
-                                                    <td class="text-center">
-                                                        <div class="form-check">
-                                                            <input class="form-check-input" type="checkbox" name="alumnos[]"
-                                                                value="{{ $alumno->user->id }}"
-                                                                id="alumno{{ $alumno->id }}"
-                                                                style="width: 15px;height: 15px; cursor: pointer;">
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <label class="form-check-label" for="alumno{{ $alumno->id }}">
-                                                            {{ $alumno->apellidos }}, {{ $alumno->nombres }}
-                                                        </label>
-                                                    </td>
-                                                    <td>{{ $alumno->dni }}</td>
-                                                    <td>{{ $alumno->user->pendiente ?? '---' }}</td>
-                                                </tr> --}}
                                                 <tr
                                                     @if ($esResaltado) style="background-color: #fdcbbf" @endif>
                                                     <td>{{ $loop->iteration }}</td>
@@ -264,7 +201,22 @@
                                                                 class="badge bg-secondary text-white ms-2">{{ $alumno->user->perfil }}</span>
                                                         @endif
                                                     </td>
-                                                    <td>{{ $alumno->dni }}</td>
+                                                    <td>
+                                                        <ul>
+                                                            <li>DNI: {{ $alumno->dni }}</li>
+                                                            <li>Número: {{ $alumno->numero }} | Referencia:
+                                                                {{ $alumno->numero_referencia ?? 'no asignado' }}</li>
+                                                            <li>Correo: {{ $alumno->email }}</li>
+                                                            <li>Fecha de Nacimiento:
+                                                                {{ $alumno->fecha_nacimiento
+                                                                    ? \Carbon\Carbon::parse($alumno->fecha_nacimiento)->locale('es')->translatedFormat('d \\d\\e F \\d\\e\\l Y')
+                                                                    : 'Sin datos' }}
+                                                                |
+                                                                Edad:
+                                                                {{ $alumno->fecha_nacimiento ? \Carbon\Carbon::parse($alumno->fecha_nacimiento)->age . ' años' : '—' }}
+                                                            </li>
+                                                        </ul>
+                                                    </td>
                                                     <td>{{ $alumno->user->pendiente ?? '---' }}</td>
                                                 </tr>
                                             @endif
@@ -281,11 +233,19 @@
                                                 </td>
                                                 <td>
                                                     <label class="form-check-label" for="alumnoB{{ $alumno->id }}">
-                                                        {{ $alumno->apellidos }}, {{ $alumno->name }}
+                                                        {{ $alumno->apellidos }}, {{ $alumno->name }} <br>
+                                                        Número: {{ $alumno->telefono }}
                                                     </label>
                                                 </td>
                                                 <td>{{ $alumno->dni }}</td>
                                                 <td>{{ $alumno->pendiente ?? '---' }}</td>
+                                                <td class="text-center">
+                                                    @if ($alumno->alumnoB)
+                                                        ✔
+                                                    @else
+                                                        ✘
+                                                    @endif
+                                                </td>
                                             </tr>
                                         @endforeach
                                     </tbody>

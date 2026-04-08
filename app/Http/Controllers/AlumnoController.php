@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use App\Mail\NotificacionRegistro;
 use App\Models\Alumno;
 use App\Models\Ciclo;
+use App\Models\Departamento;
+use App\Models\Distrito;
 use App\Models\PeriodoActual;
 use App\Models\ppd;
 use App\Models\Programa;
+use App\Models\Provincia;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -34,11 +37,12 @@ class AlumnoController extends Controller
         } else {
             return view('alumnos.vistasAlumnos.index');
         }
-    }
+    }  
 
     public function ficha(Alumno $alumno)
     {
-        return view('alumnos.ficha', compact('alumno'));
+        $periodoActual = PeriodoActual::where('actual', true)->first();
+        return view('alumnos.ficha', compact('alumno', 'periodoActual'));
     }
 
     public function mostrarContenido(Request $request)
@@ -310,6 +314,21 @@ class AlumnoController extends Controller
         $ciclos = Ciclo::all();
         $user = auth()->user();
         $alumno->bienes_vivienda = explode(',', $alumno->bienes_vivienda);
+        $departamentos = Departamento::with('provincias.distritos')->get();
+        $departamentosData = [];
+        foreach ($departamentos as $dep) {
+            $departamentosData[$dep->nombre] = [
+                'provincia' => [],
+            ];
+
+            foreach ($dep->provincias as $prov) {
+                $departamentosData[$dep->nombre]['provincia'][$prov->nombre] =
+                    $prov->distritos->pluck('nombre')->toArray();
+            }
+        }
+        // 3. Para autoselección en edición
+        $provinciasData = Provincia::where('departamento_id', $alumno->departamento_id)->pluck('nombre')->toArray();
+        $distritosData = Distrito::where('provincia_id', $alumno->provincia_id)->pluck('nombre')->toArray();
         $opcionesBienesVivienda = [
             'Cocina a gas',
             'Cocina eléctrica',
@@ -348,7 +367,10 @@ class AlumnoController extends Controller
 
         // 🔹 Ubicación de ejemplo (solo algunos departamentos con provincias y distritos reales para demo)
 
-        return view('alumnos.edit', compact('alumno', 'programas', 'ciclos', 'user', 'opcionesBienesVivienda', 'opcionesServicios', 'opcionesHabilidades'));
+        return view('alumnos.edit', compact('alumno', 
+        'programas', 
+        'ciclos', 
+        'user', 'opcionesBienesVivienda', 'opcionesServicios', 'opcionesHabilidades', 'departamentosData', 'provinciasData', 'distritosData'));
     }
 
     public function update(Request $request, Alumno $alumno)

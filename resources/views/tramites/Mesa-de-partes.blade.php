@@ -50,7 +50,7 @@
                 <div class="row justify-content-center align-items-center fichas mt-3">
                     <div class="col-lg-4 col-12">
                         <div class="card">
-                            <a href="{{ asset('pdf/fut.docx') }}" target="_blank" class="text-center">
+                            <a href="{{ asset('pdf/FUT-2026.docx') }}" target="_blank" class="text-center">
                                 <img width="80%" src="{{ asset('img/min/Ficha-de-inscripcion-Pukllasunchis.png') }}"
                                     alt="Ficha de Inscrición Pukllasunchis">
                                 <p class="text-center">Descargar FUT</p>

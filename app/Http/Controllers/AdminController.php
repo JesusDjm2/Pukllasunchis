@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Alumno;
 use App\Models\Ciclo;
+use App\Models\Departamento;
 use App\Models\Docente;
 use App\Models\ppd;
 use App\Models\Programa;
@@ -53,13 +54,11 @@ class AdminController extends Controller
             });
         });
         $withUser = $request->get('with_user');
-
         if ($withUser === '1') {
             $query->has('user');
         } elseif ($withUser === '0') {
             $query->doesntHave('user');
         }
-
         if ($request->has('search')) {
             $searchTerms = explode(' ', $request->input('search'));
             $query->where(function ($subquery) use ($searchTerms) {
@@ -100,18 +99,16 @@ class AdminController extends Controller
     public function relacionarUsuario($alumnoId)
     {
         $alumno = Alumno::find($alumnoId);
-        // Crear un nuevo usuario con los datos del alumno
         $user = new User([
             'name' => $alumno->nombres,
             'apellidos' => $alumno->apellidos,
             'dni' => $alumno->dni,
             'email' => $alumno->email,
-            'password' => Hash::make($alumno->dni), // Puedes ajustar esto según tus necesidades
+            'password' => Hash::make($alumno->dni), 
         ]);
 
         $user->save();
 
-        // Asignar el usuario al alumno
         $alumno->user()->associate($user);
         $alumno->save();
 
@@ -141,7 +138,8 @@ class AdminController extends Controller
         $currentProgramId = $admin->programa_id;
         $currentRole = $admin->getRoleNames()->first();
         $currentCicloId = $admin->ciclo_id;
-        return view('admin.edit', compact('admin', 'programas', 'ciclos', 'currentRole', 'currentCicloId', 'currentProgramId'));
+        $departamentosData = Departamento::all();
+        return view('admin.edit', compact('admin', 'programas', 'ciclos', 'currentRole', 'currentCicloId', 'currentProgramId', 'departamentosData'));
     }
     public function store(Request $request)
     {

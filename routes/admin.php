@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminFidController;
+use App\Http\Controllers\AdminPpdController;
 use App\Http\Controllers\AlumnoController;
 use App\Http\Controllers\AlumnoCursoController;
 use App\Http\Controllers\BolsaController;
@@ -15,8 +16,10 @@ use App\Http\Controllers\DocenteCOntroller;
 use App\Http\Controllers\EnfoquesController;
 use App\Http\Controllers\EstandaresController;
 use App\Http\Controllers\PeriodoActualController;
+use App\Http\Controllers\PeriodoActualPpdController;
 use App\Http\Controllers\PeriodoController;
 use App\Http\Controllers\PostulanteController;
+use App\Http\Controllers\PostulantesPpdController;
 use App\Http\Controllers\PostulantesRegularController;
 use App\Http\Controllers\PpdController;
 use App\Http\Controllers\ProgramaController;
@@ -96,8 +99,12 @@ Route::delete(
 Route::resource('Periodo-Actual', PeriodoActualController::class)->middleware('auth')->names('periodoactual')->parameters(['Periodo-Actual' => 'periodoactual']);
 Route::post('Periodo-Actual/{periodoactual}/crear-calificaciones', [PeriodoActualController::class, 'crearCalificaciones'])
     ->name('periodoactual.crearCalificaciones')->middleware('auth');
+Route::get('/periodo-actual/{id}/actualizar-notas', [PeriodoActualController::class, 'actualizarNotas'])
+    ->name('periodoactual.actualizarNotas');
+
 Route::get('Periodo-Actual/{periodoactual}/registros', [PeriodoActualController::class, 'showRegistros'])
     ->name('periodoactual.showRegistros')->middleware('auth');
+
 Route::resource('periodos', PeriodoController::class)->middleware('auth')->names('periodos');
 Route::get('/periodos/{nombre}', [PeriodoController::class, 'show'])->name('periodos.show');
 
@@ -195,21 +202,51 @@ Route::get('/get-distritos/{provincia}', [PostulantesRegularController::class, '
 /* Route::resource('inscripcion-regulares', PostulantesRegularController::class)->middleware('auth')->names('regulares');*/
 Route::resource('inscripcion-regulares-fits', PostulantesRegularController::class)
     ->only(['index', 'edit', 'update', 'destroy', 'show'])
-    ->middleware('auth')
-    ->names('regulares');
+    ->middleware('auth')->names('regulares');
 Route::get('/regulares/{id}/enviar-correo', [PostulantesRegularController::class, 'enviarCorreo'])->name('regulares.enviarCorreo');
 Route::get('/postulantes/ingresantes', [PostulantesRegularController::class, 'crearIngresantes'])->name('postulantes.ingresantes');
 Route::post('/guardar-ingresantes', [PostulantesRegularController::class, 'guardarIngresantes'])->name('postulantes.guardarIngresantes');
-//Gestioanr periodos de admisión
+
+//Postulantes PPD
+Route::resource('periodos-de-ppd', PeriodoActualPpdController::class)->names('periodos.admin.ppd');
+Route::get('admin/periodos/ppd/{id}/export', [PeriodoActualPpdController::class, 'export'])->name('periodos.admin.ppd.export');
+
+//Prueba de rutas para guardarperiodos :
+Route::post('periodos-admision-ppd/{id}/crear-calificaciones', [PeriodoActualPpdController::class, 'crearCalificaciones'])->name('periodos.admin.ppd.crearCalificaciones');
+Route::post('periodos-admision-ppd/{id}/sincronizar-calificaciones',
+    [PeriodoActualPpdController::class, 'sincronizarCalificaciones'])
+    ->name('periodos.admin.ppd.sincronizarCalificaciones');
+
+Route::resource('admin-gestion-ppd', AdminPpdController::class)->names('admin.ppd')->parameters(['admin-gestion-ppd' => 'admin_ppd']);
+//Gestionar periodos de admisión
+Route::get('periodos-de-admision', [PeriodoActualController::class, 'periodos'])->name('periodos.admision');
 Route::resource('admin-fids', AdminFidController::class);
 Route::post('/admin-fids/{adminFid}/crear-registros', [AdminFidController::class, 'asociarSinRelacion'])->name('admin-fids.asociar-sin-relacion');
 Route::get('/admin-fids/{adminFid}/ver-postulantes', [AdminFidController::class, 'verPostulantes'])->name('admin-fids.ver-postulantes');
-Route::get('/admin-fids/{adminFid}/postulantes', [AdminFidController::class, 'verPostulantes'])
-    ->name('admin-fids.verPostulantes');
+Route::get('/admin-fids/{adminFid}/postulantes', [AdminFidController::class, 'verPostulantes'])->name('admin-fids.verPostulantes');
+
+/* Route::get('profesionalizacion-docente-postulantes/{postulanteId}/enviar-correo-ppd',
+[PostulantesPpdController::class, 'enviarCorreo'])->name('enviarcorreo.ppd'); */
+Route::post('profesionalizacion-docente-postulantes/{postulanteId}/enviar-correo-ppd',
+    [PostulantesPpdController::class, 'enviarCorreo'])->name('enviarcorreo.ppd');
+Route::resource('postulantes-profesionalizacion-docente', PostulantesPpdController::class)
+    ->parameters(['postulantes-profesionalizacion-docente' => 'postulante'])
+    ->names('postulantes.ppd');
+Route::get('profesionalizacion-docente/inscripcion', [PostulantesPpdController::class, 'create']
+)->name('postulantes.ppd.create');
+//Crear registros de postulantes PPD a Users
+Route::get('/postulantes-ppd/seleccion-masiva', [PostulantesPpdController::class, 'seleccionMasiva'])
+    ->name('postulantes.ppd.seleccion-masiva');
+Route::post('/postulantes-ppd/convertir-masivo', [PostulantesPpdController::class, 'convertirMasivo'])
+    ->name('postulantes.ppd.convertir-masivo');
+
+Route::post('/postulantes-regular/{id}/apto', [PostulantesRegularController::class, 'updateApto']);
+Route::post('/postulantes/{id}/apto', [PostulantesPpdController::class, 'updateApto']);
+Route::post('/postulantes-regular/{id}/apto2', [PostulantesRegularController::class, 'updateApto2'])->name('postulantes.apto2');
+Route::post('/postulantes-regular/{id}/apto-status', [PostulantesRegularController::class, 'updateAptoStatus'])->name('postulantes.apto-status');
 
 Route::resource('inscripcion-regulares', PostulantesRegularController::class)
-    ->only(['create', 'store'])
-    ->names('regulares');
+    ->only(['create', 'store'])->names('regulares');
 
 Route::get('/postulante/{id}/toggle-observacion', [PostulantesRegularController::class, 'toggleObservacion'])
     ->name('postulante.toggleObservacion');

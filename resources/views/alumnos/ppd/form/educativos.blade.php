@@ -4,7 +4,8 @@
     </div>
     <div class="col-lg-6 mb-2 mt-2">
         <label for="convivientes">1. ¿Con quién(es) vive(s)?:</label>
-        <select class="form-control @error('convivientes') is-invalid @enderror" id="convivientes" name="convivientes">
+        <select class="form-control @error('convivientes') is-invalid @enderror" id="convivientes" name="convivientes"
+            required>
             <option value="" disabled selected>Selecciona una opción</option>
             <option value="Solo" {{ old('convivientes') == 'Solo' ? 'selected' : '' }}>Solo</option>
             <option value="Padre" {{ old('convivientes') == 'Padre' ? 'selected' : '' }}>Padre</option>
@@ -13,43 +14,26 @@
             </option>
             <option value="Esposo/Cónyuge" {{ old('convivientes') == 'Esposo/Cónyuge' ? 'selected' : '' }}>
                 Esposo/Cónyuge</option>
-            <option value="Otro" {{ old('convivientes') == 'Otro' ? 'selected' : '' }}>Otro</option>
+            <option value="Esposo e hijos" {{ old('convivientes') == 'Esposo e hijos' ? 'selected' : '' }}>
+                Esposo/Cónyuge e hijos</option>
+            <option value="Hijos" {{ old('convivientes') == 'Hijos' ? 'selected' : '' }}>Solo con hijos</option>
+            <option value="Hermanos" {{ old('convivientes') == 'Hermanos' ? 'selected' : '' }}>Hermanos</option>
+            <option value="Abuelos" {{ old('convivientes') == 'Abuelos' ? 'selected' : '' }}>Abuelos</option>
+            <option value="Tíos" {{ old('convivientes') == 'Tíos' ? 'selected' : '' }}>Tíos</option>
+            <option value="Primos" {{ old('convivientes') == 'Primos' ? 'selected' : '' }}>Primos</option>
+            <option value="Familia política" {{ old('convivientes') == 'Familia política' ? 'selected' : '' }}>Familia
+                política (suegros/cuñados)</option>
+            <option value="Amigos" {{ old('convivientes') == 'Amigos' ? 'selected' : '' }}>Amigos</option>
+            <option value="Roomies" {{ old('convivientes') == 'Roomies' ? 'selected' : '' }}>Roomies/Compañeros
+            </option>
+            <option value="Familia extensa" {{ old('convivientes') == 'Familia extensa' ? 'selected' : '' }}>Familia
+                extensa (varios familiares)</option>
         </select>
-        <input type="text" class="form-control mt-2 @if (old('convivientes') != 'Otro') d-none @endif"
-            id="otro_conviviente" name="convivientes" value="{{ old('otro_conviviente') }}"
-            placeholder="Especificar otro">
         @error('convivientes')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
     </div>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const convivientesSelect = document.getElementById('convivientes');
-            const otroConvivienteInput = document.getElementById('otro_conviviente');
 
-            convivientesSelect.addEventListener('change', function() {
-                if (convivientesSelect.value === 'Otro') {
-                    otroConvivienteInput.classList.remove('d-none');
-                    otroConvivienteInput.setAttribute('required', 'required');
-                    otroConvivienteInput.setAttribute('name',
-                        'convivientes'); // Establecer el nombre como 'convivientes'
-                    otroConvivienteInput.setAttribute('id',
-                        'convivientes'); // Establecer el ID como 'convivientes'
-                } else {
-                    otroConvivienteInput.classList.add('d-none');
-                    otroConvivienteInput.removeAttribute('required');
-                    otroConvivienteInput.removeAttribute('name');
-                    otroConvivienteInput.removeAttribute('id');
-                }
-            });
-
-            otroConvivienteInput.addEventListener('input', function() {
-                if (convivientesSelect.value === 'Otro') {
-                    convivientesSelect.value = otroConvivienteInput.value;
-                }
-            });
-        });
-    </script>
     <div class="col-lg-6 mb-2 mt-2">
         <label for="quien_mantiene">2. Persona que mantiene el hogar:</label>
         <select class="form-control form-control-sm @error('quien_mantiene') is-invalid @enderror" id="quien_mantiene"
@@ -114,7 +98,8 @@
     <div class="col-lg-4 mb-2 mt-2">
         <label for="ano_culminaste">2. Año en que culminaste:</label>
         <input type="number" class="form-control form-control-sm @error('ano_culminaste') is-invalid @enderror"
-            id="ano_culminaste" name="ano_culminaste" placeholder="Ingrese el año que culmino sus estudios superiores" value="{{ old('ano_culminaste') }}">
+            id="ano_culminaste" name="ano_culminaste" placeholder="Ingrese el año que culmino sus estudios superiores"
+            value="{{ old('ano_culminaste') }}">
         @error('ano_culminaste')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
@@ -155,8 +140,8 @@
         <label for="dep_dist_prov_institucion">6. Departamento, Distrito y Prov. de la I.E. de Procedencia:</label>
         <input type="text"
             class="form-control form-control-sm @error('dep_dist_prov_institucion') is-invalid @enderror"
-            id="dep_dist_prov_institucion" name="dep_dist_prov_institucion" placeholder="Ejemplo: (Cusco - Cusco - Jan Jerónimo)"
-            value="{{ old('dep_dist_prov_institucion') }}">
+            id="dep_dist_prov_institucion" name="dep_dist_prov_institucion"
+            placeholder="Ejemplo: (Cusco - Cusco - Jan Jerónimo)" value="{{ old('dep_dist_prov_institucion') }}">
         @error('dep_dist_prov_institucion')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
@@ -213,7 +198,8 @@
     </div>
 
     <div class="col-lg-4 mb-2 mt-2">
-        <label for="postulaciones_otros">11.Número de veces que postuló a otras carreras en otras Instituciones:</label>
+        <label for="postulaciones_otros">11.Número de veces que postuló a otras carreras en otras
+            Instituciones:</label>
         <input type="number" class="form-control form-control-sm @error('postulaciones_otros') is-invalid @enderror"
             id="postulaciones_otros" name="postulaciones_otros" placeholder="Ingrese la cantidad"
             value="{{ old('postulaciones_otros') }}">

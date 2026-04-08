@@ -6,18 +6,21 @@
             <div class="row justify-content-center">
                 <div class="col-lg-12">
                     <div class="card mt-3 mb-3">
-                        <h5 class="text-center mt-3 mb-2">Formulario de Inscripción Regular 2025</h5>
+                        <h5 class="text-center mt-3 mb-2">Formulario de Inscripción Regssular 2026</h5>
                         <div class="mx-auto mb-2"
                             style="width: 30px; height: 4px; background-color: #4e73df; border-radius: 5px;"></div>
                         <p class="text-center">Los campos con (<span class="text-danger">*</span>) son obligatorios.</p>
                         <div class="mt-2">
                             @if ($errors->any())
-                                <div class="alert alert-danger">
-                                    <ul>
+                                <div class="alert alert-danger alert-dismissible fade show">
+                                    <strong><i class="fas fa-exclamation-triangle"></i> Por favor, corrige los siguientes
+                                        errores:</strong>
+                                    <ul class="mb-0 mt-2">
                                         @foreach ($errors->all() as $error)
                                             <li>{{ $error }}</li>
                                         @endforeach
                                     </ul>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                                 </div>
                             @endif
                         </div>
@@ -35,44 +38,6 @@
             </div>
         </div>
         <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-        <script>
-            document.getElementById('btn-consultar').addEventListener('click', async () => {
-                const dni = document.getElementById('dni').value;
-                if (dni.length !== 8) {
-                    alert('El DNI debe tener 8 dígitos');
-                    return;
-                }
-                try {
-                    const response = await fetch('{{ route('consulta.dni') }}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        body: JSON.stringify({
-                            dni
-                        })
-                    });
-                    const data = await response.json();                   
-                    if (data.success && data.data) {
-                        document.getElementById('nombres').value = data.data.nombres ?? '';
-                        document.getElementById('apellido_paterno').value = data.data.apellido_paterno ?? '';
-                        document.getElementById('apellido_materno').value = data.data.apellido_materno ?? '';
-                        // 🔹 Combinar los apellidos visibles
-                        const apellidosCompletos = [
-                            data.data.apellido_paterno ?? '',
-                            data.data.apellido_materno ?? ''
-                        ].filter(Boolean).join(' '); // Evita espacios dobles si falta uno
-                        document.getElementById('apellidos').value = apellidosCompletos;
-                    } else {
-                        alert('No se encontró información para ese DNI.');
-                    }
-                } catch (error) {
-                    console.error(error);
-                    alert('Error consultando el DNI');
-                }
-            });
-        </script>
         <script>
             $(document).ready(function() {
                 // 🌎 FUNCIONES REUTILIZABLES
@@ -211,7 +176,7 @@
                         }
                     }
                 });
-               
+
                 function toggleVoucherRequirement() {
                     const esBeca = $('#estudio_beca').val();
                     const $voucherInput = $('#voucher_pago');

@@ -116,7 +116,9 @@
     <div class="col-lg-6 mb-2">
         <label for="numero">Celular:</label>
         <input type="text" class="form-control form-control-sm @error('numero') is-invalid @enderror" id="numero"
-            name="numero" value="{{ old('numero') }}" required>
+            name="numero" value="{{ old('numero', optional($user)->telefono) }}"
+            @if (auth()->check())  @endif required>
+
         @error('numero')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
@@ -203,6 +205,10 @@
             <option value="Estoy en Cusco de lunes a viernes y los fines de semana en mi comunidad"
                 {{ old('permanencia_vivienda') == 'Estoy en Cusco de lunes a viernes y los fines de semana en mi comunidad' ? 'selected' : '' }}>
                 Estoy en Cusco de lunes a viernes y los fines de semana en mi comunidad</option>
+            <option value="Vivo en comunidad y me traslado al Cusco fines de semana"
+                {{ old('permanencia_vivienda') == 'Vivo en comunidad y me traslado al Cusco fines de semana' ? 'selected' : '' }}>
+                Vivo en comunidad y me traslado al Cusco fines de semana
+            </option>
         </select>
         @error('permanencia_vivienda')
             <span class="invalid-feedback" role="alert">{{ $message }}</span>
@@ -259,35 +265,102 @@
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
     </div>
-    <div class="col-lg-6 mb-2">
-        <label for="lengua_1">Lengua 1:</label>
-        <select class="form-control form-control-sm @error('lengua_1') is-invalid @enderror" id="lengua_1"
-            name="lengua_1" required>
-            <option value="" disabled>Selecciona una opción</option>
-            <option value="Quechua" {{ old('lengua_1') == 'Quechua' ? 'selected' : '' }}>Quechua</option>
-            <option value="Castellano" {{ old('lengua_1') == 'Castellano' ? 'selected' : '' }}>Castellano</option>
-            <option value="Otro" {{ old('lengua_1') == 'Otro' ? 'selected' : '' }}>Otro</option>
-        </select>
-        @error('lengua_1')
-            <div class="invalid-feedback">{{ $message }}</div>
-        @enderror
+    <div class="row">
+        <div class="col-lg-6 mb-2">
+            <label for="lengua_1">Lengua 1:</label>
+            <select class="form-control form-control-sm @error('lengua_1') is-invalid @enderror" id="lengua_1"
+                name="lengua_1" required>
+                <option value="" disabled>Selecciona una opción</option>
+                <option value="Quechua" {{ old('lengua_1') == 'Quechua' ? 'selected' : '' }}>Quechua</option>
+                <option value="Castellano" {{ old('lengua_1') == 'Castellano' ? 'selected' : '' }}>Castellano</option>
+                <option value="Otro" {{ old('lengua_1') == 'Otro' ? 'selected' : '' }}>Otro</option>
+            </select>
+            @error('lengua_1')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="col-lg-6 mb-2">
+            <label for="lengua_2">Lengua 2:</label>
+            <select class="form-control form-control-sm @error('lengua_2') is-invalid @enderror" id="lengua_2"
+                name="lengua_2" required>
+                <option value="" disabled>Selecciona una opción</option>
+                <option value="Quechua" {{ old('lengua_2') == 'Quechua' ? 'selected' : '' }}>Quechua</option>
+                <option value="Castellano" {{ old('lengua_2') == 'Castellano' ? 'selected' : '' }}>Castellano</option>
+                <option value="Otro" {{ old('lengua_2') == 'Otro' ? 'selected' : '' }}>Otro</option>
+            </select>
+            @error('lengua_2')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
     </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const lengua1 = document.getElementById('lengua_1');
+            const lengua2 = document.getElementById('lengua_2');
+
+            // Guardar todas las opciones originales
+            const opcionesOriginales = Array.from(lengua2.options).map(opt => ({
+                value: opt.value,
+                text: opt.text,
+                disabled: opt.disabled
+            }));
+
+            function actualizarOpcionesLengua2() {
+                const seleccionLengua1 = lengua1.value;
+                // Limpiar opciones actuales
+                lengua2.innerHTML = '';
+                // Agregar opción por defecto
+                const defaultOption = document.createElement('option');
+                defaultOption.value = '';
+                defaultOption.disabled = true;
+                defaultOption.selected = true;
+                defaultOption.textContent = 'Selecciona una opción';
+                lengua2.appendChild(defaultOption);
+                // Filtrar y agregar opciones (excluir la seleccionada en lengua 1)
+                opcionesOriginales.forEach(opcion => {
+                    // Saltar la opción vacía y la seleccionada en lengua 1
+                    if (opcion.value && opcion.value !== seleccionLengua1) {
+                        const option = document.createElement('option');
+                        option.value = opcion.value;
+                        option.textContent = opcion.text;
+
+                        // Mantener el valor de old si existe y es válido
+                        const oldValue = '{{ old('lengua_2') }}';
+                        if (oldValue && opcion.value === oldValue && oldValue !== seleccionLengua1) {
+                            option.selected = true;
+                        }
+
+                        lengua2.appendChild(option);
+                    }
+                });
+                // Si no hay opciones disponibles, deshabilitar el select
+                if (lengua2.options.length <= 1) {
+                    lengua2.disabled = true;
+                    // Mostrar mensaje de error personalizado
+                    if (!document.getElementById('lengua2-error')) {
+                        const errorDiv = document.createElement('div');
+                        errorDiv.id = 'lengua2-error';
+                        errorDiv.className = 'invalid-feedback d-block';
+                        errorDiv.textContent = 'No hay opciones disponibles para Lengua 2';
+                        lengua2.parentNode.appendChild(errorDiv);
+                    }
+                } else {
+                    lengua2.disabled = false;
+                    const errorDiv = document.getElementById('lengua2-error');
+                    if (errorDiv) errorDiv.remove();
+                }
+            }
+            // Ejecutar al cargar la página (para mantener estado después de error)
+            actualizarOpcionesLengua2();
+
+            // Ejecutar al cambiar lengua 1
+            lengua1.addEventListener('change', actualizarOpcionesLengua2);
+        });
+    </script>
     <div class="col-lg-6 mb-2">
-        <label for="lengua_2">Lengua 2:</label>
-        <select class="form-control form-control-sm @error('lengua_2') is-invalid @enderror" id="lengua_2"
-            name="lengua_2" required>
-            <option value="" disabled>Selecciona una opción</option>           
-            <option value="Quechua" {{ old('lengua_2') == 'Quechua' ? 'selected' : '' }}>Quechua</option>
-            <option value="Castellano" {{ old('lengua_2') == 'Castellano' ? 'selected' : '' }}>Castellano</option>
-            <option value="Otro" {{ old('lengua_2') == 'Otro' ? 'selected' : '' }}>Otro</option>
-        </select>
-        @error('lengua_2')
-            <div class="invalid-feedback">{{ $message }}</div>
-        @enderror
-    </div>
-    <div class="col-lg-6 mb-2">
-        <label for="estado_civil">Estado Civil:</label>
+        <label for="estado_civil">Estado Civil: <span class="text-danger">*</span></label>
         <select class="form-control form-control-sm mb-2 @error('estado_civil') is-invalid @enderror"
             name="estado_civil" required>
             <option disabled selected>Seleccionar estado civil</option>
@@ -303,6 +376,10 @@
             <option value="Divorciado"
                 {{ old('estado_civil', isset($alumno) ? $alumno->estado_civil : '') == 'Divorciado' ? 'selected' : '' }}>
                 Divorciado</option>
+            <option value="Conviviente"
+                {{ old('estado_civil', isset($alumno) ? $alumno->estado_civil : '') == 'Conviviente' ? 'selected' : '' }}>
+                Conviviente
+            </option>
         </select>
         @error('estado_civil')
             <span class="invalid-feedback" role="alert">
@@ -354,7 +431,7 @@
     </div>
 
     <div class="col-lg-6 mb-2">
-        <label for="num_comprobante">N° Voucher Caja Cusco:
+        <label for="num_comprobante">N° Boleta de pago:
             <small> <span class="text-primary" type="button" data-toggle="modal" data-target="#exampleModal">
                     Ejemplo
                 </span></small>
@@ -369,16 +446,13 @@
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
     </div>
-    
+
     <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
         aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
-                <img src="{{ asset('img/novedades/Voucher-cajaCusco.jpg') }}" alt="">
+                <img src="{{ asset('img/novedades/Boleta-de-pago-PPD.webp') }}" alt="">
             </div>
         </div>
     </div>
-
 </div>
-
-

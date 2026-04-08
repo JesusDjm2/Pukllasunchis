@@ -81,6 +81,11 @@
                                                 <th>Lugar de Nacimiento</th>
                                                 <td>{{ $postulante->lugar_nacimiento }}</td>
                                             </tr>
+                                            <!-- Nuevo campo etnicidad -->
+                                            <tr>
+                                                <th>Etnicidad</th>
+                                                <td>{{ $postulante->etnicoidad ?? 'N/A' }}</td>
+                                            </tr>
                                             <tr>
                                                 <th>Número de Hijos</th>
                                                 <td>{{ $postulante->num_hijos ?? 'N/A' }}</td>
@@ -102,7 +107,7 @@
                                 <div class="table-responsive">
                                     <table class="table table-bordered tabla-sin-eventos">
                                         <tbody>
-                                            
+
                                             <tr>
                                                 <th>Provincia de Nacimiento</th>
                                                 <td>{{ $postulante->provincia_nacimiento }}</td>

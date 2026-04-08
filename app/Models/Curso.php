@@ -16,14 +16,17 @@ class Curso extends Model
     {
         return $this->belongsTo(Ciclo::class);
     }
+
     public function users()
     {
         return $this->belongsToMany(User::class)->withTimestamps();
     }
+
     public function docentes()
     {
         return $this->belongsToMany(Docente::class, 'curso_docente');
     }
+
     public function competencias()
     {
         return $this->belongsToMany(Competencia::class);
@@ -123,4 +126,35 @@ class Curso extends Model
 
         return round(($alumnosCompletos / $total) * 100, 2);
     }
+
+    /* public function alumnosValidosPpdIds(): \Illuminate\Support\Collection
+    {
+        return $this->calificacionesppd()
+            ->whereHas('ppd.user.roles', fn ($q) => $q->where('name', 'alumnoB'))
+            ->pluck('ppd_id')
+            ->unique()
+            ->values();
+    }
+
+    public function porcentajePPD(
+        array $camposClave = ['calificacion_curso']
+    ): float {
+        $ids = $this->alumnosValidosPpdIds();
+        $total = $ids->count();
+
+        if ($total === 0) {
+            return 0.0;
+        }
+
+        $q = $this->calificacionesppd()
+            ->whereIn('ppd_id', $ids);
+
+        foreach ($camposClave as $campo) {
+            $q->whereRaw("NULLIF($campo, '') IS NOT NULL");
+        }
+
+        $alumnosCompletos = $q->count(DB::raw('DISTINCT ppd_id'));
+
+        return round(($alumnosCompletos / $total) * 100, 2);
+    } */
 }

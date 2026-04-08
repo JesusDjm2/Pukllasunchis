@@ -8,6 +8,25 @@
                 Volver
             </a>
         </div>
+        
+        {{-- MOSTRAR ERRORES GENERALES DEL FORMULARIO --}}
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                <ul class="mb-0">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        {{-- MOSTRAR MENSAJE DE ÉXITO --}}
+        @if (session('success'))
+            <div class="alert alert-success">
+                {{ session('success') }}
+            </div>
+        @endif
+
         <div class="row">
             <style>
                 .vertical-align {
@@ -48,11 +67,6 @@
                 </div>
             </div>
             <div class="col-lg-12">
-                @if (session('success'))
-                    <div class="alert alert-success">
-                        {{ session('success') }}
-                    </div>
-                @endif
                 <form id="editForm" method="POST" action="{{ route('adminUpdate', $admin->id) }}" class="mt-3"
                     enctype="multipart/form-data">
                     @csrf
@@ -92,54 +106,59 @@
                                 }
                             }
                         </script>
+                        
                         <div class="col-lg-4 mb-3">
                             <label for="name" class="form-label">Nombre:</label>
                             <input type="text" class="form-control form-control-sm @error('name') is-invalid @enderror"
-                                id="name" name="name" value="{{ $admin->name }}" required>
+                                id="name" name="name" value="{{ old('name', $admin->name) }}" required>
                             @error('name')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
+                        
                         <div class="col-lg-4 mb-3">
                             <label for="apellidos" class="form-label">Apellidos:</label>
                             <input type="text"
                                 class="form-control form-control-sm @error('apellidos') is-invalid @enderror" id="apellidos"
-                                name="apellidos" value="{{ $admin->apellidos }}" required>
+                                name="apellidos" value="{{ old('apellidos', $admin->apellidos) }}" required>
                             @error('apellidos')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
+                        
                         <div class="col-lg-2 mb-3">
                             <label for="dni" class="form-label">DNI:</label>
                             <input type="text" class="form-control form-control-sm @error('dni') is-invalid @enderror"
-                                id="dni" name="dni" value="{{ $admin->dni }}" required>
+                                id="dni" name="dni" value="{{ old('dni', $admin->dni) }}" required>
                             @error('dni')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
+                        
                         <div class="col-lg-3 mb-3">
                             <label for="email" class="form-label">Correo electrónico:</label>
                             <input type="email" class="form-control form-control-sm @error('email') is-invalid @enderror"
-                                id="email" name="email" value="{{ $admin->email }}" required>
+                                id="email" name="email" value="{{ old('email', $admin->email) }}" required>
                             @error('email')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
+                        
                         <div class="col-lg-3 mb-3">
                             <label for="password">Nueva Contraseña (opcional):</label>
-                            <input type="password" name="password" id="password" class="form-control form-control-sm">
-                            @if ($errors->has('password'))
-                                <span class="text-danger">{{ $errors->first('password') }}</span>
-                            @endif
+                            <input type="password" name="password" id="password" class="form-control form-control-sm @error('password') is-invalid @enderror">
+                            @error('password')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
+                        
                         <div class="col-lg-4 mb-3">
                             <label for="password_confirmation">Confirmar Contraseña (opcional):</label>
                             <input type="password" name="password_confirmation" id="password_confirmation"
-                                class="form-control form-control-sm" placeholder="Confirmar contraseña">
-
-                            @if ($errors->has('password_confirmation'))
-                                <span class="text-danger">{{ $errors->first('password_confirmation') }}</span>
-                            @endif
+                                class="form-control form-control-sm @error('password') is-invalid @enderror" placeholder="Confirmar contraseña">
+                            @error('password')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div class="col-lg-6 mb-3">
@@ -147,83 +166,77 @@
                             <select id="role" name="role"
                                 class="form-control form-control-sm @error('role') is-invalid @enderror">
                                 <option disabled>Seleccionar Rol</option>
-                                <option value="admin" {{ $currentRole === 'admin' ? 'selected' : '' }}>Administrador
-                                </option>
-                                <option value="docente" {{ $currentRole === 'docente' ? 'selected' : '' }}>Docente</option>
-                                <option value="alumno" {{ $currentRole === 'alumno' ? 'selected' : '' }}>Alumno</option>
-                                <option value="alumnoB" {{ $currentRole === 'alumnoB' ? 'selected' : '' }}>Alumno PPD
-                                </option>
-                                <option value="adminB" {{ $currentRole === 'adminB' ? 'selected' : '' }}>Administrador
-                                    Bolsa</option>
-                                <option value="inhabilitado" {{ $currentRole === 'inhabilitado' ? 'selected' : '' }}>
-                                    Inhabilitado
-                                </option>
+                                <option value="admin" {{ old('role', $currentRole) === 'admin' ? 'selected' : '' }}>Administrador</option>
+                                <option value="docente" {{ old('role', $currentRole) === 'docente' ? 'selected' : '' }}>Docente</option>
+                                <option value="alumno" {{ old('role', $currentRole) === 'alumno' ? 'selected' : '' }}>Alumno</option>
+                                <option value="alumnoB" {{ old('role', $currentRole) === 'alumnoB' ? 'selected' : '' }}>Alumno PPD</option>
+                                <option value="adminB" {{ old('role', $currentRole) === 'adminB' ? 'selected' : '' }}>Administrador Bolsa</option>
+                                <option value="inhabilitado" {{ old('role', $currentRole) === 'inhabilitado' ? 'selected' : '' }}>Inhabilitado</option>
                             </select>
                             @error('role')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
+                        
                         <div class="col-lg-6">
                             <div id="motivo-inhabilitado-container" style="display: none;">
-                                <label for="perfil">Motivo de inhabilitación</label>
-                                <select name="perfil" id="perfil"
+                                <label for="perfil_inhabilitado">Motivo de inhabilitación</label>
+                                <select name="perfil" id="perfil_inhabilitado"
                                     class="form-control form-control-sm @error('perfil') is-invalid @enderror">
-                                    <option value="Deuda"
-                                        {{ old('perfil', $admin->perfil) == 'Deuda' ? 'selected' : '' }}>Deuda</option>
-                                    <option value="Sin matrícula"
-                                        {{ old('perfil', $admin->perfil) == 'Sin matrícula' ? 'selected' : '' }}>Sin
-                                        Matrícula</option>
-                                    <option value="Licencia"
-                                        {{ old('perfil', $admin->perfil) == 'Licencia' ? 'selected' : '' }}>Licencia
-                                    </option>
-                                    <option value="Reserva"
-                                        {{ old('perfil', $admin->perfil) == 'Reserva' ? 'selected' : '' }}>Reserva</option>
+                                    <option value="Deuda" {{ old('perfil', $admin->perfil) == 'Deuda' ? 'selected' : '' }}>Deuda</option>
+                                    <option value="Sin matrícula" {{ old('perfil', $admin->perfil) == 'Sin matrícula' ? 'selected' : '' }}>Sin Matrícula</option>
+                                    <option value="Licencia" {{ old('perfil', $admin->perfil) == 'Licencia' ? 'selected' : '' }}>Licencia</option>
+                                    <option value="Reserva" {{ old('perfil', $admin->perfil) == 'Reserva' ? 'selected' : '' }}>Reserva</option>
                                 </select>
+                                @error('perfil')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
                         </div>
+                        
                         <div class="col-lg-12" id="admin-fields" style="display: none;">
                             <div class="row">
                                 <div class="col-lg-3 mb-3">
                                     <label for="programa_id" class="form-label">Seleccionar Programa:</label>
-                                    <select id="programa_id" name="programa_id" class="form-control form-control-sm">
-                                        <option disabled>Seleccionar Programa</option>
+                                    <select id="programa_id" name="programa_id" class="form-control form-control-sm @error('programa_id') is-invalid @enderror">
+                                        <option value="">Seleccionar Programa</option>
                                         @foreach ($programas as $programa)
                                             <option value="{{ $programa->id }}"
-                                                {{ $programa->id == $currentProgramId ? 'selected' : '' }}>
+                                                {{ old('programa_id', $currentProgramId) == $programa->id ? 'selected' : '' }}>
                                                 {{ $programa->nombre }}
                                             </option>
                                         @endforeach
                                     </select>
+                                    @error('programa_id')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
 
                                 <div class="col-lg-3 mb-3">
                                     <label for="ciclo_id" class="form-label">Seleccionar Ciclo:</label>
-                                    <select id="ciclo_id" name="ciclo_id" class="form-control form-control-sm">
-                                        <option disabled>Seleccionar Ciclo</option>
+                                    <select id="ciclo_id" name="ciclo_id" class="form-control form-control-sm @error('ciclo_id') is-invalid @enderror">
+                                        <option value="">Seleccionar Ciclo</option>
                                         @foreach ($ciclos as $ciclo)
                                             <option value="{{ $ciclo->id }}"
-                                                {{ $ciclo->id == $currentCicloId ? 'selected' : '' }}>
+                                                {{ old('ciclo_id', $currentCicloId) == $ciclo->id ? 'selected' : '' }}>
                                                 {{ $ciclo->nombre }}
                                             </option>
                                         @endforeach
                                     </select>
+                                    @error('ciclo_id')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
+                                
                                 <div class="col-lg-3 mb-2">
                                     <label for="condicion">Condición:</label>
                                     <select class="form-control form-control-sm @error('condicion') is-invalid @enderror"
                                         id="condicion" name="condicion">
-                                        <option value="" disabled {{ !$admin->condicion ? 'selected' : '' }}>
-                                            Seleccionar Condición</option>
-                                        <option value="Regular" {{ $admin->condicion == 'Regular' ? 'selected' : '' }}>
-                                            Regular</option>
-                                        <option value="Beca Continua"
-                                            {{ $admin->condicion == 'Beca Continua' ? 'selected' : '' }}>Beca Continua
-                                        </option>
-                                        <option value="Beca 18" {{ $admin->condicion == 'Beca 18' ? 'selected' : '' }}>
-                                            Beca
-                                            18</option>
-                                        <option value="Beca Puklla"
-                                            {{ $admin->condicion == 'Beca Puklla' ? 'selected' : '' }}>Beca Puklla</option>
+                                        <option value="" {{ old('condicion', $admin->condicion) == '' ? 'selected' : '' }}>Seleccionar Condición</option>
+                                        <option value="Regular" {{ old('condicion', $admin->condicion) == 'Regular' ? 'selected' : '' }}>Regular</option>
+                                        <option value="Beca Continua" {{ old('condicion', $admin->condicion) == 'Beca Continua' ? 'selected' : '' }}>Beca Continua</option>
+                                        <option value="Beca 18" {{ old('condicion', $admin->condicion) == 'Beca 18' ? 'selected' : '' }}>Beca 18</option>
+                                        <option value="Beca Puklla" {{ old('condicion', $admin->condicion) == 'Beca Puklla' ? 'selected' : '' }}>Beca Puklla</option>
                                     </select>
                                     @error('condicion')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -231,21 +244,14 @@
                                 </div>
 
                                 <div class="col-lg-3 mb-2">
-                                    <label for="perfil">Perfil: <small>Este campo se usa para bolsa de
-                                            trabajo</small></label>
+                                    <label for="perfil_bolsa">Perfil: <small>Este campo se usa para bolsa de trabajo</small></label>
                                     <select class="form-control form-control-sm @error('perfil') is-invalid @enderror"
-                                        id="perfil" name="perfil">
-                                        <option value="" disabled {{ !$admin->perfil ? 'selected' : '' }}>
-                                            Seleccionar
-                                            Perfil</option>
-                                        <option value="Estudiante" {{ $admin->perfil == 'Estudiante' ? 'selected' : '' }}>
-                                            Estudiante</option>
-                                        <option value="Bachiller" {{ $admin->perfil == 'Bachiller' ? 'selected' : '' }}>
-                                            Bachiller</option>
-                                        <option value="Titulado" {{ $admin->perfil == 'Titulado' ? 'selected' : '' }}>
-                                            Titulado</option>
-                                        <option value="Egresado" {{ $admin->perfil == 'Egresado' ? 'selected' : '' }}>
-                                            Egresado</option>
+                                        id="perfil_bolsa" name="perfil">
+                                        <option value="" {{ old('perfil', $admin->perfil) == '' ? 'selected' : '' }}>Seleccionar Perfil</option>
+                                        <option value="Estudiante" {{ old('perfil', $admin->perfil) == 'Estudiante' ? 'selected' : '' }}>Estudiante</option>
+                                        <option value="Bachiller" {{ old('perfil', $admin->perfil) == 'Bachiller' ? 'selected' : '' }}>Bachiller</option>
+                                        <option value="Titulado" {{ old('perfil', $admin->perfil) == 'Titulado' ? 'selected' : '' }}>Titulado</option>
+                                        <option value="Egresado" {{ old('perfil', $admin->perfil) == 'Egresado' ? 'selected' : '' }}>Egresado</option>
                                     </select>
                                     @error('perfil')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -254,9 +260,9 @@
 
                                 <div class="col-lg-3 mb-4">
                                     <label for="beca" class="form-label">Beca:</label>
-                                    <select id="beca" name="beca" class="form-control form-control-sm">
-                                        <option value="1" {{ $admin->beca ? 'selected' : '' }}>Sí</option>
-                                        <option value="0" {{ !$admin->beca ? 'selected' : '' }}>No</option>
+                                    <select id="beca" name="beca" class="form-control form-control-sm @error('beca') is-invalid @enderror">
+                                        <option value="1" {{ old('beca', $admin->beca) == 1 ? 'selected' : '' }}>Sí</option>
+                                        <option value="0" {{ old('beca', $admin->beca) == 0 ? 'selected' : '' }}>No</option>
                                     </select>
                                     @error('beca')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -264,37 +270,33 @@
                                 </div>
 
                                 <div class="col-lg-3 mb-3">
-                                    <label for="tiene_cursos_pendientes" class="form-label">¿Tiene cursos
-                                        pendientes?</label>
+                                    <label for="tiene_cursos_pendientes" class="form-label">¿Tiene cursos pendientes?</label>
                                     <select id="tiene_cursos_pendientes" name="tiene_cursos_pendientes"
                                         class="form-control form-control-sm">
-                                        <option value="1"
-                                            {{ old('tiene_cursos_pendientes', isset($admin->pendiente) ? 1 : null) == 1 ? 'selected' : '' }}>
-                                            Sí</option>
-                                        <option value="0"
-                                            {{ old('tiene_cursos_pendientes', isset($admin->pendiente) ? 1 : null) == 0 ? 'selected' : '' }}>
-                                            No</option>
+                                        <option value="1" {{ old('tiene_cursos_pendientes', isset($admin->pendiente) ? 1 : 0) == 1 ? 'selected' : '' }}>Sí</option>
+                                        <option value="0" {{ old('tiene_cursos_pendientes', isset($admin->pendiente) ? 1 : 0) == 0 ? 'selected' : '' }}>No</option>
                                     </select>
                                 </div>
+                                
                                 <div class="col-lg-12 mb-4" id="cursos-pendientes"
-                                    style="{{ old('tiene_cursos_pendientes', isset($admin->pendiente) ? 1 : null) == 1 ? '' : 'display: none;' }}">
+                                    style="{{ old('tiene_cursos_pendientes', isset($admin->pendiente) ? 1 : 0) == 1 ? '' : 'display: none;' }}">
                                     <label for="pendiente" class="form-label">Cursos Pendientes:</label>
                                     <input type="text" id="pendiente" name="pendiente"
-                                        class="form-control form-control-sm"
+                                        class="form-control form-control-sm @error('pendiente') is-invalid @enderror"
                                         value="{{ old('pendiente', $admin->pendiente ?? '') }}"
                                         placeholder="Escriba los cursos pendientes separados por comas">
                                     @error('pendiente')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
-
                             </div>
                         </div>
 
-                        <button type="submit" class="btn btn-primary">Actualizar</button>
+                        <div class="col-lg-12">
+                            <button type="submit" class="btn btn-primary">Actualizar</button>
+                        </div>
                     </div>
                 </form>
-
             </div>
         </div>
     </div>
@@ -304,50 +306,17 @@
             var cursosPendientesContainer = document.getElementById('cursos-pendientes');
 
             tieneCursosPendientes.addEventListener('change', function() {
-                if (tieneCursosPendientes.value == 1) {
-                    cursosPendientesContainer.style.display = 'block';
-                } else {
-                    cursosPendientesContainer.style.display = 'none';
-                }
+                cursosPendientesContainer.style.display = tieneCursosPendientes.value == 1 ? 'block' : 'none';
             });
-
-            // Ensure the correct display state on page load
-            if (tieneCursosPendientes.value == 1 || '{{ old('tiene_cursos_pendientes') }}' == 1) {
-                cursosPendientesContainer.style.display = 'block';
-            } else {
-                cursosPendientesContainer.style.display = 'none';
-            }
         });
     </script>
-
-    {{-- <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var roleSelect = document.getElementById('role');
-            var adminFields = document.getElementById('admin-fields');
-            var motivoInhabilitadoContainer = document.getElementById('motivo-inhabilitado-container');
-
-            function toggleFields() {
-                var selectedRole = roleSelect.value;
-                // Mostrar campos si es alumno o alumnoB
-                adminFields.style.display = (selectedRole === 'alumno' || selectedRole === 'alumnoB') ?
-                    'block' :
-                    'none';
-                // Mostrar motivo solo si es inhabilitado
-                motivoInhabilitadoContainer.style.display = (selectedRole === 'inhabilitado') ?
-                    'block' :
-                    'none';
-            }
-            roleSelect.addEventListener('change', toggleFields);
-            toggleFields(); // Ejecutar al cargar
-        });
-    </script> --}}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const roleSelect = document.getElementById('role');
             const adminFields = document.getElementById('admin-fields');
             const motivoInhabilitadoContainer = document.getElementById('motivo-inhabilitado-container');
-            const selectPerfilBolsa = document.querySelector('#admin-fields select[name="perfil"]');
-            const selectPerfilInhabilitado = document.querySelector('#motivo-inhabilitado-container select');
+            const selectPerfilBolsa = document.getElementById('perfil_bolsa');
+            const selectPerfilInhabilitado = document.getElementById('perfil_inhabilitado');
 
             function toggleFields() {
                 const selectedRole = roleSelect.value;
@@ -381,33 +350,15 @@
             toggleFields(); // Ejecutar al cargar
         });
     </script>
-
-
-
-    {{-- <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var roleSelect = document.getElementById('role');
-            var adminFields = document.getElementById('admin-fields');
-
-            function toggleFields() {
-                if (roleSelect.value === 'alumno' || roleSelect.value === 'alumnoB') {
-                    adminFields.style.display = 'block';
-                } else {
-                    adminFields.style.display = 'none';
-                }
-            }
-
-            roleSelect.addEventListener('change', toggleFields);
-            toggleFields();
-        });
-    </script> --}}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             var programaSelector = document.getElementById('programa_id');
             var cicloSelector = document.getElementById('ciclo_id');
+            
             programaSelector.addEventListener('change', function() {
                 var programaId = programaSelector.value;
-                cicloSelector.innerHTML = '<option disabled selected>Seleccionar Ciclo</option>';
+                cicloSelector.innerHTML = '<option value="">Seleccionar Ciclo</option>';
+                
                 if (programaId) {
                     fetch('/obtener-ciclos/' + programaId)
                         .then(response => response.json())

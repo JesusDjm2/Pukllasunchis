@@ -85,26 +85,16 @@
                                         <em>Sin número</em>
                                     @endif
                                 </li>
+                                <li class="pl-2">
+                                    Te consideras: {{ optional($alumno->alumnoB)->te_consideras ?? 'No registrado' }}
+                                </li>
+                                <li class="pl-2">
+                                    Número: {{ optional($alumno->alumnoB)->numero ?? 'No registrado' }}
+                                </li>
                             </td>
                             <td>{{ $alumno->ciclo->programa->nombre }} - {{ $alumno->ciclo->nombre }}</td>
 
-                            <td>
-                                {{-- @if ($alumno->alumnoB)
-                                    <a href="{{ route('alumnos.show', $alumno->alumnoB->id) }}"
-                                        class="btn btn-sm btn-primary" title="Ver">
-                                        <i class="fa fa-eye"></i>
-                                    </a>
-                                    <a href="{{ route('alumnos.edit', $alumno->alumnoB->id) }}"
-                                        class="btn btn-sm btn-warning" title="Editar">
-                                        <i class="fa fa-edit"></i>
-                                    </a>
-                                    <button type="button" class="btn btn-sm btn-danger" title="Eliminar"
-                                        onclick="confirmDelete('{{ route('alumnos.destroy', $alumno->alumnoB->id) }}', '{{ $alumno->apellidos }}, {{ $alumno->nombres }}')">
-                                        <i class="fa fa-trash"></i>
-                                    </button>
-                                @else
-                                    <em>Sin matrícula</em>
-                                @endif --}}
+                            <td>                               
                                 @if ($alumno->alumnoB)
                                     <a href="{{ route('ppd.show', $alumno->alumnoB->id) }}" class="btn btn-sm btn-primary"
                                         title="Ver">

@@ -189,7 +189,7 @@
                                                 <li><a href="{{ route('primaria') }}">Educación Primaria</a></li>
                                                 <li><a href="{{ route('primariaEIB') }}">Educación Primaria EIB</a>
                                                 </li>
-                                                <li><a href="{{ route('formacion') }}">Formación Continua</a></li>
+                                                {{--  <li><a href="{{ route('formacion') }}">Formación Continua</a></li> --}}
                                                 {{-- <li><a href="#">Cursos a Distancia</a></li> --}}
                                                 <li><a href="{{ route('profesionalizacion') }}">Profesionalización
                                                         Docente</a></li>
@@ -375,47 +375,412 @@
                 </div>
             </div>
         </div>
-        {{-- <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-            aria-hidden="true">
-            <div class="modal-dialog modal-lg" role="document">
-                <div class="modal-content">
-                    <div class="modal-body">
-                        <button style="float:right" type="button" class="btn btn-danger btn-sm"
-                            data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                        <img src="{{ asset('img/novedades/Matricula-2024-II-2.webp') }}" width="100%">
+        <!-- Modal de Admisiones 2026 - VERSIÓN PERSONALIZADA (sin Bootstrap) -->
+        <style>
+            /* Estilos personalizados para el modal */
+            .custom-modal-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.7);
+                z-index: 9999;
+                justify-content: center;
+                align-items: center;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+
+            .custom-modal-overlay.show {
+                display: flex;
+                opacity: 1;
+            }
+
+            .custom-modal {
+                background: white;
+                width: 90%;
+                max-width: 600px;
+                max-height: 90vh;
+                border-radius: 12px;
+                overflow: hidden;
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+                transform: scale(0.9);
+                transition: transform 0.3s ease;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .custom-modal-overlay.show .custom-modal {
+                transform: scale(1);
+            }
+
+            .custom-modal-header {
+                background-color: #f8f9fa;
+                border-bottom: 2px solid #dee2e6;
+                padding: 15px 20px;
+                position: relative;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .custom-modal-title {
+                color: #be5c0c;
+                font-weight: 600;
+                font-size: clamp(1rem, 4vw, 1.5rem);
+                margin: 0;
+                text-align: center;
+                flex: 1;
+            }
+
+            .custom-modal-close {
+                background: none;
+                border: none;
+                font-size: 28px;
+                cursor: pointer;
+                color: #666;
+                width: 40px;
+                height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                transition: all 0.2s ease;
+                margin-left: 10px;
+                padding: 0;
+                line-height: 1;
+            }
+
+            .custom-modal-close:hover {
+                background-color: rgba(0, 0, 0, 0.1);
+                color: #333;
+                transform: rotate(90deg);
+            }
+
+            .custom-modal-close:active {
+                transform: scale(0.95);
+            }
+
+            .custom-modal-body {
+                overflow-y: auto;
+                max-height: calc(90vh - 80px);
+                padding: 0;
+            }
+
+            /* Contenido específico del modal FID */
+            .fid-container {
+                background: linear-gradient(135deg, #2E5397 0%, #4a7cd4 100%);
+                padding: clamp(1rem, 5vw, 2rem);
+            }
+
+            .fid-title {
+                color: white;
+                font-weight: bold;
+                text-align: center;
+                margin-bottom: 1.5rem;
+                font-size: clamp(1.2rem, 5vw, 1.8rem);
+            }
+
+            .fid-card {
+                background-color: rgba(255, 255, 255, 0.95);
+                border: none;
+                border-radius: 12px;
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+                margin-bottom: 1.5rem;
+            }
+
+            .fid-card-body {
+                padding: clamp(1rem, 4vw, 2rem);
+            }
+
+            .fid-card-title {
+                color: #2E5397;
+                font-weight: bold;
+                text-align: center;
+                margin-bottom: 1rem;
+                font-size: clamp(1rem, 4vw, 1.25rem);
+            }
+
+            .fid-text {
+                color: #333;
+                font-weight: 500;
+                text-align: center;
+                margin-bottom: 1rem;
+                font-size: clamp(0.9rem, 3.5vw, 1rem);
+            }
+
+            .fid-subtitle {
+                text-align: center;
+                margin-bottom: 1.5rem;
+                font-size: clamp(0.9rem, 3.5vw, 1rem);
+            }
+
+            .fid-carreras {
+                margin-bottom: 1.5rem;
+            }
+
+            .fid-carrera-item {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 1rem;
+                background-color: #e9f0ff;
+                border-radius: 8px;
+                margin-bottom: 1rem;
+            }
+
+            @media (min-width: 768px) {
+                .fid-carrera-item {
+                    flex-direction: row;
+                }
+            }
+
+            .fid-carrera-icon {
+                color: #2E5397;
+                font-size: 1.5rem;
+                margin-bottom: 0.5rem;
+            }
+
+            @media (min-width: 768px) {
+                .fid-carrera-icon {
+                    margin-bottom: 0;
+                    margin-right: 1rem;
+                }
+            }
+
+            .fid-carrera-nombre {
+                font-weight: bold;
+                text-align: center;
+            }
+
+            @media (min-width: 768px) {
+                .fid-carrera-nombre {
+                    text-align: left;
+                }
+            }
+
+            .fid-alert {
+                background-color: #e3f2fd;
+                color: #0c5460;
+                border: none;
+                border-radius: 8px;
+                padding: 1rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .fid-alert-content {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            @media (min-width: 768px) {
+                .fid-alert-content {
+                    flex-direction: row;
+                    text-align: left;
+                }
+            }
+
+            .fid-alert-icon {
+                color: #2E5397;
+                font-size: 1.25rem;
+                margin-bottom: 0.5rem;
+            }
+
+            @media (min-width: 768px) {
+                .fid-alert-icon {
+                    margin-bottom: 0;
+                    margin-right: 1rem;
+                }
+            }
+
+            .fid-alert-text {
+                font-weight: bold;
+            }
+
+            .fid-button-container {
+                text-align: center;
+            }
+
+            .fid-button {
+                background-color: #1e3a6b;
+                color: white;
+                font-weight: bold;
+                padding: 0.75rem 2rem;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                text-decoration: none;
+                display: inline-block;
+                font-size: clamp(0.9rem, 4vw, 1rem);
+                transition: all 0.2s ease;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+                width: 100%;
+            }
+
+            @media (min-width: 768px) {
+                .fid-button {
+                    width: auto;
+                }
+            }
+
+            .fid-button:hover {
+                background-color: #2a4b8a;
+                transform: translateY(-2px);
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            }
+            .fid-button:active {
+                transform: translateY(0);
+            }
+        </style>
+        <!-- Modal personalizado 
+        <div class="custom-modal-overlay" id="customAdmisionesModal">
+            <div class="custom-modal">
+                <div class="custom-modal-header">
+                    <h4 class="custom-modal-title">ADMISIONES EESP PUKLLASUNCHIS 2026</h4>
+                    <button class="custom-modal-close" id="cerrarCustomModal" aria-label="Cerrar">&times;</button>
+                </div>
+                <div class="custom-modal-body">
+                    <div class="fid-container">
+                        <div class="text-center mb-3">
+                            <h3 class="fid-title">Formación Inicial Docente (FID)</h3>
+                        </div>
+
+                        <div class="fid-card">
+                            <div class="fid-card-body">
+                                <h5 class="fid-card-title">
+                                    <i class="fas fa-user-graduate me-2"></i>
+                                    Admisión 2026
+                                </h5>
+                                <p class="fid-text">
+                                    Duración de 5 años con grado de Bachiller y título de Licenciado
+                                </p>
+
+                                <p class="fid-subtitle">
+                                    <strong>Carreras disponibles:</strong>
+                                </p>
+
+                                <div class="fid-carreras">
+                                    <div class="fid-carrera-item">
+                                        <i class="fas fa-child fid-carrera-icon"></i>
+                                        <div class="fid-carrera-nombre">
+                                            <strong>Educación Inicial</strong>
+                                        </div>
+                                    </div>
+                                    <div class="fid-carrera-item">
+                                        <i class="fas fa-hands-helping fid-carrera-icon"></i>
+                                        <div class="fid-carrera-nombre">
+                                            <strong>Educación Primaria Intercultural (EIB)</strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="fid-alert">
+                                    <div class="fid-alert-content">
+                                        <i class="fas fa-calendar-check fid-alert-icon"></i>
+                                        <div>
+                                            <span class="fid-alert-text">Inscripciones abiertas hasta el 17 de
+                                                marzo</span><br>
+                                            <span class="fid-alert-text">Examen: 19, 20 y 21 de marzo</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="fid-button-container">
+                            <a href="https://eesppukllasunchis.edu.pe/formulario-de-inscrici%C3%B3n-regular"
+                                target="_blank" class="fid-button">
+                                <i class="fas fa-external-link-alt me-2"></i>
+                                POSTULA AQUÍ
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div> --}}
-
+        </div>-->
+        <!-- Script para el modal personalizado -->
         <script>
-            document.addEventListener("DOMContentLoaded", function() {
-                function mostrarComunicado() {
-                    $('#exampleModal').modal('show');
+            document.addEventListener('DOMContentLoaded', function() {
+                const modalKey = 'customModalAdmisionesMostradoFecha';
+                const ultimaFecha = localStorage.getItem(modalKey);
+                const hoy = new Date().toISOString().split('T')[0];
+
+                const modalOverlay = document.getElementById('customAdmisionesModal');
+                const cerrarBtn = document.getElementById('cerrarCustomModal');
+
+                // Función para mostrar el modal
+                function mostrarModal() {
+                    modalOverlay.classList.add('show');
+                    document.body.style.overflow = 'hidden'; // Prevenir scroll del body
                 }
-                setTimeout(mostrarComunicado, 2000);
+
+                // Función para cerrar el modal
+                function cerrarModal() {
+                    modalOverlay.classList.remove('show');
+                    document.body.style.overflow = ''; // Restaurar scroll
+                }
+
+                // Mostrar modal si no se ha mostrado hoy
+                if (ultimaFecha !== hoy && modalOverlay) {
+                    setTimeout(function() {
+                        mostrarModal();
+                        localStorage.setItem(modalKey, hoy);
+                    }, 1000);
+                }
+
+                // Cerrar con botón
+                if (cerrarBtn) {
+                    cerrarBtn.addEventListener('click', cerrarModal);
+                }
+
+                // Cerrar con ESC
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && modalOverlay.classList.contains('show')) {
+                        cerrarModal();
+                    }
+                });
+
+                // Cerrar haciendo clic fuera del modal
+                modalOverlay.addEventListener('click', function(e) {
+                    if (e.target === modalOverlay) {
+                        cerrarModal();
+                    }
+                });
+
+                // Evitar que el modal se cierre al hacer clic dentro del contenido
+                const modalContent = document.querySelector('.custom-modal');
+                if (modalContent) {
+                    modalContent.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                    });
+                }
+
+                // Prevenir scroll del body cuando el modal está abierto
+                const observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                        if (mutation.attributeName === 'class') {
+                            if (modalOverlay.classList.contains('show')) {
+                                document.body.style.overflow = 'hidden';
+                            } else {
+                                document.body.style.overflow = '';
+                            }
+                        }
+                    });
+                });
+
+                observer.observe(modalOverlay, {
+                    attributes: true
+                });
             });
         </script>
-    </footer>    
-
-    <script>
-        var botmanWidget = {
-            title: "Asistente EESP Pukllasunchis 🎓",
-            introMessage: "👋 ¡Hola! Soy el asistente virtual de la EESP Pukllasunchis.",
-            mainColor: "#c78e41", // Color principal
-            bubbleBackground: "transparent", // Color de la burbuja flotante
-            headerTextColor: "#fff", // Color del texto del header
-            aboutText: "ChatBot Institucional",
-            placeholderText: "Escribe tu pregunta...",
-            desktopHeight: 500, 
-            desktopWidth: 350, 
-            bubbleAvatarUrl: "{{ asset('img/PukllaBot.png') }}",
-        };
-    </script>
-    <script src="{{ asset('js/botman.js') }}"></script>
-
+        <!-- Font Awesome para íconos -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    </footer>
 
     <script src="{{ asset('js/vendor/modernizr-3.5.0.min.js') }}"></script>
     <script src="{{ asset('js/vendor/jquery-1.12.4.min.js') }}"></script>

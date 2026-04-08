@@ -17,7 +17,7 @@ class CicloController extends Controller
     {
         $ciclos = Ciclo::whereIn('programa_id', [1, 2, 3, 4, 5])->get();
         foreach ($ciclos as $ciclo) {
-            $alumnos = $ciclo->alumnos()               
+            $alumnos = $ciclo->alumnos()
                 ->whereHas('user', function ($query) {
                     $query->where('perfil', '!=', 'Sin matrícula');
                 })
@@ -71,21 +71,9 @@ class CicloController extends Controller
         return redirect()->route('ciclo.index')->with('success', 'Ciclo creado exitosamente');
     }
 
-    public function show(Ciclo $ciclo)
+    /* public function show(Ciclo $ciclo)
     {
         $alumnos = $ciclo->alumnos()
-            /* ->whereHas('user', function ($query) {
-                $query->where(function ($q) {
-                    $q->whereDoesntHave('roles', function ($roleQuery) {
-                        $roleQuery->where('name', 'inhabilitado');
-                    })
-                        ->orWhere(function ($subQuery) {
-                            $subQuery->whereHas('roles', function ($roleQuery) {
-                                $roleQuery->where('name', 'inhabilitado');
-                            })->whereNotIn('perfil', ['sin_matricula', 'reserva']);
-                        });
-                });
-            }) */
             ->whereHas('user', function ($query) {
                 $query->where('perfil', '!=', 'Sin matrícula');
             })
@@ -111,6 +99,58 @@ class CicloController extends Controller
         $ciclosDisponibles = Ciclo::where('programa_id', $ciclo->programa_id)->get();
         $cantidadAlumnos = $alumnos->count();
         $cursosConDocentes = $ciclo->cursos()->with('docentes')->get();
+
+        return view('admin.ciclo.show', compact(
+            'ciclo',
+            'alumnos',
+            'alumnosB',
+            'cantidadAlumnos',
+            'ciclosDisponibles',
+            'cursosConDocentes'
+        ));
+    } */
+
+    public function show(Ciclo $ciclo)
+    {
+        // Alumnos regulares (relación directa)
+        $alumnos = $ciclo->alumnos()
+            ->whereHas('user', function ($query) {
+                $query->where('perfil', '!=', 'Sin matrícula');
+            })
+            ->orderBy('apellidos')
+            ->get();
+
+        // Alumnos B (con ciclo_id en users) - Misma lógica que en index()
+        $alumnosB = User::whereHas('roles', function ($query) {
+            $query->where('name', 'alumnoB');
+        })
+            ->where('ciclo_id', $ciclo->id)
+            ->where(function ($q) {
+                $q->whereDoesntHave('roles', function ($roleQuery) {
+                    $roleQuery->where('name', 'inhabilitado');
+                })
+                    ->orWhere(function ($subQuery) {
+                        $subQuery->whereHas('roles', function ($roleQuery) {
+                            $roleQuery->where('name', 'inhabilitado');
+                        })->where('perfil', 'Licencia');
+                    });
+            })
+            ->orderBy('apellidos')
+            ->get();
+
+        // Total de alumnos (ambos tipos)
+        $cantidadAlumnos = $alumnos->count() + $alumnosB->count();
+
+        $ciclosDisponibles = Ciclo::where('programa_id', $ciclo->programa_id)->get();
+        $cursosConDocentes = $ciclo->cursos()->with('docentes')->get();
+
+        // Debug en la vista (opcional)
+        \Log::info('Show method results:', [
+            'ciclo' => $ciclo->nombre ?? $ciclo->name,
+            'alumnos_regulares' => $alumnos->count(),
+            'alumnos_b' => $alumnosB->count(),
+            'total' => $cantidadAlumnos,
+        ]);
 
         return view('admin.ciclo.show', compact(
             'ciclo',

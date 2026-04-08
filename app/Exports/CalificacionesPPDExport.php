@@ -3,17 +3,19 @@
 namespace App\Exports;
 
 use App\Models\Curso;
-use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Events\AfterSheet;
 
-class CalificacionesPPDExport implements FromCollection, WithHeadings, WithEvents
+class CalificacionesPPDExport implements FromCollection, WithEvents, WithHeadings
 {
     protected $docenteId;
+
     protected $cursoId;
+
     protected $competenciasSeleccionadas;
+
     protected $alumnos;
 
     public function __construct($docenteId, $cursoId, $competenciasSeleccionadas, $alumnos)
@@ -33,7 +35,7 @@ class CalificacionesPPDExport implements FromCollection, WithHeadings, WithEvent
 
             $row = [
                 '#' => $index + 1,
-                'Alumno' => $alumno->apellidos . ' ' . $alumno->nombres,
+                'Alumno' => $alumno->apellidos.' '.$alumno->nombres,
             ];
 
             // Solo el promedio final por competencia
@@ -51,15 +53,16 @@ class CalificacionesPPDExport implements FromCollection, WithHeadings, WithEvent
             $row['Nivel de Desempeño'] = $calif?->nivel_desempeno ?? 'Sin calificar';
             $row['Calificación Curso'] = $calif?->calificacion_curso ?? 'Sin calificar';
             $row['Calificación Sistema'] = $calif?->calificacion_sistema ?? 'Sin calificar';
+            /* $row['Observaciones'] = $calif?->observaciones ?? ''; */
+            $row['Observaciones'] = filled($calif?->observaciones)
+    ? $calif->observaciones
+    : 'Sin datos';
 
             $data->push($row);
         }
 
         return $data;
     }
-
-
-
 
     public function headings(): array
     {
@@ -80,6 +83,7 @@ class CalificacionesPPDExport implements FromCollection, WithHeadings, WithEvent
         $headings1[] = 'Nivel de Desempeño';
         $headings1[] = 'Calificación Curso';
         $headings1[] = 'Calificación Sistema';
+        $headings1[] = 'Observaciones';
 
         return $headings1;
     }
@@ -89,13 +93,15 @@ class CalificacionesPPDExport implements FromCollection, WithHeadings, WithEvent
         return [
             AfterSheet::class => function (AfterSheet $event) {
                 // Encabezados en negrita
-                $event->sheet->getStyle('A1:Z1')->getFont()->setBold(true);
+                /* $event->sheet->getStyle('A1:Z1')->getFont()->setBold(true); */
+                $highestColumn = $event->sheet->getHighestDataColumn();
+                $event->sheet->getStyle("A1:{$highestColumn}1")->getFont()->setBold(true);
 
                 // Ajustar ancho automático
                 foreach (range('A', $event->sheet->getHighestDataColumn()) as $col) {
                     $event->sheet->getColumnDimension($col)->setAutoSize(true);
                 }
-            }
+            },
         ];
     }
 }

@@ -47,7 +47,129 @@
                 @endif
             </div>
 
-            <div class="col-lg-12">
+            <div class="col-12 mb-4">
+                <div class="row g-3">
+                    <!-- Periodo 1 -->
+                    <div class="col-md-3">
+                        <div class="card shadow-sm h-100 text-center">
+                            <div class="card-body">
+                                <h6 class="text-primary fw-bold">
+                                    <i class="fa fa-calendar"></i> Periodo 1
+                                </h6>
+                                <button type="button" class="btn btn-outline-danger btn-sm mt-2 btn-eliminar"
+                                    data-form="formPeriodo1" data-mensaje="Se eliminarán TODOS los datos del Periodo 1">
+                                    <i class="fa fa-trash"></i> Eliminar
+                                </button>
+                                <form id="formPeriodo1" action="{{ route('periodouno.eliminar') }}" method="POST">
+                                    @csrf
+                                    @method('DELETE')
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Periodo 2 -->
+                    <div class="col-md-3">
+                        <div class="card shadow-sm h-100 text-center">
+                            <div class="card-body">
+                                <h6 class="text-info fw-bold">
+                                    <i class="fa fa-calendar"></i> Periodo 2
+                                </h6>
+                                <button type="button" class="btn btn-outline-danger btn-sm mt-2 btn-eliminar"
+                                    data-form="formPeriodo2" data-mensaje="Se eliminarán TODOS los datos del Periodo 2">
+                                    <i class="fa fa-trash"></i> Eliminar
+                                </button>
+                                <form id="formPeriodo2" action="{{ route('periododos.eliminar') }}" method="POST">
+                                    @csrf
+                                    @method('DELETE')
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Periodo 3 -->
+                    <div class="col-md-3">
+                        <div class="card shadow-sm h-100 text-center">
+                            <div class="card-body">
+                                <h6 class="text-success fw-bold">
+                                    <i class="fa fa-chart-line"></i> Desempeño Final
+                                </h6>
+                                <button type="button" class="btn btn-outline-danger btn-sm mt-2 btn-eliminar"
+                                    data-form="formPeriodo3" data-mensaje="Se eliminará el desempeño final">
+                                    <i class="fa fa-trash"></i> Eliminar
+                                </button>
+                                <form id="formPeriodo3" action="{{ route('periodotres.eliminar') }}" method="POST">
+                                    @csrf
+                                    @method('DELETE')
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Acción Global -->
+                    <div class="col-md-3">
+                        <div class="card border-danger shadow h-100 text-center">
+                            <div class="card-body">
+                                <h6 class="text-secondary fw-bold">
+                                    <i class="fa fa-link"></i> Asignaciones FID
+                                </h6>
+                                <button type="button" class="btn btn-outline-danger btn-sm mt-2"
+                                    data-form="formGlobal"
+                                    data-mensaje="⚠️ Esto eliminará TODOS los cursos asignados de FID a TODOS los docentes">
+                                    <i class="fa fa-unlink"></i> Quitar designación a docentes PPD
+                                </button>
+                                <button type="button" class="btn btn-outline-danger btn-sm mt-2 btn-eliminar"
+                                    data-form=""
+                                    data-mensaje="⚠️ Esto eliminará TODOS los cursos asignados a TODOS los docentes">
+                                    <i class="fa fa-unlink"></i> Quitar designación a docentes FID
+                                </button>
+                                <form id="formGlobal" action="{{ route('docente.cursos.eliminarTodosGlobal') }}"
+                                    method="POST">
+                                    @csrf
+                                    @method('DELETE')
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+
+                    document.querySelectorAll('.btn-eliminar').forEach(btn => {
+
+                        btn.addEventListener('click', function() {
+
+                            let formId = this.dataset.form;
+                            let mensaje = this.dataset.mensaje;
+
+                            Swal.fire({
+                                title: '¿Estás seguro?',
+                                text: mensaje,
+                                icon: 'warning',
+                                showCancelButton: true,
+                                confirmButtonColor: '#dc3545',
+                                cancelButtonColor: '#6c757d',
+                                confirmButtonText: 'Sí, eliminar',
+                                cancelButtonText: 'Cancelar'
+                            }).then((result) => {
+
+                                if (result.isConfirmed) {
+                                    document.getElementById(formId).submit();
+                                }
+
+                            });
+
+                        });
+
+                    });
+
+                });
+            </script>
+
+
+            {{-- <div class="col-lg-12">
                 <table class="table table-bordered">
                     <thead class="thead-dark text-center">
                         <tr>
@@ -60,10 +182,6 @@
                     <tbody>
                         <tr>
                             <td class="text-center">
-                                <form action="{{ route('periodouno.storeBloque') }}" method="POST">
-                                    @csrf
-                                    <button type="submit" class="btn btn-primary btn-sm">Publicar y/o Actualizar</button>
-                                </form>
                                 <form action="{{ route('periodouno.eliminar') }}" method="POST"
                                     onsubmit="return confirm('¿Estás seguro de que deseas eliminar todos los datos de Periodo 1?');">
                                     @csrf
@@ -72,10 +190,6 @@
                                 </form>
                             </td>
                             <td class="text-center">
-                                <form action="{{ route('storePeriodoDos') }}" method="POST">
-                                    @csrf
-                                    <button type="submit" class="btn btn-primary btn-sm">Publicar y/o Actualizar</button>
-                                </form>
                                 <form action="{{ route('periododos.eliminar') }}" method="POST"
                                     onsubmit="return confirm('¿Estás seguro de que deseas eliminar todos los datos de Periodo 2?');">
                                     @csrf
@@ -84,10 +198,6 @@
                                 </form>
                             </td>
                             <td class="text-center">
-                                <form action="{{ route('storePeriodoTres') }}" method="POST">
-                                    @csrf
-                                    <button type="submit" class="btn btn-primary btn-sm">Publicar y/o Actualizar</button>
-                                </form>
                                 <form action="{{ route('periodotres.eliminar') }}" method="POST"
                                     onsubmit="return confirm('¿Estás seguro de que deseas eliminar todos los datos de Periodo 3?');">
                                     @csrf
@@ -102,14 +212,14 @@
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-danger"
                                         onclick="return confirm('⚠️ Esto quitará TODOS los cursos de TODOS los docentes. ¿Estás 100% seguro?')">
-                                        Quitar TODOS los cursos asignados <i class="fa fa-unlink text-danger"></i>
+                                        Quitar TODOS los cursos asignados ss<i class="fa fa-unlink text-danger"></i>
                                     </button>
                                 </form>
                             </td>
                         </tr>
                     </tbody>
                 </table>
-            </div>
+            </div> --}}
 
         </div>
         <!-- Buscador -->
@@ -148,14 +258,6 @@
                                             <ul>
                                                 <li>{{ $docente->email }}</li>
                                                 <li>{{ $docente->dni }}</li>
-                                                {{-- @if ($docente->blog)
-                                                    <li>
-                                                        <a
-                                                            href="{{ route('docente.blog.show', ['docente' => $docente->id]) }}">
-                                                            Ver Blog
-                                                        </a>
-                                                    </li>
-                                                @endif --}}
                                             </ul>
                                         </div>
                                     </td>
@@ -200,8 +302,8 @@
                                                                                     'docentes/silabo/' . $curso->silabo,
                                                                                 );
                                                                             $tipoSílabo = $curso->relacionsilabo
-                                                                                ? 'Relación con tabla silabo'
-                                                                                : 'Campo del curso';
+                                                                                ? 'Creado desde sistema'
+                                                                                : 'Archivo subido en PDF';
                                                                         @endphp
                                                                         <a href="{{ $sílaboURL }}" class="mb-2"
                                                                             style="font-size: 13px" target="_blank">
@@ -364,8 +466,6 @@
                                                                 </form>
                                                             </li>
                                                         </ul>
-
-
                                                     </li>
                                                 @endforeach
                                             </ul>

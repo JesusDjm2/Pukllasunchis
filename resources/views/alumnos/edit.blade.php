@@ -244,38 +244,6 @@
                                 </button>
                             </div>
                         </div>
-
-                        {{-- <script>
-                            const departamentosData = @json($departamentosData);
-
-                            const departamentoSelect = document.getElementById('departamento');
-                            const provinciaSelect = document.getElementById('provincia');
-                            const distritoSelect = document.getElementById('distrito');
-
-                            departamentoSelect.addEventListener('change', function() {
-                                const departamento = this.value;
-                                provinciaSelect.innerHTML = '<option value="">Seleccione...</option>';
-                                distritoSelect.innerHTML = '<option value="">Seleccione...</option>';
-
-                                if (departamento && departamentosData[departamento]) {
-                                    Object.keys(departamentosData[departamento].provincia).forEach(prov => {
-                                        provinciaSelect.innerHTML += `<option value="${prov}">${prov}</option>`;
-                                    });
-                                }
-                            });
-
-                            provinciaSelect.addEventListener('change', function() {
-                                const departamento = departamentoSelect.value;
-                                const provincia = this.value;
-                                distritoSelect.innerHTML = '<option value="">Seleccione...</option>';
-
-                                if (departamento && provincia && departamentosData[departamento].provincia[provincia]) {
-                                    departamentosData[departamento].provincia[provincia].forEach(dis => {
-                                        distritoSelect.innerHTML += `<option value="${dis}">${dis}</option>`;
-                                    });
-                                }
-                            });
-                        </script> --}}
                         <script>
                             const departamentosData = @json($departamentosData);
 
@@ -332,79 +300,11 @@
                                 }
                             }
                         </script>
-
-                        {{-- <ul class="nav nav-tabs nav-pills nav-justified flex-column flex-sm-row" id="myTab"
-                            role="tablist">
-                            <li class="nav-item">
-                                <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab"
-                                    aria-controls="home" aria-selected="true">Datos Personales</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab"
-                                    aria-controls="profile" aria-selected="false">Familiares/Educativos</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" id="socioeconomico-tab" data-toggle="tab" href="#socioeconomico"
-                                    role="tab" aria-controls="socioeconomico" aria-selected="false">
-                                    Socioeconómicos</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" id="contact-tab" data-toggle="tab" href="#contact" role="tab"
-                                    aria-controls="contact" aria-selected="false">Aspecto Vivienda</a>
-                            </li>
-
-                            <li class="nav-item">
-                                <a class="nav-link" id="vivienda-tab" data-toggle="tab" href="#vivienda" role="tab"
-                                    aria-controls="vivienda" aria-selected="false">Salud y Adicionales</a>
-                            </li>
-                        </ul> --}}
-                        {{-- <div class="tab-content mt-2">
-                            <div class="tab-pane fade show active" id="home" role="tabpanel"
-                                aria-labelledby="home-tab">
-                                @include('alumnos.vistasAlumnos.edit.datos-personales-edit')
-                                <div class="mt-4">
-                                    <button type="button" class="btn btn-primary mt-4 next-tab"
-                                        data-tab="profile">Siguiente</button>
-                                </div>
-                            </div>
-                            <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
-                                @include('alumnos.vistasAlumnos.edit.caracteristicas-familiares-edit')
-                                <div class="mt-4">
-                                    <button type="button" class="btn btn-secondary mt-4 prev-tab"
-                                        data-tab="home">Anterior</button>
-                                    <button type="button" class="btn btn-primary mt-4 next-tab"
-                                        data-tab="contact">Siguiente</button>
-                                </div>
-                            </div>
-                            <div class="tab-pane fade" id="socioeconomico" role="tabpanel"
-                                aria-labelledby="socioeconomico-tab">
-                                @include('alumnos.vistasAlumnos.edit.aspectos-socioeconomico-edit')
-                                <button type="button" class="btn btn-secondary mt-4 prev-tab"
-                                    data-tab="profile">Anterior</button>
-                                <button type="button" class="btn btn-primary mt-4 next-tab"
-                                    data-tab="socioeconomico">Siguiente</button>
-                            </div>
-                            <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
-                                @include('alumnos.vistasAlumnos.edit.aspectos-vivienda-edit')
-                                <button type="button" class="btn btn-secondary mt-4 prev-tab"
-                                    data-tab="contact">Anterior</button>
-                                <button type="button" class="btn btn-primary mt-4 next-tab"
-                                    data-tab="vivienda">Siguiente</button>
-                            </div>
-
-                            <div class="tab-pane fade" id="vivienda" role="tabpanel" aria-labelledby="vivienda-tab">
-                                @include('alumnos.vistasAlumnos.edit.aspectos-salud-culturales-edit')
-                                <button type="button" class="btn btn-secondary mt-4 prev-tab"
-                                    data-tab="socioeconomico">Anterior</button>
-                            </div>
-                        </div> --}}
-
                     </div>
                 </form>
             </div>
         </div>
     </div>
-    <!-- Modal -->
     <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
         aria-hidden="true">
         <div class="modal-dialog" role="document">

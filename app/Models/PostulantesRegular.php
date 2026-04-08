@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\DB;
 class PostulantesRegular extends Model
 {
     use HasFactory;
-
     protected $table = 'postulantes_regulars';
 
     protected $fillable = [
@@ -23,6 +22,7 @@ class PostulantesRegular extends Model
         'genero',
         'direccion',
         'numero',
+        'apto',
         'fecha_nacimiento',
         'lugar_nacimiento',
         'distrito_nacimiento',
@@ -40,8 +40,12 @@ class PostulantesRegular extends Model
         'promedio_colegio',
         'lengua_1',
         'lengua_2',
-         'nivel_quechua_hablado',
-         'nivel_quechua_escrito',
+
+        'etnicoidad',
+        'convertido',
+
+        'nivel_quechua_hablado',
+        'nivel_quechua_escrito',
         'estado_civil',
         'num_hijos',
         'trabajas',
@@ -52,16 +56,11 @@ class PostulantesRegular extends Model
         'partida_nacimiento_pdf',
         'certificado_secundaria_pdf',
         'foto',
-        'declaracion_jurada_salud_pdf',
-        'declaracion_jurada_documentos_pdf',
-        'declaracion_jurada_conectividad_pdf',
         'voucher_pago',
-        'declaracion_veracidad',
-
         'observaciones',
         'admin_fids_id',
-
         'constancia',
+        
     ];
 
     protected $casts = [
@@ -69,6 +68,9 @@ class PostulantesRegular extends Model
         'genero' => 'boolean',
         'trabajas' => 'boolean',
         'declaracion_veracidad' => 'boolean',
+        'apto' => 'boolean',
+        'apto2' => 'boolean',
+        'convertido' => 'boolean',
     ];
 
     public function getEdadAttribute()
@@ -79,15 +81,11 @@ class PostulantesRegular extends Model
 
         return Carbon::parse($this->fecha_nacimiento)->age;
     }
-
     public static function generarConstancia(): string
     {
         $prefijo = 'FID';
         $model = new self;
         $table = $model->getTable();
-
-        // Obtiene el máximo número ya existente, extrae la parte numérica desde el carácter 4
-        // Ejemplo constancia = 'FID0001' -> SUBSTRING(constancia, 4) => '0001'
         $maxNum = DB::table($table)
             ->whereNotNull('constancia')
             ->where('constancia', 'like', $prefijo.'%')
@@ -98,7 +96,6 @@ class PostulantesRegular extends Model
 
         return $prefijo.str_pad($next, 4, '0', STR_PAD_LEFT);
     }
-
     public function periodoAdmision()
     {
         return $this->belongsTo(AdminFid::class);

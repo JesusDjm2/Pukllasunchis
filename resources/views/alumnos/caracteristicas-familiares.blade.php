@@ -9,18 +9,21 @@
             <option value="Solo" {{ old('convivientes') == 'Solo' ? 'selected' : '' }}>Solo</option>
             <option value="Padre" {{ old('convivientes') == 'Padre' ? 'selected' : '' }}>Padre</option>
             <option value="Madre" {{ old('convivientes') == 'Madre' ? 'selected' : '' }}>Madre</option>
-            <option value="Padre y Madre" {{ old('convivientes') == 'Padre y Madre' ? 'selected' : '' }}>Padre y Madre</option>
-            <option value="Esposo/Cónyuge" {{ old('convivientes') == 'Esposo/Cónyuge' ? 'selected' : '' }}>Esposo/Cónyuge</option>
-            <option value="Otro" {{ old('convivientes') == 'Otro' ? 'selected' : '' }}>Otro</option>
+            <option value="Padre y Madre" {{ old('convivientes') == 'Padre y Madre' ? 'selected' : '' }}>Padre y Madre
+            </option>
+            <option value="Esposo/Cónyuge" {{ old('convivientes') == 'Esposo/Cónyuge' ? 'selected' : '' }}>
+                Esposo/Cónyuge</option>
+            <option value="Otro"
+                {{ old('convivientes') == 'Otro' || (old('convivientes') && !in_array(old('convivientes'), ['Solo', 'Padre', 'Madre', 'Padre y Madre', 'Esposo/Cónyuge'])) ? 'selected' : '' }}>
+                Otro</option>
         </select>
-    
-        <input type="text" class="form-control mt-2 @error('convivientes') is-invalid @enderror 
-            {{ old('convivientes') && !in_array(old('convivientes'), ['Solo', 'Padre', 'Madre', 'Padre y Madre', 'Esposo/Cónyuge']) ? '' : 'd-none' }}" 
-            id="otro_conviviente" 
-            name="otro_conviviente" 
-            value="{{ old('convivientes') && !in_array(old('convivientes'), ['Solo', 'Padre', 'Madre', 'Padre y Madre', 'Esposo/Cónyuge']) ? old('convivientes') : '' }}"
-            placeholder="Especificar otro">
-    
+
+        <input type="text" class="form-control mt-2 @error('convivientes') is-invalid @enderror"
+            id="otro_conviviente" name="otro_conviviente"
+            value="{{ old('otro_conviviente') ?: (old('convivientes') && !in_array(old('convivientes'), ['Solo', 'Padre', 'Madre', 'Padre y Madre', 'Esposo/Cónyuge']) ? old('convivientes') : '') }}"
+            placeholder="Especificar otro"
+            {{ old('convivientes') == 'Otro' || (old('convivientes') && !in_array(old('convivientes'), ['Solo', 'Padre', 'Madre', 'Padre y Madre', 'Esposo/Cónyuge'])) ? '' : 'style=display:none;' }}>
+
         @error('convivientes')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
@@ -28,22 +31,24 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const convivientesSelect = document.getElementById('convivientes');
-            const otroConvivienteInput = document.getElementById('otro_conviviente');
+            const select = document.getElementById('convivientes');
+            const otroInput = document.getElementById('otro_conviviente');
 
-            convivientesSelect.addEventListener('change', function() {
-                if (convivientesSelect.value === 'Otro') {
-                    otroConvivienteInput.classList.remove('d-none');
-                    otroConvivienteInput.setAttribute('required', 'required');
-                    otroConvivienteInput.setAttribute('name',
-                    'convivientes'); // Asigna el valor al mismo campo del select
+            function toggleOtro() {
+                if (select.value === 'Otro') {
+                    otroInput.style.display = 'block';
+                    otroInput.required = true;
                 } else {
-                    otroConvivienteInput.classList.add('d-none');
-                    otroConvivienteInput.removeAttribute('required');
-                    otroConvivienteInput.setAttribute('name',
-                    'otro_conviviente'); // Nombre diferente para no afectar el select
+                    otroInput.style.display = 'none';
+                    otroInput.required = false;
                 }
-            });
+            }
+
+            // Ejecutar al cargar (para mantener estado después de error)
+            toggleOtro();
+
+            // Ejecutar al cambiar
+            select.addEventListener('change', toggleOtro);
         });
     </script>
 
@@ -361,7 +366,7 @@
     </div>
 
     <div class="col-lg-6 mb-2 mt-2">
-        <label for="num_hrs_estudio">Número de horas dedicadas al estudio:</label>
+        <label for="num_hrs_estudio"> Número de horas dedicadas al estudio:</label>
         <input type="number" class="form-control @error('num_hrs_estudio') is-invalid @enderror"
             id="num_hrs_estudio" name="num_hrs_estudio" value="{{ old('num_hrs_estudio') }}" required>
         @error('num_hrs_estudio')

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AdminFid;
+use App\Models\AdminPpd;
 use App\Models\Postulante;
 use Illuminate\Http\Request;
 
@@ -53,7 +54,8 @@ class EnlacesController extends Controller
     }
     public function profesionalizacion()
     {
-        return view('programas.profesionalizacion-docente');
+        $periodoAdmisionActivo = AdminPpd::where('estado', true)->exists();
+        return view('programas.profesionalizacion-docente', compact('periodoAdmisionActivo'));
     }
     //Ordinario
     public function ordinario()

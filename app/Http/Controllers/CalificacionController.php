@@ -80,6 +80,10 @@ class CalificacionController extends Controller
                 'calificacion_sistema' => $request->input('calificacion_sistema'),
             ]
         );
+        /* $mostrarBotonDesempeno = false;
+        $porcentaje = $curso->porcentajePeriodo(2, ['calificacion_curso']);
+        $mostrarBotonDesempeno = $porcentaje >= 50; */
+
         if ($calificacion->wasRecentlyCreated) {
             session()->flash('success', 'Calificación guardada exitosamente.');
         }
@@ -134,6 +138,7 @@ class CalificacionController extends Controller
             'alumnos.*.competencias' => 'required|array|min:1|max:3',
             'alumnos.*.observaciones' => 'nullable|string|max:1000',
         ]);
+
         $docenteId = $request->input('docente_id');
         $docente = Docente::findOrFail($docenteId);
         $cursoId = $request->input('curso_id');
@@ -194,12 +199,10 @@ class CalificacionController extends Controller
             })
             ->orderBy('apellidos')
             ->get();
-
         $alumnos = $alumnosRelacionados
             ->merge($alumnosCiclo)
             ->unique('id')
             ->values();
-
         $alumnos = $alumnos->filter(function ($alumno) use ($cursoId) {
             $cursoRelacionIds = $alumno->cursos()->pluck('curso_id');
             if ($cursoRelacionIds->isNotEmpty() && ! $cursoRelacionIds->contains($cursoId)) {
@@ -210,20 +213,8 @@ class CalificacionController extends Controller
         })->values();
 
         $mostrarBotonDesempeno = false;
-
-        foreach ($alumnos as $alumno) {
-            $periodoDos = $alumno->periododos()->where('curso_id', $cursoId)->first();
-
-            if ($periodoDos) {
-                foreach ($competenciasSeleccionadas as $index => $competencia) {
-                    $campoValoracion = 'valoracion_'.($index + 1);
-                    if ($periodoDos->$campoValoracion > 0) {
-                        $mostrarBotonDesempeno = true;
-                        break 2;
-                    }
-                }
-            }
-        }
+        $porcentaje = $curso->porcentajePeriodo(2, ['calificacion_curso']);
+        $mostrarBotonDesempeno = $porcentaje >= 50;
 
         return view('docentes.calificaciones.alumnos', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos', 'mostrarBotonDesempeno'));
     }
@@ -368,12 +359,16 @@ class CalificacionController extends Controller
                 );
             }
         }
+        $mostrarBotonDesempeno = false;
+        $porcentaje = $curso->porcentajePeriodo(2, ['calificacion_curso']);
+        $mostrarBotonDesempeno = $porcentaje >= 50;
 
         return view('admin.curso.calificaciones', [
             'curso' => $curso,
             'docente' => $docente,
             'competenciasSeleccionadas' => $competenciasSeleccionadas,
             'alumnos' => $alumnos,
+            'mostrarBotonDesempeno' => $mostrarBotonDesempeno,
         ])->with('success', 'Periodo 1 publicado correctamente.');
     }
 
@@ -415,7 +410,7 @@ class CalificacionController extends Controller
                 ]
             );
         }
-        session()->flash('success', 'Parcial 1 guardado correctamente!');
+        session()->flash('success', 'Calificaciones de Parcial 1 guardado correctamente!');
         $competenciasIds = [];
         foreach ($request->input('alumnos') as $data) {
             if (isset($data['competencias'])) {
@@ -465,10 +460,9 @@ class CalificacionController extends Controller
 
             return true;
         })->values();
-
-        $mostrarBotonDesempeno = $alumnos->contains(function ($alumno) {
-            return $alumno->periodos->isNotEmpty() && $alumno->calificaciones->isNotEmpty();
-        });
+        $mostrarBotonDesempeno = false;
+        $porcentaje = $curso->porcentajePeriodo(2, ['calificacion_curso']);
+        $mostrarBotonDesempeno = $porcentaje >= 50;
 
         return view('docentes.calificaciones.alumnos', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos', 'mostrarBotonDesempeno'));
     }
@@ -524,7 +518,7 @@ class CalificacionController extends Controller
             }
         }
 
-        return back()->with('success', 'Periodo 2 publicado correctamente.');
+        return back()->with('success', 'Calificaciones de Periodo 2 guardados correctamente.');
     }
 
     public function eliminarPeriodoDos()
@@ -578,7 +572,7 @@ class CalificacionController extends Controller
             }
         }
 
-        return back()->with('success', 'Periodo de desempeño publicado correctamente.');
+        return back()->with('success', 'Calificaciones de Periodo de Desempeño guardados correctamente.');
     }
 
     public function eliminarPeriodoTres()
@@ -640,7 +634,11 @@ class CalificacionController extends Controller
         // 👉 Armamos el nombre dinámico del archivo
         /* $nombreArchivo = "$curso->nombre.xlsx"; */
         $docente = Docente::findOrFail($docenteId);
-        $nombreArchivo = "{$curso->nombre}_{$docente->nombre}.xlsx";
+
+        $nombreCurso = preg_replace('/[\/\\\\]/', '-', $curso->nombre);
+        $nombreDocente = preg_replace('/[\/\\\\]/', '-', $docente->nombre);
+
+        $nombreArchivo = "{$nombreCurso}_{$nombreDocente}.xlsx";
 
         return Excel::download(
             new CalificacionesPPDExport($docenteId, $cursoId, $competenciasSeleccionadas, $alumnos),
@@ -648,10 +646,23 @@ class CalificacionController extends Controller
         );
     }
 
-    public function eliminarTodosCursosGlobal()
+    /* public function eliminarTodosCursosGlobal()
     {
         \DB::table('curso_docente')->truncate();
-
         return redirect()->back()->with('success', 'Se eliminaron todos los cursos de todos los docentes.');
+    } */
+    public function eliminarTodosCursosGlobal()
+    {
+        // Obtener los IDs de cursos que NO son de programas PPD
+        $cursosNoPPD = Curso::whereHas('ciclo.programa', function ($query) {
+            $query->where('nombre', 'NOT LIKE', '%PPD%');
+        })->pluck('id');
+
+        // Eliminar solo las asignaciones de cursos que NO son PPD
+        \DB::table('curso_docente')
+            ->whereIn('curso_id', $cursosNoPPD)
+            ->delete();
+
+        return redirect()->back()->with('success', 'Se eliminaron todos los cursos de todos los docentes (excluyendo cursos de programas PPD).');
     }
 }

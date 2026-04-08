@@ -5,20 +5,18 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
-
     public function up(): void
     {
         Schema::create('periodo_actual', function (Blueprint $table) {
             $table->id();
             $table->string('nombre');
             $table->string('horario')->nullable();
-            $table->date('fecha_inicio')->nullable();  // Nueva columna
+            $table->date('fecha_inicio')->nullable();
             $table->date('fecha_cierre')->nullable();
             $table->boolean('actual')->default(false);
             $table->timestamps();
         });
     }
-
     public function down(): void
     {
         Schema::dropIfExists('periodo_actual');

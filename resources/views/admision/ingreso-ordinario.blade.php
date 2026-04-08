@@ -8,7 +8,6 @@
 @endsection
 @section('contenido')
     <style>
-        /* Contenedor general */
         .steps-container {
             max-width: 800px;
             margin: 50px auto;
@@ -138,7 +137,7 @@
             <div class="col-lg-9">
                 <h2 class="linea-debajo">{{ $titulo }}</h2>
                 <div class="row">
-                    <div class="col-lg-7">
+                    <div class="col-lg-12">
                         <p class="text-justify">
                             Si eres egresado de un colegio público o privado, puedes participar en nuestro proceso de
                             admisión.<br><br>
@@ -148,21 +147,7 @@
                             lugar en el <strong>mes de marzo</strong>.
                         </p>
                     </div>
-                    <div class="col-lg-5 text-center">
-                        <p class="text-center font-weight-bold">¡Inscríbete acá!</p>
 
-                        @if ($periodoAdmision)
-                            <a href="{{ route('formInscripcionRegular') }}" target="_blank">
-                                <img class="img-fluid" src="{{ asset('img/min/Ficha-de-inscripcion-Pukllasunchis.png') }}"
-                                    alt="Ingreso Ordinario" width="200px">
-                            </a>
-                        @else
-                            <img class="img-fluid opacity-50"
-                                src="{{ asset('img/min/Ficha-de-inscripcion-Pukllasunchis.png') }}"
-                                alt="Inscripción deshabilitada" width="200px">
-                            <p class="text-danger text-center mt-2">Periodo de admisión cerrado</p>
-                        @endif
-                    </div>
 
                 </div>
                 <h3 class="linea-debajo">Requisitos de inscripción:</h3>
@@ -190,16 +175,31 @@
                 <div class="row justify-content-center align-items-center fichas">
                     <div class="col-lg-2 col-6 text-center">
                         <div class="card">
-                            <a href="{{ route('formInscripcionRegular') }}" target="_blank" class="text-center">
+                            {{-- <a href="{{ route('formInscripcionRegular') }}" target="_blank" class="text-center">
                                 <img width="80%" src="{{ asset('img/min/Ficha-de-inscripcion-Pukllasunchis.png') }}"
                                     alt="Ficha de Inscrición Pukllasunchis">
                                 <p class="text-center">Ficha de inscripción</p>
-                            </a>
+                            </a> --}}
+                            @if ($periodoAdmision)
+                                <a href="{{ route('formInscripcionRegular') }}" target="_blank" class="text-center">
+                                    <img width="80%" src="{{ asset('img/min/Ficha-de-inscripcion-Pukllasunchis.png') }}"
+                                        alt="Ficha de Inscripción Pukllasunchis">
+                                    <p class="text-center">Ficha de inscripción</p>
+                                </a>
+                            @else
+                                <div class="text-center">
+                                    <img class="opacity-50" width="80%"
+                                        src="{{ asset('img/min/Ficha-de-inscripcion-Pukllasunchis.png') }}">
+                                    <p class="text-center" style="font-size: 14px">
+                                        Periodo de admisión cerrado
+                                    </p>
+                                </div>
+                            @endif
                         </div>
                     </div>
                     <div class="col-lg-2 col-6">
                         <div class="card">
-                            <a href="{{ asset('pdf/Prospecto-de-Admision-2025-2.pdf') }}" target="_blank">
+                            <a href="{{ asset('pdf/Prospecto-de-Admision-2026.pdf') }}" target="_blank">
                                 <div style="height: 100px">
                                     <img height="100%" src="{{ asset('img/min/Prospecto-Pukllasunchis.png') }}"
                                         alt="Prospecto Pukllasunchis">
@@ -232,7 +232,7 @@
                     </div>
                     <div class="col-lg-2 col-6 text-center">
                         <div class="card">
-                            <a href="">
+                            <a href=" {{ asset('img/min/Infografia-FID-2026.webp') }}" target="_blank">
                                 <img width="100%" src="{{ asset('img/min/Secuencia de Inscripcion.png') }}"
                                     alt="Secuencia de Inscripción Pukllasunchis">
                                 <p class="text-center">Secuencia de Admisión</p>
@@ -305,37 +305,30 @@
                     </div>
                 </div>
 
-                {{-- <h3 class="linea-debajo">Pago por Derecho de Inscripción </h3>
-                <p>La inscripción para postulantes en cualquiera de las tres modalidades es de S/. 150.00 soles.<br>
-                    La EESPP Pukllasunchis ha establecido el siguiente medio de pago:
-                </p> --}}
-
-                {{--  <ul class="listasCuerpo mb-4">
-                    <li><strong>En ventanilla</strong> de las agencias de CMAC CUSCO a nivel nacional:
-                        <ul>
-                            <li>Cliente debe indicar: Pago de convenio</li>
-                            <li>"Asociación Pukllasunchis - EESP" + Codigo o nombre del cliente/alumno</li>
-                            <li>Ejemplo: <strong> <span class="text-danger"> Asociación Pukllsunchis -
-                                        EESP</span>75050934</strong></li>
-                        </ul>
-                    </li>
-                    <li><strong>En agentes corresponsables</strong> de la CMAC Cusco:
-                        <ul>
-                            <li>Clientes debe indicar: Pago de convenio</li>
-                            <li>"Asociación Pukllasunchis - EESP" + Dictar: <strong> <span class="text-danger">523(prefijo
-                                        Institucional)</span> Código de cliente/Alumno</strong></li>
-                            <li>Ejemplo: <strong> <span class="text-danger"> 523</span>75050934</strong></li>
-                        </ul>
-                    </li>
-                </ul> --}}
                 <p class="generic-blockquote">
                     <strong>OJO:</strong><br>
-                    El estudiante tiene la OBLIGACIÓN de enviar, adjunto a la Ficha de Inscripción, una foto del comprobante
+                    El postulante tiene la OBLIGACIÓN de enviar, adjunto a la Ficha de Inscripción, una foto del comprobante
                     de depósito (voucher) entregado por el banco, con los siguientes datos escritos con letra clara: <br>
                     - Nombre y apellidos completos<br>
                     - Número de DNI<br>
                     - Programa de formación al que postula (Inicial / Primaria EIB / Profesionalización / 2da Especialidad)
                 </p>
+
+                {{-- <div class="col-lg-12 text-center mt-4">
+                    <p class="text-center font-weight-bold">¡Inscríbete acá!</p>
+
+                    @if ($periodoAdmision)
+                        <a href="{{ route('formInscripcionRegular') }}" target="_blank">
+                            <img class="img-fluid" src="{{ asset('img/min/Ficha-de-inscripcion-Pukllasunchis.png') }}"
+                                alt="Ingreso Ordinario" width="200px">
+                        </a>
+                    @else
+                        <img class="img-fluid opacity-50"
+                            src="{{ asset('img/min/Ficha-de-inscripcion-Pukllasunchis.png') }}"
+                            alt="Inscripción deshabilitada" width="200px">
+                        <p class="text-danger text-center mt-2">Periodo de admisión cerrado</p>
+                    @endif
+                </div> --}}
             </div>
         </div>
     </div>

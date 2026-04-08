@@ -14,9 +14,7 @@ use Illuminate\Queue\SerializesModels;
 class ConfirmacionInscripcionMail extends Mailable
 {
     use Queueable, SerializesModels;
-
-    public $postulante;
-
+    public $postulante;    
     public $adminFid;
 
     public function __construct(PostulantesRegular $postulantesRegular, AdminFid $adminFid)

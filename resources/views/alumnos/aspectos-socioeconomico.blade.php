@@ -101,7 +101,7 @@
     </div>
 
     <div class="col-lg-6 mb-2 mt-2">
-        <label for="hrs_laboradas_sem">6.Número de horas que labora a la semana:</label>
+        <label for="hrs_laboradas_sem">6. Número de horas que labora a la semana:</label>
         <input type="number" class="form-control form-control-sm @error('hrs_laboradas_sem') is-invalid @enderror"
             id="hrs_laboradas_sem" name="hrs_laboradas_sem" value="{{ old('hrs_laboradas_sem') }}" required>
         @error('hrs_laboradas_sem')

@@ -17,7 +17,7 @@
             transition: 0.2s ease;
         }
 
-        .imprimir:hover {
+        .imprimir:hover { 
             color: #fff;
             font-size: 13px;
             transition: 0.2s ease;
@@ -110,7 +110,7 @@
                 <table border="1" style="border-collapse: collapse; width: 100%;">
                     <tr>
                         <td style="padding: 8px;border-left: 3px solid #c78d40;font-weight:bold">Periodo Académico</td>
-                        <td style="padding: 8px;">2025-II </td>
+                        <td style="padding: 8px;">{{ $periodoActual->nombre }} </td>
                     </tr>
                     <tr>
                         <td style="padding: 8px;border-left: 3px solid #c78d40;font-weight:bold">Ciclo - Sección</td>
