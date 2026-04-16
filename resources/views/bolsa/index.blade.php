@@ -52,7 +52,7 @@
 
                 </div>
                 <div class="table-responsive">
-                    <table id="alumnos-table" class="table table-hover">
+                    <table id="alumnos-table" class="table table-hover table-sortable">
                         <thead class="thead-dark">
                             <tr style="font-size: 14px">
                                 <th>Nombre

@@ -10,6 +10,7 @@ use App\Models\PeriodoActual;
 use App\Models\PeriodoActualPpd;
 use App\Models\PeriodoTres;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 
 class PeriodoActualController extends Controller
@@ -18,6 +19,7 @@ class PeriodoActualController extends Controller
     {
         $periodoactuales = PeriodoActual::orderBy('nombre', 'desc')->get();
         $periodosppd = PeriodoActualPpd::orderBy('id', 'desc')->get();
+
         return view('admin.periodos.index', compact('periodoactuales', 'periodosppd'));
     }
 
@@ -42,10 +44,14 @@ class PeriodoActualController extends Controller
 
         $rutaImagen = null;
 
-        if ($request->hasFile('imagen')) {
-            $archivo = $request->file('imagen');
+        if ($request->hasFile('horario')) {
+            $carpeta = public_path('img/horarios');
+            if (! file_exists($carpeta)) {
+                mkdir($carpeta, 0755, true);
+            }
+            $archivo = $request->file('horario');
             $nombreOriginal = $archivo->getClientOriginalName();
-            $archivo->move(public_path('img/horarios'), $nombreOriginal);
+            $archivo->move($carpeta, $nombreOriginal);
             $rutaImagen = 'img/horarios/'.$nombreOriginal;
         }
 
@@ -64,6 +70,7 @@ class PeriodoActualController extends Controller
     {
         return view('admin.periodos.edit', compact('periodoactual'));
     }
+
     public function update(Request $request, PeriodoActual $periodoactual)
     {
         $request->validate([
@@ -83,9 +90,13 @@ class PeriodoActualController extends Controller
                 unlink(public_path($periodoactual->horario)); // elimina anterior
             }
 
+            $carpeta = public_path('img/horarios');
+            if (! file_exists($carpeta)) {
+                mkdir($carpeta, 0755, true);
+            }
             $archivo = $request->file('horario');
             $nombreOriginal = $archivo->getClientOriginalName();
-            $archivo->move(public_path('img/horarios'), $nombreOriginal);
+            $archivo->move($carpeta, $nombreOriginal);
             $rutaHorario = 'img/horarios/'.$nombreOriginal;
         }
 
@@ -99,12 +110,14 @@ class PeriodoActualController extends Controller
 
         return redirect()->route('periodoactual.index')->with('success', 'Período Actual actualizado correctamente.');
     }
+
     public function destroy(PeriodoActual $periodoactual)
     {
         $periodoactual->delete();
 
         return redirect()->route('periodoactual.index')->with('success', 'Período Actual eliminado correctamente.');
     }
+
     public function crearCalificaciones(PeriodoActual $periodoactual)
     {
         $datosPeriodoTres = PeriodoTres::whereHas('alumno.user', function ($query) {
@@ -204,7 +217,7 @@ class PeriodoActualController extends Controller
         return redirect()->route('periodoactual.index')
             ->with('success', $mensaje);
     }
-    
+
     public function showRegistros($id)
     {
         $periodoActual = PeriodoActual::findOrFail($id);
@@ -257,6 +270,7 @@ class PeriodoActualController extends Controller
             'ciclos' => $ciclos,
         ]);
     }
+
     public function exportExcel($id)
     {
         $periodoActual = PeriodoActual::findOrFail($id);
@@ -268,6 +282,7 @@ class PeriodoActualController extends Controller
             $nombreArchivo
         );
     }
+
     private function getDataForRegistros(int $id): array
     {
         $periodos = Periodo::with([
@@ -299,7 +314,7 @@ class PeriodoActualController extends Controller
         foreach ($periodos as $alumnoId => $grupoPeriodos) {
             $alumno = $alumnosMap->get($alumnoId) ?? $grupoPeriodos->first()->alumno;
 
-            $pivotIds = \DB::table('alumno_cursos')
+            $pivotIds = DB::table('alumno_cursos')
                 ->where('alumno_id', $alumnoId)
                 ->pluck('curso_id')
                 ->toArray();
@@ -333,6 +348,7 @@ class PeriodoActualController extends Controller
 
         return [$ciclos, $filas];
     }
+
     public function periodos()
     {
         return view('alumnos.postulantes.periodos');

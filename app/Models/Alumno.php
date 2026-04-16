@@ -253,11 +253,81 @@ class Alumno extends Model
         return $rules;
     }
 
+    /**
+     * Valor en tabla `alumnos.fecha_nacimiento` considerado vacío (se usará `users.fecha_nacimiento` si existe).
+     */
+    public function alumnoTieneFechaNacimientoCapturada(): bool
+    {
+        $v = $this->getAttribute('fecha_nacimiento');
+        if ($v === null) {
+            return false;
+        }
+        if ($v instanceof \DateTimeInterface) {
+            return true;
+        }
+        if (is_string($v)) {
+            return trim($v) !== '';
+        }
+
+        return true;
+    }
+
+    /**
+     * Fecha de nacimiento mostrada: columna del alumno o, si está vacía, la del usuario relacionado.
+     */
+    public function fechaNacimientoResuelta(): mixed
+    {
+        if ($this->alumnoTieneFechaNacimientoCapturada()) {
+            return $this->getAttribute('fecha_nacimiento');
+        }
+
+        return $this->user?->fecha_nacimiento;
+    }
+
+    /** Valor para input type="date" (Y-m-d) o null. */
+    public function fechaNacimientoResueltaParaInput(): ?string
+    {
+        $fn = $this->fechaNacimientoResuelta();
+        if ($fn === null) {
+            return null;
+        }
+        if (is_string($fn) && trim($fn) === '') {
+            return null;
+        }
+        try {
+            return Carbon::parse($fn)->format('Y-m-d');
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    /** Texto formateado para listados / exportación; cadena vacía si no hay dato. */
+    public function fechaNacimientoResueltaFormateada(string $format = 'd/m/Y'): string
+    {
+        $fn = $this->fechaNacimientoResuelta();
+        if ($fn === null || (is_string($fn) && trim($fn) === '')) {
+            return '';
+        }
+        try {
+            return Carbon::parse($fn)->format($format);
+        } catch (\Throwable) {
+            return '';
+        }
+    }
+
     //SCOPES  DE ALUMNOS
     // 🔹 Calcular edad
-    public function getEdadAttribute()
+    public function getEdadAttribute(): ?int
     {
-        return Carbon::parse($this->fecha_nacimiento)->age;
+        $fn = $this->fechaNacimientoResuelta();
+        if ($fn === null || (is_string($fn) && trim($fn) === '')) {
+            return null;
+        }
+        try {
+            return Carbon::parse($fn)->age;
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     // 🔹 Scope para filtrar por género

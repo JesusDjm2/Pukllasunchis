@@ -16,6 +16,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Validator;
 
 class AlumnoController extends Controller
 {
@@ -37,11 +38,12 @@ class AlumnoController extends Controller
         } else {
             return view('alumnos.vistasAlumnos.index');
         }
-    }  
+    }
 
     public function ficha(Alumno $alumno)
     {
         $periodoActual = PeriodoActual::where('actual', true)->first();
+
         return view('alumnos.ficha', compact('alumno', 'periodoActual'));
     }
 
@@ -98,7 +100,7 @@ class AlumnoController extends Controller
     public function store(Request $request)
     {
         // Validar los datos del formulario
-        $validator = \Validator::make($request->all(), Alumno::getValidationRules());
+        $validator = Validator::make($request->all(), Alumno::getValidationRules());
 
         // Realizar verificación adicional antes de almacenar en la base de datos
         $numero = $request->input('numero');
@@ -270,8 +272,14 @@ class AlumnoController extends Controller
 
     public function show($id)
     {
-        /* $alumno = Alumno::with('user')->find($id); */
-        $alumno = Alumno::with('user')->find($id);
+        $alumno = Alumno::with([
+            'user',
+            'programa',
+            'ciclo.cursos',
+            'cursos.ciclo',
+            'periodo.curso',
+            'periodo.periodoActual',
+        ])->find($id);
 
         $procedencia = [
             'vivo_en_comunidad' => 'Yo aún vivo en la comunidad',
@@ -307,11 +315,9 @@ class AlumnoController extends Controller
         ]);
     }
 
-    public function edit($id)
+    public function edit(Request $request, Alumno $alumno)
     {
-        $alumno = Alumno::find($id);
         $programas = Programa::all();
-        $ciclos = Ciclo::all();
         $user = auth()->user();
         $alumno->bienes_vivienda = explode(',', $alumno->bienes_vivienda);
         $departamentos = Departamento::with('provincias.distritos')->get();
@@ -367,32 +373,62 @@ class AlumnoController extends Controller
 
         // 🔹 Ubicación de ejemplo (solo algunos departamentos con provincias y distritos reales para demo)
 
-        return view('alumnos.edit', compact('alumno', 
-        'programas', 
-        'ciclos', 
-        'user', 'opcionesBienesVivienda', 'opcionesServicios', 'opcionesHabilidades', 'departamentosData', 'provinciasData', 'distritosData'));
+        $programaIdParaCiclos = (int) $request->old('programa_id', $alumno->programa_id);
+        $ciclosPorPrograma = $programaIdParaCiclos
+            ? Ciclo::where('programa_id', $programaIdParaCiclos)->orderBy('id')->get()
+            : collect();
+
+        return view('alumnos.edit', compact('alumno',
+            'programas',
+            'ciclosPorPrograma',
+            'user', 'opcionesBienesVivienda', 'opcionesServicios', 'opcionesHabilidades', 'departamentosData', 'provinciasData', 'distritosData'));
     }
 
     public function update(Request $request, Alumno $alumno)
     {
         $alumno = Alumno::findOrFail($alumno->id);
-        // Validación solo para estos campos
-        $request->validate([
+
+        $rules = [
             'genero' => 'required|string',
             'numero' => 'required|string|max:20',
             'numero_referencia' => 'required|string|max:20',
             'fecha_nacimiento' => 'required|date',
             'num_hijos' => 'nullable|integer|min:0',
-            'num_comprobante' => 'required|string|max:50',
             'trabajas' => 'required|string',
             'departamento' => 'required|string|max:255',
             'provincia' => 'required|string|max:255',
             'distrito' => 'required|string|max:255',
             'direccion' => 'required|string|max:255',
-        ]);
+        ];
+        if (! $request->user()->hasRole('admin')) {
+            $rules['num_comprobante'] = 'required|string|max:50';
+        }
+        if ($request->user()->hasRole('admin')) {
+            $rules['programa_id'] = 'required|exists:programas,id';
+            $rules['ciclo_id'] = 'required|exists:ciclos,id';
+        }
+        $request->validate($rules);
 
-        // Actualización de estos campos
-        $alumno->update($request->all());
+        if ($request->user()->hasRole('admin')) {
+            $ciclo = Ciclo::findOrFail($request->input('ciclo_id'));
+            if ((int) $ciclo->programa_id !== (int) $request->input('programa_id')) {
+                return redirect()->back()->withInput()->withErrors([
+                    'ciclo_id' => 'El ciclo seleccionado no pertenece al programa indicado.',
+                ]);
+            }
+        }
+
+        $data = $request->except(['programa_id', 'ciclo_id']);
+        if ($request->user()->hasRole('admin')) {
+            unset($data['num_comprobante']);
+            $data['programa_id'] = (int) $request->input('programa_id');
+            $data['ciclo_id'] = (int) $request->input('ciclo_id');
+        }
+        $alumno->update($data);
+
+        if ($request->user()->hasRole('admin')) {
+            return redirect()->route('adminAlumnos')->with('success', 'Datos registrados correctamente.');
+        }
 
         return redirect()->route('alumnos.index', $alumno)->with('success', 'Datos registrados correctamente.');
     }

@@ -208,12 +208,14 @@
                                                                 {{ $alumno->numero_referencia ?? 'no asignado' }}</li>
                                                             <li>Correo: {{ $alumno->email }}</li>
                                                             <li>Fecha de Nacimiento:
-                                                                {{ $alumno->fecha_nacimiento
-                                                                    ? \Carbon\Carbon::parse($alumno->fecha_nacimiento)->locale('es')->translatedFormat('d \\d\\e F \\d\\e\\l Y')
-                                                                    : 'Sin datos' }}
-                                                                |
-                                                                Edad:
-                                                                {{ $alumno->fecha_nacimiento ? \Carbon\Carbon::parse($alumno->fecha_nacimiento)->age . ' años' : '—' }}
+                                                                @if ($alumno->fechaNacimientoResueltaFormateada() !== '')
+                                                                    {{ \Carbon\Carbon::parse($alumno->fechaNacimientoResuelta())->locale('es')->translatedFormat('d \\d\\e F \\d\\e\\l Y') }}
+                                                                    |
+                                                                    Edad:
+                                                                    {{ $alumno->edad !== null ? $alumno->edad . ' años' : '—' }}
+                                                                @else
+                                                                    Sin datos
+                                                                @endif
                                                             </li>
                                                         </ul>
                                                     </td>

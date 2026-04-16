@@ -325,7 +325,12 @@
                                                 <i class="fas fa-pencil-alt me-1"></i>
                                                 Editar
                                             </a>
-                                            @if ($p->periodosPpd->isEmpty())
+                                            @if ($p->actual)
+                                                <span class="text-muted small me-2" title="Período en curso">
+                                                    <i class="fas fa-info-circle me-1"></i>
+                                                    Calificaciones por período al cerrar el ciclo
+                                                </span>
+                                            @elseif ($p->periodosPpd->isEmpty())
                                                 <form
                                                     action="{{ route('periodos.admin.ppd.crearCalificaciones', $p->id) }}"
                                                     method="POST" class="d-inline">

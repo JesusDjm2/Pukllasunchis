@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -9,6 +10,34 @@ class Calificacionesppd extends Model
 {
     use HasFactory;
     protected $table = 'calificacionesppds';
+
+    /**
+     * Columnas en las que puede haber “nota” guardada (incluye desglose y finales).
+     * La sincronización al período PPD usa este criterio, no solo calificacion_curso.
+     */
+    private const COLUMNAS_CON_NOTA = [
+        'comp1', 'comp2', 'comp3',
+        'pp_c1_1', 'pp_c1_2', 'pp_c1_3', 'pp_c1_4',
+        'pp_c2_1', 'pp_c2_2', 'pp_c2_3', 'pp_c2_4',
+        'pp_c3_1', 'pp_c3_2', 'pp_c3_3', 'pp_c3_4',
+        'pf_c1_1', 'pf_c1_2', 'pf_c1_3',
+        'pf_c2_1', 'pf_c2_2', 'pf_c2_3',
+        'pf_c3_1', 'pf_c3_2', 'pf_c3_3',
+        'pg_c1_1', 'pg_c1_2', 'pg_c1_3',
+        'pg_c2_1', 'pg_c2_2', 'pg_c2_3',
+        'pg_c3_1', 'pg_c3_2', 'pg_c3_3',
+        'nivel_desempeno', 'calificacion_curso', 'calificacion_sistema',
+        'observaciones',
+    ];
+
+    public function scopeConDatosSincronizables(Builder $query): Builder
+    {
+        return $query->where(function (Builder $q) {
+            foreach (self::COLUMNAS_CON_NOTA as $columna) {
+                $q->orWhereNotNull($columna);
+            }
+        });
+    }
 
     protected $fillable = [ 
         'nombre',

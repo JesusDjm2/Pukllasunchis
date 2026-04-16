@@ -4,73 +4,87 @@ namespace App\Http\Controllers;
 
 use App\Models\AdminFid;
 use App\Models\AdminPpd;
+use App\Models\BolsaTrabajoOferta;
 use App\Models\Postulante;
 use Illuminate\Http\Request;
 
 class EnlacesController extends Controller
 {
-
     public function tour()
     {
         return view('tour01');
     }
+
     public function video1()
     {
         return view('videos.video1');
     }
+
     public function video2()
     {
         return view('videos.video2');
     }
+
     public function video3()
     {
         return view('videos.video3');
     }
+
     public function video4()
     {
         return view('videos.video4');
     }
-    
-    
+
     public function nosotros()
     {
         return view('nosotros');
     }
+
     public function inicial()
     {
         return view('programas.educacion-inicial');
     }
+
     public function primaria()
     {
         return view('programas.educacion-primaria');
     }
+
     public function primariaEIB()
     {
         return view('programas.educacion-primaria-EIB');
     }
+
     public function formacion()
     {
         return view('programas.formacion-continua');
     }
+
     public function profesionalizacion()
     {
         $periodoAdmisionActivo = AdminPpd::where('estado', true)->exists();
+
         return view('programas.profesionalizacion-docente', compact('periodoAdmisionActivo'));
     }
+
     //Ordinario
     public function ordinario()
     {
         $periodoAdmision = AdminFid::where('estado', true)->first();
+
         return view('admision.ingreso-ordinario', compact('periodoAdmision'));
     }
+
     public function exoneracion()
     {
         return view('admision.por-exoneracion');
     }
+
     public function traslado()
     {
         return view('admision.traslado-externo');
     }
+
     public function resultados()
     {
         return view('admision.resultados');
@@ -81,18 +95,22 @@ class EnlacesController extends Controller
     {
         return view('tramites.tramite-titulacion');
     }
+
     public function plan()
     {
         return view('tramites.titulacion.plan-de-trabajo');
     }
+
     public function tinvestigacion()
     {
         return view('tramites.titulacion.investigacion');
     }
+
     public function tesis()
     {
         return view('tramites.titulacion.tesis');
     }
+
     public function tramites()
     {
         return view('tramites.titulacion.tramite');
@@ -103,18 +121,22 @@ class EnlacesController extends Controller
     {
         return view('tramites.Matriculas');
     }
+
     public function Ttraslado()
     {
         return view('tramites.Traslado');
     }
+
     public function licencia()
     {
         return view('tramites.Licencia-de-estudios');
     }
+
     public function partes()
     {
         return view('tramites.Mesa-de-partes');
     }
+
     public function extraordinarios()
     {
         return view('tramites.titulacion.extraordinarios');
@@ -125,18 +147,22 @@ class EnlacesController extends Controller
     {
         return view('lineas.lineas-tutoria');
     }
+
     public function bienestar()
     {
         return view('lineas.lineas-bienestar');
     }
+
     public function investigacion()
     {
         return view('lineas.lineas-investigacion');
     }
+
     public function preProfesional()
     {
         return view('lineas.practica-pre-profesional');
     }
+
     public function subvenciones()
     {
         return view('lineas.subvenciones-y-becas');
@@ -147,29 +173,64 @@ class EnlacesController extends Controller
     {
         return view('informacion.informacion-novedades');
     }
+
     public function articulos()
     {
         return view('informacion.articulos');
     }
+
     public function proyectos()
     {
         return view('informacion.proyectos-academicos');
     }
+
     public function innovaciones()
     {
         return view('informacion.innovaciones');
     }
-    public function bolsa()
+
+    public function bolsa(Request $request)
     {
         $postulantes = Postulante::all();
         $postulantes1 = Postulante::where('programa_id', 1)->get();
         $postulantes2 = Postulante::where('programa_id', 2)->get();
-        return view('informacion.bolsa-de-trabajo', compact('postulantes', 'postulantes1', 'postulantes2'));
+
+        $ofertasQuery = BolsaTrabajoOferta::query();
+        if ($request->filled('anio')) {
+            $ofertasQuery->where('anio', (int) $request->anio);
+        }
+        if ($request->filled('mes')) {
+            $ofertasQuery->where('mes', (int) $request->mes);
+        }
+
+        $ofertas = $ofertasQuery
+            ->orderByDesc('fecha_inicio')
+            ->orderByDesc('fecha_fin')
+            ->orderByDesc('id')
+            ->limit(20)
+            ->get();
+        $aniosOfertas = BolsaTrabajoOferta::query()->select('anio')->distinct()->orderByDesc('anio')->pluck('anio');
+        $mesesNombres = [
+            1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril',
+            5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto',
+            9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre',
+        ];
+
+        return view('informacion.bolsa-de-trabajo', compact(
+            'postulantes',
+            'postulantes1',
+            'postulantes2',
+            'ofertas',
+            'aniosOfertas',
+            'mesesNombres'
+        ));
     }
+
     public function conv()
     {
         return view('informacion.convocatoria');
     }
+
     public function conv2()
     {
         return view('informacion.convocatoria-2');
@@ -180,10 +241,12 @@ class EnlacesController extends Controller
     {
         return view('foot.informacion-institucional');
     }
+
     public function politica()
     {
         return view('foot.politica-de-privacidad');
     }
+
     public function terminos()
     {
         return view('foot.terminos-y-condiciones');

@@ -51,7 +51,7 @@
             </div>
             <div class="col-12">
                 <div class="table-responsive">
-                    <table id="alumnos-table" class="table table-hover" style="font-size: 15px">
+                    <table id="alumnos-table" class="table table-hover table-sortable" style="font-size: 15px">
                         <thead class="thead-dark">
                             <tr>
                                 <th>Nombre

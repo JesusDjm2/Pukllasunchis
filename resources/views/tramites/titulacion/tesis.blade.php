@@ -317,7 +317,7 @@
                             <li>Este trámite solo se realiza de manera virtual. Enviar su FUT debidamente llenado al correo
                                 institucional: <a href="mailto:eespp@pukllasunchis.org"
                                     class="text-primary">eespp@pukllasunchis.org</a>
-                                <br>Adjuntar al FUT la boleta de pago correspondiente. 
+                                <br>Adjuntar al FUT la boleta de pago correspondiente.
                                 En el asunto del correo debe consignar:
                                 <strong>“Emisión de diploma de Bachiller”</strong>.
                                 Una vez ingresada la solicitud, se le informará oportunamente la fecha en la que deberá
@@ -349,6 +349,12 @@
                                         institucional)</a></small></li>
 
                             <li>Comprobante de pago por Inscripción de Título de Licenciado.</li>
+                            <li>
+                                <span class="text-info">
+                                    👉 Este proceso concluye aproximadamente 30 días hábiles después de haber realizado el
+                                    pago correspondiente y haber completado el proceso.
+                                </span>
+                            </li>
                         </ul>
                     </li>
                 </ul>

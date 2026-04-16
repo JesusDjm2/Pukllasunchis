@@ -47,4 +47,6 @@
 <file name="2025_12_02_211305_create_postulantes_ppds_table.php" server="ftp.eesppukllasunchis.edu.pe" local="134159102799658437" remote="134161842000000000" Dst="0" />
 <file name="2026_02_03_215719_create_periodo_ppds_table.php" server="ftp.eesppukllasunchis.edu.pe" local="134146302441601962" remote="134153358000000000" Dst="0" />
 <file name="2024_11_17_193101_create_admin_fids_table.php" server="ftp.eesppukllasunchis.edu.pe" local="134052031520936175" remote="134185342800000000" Dst="0" />
+<file name="2026_04_08_000001_add_nombre_to_periodos_table_if_missing.php" server="ftp.eesppukllasunchis.edu.pe" local="134201404016895336" remote="134202408600000000" Dst="0" />
+<file name="2026_04_08_120000_create_bolsa_trabajo_ofertas_table.php" server="ftp.eesppukllasunchis.edu.pe" local="134201404017104789" remote="134202408600000000" Dst="0" />
 </dwsync>

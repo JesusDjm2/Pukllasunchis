@@ -38,7 +38,7 @@
                                 <h3> Bolsa de <br>
                                     <span>Trabajo</span>
                                 </h3>
-                                <a href="{{ route('admin') }}" class="boxed-btn3">Leer más</a>
+                                <a href="{{ route('bolsa') }}" class="boxed-btn3">Ver ofertas</a>
                             </div>
                         </div>
                     </div>
@@ -581,6 +581,406 @@
             </div>
         </div>
     </div>
+
+    <div id="bolsa-registro" class="department_area bolsa-registro-section">
+        <div class="container py-5">
+            <div class="row g-4 g-lg-5 align-items-stretch">
+                <div class="col-lg-6 d-flex">
+                    <div class="bolsa-registro-intro w-100">
+                        <span class="bolsa-registro-eyebrow">
+                            <i class="fa-solid fa-briefcase" aria-hidden="true"></i>
+                            Vinculación laboral
+                        </span>
+                        <h2 class="bolsa-registro-title">Bolsa de trabajo</h2>
+                        <p class="bolsa-registro-lead text-justify">
+                            Publica una convocatoria u oferta laboral. Los registros aparecerán en la sección pública de
+                            bolsa de trabajo con todos los detalles. También puedes revisarlos filtrados por año y mes.
+                        </p>
+                        <div class="bolsa-registro-actions d-flex flex-wrap align-items-center gap-3 mt-4">
+                            <a href="{{ route('bolsa') }}" class="boxed-btn3 bolsa-registro-btn-primary">
+                                <i class="fa-solid fa-arrow-right-to-bracket me-2" aria-hidden="true"></i>
+                                Ir a la bolsa
+                            </a>
+                            <button type="button" class="bolsa-registro-btn-outline" id="btnAbrirFormBolsa">
+                                <i class="fa-solid fa-pen-to-square me-2" aria-hidden="true"></i>
+                                Publicar oferta
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 d-flex">
+                    <div class="bolsa-registro-card w-100">
+                        <div class="bolsa-registro-card-accent" aria-hidden="true"></div>
+                        <div class="bolsa-registro-card-inner">
+                            <div class="d-flex align-items-start gap-3 mb-4">
+                                <div class="bolsa-registro-card-icon" aria-hidden="true">
+                                    <i class="fa-solid fa-file-circle-plus"></i>
+                                </div>
+                                <div>
+                                    <h3 class="bolsa-registro-card-heading h4 mb-1">Nuevo registro</h3>
+                                    <p class="bolsa-registro-card-sub text-muted mb-0">
+                                        Completa el formulario en una ventana emergente y publica tu convocatoria en pocos
+                                        pasos.
+                                    </p>
+                                </div>
+                            </div>
+                            <ul class="bolsa-registro-features list-unstyled mb-4">
+                                <li>
+                                    <span class="bolsa-registro-feature-icon"><i class="fa-solid fa-globe"
+                                            aria-hidden="true"></i></span>
+                                    <span>Visible en la bolsa pública con todos los detalles.</span>
+                                </li>
+                                <li>
+                                    <span class="bolsa-registro-feature-icon"><i class="fa-solid fa-filter"
+                                            aria-hidden="true"></i></span>
+                                    <span>Consulta ofertas filtradas por año y mes.</span>
+                                </li>
+                                <li>
+                                    <span class="bolsa-registro-feature-icon"><i class="fa-solid fa-bolt"
+                                            aria-hidden="true"></i></span>
+                                    <span>Proceso guiado sin salir de esta página.</span>
+                                </li>
+                            </ul>
+                            <button type="button" class="boxed-btn3 bolsa-registro-card-cta w-100" id="btnAbrirFormBolsaCard">
+                                <i class="fa-solid fa-window-restore me-2" aria-hidden="true"></i>
+                                Abrir formulario
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .bolsa-registro-section {
+            position: relative;
+            padding: 4.5rem 0;
+            overflow: hidden;
+            background: linear-gradient(145deg, #faf7f2 0%, #f3ede4 45%, #ebe3d6 100%);
+        }
+
+        .bolsa-registro-section::before {
+            content: "";
+            position: absolute;
+            top: -20%;
+            right: -10%;
+            width: 55%;
+            max-width: 520px;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(205, 146, 68, 0.14) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .bolsa-registro-intro {
+            position: relative;
+            z-index: 1;
+            padding: 0.5rem 0;
+        }
+
+        .bolsa-registro-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #8b6914;
+            background: rgba(205, 146, 68, 0.12);
+            border: 1px solid rgba(205, 146, 68, 0.28);
+            padding: 0.35rem 0.85rem;
+            border-radius: 999px;
+            margin-bottom: 1rem;
+        }
+
+        .bolsa-registro-title {
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 0.75rem;
+            position: relative;
+            padding-bottom: 0.65rem;
+        }
+
+        .bolsa-registro-title::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 56px;
+            height: 4px;
+            border-radius: 2px;
+            background: linear-gradient(90deg, #cd9244, #e0b366);
+        }
+
+        .bolsa-registro-lead {
+            color: #444;
+            font-size: 1.02rem;
+            line-height: 1.65;
+            margin-bottom: 0;
+        }
+
+        .bolsa-registro-btn-primary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 0;
+            box-shadow: 0 8px 24px rgba(205, 146, 68, 0.35);
+        }
+
+        .bolsa-registro-btn-primary:hover {
+            box-shadow: 0 6px 18px rgba(205, 146, 68, 0.25);
+        }
+
+        .bolsa-registro-btn-outline {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-family: "Poppins", sans-serif;
+            font-size: 15px;
+            font-weight: 500;
+            padding: 16px 28px;
+            border-radius: 4px;
+            border: 2px solid #cd9244;
+            background: #fff;
+            color: #cd9244 !important;
+            cursor: pointer;
+            text-transform: capitalize;
+            transition: color 0.35s ease, background 0.35s ease, border-color 0.35s ease, transform 0.2s ease;
+        }
+
+        .bolsa-registro-btn-outline:hover {
+            background: #cd9244;
+            color: #fff !important;
+            border-color: #cd9244;
+        }
+
+        .bolsa-registro-btn-outline:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(205, 146, 68, 0.35);
+        }
+
+        .bolsa-registro-card {
+            position: relative;
+            z-index: 1;
+            border-radius: 16px;
+            background: #fff;
+            box-shadow: 0 18px 50px rgba(40, 35, 25, 0.12), 0 2px 8px rgba(40, 35, 25, 0.06);
+            transition: transform 0.35s ease, box-shadow 0.35s ease;
+        }
+
+        .bolsa-registro-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 26px 60px rgba(40, 35, 25, 0.14), 0 4px 12px rgba(40, 35, 25, 0.08);
+        }
+
+        .bolsa-registro-card-accent {
+            height: 5px;
+            border-radius: 16px 16px 0 0;
+            background: linear-gradient(90deg, #cd9244, #d9a85c, #b87a2a);
+        }
+
+        .bolsa-registro-card-inner {
+            padding: 1.75rem 1.75rem 2rem;
+        }
+
+        @media (min-width: 992px) {
+            .bolsa-registro-card-inner {
+                padding: 2rem 2.25rem 2.25rem;
+            }
+        }
+
+        .bolsa-registro-card-icon {
+            flex-shrink: 0;
+            width: 52px;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 14px;
+            background: linear-gradient(145deg, rgba(205, 146, 68, 0.18), rgba(205, 146, 68, 0.06));
+            color: #a67428;
+            font-size: 1.35rem;
+        }
+
+        .bolsa-registro-card-heading {
+            font-weight: 700;
+            color: #222;
+        }
+
+        .bolsa-registro-features li {
+            display: flex;
+            gap: 0.75rem;
+            align-items: flex-start;
+            padding: 0.55rem 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+            font-size: 0.95rem;
+            color: #3d3d3d;
+            line-height: 1.5;
+        }
+
+        .bolsa-registro-features li:last-child {
+            border-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .bolsa-registro-feature-icon {
+            flex-shrink: 0;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background: rgba(205, 146, 68, 0.12);
+            color: #b07d2e;
+            font-size: 0.85rem;
+        }
+
+        .bolsa-registro-card-cta {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 0;
+            padding-top: 16px;
+            padding-bottom: 16px;
+        }
+
+        #bolsaRegistroOverlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 10060;
+            background: rgba(0, 0, 0, 0.75);
+            align-items: flex-start;
+            justify-content: center;
+            padding: 2rem 1rem;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+
+        #bolsaRegistroOverlay.is-open {
+            display: flex;
+        }
+
+        .bolsa-registro-modal-panel {
+            position: relative;
+            width: 100%;
+            max-width: 720px;
+            margin: auto;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+            padding: 1.5rem 1.5rem 2rem;
+        }
+
+        #bolsaRegistroModalClose {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.75rem;
+            font-size: 2rem;
+            line-height: 1;
+            color: #333;
+            background: transparent;
+            border: 0;
+            cursor: pointer;
+            padding: 0.25rem 0.5rem;
+            z-index: 2;
+        }
+
+        #bolsaRegistroModalClose:hover {
+            color: #000;
+        }
+    </style>
+
+    <div id="bolsaRegistroOverlay" role="dialog" aria-modal="true" aria-labelledby="bolsaRegistroTitulo"
+        onclick="if (event.target === this) bolsaRegistroModalClose();">
+        <div class="bolsa-registro-modal-panel" onclick="event.stopPropagation();">
+            <button type="button" id="bolsaRegistroModalClose" onclick="bolsaRegistroModalClose();"
+                aria-label="Cerrar">&times;</button>
+            <h4 id="bolsaRegistroTitulo" class="mb-3 pr-4">Nuevo registro — Bolsa de trabajo</h4>
+            @if ($errors->any() && old('form_context') === 'bolsa_oferta')
+                <div class="alert alert-danger">
+                    <ul class="mb-0 pl-3">
+                        @foreach ($errors->all() as $err)
+                            <li>{{ $err }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+            @include('partials.bolsa-oferta-registro-form', [
+                'prefix' => 'modal_bolsa',
+                'redirectTo' => 'bolsa',
+            ])
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/tinymce@6/tinymce.min.js"></script>
+    <script>
+        var bolsaTinyMceInited = false;
+
+        function bolsaRegistroModalOpen() {
+            var overlay = document.getElementById('bolsaRegistroOverlay');
+            if (!overlay) return;
+            overlay.classList.add('is-open');
+            document.body.style.overflow = 'hidden';
+            if (!bolsaTinyMceInited && typeof tinymce !== 'undefined') {
+                tinymce.init({
+                    selector: '#modal_bolsa_detalles',
+                    height: 280,
+                    menubar: false,
+                    plugins: 'lists link',
+                    toolbar: 'undo redo | blocks | bold italic underline | bullist numlist | link | removeformat',
+                    language: 'es',
+                    branding: false
+                });
+                bolsaTinyMceInited = true;
+            }
+        }
+
+        function bolsaRegistroModalClose() {
+            var overlay = document.getElementById('bolsaRegistroOverlay');
+            if (!overlay) return;
+            overlay.classList.remove('is-open');
+            document.body.style.overflow = '';
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var formBolsa = document.getElementById('modal_bolsa_form');
+            if (formBolsa) {
+                formBolsa.addEventListener('submit', function() {
+                    if (typeof tinymce === 'undefined') {
+                        return;
+                    }
+                    var ed = tinymce.get('modal_bolsa_detalles');
+                    if (ed) {
+                        ed.save();
+                    } else {
+                        tinymce.triggerSave();
+                    }
+                });
+            }
+            var openers = document.querySelectorAll('#btnAbrirFormBolsa, #btnAbrirFormBolsaCard');
+            openers.forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    bolsaRegistroModalOpen();
+                });
+            });
+            if (window.location.hash === '#bolsa-registro') {
+                bolsaRegistroModalOpen();
+            }
+            @if ($errors->any() && old('form_context') === 'bolsa_oferta')
+                bolsaRegistroModalOpen();
+            @endif
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    var o = document.getElementById('bolsaRegistroOverlay');
+                    if (o && o.classList.contains('is-open')) bolsaRegistroModalClose();
+                }
+            });
+        });
+    </script>
     <section class="fondoLogo">
         <div class="container pt-4 pb-4">
             <div class="row pt-5 pb-5">

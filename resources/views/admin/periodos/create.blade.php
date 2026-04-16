@@ -44,10 +44,10 @@
 
                 <div class="col-lg-12">
                     <div class="form-group">
-                        <label for="imagen">Imagen del Horario (JPG, PNG, WEBP - máx. 4MB)</label>
-                        <input type="file" name="imagen" class="form-control form-control-sm"
+                        <label for="horario">Imagen del Horario (JPG, PNG, WEBP - máx. 4MB)</label>
+                        <input type="file" name="horario" id="horario" class="form-control form-control-sm"
                             accept=".jpg,.jpeg,.png,.webp">
-                        @error('imagen')
+                        @error('horario')
                             <small class="text-danger">{{ $message }}</small>
                         @enderror
                     </div>

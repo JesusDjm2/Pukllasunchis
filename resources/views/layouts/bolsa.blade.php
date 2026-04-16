@@ -149,6 +149,13 @@
                         </div>
                     </div>
                 </li>
+                <hr class="sidebar-divider d-none d-md-block">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('bolsa-trabajo.ofertas.index') }}">
+                        <i class="fas fa-bullhorn"></i>
+                        <span>Ofertas / convocatorias</span>
+                    </a>
+                </li>
             @endrole
             @role('alumno')
                 <ul class="navbar-nav bg-gradient-info sidebar sidebar-dark accordion" id="accordionSidebar">                   

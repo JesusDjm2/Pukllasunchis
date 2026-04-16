@@ -369,7 +369,7 @@
                             <li>Comprobante de pago por Inscripción del Grado de Bachiller.</li>
                             <li>
                                 <span class="text-info">
-                                    👉 Este proceso concluye aproximadamente 15 días hábiles después de haber realizado el
+                                    👉 Este proceso concluye aproximadamente 30 días hábiles después de haber realizado el
                                     pago correspondiente y haber completado el proceso.
                                 </span>
                             </li>
@@ -534,7 +534,7 @@
                 </li>
                 <li><span class="span">5</span>
                     Con esta boleta electrónica podrás realizar tu trámite correspondiente.
-                </li>
+                </li> 
             </ul>
             <div class="mx-auto text-center mt-3" style="width: 100%;">
                 <button class="btn btn-sm btn-primary" onclick="closeModal()">Cerrar</button>

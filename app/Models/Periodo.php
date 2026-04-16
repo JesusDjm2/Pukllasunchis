@@ -8,7 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class Periodo extends Model
 {
     use HasFactory;
-    protected $fillable = [        
+
+    protected $fillable = [
+        'nombre',
         'valoracion_curso',
         'calificacion_curso',
         'calificacion_sistema',
@@ -16,14 +18,17 @@ class Periodo extends Model
         'curso_id',
         'periodo_actual_id',
     ];
+
     public function alumno()
     {
         return $this->belongsTo(Alumno::class, 'alumno_id');
     }
+
     public function curso()
     {
         return $this->belongsTo(Curso::class);
     }
+
     public function periodoActual()
     {
         return $this->belongsTo(PeriodoActual::class);

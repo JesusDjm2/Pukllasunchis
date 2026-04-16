@@ -198,16 +198,65 @@
                                             <td>{{ $alumno->dni }}</td>
                                         </tr>
                                         <tr>
+                                            <td class="fw-bold">Género:</td>
+                                            <td>{{ $alumno->genero ?? '—' }}</td>
+                                            <td class="fw-bold">Fecha de nacimiento:</td>
+                                            <td>
+                                                @php $fechaNacFmtShow = $alumno->fechaNacimientoResueltaFormateada(); @endphp
+                                                @if ($fechaNacFmtShow !== '')
+                                                    {{ $fechaNacFmtShow }}
+                                                    @if ($alumno->edad !== null)
+                                                        <span class="text-muted">({{ $alumno->edad }}
+                                                            {{ $alumno->edad === 1 ? 'año' : 'años' }})</span>
+                                                    @endif
+                                                @else
+                                                    —
+                                                @endif
+                                            </td>
+                                        </tr>
+                                        <tr>
                                             <td class="fw-bold">Número:</td>
                                             <td>{{ $alumno->numero }}</td>
                                             <td class="fw-bold">Número de referencia:</td>
                                             <td>{{ $alumno->numero_referencia }}</td>
                                         </tr>
                                         <tr>
-                                            <td class="fw-bold">Procedencia Familiar:</td>
-                                            <td>{{ $alumno->procedencia_familiar }}</td>
-                                            <td class="fw-bold">Domicilio:</td>
-                                            <td>{{ $alumno->direccion }}</td>
+                                            <td class="fw-bold">Lugar de nacimiento:</td>
+                                            <td>{{ $alumno->lugar_nacimiento ?? '—' }}</td>
+                                            <td class="fw-bold">Permanencia en la vivienda:</td>
+                                            <td>{{ $alumno->permanencia_vivienda ?? '—' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold">Departamento:</td>
+                                            <td>{{ $alumno->departamento ?? '—' }}</td>
+                                            <td class="fw-bold">Provincia:</td>
+                                            <td>{{ $alumno->provincia ?? '—' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold">Distrito:</td>
+                                            <td>{{ $alumno->distrito ?? '—' }}</td>
+                                            <td class="fw-bold">Dirección:</td>
+                                            <td>{{ $alumno->direccion ?? '—' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold">Procedencia familiar:</td>
+                                            <td>{{ $procedencia[$alumno->procedencia_familiar] ?? $alumno->procedencia_familiar ?? '—' }}
+                                            </td>
+                                            <td class="fw-bold">Sector laboral:</td>
+                                            <td>{{ $alumno->sector_laboral ? $alumno->sector_laboral : '—' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold">Usuario del sistema:</td>
+                                            <td colspan="3">
+                                                @if ($alumno->user)
+                                                    {{ $alumno->user->email }}
+                                                    @if ($alumno->user->name)
+                                                        <span class="text-muted">({{ $alumno->user->name }})</span>
+                                                    @endif
+                                                @else
+                                                    <span class="text-muted">Sin cuenta vinculada</span>
+                                                @endif
+                                            </td>
                                         </tr>
                                         <tr>
                                             <td class="fw-bold">Te consideras:</td>
@@ -369,9 +418,19 @@
                                     <tbody>
                                         <tr>
                                             <td class="fw-bold">¿Actualmente trabaja?:</td>
-                                            <td>{{ $alumno->trabajas ? 'Sí' : 'No' }}</td>
+                                            <td>
+                                                @php
+                                                    $tr = $alumno->trabajas;
+                                                    $trabTxt = match (true) {
+                                                        $tr === 1 || $tr === '1' => 'Sí',
+                                                        $tr === 0 || $tr === '0' => 'No',
+                                                        default => $tr !== null && $tr !== '' ? (string) $tr : '—',
+                                                    };
+                                                @endphp
+                                                {{ $trabTxt }}
+                                            </td>
                                             <td class="fw-bold">Lugar de trabajo:</td>
-                                            <td>{{ $alumno->donde_trabajas }}</td>
+                                            <td>{{ $alumno->donde_trabajas ?? '—' }}</td>
                                         </tr>
                                         <tr>
                                             <td class="fw-bold">Ingreso mensual:</td>
@@ -427,7 +486,23 @@
                                             <td class="fw-bold">Material:</td>
                                             <td>{{ $alumno->material_vivienda }}</td>
                                             <td class="fw-bold">Bienes:</td>
-                                            <td>{{ $alumno->bienes_vivienda }}</td>
+                                            <td>
+                                                @php
+                                                    $bienesRaw = $alumno->bienes_vivienda;
+                                                    $bienesList = is_array($bienesRaw)
+                                                        ? $bienesRaw
+                                                        : array_filter(array_map('trim', explode(',', (string) $bienesRaw)));
+                                                @endphp
+                                                @if (count($bienesList))
+                                                    <ul class="mb-0 ps-3">
+                                                        @foreach ($bienesList as $b)
+                                                            <li>{{ $b }}</li>
+                                                        @endforeach
+                                                    </ul>
+                                                @else
+                                                    —
+                                                @endif
+                                            </td>
                                         </tr>
                                         <tr>
                                             <td class="fw-bold">Horas Agua:</td>
@@ -438,8 +513,24 @@
                                         <tr>
                                             <td class="fw-bold">Horas Luz:</td>
                                             <td>{{ $alumno->hrs_disponibles_luz }}</td>
-                                            <td class="fw-bold">Otros Servicios:</td>
-                                            <td>{{ $alumno->otros_servicios }}</td>
+                                            <td class="fw-bold">Otros servicios:</td>
+                                            <td>
+                                                @php
+                                                    $otrosRaw = $alumno->otros_servicios;
+                                                    $otrosList = is_array($otrosRaw)
+                                                        ? $otrosRaw
+                                                        : array_filter(array_map('trim', explode(',', (string) $otrosRaw)));
+                                                @endphp
+                                                @if (count($otrosList))
+                                                    <ul class="mb-0 ps-3">
+                                                        @foreach ($otrosList as $o)
+                                                            <li>{{ $o }}</li>
+                                                        @endforeach
+                                                    </ul>
+                                                @else
+                                                    —
+                                                @endif
+                                            </td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -531,7 +622,23 @@
                                             <td class="fw-bold">Actividades en Internet:</td>
                                             <td>{{ $alumno->actividades_internet }}</td>
                                             <td class="fw-bold">Habilidades:</td>
-                                            <td>{{ $alumno->habilidades }}</td>
+                                            <td>
+                                                @php
+                                                    $habRaw = $alumno->habilidades;
+                                                    $habList = is_array($habRaw)
+                                                        ? $habRaw
+                                                        : array_filter(preg_split('/[-,]/', (string) $habRaw) ?: []);
+                                                @endphp
+                                                @if (count($habList))
+                                                    <ul class="mb-0 ps-3">
+                                                        @foreach ($habList as $h)
+                                                            <li>{{ trim($h) }}</li>
+                                                        @endforeach
+                                                    </ul>
+                                                @else
+                                                    —
+                                                @endif
+                                            </td>
                                         </tr>
                                         <tr>
                                             <td class="fw-bold">¿Dispone de tiempo libre?:</td>

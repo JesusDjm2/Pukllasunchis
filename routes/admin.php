@@ -6,6 +6,7 @@ use App\Http\Controllers\AdminPpdController;
 use App\Http\Controllers\AlumnoController;
 use App\Http\Controllers\AlumnoCursoController;
 use App\Http\Controllers\BolsaController;
+use App\Http\Controllers\BolsaTrabajoOfertaController;
 use App\Http\Controllers\BotManController;
 use App\Http\Controllers\CalificacionController;
 use App\Http\Controllers\CapacidadesController;
@@ -27,6 +28,8 @@ use App\Http\Controllers\ProyectoController;
 use App\Http\Controllers\SilaboController;
 use App\Http\Controllers\vistasAlumnosController;
 use App\Models\Calificacion;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 
 Auth::routes();
 
@@ -41,6 +44,12 @@ Route::put('/admin/update/{id}', [AdminController::class, 'update'])->name('admi
 Route::get('/registro', [AdminController::class, 'create'])->name('registerAdmin');
 Route::post('/admin/store', [AdminController::class, 'store'])->name('adminStore');
 Route::get('/admin/alumnos', [AdminController::class, 'alumnos'])->name('adminAlumnos');
+Route::post('/admin/alumnos/exportar-excel', [AdminController::class, 'exportAlumnosExcel'])
+    ->middleware('auth')
+    ->name('admin.alumnos.export-excel');
+Route::get('/admin/alumnos/{alumno}/carnet', [AdminController::class, 'alumnoCarnet'])
+    ->middleware('auth')
+    ->name('admin.alumnos.carnet');
 Route::get('/admin/alumnos/demograficos', [AlumnoController::class, 'estadisticas'])->name('alumnos.demograficos');
 Route::get('/admin/alumnosPPD', [AdminController::class, 'alumnosppd'])->name('alumnosppd');
 Route::post('/relacionar-usuario/{alumno}', [AdminController::class, 'relacionarUsuario'])->name('relacionarUsuario');
@@ -105,8 +114,13 @@ Route::get('/periodo-actual/{id}/actualizar-notas', [PeriodoActualController::cl
 Route::get('Periodo-Actual/{periodoactual}/registros', [PeriodoActualController::class, 'showRegistros'])
     ->name('periodoactual.showRegistros')->middleware('auth');
 
-Route::resource('periodos', PeriodoController::class)->middleware('auth')->names('periodos');
-Route::get('/periodos/{nombre}', [PeriodoController::class, 'show'])->name('periodos.show');
+Route::resource('periodos', PeriodoController::class)
+    ->only(['index', 'create', 'store'])
+    ->middleware('auth')
+    ->names('periodos');
+Route::get('/periodos/{nombre}', [PeriodoController::class, 'show'])
+    ->middleware('auth')
+    ->name('periodos.show');
 
 Route::get('/admin/periodos/{id}/export', [PeriodoActualController::class, 'exportExcel'])->name('periodos.export');
 
@@ -190,6 +204,19 @@ Route::get('/get-cursos/{ciclo}', [vistasAlumnosController::class, 'getCursos'])
 Route::get('/obtener-cursos/{cicloId}', [vistasAlumnosController::class, 'getCursos'])->name('obtener.cursos');
 // Ficha de matrículaen PDF
 Route::get('/alumnos/{alumno}/ficha-pdf', [vistasAlumnosController::class, 'exportarFichaPDF'])->name('alumno.ficha.pdf');
+
+Route::post('bolsa-trabajo/ofertas', [BolsaTrabajoOfertaController::class, 'store'])
+    ->name('bolsa-trabajo.ofertas.store');
+Route::middleware('auth')->group(function () {
+    Route::get('bolsa-trabajo/ofertas', [BolsaTrabajoOfertaController::class, 'index'])
+        ->name('bolsa-trabajo.ofertas.index');
+    Route::get('bolsa-trabajo/ofertas/{oferta}/edit', [BolsaTrabajoOfertaController::class, 'edit'])
+        ->name('bolsa-trabajo.ofertas.edit');
+    Route::put('bolsa-trabajo/ofertas/{oferta}', [BolsaTrabajoOfertaController::class, 'update'])
+        ->name('bolsa-trabajo.ofertas.update');
+    Route::delete('bolsa-trabajo/ofertas/{oferta}', [BolsaTrabajoOfertaController::class, 'destroy'])
+        ->name('bolsa-trabajo.ofertas.destroy');
+});
 
 Route::resource('trabajo', BolsaController::class)->middleware('auth')->names('trabajo');
 Route::resource('postulante', PostulanteController::class);

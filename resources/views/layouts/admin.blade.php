@@ -137,6 +137,24 @@
                 <!-- Divider -->
                 <hr class="sidebar-divider d-none d-md-block">
                 <li class="nav-item">
+                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseBolsaPublica"
+                        aria-expanded="false" aria-controls="collapseBolsaPublica">
+                        <i class="fas fa-briefcase"></i>
+                        <span>Bolsa de trabajo</span>
+                    </a>
+                    <div id="collapseBolsaPublica" class="collapse" aria-labelledby="headingBolsaPublica"
+                        data-parent="#accordionSidebar">
+                        <div class="bg-white py-2 collapse-inner rounded">
+                            <h6 class="collapse-header">Ofertas públicas</h6>
+                            <a class="collapse-item" href="{{ route('bolsa-trabajo.ofertas.index') }}">Registros y filtros</a>
+                            <a class="collapse-item" href="{{ route('bolsa') }}" target="_blank" rel="noopener noreferrer">Ver
+                                página pública</a>
+                        </div>
+                    </div>
+                </li>
+                <!-- Divider -->
+                <hr class="sidebar-divider d-none d-md-block">
+                <li class="nav-item">
                     <a class="nav-link collapsed"
                         href="https://sites.google.com/pukllavirtual.edu.pe/bibliotecaeesppuklla/inicio" target="_blank">
                         <i class="fas fa-book-open"></i>

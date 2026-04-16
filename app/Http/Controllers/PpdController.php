@@ -483,8 +483,7 @@ class PpdController extends Controller
             ->whereHas('programa.ciclos.cursos', function ($query) use ($curso) {
                 $query->where('id', $curso->id);
             })
-            ->whereHas('alumnoB', function ($query) {
-                // 🔥 SOLO TRAER ALUMNOS CUYO PPD TIENE guardado = false
+            ->whereDoesntHave('alumnoB', function ($query) {
                 $query->where('guardado', true);
             })
             ->with(['programa.ciclos.cursos', 'roles', 'alumnoB'])

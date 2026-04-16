@@ -24,7 +24,6 @@
                 <a href="{{ route('registerAdmin') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
                     Nuevo Registro <i class="fa fa-plus fa-sm"></i>
                 </a>
-
             </div>
         @endrole
         @role('alumno')
@@ -66,7 +65,7 @@
                             </button>
                         </div>
                     @endif
-                </div>
+                </div>                
                 <div class="col-lg-12">
                     <div class="row">
                         <div class="col-lg-6 mb-3">
@@ -88,7 +87,7 @@
                         </div>
                     </div>
                     <div class="table-responsive">
-                        <table id="admins-table" class="table table-hover">
+                        <table id="admins-table" class="table table-hover table-sortable">
                             <thead class="thead-dark">
                                 <tr>
                                     <th>Nombre
@@ -196,7 +195,7 @@
                         </table>
                     </div>
                     <div class="table-responsive">
-                        <table id="alumnosppd" class="table table-hover" style="display: none">
+                        <table id="alumnosppd" class="table table-hover table-sortable" style="display: none">
                             <thead class="thead-dark">
                                 <tr>
                                     <th>Nombres ppd

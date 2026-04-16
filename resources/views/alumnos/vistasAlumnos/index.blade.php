@@ -7,8 +7,7 @@
             @php
                 $alumno = auth()->user()->alumno ?? auth()->user()->alumnoB;
             @endphp
-
-            @if ($alumno)
+            {{-- @if ($alumno)
                 @if (!Session::has('mostrar_contenido'))
                     <button type="button" class="btn btn-info btn-sm mb-2" id="mostrar-contenido">
                         Notificar que he terminado con mi registro de matrícula. <i class="fa fa-smile"></i>
@@ -19,14 +18,14 @@
                         Completar Matrícula
                     </a>
                 </span>
-            @endif
+            @endif--}}
             @if (auth()->user()->alumno)
                 <span>
                     <a class="btn btn-sm btn-info mb-2"
                         href="{{ route('ficha-matricula', ['alumno' => $alumno->id]) }}">Ficha de
                         matricula</a>
                 </span>
-            @endif
+            @endif 
         </div>
         <div class="row bg-white" id="contenido-alumno">
             <div class="col-12">

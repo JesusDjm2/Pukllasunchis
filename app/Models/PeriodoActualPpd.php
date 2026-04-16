@@ -28,13 +28,25 @@ class PeriodoActualPpd extends Model
     protected static function boot()
     {
         parent::boot();
-
         static::saving(function ($model) {
             if ($model->actual) {
                 // Desactivar otros períodos actuales
                 static::where('id', '!=', $model->id)
                     ->where('actual', true)
                     ->update(['actual' => false]);
+            }
+        });
+
+        // El período marcado como "actual" sigue en calificación: no debe tener snapshot en periodo_ppds.
+        static::updating(function (PeriodoActualPpd $model) {
+            if ($model->isDirty('actual') && (int) $model->actual === 1) {
+                PeriodoPpd::where('periodo_actual_ppd_id', $model->id)->delete();
+            }
+        });
+
+        static::created(function (PeriodoActualPpd $model) {
+            if ((int) $model->actual === 1) {
+                PeriodoPpd::where('periodo_actual_ppd_id', $model->id)->delete();
             }
         });
     }

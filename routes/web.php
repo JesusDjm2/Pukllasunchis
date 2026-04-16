@@ -4,15 +4,13 @@
 use App\Http\Controllers\AlumnoController;
 use App\Http\Controllers\EnlacesController;
 use App\Http\Controllers\PpdController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 Route::get('/', function () {
     return view('welcome');
 })->name('index');
-
-//Pandero
-Route::get('pandero', [EnlacesController::class, 'pandero'])->name('pandero');
 
 Route::get('nosotros', [EnlacesController::class, 'nosotros'])->name('nosotros');
 //Programas
@@ -80,14 +78,14 @@ Route::get('La-flor-de-la-canela', [EnlacesController::class, 'video4'])->name('
 //360
 Route::get('Tour-360', [EnlacesController::class, 'tour'])->name('tour');
 
-Route::get('/clear-cache', function () {
+/* Route::get('/clear-cache', function () {
     $exitCode = Artisan::call('cache:clear');
     $exitCode = Artisan::call('config:cache');
     $exitCode = Artisan::call('config:clear');
     $exitCode = Artisan::call('view:clear');
 
     return 'DONE';
-});
+}); */
 
 Route::get('/logout', function () {
     Auth::logout();

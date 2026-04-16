@@ -8,11 +8,73 @@ use App\Models\PeriodoActualPpd;
 use App\Models\PeriodoPpd;
 use App\Models\ppd;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 
 class PeriodoActualPpdController extends Controller
 {
+    /**
+     * Calificaciones fuente para período PPD (opcionalmente filtradas por curso en config).
+     */
+    private function calificacionesPpdQueryParaPeriodo()
+    {
+        $q = Calificacionesppd::with(['ppd', 'curso'])->conDatosSincronizables();
+        $cursos = config('ppd_periodo.cursos_sincronizacion_limitados', []);
+        if (! empty($cursos)) {
+            $q->whereIn('curso_id', $cursos);
+        }
+
+        return $q;
+    }
+
+    private function decimalONull(mixed $valor): ?float
+    {
+        if ($valor === null || $valor === '') {
+            return null;
+        }
+        if (is_numeric($valor)) {
+            return round((float) $valor, 2);
+        }
+
+        return null;
+    }
+
+    private function enteroONull(mixed $valor): ?int
+    {
+        if ($valor === null || $valor === '') {
+            return null;
+        }
+        if (is_numeric($valor)) {
+            return (int) round((float) $valor);
+        }
+
+        return null;
+    }
+
+    private function notasNormalizadasParaPeriodoPpd(Calificacionesppd $c): array
+    {
+        return [
+            'calificacion_curso' => $this->decimalONull($c->calificacion_curso),
+            'calificacion_sistema' => $this->decimalONull($c->calificacion_sistema),
+            'nivel_desempeno' => $this->enteroONull($c->nivel_desempeno),
+        ];
+    }
+
+    /**
+     * El período PPD "actual" sigue en calificación en calificacionesppds; no debe tener snapshot en periodo_ppds.
+     */
+    private function redirigirSiPeriodoPpdActual(PeriodoActualPpd $periodo): ?\Illuminate\Http\RedirectResponse
+    {
+        if (! (int) $periodo->actual) {
+            return null;
+        }
+
+        return redirect()->route('periodoactual.index')
+            ->with('warning', 'Este período PPD está marcado como actual (en curso). Las acciones de calificaciones por período (crear, sincronizar o ver registros) están deshabilitadas hasta que deje de ser el período actual.');
+    }
+
     public function create()
     {
         return view('admin.periodos.ppd.create');
@@ -22,7 +84,7 @@ class PeriodoActualPpdController extends Controller
     {
         $request->validate([
             'nombre' => 'required|string|max:255',
-            'calendario' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:4096',
+            'calendario' => 'nullable|file|mimes:jpg,jpeg,png,webp,pdf|max:4096',
             'fecha_inicio' => 'nullable|date',
             'fecha_cierre' => 'nullable|date|after_or_equal:fecha_inicio',
             'actual' => 'nullable|boolean',
@@ -62,6 +124,9 @@ class PeriodoActualPpdController extends Controller
     public function show($id)
     {
         $periodo = PeriodoActualPpd::findOrFail($id);
+        if ($redirect = $this->redirigirSiPeriodoPpdActual($periodo)) {
+            return $redirect;
+        }
 
         // Obtener los registros existentes (con calificaciones)
         $registros = PeriodoPpd::where('periodo_actual_ppd_id', $periodo->id)
@@ -231,6 +296,9 @@ class PeriodoActualPpdController extends Controller
     public function export($id)
     {
         $periodo = PeriodoActualPpd::findOrFail($id);
+        if ($redirect = $this->redirigirSiPeriodoPpdActual($periodo)) {
+            return $redirect;
+        }
         $nombreArchivo = 'periodo_ppd_'.Str::slug($periodo->nombre).'_'.date('Y-m-d_His').'.xlsx';
 
         return Excel::download(new PeriodoPpdExport($id), $nombreArchivo);
@@ -304,14 +372,15 @@ class PeriodoActualPpdController extends Controller
     public function crearCalificaciones($id)
     {
         $periodo = PeriodoActualPpd::findOrFail($id);
+        if ($redirect = $this->redirigirSiPeriodoPpdActual($periodo)) {
+            return $redirect;
+        }
         if ($periodo->periodosPpd()->exists()) {
             return redirect()->route('periodoactual.index')
                 ->with('warning', 'Ya se han creado calificaciones para este período.');
         }
 
-        $calificacionesPpd = Calificacionesppd::with(['ppd', 'curso'])
-            ->whereNotNull('calificacion_curso')
-            ->get();
+        $calificacionesPpd = $this->calificacionesPpdQueryParaPeriodo()->get();
 
         $contador = 0;
         $errores = [];
@@ -333,14 +402,16 @@ class PeriodoActualPpdController extends Controller
                 continue;
             }
 
+            $notas = $this->notasNormalizadasParaPeriodoPpd($calificacion);
+
             try {
                 PeriodoPpd::create([
                     'periodo_actual_ppd_id' => $periodo->id,
                     'alumno_id' => $calificacion->ppd_id,
                     'curso_id' => $calificacion->curso_id,
-                    'calificacion_curso' => $calificacion->calificacion_curso,
-                    'calificacion_sistema' => $calificacion->calificacion_sistema,
-                    'nivel_desempeno' => $calificacion->nivel_desempeno,
+                    'calificacion_curso' => $notas['calificacion_curso'],
+                    'calificacion_sistema' => $notas['calificacion_sistema'],
+                    'nivel_desempeno' => $notas['nivel_desempeno'],
                 ]);
 
                 $contador++;
@@ -353,17 +424,21 @@ class PeriodoActualPpdController extends Controller
 
             } catch (\Exception $e) {
                 $errores[] = "Error al crear registro para alumno ID {$calificacion->ppd_id}, curso ID {$calificacion->curso_id}: ".$e->getMessage();
-                \Log::error('Error crear calificación PPD: '.$e->getMessage());
+                Log::error('Error crear calificación PPD: '.$e->getMessage());
             }
         }
 
         // Mensaje de resultado
         $mensaje = "Se crearon {$contador} registros de calificaciones PPD para el período {$periodo->nombre}";
         $mensaje .= ' y se marcaron '.count($alumnosActualizados).' alumnos como guardados.';
+        $cursosFiltro = config('ppd_periodo.cursos_sincronizacion_limitados', []);
+        if (! empty($cursosFiltro)) {
+            $mensaje .= ' (solo cursos ID: '.implode(', ', $cursosFiltro).').';
+        }
 
         if (! empty($errores)) {
             $mensaje .= '. Se encontraron '.count($errores).' errores.';
-            \Log::error('Errores al crear calificaciones PPD:', $errores);
+            Log::error('Errores al crear calificaciones PPD:', $errores);
         }
 
         if ($contador > 0) {
@@ -378,37 +453,27 @@ class PeriodoActualPpdController extends Controller
     public function sincronizarCalificaciones($id)
     {
         $periodo = PeriodoActualPpd::findOrFail($id);
+        if ($redirect = $this->redirigirSiPeriodoPpdActual($periodo)) {
+            return $redirect;
+        }
 
-        $calificacionesPpd = Calificacionesppd::with(['ppd', 'curso'])
-            ->whereNotNull('calificacion_curso')
-            ->get();
+        $calificacionesPpd = $this->calificacionesPpdQueryParaPeriodo()->get();
 
-        $data = [];
+        $dataPorClave = [];
         $alumnosIds = [];
-        $contadorActualizados = 0;
-        $contadorNuevos = 0;
 
         foreach ($calificacionesPpd as $calificacion) {
             if ($calificacion->ppd) {
-                // Verificar si ya existe el registro
-                $existe = PeriodoPpd::where('periodo_actual_ppd_id', $periodo->id)
-                    ->where('alumno_id', $calificacion->ppd_id)
-                    ->where('curso_id', $calificacion->curso_id)
-                    ->exists();
+                $notas = $this->notasNormalizadasParaPeriodoPpd($calificacion);
+                $clave = $periodo->id.'-'.$calificacion->ppd_id.'-'.$calificacion->curso_id;
 
-                if ($existe) {
-                    $contadorActualizados++;
-                } else {
-                    $contadorNuevos++;
-                }
-
-                $data[] = [
+                $dataPorClave[$clave] = [
                     'periodo_actual_ppd_id' => $periodo->id,
                     'alumno_id' => $calificacion->ppd_id,
                     'curso_id' => $calificacion->curso_id,
-                    'calificacion_curso' => $calificacion->calificacion_curso,
-                    'calificacion_sistema' => $calificacion->calificacion_sistema,
-                    'nivel_desempeno' => $calificacion->nivel_desempeno,
+                    'calificacion_curso' => $notas['calificacion_curso'],
+                    'calificacion_sistema' => $notas['calificacion_sistema'],
+                    'nivel_desempeno' => $notas['nivel_desempeno'],
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
@@ -417,37 +482,43 @@ class PeriodoActualPpdController extends Controller
             }
         }
 
+        $data = array_values($dataPorClave);
+
+        $contadorNuevos = 0;
+        $contadorActualizados = 0;
+        foreach ($data as $fila) {
+            $yaExistia = PeriodoPpd::where('periodo_actual_ppd_id', $fila['periodo_actual_ppd_id'])
+                ->where('alumno_id', $fila['alumno_id'])
+                ->where('curso_id', $fila['curso_id'])
+                ->exists();
+            if ($yaExistia) {
+                $contadorActualizados++;
+            } else {
+                $contadorNuevos++;
+            }
+        }
+
         if (empty($data)) {
+            $cursosFiltro = config('ppd_periodo.cursos_sincronizacion_limitados', []);
+            $extra = ! empty($cursosFiltro)
+                ? ' No hay filas en calificacionesppds para los cursos filtrados (IDs: '.implode(', ', $cursosFiltro).').'
+                : '';
+
             return redirect()->route('periodoactual.index')
-                ->with('warning', 'No hay calificaciones PPD para sincronizar.');
+                ->with('warning', 'No hay calificaciones PPD para sincronizar.'.$extra);
         }
 
         // Usar transacción para asegurar consistencia
-        \DB::transaction(function () use ($data, $alumnosIds, $periodo) {
+        DB::transaction(function () use ($data, $alumnosIds) {
             PeriodoPpd::upsert(
                 $data,
                 ['periodo_actual_ppd_id', 'alumno_id', 'curso_id'],
                 ['calificacion_curso', 'calificacion_sistema', 'nivel_desempeno', 'updated_at']
             );
 
-            $alumnosUnicos = array_unique($alumnosIds);
-            $alumnosConCalificacionesCompletas = [];
-
-            foreach ($alumnosUnicos as $alumnoId) {
-                // Obtener los cursos que tiene este alumno en este período
-                $cursosDelAlumno = PeriodoPpd::where('periodo_actual_ppd_id', $periodo->id)
-                    ->where('alumno_id', $alumnoId)
-                    ->count();
-
-                if ($cursosDelAlumno > 0) {
-                    $alumnosConCalificacionesCompletas[] = $alumnoId;
-                }
-            }
-
-            // Actualizar el campo guardado para los alumnos que tienen calificaciones
-            if (! empty($alumnosConCalificacionesCompletas)) {
-                ppd::whereIn('id', $alumnosConCalificacionesCompletas)
-                    ->update(['guardado' => true]);
+            $idsPpd = array_values(array_unique($alumnosIds));
+            if (! empty($idsPpd)) {
+                ppd::whereIn('id', $idsPpd)->update(['guardado' => true]);
             }
         });
 
@@ -462,6 +533,10 @@ class PeriodoActualPpdController extends Controller
         ({$contadorNuevos} nuevos, {$contadorActualizados} actualizados) 
         para {$alumnosUnicos} alumnos en el período {$periodo->nombre}.
         {$alumnosMarcados} alumnos marcados como guardados.";
+        $cursosFiltro = config('ppd_periodo.cursos_sincronizacion_limitados', []);
+        if (! empty($cursosFiltro)) {
+            $mensaje .= ' Solo cursos ID: '.implode(', ', $cursosFiltro).'.';
+        }
 
         return redirect()->route('periodoactual.index')
             ->with('success', $mensaje);
@@ -501,7 +576,7 @@ class PeriodoActualPpdController extends Controller
         }
 
         // Usar transacción para asegurar consistencia
-        \DB::transaction(function () use ($data, $alumnosIds) {
+        DB::transaction(function () use ($data, $alumnosIds) {
             // Sincronizar calificaciones
             PeriodoPpd::upsert(
                 $data,

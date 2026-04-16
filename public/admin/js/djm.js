@@ -2,10 +2,14 @@
 document.addEventListener('DOMContentLoaded', function () {
     var searchInput = document.getElementById('searchInput');
     var searchButton = document.getElementById('searchButton');
+    var searchForm = document.getElementById('searchForm');
+    if (!searchInput || !searchForm) {
+        return;
+    }
     var debounceTimer;
 
     function performSearch() {
-        document.getElementById('searchForm').submit();
+        searchForm.submit();
     }
 
     searchInput.addEventListener('input', function () {
@@ -13,24 +17,25 @@ document.addEventListener('DOMContentLoaded', function () {
 
         debounceTimer = setTimeout(performSearch, 300);
 
-        searchButton.disabled = !searchInput.value.trim();
+        if (searchButton) {
+            searchButton.disabled = !searchInput.value.trim();
+        }
     });
 });
 $(document).ready(function () {
-    $('th').click(function () {
-        var table = $(this).parents('table').eq(0);
-        var column = $(this).index(); // Obtén el índice de la columna clicada
-        var rows = table.find('tr:gt(0)').toArray().sort(comparer(column));
+    $('table.table-sortable thead th').click(function () {
+        var table = $(this).closest('table');
+        var column = $(this).index();
+        var rows = table.find('tbody tr').toArray().sort(comparer(column));
         this.asc = !this.asc;
 
-        // Cambia la clase de la flecha en la columna clicada
         $(this).find('span').toggleClass('fa-caret-up fa-caret-down');
 
         if (!this.asc) {
             rows = rows.reverse();
         }
         for (var i = 0; i < rows.length; i++) {
-            table.append(rows[i]);
+            table.find('tbody').append(rows[i]);
         }
     });
 
@@ -49,6 +54,9 @@ $(document).ready(function () {
 
 document.addEventListener('DOMContentLoaded', function () {
     var searchInput = document.getElementById('searchInput');
+    if (!searchInput) {
+        return;
+    }
     var storedValue = sessionStorage.getItem('searchValue');
 
     if (storedValue) {

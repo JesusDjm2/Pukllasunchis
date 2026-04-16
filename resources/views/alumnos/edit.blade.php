@@ -35,6 +35,67 @@
                 <form action="{{ route('alumnos.update', ['alumno' => $alumno->id]) }}" method="POST">
                     @csrf
                     @method('PUT')
+                    @role('admin')
+                        <div class="container-fluid mt-3">
+                            <div class="row">
+                                <div class="col-12 mb-3">
+                                    <div class="card border-left-warning shadow-sm">
+                                        <div class="card-header py-2 bg-light">
+                                            <strong><i class="fas fa-user-shield mr-1"></i> Solo administrador</strong> —
+                                            Programa y ciclo académico
+                                        </div>
+                                        <div class="card-body py-3">
+                                            <div class="form-row">
+                                                <div class="form-group col-md-6 mb-md-0">
+                                                    <label for="admin_programa_selector">Programa</label>
+                                                    <select name="programa_id" id="admin_programa_selector"
+                                                        class="form-control form-control-sm @error('programa_id') is-invalid @enderror"
+                                                        required>
+                                                        @foreach ($programas as $programa)
+                                                            <option value="{{ $programa->id }}"
+                                                                {{ (int) old('programa_id', $alumno->programa_id) === (int) $programa->id ? 'selected' : '' }}>
+                                                                {{ $programa->nombre }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                    @error('programa_id')
+                                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                                <div class="form-group col-md-6 mb-0">
+                                                    <label for="admin_ciclo_selector">Ciclo</label>
+                                                    <select name="ciclo_id" id="admin_ciclo_selector"
+                                                        class="form-control form-control-sm @error('ciclo_id') is-invalid @enderror"
+                                                        required>
+                                                        @foreach ($ciclosPorPrograma as $ciclo)
+                                                            <option value="{{ $ciclo->id }}"
+                                                                {{ (int) old('ciclo_id', $alumno->ciclo_id) === (int) $ciclo->id ? 'selected' : '' }}>
+                                                                {{ $ciclo->nombre }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                    @error('ciclo_id')
+                                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                            </div>
+                                            <small class="text-muted">Al cambiar el programa se cargan los ciclos de ese
+                                                programa.</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endrole
+                    @unless (auth()->user()->hasRole('admin'))
+                        <div class="container-fluid mt-2">
+                            <div class="alert alert-light border small mb-0">
+                                <strong>Programa y ciclo:</strong>
+                                {{ $alumno->programa->nombre ?? '—' }}
+                                —
+                                {{ $alumno->ciclo->nombre ?? '—' }}
+                                <span class="text-muted">(solo lectura; el administrador puede cambiarlos en su panel.)</span>
+                            </div>
+                        </div>
+                    @endunless
                     <div class="container-fluid mt-3">
                         <div class="row">
                             <div class="col-lg-4 mb-3">
@@ -66,26 +127,28 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-                            <div class="col-lg-4 mb-3">
-                                <label for="num_comprobante">Número de boleta electrónica emitida por la EESP:
-                                    <small>
-                                        <span class="text-primary" type="button" data-toggle="modal"
-                                            data-target="#exampleModal">
-                                            Ejemplo
-                                        </span>
-                                    </small>
-                                </label>
-                                <div class="input-group">
-                                    <input type="text"
-                                        class="form-control form-control-sm @error('num_comprobante') is-invalid @enderror"
-                                        id="num_comprobante" name="num_comprobante"
-                                        value="{{ stripos($alumno->num_comprobante, 'beca') !== false ? 'Beca' : (old('num_comprobante') ?: '') }}"
-                                        @if (stripos($alumno->num_comprobante, 'beca') !== false) readonly @endif required>
+                            @unless (auth()->user()->hasRole('admin'))
+                                <div class="col-lg-4 mb-3">
+                                    <label for="num_comprobante">Número de boleta electrónica emitida por la EESP:
+                                        <small>
+                                            <span class="text-primary" type="button" data-toggle="modal"
+                                                data-target="#exampleModal">
+                                                Ejemplo
+                                            </span>
+                                        </small>
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="text"
+                                            class="form-control form-control-sm @error('num_comprobante') is-invalid @enderror"
+                                            id="num_comprobante" name="num_comprobante"
+                                            value="{{ stripos($alumno->num_comprobante, 'beca') !== false ? 'Beca' : (old('num_comprobante') ?: '') }}"
+                                            @if (stripos($alumno->num_comprobante, 'beca') !== false) readonly @endif required>
+                                    </div>
+                                    @error('num_comprobante')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
-                                @error('num_comprobante')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
+                            @endunless
 
                             <div class="col-lg-4 mb-3">
                                 <label for="fecha_nacimiento">Fecha de nacimiento:</label>
@@ -93,7 +156,8 @@
                                     <input type="date"
                                         class="form-control form-control-sm @error('fecha_nacimiento') is-invalid @enderror"
                                         id="fecha_nacimiento" name="fecha_nacimiento"
-                                        value="{{ old('fecha_nacimiento', $alumno->fecha_nacimiento) }}" required>
+                                        value="{{ old('fecha_nacimiento', $alumno->fechaNacimientoResueltaParaInput() ?? '') }}"
+                                        required>
                                 </div>
                                 @error('fecha_nacimiento')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -305,14 +369,16 @@
             </div>
         </div>
     </div>
-    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <img src="{{ asset('img/novedades/Foto-voucher-2024-II-2.webp') }}" alt="">
+    @unless (auth()->user()->hasRole('admin'))
+        <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <img src="{{ asset('img/novedades/Foto-voucher-2024-II-2.webp') }}" alt="">
+                </div>
             </div>
         </div>
-    </div>
+    @endunless
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script>
         function toggleOtroSector() {
@@ -382,4 +448,53 @@
             }
         });
     </script>
+    @role('admin')
+        <script>
+            (function() {
+                var base = @json(url('/obtener-ciclos'));
+                var programa = document.getElementById('admin_programa_selector');
+                var ciclo = document.getElementById('admin_ciclo_selector');
+                if (!programa || !ciclo) return;
+
+                function cargarCiclos(programaId, selectedCicloId) {
+                    if (!programaId) return;
+                    ciclo.disabled = true;
+                    ciclo.innerHTML = '<option value="">Cargando…</option>';
+                    fetch(base + '/' + programaId, {
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        })
+                        .then(function(r) {
+                            return r.json();
+                        })
+                        .then(function(data) {
+                            ciclo.innerHTML = '';
+                            if (!data.length) {
+                                ciclo.innerHTML = '<option value="">No hay ciclos</option>';
+                                ciclo.disabled = true;
+                                return;
+                            }
+                            data.forEach(function(c) {
+                                var opt = document.createElement('option');
+                                opt.value = c.id;
+                                opt.textContent = c.nombre;
+                                if (String(c.id) === String(selectedCicloId)) opt.selected = true;
+                                ciclo.appendChild(opt);
+                            });
+                            ciclo.disabled = false;
+                        })
+                        .catch(function() {
+                            ciclo.innerHTML = '<option value="">Error al cargar</option>';
+                            ciclo.disabled = true;
+                        });
+                }
+
+                programa.addEventListener('change', function() {
+                    cargarCiclos(programa.value, '');
+                });
+            })();
+        </script>
+    @endrole
 @endsection

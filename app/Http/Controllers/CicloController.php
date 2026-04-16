@@ -9,6 +9,7 @@ use App\Models\Programa;
 use App\Models\Proyecto;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
 class CicloController extends Controller
@@ -114,6 +115,7 @@ class CicloController extends Controller
     {
         // Alumnos regulares (relación directa)
         $alumnos = $ciclo->alumnos()
+            ->with('user')
             ->whereHas('user', function ($query) {
                 $query->where('perfil', '!=', 'Sin matrícula');
             })
@@ -145,7 +147,7 @@ class CicloController extends Controller
         $cursosConDocentes = $ciclo->cursos()->with('docentes')->get();
 
         // Debug en la vista (opcional)
-        \Log::info('Show method results:', [
+        Log::info('Show method results:', [
             'ciclo' => $ciclo->nombre ?? $ciclo->name,
             'alumnos_regulares' => $alumnos->count(),
             'alumnos_b' => $alumnosB->count(),
