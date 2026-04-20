@@ -62,23 +62,25 @@
                         </div>
 
                         <div class="col-lg-12 mb-3">
-                            <label for="role" class="form-label">Asignar Rol:</label>
-                            <select id="role" name="role"
-                                class="form-control form-control-sm @error('role') is-invalid @enderror">
-                                <option selected disabled>Seleccionar Rol</option>
-                                <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>Administrador
-                                </option>
-                                <option value="docente" {{ old('role') === 'docente' ? 'selected' : '' }}>Docente</option>
-                                <option value="alumno" {{ old('role') === 'alumno' ? 'selected' : '' }}>Alumno</option>
-                                <option value="adminB" {{ old('role') === 'adminB' ? 'selected' : '' }}>Administrador Bolsa
-                                </option>
-                                <option value="inhabilitado" {{ old('role') === 'inhabilitado' ? 'selected' : '' }}>
-                                    Inhabilitado</option>
-                                <option value="alumnoB" {{ old('role') === 'alumnoB' ? 'selected' : '' }}>Alumno PPD
-                                </option>
-                            </select>
-                            @error('role')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                            <label class="form-label">Roles:</label>
+                            @foreach([
+                                'admin'       => 'Administrador',
+                                'docente'     => 'Docente',
+                                'tutor'       => 'Tutor',
+                                'alumno'      => 'Alumno FID',
+                                'alumnoB'     => 'Alumno PPD',
+                                'adminB'      => 'Administrador Bolsa',
+                                'inhabilitado'=> 'Inhabilitado',
+                            ] as $val => $label)
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input role-checkbox" type="checkbox"
+                                        name="roles[]" value="{{ $val }}" id="role_{{ $val }}"
+                                        {{ in_array($val, old('roles', [])) ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="role_{{ $val }}">{{ $label }}</label>
+                                </div>
+                            @endforeach
+                            @error('roles')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
                             @enderror
                         </div>
                         <div class="col-lg-12" id="admin-fields" style="display: none;">
@@ -267,31 +269,21 @@
     </script> --}}
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const roleSelect = document.getElementById('role');
             const adminFields = document.getElementById('admin-fields');
             const adminBolsa = document.getElementById('admin-bolsa');
-    
-            function toggleFields() {
-                const role = roleSelect.value;
-    
-                // Mostrar adminFields si el rol es alumno o alumnoB
-                if (role === 'alumno' || role === 'alumnoB') {
-                    adminFields.style.display = 'block';
-                } else {
-                    adminFields.style.display = 'none';
-                }
-    
-                // Mostrar admin-bolsa solo si el rol es alumnoB
-                if (role === 'alumnoB') {
-                    adminBolsa.style.display = 'block';
-                } else {
-                    adminBolsa.style.display = 'none';
-                }
+
+            function getCheckedRoles() {
+                return Array.from(document.querySelectorAll('.role-checkbox:checked')).map(cb => cb.value);
             }
-    
-            roleSelect.addEventListener('change', toggleFields);
-    
-            // Ejecutar al cargar la página
+
+            function toggleFields() {
+                const roles = getCheckedRoles();
+
+                adminFields.style.display = (roles.includes('alumno') || roles.includes('alumnoB')) ? 'block' : 'none';
+                adminBolsa.style.display = roles.includes('alumnoB') ? 'block' : 'none';
+            }
+
+            document.querySelectorAll('.role-checkbox').forEach(cb => cb.addEventListener('change', toggleFields));
             toggleFields();
         });
     </script>

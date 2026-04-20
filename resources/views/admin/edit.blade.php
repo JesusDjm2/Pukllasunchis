@@ -162,19 +162,26 @@
                         </div>
 
                         <div class="col-lg-6 mb-3">
-                            <label for="role" class="form-label">Asignar Rol:</label>
-                            <select id="role" name="role"
-                                class="form-control form-control-sm @error('role') is-invalid @enderror">
-                                <option disabled>Seleccionar Rol</option>
-                                <option value="admin" {{ old('role', $currentRole) === 'admin' ? 'selected' : '' }}>Administrador</option>
-                                <option value="docente" {{ old('role', $currentRole) === 'docente' ? 'selected' : '' }}>Docente</option>
-                                <option value="alumno" {{ old('role', $currentRole) === 'alumno' ? 'selected' : '' }}>Alumno</option>
-                                <option value="alumnoB" {{ old('role', $currentRole) === 'alumnoB' ? 'selected' : '' }}>Alumno PPD</option>
-                                <option value="adminB" {{ old('role', $currentRole) === 'adminB' ? 'selected' : '' }}>Administrador Bolsa</option>
-                                <option value="inhabilitado" {{ old('role', $currentRole) === 'inhabilitado' ? 'selected' : '' }}>Inhabilitado</option>
-                            </select>
-                            @error('role')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                            <label class="form-label">Roles asignados:</label>
+                            @php $selectedRoles = old('roles', $currentRoles); @endphp
+                            @foreach([
+                                'admin'       => 'Administrador',
+                                'docente'     => 'Docente',
+                                'tutor'       => 'Tutor',
+                                'alumno'      => 'Alumno FID',
+                                'alumnoB'     => 'Alumno PPD',
+                                'adminB'      => 'Administrador Bolsa',
+                                'inhabilitado'=> 'Inhabilitado',
+                            ] as $val => $label)
+                                <div class="form-check">
+                                    <input class="form-check-input role-checkbox" type="checkbox"
+                                        name="roles[]" value="{{ $val }}" id="role_{{ $val }}"
+                                        {{ in_array($val, $selectedRoles) ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="role_{{ $val }}">{{ $label }}</label>
+                                </div>
+                            @endforeach
+                            @error('roles')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
                             @enderror
                         </div>
                         
@@ -312,42 +319,38 @@
     </script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const roleSelect = document.getElementById('role');
             const adminFields = document.getElementById('admin-fields');
             const motivoInhabilitadoContainer = document.getElementById('motivo-inhabilitado-container');
             const selectPerfilBolsa = document.getElementById('perfil_bolsa');
             const selectPerfilInhabilitado = document.getElementById('perfil_inhabilitado');
 
-            function toggleFields() {
-                const selectedRole = roleSelect.value;
+            function getCheckedRoles() {
+                return Array.from(document.querySelectorAll('.role-checkbox:checked')).map(cb => cb.value);
+            }
 
-                // Mostrar campos según el rol
-                if (selectedRole === 'alumno' || selectedRole === 'alumnoB') {
+            function toggleFields() {
+                const roles = getCheckedRoles();
+
+                if (roles.includes('alumno') || roles.includes('alumnoB')) {
                     adminFields.style.display = 'block';
                     motivoInhabilitadoContainer.style.display = 'none';
-
-                    // Asignar name dinámicamente
                     selectPerfilBolsa.name = 'perfil';
                     selectPerfilInhabilitado.removeAttribute('name');
-                } else if (selectedRole === 'inhabilitado') {
+                } else if (roles.includes('inhabilitado')) {
                     adminFields.style.display = 'none';
                     motivoInhabilitadoContainer.style.display = 'block';
-
-                    // Asignar name dinámicamente
                     selectPerfilInhabilitado.name = 'perfil';
                     selectPerfilBolsa.removeAttribute('name');
                 } else {
                     adminFields.style.display = 'none';
                     motivoInhabilitadoContainer.style.display = 'none';
-
-                    // Quitar ambos name por seguridad
                     selectPerfilBolsa.removeAttribute('name');
                     selectPerfilInhabilitado.removeAttribute('name');
                 }
             }
 
-            roleSelect.addEventListener('change', toggleFields);
-            toggleFields(); // Ejecutar al cargar
+            document.querySelectorAll('.role-checkbox').forEach(cb => cb.addEventListener('change', toggleFields));
+            toggleFields();
         });
     </script>
     <script>

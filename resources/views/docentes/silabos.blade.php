@@ -1,48 +1,67 @@
 @extends('layouts.docente')
 
-@section('contenido')
-   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
+@section('titulo', 'Repositorio de sílabos')
 
-    <div class="container mt-4 text-center">
-        <h3 class="text-center mb-4 text-primary font-weight-bold">Repositorio de Sílabos Pukllasunchis</h3>
-        <a class="btn btn-primary btn-sm mb-2" target="_blank"
-            href="https://drive.google.com/drive/folders/1LjW2BYFC2HhmqXLPhTuYDIBcsRGpyHFG?usp=sharing">Ver en
-            Drive</a>
-        <div class="mb-3">
-            <input type="text" id="buscador" class="form-control" placeholder="Buscar por nombre de curso..."
-                onkeyup="filtrarCursos()">
+@section('contenido')
+    @php
+        $cursosAgrupados = $cursos->isEmpty()
+            ? collect()
+            : $cursos->groupBy(function ($curso) {
+                return $curso->relacionsilabo ? $curso->relacionsilabo->periodo : 'Sílabo sin periodo';
+            });
+    @endphp
+
+    <div class="container-fluid docente-ui-page">
+        @include('docentes.partials.ui-header', [
+            'kicker' => 'Documentos',
+            'title' => 'Repositorio de sílabos',
+            'subtitle' => 'Consulte sílabos por periodo. Use el buscador para filtrar por nombre de curso.',
+            'backUrl' => route('vistaDocente', ['docente' => $docente->id]),
+            'backLabel' => 'Mis cursos',
+        ])
+
+        <div class="card docente-ui-card mb-4">
+            <div class="card-body p-3 p-md-4">
+                <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-md-between">
+                    <a class="btn btn-primary btn-sm mb-3 mb-md-0" target="_blank" rel="noopener noreferrer"
+                        href="https://drive.google.com/drive/folders/1LjW2BYFC2HhmqXLPhTuYDIBcsRGpyHFG?usp=sharing">
+                        <i class="fab fa-google-drive mr-1"></i> Abrir carpeta en Drive
+                    </a>
+                    <div class="flex-grow-1 ml-md-3" style="max-width: 28rem;">
+                        <label for="buscadorSilabos" class="sr-only">Buscar curso</label>
+                        <input type="search" id="buscadorSilabos" class="form-control form-control-sm"
+                            placeholder="Buscar por nombre de curso…" autocomplete="off" oninput="docenteFiltrarSilabos()">
+                    </div>
+                </div>
+            </div>
         </div>
 
         @if ($cursos->isEmpty())
-            <div class="alert alert-info text-center">No hay sílabos disponibles.</div>
+            <div class="alert alert-info shadow-sm text-center mb-0">No hay sílabos disponibles.</div>
         @else
-            @php
-                // Agrupamos cursos según el periodo del silabo o "Sin periodo disponible"
-                $cursosAgrupados = $cursos->groupBy(function ($curso) {
-                    return $curso->relacionsilabo ? $curso->relacionsilabo->periodo : 'Sílabo sin periodo';
-                });
-            @endphp
-            <div class="accordion" id="accordionPeriodos">
+            <div class="accordion docente-ui-accordion" id="accordionSilabosDocente">
                 @foreach ($cursosAgrupados as $periodo => $grupoCursos)
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="heading-{{ Str::slug($periodo) }}">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                                data-bs-target="#collapse-{{ Str::slug($periodo) }}" aria-expanded="false"
-                                aria-controls="collapse-{{ Str::slug($periodo) }}">
-                                📅 Periodo: {{ $periodo }}
-                            </button>
-                        </h2>
-                        <div id="collapse-{{ Str::slug($periodo) }}" class="accordion-collapse collapse"
-                            aria-labelledby="heading-{{ Str::slug($periodo) }}" data-bs-parent="#accordionPeriodos">
-                            <div class="accordion-body">
-
+                    @php $sid = 'silabo-period-' . $loop->index; @endphp
+                    <div class="card docente-silabo-period-card">
+                        <div class="card-header" id="heading-{{ $sid }}">
+                            <h2 class="mb-0 h6">
+                                <button class="btn btn-link collapsed" type="button" data-toggle="collapse"
+                                    data-target="#collapse-{{ $sid }}" aria-expanded="false"
+                                    aria-controls="collapse-{{ $sid }}">
+                                    <i class="far fa-calendar-alt mr-2"></i> Periodo: {{ $periodo }}
+                                </button>
+                            </h2>
+                        </div>
+                        <div id="collapse-{{ $sid }}" class="collapse" aria-labelledby="heading-{{ $sid }}"
+                            data-parent="#accordionSilabosDocente">
+                            <div class="card-body p-0">
                                 <div class="table-responsive">
-                                    <table class="table table-bordered table-hover align-middle">
-                                        <thead class="table-dark">
+                                    <table class="table table-bordered table-hover table-sm mb-0 align-middle">
+                                        <thead class="thead-dark">
                                             <tr>
                                                 <th scope="col">#</th>
                                                 <th scope="col">Curso</th>
-                                                <th scope="col">Programa - Ciclo</th>
+                                                <th scope="col">Programa — Ciclo</th>
                                                 <th scope="col">Acciones</th>
                                             </tr>
                                         </thead>
@@ -52,16 +71,15 @@
                                                 @if ($curso->silabo || $curso->relacionsilabo)
                                                     <tr>
                                                         <td>{{ $contador++ }}</td>
-                                                        
-                                                        <td class="text-start curso-nombre">
+                                                        <td class="text-left curso-nombre">
                                                             <strong>{{ $curso->nombre }}</strong>
-                                                            <ul class="mb-0 small">
+                                                            <ul class="mb-0 small pl-3">
                                                                 <li>Horas: {{ $curso->horas }}</li>
                                                                 <li>Créditos: {{ $curso->creditos }}</li>
                                                                 <li>CC: {{ $curso->cc }}</li>
                                                             </ul>
                                                         </td>
-                                                        <td>
+                                                        <td class="small">
                                                             {{ $curso->ciclo && $curso->ciclo->programa
                                                                 ? (str_contains($curso->ciclo->programa->nombre, 'Inicial')
                                                                     ? 'Programa Inicial'
@@ -69,21 +87,21 @@
                                                                         ? 'Programa EIB'
                                                                         : $curso->ciclo->programa->nombre))
                                                                 : 'Sin programa asignado' }}
-                                                            -
+                                                            —
                                                             {{ $curso->ciclo ? $curso->ciclo->nombre : 'Sin ciclo asignado' }}
                                                         </td>
                                                         <td>
                                                             @if ($curso->silabo)
-                                                                <a class="btn btn-success btn-sm"
+                                                                <a class="btn btn-success btn-sm mb-1"
                                                                     href="{{ asset('docentes/silabo/' . $curso->silabo) }}"
-                                                                    target="_blank" title="Ver Sílabo">
-                                                                    <i class="fa fa-file-pdf"></i> Ver PDF
+                                                                    target="_blank" rel="noopener noreferrer" title="Ver PDF">
+                                                                    <i class="fa fa-file-pdf"></i> PDF
                                                                 </a>
                                                             @endif
                                                             @if ($curso->relacionsilabo)
                                                                 <a href="{{ route('silabos.show', ['silabo' => $curso->relacionsilabo->id]) }}"
-                                                                    class="btn btn-info btn-sm" title="Ver Sílabo">
-                                                                    <i class="fa fa-eye"></i> Ver Sílabo
+                                                                    class="btn btn-info btn-sm mb-1" title="Ver sílabo en sistema">
+                                                                    <i class="fa fa-eye"></i> Ver
                                                                 </a>
                                                             @endif
                                                         </td>
@@ -100,45 +118,42 @@
             </div>
         @endif
     </div>
+@endsection
 
+@push('scripts')
     <script>
-        function normalizarTexto(texto) {
-            return texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+        function docenteNormalizarTexto(texto) {
+            return texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
         }
 
-        function filtrarCursos() {
-            let input = normalizarTexto(document.getElementById("buscador").value);
-            let acordeones = document.querySelectorAll(".accordion-item");
-
-            acordeones.forEach(acordeon => {
-                let filas = acordeon.querySelectorAll("tbody tr");
-                let hayCoincidencia = false;
-
-                filas.forEach(fila => {
-                    let nombreCurso = normalizarTexto(fila.querySelector(".curso-nombre").textContent);
-                    if (nombreCurso.includes(input)) {
-                        fila.style.display = "";
-                        hayCoincidencia = true;
+        function docenteFiltrarSilabos() {
+            var inputEl = document.getElementById('buscadorSilabos');
+            if (!inputEl) return;
+            var input = docenteNormalizarTexto(inputEl.value);
+            document.querySelectorAll('.docente-silabo-period-card').forEach(function(card) {
+                var filas = card.querySelectorAll('tbody tr');
+                var hay = false;
+                filas.forEach(function(fila) {
+                    var cel = fila.querySelector('.curso-nombre');
+                    if (!cel) return;
+                    var nombre = docenteNormalizarTexto(cel.textContent);
+                    if (nombre.indexOf(input) !== -1) {
+                        fila.style.display = '';
+                        hay = true;
                     } else {
-                        fila.style.display = "none";
+                        fila.style.display = 'none';
                     }
                 });
-
-                // Mostrar/ocultar acordeón según coincidencia
-                acordeon.style.display = hayCoincidencia ? "" : "none";
-
-                // Si hay coincidencias, abrir el acordeón automáticamente
-                if (hayCoincidencia) {
-                    let collapse = acordeon.querySelector(".accordion-collapse");
-                    let bsCollapse = new bootstrap.Collapse(collapse, {
-                        toggle: false
-                    });
-                    bsCollapse.show();
+                card.style.display = hay ? '' : 'none';
+                if (hay) {
+                    var col = card.querySelector('.collapse');
+                    if (col && typeof jQuery !== 'undefined') {
+                        jQuery(col).collapse('show');
+                    } else if (col) {
+                        col.classList.add('show');
+                    }
                 }
             });
         }
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q" crossorigin="anonymous">
-    </script>
-@endsection
+@endpush

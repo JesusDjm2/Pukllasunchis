@@ -63,13 +63,20 @@
             }
         }
     </style>
-    <div class="container-fluid mb-3 p-3 bg-white m-auto">
-        <!-----Boton exportar como PDF------------->
+    <div class="container-fluid docente-ui-page">
+        @include('docentes.partials.ui-header', [
+            'kicker' => 'Sílabos',
+            'title' => 'Vista del sílabo',
+            'subtitle' => $curso->nombre ?? '',
+            'backUrl' => auth()->user()->docente
+                ? route('vistaDocente', ['docente' => auth()->user()->docente->id])
+                : url()->previous(),
+            'backLabel' => 'Volver',
+        ])
         <a href="{{ route('silabo.pdf', $silabo->id) }}" class="btn btn-primary btn-flotante">
             <i class="fas fa-file-pdf"></i> Descargar PDF
         </a>
-    </div>
-    <div class="container-fluid bg-white">
+    <div class="container-fluid bg-white px-md-2">
         <div class="container">
             <table style="width: 100%; border-collapse: collapse; margin-bottom: 1em;">
                 <tr>
@@ -409,8 +416,9 @@
             </div>
         </div>
     </div>
-    <a href="{{ url()->previous() }}" class="btn btn-danger boton-volver"
+    </div>
+    <a href="{{ url()->previous() }}" class="btn btn-outline-secondary btn-sm shadow-sm boton-volver"
         style="position: fixed; top: 120px; right: 20px; z-index: 1000;">
-        Volver
+        <i class="fas fa-arrow-left mr-1"></i> Volver
     </a>
 @endsection

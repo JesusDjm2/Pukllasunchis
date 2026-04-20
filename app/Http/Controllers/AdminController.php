@@ -40,13 +40,14 @@ class AdminController extends Controller
         $conteoPpd = User::role('alumnoB')->count();
         $conteoAdmin = User::role('admin')->count();
         $conteoInhabilitados = User::role('inhabilitado')->count();
+        $conteoTutores = User::role('tutor')->count();
         $alumnosConBeca = User::where('beca', 1)
             ->whereHas('roles', function ($query) {
                 $query->where('name', 'alumno');
             })
             ->count();
 
-        return view('admin.index', compact('alumno', 'admins', 'totalAlumnos', 'totalRecords', 'alumnosConBeca', 'conteoDocentes', 'conteoAdmin', 'conteoInhabilitados', 'conteoAlumnos', 'conteoPpd'));
+        return view('admin.index', compact('alumno', 'admins', 'totalAlumnos', 'totalRecords', 'alumnosConBeca', 'conteoDocentes', 'conteoAdmin', 'conteoInhabilitados', 'conteoAlumnos', 'conteoPpd', 'conteoTutores'));
     }
 
     public function alumnos(Request $request)
@@ -215,11 +216,11 @@ class AdminController extends Controller
         $programas = Programa::all();
         $ciclos = Ciclo::all();
         $currentProgramId = $admin->programa_id;
-        $currentRole = $admin->getRoleNames()->first();
+        $currentRoles = $admin->getRoleNames()->toArray();
         $currentCicloId = $admin->ciclo_id;
         $departamentosData = Departamento::all();
 
-        return view('admin.edit', compact('admin', 'programas', 'ciclos', 'currentRole', 'currentCicloId', 'currentProgramId', 'departamentosData'));
+        return view('admin.edit', compact('admin', 'programas', 'ciclos', 'currentRoles', 'currentCicloId', 'currentProgramId', 'departamentosData'));
     }
 
     public function store(Request $request)
@@ -234,9 +235,10 @@ class AdminController extends Controller
             'beca' => 'nullable|boolean',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:7|confirmed',
-            'role' => 'required|string|in:admin,docente,alumno,adminB,alumnoB,inhabilitado',
-            'programa_id' => 'required_if:role,alumno|exists:programas,id',
-            'ciclo_id' => 'required_if:role,alumno|exists:ciclos,id',
+            'roles' => 'required|array|min:1',
+            'roles.*' => 'string|in:admin,docente,alumno,adminB,alumnoB,inhabilitado,tutor',
+            'programa_id' => [\Illuminate\Validation\Rule::requiredIf(fn () => !empty(array_intersect($request->input('roles', []), ['alumno', 'alumnoB']))), 'nullable', 'exists:programas,id'],
+            'ciclo_id' => [\Illuminate\Validation\Rule::requiredIf(fn () => !empty(array_intersect($request->input('roles', []), ['alumno', 'alumnoB']))), 'nullable', 'exists:ciclos,id'],
         ]);
 
         $user = User::create([
@@ -250,40 +252,25 @@ class AdminController extends Controller
             'email' => $request->input('email'),
             'password' => Hash::make($request->input('password')),
         ]);
-        $roleName = $request->input('role');
-        $role = Role::where('name', $roleName)->first();
+        $roles = $request->input('roles', []);
+        $user->syncRoles($roles);
 
-        if ($role) {
-            $user->assignRole($role);
-            // Crear un registro en la tabla Docente si el rol es 'docente'
-            if ($roleName === 'docente') {
-                $docente = new Docente;
-                $docente->nombre = $request->input('name').' '.$request->input('apellidos');
-                $docente->dni = $request->input('dni');
-                $docente->email = $request->input('email');
+        if (in_array('docente', $roles)) {
+            $docente = new Docente;
+            $docente->nombre = $request->input('name').' '.$request->input('apellidos');
+            $docente->dni = $request->input('dni');
+            $docente->email = $request->input('email');
+            $docente->user_id = $user->id;
+            $docente->save();
+        }
 
-                $docente->user_id = $user->id;
-                $docente->save();
-            }
+        if (in_array('alumno', $roles) || in_array('alumnoB', $roles)) {
+            $user->programa()->associate($request->input('programa_id'));
+            $user->ciclo()->associate($request->input('ciclo_id'));
+            $user->save();
 
-            if ($roleName === 'alumno') {
-                $user->programa()->associate($request->input('programa_id'));
-                $user->ciclo()->associate($request->input('ciclo_id'));
-                $user->save();
-
-                if ($request->has('cursos')) {
-                    $user->cursos()->attach($request->input('cursos'));
-                }
-            }
-
-            if ($roleName === 'alumnoB') {
-                $user->programa()->associate($request->input('programa_id'));
-                $user->ciclo()->associate($request->input('ciclo_id'));
-                $user->save();
-
-                if ($request->has('cursos')) {
-                    $user->cursos()->attach($request->input('cursos'));
-                }
+            if ($request->has('cursos')) {
+                $user->cursos()->attach($request->input('cursos'));
             }
         }
 
@@ -302,9 +289,10 @@ class AdminController extends Controller
             'beca' => 'nullable|boolean',
             'email' => 'required|email|unique:users,email,'.$id,
             'password' => 'nullable|string|min:7|confirmed',
-            'role' => 'required|string|in:admin,docente,alumno,adminB,alumnoB,inhabilitado',
-            'programa_id' => 'required_if:role,alumno,alumnoB|exists:programas,id',
-            'ciclo_id' => 'required_if:role,alumno,alumnoB|exists:ciclos,id',
+            'roles' => 'required|array|min:1',
+            'roles.*' => 'string|in:admin,docente,alumno,adminB,alumnoB,inhabilitado,tutor',
+            'programa_id' => [\Illuminate\Validation\Rule::requiredIf(fn () => !empty(array_intersect($request->input('roles', []), ['alumno', 'alumnoB']))), 'nullable', 'exists:programas,id'],
+            'ciclo_id' => [\Illuminate\Validation\Rule::requiredIf(fn () => !empty(array_intersect($request->input('roles', []), ['alumno', 'alumnoB']))), 'nullable', 'exists:ciclos,id'],
             'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 
@@ -336,24 +324,22 @@ class AdminController extends Controller
             $user->foto = $nombreFoto;
         }
 
-        $roleName = $request->input('role');
-        $role = Role::where('name', $roleName)->first();
+        $roles = $request->input('roles', []);
+        $user->syncRoles($roles);
 
-        if ($role) {
-            $user->syncRoles([$role]);
-
-            if ($roleName === 'docente') {
-                $docente = $user->docente;
+        if (in_array('docente', $roles)) {
+            $docente = $user->docente;
+            if ($docente) {
                 $docente->nombre = $request->input('name').' '.$request->input('apellidos');
                 $docente->dni = $request->input('dni');
                 $docente->email = $request->input('email');
                 $docente->save();
             }
+        }
 
-            if ($roleName === 'alumno' || $roleName === 'alumnoB') {
-                $user->programa()->associate($request->input('programa_id'));
-                $user->ciclo()->associate($request->input('ciclo_id'));
-            }
+        if (in_array('alumno', $roles) || in_array('alumnoB', $roles)) {
+            $user->programa()->associate($request->input('programa_id'));
+            $user->ciclo()->associate($request->input('ciclo_id'));
         }
         $user->save();
 

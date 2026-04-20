@@ -50,6 +50,8 @@ class LoginController extends Controller
             return redirect()->route('alumnos.index')->with('userData', $user);            
         } elseif ($user->hasRole('docente')) {
             return redirect()->route('vistaDocente', ['docente' => $user->docente->id]);
+        } elseif ($user->hasRole('tutor')) {
+            return redirect()->route('tutor.dashboard');
         } elseif ($user->hasRole('inhabilitado')) {
             return redirect()->route('inhabilitado')->with('userData', $user);
         } else {

@@ -1,29 +1,62 @@
 @extends('layouts.docente')
+@section('titulo', 'Mis cursos')
 @section('contenido')
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <div class="container-fluid bg-white">
-        <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3"
-            style="border-bottom: 1px dashed #80808078">
-            <h4 class="font-weight-bold text-primary">Cursos asignados:</strong></h4>
-            <div class="mb-4 text-center">
-                <button class="btn btn-success mx-2" onclick="mostrarTabla('fid')">Cursos FID</button>
-                <button class="btn btn-primary mx-2" onclick="mostrarTabla('ppd')">Cursos PPD</button>
+    @php
+        $primerNombre = explode(' ', trim($docente->nombre))[0];
+        $cursosPPD = $docente->cursos->filter(
+            fn($curso) => str_contains($curso->ciclo->programa->nombre ?? '', 'PPD'),
+        );
+        $otrosCursos = $docente->cursos->filter(
+            fn($curso) => !str_contains($curso->ciclo->programa->nombre ?? '', 'PPD'),
+        );
+        $cursosPPDCount = $cursosPPD->count();
+        $cursosFidCount = $otrosCursos->count();
+    @endphp
+
+    <div class="container-fluid docente-ui-page docente-cursos-page px-2 px-md-3 pb-5">
+        <div class="card border-0 shadow-sm mb-3 mb-md-4">
+            <div class="card-body p-3 p-md-4">
+                <div class="row align-items-center">
+                    <div class="col-lg-8 mb-3 mb-lg-0">
+                        <p class="text-uppercase text-muted small mb-1 font-weight-bold" style="letter-spacing: .04em;">
+                            Área docente</p>
+                        <h1 class="h4 font-weight-bold text-gray-800 mb-2">Hola, {{ $primerNombre }}</h1>
+                        <p class="text-muted mb-2 small mb-lg-0">
+                            Aquí gestionas tus cursos, sílabos y datos de Classroom. Usa los botones para alternar entre
+                            FID y PPD.
+                        </p>
+                        @if (isset($periodoActual) && $periodoActual)
+                            <span class="badge badge-primary font-weight-normal">Periodo:
+                                {{ $periodoActual->nombre }}</span>
+                        @endif
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="btn-group-vertical w-100" role="group" aria-label="Vista de cursos">
+                            <button type="button" class="btn btn-success btn-sm text-left" id="btn-tab-fid"
+                                onclick="mostrarTabla('fid')" aria-pressed="true">
+                                <i class="fas fa-graduation-cap mr-2"></i>Cursos FID
+                                @if ($cursosFidCount > 0)
+                                    <span class="badge badge-light text-success float-right mt-1">{{ $cursosFidCount }}</span>
+                                @endif
+                            </button>
+                            <button type="button" class="btn btn-outline-primary btn-sm text-left" id="btn-tab-ppd"
+                                onclick="mostrarTabla('ppd')" aria-pressed="false">
+                                <i class="fas fa-chalkboard-teacher mr-2"></i>Cursos PPD
+                                @if ($cursosPPDCount > 0)
+                                    <span class="badge badge-primary float-right mt-1">{{ $cursosPPDCount }}</span>
+                                @endif
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
-            {{-- <a href="{{ route('vistaDocente', $docente->id) }}"
-                class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm float-right">
-                Volver
-            </a> --}}
-            <span><img src="{{ asset('img/Icono-Puklla.png') }}" width="30" alt=""></span>
         </div>
 
-        <div class="row bg-white">
-            <div class="col-lg-12">
-                @php
-                    $primerNombre = explode(' ', trim($docente->nombre))[0];
-                @endphp
+        <div class="row">
+            <div class="col-12">
                 @if (Session::has('success'))
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        {{ Session::get('success') }} 🎉
+                    <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+                        {{ Session::get('success') }}
                         <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar">
                             <span aria-hidden="true">&times;</span>
                         </button>
@@ -31,8 +64,8 @@
                 @endif
 
                 @if ($errors->has('silabo'))
-                    <div class="alert alert-danger alert-dismissible fade show text-center" role="alert">
-                        <strong>¡Ups, {{ $primerNombre }}! 😅</strong> {{ $errors->first('silabo') }}
+                    <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+                        <strong>Atención, {{ $primerNombre }}:</strong> {{ $errors->first('silabo') }}
                         <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar">
                             <span aria-hidden="true">&times;</span>
                         </button>
@@ -40,23 +73,27 @@
                 @endif
             </div>
         </div>
+
         <div class="row pb-5">
-            @php
-                $cursosPPD = $docente->cursos->filter(
-                    fn($curso) => str_contains($curso->ciclo->programa->nombre ?? '', 'PPD'),
-                );
-                $otrosCursos = $docente->cursos->filter(
-                    fn($curso) => !str_contains($curso->ciclo->programa->nombre ?? '', 'PPD'),
-                );
-            @endphp
-            <div class="col-lg-12 table-responsive" id="tablafid">
-                <h4 class="font-weight-bold text-primary text-center" style="font-size: 22px">Cursos FID</h4>
+            <div class="col-12" id="tablafid">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white py-3 border-bottom-0">
+                        <h2 class="h5 mb-0 font-weight-bold text-primary d-flex align-items-center">
+                            <i class="fas fa-graduation-cap mr-2 text-success"></i> Cursos FID
+                        </h2>
+                        <p class="small text-muted mb-0 mt-1 d-none d-md-block">Formación inicial docente y cursos fuera de
+                            PPD.</p>
+                    </div>
+                    <div class="card-body p-0">
                 @if ($otrosCursos->isEmpty())
-                    <div class="text-center text-muted my-4">
-                        <strong>No tiene cursos asignados de FID</strong>
+                    <div class="text-center text-muted py-5 px-3">
+                        <i class="fas fa-inbox fa-2x mb-3 text-gray-300"></i>
+                        <p class="mb-0 font-weight-bold">No tiene cursos FID asignados</p>
+                        <p class="small mb-0">Si cree que es un error, comuníquese con administración.</p>
                     </div>
                 @else
-                    <table class="table table-hover table-bordered">
+                    <div class="table-responsive">
+                    <table class="table table-hover table-bordered table-sm mb-0 table-docente-cursos">
                         <thead class="thead-dark">
                             <tr style="pointer-events:none">
                                 <th>N°</th>
@@ -342,18 +379,6 @@
 
 
                                     </td>
-                                    <script>
-                                        function updateFileName(input, elementId) {
-                                            const fileInput = input;
-                                            const fileNameDisplay = document.getElementById(elementId);
-
-                                            if (fileInput.files.length > 0) {
-                                                fileNameDisplay.textContent = fileInput.files[0].name;
-                                            } else {
-                                                fileNameDisplay.textContent = '';
-                                            }
-                                        }
-                                    </script>
                                     <td>
                                         <form action="{{ route('cursos.classroomClaveCRUD', ['curso' => $curso->id]) }}"
                                             method="POST">
@@ -385,16 +410,29 @@
                             @endforeach
                         </tbody>
                     </table>
+                    </div>
                 @endif
+                    </div>
+                </div>
             </div>
-            <div class="col-lg-12 table-responsive mb-5" id="tablappd" style="display: none;">
+            <div class="col-12 mb-5" id="tablappd" style="display: none;">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white py-3 border-bottom-0">
+                        <h2 class="h5 mb-0 font-weight-bold text-primary d-flex align-items-center">
+                            <i class="fas fa-chalkboard-teacher mr-2"></i> Cursos PPD
+                        </h2>
+                        <p class="small text-muted mb-0 mt-1 d-none d-md-block">Profesionalización pedagógica docente.</p>
+                    </div>
+                    <div class="card-body p-0">
                 @if ($cursosPPD->isEmpty())
-                    <div class="alert alert-secondary text-center" role="alert">
-                        No cuenta con ningún curso de <strong>Profesionalización Docente</strong> asignado.
+                    <div class="text-center text-muted py-5 px-3">
+                        <i class="fas fa-folder-open fa-2x mb-3 text-gray-300"></i>
+                        <p class="mb-0 font-weight-bold">No tiene cursos PPD asignados</p>
+                        <p class="small mb-0">Los cursos PPD aparecerán aquí cuando estén asignados.</p>
                     </div>
                 @else
-                    <h4 class="font-weight-bold text-primary text-center" style="font-size: 20px">Cursos PPD</h4>
-                    <table class="table table-hover table-bordered">
+                    <div class="table-responsive">
+                    <table class="table table-hover table-bordered table-sm mb-0 table-docente-cursos">
                         <thead class="thead-dark">
                             <tr style="pointer-events:none">
                                 <th>N°</th>
@@ -564,18 +602,6 @@
                                             @endif
                                         @endif
                                     </td>
-                                    <script>
-                                        function updateFileName(input, elementId) {
-                                            const fileInput = input;
-                                            const fileNameDisplay = document.getElementById(elementId);
-
-                                            if (fileInput.files.length > 0) {
-                                                fileNameDisplay.textContent = fileInput.files[0].name;
-                                            } else {
-                                                fileNameDisplay.textContent = '';
-                                            }
-                                        }
-                                    </script>
                                     <td>
                                         <form action="{{ route('cursos.classroomClaveCRUD', ['curso' => $curso->id]) }}"
                                             method="POST">
@@ -607,7 +633,10 @@
                             @endforeach
                         </tbody>
                     </table>
+                    </div>
                 @endif
+                    </div>
+                </div>
             </div>
 
 
@@ -634,51 +663,82 @@
             </div>
         </div>
     </div>
+@endsection
 
-    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-
+@push('scripts')
     <script>
+        function updateFileName(input, elementId) {
+            var fileNameDisplay = document.getElementById(elementId);
+            if (!fileNameDisplay) {
+                return;
+            }
+            if (input.files.length > 0) {
+                fileNameDisplay.textContent = input.files[0].name;
+            } else {
+                fileNameDisplay.textContent = '';
+            }
+        }
+
+        function mostrarTabla(tipo) {
+            var tablaPPD = document.getElementById('tablappd');
+            var tablaFID = document.getElementById('tablafid');
+            var btnFid = document.getElementById('btn-tab-fid');
+            var btnPpd = document.getElementById('btn-tab-ppd');
+            if (!tablaPPD || !tablaFID || !btnFid || !btnPpd) {
+                return;
+            }
+            if (tipo === 'ppd') {
+                tablaPPD.style.display = 'block';
+                tablaFID.style.display = 'none';
+                btnPpd.classList.remove('btn-outline-primary');
+                btnPpd.classList.add('btn-primary');
+                btnFid.classList.remove('btn-success');
+                btnFid.classList.add('btn-outline-success');
+                btnPpd.setAttribute('aria-pressed', 'true');
+                btnFid.setAttribute('aria-pressed', 'false');
+            } else if (tipo === 'fid') {
+                tablaPPD.style.display = 'none';
+                tablaFID.style.display = 'block';
+                btnFid.classList.remove('btn-outline-success');
+                btnFid.classList.add('btn-success');
+                btnPpd.classList.remove('btn-primary');
+                btnPpd.classList.add('btn-outline-primary');
+                btnFid.setAttribute('aria-pressed', 'true');
+                btnPpd.setAttribute('aria-pressed', 'false');
+            }
+        }
+
         $(document).ready(function() {
             $('#confirmDeleteModal').on('show.bs.modal', function(e) {
-                var button = $(e.relatedTarget); // El botón que activó el modal
-                var url = button.data('href'); // La URL a la que se debe enviar la solicitud DELETE
-                var modal = $(this);
-                modal.find('#confirm-delete').data('href',
-                    url); // Configura la URL en el botón de confirmación
+                var button = $(e.relatedTarget);
+                var url = button.data('href');
+                $(this).find('#confirm-delete').data('href', url);
             });
 
-            $('#confirm-delete').click(function() {
-                var url = $(this).data('href'); // Obtener la URL configurada
+            $('#confirm-delete').on('click', function() {
+                var url = $(this).data('href');
+                if (!url) {
+                    return;
+                }
                 var form = $('<form>', {
-                    'method': 'POST',
-                    'action': url
-                }).append($('<input>', {
-                    'name': '_token',
-                    'value': $('meta[name="csrf-token"]').attr('content'),
-                    'type': 'hidden'
-                })).append($('<input>', {
-                    'name': '_method',
-                    'value': 'DELETE',
-                    'type': 'hidden'
-                }));
+                    method: 'POST',
+                    action: url
+                }).append(
+                    $('<input>', {
+                        name: '_token',
+                        value: $('meta[name="csrf-token"]').attr('content'),
+                        type: 'hidden'
+                    })
+                ).append(
+                    $('<input>', {
+                        name: '_method',
+                        value: 'DELETE',
+                        type: 'hidden'
+                    })
+                );
                 $('body').append(form);
                 form.submit();
             });
         });
     </script>
-    <script>
-        function mostrarTabla(tipo) {
-            const tablaPPD = document.getElementById('tablappd');
-            const tablaFID = document.getElementById('tablafid');
-
-            if (tipo === 'ppd') {
-                tablaPPD.style.display = 'block';
-                tablaFID.style.display = 'none';
-            } else if (tipo === 'fid') {
-                tablaPPD.style.display = 'none';
-                tablaFID.style.display = 'block';
-            }
-        }
-    </script>
-@endsection
+@endpush

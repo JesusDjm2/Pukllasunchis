@@ -1,196 +1,221 @@
 @extends('layouts.docente')
+
+@section('titulo', 'Alumnos PPD — Docente')
+
+@push('styles')
+<style>
+    .alumno-row td { vertical-align: middle; }
+    .alumno-avatar {
+        width: 58px; height: 58px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #e3e6f0;
+        cursor: pointer;
+        transition: transform .15s, border-color .15s;
+    }
+    .alumno-avatar:hover { transform: scale(1.08); border-color: #1cc88a; }
+    .alumno-avatar-placeholder {
+        width: 58px; height: 58px;
+        border-radius: 50%;
+        background: #e9ecef;
+        display: flex; align-items: center; justify-content: center;
+        border: 2px solid #dee2e6;
+        color: #adb5bd;
+        font-size: 1.4rem;
+        flex-shrink: 0;
+    }
+    .alumno-nombre { font-weight: 600; font-size: .92rem; color: #3a3b45; line-height: 1.3; }
+    .alumno-meta   { font-size: .78rem; color: #858796; }
+    .curso-pill    { font-size: .72rem; font-weight: 600; letter-spacing: .03em; }
+    .accordion-btn-curso { text-align: left; width: 100%; }
+    .accordion-btn-curso:focus { box-shadow: none; }
+    .curso-count-badge {
+        background: rgba(255,255,255,.22);
+        border-radius: 20px;
+        padding: 2px 10px;
+        font-size: .75rem;
+        font-weight: 700;
+        letter-spacing: .02em;
+    }
+</style>
+@endpush
+
 @section('contenido')
-    <div class="container-fluid bg-light">
-        <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3"
-            style="border-bottom: 1px dashed #80808078">
-            <h4 class="font-weight-bold text-primary">Alumnos PPD: Alumnos por Curso
-            </h4>
-            <a href="{{ route('calificar', $docente->id) }}"
-                class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm float-right mb-3">
-                Volver
-            </a>
-        </div>
-        <div class="row bg-white">
+    @php
+        $alumnosPorCurso = collect($alumnosPorCurso)->sortBy(function ($alumnos, $cursoId) use ($docente) {
+            $curso = $docente->cursos->find($cursoId);
+            preg_match('/\d+/', optional($curso?->ciclo)->nombre ?? '', $m);
+            return $m[0] ?? 0;
+        });
+    @endphp
+
+    <div class="container-fluid docente-ui-page">
+        @include('docentes.partials.ui-header', [
+            'kicker'    => 'Alumnos PPD',
+            'title'     => 'Alumnos por curso',
+            'subtitle'  => 'Profesionalización pedagógica docente.',
+            'backUrl'   => route('calificar', $docente->id),
+            'backLabel' => 'Calificaciones',
+        ])
+
+        @if (Session::has('success'))
+            <div class="alert alert-success alert-dismissible fade show shadow-sm mb-3" role="alert">
+                {{ Session::get('success') }}
+                <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+            </div>
+        @endif
+
+        <div class="row pb-5">
             <div class="col-12">
-                @if (Session::has('success'))
-                    <div class="alert alert-success alert-dismissible fade show text-center" role="alert">
-                        {{ Session::get('success') }}
-                        <a type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </a>
+                @php $hayAlumnos = collect($alumnosPorCurso)->filter(fn($a) => $a->isNotEmpty())->isNotEmpty(); @endphp
+
+                @forelse ($alumnosPorCurso as $cursoId => $alumnos)
+                    @if ($alumnos->isEmpty()) @continue @endif
+                    @php
+                        $cursoObj       = $docente->cursos->find($cursoId);
+                        $cicloNombre    = optional($cursoObj?->ciclo)->nombre ?? null;
+                        $programaNombre = optional($cursoObj?->ciclo?->programa)->nombre ?? null;
+                        $totalAlum      = $alumnos->count();
+                    @endphp
+                    <div class="card shadow-sm mb-3 border-0">
+                        {{-- Cabecera del curso --}}
+                        <div class="card-header p-0 border-0"
+                             style="background: linear-gradient(90deg,#1cc88a 0%,#13855c 100%);">
+                            <button class="btn btn-link text-white accordion-btn-curso py-3 px-4"
+                                    type="button" data-toggle="collapse"
+                                    data-target="#colPpd{{ $loop->index }}"
+                                    aria-expanded="{{ $loop->first ? 'true' : 'false' }}"
+                                    aria-controls="colPpd{{ $loop->index }}">
+                                <div class="d-flex align-items-center flex-wrap" style="gap:.5rem;">
+                                    <i class="fas fa-graduation-cap mr-2"></i>
+                                    <span class="font-weight-bold" style="font-size:.95rem;">
+                                        {{ $cursoObj?->nombre ?? 'Curso' }}
+                                    </span>
+                                    @if($programaNombre || $cicloNombre)
+                                        <span class="text-white-50" style="font-size:.8rem;">
+                                            — {{ $programaNombre }} {{ $cicloNombre ? '· '.$cicloNombre : '' }}
+                                        </span>
+                                    @endif
+                                    <span class="curso-count-badge ml-auto">
+                                        <i class="fas fa-users fa-xs mr-1"></i>{{ $totalAlum }}
+                                    </span>
+                                </div>
+                            </button>
+                        </div>
+
+                        {{-- Lista de alumnos --}}
+                        <div id="colPpd{{ $loop->index }}"
+                             class="collapse {{ $loop->first ? 'show' : '' }}">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead style="background:#f8f9fc;">
+                                        <tr>
+                                            <th style="width:72px;" class="border-top-0 pl-4">Foto</th>
+                                            <th class="border-top-0">Estudiante</th>
+                                            <th class="border-top-0 d-none d-md-table-cell">Ciclo / Programa</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($alumnos as $alumno)
+                                            @php
+                                                /* $alumno es User model */
+                                                $fotoUrl   = $alumno->foto
+                                                    ? asset('img/estudiantes/'.$alumno->foto)
+                                                    : null;
+                                                $numAlumno = optional($alumno->alumnoB)->numero ?? null;
+                                                $fullName  = trim($alumno->apellidos.', '.$alumno->name);
+                                            @endphp
+                                            <tr class="alumno-row">
+                                                <td class="pl-4">
+                                                    @if ($fotoUrl)
+                                                        <img src="{{ $fotoUrl }}"
+                                                             alt="Foto {{ $alumno->name }}"
+                                                             class="alumno-avatar"
+                                                             onclick="docenteOpenPhotoModal('{{ $fotoUrl }}', '{{ $fullName }}')"
+                                                             oncontextmenu="return false;">
+                                                    @else
+                                                        <div class="alumno-avatar-placeholder">
+                                                            <i class="fas fa-user"></i>
+                                                        </div>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    <div class="alumno-nombre">{{ $fullName }}</div>
+                                                    <div class="alumno-meta mt-1">
+                                                        @if ($alumno->email)
+                                                            <span><i class="fas fa-envelope fa-xs mr-1"></i>{{ $alumno->email }}</span>
+                                                        @endif
+                                                        @if ($numAlumno)
+                                                            <span class="ml-2"><i class="fas fa-phone fa-xs mr-1"></i>{{ $numAlumno }}</span>
+                                                        @endif
+                                                    </div>
+                                                </td>
+                                                <td class="d-none d-md-table-cell">
+                                                    @if ($alumno->ciclo)
+                                                        <span class="badge badge-success curso-pill">
+                                                            {{ $alumno->ciclo->nombre }}
+                                                        </span>
+                                                    @endif
+                                                    @if ($alumno->programa)
+                                                        <span class="badge badge-light curso-pill text-muted border mt-1">
+                                                            {{ $alumno->programa->nombre }}
+                                                        </span>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                @empty
+                @endforelse
+
+                @if (!$hayAlumnos)
+                    <div class="card docente-ui-card">
+                        <div class="card-body text-center text-muted py-5">
+                            <i class="fas fa-user-graduate fa-2x mb-3 text-gray-300 d-block"></i>
+                            <p class="mb-0 font-weight-bold">No hay alumnos PPD para mostrar</p>
+                            <p class="small mb-0">Cuando haya matrículas en sus cursos PPD, aparecerán aquí.</p>
+                        </div>
                     </div>
                 @endif
             </div>
         </div>
-        <div class="row pb-5">
-            <div class="col-lg-12 table-responsive">
-                <div class="accordion" id="alumnosAccordion">
-                    @php
-                        $alumnosPorCurso = collect($alumnosPorCurso)->sortBy(function ($alumnos, $cursoId) {
-                            $primerAlumno = $alumnos->first();
-                            if ($primerAlumno && $primerAlumno->ciclo) {
-                                $cicloNombre = $primerAlumno->ciclo->nombre ?? '';
-                                preg_match('/\d+/', $cicloNombre, $matches);
-                                return $matches[0] ?? 0; // Devuelve el número del ciclo
-                            }
-                            return 0; // Si no hay alumno o no tiene ciclo, lo mandamos al final
-                        });
-                    @endphp
-                    {{-- @foreach ($alumnosPorCurso as $cursoId => $alumnos) --}}
-                    @foreach ($alumnosPorCurso as $cursoId => $alumnos)
-                        @if ($alumnos->isNotEmpty())
-                            <div class="card mb-3">
-                                <div class="card-header bg-dark" id="heading{{ $loop->index }}">
-                                    <h5 class="mb-0">
-                                        <button class="btn btn-link text-white" data-toggle="collapse"
-                                            data-target="#collapse{{ $loop->index }}" aria-expanded="true"
-                                            aria-controls="collapse{{ $loop->index }}">
-                                            <span class="font-weight-bold">
-                                                {{ optional($docente->cursos->firstWhere('id', $cursoId))->nombre ?? 'Curso no encontrado' }}
-                                            </span>
-                                            <small>
-                                                @php
-                                                    $curso = $docente->cursos->firstWhere('id', $cursoId);
-                                                @endphp
-                                                {{-- @if ($alumnos->isNotEmpty())
-                                                ({{ optional($alumnos->first()->ciclo->programa)->nombre ?? 'Sin programa' }}
-                                                -
-                                                {{ optional($alumnos->first()->ciclo)->nombre ?? 'Sin ciclo' }})
-                                                - Alumnos: {{ $alumnos->count() }}
-                                            @else
-                                                No hay alumnos en este curso.
-                                            @endif --}}
-                                                ({{ optional($curso->ciclo->programa)->nombre ?? 'Sin programa' }}
-                                                -
-                                                {{ optional($curso->ciclo)->nombre ?? 'Sin ciclo' }})
-                                                @if ($alumnos->isNotEmpty())
-                                                    - Alumnos: {{ $alumnos->count() }}
-                                                @else
-                                                    - No hay alumnos en este curso.
-                                                @endif
-                                            </small>
-                                        </button>
-                                    </h5>
-                                </div>
-                                <div id="collapse{{ $loop->index }}" class="collapse"
-                                    aria-labelledby="heading{{ $loop->index }}" data-parent="#alumnosAccordion">
-                                    @if ($alumnos->isEmpty())
-                                        <p class="p-3">No hay alumnos asignados a este curso.</p>
-                                    @else
-                                        <table class="table table-bordered table-hover">
-                                            <thead class="bg-secondary text-white">
-                                                <tr>
-                                                    <th>Nombre</th>
-                                                    <th>Email</th>
-                                                    <th>Teléfono</th>
-                                                    <th>Foto</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @foreach ($alumnos as $alumno)
-                                                    <tr>
-                                                        <td>{{ $alumno->apellidos }}, {{ $alumno->nombres }}</td>
-                                                        <td>{{ $alumno->email }}</td>
-                                                        <td>{{ $alumno->numero ?? 'N/A' }}</td>
-                                                        <td>
-                                                            @if ($alumno->foto)
-                                                                <img src="{{ asset('img/estudiantes/' . $alumno->foto) }}"
-                                                                    alt="Foto de {{ $alumno->nombre }}" class="img-fluid"
-                                                                    style="width: 40px; height: 40px; border-radius: 50%; cursor: pointer;"
-                                                                    onclick="openModal('{{ asset('img/estudiantes/' . $alumno->foto) }}')"
-                                                                    oncontextmenu="return false;">
-                                                            @else
-                                                                <span class="text-muted">Sin foto</span>
-                                                            @endif
-                                                        </td>
-                                                    </tr>
-                                                @endforeach
-                                            </tbody>
-                                        </table>
-                                    @endif
-                                </div>
-                            </div>
-                        @endif
-                    @endforeach
-                </div>
-            </div>
-        </div>
     </div>
 
-    <div id="imageModal" class="modal" style="display:none;" onclick="closeModal()">
-        <div class="modal-content" onclick="event.stopPropagation();"
-            style="display: flex; flex-direction: column; position: relative;">
-            <span onclick="closeModal()" class="cerrarBtn">&times;</span>
-            <img id="modalImage" style="width:100%; height:auto;" oncontextmenu="return false;">
+    {{-- Modal foto --}}
+    <div id="docentePhotoModal" class="docente-photo-modal-overlay" role="dialog" aria-modal="true"
+         aria-label="Vista ampliada de foto" onclick="docenteClosePhotoModal()">
+        <div class="docente-photo-modal-inner" onclick="event.stopPropagation();">
+            <button type="button" class="docente-photo-modal-close" onclick="docenteClosePhotoModal()"
+                    aria-label="Cerrar">&times;</button>
+            <img id="docentePhotoModalImg" src="" alt="" oncontextmenu="return false;">
+            <p id="docentePhotoModalName" class="text-white text-center mt-2 mb-0 font-weight-bold"
+               style="font-size:.9rem;text-shadow:0 1px 3px rgba(0,0,0,.6);"></p>
         </div>
     </div>
-
-    <!-- Estilos para el modal -->
-    <style>
-        .cerrarBtn {
-            cursor: pointer;
-            font-size: 22px;
-            float: right;
-            margin-left: auto;
-            color: #fff;
-            font-weight: bold;
-            margin-right: -20px;
-            padding-left: 8px;
-            border-radius: 50%;
-            padding-right: 8px;
-            transition: 0.3s ease;
-        }
-
-        .cerrarBtn:hover {
-            color: #000;
-            background: #fff;
-            border-radius: 50%;
-            padding-left: 8px;
-            padding-right: 8px;
-            transition: 0.3s ease;
-        }
-
-        .modal {
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.8);
-            /* Capa oscura */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
-            max-width: 200px;
-            position: relative;
-            background: none
-        }
-
-        .modal img {
-            max-width: 100%;
-            height: auto;
-            display: block;
-            margin: auto;
-            border: 5px solid rgb(255, 255, 255);
-            border-radius: 5px
-        }
-    </style>
-
-    <!-- Script para abrir y cerrar el modal -->
-    <script>
-        function openModal(imageSrc) {
-            document.getElementById('modalImage').src = imageSrc;
-            document.getElementById('imageModal').style.display = 'flex';
-        }
-
-        function closeModal() {
-            document.getElementById('imageModal').style.display = 'none';
-        }
-    </script>
 @endsection
+
+@push('scripts')
+<script>
+    function docenteOpenPhotoModal(src, name) {
+        var el  = document.getElementById('docentePhotoModal');
+        var img = document.getElementById('docentePhotoModalImg');
+        var lbl = document.getElementById('docentePhotoModalName');
+        if (!el || !img) return;
+        img.src = src;
+        img.alt = name || 'Foto del estudiante';
+        if (lbl) lbl.textContent = name || '';
+        el.classList.add('is-open');
+    }
+    function docenteClosePhotoModal() {
+        var el = document.getElementById('docentePhotoModal');
+        if (el) el.classList.remove('is-open');
+    }
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') docenteClosePhotoModal();
+    });
+</script>
+@endpush

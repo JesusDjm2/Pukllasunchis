@@ -1,4 +1,5 @@
 @extends('layouts.docente')
+@section('titulo', 'Calificaciones FID')
 @section('contenido')
     <style>
         th.sortable {
@@ -34,55 +35,45 @@
             width: 80%;
         }
 
-        .close {
+        .modal-competencia .close {
             color: #000000;
             font-weight: bold;
             right: 1em !important;
             position: absolute;
-            font-weight: bold
         }
 
-        .close:hover,
-        .close:focus {
+        .modal-competencia .close:hover,
+        .modal-competencia .close:focus {
             color: black;
             text-decoration: none;
             cursor: pointer;
         }
     </style>
-    <div class="container-fluid bg-light">
-        <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3"
-            style="border-bottom: 1px dashed #80808078">
-            <h4 class="font-weight-bold text-primary">{{ $curso->nombre }}
-                <small class="text-secondary">({{ $curso->ciclo->programa->nombre }} - {{ $curso->ciclo->nombre }})</small>
-            </h4>
-            {{-- <form action="{{ route('calificaciones.exportar', ['docenteId' => $docente->id, 'cursoId' => $curso->id]) }}"
-                method="GET">
-                @csrf
-                @foreach ($competenciasSeleccionadas as $competencia)
-                    <input type="hidden" name="competencias[]" value="{{ $competencia->id }}">
-                @endforeach
-                <div class="text-center"><button type="submit" class="btn btn-primary btn-sm mb-2">Exportar CSV <i
-                            class="fa fa-file-csv"></i></button></div>
-            </form> --}}
-            <a href="{{ route('calificar', $docente->id) }}"
-                class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm float-right mb-3">
-                <i class="fa fa-arrow-left fa-sm"></i> Volver
-            </a>
+    <div class="container-fluid docente-ui-page">
+        @include('docentes.partials.ui-header', [
+            'kicker' => 'Calificaciones FID',
+            'title' => $curso->nombre,
+            'subtitle' => ($curso->ciclo->programa->nombre ?? '') . ' — ' . ($curso->ciclo->nombre ?? ''),
+            'backUrl' => route('calificar', $docente->id),
+            'backLabel' => 'Volver a cursos',
+        ])
+
+        <div class="card docente-ui-card mb-3">
+            <div class="card-body py-3">
+                <p class="docente-ui-legenda text-center mb-0">
+                    <span class="legenda-item" style="color:#103b86">Destacado: 17–20</span>
+                    <span class="d-none d-sm-inline"> | </span>
+                    <span class="legenda-item d-block d-sm-inline" style="color:#0b954e">Logrado: 14–16</span>
+                    <span class="d-none d-sm-inline"> | </span>
+                    <span class="legenda-item d-block d-sm-inline" style="color:#c1ac0f">En proceso: 11–13</span>
+                    <span class="d-none d-sm-inline"> | </span>
+                    <span class="legenda-item d-block d-sm-inline text-danger">Inicio: 6–10</span>
+                    <span class="d-none d-sm-inline"> | </span>
+                    <span class="legenda-item d-block d-sm-inline text-danger">Previo al inicio: 1–5</span>
+                </p>
+            </div>
         </div>
-        <div class="col-lg-12">
-            <p class="text-center" style="color: #000000">
-                <span style="color:#103b86">Destacado: 17 - 20</span>
-                <span>|</span>
-                <span style="color:#0b954e"> Logrado: 14 - 16</span>
-                <span>|</span>
-                <span style="color:#c1ac0f"> En Proceso: 11 - 13</span>
-                <span>|</span>
-                <span class="text-danger"> Inicio: 6 - 10 </span>
-                <span>|</span>
-                <span class="text-danger"> Previo al Inicio: 1- 5</span>
-            </p>
-        </div>
-        <div class="col-lg-12 text-center mb-2">
+        <div class="col-lg-12 text-center mb-2 px-0">
             @foreach ($competenciasSeleccionadas as $competencia)
                 <a class="text-center align-middle" style="font-size: 16px; cursor: pointer;"
                     data-id="{{ $competencia->id }}" data-nombre="{{ $competencia->nombre }}"

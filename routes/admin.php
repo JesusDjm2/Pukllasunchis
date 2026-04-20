@@ -58,6 +58,10 @@ Route::get('/inhabilitado', function () {
     return view('admin.inhabilitado');
 })->name('inhabilitado');
 
+Route::get('/tutor/dashboard', [App\Http\Controllers\TutorController::class, 'index'])
+    ->middleware('auth')
+    ->name('tutor.dashboard');
+
 //Programas
 Route::prefix('programas')->middleware(['auth'])->group(function () {
     Route::resource('programa', ProgramaController::class);

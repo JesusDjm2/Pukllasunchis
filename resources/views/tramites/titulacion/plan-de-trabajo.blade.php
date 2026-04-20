@@ -143,7 +143,7 @@
                 <div class="row justify-content-center align-items-center fichas mt-4">
                     <div class="col-lg-4 col-6 text-center">
                         <div class="card">
-                            <a href="{{ asset('pdf/Formato-PTI-2025.docx') }}" target="_blank">
+                            <a href="{{ asset('pdf/Plan-de-Trabajo-de-Investigación (PTI).docx') }}" target="_blank">
                                 <div style="height: 100px">
                                     <img height="100%" src="{{ asset('img/min/Bachillerato-Pukllasunchis.png') }}"
                                         alt="Formato PTI">

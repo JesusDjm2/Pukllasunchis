@@ -185,7 +185,7 @@
                 }
             }
         </style>
-
+        
         <div id="bolsaAdminLightboxOverlay" role="dialog" aria-modal="true" aria-label="Vista ampliada de imagen"
             onclick="if (event.target === this) bolsaAdminLightboxClose();">
             <button type="button" id="bolsaAdminLightboxClose" onclick="bolsaAdminLightboxClose();"

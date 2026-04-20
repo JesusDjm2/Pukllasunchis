@@ -81,6 +81,8 @@
                             <button class="btn btn-warning btn-sm" onclick="mostrarTabla('alumnos')">Administradores
                                 <small>{{ $conteoAdmin }}</small></button>
                             <button class="btn btn-success btn-sm" onclick="mostrarTabla('adminsB')">Admins Bolsa</button>
+                            <button class="btn btn-dark btn-sm" onclick="mostrarTabla('tutores')">Tutores
+                                <small>{{ $conteoTutores }}</small></button>
                         </div>
                         <div class="col-lg-6 mb-3" style="float: right">
                             <input type="text" id="search-box"0 class="form-control" placeholder="Buscar Alumnos">
@@ -372,6 +374,42 @@
                         </table>
                     </div>
                     <div class="table-responsive">
+                        <table class="table table-hover" id="tutores-table" style="display: none">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Nombre</th>
+                                    <th>Correo</th>
+                                    <th>DNI</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @php $tutorCount = 0; @endphp
+                                @foreach ($admins as $admin)
+                                    @if ($admin->hasRole('tutor'))
+                                        @php $tutorCount++; @endphp
+                                        <tr>
+                                            <td>{{ $tutorCount }}</td>
+                                            <td>{{ $admin->apellidos }}, {{ $admin->name }}</td>
+                                            <td>{{ $admin->email }}</td>
+                                            <td>{{ $admin->dni }}</td>
+                                            <td>
+                                                <a href="{{ route('adminEdit', ['id' => $admin->id]) }}"
+                                                    class="btn btn-info btn-sm" title="Editar"><i class="fa fa-pen"></i></a>
+                                                <a href="#" class="btn btn-danger btn-sm" data-toggle="modal"
+                                                    data-target="#confirmDeleteModal"
+                                                    data-href="{{ route('adminDestroy', ['id' => $admin->id]) }}">
+                                                    <i class="fa fa-trash"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    @endif
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="table-responsive">
                         <table class="table table-hover" id="inhabilitado-table" style="display: none">
                             <thead class="thead-dark">
                                 <tr>
@@ -500,50 +538,20 @@
     </script>
 
     <script>
+        const allTables = ['admins-table', 'alumnos-table', 'alumnosppd', 'adminsB-table', 'docentes-table', 'inhabilitado-table', 'tutores-table'];
+
         function mostrarTabla(tipo) {
-            if (tipo === 'admins') {
-                document.getElementById('admins-table').style.display = 'table';
-                document.getElementById('alumnos-table').style.display = 'none';
-                document.getElementById('alumnosppd').style.display = 'none';
-                document.getElementById('adminsB-table').style.display = 'none';
-                document.getElementById('docentes-table').style.display = 'none';
-                document.getElementById('inhabilitado-table').style.display = 'none';
-            } else if (tipo === 'alumnos') {
-                document.getElementById('admins-table').style.display = 'none';
-                document.getElementById('alumnos-table').style.display = 'table';
-                document.getElementById('alumnosppd').style.display = 'none';
-                document.getElementById('adminsB-table').style.display = 'none';
-                document.getElementById('docentes-table').style.display = 'none';
-                document.getElementById('inhabilitado-table').style.display = 'none';
-            } else if (tipo === 'adminsB') {
-                document.getElementById('admins-table').style.display = 'none';
-                document.getElementById('alumnos-table').style.display = 'none';
-                document.getElementById('adminsB-table').style.display = 'table';
-                document.getElementById('docentes-table').style.display = 'none';
-                document.getElementById('inhabilitado-table').style.display = 'none';
-                document.getElementById('alumnosppd').style.display = 'none';
-            } else if (tipo === 'docentes') {
-                document.getElementById('admins-table').style.display = 'none';
-                document.getElementById('alumnos-table').style.display = 'none';
-                document.getElementById('adminsB-table').style.display = 'none';
-                document.getElementById('docentes-table').style.display = 'table';
-                document.getElementById('inhabilitado-table').style.display = 'none';
-                document.getElementById('alumnosppd').style.display = 'none';
-            } else if (tipo === 'inhabilitados') {
-                document.getElementById('admins-table').style.display = 'none';
-                document.getElementById('alumnos-table').style.display = 'none';
-                document.getElementById('adminsB-table').style.display = 'none';
-                document.getElementById('docentes-table').style.display = 'none';
-                document.getElementById('inhabilitado-table').style.display = 'table';
-                document.getElementById('alumnosppd').style.display = 'none';
-            } else if (tipo === 'alumnosppd') {
-                document.getElementById('admins-table').style.display = 'none';
-                document.getElementById('alumnos-table').style.display = 'none';
-                document.getElementById('adminsB-table').style.display = 'none';
-                document.getElementById('docentes-table').style.display = 'none';
-                document.getElementById('inhabilitado-table').style.display = 'none';
-                document.getElementById('alumnosppd').style.display = 'table';
-            }
+            allTables.forEach(id => document.getElementById(id).style.display = 'none');
+            const map = {
+                admins: 'admins-table',
+                alumnos: 'alumnos-table',
+                alumnosppd: 'alumnosppd',
+                adminsB: 'adminsB-table',
+                docentes: 'docentes-table',
+                inhabilitados: 'inhabilitado-table',
+                tutores: 'tutores-table',
+            };
+            if (map[tipo]) document.getElementById(map[tipo]).style.display = 'table';
         }
     </script>
 @endsection

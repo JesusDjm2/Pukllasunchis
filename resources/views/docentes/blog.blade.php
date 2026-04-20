@@ -1,25 +1,32 @@
 @extends('layouts.docente')
+
+@section('titulo', 'Blog — Docente')
+
 @section('contenido')
-    <div class="container mt-4">
-        <div class="row">
-            <div class="col-md-12">
-                <h3 class="mb-2 text-primary font-weight-bold"> {{ $docente->nombre }}</h3>
-                {{-- <h5><strong>Curso:</strong> {{ $curso->nombre }}</h5>
-                <p>
-                    <strong>Programa:</strong> {{ $curso->ciclo->programa->nombre }} ||
-                    <strong>Ciclo:</strong> {{ $curso->ciclo->nombre }}
-                </p> --}}
+    <div class="container-fluid docente-ui-page px-2 px-md-3">
+        @include('docentes.partials.ui-header', [
+            'kicker' => 'Docente',
+            'title' => $docente->nombre,
+            'subtitle' => 'Contenido publicado en su espacio.',
+            'backUrl' => route('vistaDocente', ['docente' => $docente->id]),
+            'backLabel' => 'Mis cursos',
+        ])
 
-                <div class="card mb-3">
-                    <div class="card-body">
-
-                        {!! $docente->blog !!}
-                    </div>
-                </div>
-                <div class="mt-4">
-                    <a href="{{ route('docente.index') }}" class="btn btn-secondary">Volver</a>
+        <div class="card docente-ui-card">
+            <div class="card-body p-3 p-md-4">
+                <div class="docente-blog-content">
+                    {!! $docente->blog !!}
                 </div>
             </div>
         </div>
     </div>
 @endsection
+
+@push('styles')
+    <style>
+        .docente-blog-content img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+@endpush

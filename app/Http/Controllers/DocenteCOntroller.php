@@ -431,22 +431,19 @@ class DocenteCOntroller extends Controller
 
     public function alumnosppd($id)
     {
-        $docente = Docente::with('cursos')->findOrFail($id);
-        // Traer los cursos del docente
+        $docente = Docente::with(['cursos.ciclo.programa'])->findOrFail($id);
         $cursos = $docente->cursos;
-        // Inicializar un array vacío para almacenar los alumnos por curso
         $alumnosPorCurso = [];
         foreach ($cursos as $curso) {
-            // Buscar alumnos que tengan el rol alumnoB y pertenezcan al ciclo del curso actual
-            $alumnos = User::with(['ciclo', 'programa'])
+            $alumnos = User::with(['ciclo.programa', 'alumnoB'])
                 ->whereHas('roles', function ($query) {
                     $query->where('name', 'alumnoB');
                 })
                 ->whereHas('ciclo.cursos', function ($query) use ($curso) {
                     $query->where('cursos.id', $curso->id);
                 })
+                ->orderBy('apellidos')
                 ->get();
-            // Agrupar por el ID del curso
             $alumnosPorCurso[$curso->id] = $alumnos;
         }
 

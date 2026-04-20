@@ -1,5 +1,7 @@
 @extends('layouts.docente')
 
+@section('titulo', 'Editar sílabo')
+
 @section('contenido')
     <style>
         #acciones {
@@ -70,14 +72,16 @@
             }
         }
     </style>
-    <div class="container-fluid bg-white">
-        <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3">
-            <h4 class="font-weight-bold text-primary">Actualizar Sílabo</h4>
-            <a href="{{ url()->previous() }}" class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm float-right">
-                Volver
-            </a>
-        </div>
-        <div class="row bg-white">
+    <div class="container-fluid docente-ui-page">
+        @include('docentes.partials.ui-header', [
+            'kicker' => 'Sílabos',
+            'title' => 'Actualizar sílabo',
+            'subtitle' => 'Modifique las secciones y guarde los cambios.',
+            'backUrl' => url()->previous() !== url()->current() ? url()->previous() : route('vistaDocente', $docente->id),
+            'backLabel' => 'Volver',
+        ])
+
+        <div class="row">
             <div class="col-12">
                 @if (Session::has('error'))
                     <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -699,6 +703,7 @@
             </div>
             <button type="submit" class="btn btn-primary btn-flotante">Actualizar Sílabo</button>
         </form>
+    </div>
 
         <!-- Script para agregar enfoques dinámicamente -->
         <script>

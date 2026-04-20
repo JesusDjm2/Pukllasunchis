@@ -1,4 +1,7 @@
 @extends('layouts.docente')
+
+@section('titulo', 'Calificaciones PPD')
+
 @section('contenido')
     <style>
         .highlighted {
@@ -14,7 +17,6 @@
             position: sticky;
             left: 0;
             background-color: white;
-            /* O el color de fondo de tus filas */
             z-index: 5;
         }
 
@@ -26,10 +28,10 @@
             color: white;
         }
 
-        .modal {
+        .docente-cal-ppd-comp-modal {
             display: none;
             position: fixed;
-            z-index: 1000;
+            z-index: 2000;
             left: 0;
             top: 0;
             width: 100%;
@@ -38,85 +40,90 @@
             background-color: rgba(0, 0, 0, 0.4);
         }
 
-        .modal-content {
+        .docente-cal-ppd-comp-modal .modal-content {
             background-color: #fefefe;
             margin: 15% auto;
-            /* 15% desde arriba y centrado */
             padding: 20px;
             border: 1px solid #888;
             width: 80%;
-            /* Ancho del modal */
+            max-width: 640px;
+            position: relative;
         }
 
-        .close {
+        .docente-cal-ppd-comp-modal .close {
             color: #000000;
             font-weight: bold;
             right: 1em !important;
             position: absolute;
-            font-weight: bold
         }
 
-        .close:hover,
-        .close:focus {
+        .docente-cal-ppd-comp-modal .close:hover,
+        .docente-cal-ppd-comp-modal .close:focus {
             color: black;
             text-decoration: none;
             cursor: pointer;
         }
     </style>
-    <div class="container-fluid bg-light">
-        <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3"
-            style="border-bottom: 1px dashed #80808078">
-            <h4 class="font-weight-bold text-primary">{{ $curso->nombre }}
-                <small class="text-secondary">({{ $curso->ciclo->programa->nombre }} - {{ $curso->ciclo->nombre }})</small>
-            </h4>
-            <form action="{{ route('calificaciones.exportar.ppd', ['docenteId' => $docente->id, 'cursoId' => $curso->id]) }}"
-                method="GET">
-                @csrf
-                @foreach ($competenciasSeleccionadas as $competencia)
-                    <input type="hidden" name="competencias[]" value="{{ $competencia->id }}">
-                @endforeach
-                <div class="text-center"><button type="submit" class="btn btn-primary btn-sm mb-2">Exportar CSV <i
-                            class="fa fa-file-csv"></i></button></div>
-            </form>
-            <a href="{{ route('calificar', $docente->id) }}"
-                class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm float-right mb-3">
-                <i class="fa fa-arrow-left fa-sm"></i> Volver
-            </a>
+    <div class="container-fluid docente-ui-page">
+        @include('docentes.partials.ui-header', [
+            'kicker' => 'Calificaciones PPD',
+            'title' => $curso->nombre,
+            'subtitle' => ($curso->ciclo->programa->nombre ?? '') . ' — ' . ($curso->ciclo->nombre ?? ''),
+            'backUrl' => route('calificar', $docente->id),
+            'backLabel' => 'Volver a cursos',
+        ])
+
+        <div class="card docente-ui-card mb-3">
+            <div class="card-body py-3 d-flex flex-column flex-md-row align-items-md-center justify-content-between">
+                <form action="{{ route('calificaciones.exportar.ppd', ['docenteId' => $docente->id, 'cursoId' => $curso->id]) }}"
+                    method="GET" class="mb-3 mb-md-0">
+                    @csrf
+                    @foreach ($competenciasSeleccionadas as $competencia)
+                        <input type="hidden" name="competencias[]" value="{{ $competencia->id }}">
+                    @endforeach
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="fa fa-file-csv mr-1"></i> Exportar CSV
+                    </button>
+                </form>
+            </div>
         </div>
-        <div class="col-lg-12">
-            <p class="text-center" style="color: #000000">
-                <span class="text-danger"> Previo al Inicio: 1- 5</span>
-                <span>|</span>
-                <span class="text-danger"> Inicio: 6 - 10 </span>
-                <span>|</span>
-                <span style="color:#c1ac0f"> En Proceso: 11 - 13</span>
-                <span>|</span>                
-                <span style="color:#0b954e"> Logrado: 14 - 16</span>
-                <span>|</span>
-                <span style="color:#103b86">Destacado: 17 - 20</span>
-            </p>
+
+        <div class="card docente-ui-card mb-3">
+            <div class="card-body py-3">
+                <p class="docente-ui-legenda text-center mb-0">
+                    <span class="legenda-item text-danger">Previo al inicio: 1–5</span>
+                    <span class="d-none d-sm-inline"> | </span>
+                    <span class="legenda-item d-block d-sm-inline text-danger">Inicio: 6–10</span>
+                    <span class="d-none d-sm-inline"> | </span>
+                    <span class="legenda-item d-block d-sm-inline" style="color:#c1ac0f">En proceso: 11–13</span>
+                    <span class="d-none d-sm-inline"> | </span>
+                    <span class="legenda-item d-block d-sm-inline" style="color:#0b954e">Logrado: 14–16</span>
+                    <span class="d-none d-sm-inline"> | </span>
+                    <span class="legenda-item d-block d-sm-inline" style="color:#103b86">Destacado: 17–20</span>
+                </p>
+            </div>
         </div>
-        <div class="col-lg-12 text-center mb-2">
+        <div class="col-lg-12 text-center mb-3 px-0">
             @foreach ($competenciasSeleccionadas as $competencia)
-                <a class="text-center align-middle" style="font-size: 16px; cursor: pointer;"
+                <a class="text-center align-middle font-weight-bold text-primary" style="font-size: 15px; cursor: pointer;"
                     data-id="{{ $competencia->id }}" data-nombre="{{ $competencia->nombre }}"
                     data-descripcion="{{ addslashes($competencia->descripcion) }}"
                     data-capacidades="{!! addslashes($competencia->capacidades) !!}" onclick="openModal(this)">
                     {{ $competencia->nombre }}
                 </a>
                 @if (!$loop->last)
-                    |
+                    <span class="text-muted mx-1">|</span>
                 @endif
             @endforeach
         </div>
-        <div class="row bg-white">
+        <div class="row">
             <div class="col-12">
                 @if (Session::has('success'))
-                    <div class="alert alert-success alert-dismissible fade show text-center" role="alert">
+                    <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
                         {{ Session::get('success') }}
-                        <a type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar">
                             <span aria-hidden="true">&times;</span>
-                        </a>
+                        </button>
                     </div>
                 @endif
             </div>
@@ -334,7 +341,7 @@
         </div>
     </div>
 
-    <div id="competenciaModal" class="modal" onclick="closeModal(event)">
+    <div id="competenciaModal" class="docente-cal-ppd-comp-modal" onclick="closeModal(event)">
         <div class="modal-content" onclick="event.stopPropagation();">
             <span class="close" onclick="closeModal(event)">&times;</span>
             <h4 id="competenciaNombre" class="font-weight-bold"></h4>

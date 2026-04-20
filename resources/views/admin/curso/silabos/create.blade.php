@@ -1,4 +1,7 @@
 @extends('layouts.docente')
+
+@section('titulo', 'Crear sílabo')
+
 @section('contenido')
     <style>
         table tr,
@@ -56,38 +59,42 @@
             }
         }
     </style>
-    <div class="container-fluid bg-white">
-        <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3">
-            <h4 class="font-weight-bold text-primary">Crear Nuevo Sílabo</h4>
-            <a href="{{ route('vistaDocente', $docente->id) }}"
-                class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm float-right">
-                Volver
-            </a>
-        </div>
-        <div class="row bg-white">
+    <div class="container-fluid docente-ui-page">
+        @include('docentes.partials.ui-header', [
+            'kicker' => 'Sílabos',
+            'title' => 'Crear sílabo',
+            'subtitle' => 'Complete el formulario del sílabo para el curso asignado.',
+            'backUrl' => route('vistaDocente', $docente->id),
+            'backLabel' => 'Mis cursos',
+        ])
+
+        <div class="row">
             <div class="col-12">
                 @if (Session::has('error'))
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
                         {{ Session::get('error') }}
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
                 @endif
             </div>
             @if ($errors->any())
-                <div class="alert alert-danger">
-                    <ul>
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
+                <div class="col-12">
+                    <div class="alert alert-danger shadow-sm">
+                        <ul class="mb-0 pl-3">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
                 </div>
             @endif
         </div>
 
-        <div class="mt-3 mb-3">
-            <div class="row align-items-center">
+        <div class="card docente-ui-card mb-3">
+            <div class="card-body p-3 p-md-4">
+                <div class="row align-items-center">
                 <!-- Logo alineado a la izquierda -->
                 <div class="col-lg-3 d-flex justify-content-start">
                     <img src="{{ asset('img/logo-iesp-pukllasunchis.png') }}" alt="Logo IESP Pukllasunchis"
@@ -100,6 +107,7 @@
                     <h5 class="font-weight-bold mb-1">{{ $curso->ciclo->programa->nombre }} - Ciclo:
                         {{ $curso->ciclo->nombre }}</h5>
                     <h4 class="font-weight-bold">{{ $curso->nombre }}</h4>
+                </div>
                 </div>
             </div>
         </div>
@@ -496,6 +504,7 @@
             </div>
             <button type="submit" class="btn btn-primary btn-flotante">Guardar Sílabo</button>
         </form>
+    </div>
         <!-- Enfoques -->
         <script>
             document.addEventListener('DOMContentLoaded', function() {
