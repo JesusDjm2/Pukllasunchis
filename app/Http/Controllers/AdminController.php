@@ -372,6 +372,25 @@ class AdminController extends Controller
         }
     }
 
+    // ── Gestión Tutor → Ciclo ────────────────────────────────────────────────
+
+    public function tutorCiclosForm($userId)
+    {
+        $tutor  = User::role('tutor')->findOrFail($userId);
+        $ciclos = Ciclo::with('programa')->get()->sortBy(fn ($c) => $c->ordenCiclo());
+        $asignados = $tutor->tutorCiclos->pluck('id')->toArray();
+
+        return view('admin.tutor-ciclos', compact('tutor', 'ciclos', 'asignados'));
+    }
+
+    public function tutorCiclosUpdate(Request $request, $userId)
+    {
+        $tutor = User::role('tutor')->findOrFail($userId);
+        $tutor->tutorCiclos()->sync($request->input('ciclos', []));
+
+        return redirect()->route('admin')->with('success', 'Ciclos del tutor actualizados correctamente.');
+    }
+
     /**
      * Listado FID (tabla alumnos): excluye PPD (rol alumnoB). Incluye usuario con rol alumno, o bien solo inhabilitado
      * si users.perfil es Deuda. Quien tenga rol inhabilitado sin perfil Deuda queda fuera.

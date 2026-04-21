@@ -1,4 +1,12 @@
-@extends(auth()->check() && auth()->user()->hasRole('admin') ? 'layouts.admin' : 'layouts.bolsa')
+@php
+    $__u = auth()->user();
+    $__layout = $__u && $__u->hasAnyRole(['admin','adminB'])
+        ? 'layouts.admin'
+        : ($__u && $__u->hasRole('docente') && $docente
+            ? 'layouts.docente'
+            : 'layouts.bolsa');
+@endphp
+@extends($__layout)
 @section('titulo')
     <title>Editar oferta — Bolsa de trabajo</title>
 @endsection

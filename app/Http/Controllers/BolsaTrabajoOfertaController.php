@@ -76,14 +76,18 @@ class BolsaTrabajoOfertaController extends Controller
             9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre',
         ];
 
-        return view('bolsa.ofertas.index', compact('ofertas', 'anios', 'mesesNombres'));
+        $docente = auth()->user()?->docente;
+
+        return view('bolsa.ofertas.index', compact('ofertas', 'anios', 'mesesNombres', 'docente'));
     }
 
     public function edit(BolsaTrabajoOferta $oferta)
     {
         $this->ensureAdminBolsa();
 
-        return view('bolsa.ofertas.edit', compact('oferta'));
+        $docente = auth()->user()?->docente;
+
+        return view('bolsa.ofertas.edit', compact('oferta', 'docente'));
     }
 
     public function update(Request $request, BolsaTrabajoOferta $oferta)
@@ -141,7 +145,7 @@ class BolsaTrabajoOfertaController extends Controller
     private function ensureAdminBolsa(): void
     {
         $user = auth()->user();
-        if (! $user || (! $user->hasRole('adminB') && ! $user->hasRole('admin'))) {
+        if (! $user || (! $user->hasAnyRole(['admin', 'adminB', 'docente']))) {
             abort(403);
         }
     }

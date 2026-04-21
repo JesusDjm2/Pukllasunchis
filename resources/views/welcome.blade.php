@@ -593,18 +593,18 @@
                         </span>
                         <h2 class="bolsa-registro-title">Bolsa de trabajo</h2>
                         <p class="bolsa-registro-lead text-justify">
-                            Publica una convocatoria u oferta laboral. Los registros aparecerán en la sección pública de
-                            bolsa de trabajo con todos los detalles. También puedes revisarlos filtrados por año y mes.
+                            ¿Necesitas encontrar a alguien para tu equipo? <strong>Publica tu oferta</strong> aquí y aparecerá en nuestra
+                            bolsa de trabajo, donde muchas personas podrán verla.
                         </p>
                         <div class="bolsa-registro-actions d-flex flex-wrap align-items-center gap-3 mt-4">
                             <a href="{{ route('bolsa') }}" class="boxed-btn3 bolsa-registro-btn-primary">
                                 <i class="fa-solid fa-arrow-right-to-bracket me-2" aria-hidden="true"></i>
-                                Ir a la bolsa
+                                Ver ofertas publicadas
                             </a>
-                            <button type="button" class="bolsa-registro-btn-outline" id="btnAbrirFormBolsa">
+                            {{-- <button type="button" class="bolsa-registro-btn-outline" id="btnAbrirFormBolsa">
                                 <i class="fa-solid fa-pen-to-square me-2" aria-hidden="true"></i>
                                 Publicar oferta
-                            </button>
+                            </button> --}}
                         </div>
                     </div>
                 </div>
@@ -617,10 +617,9 @@
                                     <i class="fa-solid fa-file-circle-plus"></i>
                                 </div>
                                 <div>
-                                    <h3 class="bolsa-registro-card-heading h4 mb-1">Nuevo registro</h3>
+                                    <h3 class="bolsa-registro-card-heading h4 mb-1">Publicar oportunidad laboral</h3>
                                     <p class="bolsa-registro-card-sub text-muted mb-0">
-                                        Completa el formulario en una ventana emergente y publica tu convocatoria en pocos
-                                        pasos.
+                                        Completa el formulario y tu convocatoria se publicará en pocos pasos.
                                     </p>
                                 </div>
                             </div>
@@ -628,20 +627,21 @@
                                 <li>
                                     <span class="bolsa-registro-feature-icon"><i class="fa-solid fa-globe"
                                             aria-hidden="true"></i></span>
-                                    <span>Visible en la bolsa pública con todos los detalles.</span>
+                                    <span>Visible para todos en la bolsa de trabajo.</span>
                                 </li>
                                 <li>
                                     <span class="bolsa-registro-feature-icon"><i class="fa-solid fa-filter"
                                             aria-hidden="true"></i></span>
                                     <span>Consulta ofertas filtradas por año y mes.</span>
                                 </li>
-                                <li>
+                               {{--  <li>
                                     <span class="bolsa-registro-feature-icon"><i class="fa-solid fa-bolt"
                                             aria-hidden="true"></i></span>
                                     <span>Proceso guiado sin salir de esta página.</span>
-                                </li>
+                                </li> --}}
                             </ul>
-                            <button type="button" class="boxed-btn3 bolsa-registro-card-cta w-100" id="btnAbrirFormBolsaCard">
+                            <button type="button" class="boxed-btn3 bolsa-registro-card-cta w-100"
+                                id="btnAbrirFormBolsaCard">
                                 <i class="fa-solid fa-window-restore me-2" aria-hidden="true"></i>
                                 Abrir formulario
                             </button>

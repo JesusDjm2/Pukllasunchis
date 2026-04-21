@@ -352,8 +352,18 @@
                                             class="fa fa-download"></i> Intranet</a></li>
                                 <li><a href="http://repositorio.pukllasunchis.org/xmlui/" target="_blank"><i
                                             class="fa fa-file-pdf"></i> Repositorio</a></li>
-                                <li><a href="{{ route('admin') }}" target="_blank"><i class="fa fa-dollar-sign"></i>
+                                <li><a href="{{ route('bolsa') }}" target="_blank"><i class="fa fa-dollar-sign"></i>
                                         Bolsa de trabajo</a></li>
+                                <li><a href="{{ route('incidencias.public.create') }}" target="_blank"><i class="fas fa-clipboard-list"></i>
+                                        Incidencias</a></li>
+                                @php $__minka = \App\Models\Minkarikuy::activo(); @endphp
+                                @if ($__minka)
+                                <li>
+                                    <a href="#" id="btnMinkarikuy">
+                                        <i class="fas fa-qrcode"></i> Mink'arikuy
+                                    </a>
+                                </li>
+                                @endif
                             </ul>
                         </div>
                     </div>
@@ -633,11 +643,12 @@
                 transform: translateY(-2px);
                 box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
             }
+
             .fid-button:active {
                 transform: translateY(0);
             }
         </style>
-        <!-- Modal personalizado 
+        <!-- Modal personalizado
         <div class="custom-modal-overlay" id="customAdmisionesModal">
             <div class="custom-modal">
                 <div class="custom-modal-header">
@@ -780,6 +791,67 @@
         </script>
         <!-- Font Awesome para íconos -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+        @if (isset($__minka) && $__minka)
+        {{-- Modal Mink'arikuy --}}
+        <div class="custom-modal-overlay" id="minkarikuyModal">
+            <div class="custom-modal" style="max-width:400px;">
+                <div class="custom-modal-header">
+                    <h4 class="custom-modal-title">
+                        <i class="fas fa-qrcode mr-2"></i>Mink'arikuy
+                    </h4>
+                    <button class="custom-modal-close" id="cerrarMinkarikuy" aria-label="Cerrar">&times;</button>
+                </div>
+                <div class="custom-modal-body">
+                    <div style="background:#1a3a6b;padding:1.5rem;text-align:center;">
+                        <p style="color:#fff;font-weight:600;font-size:1.1rem;margin-bottom:.5rem;">
+                            {{ $__minka->nombre }}
+                        </p>
+                        <p style="color:#cde;margin-bottom:1rem;font-size:.95rem;">
+                            {{ $__minka->fecha->format('d/m/Y') }}
+                            &nbsp;—&nbsp;
+                            {{ \Carbon\Carbon::createFromFormat('H:i:s', $__minka->hora)->format('H:i') }}
+                        </p>
+                        @if ($__minka->imagen)
+                            <img src="{{ asset('img/minkarikuy/'.$__minka->imagen) }}"
+                                alt="QR Mink'arikuy"
+                                style="max-width:100%;max-height:320px;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.4);">
+                        @else
+                            <p style="color:#acd;">Sin imagen disponible.</p>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var btn   = document.getElementById('btnMinkarikuy');
+                var modal = document.getElementById('minkarikuyModal');
+                var cerrar = document.getElementById('cerrarMinkarikuy');
+
+                function abrirMinka(e) {
+                    e.preventDefault();
+                    modal.classList.add('show');
+                    document.body.style.overflow = 'hidden';
+                }
+                function cerrarMinka() {
+                    modal.classList.remove('show');
+                    document.body.style.overflow = '';
+                }
+
+                if (btn) btn.addEventListener('click', abrirMinka);
+                if (cerrar) cerrar.addEventListener('click', cerrarMinka);
+                if (modal) {
+                    modal.addEventListener('click', function (e) {
+                        if (e.target === modal) cerrarMinka();
+                    });
+                }
+                document.addEventListener('keydown', function (e) {
+                    if (e.key === 'Escape' && modal && modal.classList.contains('show')) cerrarMinka();
+                });
+            });
+        </script>
+        @endif
     </footer>
 
     <script src="{{ asset('js/vendor/modernizr-3.5.0.min.js') }}"></script>

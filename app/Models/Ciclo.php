@@ -36,6 +36,16 @@ class Ciclo extends Model
         return $this->belongsTo(Proyecto::class);
     }
 
+    public function tutores()
+    {
+        return $this->belongsToMany(User::class, 'tutor_ciclos')->withTimestamps();
+    }
+
+    public function incidencias()
+    {
+        return $this->hasMany(Incidencia::class);
+    }
+
     public function estandares()
     {
         return $this->belongsToMany(Estandares::class, 'ciclo_competencia_estandar')

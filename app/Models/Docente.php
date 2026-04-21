@@ -31,4 +31,9 @@ class Docente extends Model
         return $this->belongsToMany(Competencia::class, 'docente_curso_competencia')
             ->where('curso_id', $cursoId);
     }
+
+    public function incidencias()
+    {
+        return $this->hasMany(Incidencia::class);
+    }
 }

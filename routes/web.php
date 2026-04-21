@@ -98,3 +98,7 @@ Route::get('/logout', function () {
 Route::get('/test-419', function () {
     throw new HttpException(419, 'Página expirada');
 });
+
+// Formulario público de incidencias (sin login)
+Route::get('/incidencias', [App\Http\Controllers\IncidenciaController::class, 'publicCreate'])->name('incidencias.public.create');
+Route::post('/incidencias', [App\Http\Controllers\IncidenciaController::class, 'publicStore'])->name('incidencias.public.store');

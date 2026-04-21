@@ -76,3 +76,173 @@
         transform: rotate(360deg);
     }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SIDEBAR — Logo, headings, nav items, toggle, responsive
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Área del logo: anulamos la altura fija de SB-Admin-2 (4.375rem)
+   y dejamos que el logo defina su propio alto con padding controlado */
+.sidebar .sidebar-brand {
+    height: auto !important;
+    padding: 1.25rem .75rem 1rem !important;
+    text-decoration: none;
+}
+
+/* Imagen del logo — tamaño máximo y centrada */
+.sidebar-logo-img {
+    display: block;
+    max-height: 80px;
+    width: auto;
+    max-width: 148px;
+    object-fit: contain;
+    margin: 0 auto;
+    transition: max-height .25s ease, opacity .2s ease;
+}
+
+/* Separador inmediatamente debajo del logo:
+   espacio extra para que el heading no quede pegado */
+hr.sidebar-logo-divider {
+    margin-top: 0 !important;
+    margin-bottom: .6rem !important;
+}
+
+/* Headings de sección (Administración, Bolsa, Tutor…) */
+.sidebar .sidebar-heading {
+    padding: .55rem 1rem .2rem !important;
+    font-size: .62rem !important;
+    font-weight: 800 !important;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, .55) !important;
+    display: flex;
+    align-items: center;
+    gap: .3rem;
+}
+
+/* Nav links: altura cómoda y transición suave */
+.sidebar .nav-item .nav-link {
+    padding: .72rem 1rem !important;
+    font-size: .855rem;
+    transition: background .15s ease, padding-left .15s ease;
+}
+
+.sidebar .nav-item .nav-link:hover {
+    background: rgba(255, 255, 255, .08);
+    padding-left: 1.25rem !important;
+}
+
+/* Dividers internos entre secciones */
+.sidebar .sidebar-divider {
+    border-top: 1px solid rgba(255, 255, 255, .15);
+}
+
+/* Botón de colapso (flecha en el pie del sidebar) */
+#sidebarToggle {
+    width: 2rem;
+    height: 2rem;
+    background: rgba(255, 255, 255, .2);
+    cursor: pointer;
+    transition: background .15s;
+}
+#sidebarToggle:hover {
+    background: rgba(255, 255, 255, .35);
+}
+
+/* ── Sidebar COLAPSADO (desktop: icono-only) ──────────────────────────── */
+body.sidebar-toggled .sidebar .sidebar-logo-img {
+    max-height: 36px !important;
+    max-width: 36px !important;
+}
+
+body.sidebar-toggled .sidebar .sidebar-heading,
+body.sidebar-toggled .sidebar hr.sidebar-logo-divider {
+    display: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TOPBAR
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.topbar {
+    height: 4.375rem;
+}
+
+/* Botón hamburguesa visible solo en móvil */
+#sidebarToggleTop {
+    color: #5a5c69;
+    padding: .4rem .6rem;
+    font-size: 1rem;
+    border-radius: 50%;
+}
+
+#sidebarToggleTop:hover {
+    background: #eaecf4;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESPONSIVE — ajustes específicos por breakpoint
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Móvil (< 768 px) ──────────────────────────────────────────────────── */
+@media (max-width: 767.98px) {
+
+    /* Sidebar oculto en móvil (SB Admin 2 lo maneja con .sidebar-toggled en body) */
+    .sidebar {
+        width: 14rem !important;
+    }
+
+    /* Logo más pequeño en móvil para no ocupar demasiado */
+    .sidebar-logo-img {
+        max-height: 64px;
+        max-width: 120px;
+    }
+
+    /* Topbar: hamburguesa al inicio, nombre a la derecha */
+    .topbar .navbar-nav {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .topbar .topbar-divider {
+        display: none !important;
+    }
+
+    /* Tablas — siempre envueltas en tabla-responsive; por si alguna no lo tiene */
+    .table-responsive {
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Contenido principal: sin margen lateral extra cuando sidebar está cerrado */
+    #content-wrapper {
+        min-width: 0;
+    }
+
+    /* Botones de acción en tablas: no rompan línea */
+    .btn-group-sm > .btn,
+    .btn-sm {
+        white-space: nowrap;
+    }
+}
+
+/* ── Tablet (768 px – 991 px) ──────────────────────────────────────────── */
+@media (min-width: 768px) and (max-width: 991.98px) {
+
+    .sidebar-logo-img {
+        max-height: 70px;
+        max-width: 130px;
+    }
+
+    /* Tarjetas en grid de 2 columnas si están en row */
+    .card-columns {
+        column-count: 2;
+    }
+}
+
+/* ── Desktop grande (>= 1200 px) ───────────────────────────────────────── */
+@media (min-width: 1200px) {
+    .sidebar-logo-img {
+        max-height: 84px;
+        max-width: 158px;
+    }
+}

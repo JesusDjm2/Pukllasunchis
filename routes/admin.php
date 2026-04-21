@@ -58,9 +58,34 @@ Route::get('/inhabilitado', function () {
     return view('admin.inhabilitado');
 })->name('inhabilitado');
 
-Route::get('/tutor/dashboard', [App\Http\Controllers\TutorController::class, 'index'])
-    ->middleware('auth')
-    ->name('tutor.dashboard');
+Route::middleware('auth')->group(function () {
+    Route::get('/admin/tutor/{user}/ciclos',   [AdminController::class, 'tutorCiclosForm'])->name('admin.tutor.ciclos');
+    Route::post('/admin/tutor/{user}/ciclos',  [AdminController::class, 'tutorCiclosUpdate'])->name('admin.tutor.ciclos.update');
+});
+
+Route::middleware('auth')->prefix('admin/minkarikuy')->name('admin.minkarikuy.')->group(function () {
+    Route::get('/',               [App\Http\Controllers\MinkarikuyController::class, 'index'])->name('index');
+    Route::get('/create',         [App\Http\Controllers\MinkarikuyController::class, 'create'])->name('create');
+    Route::post('/',              [App\Http\Controllers\MinkarikuyController::class, 'store'])->name('store');
+    Route::get('/{minkarikuy}/edit',    [App\Http\Controllers\MinkarikuyController::class, 'edit'])->name('edit');
+    Route::put('/{minkarikuy}',         [App\Http\Controllers\MinkarikuyController::class, 'update'])->name('update');
+    Route::delete('/{minkarikuy}',      [App\Http\Controllers\MinkarikuyController::class, 'destroy'])->name('destroy');
+});
+
+Route::middleware('auth')->prefix('tutor')->name('tutor.')->group(function () {
+    Route::get('/dashboard', [App\Http\Controllers\TutorController::class, 'index'])->name('dashboard');
+    Route::get('/ciclo/{ciclo}', [App\Http\Controllers\TutorController::class, 'ciclo'])->name('ciclo');
+});
+
+Route::middleware('auth')->prefix('docente/{docente}/incidencias')->name('docente.incidencias.')->group(function () {
+    Route::get('/',        [App\Http\Controllers\IncidenciaController::class, 'index'])->name('index');
+    Route::get('/create',  [App\Http\Controllers\IncidenciaController::class, 'create'])->name('create');
+    Route::post('/',       [App\Http\Controllers\IncidenciaController::class, 'store'])->name('store');
+});
+
+// AJAX helpers (sin auth: también los usa el formulario público)
+Route::get('/api/ciclos-por-programa/{programa}', [App\Http\Controllers\IncidenciaController::class, 'ciclosPorPrograma'])->name('api.ciclos');
+Route::get('/api/alumnos-por-ciclo/{ciclo}',     [App\Http\Controllers\IncidenciaController::class, 'alumnosPorCiclo'])->name('api.alumnos');
 
 //Programas
 Route::prefix('programas')->middleware(['auth'])->group(function () {

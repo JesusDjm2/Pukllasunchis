@@ -397,6 +397,10 @@
                                             <td>
                                                 <a href="{{ route('adminEdit', ['id' => $admin->id]) }}"
                                                     class="btn btn-info btn-sm" title="Editar"><i class="fa fa-pen"></i></a>
+                                                <a href="{{ route('admin.tutor.ciclos', $admin->id) }}"
+                                                    class="btn btn-success btn-sm" title="Asignar ciclos">
+                                                    <i class="fas fa-layer-group"></i>
+                                                </a>
                                                 <a href="#" class="btn btn-danger btn-sm" data-toggle="modal"
                                                     data-target="#confirmDeleteModal"
                                                     data-href="{{ route('adminDestroy', ['id' => $admin->id]) }}">

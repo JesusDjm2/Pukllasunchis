@@ -204,47 +204,21 @@
                     <!---Contenido solo para estilo a logo--->
                 </div>
             </a>
-            <li class="nav-item mt-3">
-                <a class="nav-link" href="{{ route('index') }}">
-                    <i class="fa fa-sm fa-home"></i> <span>Ir a la web</span>
-                </a>
-            </li>
-            <hr class="sidebar-divider d-none d-md-block">
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#perfil"
-                    aria-expanded="true" aria-controls="perfil">
+
+            <li class="nav-item mt-2">
+                <a class="nav-link" href="{{ route('docente.show', $docente->id) }}">
                     <i class="fas fa-user"></i>
                     <span>Perfil</span>
                 </a>
-                <div id="perfil" class="collapse" aria-labelledby="headingUtilities" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">Perfil Docente</h6>
-                        <a class="collapse-item" href="{{ route('docente.show', $docente->id) }}">Ver mi perfil</a>
-                        <a class="collapse-item" href="{{ route('logout') }}"
-                            onclick="event.preventDefault(); document.getElementById('logout-form-docente').submit();">
-                            <span>Salir del sistema</span>
-                        </a>
-                    </div>
-                </div>
             </li>
-            <hr class="sidebar-divider d-none d-md-block">
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#cursos"
-                    aria-expanded="true" aria-controls="cursos">
+            <li class="nav-item mt-2">
+                <a class="nav-link" href="{{ route('vistaDocente', ['docente' => $docente->id]) }}">
                     <i class="fas fa-book"></i>
                     <span>Cursos</span>
                 </a>
-                <div id="cursos" class="collapse" aria-labelledby="headingUtilities" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">Gestionar Cursos:</h6>
-                        <a class="collapse-item" href="{{ route('vistaDocente', ['docente' => $docente->id]) }}">Ver
-                            mis
-                            cursos</a>
-                    </div>
-                </div>
             </li>
-            <hr class="sidebar-divider d-none d-md-block">
-            <li class="nav-item">
+
+            <li class="nav-item mt-2">
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#alumnos"
                     aria-expanded="true" aria-controls="alumnos">
                     <i class="fas fa-user-graduate"></i>
@@ -262,38 +236,37 @@
                     </div>
                 </div>
             </li>
-            <hr class="sidebar-divider d-none d-md-block">
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities"
-                    aria-expanded="true" aria-controls="collapseUtilities">
-                    <i class="fas fa-pen"></i>
-                    <span>Calificar</span>
+            <li class="nav-item mt-2">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#sIncidencias"
+                    aria-expanded="false" aria-controls="sIncidencias">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>Incidencias</span>
                 </a>
-                <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities"
-                    data-parent="#accordionSidebar">
+                <div id="sIncidencias" class="collapse" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">Calificaciones</h6>
-                        <a class="collapse-item"
-                            href="{{ route('calificar', ['id' => $docente->id]) }}">Calificaciones</a>
+                        <a class="collapse-item" href="{{ route('docente.incidencias.index', $docente->id) }}">
+                            <i class="fas fa-list fa-xs mr-1 text-muted"></i> Mis incidencias
+                        </a>
+                        <a class="collapse-item" href="{{ route('docente.incidencias.create', $docente->id) }}">
+                            <i class="fas fa-plus fa-xs mr-1 text-muted"></i> Nueva incidencia
+                        </a>
                     </div>
                 </div>
             </li>
-            <hr class="sidebar-divider d-none d-md-block">
-            {{-- <li class="nav-item">
-                <a class="nav-link collapsed" href="{{ route('index') }}">
-                    <i class="fas fa-file-pdf"></i>
-                    <span>Repositorio de sílabos</span>
+            {{-- <hr class="sidebar-divider d-none d-md-block"> --}}
+            <li class="nav-item mt-2">
+                <a class="nav-link" href="{{ route('calificar', ['id' => $docente->id]) }}">
+                    <i class="fas fa-pen"></i>
+                    <span>Calificar</span>
                 </a>
-            </li> --}}
-            <li class="nav-item">
+            </li>
+            <li class="nav-item mt-2">
                 <a class="nav-link collapsed" href="{{ route('repositorio', $docente->id) }}">
                     <i class="fas fa-file-pdf"></i>
                     <span>Repositorio de Sílabos</span>
                 </a>
             </li>
-            <!-- Divider -->
-            <hr class="sidebar-divider d-none d-md-block">
-            <li class="nav-item">
+            <li class="nav-item mt-2">
                 <a class="nav-link collapsed" target="_blank"
                     href="https://sites.google.com/pukllavirtual.edu.pe/bibliotecaeesppuklla/inicio">
                     <i class="fas fa-book-open"></i>
@@ -301,42 +274,79 @@
                 </a>
             </li>
 
-            @role('tutor')
-            <!-- Divider -->
+            {{-- ── Bolsa de Trabajo ── --}}
             <hr class="sidebar-divider d-none d-md-block">
-            <div class="sidebar-heading text-white-50 px-3 py-1" style="font-size:0.65rem;letter-spacing:.08em;text-transform:uppercase;">
-                Tutor
+            <div class="sidebar-heading text-white-50 px-3 py-1"
+                 style="font-size:0.65rem;letter-spacing:.08em;text-transform:uppercase;">
+                Bolsa de Trabajo
             </div>
             <li class="nav-item">
-                <a class="nav-link" href="{{ route('tutor.dashboard') }}">
-                    <i class="fas fa-chalkboard-teacher"></i>
-                    <span>Panel de Tutor</span>
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#sBolsaDocente"
+                   aria-expanded="false" aria-controls="sBolsaDocente">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Bolsa de trabajo</span>
+                </a>
+                <div id="sBolsaDocente" class="collapse" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <h6 class="collapse-header">Ofertas y convocatorias:</h6>
+                        <a class="collapse-item" href="{{ route('bolsa-trabajo.ofertas.index') }}">
+                            <i class="fas fa-list fa-xs mr-1 text-muted"></i> Registros y filtros
+                        </a>
+                        <a class="collapse-item" href="{{ route('bolsa') }}" target="_blank" rel="noopener noreferrer">
+                            <i class="fas fa-external-link-alt fa-xs mr-1 text-muted"></i> Ver página pública
+                        </a>
+                    </div>
+                </div>
+            </li>
+
+            @role('tutor')
+                <hr class="sidebar-divider d-none d-md-block">
+                <div class="sidebar-heading text-white-50 px-3 py-1"
+                    style="font-size:0.65rem;letter-spacing:.08em;text-transform:uppercase;">
+                    Tutor
+                </div>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('tutor.dashboard') }}">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                        <span>Panel de Tutor</span>
+                    </a>
+                </li>
+                <hr class="sidebar-divider d-none d-md-block">
+            @endrole
+
+            <li class="nav-item mt-3">
+                <a class="nav-link" href="{{ route('index') }}">
+                    <i class="fa fa-sm fa-home"></i> <span>Ir a la web</span>
                 </a>
             </li>
             <hr class="sidebar-divider d-none d-md-block">
-            @endrole
 
-            <form id="logout-form-docente" action="{{ route('logout') }}" method="POST" class="d-none" aria-hidden="true">
+            <form id="logout-form-docente" action="{{ route('logout') }}" method="POST" class="d-none"
+                aria-hidden="true">
                 @csrf
             </form>
             <div class="text-center d-none d-md-inline">
-                <button class="rounded-circle border-0" id="sidebarToggle" type="button" aria-label="Contraer menú lateral"></button>
+                <button class="rounded-circle border-0" id="sidebarToggle" type="button"
+                    aria-label="Contraer menú lateral"></button>
             </div>
         </ul>
         <div id="content-wrapper" class="d-flex flex-column">
             <div id="content">
-                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-3 mb-md-4 static-top shadow flex-wrap align-items-center py-2">
+                <nav
+                    class="navbar navbar-expand navbar-light bg-white topbar mb-3 mb-md-4 static-top shadow flex-wrap align-items-center py-2">
                     <button id="sidebarToggleTop" type="button" class="btn btn-link d-md-none rounded-circle mr-2"
                         aria-label="Abrir menú">
                         <i class="fa fa-bars"></i>
                     </button>
 
-                    <div class="navbar-nav flex-row flex-wrap flex-grow-1 align-items-center mr-2 docente-topbar-horario">
+                    <div
+                        class="navbar-nav flex-row flex-wrap flex-grow-1 align-items-center mr-2 docente-topbar-horario">
                         @if (isset($periodoActual) && $periodoActual && $periodoActual->horario)
                             <button type="button" class="btn btn-info btn-sm my-1 my-md-0" data-toggle="modal"
                                 data-target="#modalHorario">
                                 <i class="far fa-calendar-alt mr-1"></i>
-                                <span class="d-none d-sm-inline">Ver horario</span><span class="d-sm-none">Horario</span>
+                                <span class="d-none d-sm-inline">Ver horario</span><span
+                                    class="d-sm-none">Horario</span>
                                 <span class="d-none d-md-inline"> — {{ $periodoActual->nombre }}</span>
                             </button>
 
@@ -347,7 +357,8 @@
                                         <div class="modal-header py-2">
                                             <h5 class="modal-title" id="modalHorarioLabel">Horario
                                                 {{ $periodoActual->nombre }}</h5>
-                                            <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                                            <button type="button" class="close" data-dismiss="modal"
+                                                aria-label="Cerrar">
                                                 <span aria-hidden="true">&times;</span>
                                             </button>
                                         </div>
@@ -378,13 +389,14 @@
                     <ul class="navbar-nav ml-auto flex-row align-items-center">
                         <div class="topbar-divider d-none d-sm-block"></div>
                         <li class="nav-item dropdown no-arrow mx-1">
-                            <a class="nav-link dropdown-toggle text-truncate docente-user-name" href="#" id="userDropdown"
-                                role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
-                                style="max-width: 14rem;">
+                            <a class="nav-link dropdown-toggle text-truncate docente-user-name" href="#"
+                                id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true"
+                                aria-expanded="false" style="max-width: 14rem;">
                                 @if (Auth::check() && Auth::user())
                                     <span class="d-none d-sm-inline">{{ Auth::user()->name }}
                                         {{ Auth::user()->apellidos }}</span>
-                                    <span class="d-sm-none"><i class="fas fa-user-circle fa-lg text-gray-600"></i></span>
+                                    <span class="d-sm-none"><i
+                                            class="fas fa-user-circle fa-lg text-gray-600"></i></span>
                                 @endif
                             </a>
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"

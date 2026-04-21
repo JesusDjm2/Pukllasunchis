@@ -22,265 +22,161 @@
         <div id="preloader">
             <div class="loader"></div>
         </div>
-        @role('admin')
-            <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
-                <a class="sidebar-brand d-flex align-items-center justify-content-center mb-3" href="{{ route('index') }}">
-                    <div class="sidebar-brand-icon">
-                        <img class="pt-3" src="{{ asset('admin/img/Logo-Pukllasunchis-blanco.png') }}"
-                            alt="Logo Pukllasunchis" width="100%">
-                    </div>
-                    <div class="sidebar-brand-text mx-3">
-                        <!---Contenido solo para estilo a logo--->
-                    </div>
-                </a>
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities"
-                        aria-expanded="true" aria-controls="collapseUtilities">
-                        <i class="fas fa-book"></i>
-                        <span>Gestión</span>
-                    </a>
-                    <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities"
-                        data-parent="#accordionSidebar">
-                        <div class="bg-white py-2 collapse-inner rounded">
-                            <h6 class="collapse-header">Gestionar programas:</h6>
-                            <a class="collapse-item" href="{{ route('programa.index') }}">Programas</a>
-                            <a class="collapse-item" href="{{ route('ciclo.index') }}">Ciclos</a>
-                            <a class="collapse-item" href="{{ route('curso.index') }}">Cursos</a>
-                            <a class="collapse-item" href="{{ route('competencias.index') }}">Competencias</a>
-                            <a class="collapse-item" href="{{ route('capacidades.index') }}">Capacidades</a>
-                            <a class="collapse-item" href="{{ route('estandares.index') }}">Estándares</a>
-                            <a class="collapse-item" href="{{ route('enfoques.index') }}">Enfoques</a>
-                            <a class="collapse-item" href="{{ route('proyectos.index') }}">Proyectos Integradores</a>
-                            <a class="collapse-item" href="{{ route('periodoactual.index') }}">Periodos</a>
-                        </div>
-                    </div>
-                </li>
-                <hr class="sidebar-divider d-none d-md-block">
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
-                        aria-expanded="true" aria-controls="collapseTwo">
-                        <i class="fas fa-pen"></i>
-                        <span>Perfiles</span>
-                    </a>
-                    <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
-                        <div class="bg-white py-2 collapse-inner rounded">
-                            <h6 class="collapse-header">Gestionar perfiles</h6>
-                            <a class="collapse-item" href="{{ route('admin') }}">Perfiles registrados</a>
-                            <a class="collapse-item" href="{{ route('registerAdmin') }}">Registrar nuevo</a>
-                        </div>
-                    </div>
-                </li>
-                <hr class="sidebar-divider d-none d-md-block">
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseDocentes"
-                        aria-expanded="true" aria-controls="collapseDocentes">
-                        <i class="fas fa-user-tie"></i>
-                        <span>Docentes</span>
-                    </a>
-                    <div id="collapseDocentes" class="collapse" aria-labelledby="headingDocentes"
-                        data-parent="#accordionSidebar">
-                        <div class="bg-white py-2 collapse-inner rounded">
-                            <h6 class="collapse-header">Gestionar Docentes:</h6>
-                            <a class="collapse-item" href="{{ route('docente.index') }}">Lista de Docentes</a>
-                        </div>
-                    </div>
-                </li>
-                <hr class="sidebar-divider d-none d-md-block">
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseAlumnos"
-                        aria-expanded="true" aria-controls="collapseAlumnos">
-                        <i class="fas fa-fw fa-graduation-cap"></i>
-                        <span>Matriculados</span>
-                    </a>
-                    <div id="collapseAlumnos" class="collapse" aria-labelledby="headingAlumnos"
-                        data-parent="#accordionSidebar">
-                        <div class="bg-white py-2 collapse-inner rounded">
-                            <h6 class="collapse-header">Gestionar alumnos:</h6>
-                            <a class="collapse-item" href="{{ route('adminAlumnos') }}">Alumnos FID</a>
-                            <a class="collapse-item" href="{{ route('alumnosppd') }}">Alumnos PPD</a>
-                            <a class="collapse-item" href="{{ route('alumnos.demograficos') }}">Datos demográficos</a>
-                            {{-- <a class="collapse-item" href="{{ route('vistAlumno') }}">Ingresar nuevo</a>
-                             --}}
-                            {{-- <a class="collapse-item" href="">Datos Demográficos</a> --}}
-                            <a class="collapse-item" href="{{ route('filtro') }}">Filtrar por campos</a>
-                        </div>
-                    </div>
-                </li>
+        @hasanyrole('admin|docente|adminB|tutor')
+        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+            {{-- Logo --}}
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{{ route('index') }}">
+                <div class="sidebar-brand-icon">
+                    <img src="{{ asset('admin/img/Logo-Pukllasunchis-blanco.png') }}"
+                        alt="Logo Pukllasunchis" class="sidebar-logo-img">
+                </div>
+            </a>
 
-                <!-- Divider -->
-                <hr class="sidebar-divider d-none d-md-block">
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#fid"
-                        aria-expanded="true" aria-controls="bolsa">
-                        <i class="fas fa-fw fa-users"></i>
-                        <span>Admisión</span>
-                    </a>
-                    <div id="fid" class="collapse" aria-labelledby="headingAlumnos"
-                        data-parent="#accordionSidebar">
-                        <div class="bg-white py-2 collapse-inner rounded">
-                            <h6 class="collapse-header">Gestionar usuarios:</h6>
-                            {{-- <a class="collapse-item" href="{{ route('regulares.index') }}">Postulantes FID</a> --}}
-                            {{--  @if ($admision) --}}
-                            <a class="collapse-item" href="{{ route('regulares.index') }}">Postulantes FID</a>
-                            {{--  @else
-                                <span class="collapse-item text-muted" style="pointer-events: none; opacity: .5;">
-                                    Postulantes FID
-                                </span>
-                            @endif --}}
-                            <a class="collapse-item" href="{{ route('postulantes.ppd.index') }}">
-                                Postulantes PPD
-                            </a>
-                            <a class="collapse-item" href="{{ route('admin-fids.index') }}">Admisiones</a>
-                        </div>
-                    </div>
-                </li>
-                <!-- Divider -->
-                <hr class="sidebar-divider d-none d-md-block">
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseBolsaPublica"
-                        aria-expanded="false" aria-controls="collapseBolsaPublica">
-                        <i class="fas fa-briefcase"></i>
-                        <span>Bolsa de trabajo</span>
-                    </a>
-                    <div id="collapseBolsaPublica" class="collapse" aria-labelledby="headingBolsaPublica"
-                        data-parent="#accordionSidebar">
-                        <div class="bg-white py-2 collapse-inner rounded">
-                            <h6 class="collapse-header">Ofertas públicas</h6>
-                            <a class="collapse-item" href="{{ route('bolsa-trabajo.ofertas.index') }}">Registros y filtros</a>
-                            <a class="collapse-item" href="{{ route('bolsa') }}" target="_blank" rel="noopener noreferrer">Ver
-                                página pública</a>
-                        </div>
-                    </div>
-                </li>
-                <!-- Divider -->
-                <hr class="sidebar-divider d-none d-md-block">
-                <li class="nav-item">
-                    <a class="nav-link collapsed"
-                        href="https://sites.google.com/pukllavirtual.edu.pe/bibliotecaeesppuklla/inicio" target="_blank">
-                        <i class="fas fa-book-open"></i>
-                        <span>Biblioteca</span>
-                    </a>
-                </li>
-                <!-- Divider -->
-                <hr class="sidebar-divider d-none d-md-block">
-                <div class="text-center d-none d-md-inline">
-                    <button class="rounded-circle border-0" id="sidebarToggle"></button>
-                </div>
-            </ul>
-        @endrole
-        @role('docente')
-            <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
-                <a class="sidebar-brand d-flex align-items-center justify-content-center mb-3"
-                    href="{{ route('index') }}">
-                    <div class="sidebar-brand-icon">
-                        <img class="pt-3" src="{{ asset('admin/img/Logo-Pukllasunchis-blanco.png') }}"
-                            alt="Logo Pukllasunchis" width="100%">
-                    </div>
-                    <div class="sidebar-brand-text mx-3">
-                        <!---Contenido solo para estilo a logo--->
-                    </div>
+            {{-- ══════════ SECCIÓN ADMIN ══════════ --}}
+            @role('admin')
+            <hr class="sidebar-divider sidebar-logo-divider">
+            <div class="sidebar-heading" style="font-size:.65rem;letter-spacing:.08em;opacity:.7;">
+                <i class="fas fa-shield-alt fa-xs mr-1"></i> Administración
+            </div>
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#sGestion">
+                    <i class="fas fa-fw fa-book"></i><span>Gestión académica</span>
                 </a>
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities"
-                        aria-expanded="true" aria-controls="collapseUtilities">
-                        <i class="fas fa-book"></i>
-                        <span>Programas</span>
-                    </a>
-                    <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities"
-                        data-parent="#accordionSidebar">
-                        <div class="bg-white py-2 collapse-inner rounded">
-                            <h6 class="collapse-header">Gestionar alumnos:</h6>
-                            <a class="collapse-item" href="{{ route('programa.index') }}">Programas</a>
-                            <a class="collapse-item" href="{{ route('ciclo.index') }}">Ciclos</a>
-                            <a class="collapse-item" href="{{ route('curso.index') }}">Cursos</a>
-                        </div>
+                <div id="sGestion" class="collapse" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <h6 class="collapse-header">Programas y estructura:</h6>
+                        <a class="collapse-item" href="{{ route('programa.index') }}">Programas</a>
+                        <a class="collapse-item" href="{{ route('ciclo.index') }}">Ciclos</a>
+                        <a class="collapse-item" href="{{ route('curso.index') }}">Cursos</a>
+                        <a class="collapse-item" href="{{ route('competencias.index') }}">Competencias</a>
+                        <a class="collapse-item" href="{{ route('capacidades.index') }}">Capacidades</a>
+                        <a class="collapse-item" href="{{ route('estandares.index') }}">Estándares</a>
+                        <a class="collapse-item" href="{{ route('enfoques.index') }}">Enfoques</a>
+                        <a class="collapse-item" href="{{ route('proyectos.index') }}">Proyectos integradores</a>
+                        <a class="collapse-item" href="{{ route('periodoactual.index') }}">Periodos</a>
                     </div>
-                </li>
-                <hr class="sidebar-divider d-none d-md-block">
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
-                        aria-expanded="true" aria-controls="collapseTwo">
-                        <i class="fas fa-pen"></i>
-                        <span>Registrados</span>
-                    </a>
-                    <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
-                        <div class="bg-white py-2 collapse-inner rounded">
-                            <h6 class="collapse-header">Gestionar adminis</h6>
-                            <a class="collapse-item" href="{{ route('admin') }}">Perfiles registrados</a>
-                            <a class="collapse-item" href="{{ route('registerAdmin') }}">Registrar nuevo</a>
-                        </div>
-                    </div>
-                </li>
-                <hr class="sidebar-divider d-none d-md-block">
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseDocentes"
-                        aria-expanded="true" aria-controls="collapseDocentes">
-                        <i class="fas fa-user-tie"></i>
-                        <span>Docentes</span>
-                    </a>
-                    <div id="collapseDocentes" class="collapse" aria-labelledby="headingDocentes"
-                        data-parent="#accordionSidebar">
-                        <div class="bg-white py-2 collapse-inner rounded">
-                            <h6 class="collapse-header">Gestionar Docentes:</h6>
-                            <a class="collapse-item" href="">Cursos</a>
-                            <a class="collapse-item" href="">Actualizar datos</a>
-                        </div>
-                    </div>
-                </li>
-                <hr class="sidebar-divider d-none d-md-block">
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseAlumnos"
-                        aria-expanded="true" aria-controls="collapseAlumnos">
-                        <i class="fas fa-fw fa-graduation-cap"></i>
-                        <span>Matriculados</span>
-                    </a>
-                    <div id="collapseAlumnos" class="collapse" aria-labelledby="headingAlumnos"
-                        data-parent="#accordionSidebar">
-                        <div class="bg-white py-2 collapse-inner rounded">
-                            <h6 class="collapse-header">Gestionar alumnos:</h6>
-                            <a class="collapse-item" href="{{ route('adminAlumnos') }}">Alumnos</a>
-                            <a class="collapse-item" href="{{ route('vistAlumno') }}">Ingresar nuevo</a>
-                            <a class="collapse-item" href="{{ route('filtro') }}">Filtrar por campos</a>
-                        </div>
-                    </div>
-                </li>
-                <!-- Divider -->
-                <hr class="sidebar-divider d-none d-md-block">
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#bolsa"
-                        aria-expanded="true" aria-controls="bolsa">
-                        <i class="fas fa-fw fa-dollar-sign"></i>
-                        <span>Bolsa de trabajo</span>
-                    </a>
-                    <div id="bolsa" class="collapse" aria-labelledby="headingAlumnos"
-                        data-parent="#accordionSidebar">
-                        <div class="bg-white py-2 collapse-inner rounded">
-                            <h6 class="collapse-header">Gestionar usuarios:</h6>
-                            <a class="collapse-item" href="{{ route('listaPostulantes') }}">Registrados</a>
-                            <a class="collapse-item" href="{{ route('trabajo.create') }}">Ingresar nuevo</a>
-                        </div>
-                    </div>
-                </li>
-                <!-- Divider -->
-                <hr class="sidebar-divider d-none d-md-block">
-                <div class="text-center d-none d-md-inline">
-                    <button class="rounded-circle border-0" id="sidebarToggle"></button>
                 </div>
-            </ul>
-        @endrole
+            </li>
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#sPerfiles">
+                    <i class="fas fa-fw fa-users-cog"></i><span>Perfiles</span>
+                </a>
+                <div id="sPerfiles" class="collapse" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <h6 class="collapse-header">Gestionar perfiles:</h6>
+                        <a class="collapse-item" href="{{ route('admin') }}">Perfiles registrados</a>
+                        <a class="collapse-item" href="{{ route('registerAdmin') }}">Registrar nuevo</a>
+                        <a class="collapse-item" href="{{ route('docente.index') }}">Lista de docentes</a>
+                    </div>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#sAlumnos">
+                    <i class="fas fa-fw fa-graduation-cap"></i><span>Matriculados</span>
+                </a>
+                <div id="sAlumnos" class="collapse" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <h6 class="collapse-header">Gestionar alumnos:</h6>
+                        <a class="collapse-item" href="{{ route('adminAlumnos') }}">Alumnos FID</a>
+                        <a class="collapse-item" href="{{ route('alumnosppd') }}">Alumnos PPD</a>
+                        <a class="collapse-item" href="{{ route('alumnos.demograficos') }}">Datos demográficos</a>
+                        <a class="collapse-item" href="{{ route('filtro') }}">Filtrar por campos</a>
+                    </div>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#sAdmision">
+                    <i class="fas fa-fw fa-user-plus"></i><span>Admisión</span>
+                </a>
+                <div id="sAdmision" class="collapse" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <h6 class="collapse-header">Proceso de admisión:</h6>
+                        <a class="collapse-item" href="{{ route('regulares.index') }}">Postulantes FID</a>
+                        <a class="collapse-item" href="{{ route('postulantes.ppd.index') }}">Postulantes PPD</a>
+                        <a class="collapse-item" href="{{ route('admin-fids.index') }}">Admisiones</a>
+                    </div>
+                </div>
+            </li>
+            @endrole
+
+            {{-- ══════════ MINK'ARIKUY (solo admin) ══════════ --}}
+            @role('admin')
+            <hr class="sidebar-divider d-none d-md-block">
+            <div class="sidebar-heading" style="font-size:.65rem;letter-spacing:.08em;opacity:.7;">
+                <i class="fas fa-qrcode fa-xs mr-1"></i> Mink'arikuy
+            </div>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('admin.minkarikuy.index') }}">
+                    <i class="fas fa-fw fa-qrcode"></i><span>Mink'arikuy</span>
+                </a>
+            </li>
+            @endrole
+
+            {{-- ══════════ SECCIÓN BOLSA (admin y/o adminB) ══════════ --}}
+            @hasanyrole('admin|adminB')
+            <hr class="sidebar-divider d-none d-md-block">
+            <div class="sidebar-heading" style="font-size:.65rem;letter-spacing:.08em;opacity:.7;">
+                <i class="fas fa-briefcase fa-xs mr-1"></i> Bolsa de Trabajo
+            </div>
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#sBolsa">
+                    <i class="fas fa-fw fa-briefcase"></i><span>Bolsa de trabajo</span>
+                </a>
+                <div id="sBolsa" class="collapse" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        @role('adminB')
+                        <h6 class="collapse-header">Gestión de bolsa:</h6>
+                        <a class="collapse-item" href="{{ route('trabajo.index') }}">Lista de registros</a>
+                        <a class="collapse-item" href="{{ route('trabajo.create') }}">Registrar nuevo</a>
+                        <a class="collapse-item" href="{{ route('listaPostulantes') }}">Postulantes</a>
+                        @endrole
+                        @role('admin')
+                        <h6 class="collapse-header">Ofertas públicas:</h6>
+                        <a class="collapse-item" href="{{ route('bolsa-trabajo.ofertas.index') }}">Registros y filtros</a>
+                        <a class="collapse-item" href="{{ route('bolsa') }}" target="_blank" rel="noopener noreferrer">Ver página pública</a>
+                        @endrole
+                    </div>
+                </div>
+            </li>
+            @endhasanyrole
+
+            {{-- ══════════ SECCIÓN TUTOR ══════════ --}}
+            @role('tutor')
+            <hr class="sidebar-divider d-none d-md-block">
+            <div class="sidebar-heading" style="font-size:.65rem;letter-spacing:.08em;opacity:.7;">
+                <i class="fas fa-chalkboard-teacher fa-xs mr-1"></i> Tutor
+            </div>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('tutor.dashboard') }}">
+                    <i class="fas fa-fw fa-chalkboard-teacher"></i><span>Panel de Tutor</span>
+                </a>
+            </li>
+            @endrole
+
+            {{-- ══════════ COMUNES ══════════ --}}
+            <hr class="sidebar-divider d-none d-md-block">
+            <li class="nav-item">
+                <a class="nav-link" href="https://sites.google.com/pukllavirtual.edu.pe/bibliotecaeesppuklla/inicio" target="_blank">
+                    <i class="fas fa-fw fa-book-open"></i><span>Biblioteca</span>
+                </a>
+            </li>
+            <hr class="sidebar-divider d-none d-md-block">
+            <div class="text-center d-none d-md-inline">
+                <button class="rounded-circle border-0" id="sidebarToggle"></button>
+            </div>
+        </ul>
+        @endhasanyrole
+
         @role('alumno')
             <ul class="navbar-nav bg-gradient-info sidebar sidebar-dark accordion" id="accordionSidebar">
-                <a class="sidebar-brand d-flex align-items-center justify-content-center mb-3"
+                <a class="sidebar-brand d-flex align-items-center justify-content-center"
                     href="{{ route('index') }}">
                     <div class="sidebar-brand-icon">
-                        <img class="pt-3" src="{{ asset('admin/img/Logo-Pukllasunchis-blanco.png') }}"
-                            alt="Logo Pukllasunchis" width="100%">
-                    </div>
-                    <div class="sidebar-brand-text mx-3">
-                        <!---Contenido solo para estilo a logo--->
+                        <img src="{{ asset('admin/img/Logo-Pukllasunchis-blanco.png') }}"
+                            alt="Logo Pukllasunchis" class="sidebar-logo-img">
                     </div>
                 </a>
-                <hr class="sidebar-divider">
+                <hr class="sidebar-divider sidebar-logo-divider">
                 <div class="sidebar-heading">
                     Dashboard Alumno
                 </div>
@@ -316,16 +212,14 @@
         @endrole
         @role('alumnoB')
             <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
-                <a class="sidebar-brand d-flex align-items-center justify-content-center mb-4"
+                <a class="sidebar-brand d-flex align-items-center justify-content-center"
                     href="{{ route('index') }}">
                     <div class="sidebar-brand-icon">
-                        <img class="pt-4" src="{{ asset('admin/img/Logo-Pukllasunchis-blanco.png') }}"
-                            alt="Logo Pukllasunchis" width="100%">
-                    </div>
-                    <div class="sidebar-brand-text mx-3">
+                        <img src="{{ asset('admin/img/Logo-Pukllasunchis-blanco.png') }}"
+                            alt="Logo Pukllasunchis" class="sidebar-logo-img">
                     </div>
                 </a>
-                <hr class="sidebar-divider d-none d-md-block">
+                <hr class="sidebar-divider sidebar-logo-divider">
                 <li class="nav-item">
                     <a class="nav-link collapsed" href="{{ route('ppd.index') }}">
                         <i class="fas fa-cog"></i>
@@ -368,31 +262,47 @@
         <div id="content-wrapper" class="d-flex flex-column">
             <div id="content">
                 <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
-                    <!-- Sidebar Toggle (Topbar) -->
-                    @role('admin')
-                        <h5 class="font-weight-bold text-primary ml-3">Administrador</h5>
-                    @endrole
-                    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
-                        <i class="fa fa-bars"></i>
+                    {{-- Hamburguesa (móvil) --}}
+                    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-2">
+                        <i class="fa fa-bars fa-fw"></i>
                     </button>
 
-                    <ul class="navbar-nav ml-auto">
+                    {{-- Título de rol (oculto en xs para no reventar el topbar) --}}
+                    @hasanyrole('admin|adminB|tutor')
+                    <span class="font-weight-bold text-primary d-none d-sm-inline ml-1" style="font-size:.9rem;">
+                        @role('admin') Administrador @endrole
+                        @role('adminB') Admin Bolsa @endrole
+                        @role('tutor') Tutor @endrole
+                    </span>
+                    @endhasanyrole
+
+                    {{-- Navegación derecha --}}
+                    <ul class="navbar-nav ml-auto align-items-center">
                         <div class="topbar-divider d-none d-sm-block"></div>
                         <li class="nav-item dropdown no-arrow">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                @if (Auth::check() && Auth::user())
-                                    {{ Auth::user()->name }} {{ Auth::user()->apellidos }}
-                                @endif
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#"
+                               id="userDropdown" role="button"
+                               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-user-circle fa-fw mr-1 text-gray-400 d-sm-none"></i>
+                                <span class="d-none d-sm-inline mr-1" style="font-size:.85rem;">
+                                    @if (Auth::check() && Auth::user())
+                                        {{ Auth::user()->name }} {{ Auth::user()->apellidos }}
+                                    @endif
+                                </span>
                             </a>
-                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                            <div class="dropdown-menu dropdown-menu-right shadow" aria-labelledby="userDropdown">
+                                <div class="dropdown-header d-sm-none text-truncate px-3 py-2" style="font-size:.8rem;">
+                                    @if (Auth::check() && Auth::user())
+                                        {{ Auth::user()->name }} {{ Auth::user()->apellidos }}
+                                    @endif
+                                </div>
+                                <div class="dropdown-divider d-sm-none"></div>
                                 <a class="dropdown-item" href="{{ route('logout') }}"
-                                    onclick="event.preventDefault();
-                                                    document.getElementById('logout-form').submit();">
-                                    {{ __('Logout') }}
+                                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    {{ __('Cerrar sesión') }}
                                 </a>
-                                <form id="logout-form" action="{{ route('logout') }}" method="POST"
-                                    class="d-none">
+                                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
                                     @csrf
                                 </form>
                             </div>

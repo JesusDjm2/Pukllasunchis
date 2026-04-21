@@ -80,4 +80,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(Postulante::class);
     }
+
+    public function tutorCiclos()
+    {
+        return $this->belongsToMany(Ciclo::class, 'tutor_ciclos')->withTimestamps();
+    }
 }

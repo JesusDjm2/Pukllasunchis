@@ -429,4 +429,9 @@ class Alumno extends Model
         return $query->select('habilidades')
             ->whereNotNull('habilidades');
     }
+
+    public function incidencias()
+    {
+        return $this->hasMany(Incidencia::class);
+    }
 }
