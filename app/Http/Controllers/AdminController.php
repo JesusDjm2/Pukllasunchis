@@ -294,6 +294,8 @@ class AdminController extends Controller
             'programa_id' => [\Illuminate\Validation\Rule::requiredIf(fn () => !empty(array_intersect($request->input('roles', []), ['alumno', 'alumnoB']))), 'nullable', 'exists:programas,id'],
             'ciclo_id' => [\Illuminate\Validation\Rule::requiredIf(fn () => !empty(array_intersect($request->input('roles', []), ['alumno', 'alumnoB']))), 'nullable', 'exists:ciclos,id'],
             'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'telefono' => 'nullable|string|max:20',
+            'whatsapp_key' => 'nullable|string|max:20',
         ]);
 
         $user = User::findOrFail($id);
@@ -325,6 +327,14 @@ class AdminController extends Controller
         }
 
         $roles = $request->input('roles', []);
+
+        if (in_array('docente', $roles) || in_array('tutor', $roles)) {
+            $user->telefono = $request->input('telefono');
+        }
+        if (in_array('tutor', $roles)) {
+            $user->whatsapp_key = $request->input('whatsapp_key');
+        }
+
         $user->syncRoles($roles);
 
         if (in_array('docente', $roles)) {
