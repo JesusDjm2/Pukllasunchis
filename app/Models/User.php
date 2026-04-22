@@ -36,6 +36,7 @@ class User extends Authenticatable
         'lengua_2',
         'domicilio',
         'telefono',
+        'whatsapp_key',
         'dni_adjunto',
         'programa_id',  // <-- ASEGÚRATE QUE ESTÉN AQUÍ
         'ciclo_id', 

@@ -26,6 +26,7 @@ class MinkarikuyController extends Controller
             'fecha'  => 'required|date',
             'hora'   => 'required|date_format:H:i',
             'imagen' => 'nullable|image|max:4096',
+            'url'    => 'nullable|url|max:500',
             'activo' => 'nullable|boolean',
         ]);
 
@@ -38,7 +39,6 @@ class MinkarikuyController extends Controller
             $data['imagen'] = $name;
         }
 
-        // Solo uno puede estar activo a la vez
         if ($data['activo']) {
             Minkarikuy::where('activo', true)->update(['activo' => false]);
         }
@@ -61,6 +61,7 @@ class MinkarikuyController extends Controller
             'fecha'  => 'required|date',
             'hora'   => 'required|date_format:H:i',
             'imagen' => 'nullable|image|max:4096',
+            'url'    => 'nullable|url|max:500',
             'activo' => 'nullable|boolean',
         ]);
 

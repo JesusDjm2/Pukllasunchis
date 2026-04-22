@@ -299,6 +299,39 @@
                             </div>
                         </div>
 
+                        {{-- Notificaciones WhatsApp (solo para tutores) --}}
+                        @if ($admin->hasRole('tutor'))
+                        <div class="col-lg-12 mb-3">
+                            <hr>
+                            <h6 class="font-weight-bold text-primary">
+                                <i class="fab fa-whatsapp mr-1"></i> Notificaciones por WhatsApp
+                            </h6>
+                            <div class="row">
+                                <div class="col-lg-4 mb-3">
+                                    <label for="telefono">Teléfono (con código de país, sin +)</label>
+                                    <input type="text" id="telefono" name="telefono"
+                                        class="form-control form-control-sm"
+                                        value="{{ old('telefono', $admin->telefono) }}"
+                                        placeholder="51984529158">
+                                    <small class="text-muted">Ej: 51984529158 (Perú = 51)</small>
+                                </div>
+                                <div class="col-lg-4 mb-3">
+                                    <label for="whatsapp_key">Clave CallMeBot</label>
+                                    <input type="text" id="whatsapp_key" name="whatsapp_key"
+                                        class="form-control form-control-sm"
+                                        value="{{ old('whatsapp_key', $admin->whatsapp_key) }}"
+                                        placeholder="123456">
+                                    <small class="text-muted">
+                                        El tutor activa su clave enviando
+                                        <strong>I allow callmebot to send me messages</strong>
+                                        al número <strong>+34 644 52 74 61</strong> por WhatsApp.
+                                        Recibirá su API key por respuesta.
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+
                         <div class="col-lg-12">
                             <button type="submit" class="btn btn-primary">Actualizar</button>
                         </div>

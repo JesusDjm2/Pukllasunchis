@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\IncidenciaMail;
 use App\Models\Alumno;
 use App\Models\Ciclo;
 use App\Models\Incidencia;
 use App\Models\Programa;
+use App\Services\WhatsappService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 
 class IncidenciaController extends Controller
 {
@@ -57,7 +61,10 @@ class IncidenciaController extends Controller
             $data['imagen'] = $name;
         }
 
-        Incidencia::create($data);
+        $incidencia = Incidencia::create($data);
+        $incidencia->load(['alumno', 'ciclo.programa', 'docente.user']);
+
+        $this->notificarTutores($incidencia);
 
         return redirect()
             ->route('docente.incidencias.index', $docente->id)
@@ -91,10 +98,55 @@ class IncidenciaController extends Controller
             $data['imagen'] = $name;
         }
 
-        Incidencia::create($data);
+        $incidencia = Incidencia::create($data);
+        $incidencia->load(['alumno', 'ciclo.programa', 'docente.user']);
+
+        $this->notificarTutores($incidencia);
 
         return redirect()->route('incidencias.public.create')
             ->with('success', '¡Incidencia enviada correctamente! Será revisada por el tutor del ciclo.');
+    }
+
+    // ── Lógica de notificación ───────────────────────────────────────────────
+
+    private function notificarTutores(Incidencia $incidencia): void
+    {
+        $ciclo = Ciclo::with('tutores')->find($incidencia->ciclo_id);
+
+        if (!$ciclo || $ciclo->tutores->isEmpty()) {
+            return;
+        }
+
+        $alumno   = $incidencia->alumno;
+        $nombreAl = $alumno ? $alumno->apellidos.', '.$alumno->nombres : 'Alumno';
+        $reporter = $incidencia->docente
+            ? ($incidencia->docente->user->apellidos.', '.$incidencia->docente->user->name)
+            : ($incidencia->nombre_docente ?? 'Desconocido');
+
+        $textoWA = "📋 *Nueva incidencia - EESP Pukllasunchis*\n"
+            ."👤 Alumno: {$nombreAl}\n"
+            ."📚 Ciclo: {$ciclo->nombre}\n"
+            ."📅 Fecha: {$incidencia->fecha->format('d/m/Y')}\n"
+            ."✍️ Reportado por: {$reporter}\n"
+            ."📝 Reporte: ".mb_substr($incidencia->reporte, 0, 200)
+            .(mb_strlen($incidencia->reporte) > 200 ? '...' : '');
+
+        foreach ($ciclo->tutores as $tutor) {
+            // Email
+            if ($tutor->email) {
+                try {
+                    Mail::to($tutor->email)->send(new IncidenciaMail($incidencia));
+                } catch (\Throwable $e) {
+                    Log::warning("Email incidencia a tutor {$tutor->id}: ".$e->getMessage());
+                }
+            }
+
+            // WhatsApp (CallMeBot)
+            if ($tutor->telefono && $tutor->whatsapp_key) {
+                $phone = preg_replace('/\D/', '', $tutor->telefono);
+                WhatsappService::send($phone, $tutor->whatsapp_key, $textoWA);
+            }
+        }
     }
 
     // AJAX: ciclos por programa

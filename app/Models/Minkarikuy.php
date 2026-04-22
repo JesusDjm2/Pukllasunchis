@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Minkarikuy extends Model
 {
-    protected $fillable = ['nombre', 'fecha', 'hora', 'imagen', 'activo'];
+    protected $fillable = ['nombre', 'fecha', 'hora', 'imagen', 'url', 'activo'];
 
     protected $casts = [
         'fecha'  => 'date',

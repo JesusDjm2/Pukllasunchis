@@ -50,6 +50,18 @@
                 </div>
 
                 <div class="form-group">
+                    <label for="url">Enlace de redirección</label>
+                    <input type="url" id="url" name="url"
+                        class="form-control @error('url') is-invalid @enderror"
+                        value="{{ old('url') }}"
+                        placeholder="https://ejemplo.com/reunion">
+                    <small class="text-muted">Opcional. URL a donde se redirige al hacer clic en el popup.</small>
+                    @error('url')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="form-group">
                     <label for="imagen">Imagen / QR</label>
                     <input type="file" id="imagen" name="imagen"
                         class="form-control-file @error('imagen') is-invalid @enderror"

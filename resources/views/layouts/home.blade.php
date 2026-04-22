@@ -648,73 +648,7 @@
                 transform: translateY(0);
             }
         </style>
-        <!-- Modal personalizado
-        <div class="custom-modal-overlay" id="customAdmisionesModal">
-            <div class="custom-modal">
-                <div class="custom-modal-header">
-                    <h4 class="custom-modal-title">ADMISIONES EESP PUKLLASUNCHIS 2026</h4>
-                    <button class="custom-modal-close" id="cerrarCustomModal" aria-label="Cerrar">&times;</button>
-                </div>
-                <div class="custom-modal-body">
-                    <div class="fid-container">
-                        <div class="text-center mb-3">
-                            <h3 class="fid-title">Formación Inicial Docente (FID)</h3>
-                        </div>
-
-                        <div class="fid-card">
-                            <div class="fid-card-body">
-                                <h5 class="fid-card-title">
-                                    <i class="fas fa-user-graduate me-2"></i>
-                                    Admisión 2026
-                                </h5>
-                                <p class="fid-text">
-                                    Duración de 5 años con grado de Bachiller y título de Licenciado
-                                </p>
-
-                                <p class="fid-subtitle">
-                                    <strong>Carreras disponibles:</strong>
-                                </p>
-
-                                <div class="fid-carreras">
-                                    <div class="fid-carrera-item">
-                                        <i class="fas fa-child fid-carrera-icon"></i>
-                                        <div class="fid-carrera-nombre">
-                                            <strong>Educación Inicial</strong>
-                                        </div>
-                                    </div>
-                                    <div class="fid-carrera-item">
-                                        <i class="fas fa-hands-helping fid-carrera-icon"></i>
-                                        <div class="fid-carrera-nombre">
-                                            <strong>Educación Primaria Intercultural (EIB)</strong>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="fid-alert">
-                                    <div class="fid-alert-content">
-                                        <i class="fas fa-calendar-check fid-alert-icon"></i>
-                                        <div>
-                                            <span class="fid-alert-text">Inscripciones abiertas hasta el 17 de
-                                                marzo</span><br>
-                                            <span class="fid-alert-text">Examen: 19, 20 y 21 de marzo</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="fid-button-container">
-                            <a href="https://eesppukllasunchis.edu.pe/formulario-de-inscrici%C3%B3n-regular"
-                                target="_blank" class="fid-button">
-                                <i class="fas fa-external-link-alt me-2"></i>
-                                POSTULA AQUÍ
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>-->
-        <!-- Script para el modal personalizado -->
+      
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 const modalKey = 'customModalAdmisionesMostradoFecha';
@@ -818,6 +752,12 @@
                                 style="max-width:100%;max-height:320px;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.4);">
                         @else
                             <p style="color:#acd;">Sin imagen disponible.</p>
+                        @endif
+                        @if ($__minka->url)
+                            <a href="{{ $__minka->url }}" target="_blank" rel="noopener noreferrer"
+                                style="display:inline-block;margin-top:1.2rem;padding:.65rem 1.8rem;background:#fff;color:#1a3a6b;font-weight:700;border-radius:8px;text-decoration:none;font-size:.95rem;box-shadow:0 4px 12px rgba(0,0,0,.25);transition:all .2s;">
+                                <i class="fas fa-external-link-alt" style="margin-right:.4rem;"></i> Ir la enlace
+                            </a>
                         @endif
                     </div>
                 </div>
