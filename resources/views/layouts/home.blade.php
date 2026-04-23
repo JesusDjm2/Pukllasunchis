@@ -97,6 +97,14 @@
                                                     <i class="fa fa-download"></i> Administrador
                                                 </a>
                                             </li>
+                                        @elseif ($user->hasRole('docente'))
+                                            <li><a href="{{ route('vistaDocente', ['docente' => $user->docente->id]) }}">
+                                                    <i class="fa fa-download"></i> Intranet</a>
+                                            </li>
+                                        @elseif ($user->hasRole('tutor'))
+                                            <li><a href="{{ route('tutor.dashboard') }}"> <i class="fa fa-download"></i>
+                                                    Intranet</a>
+                                            </li>
                                         @elseif ($user->hasRole('adminB'))
                                             <li><a href="{{ route('trabajo.index') }}"> <i class="fa fa-download"></i>
                                                     Intranet</a>
@@ -108,10 +116,6 @@
                                         @elseif ($user->hasRole('alumno'))
                                             <li><a href="{{ route('alumnos.index') }}"> <i class="fa fa-download"></i>
                                                     Matrícula</a></li>
-                                        @elseif ($user->hasRole('docente'))
-                                            <li><a href="{{ route('vistaDocente', ['docente' => $user->docente->id]) }}">
-                                                    <i class="fa fa-download"></i> Intranet</a>
-                                            </li>
                                         @else
                                             <li><a href="{{ route('login') }}"> <i class="fa fa-download"></i> Intranet</a>
                                             </li>
@@ -136,9 +140,17 @@
                                                     <i class="fa fa-user"></i> Administrador
                                                 </a>
                                             </li>
+                                        @elseif ($user->hasRole('docente'))
+                                            <li><a href="{{ route('vistaDocente', ['docente' => $user->docente->id]) }}">
+                                                    <i class="fa fa-user"></i> Docente</a>
+                                            </li>
+                                        @elseif ($user->hasRole('tutor'))
+                                            <li><a href="{{ route('tutor.dashboard') }}"> <i class="fa fa-user"></i>
+                                                    Tutor</a>
+                                            </li>
                                         @elseif ($user->hasRole('adminB'))
                                             <li><a href="{{ route('trabajo.index') }}"> <i class="fa fa-user"></i>
-                                                    Matrícula</a>
+                                                    Bolsa</a>
                                             </li>
                                         @elseif ($user->hasRole('alumnoB'))
                                             <li><a href="{{ route('ppd.index') }}"> <i class="fa fa-user"></i>
@@ -147,12 +159,8 @@
                                         @elseif ($user->hasRole('alumno'))
                                             <li><a href="{{ route('alumnos.index') }}"> <i class="fa fa-user"></i>
                                                     Matrícula</a></li>
-                                        @elseif ($user->hasRole('docente'))
-                                            <li><a href="{{ route('vistaDocente', ['docente' => $user->docente->id]) }}">
-                                                    <i class="fa fa-user"></i> Docente</a>
-                                            </li>
                                         @else
-                                            <li><a href="{{ route('login') }}"> <i class="fa fa-user"></i> Matricula</a>
+                                            <li><a href="{{ route('login') }}"> <i class="fa fa-user"></i> Matrícula</a>
                                             </li>
                                         @endif
                                     @else

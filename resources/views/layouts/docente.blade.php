@@ -288,6 +288,19 @@
                 </a>
                 <div id="sBolsaDocente" class="collapse" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
+                        @hasrole('adminB')
+                        <h6 class="collapse-header">Gestión de bolsa:</h6>
+                        <a class="collapse-item" href="{{ route('trabajo.index') }}">
+                            <i class="fas fa-list fa-xs mr-1 text-muted"></i> Lista de registros
+                        </a>
+                        <a class="collapse-item" href="{{ route('trabajo.create') }}">
+                            <i class="fas fa-plus fa-xs mr-1 text-muted"></i> Registrar nuevo
+                        </a>
+                        <a class="collapse-item" href="{{ route('listaPostulantes') }}">
+                            <i class="fas fa-users fa-xs mr-1 text-muted"></i> Postulantes
+                        </a>
+                        <div class="collapse-divider"></div>
+                        @endhasrole
                         <h6 class="collapse-header">Ofertas y convocatorias:</h6>
                         <a class="collapse-item" href="{{ route('bolsa-trabajo.ofertas.index') }}">
                             <i class="fas fa-list fa-xs mr-1 text-muted"></i> Registros y filtros
