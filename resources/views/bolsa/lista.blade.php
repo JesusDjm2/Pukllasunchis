@@ -1,4 +1,12 @@
-@extends('layouts.bolsa')
+@php
+    $__u = auth()->user();
+    $__layout = $__u && $__u->hasRole("admin")
+        ? "layouts.admin"
+        : ($__u && $__u->hasRole("docente")
+            ? "layouts.docente"
+            : "layouts.bolsa");
+@endphp
+@extends($__layout)
 @section('titulo')
     <title>Lista de postulantes registrados</title>
 @endsection

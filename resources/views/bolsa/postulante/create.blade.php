@@ -1,4 +1,12 @@
-@extends('layouts.bolsa')
+@php
+    $__u = auth()->user();
+    $__layout = $__u && $__u->hasRole("admin")
+        ? "layouts.admin"
+        : ($__u && $__u->hasRole("docente")
+            ? "layouts.docente"
+            : "layouts.bolsa");
+@endphp
+@extends($__layout)
 @section('contenido')
     <div class="container-fluid bg-white pt-2">
         <div class="d-sm-flex align-items-center justify-content-between mb-4">

@@ -1,3 +1,4 @@
+@php $docente = $docente ?? auth()->user()?->docente; @endphp
 <!DOCTYPE html>
 <html lang="es">
 
