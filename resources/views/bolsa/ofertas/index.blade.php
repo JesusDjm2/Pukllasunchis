@@ -1,10 +1,10 @@
 @php
     $__u = auth()->user();
-    $__layout = $__u && $__u->hasAnyRole(['admin','adminB'])
-        ? 'layouts.admin'
-        : ($__u && $__u->hasRole('docente') && $docente
-            ? 'layouts.docente'
-            : 'layouts.bolsa');
+    $__layout = $__u && $__u->hasRole("admin")
+        ? "layouts.admin"
+        : ($__u && $__u->hasRole("docente")
+            ? "layouts.docente"
+            : "layouts.bolsa");
 @endphp
 @extends($__layout)
 @section('titulo', 'Ofertas Bolsa de Trabajo')
