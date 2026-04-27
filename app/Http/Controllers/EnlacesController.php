@@ -7,6 +7,7 @@ use App\Models\AdminPpd;
 use App\Models\BolsaTrabajoOferta;
 use App\Models\Postulante;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 
 class EnlacesController extends Controller
 {
@@ -62,7 +63,8 @@ class EnlacesController extends Controller
 
     public function profesionalizacion()
     {
-        $periodoAdmisionActivo = AdminPpd::where('estado', true)->exists();
+        $periodoAdmisionActivo = Schema::hasTable('admin_ppds')
+            && AdminPpd::query()->where('estado', true)->exists();
 
         return view('programas.profesionalizacion-docente', compact('periodoAdmisionActivo'));
     }

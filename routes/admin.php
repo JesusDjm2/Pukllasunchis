@@ -7,7 +7,6 @@ use App\Http\Controllers\AlumnoController;
 use App\Http\Controllers\AlumnoCursoController;
 use App\Http\Controllers\BolsaController;
 use App\Http\Controllers\BolsaTrabajoOfertaController;
-use App\Http\Controllers\BotManController;
 use App\Http\Controllers\CalificacionController;
 use App\Http\Controllers\CapacidadesController;
 use App\Http\Controllers\CicloController;
@@ -59,17 +58,17 @@ Route::get('/inhabilitado', function () {
 })->name('inhabilitado');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/admin/tutor/{user}/ciclos',   [AdminController::class, 'tutorCiclosForm'])->name('admin.tutor.ciclos');
-    Route::post('/admin/tutor/{user}/ciclos',  [AdminController::class, 'tutorCiclosUpdate'])->name('admin.tutor.ciclos.update');
+    Route::get('/admin/tutor/{user}/ciclos', [AdminController::class, 'tutorCiclosForm'])->name('admin.tutor.ciclos');
+    Route::post('/admin/tutor/{user}/ciclos', [AdminController::class, 'tutorCiclosUpdate'])->name('admin.tutor.ciclos.update');
 });
 
 Route::middleware('auth')->prefix('admin/minkarikuy')->name('admin.minkarikuy.')->group(function () {
-    Route::get('/',               [App\Http\Controllers\MinkarikuyController::class, 'index'])->name('index');
-    Route::get('/create',         [App\Http\Controllers\MinkarikuyController::class, 'create'])->name('create');
-    Route::post('/',              [App\Http\Controllers\MinkarikuyController::class, 'store'])->name('store');
-    Route::get('/{minkarikuy}/edit',    [App\Http\Controllers\MinkarikuyController::class, 'edit'])->name('edit');
-    Route::put('/{minkarikuy}',         [App\Http\Controllers\MinkarikuyController::class, 'update'])->name('update');
-    Route::delete('/{minkarikuy}',      [App\Http\Controllers\MinkarikuyController::class, 'destroy'])->name('destroy');
+    Route::get('/', [App\Http\Controllers\MinkarikuyController::class, 'index'])->name('index');
+    Route::get('/create', [App\Http\Controllers\MinkarikuyController::class, 'create'])->name('create');
+    Route::post('/', [App\Http\Controllers\MinkarikuyController::class, 'store'])->name('store');
+    Route::get('/{minkarikuy}/edit', [App\Http\Controllers\MinkarikuyController::class, 'edit'])->name('edit');
+    Route::put('/{minkarikuy}', [App\Http\Controllers\MinkarikuyController::class, 'update'])->name('update');
+    Route::delete('/{minkarikuy}', [App\Http\Controllers\MinkarikuyController::class, 'destroy'])->name('destroy');
 });
 
 Route::middleware('auth')->prefix('tutor')->name('tutor.')->group(function () {
@@ -78,14 +77,14 @@ Route::middleware('auth')->prefix('tutor')->name('tutor.')->group(function () {
 });
 
 Route::middleware('auth')->prefix('docente/{docente}/incidencias')->name('docente.incidencias.')->group(function () {
-    Route::get('/',        [App\Http\Controllers\IncidenciaController::class, 'index'])->name('index');
-    Route::get('/create',  [App\Http\Controllers\IncidenciaController::class, 'create'])->name('create');
-    Route::post('/',       [App\Http\Controllers\IncidenciaController::class, 'store'])->name('store');
+    Route::get('/', [App\Http\Controllers\IncidenciaController::class, 'index'])->name('index');
+    Route::get('/create', [App\Http\Controllers\IncidenciaController::class, 'create'])->name('create');
+    Route::post('/', [App\Http\Controllers\IncidenciaController::class, 'store'])->name('store');
 });
 
 // AJAX helpers (sin auth: también los usa el formulario público)
 Route::get('/api/ciclos-por-programa/{programa}', [App\Http\Controllers\IncidenciaController::class, 'ciclosPorPrograma'])->name('api.ciclos');
-Route::get('/api/alumnos-por-ciclo/{ciclo}',     [App\Http\Controllers\IncidenciaController::class, 'alumnosPorCiclo'])->name('api.alumnos');
+Route::get('/api/alumnos-por-ciclo/{ciclo}', [App\Http\Controllers\IncidenciaController::class, 'alumnosPorCiclo'])->name('api.alumnos');
 
 //Programas
 Route::prefix('programas')->middleware(['auth'])->group(function () {
@@ -311,6 +310,3 @@ Route::get('/postulantes/exportar', [PostulantesRegularController::class, 'expor
 
 /* Route::get('/consulta-dni', [AdminFidController::class, 'consultar']); */
 Route::post('/consulta-dni', [AdminFidController::class, 'consultar'])->name('consulta.dni');
-
-//Botman pruebas:
-Route::post('/botman', [BotManController::class, 'handle']);

@@ -308,6 +308,11 @@
                             <li>Si es que el Tesis no tiene ninguna observación, recibirás en tu correo institucional el URL
                                 de
                                 registro del Tesis en el repositorio institucional</li>
+							<li>
+                                <span class="text-info">
+                                    👉 Este trámite tiene un lapso de duración de 30 días hábiles.
+                                </span>
+                            </li>
                         </ul>
                     </li>
                     <li>Solicitar emisión de diploma de Licenciado previo pago de s/400.00 en las oficinas de <span

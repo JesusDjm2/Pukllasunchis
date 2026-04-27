@@ -2,7 +2,6 @@
 @section('titulo', 'Carnet estudiante — ' . ($alumno->apellidos ?? '') . ', ' . ($alumno->nombres ?? ''))
 @section('contenido')
     <style>
-        /* Guía de perforación: solo al imprimir (no afecta vista previa ni PNG con html2canvas). */
         #carnet .carnet-colgador-guia-print {
             display: none;
         }
@@ -64,7 +63,7 @@
                 btn.innerHTML = '<span class="spinner-border spinner-border-sm mr-1" role="status"></span> Generando…';
 
                 html2canvas(el, {
-                    scale: 2,
+                    scale: 3,
                     useCORS: true,
                     backgroundColor: '#e8dcc8',
                     logging: false

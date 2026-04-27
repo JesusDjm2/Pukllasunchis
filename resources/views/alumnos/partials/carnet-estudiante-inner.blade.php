@@ -20,7 +20,7 @@
                     <div style="background: transparent; padding: 4px 6px; text-align: center; line-height: 0;">
                         @if (!empty($logoSrc))
                             <img src="{{ $logoSrc }}" alt="Logo"
-                                style="max-width: 100%; height: 36px; width: auto; display: inline-block; vertical-align: middle;">
+                                style="max-width: 100%; height: 40px; width: auto; display: inline-block; vertical-align: middle;">
                         @else
                             <span style="font-size: 8px; font-weight: bold; color: #fff;">EESP PUKLLASUNCHIS</span>
                         @endif
@@ -40,15 +40,15 @@
             </tr>
         </table>
         <div style="padding: 0 10px 10px; position: relative; z-index: 2;">
-            <div style="background: #fff; border-radius: 10px; padding: 10px 10px 12px; position: relative;">
+            <div style="background: #fff; border-radius: 10px; padding: 8px 6px 8px; position: relative;">
                 <table role="presentation" cellpadding="0" cellspacing="0"
                     style="width: 100%; border-collapse: collapse;">
                     <tr>
-                        <td style="vertical-align: top; padding-right: 8px; width: 58%;">
+                        <td style="vertical-align: top; padding-right: 6px; width: 60%;">
                             <div style="margin-bottom: 8px;">
                                 <div style="color: #c41e3a; font-size: 8px; font-weight: bold;">Programa</div>
                                 <div
-                                    style="color: #111; font-size: 9px; font-weight: bold; text-transform: uppercase; line-height: 1.2;">
+                                    style="color: #111; font-size: 8px; font-weight: bold; text-transform: uppercase; line-height: 1.2;">
                                     {{ \Illuminate\Support\Str::limit($programaNombre, 48) }}</div>
                             </div>
                             <div style="margin-bottom: 8px;">
@@ -60,15 +60,17 @@
                                 <div style="color: #111; font-size: 11px; font-weight: bold;">{{ $dni }}</div>
                             </div>
                         </td>
-                        <td style="vertical-align: top; width: 42%; text-align: center;">
+                        <td style="vertical-align: top; width: 40%; text-align: center;">
                             <div
-                                style="width: 88px; margin: 0 auto; border-radius: 0px 0px 10px 10px; overflow: hidden; background: #e5e5e5; ">
+                                style="width: 85px; margin: 0 auto; border-radius: 0px 0px 10px 10px; overflow: hidden; background: #e5e5e5; ">
                                 @if (!empty($fotoSrc))
-                                    <img src="{{ $fotoSrc }}" alt="Foto"
-                                        style="display: block; width: 88px; height: 104px; object-fit: cover;">
+                                    <div style="width: 85px; height: 104px; overflow: hidden;">
+                                        <img src="{{ $fotoSrc }}" alt="Foto"
+                                            style="display: block; width: 85px; height: auto; min-height: 104px;">
+                                    </div>
                                 @else
                                     <div
-                                        style="width: 88px; height: 104px; line-height: 104px; text-align: center; font-size: 8px; color: #888; box-sizing: border-box;">
+                                        style="width: 85px; height: 104px; line-height: 104px; text-align: center; font-size: 8px; color: #888; box-sizing: border-box;">
                                         Sin foto</div>
                                 @endif
                             </div>
@@ -79,20 +81,20 @@
         </div>
         <div style="padding: 10px 12px 14px; text-align: center; color: #fff; position: relative; z-index: 2;">
             <div style="margin-bottom: 6px;">
-                <div style="font-size: 9px; opacity: 0.9; color: #ffeb50;">Nombres</div>
-                <div style="font-size: 12px; font-weight: bold; text-transform: uppercase; line-height: 1.15;">
+                <div style="font-size: 9px; opacity: 0.9;">Nombres</div>
+                <div style="font-size: 14px; font-weight: bold; text-transform: uppercase; line-height: 1.15;">
                     {{ $nombres }}
                 </div>
             </div>
             <div style="margin-bottom: 6px;">
-                <div style="font-size: 9px; opacity: 0.9; color: #ffeb50;">Apellido Paterno</div>
-                <div style="font-size: 12px; font-weight: bold; text-transform: uppercase; line-height: 1.15;">
+                <div style="font-size: 9px; opacity: 0.9;">Apellido Paterno</div>
+                <div style="font-size: 14px; font-weight: bold; text-transform: uppercase; line-height: 1.15;">
                     {{ $apellidoPaterno }}
                 </div>
             </div>
             <div>
-                <div style="font-size: 9px; opacity: 0.9; color: #ffeb50;">Apellido Materno</div>
-                <div style="font-size: 12px; font-weight: bold; text-transform: uppercase; line-height: 1.15;">
+                <div style="font-size: 9px; opacity: 0.9; ">Apellido Materno</div>
+                <div style="font-size: 14px; font-weight: bold; text-transform: uppercase; line-height: 1.15;">
                     {{ $apellidoMaterno }}
                 </div>
             </div>

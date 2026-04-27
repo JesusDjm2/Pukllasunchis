@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <dwsync>
-<file name="create.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="133882736427982159" remote="134123854800000000" Dst="0" />
-<file name="edit.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="133997674737026794" remote="133997854800000000" Dst="0" />
-<file name="index.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="134202202367809226" remote="134202404400000000" Dst="0" />
+<file name="create.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="134211713990856855" remote="134212719600000000" Dst="0" />
+<file name="edit.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="134211713808011420" remote="134212719600000000" Dst="0" />
+<file name="index.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="134212534366005620" remote="134212719600000000" Dst="0" />
 <file name="login.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="133892994460657596" remote="134123854800000000" Dst="0" />
 <file name="inhabilitado.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="133687298940000000" remote="134123854800000000" Dst="0" />
-<file name="silabo.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="134049337418411429" remote="134049517800000000" Dst="0" />
+<file name="silabo.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="134049337418411429" remote="134212719600000000" Dst="0" />
+<file name="tutor-ciclos.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="134212534229373483" remote="134212719600000000" Dst="0" />
 </dwsync>

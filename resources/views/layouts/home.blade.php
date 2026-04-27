@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     @yield('metas')
     <meta name="author" content="David Miranda">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -362,8 +363,8 @@
                                             class="fa fa-file-pdf"></i> Repositorio</a></li>
                                 <li><a href="{{ route('bolsa') }}" target="_blank"><i class="fa fa-dollar-sign"></i>
                                         Bolsa de trabajo</a></li>
-                                <li><a href="{{ route('incidencias.public.create') }}" target="_blank"><i class="fas fa-clipboard-list"></i>
-                                        Incidencias</a></li>
+                                {{-- <li><a href="{{ route('incidencias.public.create') }}" target="_blank"><i class="fas fa-clipboard-list"></i>
+                                        Incidencias</a></li> --}}
                                 @php $__minka = \App\Models\Minkarikuy::activo(); @endphp
                                 @if ($__minka)
                                 <li>
@@ -821,6 +822,7 @@
     <script src="{{ asset('js/plugins.js') }}"></script>
     <script src="{{ asset('js/gijgo.min.js') }}"></script>
     <script src="{{ asset('js/main.js') }}"></script>
+    @include('partials.pukllabot-widget')
     <!--contact js-->
     {{-- <script src="{{ asset('js/contact.js') }}"></script>
     <script src="{{ asset('js/jquery.ajaxchimp.min.js') }}"></script>

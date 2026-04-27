@@ -267,7 +267,8 @@
                     realizarás un pago ordinario de la Asociación
                     Pukllasunchis.
                 </li>
-                <li><span class="span">2</span>
+                <li>
+					<span class="span">2</span>
                     Indicar el concepto y código de pago.<a class="text-primary" target="_blank"
                         href="{{ asset('pdf/Conceptos-ordinarios-caja-cusco-2025-2.pdf') }}"> Ver PDF para
                         pagos<small><i class="fa fa-eye"></i></small></a>

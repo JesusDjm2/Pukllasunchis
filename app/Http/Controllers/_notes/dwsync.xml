@@ -3,8 +3,8 @@
 <file name="EnlacesController.php" server="ftp.eesppukllasunchis.edu.pe" local="134208487682765587" remote="134208667800000000" Dst="0" />
 <file name="Controller.php" server="ftp.eesppukllasunchis.edu.pe" local="133524075180000000" remote="134208622800000000" Dst="0" />
 <file name="AlumnoController.php" server="ftp.eesppukllasunchis.edu.pe" local="134208315349177849" remote="134208498600000000" Dst="0" />
-<file name="AdminController.php" server="ftp.eesppukllasunchis.edu.pe" local="134208315588392674" remote="134208498600000000" Dst="0" />
-<file name="CicloController.php" server="ftp.eesppukllasunchis.edu.pe" local="134208278304233952" remote="134208622800000000" Dst="0" />
+<file name="AdminController.php" server="ftp.eesppukllasunchis.edu.pe" local="134212533900495528" remote="134212718400000000" Dst="0" />
+<file name="CicloController.php" server="ftp.eesppukllasunchis.edu.pe" local="134208495283443535" remote="134212718400000000" Dst="0" />
 <file name="CursoController.php" server="ftp.eesppukllasunchis.edu.pe" local="134057991081903196" remote="134123857200000000" Dst="0" />
 <file name="HomeController.php" server="ftp.eesppukllasunchis.edu.pe" local="133584661940000000" remote="134208622800000000" Dst="0" />
 <file name="ProgramaController.php" server="ftp.eesppukllasunchis.edu.pe" local="133589654280000000" remote="134208623400000000" Dst="0" />
@@ -12,7 +12,7 @@
 <file name="BolsaController.php" server="ftp.eesppukllasunchis.edu.pe" local="133619913340000000" remote="134208622800000000" Dst="0" />
 <file name="PostulanteController.php" server="ftp.eesppukllasunchis.edu.pe" local="134006293389680925" remote="134185343400000000" Dst="0" />
 <file name="CompetenciaController.php" server="ftp.eesppukllasunchis.edu.pe" local="133881641353917636" remote="134208622800000000" Dst="0" />
-<file name="DocenteCOntroller.php" server="ftp.eesppukllasunchis.edu.pe" local="134193641647351949" remote="134193823800000000" Dst="0" />
+<file name="DocenteCOntroller.php" server="ftp.eesppukllasunchis.edu.pe" local="134211946887104501" remote="134212718400000000" Dst="0" />
 <file name="CalificacionController.php" server="ftp.eesppukllasunchis.edu.pe" local="134182541843976111" remote="134182736400000000" Dst="0" />
 <file name="PostulantesRegularController.php" server="ftp.eesppukllasunchis.edu.pe" local="134185036139535134" remote="134185343400000000" Dst="0" />
 <file name="CapacidadesController.php" server="ftp.eesppukllasunchis.edu.pe" local="133846301629446701" remote="134208622800000000" Dst="0" />
@@ -31,4 +31,7 @@
 <file name="PeriodoActualPpdController.php" server="ftp.eesppukllasunchis.edu.pe" local="134208222973645597" remote="134208623400000000" Dst="0" />
 <file name="PostulantesPpdController.php" server="ftp.eesppukllasunchis.edu.pe" local="134181552271427601" remote="134185343400000000" Dst="0" />
 <file name="BolsaTrabajoOfertaController.php" server="ftp.eesppukllasunchis.edu.pe" local="134208487699251175" remote="134208667800000000" Dst="0" />
+<file name="IncidenciaController.php" server="ftp.eesppukllasunchis.edu.pe" local="134212686558448770" remote="134212910400000000" Dst="0" />
+<file name="TutorController.php" server="ftp.eesppukllasunchis.edu.pe" local="134212532165069038" remote="134212718400000000" Dst="0" />
+<file name="MinkarikuyController.php" server="ftp.eesppukllasunchis.edu.pe" local="134212748723982427" remote="134212933800000000" Dst="0" />
 </dwsync>

@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php artisan *)",
+      "Bash(xargs grep *)",
+      "Bash(xargs cat *)",
+      "Bash(php -r \"require 'vendor/autoload.php';\")",
+      "Bash(php -l app/Http/Controllers/IncidenciaController.php)",
+      "Bash(php -l app/Http/Controllers/TutorController.php)",
+      "Bash(php -l app/Http/Controllers/AdminController.php)",
+      "Bash(php -l app/Models/Incidencia.php)",
+      "Bash(git -C c:/xampp/htdocs/Puklla2025 diff --name-only)",
+      "Bash(git -C c:/xampp/htdocs/Puklla2025 ls-files --others --exclude-standard)",
+      "Bash(php -l app/Http/Controllers/BolsaTrabajoOfertaController.php)",
+      "Read(//c/Users/Jaime/.claude/projects/c--xampp-htdocs-Puklla2025/memory/**)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)"
+    ]
+  }
+}
