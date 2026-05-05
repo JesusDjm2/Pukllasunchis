@@ -151,57 +151,43 @@
         </div>
     </div>
 
-    <div class="d-flex flex-wrap mensajes">
-        <div class="seccion-left p-5">
-            <div class="text-left">
-                <!-- Contenido de la sección derecha -->
-                <h3>Para Realizar las Prácticas Preprofesionales </h3><br>
-                <ul>
-                    <li><strong> 1.- Llenar el Formato Único de Trámite (FUT):</strong>
-                        <ul style="margin-left:1em">
-                            <li>• Presentar FUT en Secretaría o llenar el formulario.</li>
-                            <li>• Costo: Sin costo.</li>
-                            <li>• Como resultado de este trámite recibirás el oficio de presentación de prácticas y una
-                                carta modelo de Aceptación.</li>
-                            <li class="font-weight-bold">
-                                Nota: Esta carta (modelo) es prueba de que la institución acepta su práctica - entregar en
-                                secretaria
-                            </li>
-                        </ul>
-                    </li><br>
-                    <li><strong>2.- Solicitar la Resolución de Aprobación de Prácticas </strong>
-                        <ul style="margin-left:1em">
-                            <li>• Hacer el pago de s/50.00 por derecho de RD de aprobación de prácticas en Caja Cusco
-                                como pago ordinario.</li>
-                            <li>• Presentar FUT en la Secretaría:
-                                <ul>
-                                    <li>• Adjuntando Carta de aceptación de Practicas</li>
-                                </ul>
-                            </li>
-                        </ul>
-                    </li>
-                </ul>
+    <div class="container-fluid p-0 mensajes">
+        <div class="row no-gutters">
+            <div class="col-12 col-lg-6 d-flex align-items-center"
+                style="min-height: 560px; background-image: linear-gradient(90deg, rgba(49, 84, 152, 1) 0%, rgba(49, 84, 152, 0.92) 34%, rgba(49, 84, 152, 0.62) 56%, rgba(49, 84, 152, 0.24) 74%, rgba(49, 84, 152, 0) 100%), url('{{ asset('img/Pages/Nuevo-FID-2026.jpg') }}'); background-size: cover; background-position: center;">
+                <div class="w-100 p-4 p-md-5 p-lg-5 text-white">
+                    <span class="d-inline-block mb-3 px-3 py-2 rounded-pill"
+                        style="background: #fff;color:#000; border: 1px solid rgba(255,255,255,0.4); font-weight: 600;">FID</span>
+                    <h3 class="text-white mb-3">Formacion Inicial Docente</h3>
+                    <p class="mb-4 text-white" style="max-width: 50%;">
+                        La FID abarca los programas de Educacion Inicial y Educacion Primaria EIB, orientados a la
+                        formacion de docentes con enfoque intercultural, inclusivo y compromiso con la realidad local.
+                    </p>
+                    <div class="d-flex flex-wrap" style="gap: .65rem;">
+                        <a href="{{ route('inicial') }}" class="btn px-4 py-2"
+                            style="background:#ffffff; color:rgb(49, 84, 152); border:1px solid #ffffff; font-weight:600;">Educacion
+                            Inicial</a>
+                        <a href="{{ route('primariaEIB') }}" class="btn text-white px-4 py-2"
+                            style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.85); font-weight:600;">Primaria
+                            EIB</a>
+                    </div>
+                </div>
             </div>
-        </div>
 
-        <div class="seccion-right p-5">
-            <div class="text-left">
-                <!-- Contenido de la sección izquierda -->
-                <h3>Para la Aplicación de Trabajo de Investigación</h3><br>
-                <ul>
-                    <li><strong> 1. Llenar el Formato Único de Trámite (FUT):</strong></li>
-                    <ul style="margin-left:1em">
-                        <li>• Hacer el pago de s/10.00.</li>
-                        <li>• Presentar FUT en Secretaría o llenar el formulario.</li>
-                        <li>• Como resultado de este trámite recibirás la carta de aplicación y una carta modelo de
-                            aceptación del trabajo de investigación. </li>
-                    </ul><br>
-                    <p class="font-weight-bold">Nota: ¿Para qué sirve? La Carta de Aceptación emitida por la institución
-                        les ayudará a
-                        completar su expediente para obtener el grado de Bachiller.</p>
-
-                </ul>
-                <a href="{{ route('tinvestigacion') }}" class="boxed-btn3">Requisitos grado de Bachiller</a>
+            <div class="col-12 col-lg-6 d-flex align-items-center"
+                style="min-height: 560px; background-image: linear-gradient(90deg, rgba(200, 143, 66, 1) 0%, rgba(200, 143, 66, 0.92) 34%, rgba(200, 143, 66, 0.62) 56%, rgba(200, 143, 66, 0.24) 74%, rgba(200, 143, 66, 0) 100%), url('{{ asset('img/Pages/PPD-2026.jpg') }}'); background-size: cover; background-position: center;">
+                <div class="w-100 p-4 p-md-5 p-lg-5 text-white">
+                    <span class="d-inline-block mb-3 px-3 py-2 rounded-pill"
+                        style="background: #fff;color:#000; border: 1px solid rgba(255,255,255,0.4); font-weight: 600;">PPD</span>
+                    <h3 class="text-white mb-3">Programa de Profesionalizacion Docente</h3>
+                    <p class="mb-4 text-white" style="max-width: 50%;">
+                        Programa de 1 año dirigido a docentes con titulo de profesor y egresados de IESP, enfocado en
+                        fortalecer la practica pedagogica y responder a las demandas actuales del sistema educativo.
+                    </p>
+                    <a href="{{ route('profesionalizacion') }}" class="btn px-4 py-2"
+                        style="background:#ffffff; color:rgb(200, 143, 66); border:1px solid #ffffff; font-weight:600;">Conocer
+                        programa PPD</a>
+                </div>
             </div>
         </div>
     </div>
@@ -593,7 +579,8 @@
                         </span>
                         <h2 class="bolsa-registro-title">Bolsa de trabajo</h2>
                         <p class="bolsa-registro-lead text-justify">
-                            ¿Necesitas encontrar a alguien para tu equipo? <strong>Publica tu oferta</strong> aquí y aparecerá en nuestra
+                            ¿Necesitas encontrar a alguien para tu equipo? <strong>Publica tu oferta</strong> aquí y
+                            aparecerá en nuestra
                             bolsa de trabajo, donde muchas personas podrán verla.
                         </p>
                         <div class="bolsa-registro-actions d-flex flex-wrap align-items-center gap-3 mt-4">
@@ -634,7 +621,7 @@
                                             aria-hidden="true"></i></span>
                                     <span>Consulta ofertas filtradas por año y mes.</span>
                                 </li>
-                               {{--  <li>
+                                {{--  <li>
                                     <span class="bolsa-registro-feature-icon"><i class="fa-solid fa-bolt"
                                             aria-hidden="true"></i></span>
                                     <span>Proceso guiado sin salir de esta página.</span>

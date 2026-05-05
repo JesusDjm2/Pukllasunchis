@@ -417,38 +417,76 @@
                         <table class="table table-hover" id="inhabilitado-table" style="display: none">
                             <thead class="thead-dark">
                                 <tr>
-                                    <th>#</th>
                                     <th>Nombre</th>
-                                    <th>Correo</th>
-                                    <th>DNI</th>
+                                    <th>Editar Cursos</th>
+                                    <th>Foto</th>
+                                    <th width="30%">Cursos pendientes</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @php
-                                    $docenteCount = 0;
-                                @endphp
                                 @foreach ($admins as $admin)
                                     @if ($admin->hasRole('inhabilitado'))
-                                        @php
-                                            $docenteCount++;
-                                        @endphp
-                                        <tr>
-                                            <td>{{ $docenteCount }}</td> <!-- Enumerator -->
-                                            <td><strong>{{ $admin->name }} {{ $admin->apellidos }}</strong>
+                                        <tr class="alumno-row {{ $admin->beca == 1 ? 'becado' : '' }}">
+                                            <td>
+                                                <span class="font-weight-bold">{{ $admin->apellidos }},
+                                                    {{ $admin->name }}</span>
                                                 <ul>
-                                                    <li>{{ $admin->ciclo->programa->nombre }} -
-                                                        {{ $admin->ciclo->nombre }}
+                                                    <li>Beca:
+                                                        @if ($admin->beca == 1)
+                                                            Sí
+                                                        @else
+                                                            No
+                                                        @endif
                                                     </li>
+                                                    <li>Correo: {{ $admin->email }}</li>
+                                                    <li>{{ optional($admin->programa)->nombre ?? 'N/A' }} -
+                                                        Ciclo {{ optional($admin->ciclo)->nombre ?? 'N/A' }}</li>
+                                                    <li>DNI: {{ $admin->dni }}</li>
+                                                    <li>
+                                                        Número: {{ $admin->alumno?->numero ?? 'No tiene número asignado' }} |
+                                                        Referencia:
+                                                        {{ $admin->alumno?->numero_referencia ?? 'No tiene referencia' }}
+                                                    </li>
+                                                    <li>ID: {{ $admin->id }}</li>
                                                     <li>Inhabilitado por: {{ $admin->perfil }}</li>
                                                 </ul>
                                             </td>
-                                            <td>{{ $admin->email }}</td>
-                                            <td>{{ $admin->dni }}</td>
+                                            <td>
+                                                <a href="{{ route('asignar.cursos', ['id' => $admin->id]) }}"
+                                                    class="btn btn-primary btn-sm"><i class="fa fa-books"></i> Asignar
+                                                    Cursos</a>
+                                            </td>
+                                            <td>
+                                                @if ($admin->foto)
+                                                    <img src="{{ asset('img/estudiantes/' . $admin->foto) }}"
+                                                        alt="Foto de {{ $admin->nombre }}" loading="lazy" class="img-fluid"
+                                                        style="width: 40px; height: 40px; border-radius: 50%; cursor: pointer;"
+                                                        onclick="openModal('{{ asset('img/estudiantes/' . $admin->foto) }}')"
+                                                        oncontextmenu="return false;">
+                                                @else
+                                                    <span class="text-muted">Sin foto</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @php
+                                                    $cursos = array_map('trim', explode(',', $admin->pendiente ?? ''));
+                                                @endphp
+
+                                                @if (!empty($cursos[0]))
+                                                    <ol class="mb-0" style="padding-left:4px">
+                                                        @foreach ($cursos as $curso)
+                                                            <li>{{ $curso }}</li>
+                                                        @endforeach
+                                                    </ol>
+                                                @else
+                                                    Sin cursos pendientes
+                                                @endif
+                                            </td>
                                             <td>
                                                 <a href="{{ route('adminEdit', ['id' => $admin->id]) }}"
-                                                    class="btn btn-info btn-sm"><i class="fa fa-pen"></i></a>
-                                                <a href="{{ route('adminDestroy', ['id' => $admin->id]) }}"
+                                                    class="btn btn-info btn-sm" title="Editar"><i class="fa fa-pen"></i></a>
+                                                <a onclick="confirmarEliminacion('{{ route('adminDestroy', ['id' => $admin->id]) }}')"
                                                     class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></a>
                                             </td>
                                         </tr>

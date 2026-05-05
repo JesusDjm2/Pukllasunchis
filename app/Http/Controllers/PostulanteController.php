@@ -4,29 +4,38 @@ namespace App\Http\Controllers;
 
 use App\Models\Postulante;
 use App\Models\Programa;
+use App\Support\BolsaTrabajoListado;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class PostulanteController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = auth()->user();
         $alumno = $user->alumno;
-        return view('bolsa.postulante.index', compact('user', 'alumno'));
+
+        return view('bolsa.postulante.index', array_merge(
+            compact('user', 'alumno'),
+            BolsaTrabajoListado::datos($request)
+        ));
     }
+
     public function create()
     {
         $user = auth()->user();
         $programas = Programa::all();
+
         return view('bolsa.postulante.create', compact('user', 'programas'));
     }
+
     public function lista()
     {
         $postulantes = Postulante::all();
         $cantidad = $postulantes->count();
+
         return view('bolsa.lista', compact('postulantes', 'cantidad'));
     }
+
     public function store(Request $request)
     {
         $user = auth()->user();
@@ -35,7 +44,7 @@ class PostulanteController extends Controller
             'nombre' => 'required|string',
             'apellidos' => 'required|string',
             'dni' => 'required|string',
-            /* 'email' => 'required|string|email',  */
+            /* 'email' => 'required|string|email', */
             'email' => [
                 'required',
                 'string',
@@ -61,7 +70,7 @@ class PostulanteController extends Controller
         // Procesar la subida del CV
         if ($request->hasFile('cv')) {
             $cv = $request->file('cv');
-            $rutaCv = public_path("postulantes/cv/");
+            $rutaCv = public_path('postulantes/cv/');
             $nombreCv = $cv->getClientOriginalName();
             $cv->move($rutaCv, $nombreCv);
             $cvPath = "postulantes/cv/$nombreCv";
@@ -70,12 +79,11 @@ class PostulanteController extends Controller
         // Procesar la subida de la imagen
         if ($request->hasFile('img')) {
             $img = $request->file('img');
-            $rutaImg = public_path("img/postulantes/");
+            $rutaImg = public_path('img/postulantes/');
             $nombreImg = $img->getClientOriginalName();
             $img->move($rutaImg, $nombreImg);
             $imgPath = "img/postulantes/$nombreImg";
         }
-
 
         $postulante = new Postulante([
             'nombre' => $validatedData['nombre'],
@@ -104,17 +112,21 @@ class PostulanteController extends Controller
         return redirect()->route('postulante.index', $postulante->id)
             ->with('success', '¡Postulante registrado correctamente!');
     }
+
     public function show(Postulante $postulante)
     {
         return view('bolsa.postulante.show', compact('postulante'));
     }
+
     public function edit($id)
     {
         $user = auth()->user();
         $postulante = Postulante::findOrFail($id);
         $programas = Programa::all();
+
         return view('bolsa.postulante.edit', compact('postulante', 'programas', 'user'));
     }
+
     public function update(Request $request, $id)
     {
         $user = auth()->user();
@@ -172,7 +184,7 @@ class PostulanteController extends Controller
                 }
             }
             $cv = $request->file('cv');
-            $rutaCv = public_path("postulantes/cv/");
+            $rutaCv = public_path('postulantes/cv/');
             $nombreCv = $cv->getClientOriginalName();
             $cv->move($rutaCv, $nombreCv);
             $postulante->cv = "postulantes/cv/$nombreCv";
@@ -187,12 +199,11 @@ class PostulanteController extends Controller
                 }
             }
             $img = $request->file('img');
-            $rutaImg = public_path("img/postulantes/");
+            $rutaImg = public_path('img/postulantes/');
             $nombreImg = $img->getClientOriginalName();
             $img->move($rutaImg, $nombreImg);
             $postulante->img = "img/postulantes/$nombreImg";
         }
-
 
         // Guardar los cambios en el postulante
         $postulante->save();

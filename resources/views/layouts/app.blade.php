@@ -85,7 +85,9 @@
     <script src="{{ asset('admin/js/demo/chart-area-demo.js') }}"></script>
     <script src="{{ asset('admin/js/demo/chart-pie-demo.js') }}"></script>
     <script src="{{ asset('admin/js/djm.js') }}"></script>
-    @include('partials.pukllabot-widget')
+    @unless(app()->environment('production'))
+        @include('partials.pukllabot-widget')
+    @endunless
     @stack('scripts')
 </body>
 

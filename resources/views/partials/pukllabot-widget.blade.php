@@ -97,6 +97,7 @@
     #pukllabot-root .pukllabot-msg--md strong{color:#1e3a5f}
     #pukllabot-root .pukllabot-msg--md a{color:#2E5397;text-decoration:underline;word-break:break-word}
     #pukllabot-root .pukllabot-msg--err{white-space:pre-wrap;background:#fff3f0;border-left:3px solid #c00;color:#500}
+    #pukllabot-root .pukllabot-msg--err .pukllabot-msg__wa{color:#2E5397;font-weight:600;text-decoration:underline}
     #pukllabot-root .pukllabot-panel__form{display:flex;align-items:stretch;gap:.4rem;padding:.5rem;border-top:1px solid #e8e0d8;flex-shrink:0;margin:0}
     #pukllabot-root .pukllabot-panel__input{flex:1;min-width:0;border:1px solid #ccc;border-radius:6px;padding:.45rem .55rem;font-size:.9rem;background:#fff;color:#1F1F1F;}
     #pukllabot-root .pukllabot-panel__send{flex:0 0 auto;background:#2E5397;color:#fff;border:0;border-radius:6px;padding:0 .75rem;cursor:pointer;font-size:.88rem;white-space:nowrap}
@@ -140,6 +141,25 @@
                 d.innerHTML = window.DOMPurify.sanitize(raw, { USE_PROFILES: { html: true } });
                 d.classList.add('pukllabot-msg--md');
             } catch (e) {
+                d.textContent = text;
+            }
+        } else if (isErr && typeof text === 'string') {
+            const waRe = /(https:\/\/wa\.me\/[0-9]+)/;
+            if (waRe.test(text)) {
+                text.split(waRe).forEach(function (part, i) {
+                    if (i % 2 === 0) {
+                        if (part) d.appendChild(document.createTextNode(part));
+                    } else {
+                        const a = document.createElement('a');
+                        a.href = part;
+                        a.target = '_blank';
+                        a.rel = 'noopener noreferrer';
+                        a.textContent = 'Abrir WhatsApp';
+                        a.className = 'pukllabot-msg__wa';
+                        d.appendChild(a);
+                    }
+                });
+            } else {
                 d.textContent = text;
             }
         } else {

@@ -3,6 +3,7 @@
 <file name="api.php" server="ftp.eesppukllasunchis.edu.pe" local="134063143653129448" remote="134185344000000000" Dst="0" />
 <file name="channels.php" server="ftp.eesppukllasunchis.edu.pe" local="133488496460000000" remote="134185344000000000" Dst="0" />
 <file name="console.php" server="ftp.eesppukllasunchis.edu.pe" local="133488496460000000" remote="134185344000000000" Dst="0" />
-<file name="web.php" server="ftp.eesppukllasunchis.edu.pe" local="134212686658852729" remote="134212910400000000" Dst="0" />
-<file name="admin.php" server="ftp.eesppukllasunchis.edu.pe" local="134212735146239378" remote="134212934400000000" Dst="0" />
+<file name="web.php" server="ftp.eesppukllasunchis.edu.pe" local="134220567709359800" remote="134224055400000000" Dst="0" />
+<file name="admin.php" server="ftp.eesppukllasunchis.edu.pe" local="134223897369597078" remote="134224081800000000" Dst="0" />
+<file name="pukllabot.php" server="ftp.eesppukllasunchis.edu.pe" local="134217769702531430" remote="134219058600000000" Dst="0" />
 </dwsync>

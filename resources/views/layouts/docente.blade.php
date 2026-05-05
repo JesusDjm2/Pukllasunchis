@@ -1,4 +1,13 @@
-@php $docente = $docente ?? auth()->user()?->docente; @endphp
+@php
+    $docente = $docente ?? auth()->user()?->docente;
+    $cursosDocente = $docente?->cursos ?? collect();
+    $mostrarAlumnosFid = $cursosDocente->contains(function ($curso) {
+        return !str_contains(strtoupper(optional(optional($curso)->ciclo?->programa)->nombre ?? ''), 'PPD');
+    });
+    $mostrarAlumnosPpd = $cursosDocente->contains(function ($curso) {
+        return str_contains(strtoupper(optional(optional($curso)->ciclo?->programa)->nombre ?? ''), 'PPD');
+    });
+@endphp
 <!DOCTYPE html>
 <html lang="es">
 
@@ -221,19 +230,23 @@
 
             <li class="nav-item mt-2">
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#alumnos"
-                    aria-expanded="true" aria-controls="alumnos">
+                    aria-expanded="false" aria-controls="alumnos">
                     <i class="fas fa-user-graduate"></i>
                     <span>Alumnos</span>
                 </a>
                 <div id="alumnos" class="collapse" aria-labelledby="headingUtilities" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">Ver alumnos</h6>
-                        <a class="collapse-item" href="{{ route('vistaAlumnos', ['docente' => $docente->id]) }}">
-                            Alumnos FID
-                        </a>
-                        <a class="collapse-item" href="{{ route('alumnosppd2', $docente->id) }}">
-                            Alumnos PPD
-                        </a>
+                        @if ($mostrarAlumnosFid)
+                            <a class="collapse-item" href="{{ route('vistaAlumnos', ['docente' => $docente->id]) }}">
+                                Alumnos FID
+                            </a>
+                        @endif
+                        @if ($mostrarAlumnosPpd)
+                            <a class="collapse-item" href="{{ route('alumnosppd2', $docente->id) }}">
+                                Alumnos PPD
+                            </a>
+                        @endif
                     </div>
                 </div>
             </li>
@@ -275,30 +288,32 @@
                 </a>
             </li>
 
-            {{-- ── Bolsa de Trabajo ── --}}
-            <hr class="sidebar-divider d-none d-md-block">
-            <div class="sidebar-heading text-white-50 px-3 py-1"
-                 style="font-size:0.65rem;letter-spacing:.08em;text-transform:uppercase;">
-                Bolsa de Trabajo
-            </div>
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#sBolsaDocente"
-                   aria-expanded="false" aria-controls="sBolsaDocente">
-                    <i class="fas fa-briefcase"></i>
-                    <span>Bolsa de trabajo</span>
-                </a>
-                <div id="sBolsaDocente" class="collapse" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">                        
-                        <h6 class="collapse-header">Ofertas y convocatorias:</h6>
-                        <a class="collapse-item" href="{{ route('bolsa-trabajo.ofertas.index') }}">
-                            <i class="fas fa-list fa-xs mr-1 text-muted"></i> Registros y filtros
-                        </a>
-                        <a class="collapse-item" href="{{ route('bolsa') }}" target="_blank" rel="noopener noreferrer">
-                            <i class="fas fa-external-link-alt fa-xs mr-1 text-muted"></i> Ver página pública
-                        </a>
-                    </div>
+            @role('adminB')
+                {{-- ── Bolsa de Trabajo ── --}}
+                <hr class="sidebar-divider d-none d-md-block">
+                <div class="sidebar-heading text-white-50 px-3 py-1"
+                    style="font-size:0.65rem;letter-spacing:.08em;text-transform:uppercase;">
+                    Bolsa de Trabajo
                 </div>
-            </li>
+                <li class="nav-item">
+                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#sBolsaDocente"
+                        aria-expanded="false" aria-controls="sBolsaDocente">
+                        <i class="fas fa-briefcase"></i>
+                        <span>Bolsa de trabajo</span>
+                    </a>
+                    <div id="sBolsaDocente" class="collapse" data-parent="#accordionSidebar">
+                        <div class="bg-white py-2 collapse-inner rounded">
+                            <h6 class="collapse-header">Ofertas y convocatorias:</h6>
+                            <a class="collapse-item" href="{{ route('bolsa-trabajo.ofertas.index') }}">
+                                <i class="fas fa-list fa-xs mr-1 text-muted"></i> Registros y filtros
+                            </a>
+                            <a class="collapse-item" href="{{ route('bolsa') }}" target="_blank" rel="noopener noreferrer">
+                                <i class="fas fa-external-link-alt fa-xs mr-1 text-muted"></i> Ver página pública
+                            </a>
+                        </div>
+                    </div>
+                </li>
+            @endrole
 
             @role('tutor')
                 <hr class="sidebar-divider d-none d-md-block">

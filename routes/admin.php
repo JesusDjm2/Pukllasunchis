@@ -10,6 +10,7 @@ use App\Http\Controllers\BolsaTrabajoOfertaController;
 use App\Http\Controllers\CalificacionController;
 use App\Http\Controllers\CapacidadesController;
 use App\Http\Controllers\CicloController;
+use App\Http\Controllers\ComunicadoController;
 use App\Http\Controllers\CompetenciaController;
 use App\Http\Controllers\CursoController;
 use App\Http\Controllers\DocenteCOntroller;
@@ -51,6 +52,7 @@ Route::get('/admin/alumnos/{alumno}/carnet', [AdminController::class, 'alumnoCar
     ->name('admin.alumnos.carnet');
 Route::get('/admin/alumnos/demograficos', [AlumnoController::class, 'estadisticas'])->name('alumnos.demograficos');
 Route::get('/admin/alumnosPPD', [AdminController::class, 'alumnosppd'])->name('alumnosppd');
+Route::post('/admin/alumnosPPD/exportar-excel', [AdminController::class, 'exportAlumnosPpdExcel'])->name('admin.alumnosppd.export-excel');
 Route::post('/relacionar-usuario/{alumno}', [AdminController::class, 'relacionarUsuario'])->name('relacionarUsuario');
 Route::post('/asignar-rol-alumno/{alumno}', [AdminController::class, 'asignarRolAlumno'])->name('asignarRolAlumno');
 Route::get('/inhabilitado', function () {
@@ -60,6 +62,14 @@ Route::get('/inhabilitado', function () {
 Route::middleware('auth')->group(function () {
     Route::get('/admin/tutor/{user}/ciclos', [AdminController::class, 'tutorCiclosForm'])->name('admin.tutor.ciclos');
     Route::post('/admin/tutor/{user}/ciclos', [AdminController::class, 'tutorCiclosUpdate'])->name('admin.tutor.ciclos.update');
+});
+
+Route::middleware('auth')->prefix('admin/comunicados')->name('admin.comunicados.')->group(function () {
+    Route::get('/', [ComunicadoController::class, 'index'])->name('index');
+    Route::post('/', [ComunicadoController::class, 'store'])->name('store');
+    Route::get('/{comunicado}/edit', [ComunicadoController::class, 'edit'])->name('edit');
+    Route::put('/{comunicado}', [ComunicadoController::class, 'update'])->name('update');
+    Route::delete('/{comunicado}', [ComunicadoController::class, 'destroy'])->name('destroy');
 });
 
 Route::middleware('auth')->prefix('admin/minkarikuy')->name('admin.minkarikuy.')->group(function () {
@@ -265,6 +275,8 @@ Route::post('/guardar-ingresantes', [PostulantesRegularController::class, 'guard
 //Postulantes PPD
 Route::resource('periodos-de-ppd', PeriodoActualPpdController::class)->names('periodos.admin.ppd');
 Route::get('admin/periodos/ppd/{id}/export', [PeriodoActualPpdController::class, 'export'])->name('periodos.admin.ppd.export');
+Route::patch('admin/periodo-ppd-registro/{registro}', [PeriodoActualPpdController::class, 'updateRegistro'])->name('periodos.admin.ppd.registro.update');
+Route::post('admin/periodo-ppd-registro', [PeriodoActualPpdController::class, 'storeRegistro'])->name('periodos.admin.ppd.registro.store');
 
 //Prueba de rutas para guardarperiodos :
 Route::post('periodos-admision-ppd/{id}/crear-calificaciones', [PeriodoActualPpdController::class, 'crearCalificaciones'])->name('periodos.admin.ppd.crearCalificaciones');

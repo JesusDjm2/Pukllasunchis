@@ -1,7 +1,5 @@
 @extends('layouts.admin')
 @section('contenido')
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
-        crossorigin="anonymous">
     <style>
         #tablaCalificaciones thead th {
             position: sticky;
@@ -43,11 +41,19 @@
             margin-bottom: 15px;
             border-radius: 4px;
         }
+
+        .btn-editar-registro {
+            opacity: 0.55;
+            transition: opacity .15s;
+        }
+        .btn-editar-registro:hover {
+            opacity: 1;
+        }
     </style>
     <div class="container-fluid bg-white pt-3">
         <!-- Header -->
-        <div class="d-sm-flex align-items-center justify-content-between mb-4">
-            <h4 class="mb-3 text-primary font-weight-bold">
+        <div class="d-sm-flex align-items-center justify-content-between mb-3">
+            <h4 class="mb-0 text-primary font-weight-bold">
                 <i class="fas fa-calendar-alt text-info"></i> Período PPD: {{ $periodo->nombre }}
                 @if ($periodo->actual)
                     <span class="badge badge-success ml-2">ACTUAL</span>
@@ -62,7 +68,24 @@
                 </a>
             </div>
         </div>
-        <!-- Información del período -->
+
+        {{-- Alerta de precaución --}}
+        {{-- <div class="alert border-0 mb-4" role="alert"
+            style="background: #fff3cd; border-left: 5px solid #e0a800 !important; border-radius: 6px;">
+            <div class="d-flex align-items-start">
+                <span style="font-size: 1.4rem; line-height: 1; margin-right: 10px;">⚠️</span>
+                <div>
+                    <strong style="color: #856404; font-size: 0.92rem;">Registros sensibles — edite con precaución</strong>
+                    <p class="mb-0 mt-1" style="color: #856404; font-size: 0.85rem;">
+                        Las calificaciones de este período están vinculadas a los alumnos PPD.
+                        Modificarlas manualmente puede generar <strong>inconsistencias con el sistema de notas</strong>.
+                        Use el botón <i class="fa fa-edit fa-xs"></i> solo cuando sea estrictamente necesario.
+                    </p>
+                </div>
+            </div>
+        </div> --}}
+
+        <!-- Estadísticas -->
         <div class="row mb-4">
             <div class="col-md-3">
                 <div class="card border-left-primary shadow h-100">
@@ -111,7 +134,7 @@
             <div class="programa-header" id="programa-{{ Str::slug($programaNombre) }}">
                 <h5 class="font-weight-bold mb-0">
                     <i class="fas fa-graduation-cap text-info"></i> PROGRAMA: {{ $programaNombre }}
-                    <spmall class="badge badge-info">{{ count($alumnosDelPrograma) }} alumnos</small>
+                    <small class="badge badge-info">{{ count($alumnosDelPrograma) }} alumnos</small>
                 </h5>
             </div>
 
@@ -119,63 +142,46 @@
                 <table class="table table-bordered table-hover" id="tablaCalificaciones">
                     <thead class="table-dark">
                         <tr>
-                            <th style="width: 50px;">#</th>
+                            <th style="width: 40px;">#</th>
                             <th>Alumno</th>
                             <th>Curso</th>
                             <th>Ciclo</th>
-                            <th style="text-align: center">Calificación Curso</th>
-                            <th style="text-align: center">Calificación Sistema</th>
-                            <th style="text-align: center">Nivel Desempeño</th>
+                            <th style="text-align: center; width: 120px;">Cal. Curso</th>
+                            <th style="text-align: center; width: 120px;">Cal. Sistema</th>
+                            <th style="text-align: center; width: 110px;">Nv. Desempeño</th>
+                            <th style="text-align: center; width: 60px;"></th>
                         </tr>
                     </thead>
                     <tbody>
-                        @php
-                            $contadorPrograma = 1;
-                        @endphp
+                        @php $contadorPrograma = 1; @endphp
 
                         @foreach ($alumnosDelPrograma as $alumnoData)
                             @php
-                                $alumno = $alumnoData['alumno'];
-                                $cursos = collect($alumnoData['cursos']);
+                                $alumno  = $alumnoData['alumno'];
+                                $cursos  = collect($alumnoData['cursos']);
                                 $rowspan = $cursos->count();
-
-                                // Texto para búsqueda del alumno
-                                $alumnoSearch = strtolower(
-                                    trim(
-                                        ($alumno->apellidos ?? '') .
-                                            ' ' .
-                                            ($alumno->nombres ?? ($alumno->name ?? '')) .
-                                            ' ' .
-                                            ($alumno->email ?? '') .
-                                            ' ' .
-                                            ($alumno->dni ?? ''),
-                                    ),
-                                );
+                                $alumnoSearch = strtolower(trim(
+                                    ($alumno->apellidos ?? '') . ' ' .
+                                    ($alumno->nombres ?? ($alumno->name ?? '')) . ' ' .
+                                    ($alumno->email ?? '') . ' ' .
+                                    ($alumno->dni ?? '')
+                                ));
                             @endphp
 
                             @foreach ($cursos as $i => $cursoData)
                                 @php
-                                    $curso = $cursoData['curso'];
-                                    $registro = $cursoData['registro'];
+                                    $curso      = $cursoData['curso'];
+                                    $registro   = $cursoData['registro'];
                                     $cursoNombre = $curso ? $curso->nombre : 'Sin curso';
                                     $cicloNombre = $curso && $curso->ciclo ? $curso->ciclo->nombre : 'No asignado';
-
-                                    // Texto completo para búsqueda (incluye curso y ciclo)
-                                    $filaSearch = strtolower(
-                                        trim(
-                                            $alumnoSearch .
-                                                ' ' .
-                                                $cursoNombre .
-                                                ' ' .
-                                                $cicloNombre .
-                                                ' ' .
-                                                $programaNombre,
-                                        ),
-                                    );
+                                    $filaSearch  = strtolower(trim(
+                                        $alumnoSearch . ' ' . $cursoNombre . ' ' . $cicloNombre . ' ' . $programaNombre
+                                    ));
                                 @endphp
 
                                 <tr data-group="{{ $programaNombre }}-{{ $alumno->id }}"
                                     data-search="{{ $filaSearch }}"
+                                    data-registro-id="{{ $registro?->id ?? '' }}"
                                     @if ($i === $rowspan - 1) style="border-bottom: 2px solid #dee2e6;" @endif>
 
                                     @if ($i === 0)
@@ -194,33 +200,62 @@
                                     <td>{{ $cursoNombre }}</td>
                                     <td>{{ $cicloNombre }}</td>
 
-                                    <td style="text-align: center;">
-                                        @if ($registro && $registro->calificacion_curso)
-                                            <span>
-                                                {{ $registro->calificacion_curso }}
-                                            </span>
+                                    <td style="text-align: center;" class="celda-cal-curso">
+                                        @if ($registro && $registro->calificacion_curso !== null)
+                                            <span>{{ $registro->calificacion_curso }}</span>
                                         @else
                                             <span class="text-muted">N/A</span>
                                         @endif
                                     </td>
 
-                                    <td style="text-align: center;">
-                                        @if ($registro && $registro->calificacion_sistema)
-                                            <span>
-                                                {{ $registro->calificacion_sistema }}
-                                            </span>
+                                    <td style="text-align: center;" class="celda-cal-sistema">
+                                        @if ($registro && $registro->calificacion_sistema !== null)
+                                            <span>{{ $registro->calificacion_sistema }}</span>
                                         @else
                                             <span class="text-muted">Sin datos</span>
                                         @endif
                                     </td>
 
-                                    <td style="text-align: center;">
-                                        @if ($registro && $registro->nivel_desempeno)
-                                            <span>
-                                                {{ $registro->nivel_desempeno }}
-                                            </span>
+                                    <td style="text-align: center;" class="celda-nivel">
+                                        @if ($registro && $registro->nivel_desempeno !== null)
+                                            <span>{{ $registro->nivel_desempeno }}</span>
                                         @else
                                             <span class="text-muted">N/A</span>
+                                        @endif
+                                    </td>
+
+                                    <td style="text-align: center;">
+                                        @if ($registro)
+                                            <button type="button"
+                                                class="btn btn-sm btn-outline-warning btn-editar-registro"
+                                                title="Editar calificación"
+                                                onclick="abrirModalEditar(
+                                                    {{ $registro->id }},
+                                                    '{{ addslashes($alumno->apellidos ?? '') }}, {{ addslashes($alumno->nombres ?? ($alumno->name ?? '')) }}',
+                                                    '{{ addslashes($cursoNombre) }}',
+                                                    {{ $registro->calificacion_curso ?? 'null' }},
+                                                    {{ $registro->calificacion_sistema ?? 'null' }},
+                                                    {{ $registro->nivel_desempeno ?? 'null' }},
+                                                    this, null, null, null
+                                                )">
+                                                <i class="fa fa-edit fa-xs"></i>
+                                            </button>
+                                        @else
+                                            <button type="button"
+                                                class="btn btn-sm btn-outline-secondary btn-editar-registro"
+                                                title="Agregar calificación"
+                                                onclick="abrirModalEditar(
+                                                    null,
+                                                    '{{ addslashes($alumno->apellidos ?? '') }}, {{ addslashes($alumno->nombres ?? ($alumno->name ?? '')) }}',
+                                                    '{{ addslashes($cursoNombre) }}',
+                                                    null, null, null,
+                                                    this,
+                                                    {{ $alumno->id }},
+                                                    {{ $curso ? $curso->id : 'null' }},
+                                                    {{ $periodo->id }}
+                                                )">
+                                                <i class="fa fa-plus fa-xs"></i>
+                                            </button>
                                         @endif
                                     </td>
                                 </tr>
@@ -238,29 +273,172 @@
         @endif
     </div>
 
-    {{-- JS: filtro por grupo (alumno) en tiempo real --}}
+    {{-- Modal de edición de calificación --}}
+    <div class="modal fade" id="modalEditarCalificacion" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header" style="background: #fff3cd; border-bottom: 2px solid #e0a800;">
+                    <h5 class="modal-title font-weight-bold" id="modalEditarTitulo" style="color: #856404;">
+                        ⚠️ Editar calificación — precaución
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar"
+                        onclick="$('#modalEditarCalificacion').modal('hide')">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p class="small mb-3" id="modalEditarAviso"
+                        style="color: #856404; background:#fff3cd; border-radius:4px; padding:8px 10px;">
+                        Estás modificando un registro de calificaciones vinculado al sistema de notas PPD.
+                        <strong>Solo edita si tienes certeza absoluta del cambio.</strong>
+                    </p>
+
+                    <p class="mb-2 font-weight-bold" id="modalAlumnoNombre" style="font-size: 0.92rem;"></p>
+                    <p class="mb-3 text-muted small" id="modalCursoNombre"></p>
+
+                    <div class="form-group mb-2">
+                        <label class="small font-weight-bold">Calificación Curso <span class="text-muted">(0–20)</span></label>
+                        <input type="number" id="inputCalCurso" class="form-control form-control-sm"
+                            min="0" max="20" step="0.01" placeholder="Ej: 14.5">
+                    </div>
+                    <div class="form-group mb-2">
+                        <label class="small font-weight-bold">Calificación Sistema <span class="text-muted">(0–20)</span></label>
+                        <input type="number" id="inputCalSistema" class="form-control form-control-sm"
+                            min="0" max="20" step="0.01" placeholder="Ej: 14">
+                    </div>
+                    <div class="form-group mb-0">
+                        <label class="small font-weight-bold">Nivel Desempeño <span class="text-muted">(entero 0–4)</span></label>
+                        <input type="number" id="inputNivelDesempeno" class="form-control form-control-sm"
+                            min="0" max="4" step="1" placeholder="Ej: 3">
+                    </div>
+
+                    <div id="modalEditarError" class="alert alert-danger mt-3 d-none" role="alert"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal"
+                        onclick="$('#modalEditarCalificacion').modal('hide')">Cancelar</button>
+                    <button type="button" class="btn btn-sm btn-warning font-weight-bold" id="btnGuardarCalificacion">
+                        <i class="fas fa-save mr-1"></i> Guardar cambios
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        // ── Edición / creación de calificación ──────────────────────────────
+        let _registroActualId = null;
+        let _btnOrigen        = null;
+        let _alumnoId         = null;
+        let _cursoId          = null;
+        let _periodoId        = null;
+        const CSRF            = '{{ csrf_token() }}';
+        const BASE_URL        = '{{ url("admin/periodo-ppd-registro") }}';
+
+        function abrirModalEditar(registroId, alumno, curso, calCurso, calSistema, nivelDesempeno, btn, alumnoId, cursoId, periodoId) {
+            _registroActualId = registroId;
+            _btnOrigen        = btn;
+            _alumnoId         = alumnoId  ?? null;
+            _cursoId          = cursoId   ?? null;
+            _periodoId        = periodoId ?? null;
+
+            const esNuevo = registroId === null;
+            document.getElementById('modalEditarTitulo').textContent = esNuevo
+                ? 'Agregar calificación'
+                : '⚠️ Editar calificación — precaución';
+            document.getElementById('modalEditarAviso').style.display = esNuevo ? 'none' : '';
+
+            document.getElementById('modalAlumnoNombre').textContent     = alumno;
+            document.getElementById('modalCursoNombre').textContent      = 'Curso: ' + curso;
+            document.getElementById('inputCalCurso').value               = calCurso    !== null ? calCurso    : '';
+            document.getElementById('inputCalSistema').value             = calSistema  !== null ? calSistema  : '';
+            document.getElementById('inputNivelDesempeno').value         = nivelDesempeno !== null ? nivelDesempeno : '';
+            document.getElementById('modalEditarError').classList.add('d-none');
+
+            $('#modalEditarCalificacion').modal('show');
+        }
+
+        document.getElementById('btnGuardarCalificacion').addEventListener('click', function () {
+            const btn    = this;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Guardando…';
+
+            const esNuevo = _registroActualId === null;
+            const url     = esNuevo ? BASE_URL : BASE_URL + '/' + _registroActualId;
+            const method  = esNuevo ? 'POST' : 'PATCH';
+
+            const payload = {
+                calificacion_curso:   document.getElementById('inputCalCurso').value    || null,
+                calificacion_sistema: document.getElementById('inputCalSistema').value  || null,
+                nivel_desempeno:      document.getElementById('inputNivelDesempeno').value || null,
+            };
+            if (esNuevo) {
+                payload.alumno_id             = _alumnoId;
+                payload.curso_id              = _cursoId;
+                payload.periodo_actual_ppd_id = _periodoId;
+            }
+
+            fetch(url, {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': CSRF,
+                    'Accept':       'application/json',
+                },
+                body: JSON.stringify(payload),
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (!data.ok) throw new Error(data.message || 'Error desconocido');
+
+                const fila = _btnOrigen.closest('tr');
+                const cc   = data.calificacion_curso   !== null ? data.calificacion_curso   : null;
+                const cs   = data.calificacion_sistema !== null ? data.calificacion_sistema : null;
+                const nd   = data.nivel_desempeno      !== null ? data.nivel_desempeno      : null;
+
+                fila.querySelector('.celda-cal-curso').innerHTML   = cc !== null ? '<span>' + cc + '</span>' : '<span class="text-muted">N/A</span>';
+                fila.querySelector('.celda-cal-sistema').innerHTML = cs !== null ? '<span>' + cs + '</span>' : '<span class="text-muted">Sin datos</span>';
+                fila.querySelector('.celda-nivel').innerHTML       = nd !== null ? '<span>' + nd + '</span>' : '<span class="text-muted">N/A</span>';
+
+                // Si era creación, convertir el botón + en botón editar con el nuevo id
+                if (esNuevo && data.id) {
+                    _btnOrigen.className = 'btn btn-sm btn-outline-warning btn-editar-registro';
+                    _btnOrigen.title     = 'Editar calificación';
+                    const newId = data.id;
+                    const alumnoNombre = document.getElementById('modalAlumnoNombre').textContent;
+                    const cursoNombre  = document.getElementById('modalCursoNombre').textContent.replace('Curso: ', '');
+                    _btnOrigen.setAttribute('onclick',
+                        `abrirModalEditar(${newId}, '${alumnoNombre.replace(/'/g,"\\'")}', '${cursoNombre.replace(/'/g,"\\'")}', ${cc ?? 'null'}, ${cs ?? 'null'}, ${nd ?? 'null'}, this, null, null, null)`
+                    );
+                    _btnOrigen.innerHTML = '<i class="fa fa-edit fa-xs"></i>';
+                }
+
+                $('#modalEditarCalificacion').modal('hide');
+            })
+            .catch(err => {
+                const errDiv = document.getElementById('modalEditarError');
+                errDiv.textContent = err.message || 'Ocurrió un error al guardar.';
+                errDiv.classList.remove('d-none');
+            })
+            .finally(() => {
+                btn.disabled  = false;
+                btn.innerHTML = '<i class="fas fa-save mr-1"></i> Guardar cambios';
+            });
+        });
+
+        // ── Filtro de búsqueda en tiempo real ────────────────────────────────
+        document.addEventListener('DOMContentLoaded', function () {
             const searchInput = document.getElementById('search');
 
-            // Construir grupos de filas (agrupadas por alumno dentro de programa)
             function buildGroups() {
                 const allRows = Array.from(document.querySelectorAll('#tablaCalificaciones tbody tr'));
                 const grupos = {};
-
                 allRows.forEach(row => {
                     const groupId = row.dataset.group || 'no-group';
-                    if (!grupos[groupId]) {
-                        grupos[groupId] = {
-                            rows: [],
-                            searchText: ''
-                        };
-                    }
+                    if (!grupos[groupId]) grupos[groupId] = { rows: [], searchText: '' };
                     grupos[groupId].rows.push(row);
-                    // Acumular texto de búsqueda de toda la fila
                     grupos[groupId].searchText += ' ' + (row.dataset.search || '').toLowerCase();
                 });
-
                 return grupos;
             }
 
@@ -268,74 +446,36 @@
 
             function filtrar() {
                 const query = (searchInput.value || '').toLowerCase().trim();
-
-                // Mostrar/ocultar encabezados de programa primero
                 const programaHeaders = document.querySelectorAll('.programa-header');
-                programaHeaders.forEach(header => {
-                    header.style.display = 'block'; // Mostrar todos inicialmente
-                });
+                programaHeaders.forEach(h => h.style.display = 'block');
 
-                // Filtrar filas por grupo
                 Object.keys(grupos).forEach(groupId => {
                     const grupo = grupos[groupId];
                     const match = query === '' || grupo.searchText.includes(query);
+                    grupo.rows.forEach(row => row.style.display = match ? '' : 'none');
 
-                    // Mostrar/ocultar todas las filas del grupo
-                    grupo.rows.forEach(row => {
-                        row.style.display = match ? '' : 'none';
-                    });
-
-                    // Ocultar encabezado del programa si ningún grupo dentro de él coincide
                     if (!match) {
-                        // Extraer nombre del programa del groupId (formato: "programa-alumno_id")
                         const programaNombre = groupId.split('-')[0];
-                        const programaHeader = document.getElementById('programa-' + programaNombre
-                            .toLowerCase().replace(/\s+/g, '-'));
-
-                        // Verificar si hay otros grupos visibles en el mismo programa
-                        const otrosGruposEnMismoPrograma = Object.keys(grupos).filter(g =>
-                            g.startsWith(programaNombre + '-') && g !== groupId
-                        );
-
-                        const algunOtroVisible = otrosGruposEnMismoPrograma.some(otherGroupId => {
-                            return grupos[otherGroupId].rows.some(row => row.style.display !==
-                                'none');
-                        });
-
+                        const programaHeader = document.getElementById('programa-' + programaNombre.toLowerCase().replace(/\s+/g, '-'));
+                        const otrosGrupos = Object.keys(grupos).filter(g => g.startsWith(programaNombre + '-') && g !== groupId);
+                        const algunOtroVisible = otrosGrupos.some(id => grupos[id].rows.some(r => r.style.display !== 'none'));
                         if (programaHeader && !algunOtroVisible) {
-                            // Verificar si este es el último grupo visible del programa
-                            const gruposDelPrograma = Object.keys(grupos).filter(g => g.startsWith(
-                                programaNombre + '-'));
-                            const todosOcultos = gruposDelPrograma.every(gid => {
-                                return grupos[gid].rows.every(row => row.style.display === 'none');
-                            });
-
-                            if (todosOcultos) {
-                                programaHeader.style.display = 'none';
-                            }
+                            const todosOcultos = Object.keys(grupos).filter(g => g.startsWith(programaNombre + '-')).every(gid => grupos[gid].rows.every(r => r.style.display === 'none'));
+                            if (todosOcultos) programaHeader.style.display = 'none';
                         }
                     }
                 });
 
-                // Si hay búsqueda vacía, mostrar todo
-                if (query === '') {
-                    programaHeaders.forEach(header => {
-                        header.style.display = 'block';
-                    });
-                }
+                if (query === '') programaHeaders.forEach(h => h.style.display = 'block');
             }
 
-            // Event listener para búsqueda en tiempo real
             searchInput.addEventListener('input', filtrar);
 
-            // Filtrar también al cargar la página si hay un parámetro de búsqueda en la URL
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.has('search')) {
                 searchInput.value = urlParams.get('search');
                 filtrar();
             }
         });
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous">
     </script>
 @endsection

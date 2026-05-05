@@ -4,8 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\AdminFid;
 use App\Models\AdminPpd;
-use App\Models\BolsaTrabajoOferta;
+use App\Models\Comunicado;
 use App\Models\Postulante;
+use App\Support\BolsaTrabajoListado;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 
@@ -69,7 +70,7 @@ class EnlacesController extends Controller
         return view('programas.profesionalizacion-docente', compact('periodoAdmisionActivo'));
     }
 
-    //Ordinario
+    // Ordinario
     public function ordinario()
     {
         $periodoAdmision = AdminFid::where('estado', true)->first();
@@ -92,7 +93,7 @@ class EnlacesController extends Controller
         return view('admision.resultados');
     }
 
-    //Titulacion
+    // Titulacion
     public function tramiteTitulacion()
     {
         return view('tramites.tramite-titulacion');
@@ -118,7 +119,7 @@ class EnlacesController extends Controller
         return view('tramites.titulacion.tramite');
     }
 
-    //Tramites
+    // Tramites
     public function matricula()
     {
         return view('tramites.Matriculas');
@@ -144,7 +145,7 @@ class EnlacesController extends Controller
         return view('tramites.titulacion.extraordinarios');
     }
 
-    //Líneas
+    // Líneas
     public function tutoria()
     {
         return view('lineas.lineas-tutoria');
@@ -170,10 +171,37 @@ class EnlacesController extends Controller
         return view('lineas.subvenciones-y-becas');
     }
 
-    //Información
-    public function novedades()
+    // Información
+    public function novedades(Request $request)
     {
-        return view('informacion.informacion-novedades');
+        $query = Comunicado::query()
+            ->orderByDesc('fecha_publicacion')
+            ->orderByDesc('id');
+
+        if ($request->filled('anio')) {
+            $query->where('anio', (int) $request->input('anio'));
+        }
+
+        $comunicados = $query->get();
+        $anios = Comunicado::query()->select('anio')->distinct()->orderByDesc('anio')->pluck('anio');
+        $mesesNombres = [
+            1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril',
+            5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto',
+            9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre',
+        ];
+
+        return view('informacion.informacion-novedades', compact('comunicados', 'anios', 'mesesNombres'));
+    }
+
+    public function alumnoComunicados()
+    {
+        $comunicados = Comunicado::query()
+            ->orderByDesc('fecha_publicacion')
+            ->orderByDesc('id')
+            ->limit(5)
+            ->get();
+
+        return view('alumnos.comunicados', compact('comunicados'));
     }
 
     public function articulos()
@@ -197,34 +225,9 @@ class EnlacesController extends Controller
         $postulantes1 = Postulante::where('programa_id', 1)->get();
         $postulantes2 = Postulante::where('programa_id', 2)->get();
 
-        $ofertasQuery = BolsaTrabajoOferta::query();
-        if ($request->filled('anio')) {
-            $ofertasQuery->where('anio', (int) $request->anio);
-        }
-        if ($request->filled('mes')) {
-            $ofertasQuery->where('mes', (int) $request->mes);
-        }
-
-        $ofertas = $ofertasQuery
-            ->orderByDesc('fecha_inicio')
-            ->orderByDesc('fecha_fin')
-            ->orderByDesc('id')
-            ->limit(20)
-            ->get();
-        $aniosOfertas = BolsaTrabajoOferta::query()->select('anio')->distinct()->orderByDesc('anio')->pluck('anio');
-        $mesesNombres = [
-            1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril',
-            5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto',
-            9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre',
-        ];
-
-        return view('informacion.bolsa-de-trabajo', compact(
-            'postulantes',
-            'postulantes1',
-            'postulantes2',
-            'ofertas',
-            'aniosOfertas',
-            'mesesNombres'
+        return view('informacion.bolsa-de-trabajo', array_merge(
+            compact('postulantes', 'postulantes1', 'postulantes2'),
+            BolsaTrabajoListado::datos($request)
         ));
     }
 
@@ -238,7 +241,7 @@ class EnlacesController extends Controller
         return view('informacion.convocatoria-2');
     }
 
-    //Foot
+    // Foot
     public function informacion()
     {
         return view('foot.informacion-institucional');

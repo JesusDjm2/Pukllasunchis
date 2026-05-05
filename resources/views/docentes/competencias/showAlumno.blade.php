@@ -1,19 +1,21 @@
 @extends('layouts.alumno')
+@section('titulo', 'Detalle de competencia')
 
 @section('contenido')
-    <div class="container-fluid bg-white">
-        <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3 pb-2"
-            style="border-bottom: 1px dashed #80808078">
-            <h4 class="font-weight-bold text-primary">Detalles de la Competencia</h4>
-            <a href="javascript:history.go(-1)" class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm">
-                Volver
-            </a>
-        </div>
-        <div class="card">
-            <div class="card-body">
-                <h4 class="card-title font-weight-bold">{{ $competencia->nombre }}</h4>
-                <p class="card-text"><strong>Descripción:</strong><br> {{ $competencia->descripcion }}</p>
-                <p class="card-text"><strong>Capacidades:</strong> {!! $competencia->capacidades !!}</p>                
+    @include('partials.alumno-page-header', [
+        'title' => $competencia->nombre,
+        'subtitle' => 'Descripción y capacidades asociadas.',
+        'actions' =>
+            '<a href="javascript:history.go(-1)" class="btn btn-outline-secondary btn-sm shadow-sm"><i class="fas fa-arrow-left mr-1"></i> Volver</a>',
+    ])
+
+    <div class="card alumno-detail-card">
+        <div class="card-body">
+            <h2 class="h6 text-uppercase text-muted font-weight-bold mb-3">Descripción</h2>
+            <p class="mb-4">{{ $competencia->descripcion }}</p>
+            <h2 class="h6 text-uppercase text-muted font-weight-bold mb-3">Capacidades</h2>
+            <div class="competencia-capacidades alumno-prose">
+                {!! $competencia->capacidades !!}
             </div>
         </div>
     </div>

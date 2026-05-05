@@ -84,7 +84,7 @@
                             <button class="btn btn-link text-white accordion-btn-curso py-3 px-4"
                                     type="button" data-toggle="collapse"
                                     data-target="#colPpd{{ $loop->index }}"
-                                    aria-expanded="{{ $loop->first ? 'true' : 'false' }}"
+                                    aria-expanded="false"
                                     aria-controls="colPpd{{ $loop->index }}">
                                 <div class="d-flex align-items-center flex-wrap" style="gap:.5rem;">
                                     <i class="fas fa-graduation-cap mr-2"></i>
@@ -105,7 +105,7 @@
 
                         {{-- Lista de alumnos --}}
                         <div id="colPpd{{ $loop->index }}"
-                             class="collapse {{ $loop->first ? 'show' : '' }}">
+                             class="collapse">
                             <div class="table-responsive">
                                 <table class="table table-hover mb-0">
                                     <thead style="background:#f8f9fc;">

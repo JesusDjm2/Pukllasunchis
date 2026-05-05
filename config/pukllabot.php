@@ -1,17 +1,12 @@
 <?php
 
 return [
-
-    /**
-     * RAG: siempre léxico (fragmentos del corpus en BD, sin API de embeddings).
-     */
     'retrieval' => 'lexical',
 
     /** Fragmentos de corpus que se inyectan al LLM (menos = contexto más corto y algo más rápido) */
     'top_k' => (int) env('PUKLLABOT_TOP_K', 5),
 
-    /**
-     * Límite duro al cargar candidatos desde BD (léxico). Baja el costo de memoria y CPU en corpus grandes.
+    /**Límite duro al cargar candidatos desde BD (léxico). Baja el costo de memoria y CPU en corpus grandes.
      */
     'retrieval_max_candidates' => (int) env('PUKLLABOT_RETRIEVAL_MAX_CANDIDATES', 180),
 

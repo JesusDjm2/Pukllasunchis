@@ -73,7 +73,7 @@
                             <button class="btn btn-link text-white accordion-btn-curso py-3 px-4"
                                     type="button" data-toggle="collapse"
                                     data-target="#colFid{{ $loop->index }}"
-                                    aria-expanded="{{ $loop->first ? 'true' : 'false' }}"
+                                    aria-expanded="false"
                                     aria-controls="colFid{{ $loop->index }}">
                                 <div class="d-flex align-items-center flex-wrap" style="gap:.5rem;">
                                     <i class="fas fa-book mr-2"></i>
@@ -94,7 +94,7 @@
 
                         {{-- Lista de alumnos --}}
                         <div id="colFid{{ $loop->index }}"
-                             class="collapse {{ $loop->first ? 'show' : '' }}">
+                             class="collapse">
                             @if ($alumnos->isEmpty())
                                 <div class="card-body text-muted text-center py-4">
                                     <i class="fas fa-user-slash fa-lg mb-2 d-block text-gray-300"></i>

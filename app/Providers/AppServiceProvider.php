@@ -70,5 +70,6 @@ class AppServiceProvider extends ServiceProvider
             $periodoAdmisionActivo = AdminPpd::where('estado', true)->exists();
             $view->with('periodoAdmisionActivo', $periodoAdmisionActivo);
         });
+
     }
 }

@@ -53,7 +53,6 @@
 <file name="2026_04_15_180000_delete_periodo_ppds_for_active_ppd_periods.php" server="ftp.eesppukllasunchis.edu.pe" local="134208222973430401" remote="134212719000000000" Dst="0" />
 <file name="2026_04_21_100000_create_incidencias_table.php" server="ftp.eesppukllasunchis.edu.pe" local="134212531020457378" remote="134212719000000000" Dst="0" />
 <file name="2026_04_21_100001_create_tutor_ciclos_table.php" server="ftp.eesppukllasunchis.edu.pe" local="134212531074103223" remote="134212719000000000" Dst="0" />
-<file name="2026_04_21_195355_add_url_to_minkarikuys_table.php" server="ftp.eesppukllasunchis.edu.pe" local="134212748414709919" remote="134212933800000000" Dst="0" />
 <file name="2026_04_21_200000_update_incidencias_add_nombre_docente.php" server="ftp.eesppukllasunchis.edu.pe" local="134212686331045678" remote="134212933800000000" Dst="0" />
-<file name="2026_04_21_210000_create_minkarikuys_table.php" server="ftp.eesppukllasunchis.edu.pe" local="134212734780018964" remote="134212933800000000" Dst="0" />
+<file name="2026_04_28_161000_create_comunicados_table.php" server="ftp.eesppukllasunchis.edu.pe" local="134218833489653207" remote="134219046000000000" Dst="0" />
 </dwsync>

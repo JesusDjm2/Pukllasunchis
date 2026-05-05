@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="author" content="David Jesús Miranda">
-    @yield('titulo')
+    <title>@yield('titulo', 'Área estudiante') — EESPP Pukllasunchis</title>
     <link rel="shortcut icon" type="image/x-icon" href="{{ asset('img/logoiesp.ico') }}">
     <link href="{{ asset('admin/vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" type="text/css">
     <link
@@ -14,9 +14,11 @@
         rel="stylesheet">
     <link href="{{ asset('admin/css/sb-admin-2.min.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('admin/css/estilos.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/alumno-area.css') }}">
+    @stack('styles')
 </head>
 
-<body id="page-top">
+<body id="page-top" class="alumno-app">
     <div id="wrapper">
         <ul class="navbar-nav bg-gradient-info sidebar sidebar-dark accordion" id="accordionSidebar">
             <a class="sidebar-brand d-flex align-items-center justify-content-center mb-3" href="{{ route('index') }}">
@@ -32,38 +34,43 @@
             <div class="sidebar-heading">
                 Dashboard Alumno
             </div>
-            <li class="nav-item">
+            <li class="nav-item {{ request()->routeIs('alumnos.index') ? 'active' : '' }}">
                 <a class="nav-link collapsed" href="{{ route('alumnos.index') }}">
-                    <i class="fas fa-fw fa-newspaper"></i>
+                    <i class="fas fa-fw fa-id-card"></i>
                     <span>Ficha técnica</span>
                 </a>
             </li>
             @if (isset($alumno) && $alumno)
-                <li class="nav-item">
+                <li class="nav-item {{ request()->routeIs('calificaciones') ? 'active' : '' }}">
                     <a class="nav-link collapsed" href="{{ route('calificaciones', $alumno->id) }}">
-                        <i class="fas fa-fw fa-newspaper"></i>
+                        <i class="fas fa-fw fa-clipboard-list"></i>
                         <span>Calificaciones</span>
                     </a>
                 </li>
             @endif
-            <li class="nav-item">
+            <li class="nav-item {{ request()->routeIs('alumno.comunicados') ? 'active' : '' }}">
+                <a class="nav-link collapsed" href="{{ route('alumno.comunicados') }}">
+                    <i class="fas fa-fw fa-bullhorn"></i>
+                    <span>Comunicados</span>
+                </a>
+            </li>
+            <li class="nav-item {{ request()->routeIs('postulante.index') ? 'active' : '' }}">
                 <a class="nav-link collapsed" href="{{ route('postulante.index') }}">
-                    <i class="fas fa-fw fa-money-bill"></i>
+                    <i class="fas fa-fw fa-briefcase"></i>
                     <span>Bolsa de trabajo</span>
                 </a>
             </li>
             <hr class="sidebar-divider d-none d-md-block">
-            <li class="nav-item">
-                <a class="nav-link collapsed" target="_blank"
-                    href="{{ route('alumno.formatos') }}">
+            <li class="nav-item {{ request()->routeIs('alumno.formatos') ? 'active' : '' }}">
+                <a class="nav-link collapsed" href="{{ route('alumno.formatos') }}">
                     <i class="fas fa-book-open"></i>
                     <span>Guías de TI y Tesis</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link collapsed" target="_blank"
+                <a class="nav-link collapsed" target="_blank" rel="noopener noreferrer"
                     href="https://sites.google.com/pukllavirtual.edu.pe/bibliotecaeesppuklla/inicio">
-                    <i class="fas fa-book-open"></i>
+                    <i class="fas fa-fw fa-university"></i>
                     <span>Biblioteca</span>
                 </a>
             </li>
@@ -86,22 +93,21 @@
                         <i class="fa fa-bars"></i>
                     </button>
                     @if (isset($periodoActual) && $periodoActual->horario)
-                        <!-- Botón para abrir el modal -->
-                        <div class="text-center mt-2">
-                            <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal"
-                                data-bs-target="#modalHorario">
+                        <div class="d-flex align-items-center flex-grow-1 flex-wrap ml-md-3 mt-2 mt-md-0">
+                            <button type="button" class="btn btn-info btn-sm" data-toggle="modal"
+                                data-target="#modalHorario">
                                 Ver Horario {{ $periodoActual->nombre }}
                             </button>
                         </div>
 
-                        <!-- Modal -->
-                        <div class="modal fade" id="modalHorario" tabindex="-1" aria-labelledby="modalHorarioLabel"
-                            aria-hidden="true">
-                            <div class="modal-dialog modal-xl modal-dialog-centered">
+                        <div class="modal fade" id="modalHorario" tabindex="-1" role="dialog"
+                            aria-labelledby="modalHorarioLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
                                 <div class="modal-content">
-                                    <div class="modal-body text-center bg-light position-relative">
-                                        <button type="button" class="btn btn-danger float-right"
-                                            data-bs-dismiss="modal" aria-label="Cerrar">
+                                    <div class="modal-body text-center bg-light position-relative pt-5">
+                                        <button type="button" class="btn btn-danger position-absolute"
+                                            style="top: 0.5rem; right: 0.5rem; z-index: 2;" data-dismiss="modal"
+                                            aria-label="Cerrar">
                                             ✕
                                         </button>
                                         <img src="{{ asset($periodoActual->horario) }}"
@@ -110,7 +116,7 @@
                                     </div>
                                     <div class="modal-footer justify-content-center">
                                         <button type="button" class="btn btn-secondary btn-sm"
-                                            data-bs-dismiss="modal">Cerrar</button>
+                                            data-dismiss="modal">Cerrar</button>
                                         <a href="{{ asset($periodoActual->horario) }}" target="_blank"
                                             class="btn btn-primary btn-sm">
                                             Ver en nueva pestaña
@@ -120,18 +126,30 @@
                             </div>
                         </div>
                     @else
-                        <p>Sin Horario asignado a este periodo</p>
+                        <span class="small text-muted ml-md-3 mb-0">Sin horario asignado para este periodo.</span>
                     @endif
                     <ul class="navbar-nav ml-auto">
                         <div class="topbar-divider d-none d-sm-block"></div>
                         <li class="nav-item dropdown no-arrow">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center py-2" href="#" id="userDropdown"
+                                role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 @if (Auth::check() && Auth::user())
-                                    {{ Auth::user()->name }} {{ Auth::user()->apellidos }}
+                                    @php
+                                        $u = Auth::user();
+                                        $ni = strtoupper(
+                                            mb_substr($u->name ?? '?', 0, 1) .
+                                                mb_substr($u->apellidos ?? '', 0, 1),
+                                        );
+                                    @endphp
+                                    <span class="alumno-user-chip">
+                                        <span class="alumno-user-avatar"
+                                            aria-hidden="true">{{ $ni ?: '?' }}</span>
+                                        <span class="d-none d-sm-inline font-weight-bold text-gray-700">
+                                            {{ $u->name }} {{ $u->apellidos }}</span>
+                                    </span>
                                 @endif
                             </a>
-                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
                                 <a class="dropdown-item" href="{{ route('logout') }}"
                                     onclick="event.preventDefault();
                                                     document.getElementById('logout-form').submit();">
@@ -145,7 +163,9 @@
                         </li>
                     </ul>
                 </nav>
-                @yield('contenido')
+                <main class="alumno-main container-fluid px-3 px-lg-4">
+                    @yield('contenido')
+                </main>
             </div>
             <footer class="sticky-footer bg-white">
                 <div class="container my-auto">
@@ -162,14 +182,10 @@
     <a class="scroll-to-top rounded" href="#page-top">
         <i class="fas fa-angle-up"></i>
     </a>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('admin/vendor/jquery/jquery.min.js') }}"></script>
     <script src="{{ asset('admin/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('admin/vendor/jquery-easing/jquery.easing.min.js') }}"></script>
     <script src="{{ asset('admin/js/sb-admin-2.min.js') }}"></script>
-    <script src="{{ asset('admin/vendor/chart.js/Chart.min.js') }}"></script>
-    <script src="{{ asset('admin/js/demo/chart-area-demo.js') }}"></script>
-    <script src="{{ asset('admin/js/demo/chart-pie-demo.js') }}"></script>
     <script src="{{ asset('admin/js/djm.js') }}"></script>
 
 </body>

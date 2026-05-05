@@ -87,6 +87,7 @@
     height: auto !important;
     padding: 1.25rem .75rem 1rem !important;
     text-decoration: none;
+    transition: padding .38s cubic-bezier(.22, 1, .36, 1);
 }
 
 /* Imagen del logo — tamaño máximo y centrada */
@@ -97,7 +98,14 @@
     max-width: 148px;
     object-fit: contain;
     margin: 0 auto;
-    transition: max-height .25s ease, opacity .2s ease;
+    transform-origin: center center;
+    will-change: transform, max-height, max-width, opacity, filter;
+    transition:
+        max-height .42s cubic-bezier(.22, 1, .36, 1),
+        max-width .42s cubic-bezier(.22, 1, .36, 1),
+        transform .42s cubic-bezier(.22, 1, .36, 1),
+        opacity .26s ease,
+        filter .36s ease;
 }
 
 /* Separador inmediatamente debajo del logo:
@@ -153,6 +161,15 @@ hr.sidebar-logo-divider {
 body.sidebar-toggled .sidebar .sidebar-logo-img {
     max-height: 36px !important;
     max-width: 36px !important;
+    transform: translateY(1px) scale(.92);
+    opacity: .96;
+    filter: saturate(.92);
+}
+
+body:not(.sidebar-toggled) .sidebar .sidebar-logo-img {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+    filter: saturate(1);
 }
 
 body.sidebar-toggled .sidebar .sidebar-heading,

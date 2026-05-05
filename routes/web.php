@@ -67,6 +67,9 @@ Route::get('informacion/convocatorias-2', [EnlacesController::class, 'conv2'])->
 
 //Formatos de TI y Tesis
 Route::get('/alumnos/formatos', [AlumnoController::class, 'formatos'])->name('alumno.formatos');
+Route::get('/alumnos/comunicados', [EnlacesController::class, 'alumnoComunicados'])
+    ->middleware('auth')
+    ->name('alumno.comunicados');
 Route::get('/Formatos-de-TI-y-Tesis', [PpdController::class, 'formatos'])->name('ppd.formatos');
 
 //Videos

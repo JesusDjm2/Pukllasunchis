@@ -1,42 +1,38 @@
 @extends('layouts.admin')
 @section('contenido')
-    <div class="container-fluid bg-white">
-        <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3 pb-3"
-            style="border-bottom: 1px dashed #2252f178">
-            <h4 class="mb-0 text-primary font-weight-bold">
-                Alumnos PPD: <span id="totalRecords">{{ $alumnos->count() }}</span>
-                <small>(Mostrando: <span id="filteredRecords">{{ $alumnos->count() }}</span>)</small>
-            </h4>
-            <div>
-                <button class="btn btn-primary btn-sm filter-button" data-programa="3">
-                    @if ($counts['Inicial'] > 0)
-                        Inicial <small>{{ $counts['Inicial'] }}</small>
-                    @else
-                        <em>Sin registros</em>
-                    @endif
-                </button>
-                <button class="btn btn-success btn-sm filter-button" data-programa="4">
-                    Primaria @if ($counts['Primaria'] > 0)
-                        <small>{{ $counts['Primaria'] }}</small>
-                    @else
-                        <em>Sin registro</em>
-                    @endif
-                </button>
-                <button class="btn btn-danger btn-sm filter-button" data-programa="5">
-                    Primaria EIB
-                    @if ($counts['Primaria EIB'] > 0)
-                        <small>{{ $counts['Primaria EIB'] }}</small>
-                    @else
-                        <small>(0)</small>
-                    @endif
-                </button>
-            </div>
-        </div>
+    @php
+        $qBase = array_filter(
+            ['search' => request('search'), 'search_page' => request('search_page')],
+            fn($v) => $v !== null && $v !== '',
+        );
+        $exportHidden = array_filter(
+            ['search' => request('search'), 'search_page' => request('search_page')],
+            fn($v) => $v !== null && $v !== '',
+        );
+    @endphp
 
-        <!-- Buscador en tiempo real -->
-        <div class="mb-3">
-            <input type="text" id="searchInput" class="form-control form-control-sm"
-                placeholder="Buscar por nombre, apellido o DNI...">
+    <div class="container-fluid bg-white">
+        <div class="d-sm-flex align-items-center justify-content-between flex-wrap mb-4 pt-3 pb-3"
+            style="border-bottom: 1px dashed #80808078">
+            <h3 class="mb-2 mb-sm-0 text-primary">
+                <small>Alumnos Profesionalización Docente (PPD):</small> {{ $totalRecords }}
+            </h3>
+            <div class="d-flex flex-wrap align-items-center">
+                @role('admin')
+                    <button type="button"
+                        class="btn btn-sm shadow-sm text-white d-inline-flex align-items-center px-3 py-2 border-0 rounded-pill mr-2 mb-2 mb-sm-0"
+                        style="background: linear-gradient(135deg, #1a4a8a 0%, #2563eb 45%, #3b82f6 100%); font-weight: 600; letter-spacing: 0.02em;"
+                        data-toggle="modal" data-target="#modalExportarPpdExcel"
+                        title="Elegir ciclos y vista previa antes de descargar Excel">
+                        <i class="fas fa-file-excel mr-2" style="opacity: 0.95;"></i>
+                        Exportar Excel
+                    </button>
+                @endrole
+                <a href="{{ route('registerAdmin') }}"
+                    class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm mb-2 mb-sm-0">
+                    Nuevo Alumno &nbsp;<i class="fa fa-plus fa-sm"></i>
+                </a>
+            </div>
         </div>
 
         <div class="row bg-white">
@@ -50,115 +46,423 @@
                     </div>
                 @endif
             </div>
-        </div>
 
-        <!-- Tabla de alumnos -->
-        <div class="table-responsive">
-            <table class="table table-hover table-striped">
-                <thead class="thead-dark">
-                    <tr>
-                        <th>Nombre</th>
-                        <th>Programa</th>
-                        {{-- <th>DNI</th> --}}
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="alumnosTable">
-                    @foreach ($alumnos as $alumno)
-                        <tr data-programa="{{ $alumno->ciclo->programa->id }}">
-                            <td>
-                                <strong>{{ $alumno->apellidos }}, {{ $alumno->name }}</strong>
-                                <br>
-                                <li class="pl-2">{{ $alumno->email }}</li>
-                                <li class="pl-2">DNI: {{ $alumno->dni }}</li>
-                                <li class="pl-2">
-                                    @if ($alumno->alumnoB)
-                                        Completó matrícula: <small>✅</small>
-                                    @else
-                                        Completó matrícula: <small>❌</small>
-                                    @endif
-                                </li>
-                                <li class="pl-2">
-                                    @if ($alumno->alumnoB)
-                                        Número: {{ $alumno->alumnoB->numero }}
-                                    @else
-                                        <em>Sin número</em>
-                                    @endif
-                                </li>
-                                <li class="pl-2">
-                                    Te consideras: {{ optional($alumno->alumnoB)->te_consideras ?? 'No registrado' }}
-                                </li>
-                                <li class="pl-2">
-                                    Número: {{ optional($alumno->alumnoB)->numero ?? 'No registrado' }}
-                                </li>
-                            </td>
-                            <td>{{ $alumno->ciclo->programa->nombre }} - {{ $alumno->ciclo->nombre }}</td>
+            {{-- Filtros académicos --}}
+            <div class="col-12 mb-3">
+                <div class="card shadow-sm border-left-primary">
+                    <div class="card-body py-3">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between mb-2">
+                            <h6 class="text-primary mb-0 font-weight-bold">
+                                <i class="fas fa-filter mr-1"></i>
+                                Filtros académicos
+                            </h6>
+                            @if (request()->filled('programa_id') || request()->filled('ciclo_id') || request()->filled('search'))
+                                <a href="{{ route('alumnosppd') }}" class="btn btn-sm btn-outline-secondary">
+                                    Limpiar filtros
+                                </a>
+                            @endif
+                        </div>
+                        <p class="small text-muted mb-2 mb-md-3">Programa y ciclo se aplican en el servidor; la tabla
+                            sigue agrupada por ciclo.</p>
+                        <div class="mb-2">
+                            <span class="small font-weight-bold text-secondary mr-2 d-block d-sm-inline">Programa</span>
+                            <div class="btn-group flex-wrap mt-1" role="group" aria-label="Filtrar por programa">
+                                <a href="{{ route('alumnosppd', $qBase) }}"
+                                    class="btn btn-sm {{ !request()->filled('programa_id') ? 'btn-primary' : 'btn-outline-primary' }}">
+                                    Todos
+                                </a>
+                                @foreach ($programasFiltro as $prog)
+                                    @php $qProg = array_merge($qBase, ['programa_id' => $prog->id]); @endphp
+                                    <a href="{{ route('alumnosppd', $qProg) }}"
+                                        class="btn btn-sm {{ (int) request('programa_id') === (int) $prog->id ? 'btn-primary' : 'btn-outline-primary' }}">
+                                        {{ \Illuminate\Support\Str::limit($prog->nombre, 42) }}
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
+                        @if ($ciclosFiltro->isNotEmpty())
+                            <div class="mb-0">
+                                <span class="small font-weight-bold text-secondary mr-2 d-block d-sm-inline">Ciclo</span>
+                                <div class="btn-group flex-wrap mt-1" role="group" aria-label="Filtrar por ciclo">
+                                    @php $qSinCiclo = array_merge($qBase, ['programa_id' => request('programa_id')]); @endphp
+                                    <a href="{{ route('alumnosppd', $qSinCiclo) }}"
+                                        class="btn btn-sm {{ !request()->filled('ciclo_id') ? 'btn-info' : 'btn-outline-info' }}">
+                                        Todos los ciclos
+                                    </a>
+                                    @foreach ($ciclosFiltro as $cic)
+                                        @php
+                                            $qCic = array_merge($qBase, [
+                                                'programa_id' => request('programa_id'),
+                                                'ciclo_id' => $cic->id,
+                                            ]);
+                                            $nCiclo = optional($totalesPorCicloId->get($cic->id))->total;
+                                        @endphp
+                                        <a href="{{ route('alumnosppd', $qCic) }}"
+                                            class="btn btn-sm {{ (int) request('ciclo_id') === (int) $cic->id ? 'btn-info' : 'btn-outline-info' }}">
+                                            {{ $cic->nombre }}
+                                            @if ($nCiclo !== null)
+                                                <span class="badge badge-light text-dark ml-1">{{ $nCiclo }}</span>
+                                            @endif
+                                        </a>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @elseif(request()->filled('programa_id'))
+                            <p class="small text-muted mb-0">No hay ciclos registrados para este programa.</p>
+                        @endif
+                    </div>
+                </div>
+            </div>
 
-                            <td>                               
-                                @if ($alumno->alumnoB)
-                                    <a href="{{ route('ppd.show', $alumno->alumnoB->id) }}" class="btn btn-sm btn-primary"
-                                        title="Ver">
-                                        <i class="fa fa-eye"></i>
-                                    </a>
-                                    <a href="{{ route('ppd.edit', $alumno->alumnoB->id) }}" class="btn btn-sm btn-warning"
-                                        title="Editar">
-                                        <i class="fa fa-edit"></i>
-                                    </a>
-                                    <button type="button" class="btn btn-sm btn-danger" title="Eliminar"
-                                        onclick="confirmDelete('{{ route('alumnos.destroy', $alumno->id) }}', '{{ $alumno->apellidos }}, {{ $alumno->nombres }}')">
-                                        <i class="fa fa-trash"></i>
-                                    </button>
-                                @else
-                                    <em>Sin matrícula</em>
+            {{-- Buscador servidor --}}
+            <div class="col-12 mb-2">
+                <form id="searchForm" action="{{ route('alumnosppd') }}" method="GET">
+                    <div class="input-group mb-2">
+                        <input type="text" class="form-control form-control-sm"
+                            placeholder="Buscar por nombre, apellido o DNI..." name="search" id="searchInput"
+                            value="{{ request('search') }}">
+                        <input type="hidden" name="search_page" value="true">
+                        <div class="input-group-append">
+                            <button class="btn btn-sm btn-outline-secondary" type="submit">Buscar</button>
+                        </div>
+                    </div>
+                    <p class="small text-muted mb-0">La búsqueda recorre <strong>todos</strong> los alumnos PPD
+                        (sin filtrar por programa ni ciclo).</p>
+                    @if (!empty($busquedaActiva))
+                        <p class="small text-info mb-0 mt-1">
+                            <i class="fas fa-info-circle"></i> Filtros de programa/ciclo no aplican mientras haya texto
+                            en el buscador.
+                        </p>
+                    @endif
+                </form>
+            </div>
+
+            {{-- Tabla --}}
+            <div class="col-12">
+                <div class="table-responsive">
+                    <table class="table table-hover" style="font-size: 14px">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th scope="col">N°</th>
+                                <th scope="col">Nombre</th>
+                                <th scope="col">Detalles académicos</th>
+                                <th scope="col">Matrícula</th>
+                                <th scope="col">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php $grupoActual = null; $n = 1; @endphp
+                            @forelse ($alumnos as $alumno)
+                                @php
+                                    $grupo =
+                                        (optional($alumno->programa)->nombre
+                                            ?? optional(optional($alumno->ciclo)->programa)->nombre
+                                            ?? 'Sin programa') .
+                                        ' — Ciclo ' .
+                                        (optional($alumno->ciclo)->nombre ?? '?');
+                                @endphp
+                                @if ($grupo !== $grupoActual)
+                                    @php
+                                        $grupoActual = $grupo;
+                                        $kGrupo =
+                                            (string) ($alumno->programa_id ?? '0') .
+                                            '|' .
+                                            (string) ($alumno->ciclo_id ?? '0');
+                                        $nGrupo = $conteoGrupoListado[$kGrupo] ?? 0;
+                                        $nTotalCiclo = optional($totalesPorCicloId->get($alumno->ciclo_id))->total;
+                                    @endphp
+                                    <tr class="table-active">
+                                        <td colspan="5" class="py-2">
+                                            <strong>{{ $grupo }}</strong>
+                                            <span class="badge badge-secondary ml-2">
+                                                {{ $nGrupo }} {{ $nGrupo === 1 ? 'alumno' : 'alumnos' }}
+                                            </span>
+                                            @if ($nTotalCiclo !== null && (int) $nGrupo !== (int) $nTotalCiclo)
+                                                <span class="text-muted small ml-2"
+                                                    title="Total PPD en este ciclo (sin filtros de búsqueda)">
+                                                    · {{ $nTotalCiclo }} en ciclo (total)
+                                                </span>
+                                            @endif
+                                        </td>
+                                    </tr>
                                 @endif
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                                <tr>
+                                    <td class="text-muted font-weight-bold">{{ $n }}</td>
+                                    <td>
+                                        <strong>{{ $alumno->apellidos }}, {{ $alumno->name }}</strong>
+                                        <ul class="mb-0 pl-3">
+                                            <li>DNI: {{ $alumno->dni }}</li>
+                                            <li>{{ $alumno->email }}</li>
+                                            @if ($alumno->telefono)
+                                                <li>Tel: {{ $alumno->telefono }}</li>
+                                            @endif
+                                        </ul>
+                                    </td>
+                                    <td>
+                                        <ul class="mb-0 pl-3">
+                                            <li>{{ optional($alumno->programa)->nombre ?? optional(optional($alumno->ciclo)->programa)->nombre ?? '—' }}
+                                                – {{ optional($alumno->ciclo)->nombre ?? '?' }}</li>
+                                            @if ($alumno->lengua_1)
+                                                <li>Lengua 1: {{ $alumno->lengua_1 }}</li>
+                                            @endif
+                                            @if ($alumno->fecha_nacimiento)
+                                                <li>Nac.: {{ $alumno->fecha_nacimiento }}</li>
+                                            @endif
+                                        </ul>
+                                    </td>
+                                    <td>
+                                        @if ($alumno->alumnoB)
+                                            <span class="badge badge-success">✅ Completa</span>
+                                            <br>
+                                            <small class="text-muted">N°: {{ $alumno->alumnoB->numero ?? '—' }}</small>
+                                        @else
+                                            <span class="badge badge-secondary">❌ Sin matrícula</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if ($alumno->alumnoB)
+                                            <a href="{{ route('ppd.show', $alumno->alumnoB->id) }}"
+                                                class="btn btn-sm btn-primary" title="Ver">
+                                                <i class="fa fa-eye fa-sm"></i>
+                                            </a>
+                                            <a href="{{ route('ppd.edit', $alumno->alumnoB->id) }}"
+                                                class="btn btn-sm btn-warning" title="Editar">
+                                                <i class="fa fa-edit fa-sm"></i>
+                                            </a>
+                                        @else
+                                            <a href="{{ route('alumnos.edit', ['alumno' => $alumno->alumno->id ?? 0]) }}"
+                                                class="btn btn-sm btn-warning" title="Editar usuario">
+                                                <i class="fa fa-edit fa-sm"></i>
+                                            </a>
+                                        @endif
+                                        <button type="button" class="btn btn-sm btn-danger"
+                                            onclick="confirmarEliminar('{{ route('adminDestroy', ['id' => $alumno->id]) }}', '{{ addslashes($alumno->apellidos . ', ' . $alumno->name) }}')"
+                                            title="Eliminar">
+                                            <i class="fa fa-trash fa-sm"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                @php $n++; @endphp
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-4">No se encontraron alumnos PPD.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                    @if (session('error'))
+                        <span class="text-danger text-sm">{{ session('error') }}</span>
+                    @endif
+                </div>
+            </div>
         </div>
     </div>
+
+    {{-- Modal exportar Excel PPD --}}
+    @role('admin')
+        <div class="modal fade" id="modalExportarPpdExcel" tabindex="-1" role="dialog"
+            aria-labelledby="modalExportarPpdExcelLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <form method="POST" action="{{ route('admin.alumnosppd.export-excel') }}"
+                        id="formExportarPpdExcel">
+                        @csrf
+                        @foreach ($exportHidden as $name => $value)
+                            <input type="hidden" name="{{ $name }}" value="{{ $value }}">
+                        @endforeach
+                        <div class="modal-header">
+                            <h5 class="modal-title text-primary" id="modalExportarPpdExcelLabel">
+                                <i class="fas fa-file-excel mr-2"></i>Exportar alumnos PPD a Excel
+                            </h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <style>
+                                #modalExportarPpdExcel .export-ciclos-scroll {
+                                    max-height: min(58vh, 440px);
+                                    overflow-y: auto;
+                                    overflow-x: hidden;
+                                    -webkit-overflow-scrolling: touch;
+                                }
+                                #modalExportarPpdExcel .export-ciclo-fila {
+                                    cursor: pointer;
+                                    transition: background-color .12s ease;
+                                }
+                                #modalExportarPpdExcel .export-ciclo-fila:hover {
+                                    background-color: #e9ecef !important;
+                                }
+                            </style>
+                            @if ($errors->has('ciclo_ids') || $errors->has('ciclo_ids.*'))
+                                <div class="alert alert-danger">
+                                    {{ $errors->first('ciclo_ids') ?: $errors->first('ciclo_ids.*') }}
+                                </div>
+                            @endif
+                            <p class="small text-muted mb-2">
+                                Marca los <strong>ciclos</strong> que incluirán filas en el archivo. Se respeta el
+                                filtro de búsqueda si lo aplicaste arriba.
+                            </p>
+                            @if (!empty($busquedaActiva))
+                                <p class="small text-info mb-2">
+                                    <i class="fas fa-info-circle"></i> Búsqueda activa: el archivo solo traerá alumnos
+                                    que coincidan con el texto buscado.
+                                </p>
+                            @endif
+                            <div class="d-flex flex-wrap align-items-center mb-3 border-bottom pb-2">
+                                <span class="small font-weight-bold text-secondary mr-2">Vista previa:</span>
+                                <span class="badge badge-primary mr-2">
+                                    <span id="ppdExportPreviewCiclos">0</span> ciclos
+                                </span>
+                                <span class="badge badge-secondary">
+                                    ~<span id="ppdExportPreviewCount">0</span> alumnos PPD en esos ciclos
+                                </span>
+                            </div>
+                            <div class="btn-group btn-group-sm mb-3" role="group">
+                                <button type="button" class="btn btn-outline-secondary"
+                                    id="btnPpdExportSelTodos">Todos los ciclos</button>
+                                <button type="button" class="btn btn-outline-secondary"
+                                    id="btnPpdExportSelNinguno">Ninguno</button>
+                                @if (request()->filled('programa_id'))
+                                    <button type="button" class="btn btn-outline-primary"
+                                        id="btnPpdExportSelProgramaActual">Solo programa filtrado</button>
+                                @endif
+                            </div>
+                            @if ($ciclosParaExportacion->isEmpty())
+                                <p class="text-muted mb-0">No hay ciclos con alumnos PPD para exportar.</p>
+                            @else
+                                <div class="export-ciclos-scroll border rounded bg-light px-2 py-2">
+                                    @foreach ($ciclosParaExportacion->groupBy('programa_id') as $grupoCiclos)
+                                        @php $primer = $grupoCiclos->first(); @endphp
+                                        <div class="mb-2">
+                                            <h6 class="small font-weight-bold text-dark mb-1 text-truncate border-left border-primary pl-2"
+                                                style="border-width: 3px !important;"
+                                                title="{{ $primer->programa->nombre ?? 'Programa #' . $primer->programa_id }}">
+                                                {{ $primer->programa->nombre ?? 'Programa #' . $primer->programa_id }}
+                                            </h6>
+                                            <div class="row mx-n1">
+                                                @foreach ($grupoCiclos as $cicExport)
+                                                    @php
+                                                        $nCicExport = optional($totalesPorCicloId->get($cicExport->id))->total;
+                                                        $checked =
+                                                            (int) request('ciclo_id') === (int) $cicExport->id ||
+                                                            ((int) request('programa_id') === (int) $cicExport->programa_id &&
+                                                                !request()->filled('ciclo_id'));
+                                                    @endphp
+                                                    <div class="col-md-6 px-1 mb-1">
+                                                        <div class="export-ciclo-fila border rounded bg-white h-100 px-2 py-1">
+                                                            <div class="custom-control custom-checkbox my-0">
+                                                                <input type="checkbox"
+                                                                    class="custom-control-input ppd-ciclo-export-check"
+                                                                    name="ciclo_ids[]" value="{{ $cicExport->id }}"
+                                                                    id="ppd_ciclo_export_{{ $cicExport->id }}"
+                                                                    data-total="{{ (int) ($nCicExport ?? 0) }}"
+                                                                    data-programa-id="{{ (int) $cicExport->programa_id }}"
+                                                                    {{ $checked ? 'checked' : '' }}>
+                                                                <label class="custom-control-label small mb-0"
+                                                                    for="ppd_ciclo_export_{{ $cicExport->id }}">
+                                                                    {{ $cicExport->nombre }}
+                                                                    <span class="badge badge-light text-dark ml-1">
+                                                                        {{ (int) ($nCicExport ?? 0) }}
+                                                                    </span>
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-sm btn-secondary"
+                                data-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-sm btn-success"
+                                {{ $ciclosParaExportacion->isEmpty() ? 'disabled' : '' }}>
+                                <i class="fas fa-download mr-1"></i>Descargar Excel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    @endrole
+
+    {{-- Modal confirmación eliminar --}}
+    <div class="modal fade" id="confirmDeletePpdModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmar Eliminación</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    ¿Estás seguro de que quieres eliminar a <strong id="deleteNombrePpd"></strong>?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <a id="deleteLinkPpd" href="#" class="btn btn-sm btn-danger">Eliminar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const searchInput = document.getElementById('searchInput');
-            const rows = document.querySelectorAll('#alumnosTable tr');
-            const filteredRecords = document.getElementById('filteredRecords');
-            let activeFilter = null;
+        function confirmarEliminar(url, nombre) {
+            document.getElementById('deleteLinkPpd').href = url;
+            document.getElementById('deleteNombrePpd').textContent = nombre;
+            $('#confirmDeletePpdModal').modal('show');
+        }
 
-            function filtrarTabla() {
-                let searchText = searchInput.value.trim().toLowerCase();
-                let visibleRows = 0;
-
-                rows.forEach(row => {
-                    let nombre = row.cells[0].textContent.toLowerCase();
-                    let correo = row.cells[1].textContent.toLowerCase();
-                    let dni = row.cells[2].textContent.toLowerCase();
-
-                    let perteneceFiltro = !activeFilter || row.getAttribute('data-programa') ===
-                        activeFilter;
-                    let coincideBusqueda = nombre.includes(searchText) || correo.includes(searchText) || dni
-                        .includes(searchText);
-
-                    if (perteneceFiltro && coincideBusqueda) {
-                        row.style.display = "";
-                        visibleRows++;
-                    } else {
-                        row.style.display = "none";
-                    }
+        $(document).ready(function () {
+            function refreshPpdPreview() {
+                var ciclos = 0, total = 0;
+                $('.ppd-ciclo-export-check:checked').each(function () {
+                    ciclos++;
+                    total += parseInt($(this).attr('data-total'), 10) || 0;
                 });
-
-                filteredRecords.textContent = visibleRows; // Solo se actualiza la cantidad filtrada
+                $('#ppdExportPreviewCiclos').text(ciclos);
+                $('#ppdExportPreviewCount').text(total);
             }
 
-            searchInput.addEventListener('input', filtrarTabla);
+            $(document).on('change', '.ppd-ciclo-export-check', refreshPpdPreview);
 
-            document.querySelectorAll('.filter-button').forEach(button => {
-                button.addEventListener('click', function() {
-                    activeFilter = this.getAttribute('data-programa');
-                    searchInput.value = ''; // Limpiar búsqueda al cambiar de filtro
-                    filtrarTabla();
-                });
+            $(document).on('click', '.export-ciclo-fila', function (e) {
+                if ($(e.target).is('input[type="checkbox"]') || $(e.target).closest('label').length) return;
+                var $cb = $(this).find('.ppd-ciclo-export-check');
+                $cb.prop('checked', !$cb.prop('checked')).trigger('change');
             });
+
+            $('#btnPpdExportSelTodos').on('click', function () {
+                $('.ppd-ciclo-export-check').prop('checked', true);
+                refreshPpdPreview();
+            });
+
+            $('#btnPpdExportSelNinguno').on('click', function () {
+                $('.ppd-ciclo-export-check').prop('checked', false);
+                refreshPpdPreview();
+            });
+
+            $('#btnPpdExportSelProgramaActual').on('click', function () {
+                var pid = {{ (int) request('programa_id', 0) }};
+                $('.ppd-ciclo-export-check').each(function () {
+                    $(this).prop('checked', parseInt($(this).attr('data-programa-id'), 10) === pid);
+                });
+                refreshPpdPreview();
+            });
+
+            $('#modalExportarPpdExcel').on('shown.bs.modal', refreshPpdPreview);
+
+            @if ($errors->has('ciclo_ids') || $errors->has('ciclo_ids.*'))
+                $('#modalExportarPpdExcel').modal('show');
+            @endif
+
+            refreshPpdPreview();
         });
     </script>
 @endsection

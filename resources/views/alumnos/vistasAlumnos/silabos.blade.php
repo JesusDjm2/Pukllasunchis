@@ -1,7 +1,9 @@
 @extends('layouts.alumno')
 @section('titulo', 'Datos del Sílabo')
-@section('contenido')
+@push('styles')
     <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400&display=swap" rel="stylesheet">
+@endpush
+@section('contenido')
     <style>
         h2,
         h4,
@@ -22,55 +24,13 @@
             text-align: justify;
             vertical-align: top;
         }
-
-
-        .btn-flotante {
-            position: fixed;
-            top: 50%;
-            right: -2px;
-            transform: translateY(-50%);
-            z-index: 9999;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
-            transition: 0.4s ease;
-
-            animation: entradaBoton 1s ease-out;
-        }
-
-        /* Hover suave como lo pediste */
-        .btn-flotante:hover {
-            padding: 0.7em;
-            transition: 0.2s ease;
-        }
-
-        /* Animación personalizada */
-        @keyframes entradaBoton {
-            0% {
-                opacity: 0;
-                transform: translate(100%, -50%) scale(0.6) rotate(10deg);
-            }
-
-            60% {
-                opacity: 1;
-                transform: translate(-10px, -50%) scale(1.05);
-            }
-
-            80% {
-                transform: translate(5px, -50%) scale(0.98);
-            }
-
-            100% {
-                transform: translateY(-50%) scale(1);
-            }
-        }
     </style>
-    <div class="container-fluid mb-3 p-3 bg-white m-auto">
-        <!-----Boton exportar como PDF------------->
-        <a href="{{ route('silabo.pdf', $silabo->id) }}" class="btn btn-primary btn-flotante">
-            <i class="fas fa-file-pdf"></i> Descargar PDF
+    <div class="alumno-shell alumno-silabo-toolbar mb-3 py-3 d-flex justify-content-end align-items-center flex-wrap">
+        <a href="{{ route('silabo.pdf', $silabo->id) }}" class="btn btn-primary shadow-sm">
+            <i class="fas fa-file-pdf mr-2"></i> Descargar PDF
         </a>
-
     </div>
-    <div class="container-fluid bg-white">
+    <div class="container-fluid alumno-shell bg-white">
         <div class="container">
             <table style="width: 100%; border-collapse: collapse; margin-bottom: 1em;">
                 <tr>

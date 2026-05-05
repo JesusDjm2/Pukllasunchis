@@ -1,11 +1,16 @@
 @php
     $fotoSrc = $fotoSrc ?? null;
     $logoSrc = $logoSrc ?? null;
+    $carnetId = $carnetId ?? 'carnet';
+    $cabeceraTitulo = $cabeceraTitulo ?? 'ID Estudiante';
+    $outerBackground = $outerBackground ?? '#e8dcc8';
+    $primaryBackground = $primaryBackground ?? '#b96328';
+    $labelColor = $labelColor ?? '#c41e3a';
 @endphp
-<div id="carnet"
-    style="width: 246px; margin: 0 auto; font-family: DejaVu Sans, Arial, sans-serif; box-sizing: border-box; background: #e8dcc8; padding: 8px; border-radius: 4px;">
+<div id="{{ $carnetId }}"
+    style="width: 246px; margin: 0 auto; font-family: DejaVu Sans, Arial, sans-serif; box-sizing: border-box; background: {{ $outerBackground }}; padding: 8px; border-radius: 4px;">
     <div
-        style="background: #b96328; border-radius: 6px; overflow: hidden; position: relative; box-shadow: 0 2px 6px rgba(0,0,0,0.15); padding-top: 1em;">
+        style="background: {{ $primaryBackground }}; border-radius: 6px; overflow: hidden; position: relative; box-shadow: 0 2px 6px rgba(0,0,0,0.15); padding-top: 1em;">
         <div class="carnet-colgador-guia-print" aria-hidden="true"></div>
         <div
             style="position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0.14; background: url('{{ asset('img/aRBOL-BLANCO.png') }}') center center / 120% no-repeat;">
@@ -34,7 +39,7 @@
                 <td style="padding: 20px 5px 5px 4px; vertical-align: middle; text-align: center;">
                     <div
                         style="color: #fff; font-weight: bold; font-size: 10px; letter-spacing: 0.06em; line-height: 1.25;">
-                        ID Estudiante
+                        {{ $cabeceraTitulo }}
                     </div>
                 </td>
             </tr>
@@ -46,17 +51,17 @@
                     <tr>
                         <td style="vertical-align: top; padding-right: 6px; width: 60%;">
                             <div style="margin-bottom: 8px;">
-                                <div style="color: #c41e3a; font-size: 8px; font-weight: bold;">Programa</div>
+                                <div style="color: {{ $labelColor }}; font-size: 8px; font-weight: bold;">Programa</div>
                                 <div
                                     style="color: #111; font-size: 8px; font-weight: bold; text-transform: uppercase; line-height: 1.2;">
                                     {{ \Illuminate\Support\Str::limit($programaNombre, 48) }}</div>
                             </div>
                             <div style="margin-bottom: 8px;">
-                                <div style="color: #c41e3a; font-size: 8px; font-weight: bold;">Año de Ingreso</div>
+                                <div style="color: {{ $labelColor }}; font-size: 8px; font-weight: bold;">Año de Ingreso</div>
                                 <div style="color: #111; font-size: 11px; font-weight: bold;">{{ $anioIngreso }}</div>
                             </div>
                             <div>
-                                <div style="color: #c41e3a; font-size: 8px; font-weight: bold;">DNI</div>
+                                <div style="color: {{ $labelColor }}; font-size: 8px; font-weight: bold;">DNI</div>
                                 <div style="color: #111; font-size: 11px; font-weight: bold;">{{ $dni }}</div>
                             </div>
                         </td>

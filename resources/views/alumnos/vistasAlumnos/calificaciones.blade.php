@@ -1,4 +1,5 @@
 @extends('layouts.alumno')
+@section('titulo', 'Calificaciones')
 @section('contenido')
     <style>
         table thead tr th {
@@ -9,112 +10,119 @@
             pointer-events: none;
         }
     </style>
-    <div class="container-fluid bg-white">
-        <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3 pb-2"
-            style="border-bottom: 1px dashed #80808078">
-            <h4 class="mb-0 text-uppercase text-primary font-weight-bold">Notas </h4>
-            <span class="font-weight-bold">
-                {{ $alumno->programa->nombre }} - {{ $alumno->ciclo->nombre }}
-            </span>
-            <a href="javascript:history.go(-1)" class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm">
-                Volver
-            </a>
-        </div>
-        <div class="row mb-4">
-            <div class="col-lg-12">
+    @php
+        $actions =
+            '<a href="javascript:history.go(-1)" class="btn btn-outline-secondary btn-sm shadow-sm"><i class="fas fa-arrow-left mr-1"></i> Volver</a>';
+    @endphp
+    @include('partials.alumno-page-header', [
+        'title' => 'Calificaciones',
+        'subtitle' =>
+            'Notas del periodo actual y consulta de periodos anteriores. Programa y ciclo se muestran como referencia.',
+        'actions' => $actions,
+    ])
 
-                @if ($periodosAgrupados->isNotEmpty())
-                    <div class="container d-flex justify-content-center my-2">
-                        <div class="col-md-6">
-                            <label for="selectorPeriodo" class="form-label fw-bold text-center w-100 mb-2">
-                                Calificaciones de periodos anteriores
-                            </label>
-                            <select id="selectorPeriodo" class="form-select form-control form-control-sm text-center"
-                                onchange="mostrarPeriodoAgrupado(this.value)">
-                                <option selected disabled>-- Selecciona un período --</option>
-                                @foreach ($periodosAgrupados as $nombrePeriodo => $periodos)
-                                    <option value="periodo-{{ \Illuminate\Support\Str::slug($nombrePeriodo) }}">
-                                        {{ $nombrePeriodo }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
+    <div class="d-flex flex-wrap justify-content-center justify-content-md-end mb-3">
+        <span class="alumno-badge-program">
+            <i class="fas fa-graduation-cap mr-1"></i>
+            {{ $alumno->programa->nombre }} — {{ $alumno->ciclo->nombre }}
+        </span>
+    </div>
 
-                    @foreach ($periodosAgrupados as $nombrePeriodo => $periodos)
-                        <div id="periodo-{{ \Illuminate\Support\Str::slug($nombrePeriodo) }}"
-                            class="tabla-periodo d-none table-responsive">
-                            <table class="table table-bordered table-hover">
-                                <thead class="table-secondary thead-dark">
-                                    <tr>
-                                        <th colspan="4" class="text-center h5 mb-0">
-                                            Periodo: {{ $nombrePeriodo }}
-                                        </th>
-                                    </tr>
-                                    <tr>
-                                        <th>Cursos</th>
-                                        <th>Valoración del curso</th>
-                                        <th>Calificación del curso</th>
-                                        <th>Calificación del sistema</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($periodos as $periodo)
-                                        @php
-                                            $bgColor = is_null($periodo->calificacion_sistema)
-                                                ? '#fff3cd'
-                                                : ($periodo->calificacion_sistema > 11
-                                                    ? '#d4edda'
-                                                    : '#f8d7da');
-                                        @endphp
-                                        <tr>
-                                            <td>
-                                                <span
-                                                    class="font-weight-bold">{{ $periodo->curso->nombre ?? 'No asignado' }}</span>
-                                                <span style="font-size: 12px">
-                                                    ({{ $periodo->curso->ciclo->programa->nombre ?? 'No asignado' }} -
-                                                    {{ $periodo->curso->ciclo->nombre ?? 'No asignado' }})
-                                                </span>
-                                            </td>
-                                            <td style="text-align: center; background-color: {{ $bgColor }};">
-                                                {{ $periodo->valoracion_curso ?? 'Sin datos' }}
-                                            </td>
-                                            <td style="text-align: center; background-color: {{ $bgColor }};">
-                                                {{ $periodo->calificacion_curso ?? 'Sin datos' }}
-                                            </td>
-                                            <td style="text-align: center; background-color: {{ $bgColor }};">
-                                                {{ $periodo->calificacion_sistema ?? 'Sin datos' }}
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    @endforeach
+    <div class="row mb-4">
+        <div class="col-lg-12">
 
-                    <script>
-                        function mostrarPeriodoAgrupado(id) {
-                            document.querySelectorAll('.tabla-periodo').forEach(div => div.classList.add('d-none'));
-                            const seleccionado = document.getElementById(id);
-                            if (seleccionado) seleccionado.classList.remove('d-none');
-                        }
-                    </script>
-                @endif
+            @if ($periodosAgrupados->isNotEmpty())
+                <div class="alumno-shell alumno-cal-filter mb-4">
+                    <label for="selectorPeriodo" class="d-block font-weight-bold text-center w-100 mb-2">
+                        Periodos anteriores
+                    </label>
+                    <select id="selectorPeriodo" class="form-control form-control-sm text-center"
+                        onchange="mostrarPeriodoAgrupado(this.value)">
+                        <option selected disabled>— Selecciona un período —</option>
+                        @foreach ($periodosAgrupados as $nombrePeriodo => $periodos)
+                            <option value="periodo-{{ \Illuminate\Support\Str::slug($nombrePeriodo) }}">
+                                {{ $nombrePeriodo }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
 
-
-                @if ($alumno->ciclo->cursos->isNotEmpty())
-                    <div class="p-2 table-responsive mt-4">
-                        <table class="table table-bordered table-hover">
+                @foreach ($periodosAgrupados as $nombrePeriodo => $periodos)
+                    <div id="periodo-{{ \Illuminate\Support\Str::slug($nombrePeriodo) }}"
+                        class="tabla-periodo d-none table-responsive mb-4">
+                        <table class="table table-bordered table-hover alumno-table-cal mb-0">
                             <thead>
-                                <tr class="bg-dark text-white">
-                                    <th colspan="6" class="text-center h5 mb-0">Periodo actual</th>
+                                <tr>
+                                    <th colspan="4" class="text-center py-3 alumno-cal-period-title">
+                                        {{ $nombrePeriodo }}
+                                    </th>
                                 </tr>
+                                <tr class="bg-light">
+                                    <th>Curso</th>
+                                    <th class="text-center">Valoración del curso</th>
+                                    <th class="text-center">Calificación del curso</th>
+                                    <th class="text-center">Calificación del sistema</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($periodos as $periodo)
+                                    @php
+                                        $bgColor = is_null($periodo->calificacion_sistema)
+                                            ? '#fff3cd'
+                                            : ($periodo->calificacion_sistema > 11
+                                                ? '#d4edda'
+                                                : '#f8d7da');
+                                    @endphp
+                                    <tr>
+                                        <td>
+                                            <span class="font-weight-bold d-block">{{ $periodo->curso->nombre ?? 'No asignado' }}</span>
+                                            <span class="small text-muted">
+                                                ({{ $periodo->curso->ciclo->programa->nombre ?? '—' }} —
+                                                {{ $periodo->curso->ciclo->nombre ?? '—' }})
+                                            </span>
+                                        </td>
+                                        <td class="text-center" style="background-color: {{ $bgColor }};">
+                                            {{ $periodo->valoracion_curso ?? 'Sin datos' }}
+                                        </td>
+                                        <td class="text-center" style="background-color: {{ $bgColor }};">
+                                            {{ $periodo->calificacion_curso ?? 'Sin datos' }}
+                                        </td>
+                                        <td class="text-center" style="background-color: {{ $bgColor }};">
+                                            {{ $periodo->calificacion_sistema ?? 'Sin datos' }}
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endforeach
+
+                <script>
+                    function mostrarPeriodoAgrupado(id) {
+                        document.querySelectorAll('.tabla-periodo').forEach(div => div.classList.add('d-none'));
+                        const seleccionado = document.getElementById(id);
+                        if (seleccionado) seleccionado.classList.remove('d-none');
+                    }
+                </script>
+            @endif
+
+
+            @if ($alumno->ciclo->cursos->isNotEmpty())
+                <div class="alumno-shell p-0 overflow-hidden">
+                    <div class="p-3 border-bottom bg-light">
+                        <h2 class="h5 mb-0 font-weight-bold text-primary">
+                            <i class="fas fa-calendar-check mr-2"></i> Periodo actual
+                        </h2>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover mb-0">
+                            <thead>
                                 <tr style="font-size: 14px" class="bg-dark text-white">
-                                    <td class="font-weight-bold align-middle align-middle">Curso</td>
+                                    <td class="font-weight-bold align-middle">Curso</td>
                                     <td class="font-weight-bold align-middle text-center">Parcial</td>
-                                    <td class="font-weight-bold align-middle text-center">Valoración Curso</td>
-                                    <td class="font-weight-bold align-middle text-center">Calificación Curso</td>
-                                    <td class="font-weight-bold align-middle text-center">Calificación Sistema</td>
+                                    <td class="font-weight-bold align-middle text-center">Valoración curso</td>
+                                    <td class="font-weight-bold align-middle text-center">Calificación curso</td>
+                                    <td class="font-weight-bold align-middle text-center">Calificación sistema</td>
                                     <th class="font-weight-bold align-middle text-center">Observaciones</th>
                                 </tr>
                             </thead>
@@ -172,7 +180,6 @@
                                     </tr>
                                     <tr>
                                         <td class="font-weight-bold text-info">Parcial 2</td>
-                                        <!-- Calificaciones del segundo periodo -->
                                         @if ($periodoDos)
                                             <td class="text-center align-middle text-info">
                                                 {{ $periodoDos->valoracion_curso }}
@@ -183,22 +190,13 @@
                                             <td class="text-center align-middle text-info">
                                                 {{ $periodoDos->calificacion_sistema }}
                                             </td>
-                                            {{-- <td rowspan="3" style="width: 600px; border-top: 1px solid #39779b"
-                                                class="align-middle">
-                                                @if (!empty($periodoDos?->observaciones))
-                                                    {{ $periodoDos->observaciones }}
-                                                @elseif (!empty($periodoUno?->observaciones))
-                                                    {{ $periodoUno->observaciones }}
-                                                @else
-                                                    Sin observaciones
-                                                @endif
-                                            </td> --}}
                                         @else
                                             <td colspan="3" class="text-center">Sin datos disponibles</td>
                                         @endif
                                     </tr>
                                     <tr>
-                                        <td style="border-bottom: 1px solid #39779b;" class="text-success font-weight-bold">
+                                        <td style="border-bottom: 1px solid #39779b;"
+                                            class="text-success font-weight-bold">
                                             Promedio</td>
                                         @if ($periodoTres)
                                             <td style="border-bottom: 1px solid #39779b;"
@@ -223,13 +221,13 @@
                             </tbody>
                         </table>
                     </div>
-                @else
-                    <div class="alert alert-warning" role="alert">
-                        No hay cursos asignados para este alumno.
-                    </div>
-                @endif
+                </div>
+            @else
+                <div class="alert alert-warning border-0 shadow-sm" role="alert">
+                    <i class="fas fa-info-circle mr-2"></i> No hay cursos asignados para este alumno.
+                </div>
+            @endif
 
-            </div>
         </div>
     </div>
 @endsection

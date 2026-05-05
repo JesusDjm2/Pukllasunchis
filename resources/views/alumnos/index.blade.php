@@ -1,5 +1,65 @@
 @extends('layouts.admin')
 @section('contenido')
+    <style>
+        .alumno-avatar-thumb {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #dee2e6;
+            cursor: zoom-in;
+            transition: transform 0.15s ease, border-color 0.15s ease;
+        }
+
+        .alumno-avatar-thumb:hover {
+            transform: scale(1.06);
+            border-color: #4e73df;
+        }
+
+        .alumno-avatar-empty {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #f1f3f5;
+            color: #9aa0a6;
+            border: 2px solid #dee2e6;
+        }
+
+        #alumnoPhotoModal .modal-content {
+            background: transparent;
+            border: 0;
+            box-shadow: none;
+        }
+
+        #alumnoPhotoModal .modal-header {
+            border-bottom: 0;
+            justify-content: center;
+            padding-bottom: 0.5rem;
+        }
+
+        #alumnoPhotoModal .modal-title {
+            width: 100%;
+            text-align: center;
+            color: #fff;
+        }
+
+        #alumnoPhotoModal .close {
+            position: absolute;
+            right: 0.5rem;
+            top: 0.35rem;
+            color: #fff;
+            opacity: 0.9;
+            text-shadow: none;
+        }
+
+        #alumnoPhotoModal .close:hover {
+            color: #fff;
+            opacity: 1;
+        }
+    </style>
     @php
         $qBase = array_filter(
             [
@@ -143,14 +203,16 @@
                     <table class="table table-hover" style="font-size: 14px">
                         <thead class="thead-dark">
                             <tr>
+                                <th scope="col">N°</th>
                                 <th scope="col">Nombre</th>
                                 <th scope="col">Detalles académicos</th>
-                                <th scope="col">DNI</th>
+                                <th scope="col">Foto</th>
                                 <th scope="col">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             @php $grupoActual = null; @endphp
+                            @php $numeroRegistro = 1; @endphp
                             @forelse ($alumnos as $alumno)
                                 @php
                                     $grupo =
@@ -168,7 +230,7 @@
                                         $nGrupo = $conteoGrupoListado[$kGrupo] ?? 0;
                                     @endphp
                                     <tr class="table-active">
-                                        <td colspan="4" class="py-2">
+                                        <td colspan="5" class="py-2">
                                             <strong>{{ $grupo }}</strong>
                                             <span class="badge badge-secondary ml-2">{{ $nGrupo }}
                                                 {{ $nGrupo === 1 ? 'alumno' : 'alumnos' }}</span>
@@ -185,7 +247,13 @@
                                     </tr>
                                 @endif
                                 <tr>
+                                    <td class="text-muted font-weight-bold">{{ $numeroRegistro }}</td>
                                     <td><strong>{{ $alumno->apellidos }}, {{ $alumno->nombres }}</strong>
+                                        @if (($alumno->user->beca ?? 0) == 1)
+                                            <span class="badge badge-success ml-1 align-middle" title="Estudiante becado">
+                                                Beca
+                                            </span>
+                                        @endif
                                         @if ($alumno->user && $alumno->user->hasRole('inhabilitado') && ($alumno->user->perfil ?? '') === 'Deuda')
                                             <span class="badge badge-warning ml-1 align-middle"
                                                 title="Usuario inhabilitado por deuda">Deuda</span>
@@ -201,7 +269,7 @@
                                                 @endif
                                             </li>
                                             <li>Donde trabajas: {{ $alumno->donde_trabajas ?? 'NULL' }}</li>
-
+                                            <li>DNI: {{ $alumno->dni }}</li>
                                         </ul>
                                     </td>
                                     <td>
@@ -213,14 +281,50 @@
                                                 @php $fechaNacFmt = $alumno->fechaNacimientoResueltaFormateada(); @endphp
                                                 @if ($fechaNacFmt !== '')
                                                     {{ $fechaNacFmt }}
+                                                    @if (!is_null($alumno->edad))
+                                                        <span class="font-weight-bold">({{ $alumno->edad }} años)</span>
+                                                    @endif
                                                 @else
                                                     <span class="text-muted">—</span>
                                                 @endif
                                             </li>
                                         </ul>
                                     </td>
-                                    <td>{{ $alumno->dni }}</td>
                                     <td>
+                                        @php
+                                            $fotoAlumno = $alumno->user?->foto
+                                                ? asset('img/estudiantes/' . $alumno->user->foto)
+                                                : null;
+                                            $nombreCompleto = trim($alumno->apellidos . ', ' . $alumno->nombres);
+                                        @endphp
+                                        @if ($fotoAlumno)
+                                            <img src="{{ $fotoAlumno }}"
+                                                class="alumno-avatar-thumb js-open-photo-modal"
+                                                data-photo-src="{{ $fotoAlumno }}"
+                                                data-photo-name="{{ $nombreCompleto }}" loading="lazy"
+                                                decoding="async">
+                                        @else
+                                            <span class="alumno-avatar-empty" title="Sin foto">
+                                                <i class="fa fa-user"></i>
+                                            </span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @php
+                                            $carnetBaseParams = array_merge(
+                                                ['alumno' => $alumno->id],
+                                                array_filter(
+                                                    request()->only([
+                                                        'search',
+                                                        'search_page',
+                                                        'with_user',
+                                                        'programa_id',
+                                                        'ciclo_id',
+                                                    ]),
+                                                ),
+                                            );
+                                            $tieneFotoCarnet = !empty($alumno->user?->foto);
+                                        @endphp
                                         <a href="{{ route('alumnos.edit', ['alumno' => $alumno->id]) }}"
                                             class="btn btn-primary btn-sm" title="Editar">
                                             <i class="fa fa-edit fa-sm"></i>
@@ -229,11 +333,38 @@
                                             class="btn btn-info btn-sm" title="Ver registro completo">
                                             <i class="fa fa-eye fa-sm"></i>
                                         </a> |
-                                        <a href="{{ route('admin.alumnos.carnet', array_merge(['alumno' => $alumno->id], array_filter(request()->only(['search', 'search_page', 'with_user', 'programa_id', 'ciclo_id'])))) }}"
-                                            class="btn btn-secondary btn-sm" title="Ver carnet y descargar imagen"
-                                            target="_blank" rel="noopener noreferrer">
-                                            <i class="fa fa-id-card fa-sm"></i> Carnet
-                                        </a> |
+                                        @if ($tieneFotoCarnet)
+                                            <div class="btn-group" role="group">
+                                                <button type="button"
+                                                    class="btn btn-secondary btn-sm dropdown-toggle"
+                                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                                                    title="Carnets">
+                                                    <i class="fa fa-id-card fa-sm"></i> Carnets
+                                                </button>
+                                                <div class="dropdown-menu dropdown-menu-right">
+                                                    <a class="dropdown-item"
+                                                        href="{{ route('admin.alumnos.carnet', $carnetBaseParams) }}"
+                                                        target="_blank" rel="noopener noreferrer">
+                                                        <i class="fa fa-eye text-primary mr-2"></i> Ver ambos
+                                                    </a>
+                                                    <a class="dropdown-item"
+                                                        href="{{ route('admin.alumnos.carnet', array_merge($carnetBaseParams, ['auto_download' => 1, 'tipo' => 'estudiante'])) }}"
+                                                        target="carnetDownloadFrame" rel="noopener noreferrer">
+                                                        <i class="fa fa-download text-primary mr-2"></i> Descargar carnet
+                                                    </a>
+                                                    <a class="dropdown-item"
+                                                        href="{{ route('admin.alumnos.carnet', array_merge($carnetBaseParams, ['auto_download' => 1, 'tipo' => 'biblioteca'])) }}"
+                                                        target="carnetDownloadFrame" rel="noopener noreferrer">
+                                                        <i class="fa fa-download text-info mr-2"></i> Descargar biblioteca
+                                                    </a>
+                                                </div>
+                                            </div> |
+                                        @else
+                                            <button type="button" class="btn btn-secondary btn-sm" disabled
+                                                title="Para generar carnet, el registro debe tener foto">
+                                                <i class="fa fa-id-card fa-sm"></i> Carnets
+                                            </button> |
+                                        @endif
                                         @if (!$alumno->user)
                                             <a class="btn btn-success btn-sm relacionar-usuario"
                                                 data-alumno-id="{{ $alumno->id }}" title="Relacionar con Usuario">
@@ -278,9 +409,10 @@
                                         </div>
                                     </td>
                                 </tr>
+                                @php $numeroRegistro++; @endphp
                             @empty
                                 <tr>
-                                    <td colspan="4" class="text-center">No se encontraron alumnos.</td>
+                                    <td colspan="5" class="text-center">No se encontraron alumnos.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -511,6 +643,43 @@
                     }
                 });
             }
+
+            $(document).on('click', '.js-open-photo-modal', function() {
+                var src = $(this).data('photo-src');
+                var name = $(this).data('photo-name') || 'Foto del estudiante';
+                if (!src) return;
+                $('#alumnoPhotoModalImg').attr('src', src);
+                $('#alumnoPhotoModalLabel').text(name);
+                $('#alumnoPhotoModal').modal('show');
+            });
+
+            $('#alumnoPhotoModal').on('hidden.bs.modal', function() {
+                $('#alumnoPhotoModalImg').attr('src', '');
+                $('#alumnoPhotoModalLabel').text('');
+            });
+
+            $(document).on('click', '#alumnoPhotoModalClose', function() {
+                $('#alumnoPhotoModal').modal('hide');
+            });
         });
     </script>
+
+    <div class="modal fade" id="alumnoPhotoModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content border-0">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="alumnoPhotoModalLabel">Foto del estudiante</h5>
+                    <button type="button" class="close" id="alumnoPhotoModalClose" data-dismiss="modal"
+                        aria-label="Cerrar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body text-center p-0">
+                    <img id="alumnoPhotoModalImg" src=""
+                        style="max-width: 100%; max-height: 75vh; object-fit: contain;">
+                </div>
+            </div>
+        </div>
+    </div>
+    <iframe name="carnetDownloadFrame" style="display:none;"></iframe>
 @endsection

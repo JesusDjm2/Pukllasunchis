@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\AlumnosFidExport;
+use App\Exports\AlumnosPpdExport;
 use App\Models\Alumno;
 use App\Models\Ciclo;
 use App\Models\Curso;
@@ -157,18 +158,106 @@ class AdminController extends Controller
         ));
     }
 
-    public function alumnosppd()
+    public function alumnosppd(Request $request)
     {
-        $alumnos = User::role('alumnoB')->get();
-        $ppd = ppd::all();
-        $totalRecords = $ppd->count();
-        $counts = [
-            'Inicial' => $alumnos->filter(fn ($a) => Str::contains($a->ciclo->programa->nombre, 'Inicial'))->count(),
-            'Primaria' => $alumnos->filter(fn ($a) => Str::contains($a->ciclo->programa->nombre, 'Primaria') && ! Str::contains($a->ciclo->programa->nombre, 'EIB'))->count(),
-            'Primaria EIB' => $alumnos->filter(fn ($a) => Str::contains($a->ciclo->programa->nombre, 'Primaria EIB'))->count(),
-        ];
+        $query = $this->alumnosPpdFilteredQuery($request);
+        $busquedaActiva = $request->filled('search') && trim((string) $request->input('search')) !== '';
 
-        return view('alumnos.ppd.lista', compact('alumnos', 'ppd', 'totalRecords', 'counts'));
+        $alumnos = $query
+            ->with(['programa', 'ciclo.programa', 'alumnoB', 'roles'])
+            ->orderByRaw('programa_id IS NULL, programa_id')
+            ->orderByRaw('ciclo_id IS NULL, ciclo_id')
+            ->orderBy('apellidos')
+            ->orderBy('name')
+            ->get();
+
+        $totalRecords = $alumnos->count();
+
+        $conteoGrupoListado = $alumnos->groupBy(function (User $u) {
+            return (string) ($u->programa_id ?? '0').'|'.(string) ($u->ciclo_id ?? '0');
+        })->map->count();
+
+        $totalesPorCicloId = User::role('alumnoB')
+            ->whereNotNull('ciclo_id')
+            ->selectRaw('ciclo_id, COUNT(*) as total')
+            ->groupBy('ciclo_id')
+            ->get()
+            ->keyBy('ciclo_id');
+
+        $programaIdsConPpd = User::role('alumnoB')
+            ->whereNotNull('programa_id')
+            ->distinct()
+            ->pluck('programa_id');
+
+        $programasFiltro = Programa::query()
+            ->whereIn('id', $programaIdsConPpd)
+            ->orderBy('nombre')
+            ->get();
+
+        $ciclosFiltro = collect();
+        if ($request->filled('programa_id')) {
+            $cicloIdsConPpd = User::role('alumnoB')
+                ->where('programa_id', (int) $request->input('programa_id'))
+                ->whereNotNull('ciclo_id')
+                ->distinct()
+                ->pluck('ciclo_id');
+
+            $ciclosFiltro = Ciclo::query()
+                ->whereIn('id', $cicloIdsConPpd)
+                ->where('programa_id', (int) $request->input('programa_id'))
+                ->orderBy('id')
+                ->get();
+        }
+
+        $cicloIdsConPpdTotal = User::role('alumnoB')
+            ->whereNotNull('ciclo_id')
+            ->distinct()
+            ->pluck('ciclo_id');
+
+        $ciclosParaExportacion = Ciclo::query()
+            ->with('programa')
+            ->whereIn('id', $cicloIdsConPpdTotal)
+            ->orderBy('programa_id')
+            ->orderBy('id')
+            ->get();
+
+        return view('alumnos.ppd.lista', compact(
+            'alumnos',
+            'totalRecords',
+            'programasFiltro',
+            'ciclosFiltro',
+            'conteoGrupoListado',
+            'totalesPorCicloId',
+            'busquedaActiva',
+            'ciclosParaExportacion',
+        ));
+    }
+
+    public function exportAlumnosPpdExcel(Request $request)
+    {
+        if (! auth()->check() || ! auth()->user()->hasRole('admin')) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'ciclo_ids' => ['required', 'array', 'min:1'],
+            'ciclo_ids.*' => ['integer', 'exists:ciclos,id'],
+        ]);
+
+        $cicloIds = array_values(array_unique(array_map('intval', $validated['ciclo_ids'])));
+
+        $alumnos = $this->alumnosPpdFilteredQuery($request, false)
+            ->whereIn('ciclo_id', $cicloIds)
+            ->with(['programa', 'ciclo.programa', 'alumnoB', 'roles'])
+            ->orderByRaw('programa_id IS NULL, programa_id')
+            ->orderByRaw('ciclo_id IS NULL, ciclo_id')
+            ->orderBy('apellidos')
+            ->orderBy('name')
+            ->get();
+
+        $nombreArchivo = 'alumnos_ppd_'.now()->format('Y-m-d_His').'.xlsx';
+
+        return Excel::download(new AlumnosPpdExport($alumnos), $nombreArchivo);
     }
 
     public function relacionarUsuario($alumnoId)
@@ -428,8 +517,9 @@ class AdminController extends Controller
     {
         $alumno->loadMissing(['programa', 'ciclo', 'user']);
         [$apellidoPaterno, $apellidoMaterno] = $this->splitApellidosParaCarnet((string) $alumno->apellidos);
-        $ref = $alumno->user?->created_at ?? $alumno->created_at;
-        $anioIngreso = $ref ? $ref->format('Y') : '';
+        $email = $alumno->user?->email ?? $alumno->email ?? '';
+        preg_match('/20\d{2}/', $email, $matches);
+        $anioIngreso = $matches[0] ?? (($alumno->user?->created_at ?? $alumno->created_at)?->format('Y') ?? '');
 
         return [
             'programaNombre' => (string) ($alumno->programa->nombre ?? ''),
@@ -534,6 +624,39 @@ class AdminController extends Controller
                         ->orWhereHas('programa', function ($programaQuery) use ($term) {
                             $programaQuery->where('nombre', 'like', '%'.$term.'%');
                         });
+                }
+            });
+        }
+
+        return $query;
+    }
+
+    private function alumnosPpdFilteredQuery(Request $request, bool $aplicarFiltrosProgramaCiclo = true): Builder
+    {
+        $query = User::role('alumnoB');
+
+        $busquedaActiva = $request->filled('search') && trim((string) $request->input('search')) !== '';
+
+        if ($aplicarFiltrosProgramaCiclo && ! $busquedaActiva) {
+            if ($request->filled('programa_id')) {
+                $query->where('programa_id', (int) $request->input('programa_id'));
+            }
+            if ($request->filled('ciclo_id')) {
+                $query->where('ciclo_id', (int) $request->input('ciclo_id'));
+            }
+        }
+
+        if ($busquedaActiva) {
+            $searchTerms = array_filter(array_map('trim', explode(' ', (string) $request->input('search'))));
+            $query->where(function ($sub) use ($searchTerms) {
+                foreach ($searchTerms as $term) {
+                    if ($term === '') {
+                        continue;
+                    }
+                    $sub->where(function ($q) use ($term) {
+                        $q->where('name', 'like', '%'.$term.'%')
+                            ->orWhere('apellidos', 'like', '%'.$term.'%');
+                    })->orWhere('dni', 'like', '%'.$term.'%');
                 }
             });
         }

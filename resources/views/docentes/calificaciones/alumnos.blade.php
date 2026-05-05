@@ -48,6 +48,130 @@
             text-decoration: none;
             cursor: pointer;
         }
+
+        .alumno-identidad {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            text-align: left;
+        }
+
+        .alumno-foto-btn {
+            border: 0;
+            background: transparent;
+            padding: 0;
+            border-radius: 999px;
+            line-height: 0;
+            cursor: pointer;
+        }
+
+        .alumno-foto-btn:focus {
+            outline: 2px solid #4e73df;
+            outline-offset: 2px;
+        }
+
+        .alumno-foto-thumb {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #d6dde8;
+            transition: transform .2s ease, border-color .2s ease;
+        }
+
+        .alumno-foto-btn:hover .alumno-foto-thumb {
+            transform: scale(1.07);
+            border-color: #4e73df;
+        }
+
+        .alumno-foto-placeholder {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed #c6cfdd;
+            background: #f8fafd;
+            color: #8a96a8;
+            flex-shrink: 0;
+        }
+
+        .alumno-identidad-nombre {
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .alumno-identidad-badges .badge {
+            margin-top: 0.2rem;
+            margin-right: 0.2rem;
+        }
+
+        .alumno-foto-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(11, 18, 32, 0.8);
+            z-index: 2100;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .alumno-foto-modal-overlay.is-open {
+            display: flex;
+        }
+
+        .alumno-foto-modal-card {
+            width: min(92vw, 560px);
+            background: #fff;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 14px 40px rgba(0, 0, 0, .28);
+        }
+
+        .alumno-foto-modal-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: .7rem .95rem;
+            background: #33445a;
+            color: #fff;
+        }
+
+        .alumno-foto-modal-close {
+            border: 0;
+            background: transparent;
+            color: #fff;
+            font-size: 1.5rem;
+            line-height: 1;
+            cursor: pointer;
+        }
+
+        .alumno-foto-modal-body {
+            padding: .75rem;
+            text-align: center;
+            background: #f8fafc;
+        }
+
+        .alumno-foto-modal-body img {
+            max-width: 100%;
+            max-height: 72vh;
+            border-radius: 10px;
+            object-fit: contain;
+        }
+
+        @media (max-width: 576px) {
+            .alumno-identidad {
+                gap: 0.5rem;
+            }
+
+            .alumno-foto-thumb,
+            .alumno-foto-placeholder {
+                width: 36px;
+                height: 36px;
+            }
+        }
     </style>
     <div class="container-fluid docente-ui-page">
         @include('docentes.partials.ui-header', [
@@ -151,6 +275,11 @@
                                 @foreach ($alumnos as $index => $alumno)
                                     @php
                                         $esInhabilitado = $alumno->user && $alumno->user->hasRole('inhabilitado');
+                                        $fotoAlumnoUrl =
+                                            $alumno->user && $alumno->user->foto
+                                                ? asset('img/estudiantes/' . $alumno->user->foto)
+                                                : null;
+                                        $nombreAlumno = $alumno->apellidos . ', ' . $alumno->nombres;
                                     @endphp
 
                                     <input type="hidden" name="alumnos[{{ $alumno->id }}][alumno_id]"
@@ -165,13 +294,31 @@
                                             {{ $index + 1 }}
                                         </td>
                                         <td style="vertical-align: middle; border-bottom: 1px solid #39779b; width:200px ">
-                                            {{ $alumno->apellidos }}, {{ $alumno->nombres }}
-                                            @if ($alumno->ciclo_id !== $curso->ciclo_id)
-                                                <span class="badge badge-info">Ciclo {{ $alumno->ciclo->nombre }}</span>
-                                            @endif
-                                            @if ($esInhabilitado)
-                                                <span class="badge badge-danger">{{ $alumno->user->perfil }}</span>
-                                            @endif
+                                            <div class="alumno-identidad">
+                                                @if ($fotoAlumnoUrl)
+                                                    <button type="button" class="alumno-foto-btn"
+                                                        onclick='openAlumnoFotoCalif(@json($fotoAlumnoUrl), @json($nombreAlumno))'
+                                                        title="Ver foto de {{ $nombreAlumno }}">
+                                                        <img src="{{ $fotoAlumnoUrl }}" alt="Foto de {{ $nombreAlumno }}"
+                                                            class="alumno-foto-thumb">
+                                                    </button>
+                                                @else
+                                                    <span class="alumno-foto-placeholder" title="Sin foto">
+                                                        <i class="fas fa-user"></i>
+                                                    </span>
+                                                @endif
+                                                <div>
+                                                    <div class="alumno-identidad-nombre">{{ $nombreAlumno }}</div>
+                                                    <div class="alumno-identidad-badges">
+                                                        @if ($alumno->ciclo_id !== $curso->ciclo_id)
+                                                            <span class="badge badge-info">Ciclo {{ $alumno->ciclo->nombre }}</span>
+                                                        @endif
+                                                        @if ($esInhabilitado)
+                                                            <span class="badge badge-danger">{{ $alumno->user->perfil }}</span>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </td>
 
                                         @foreach ($competenciasSeleccionadas as $index => $competencia)
@@ -291,6 +438,13 @@
                             </thead>
                             <tbody>
                                 @foreach ($alumnos as $index => $alumno)
+                                    @php
+                                        $fotoAlumnoUrl =
+                                            $alumno->user && $alumno->user->foto
+                                                ? asset('img/estudiantes/' . $alumno->user->foto)
+                                                : null;
+                                        $nombreAlumno = $alumno->apellidos . ', ' . $alumno->nombres;
+                                    @endphp
                                     <input type="hidden" name="alumnos[{{ $alumno->id }}][alumno_id]"
                                         value="{{ $alumno->id }}">
                                     <tr>
@@ -299,10 +453,28 @@
                                             {{ $index + 1 }}</td>
                                         <td rowspan="2"
                                             style="vertical-align: middle; border-bottom: 1px solid #39779b; font-weight: bold">
-                                            {{ $alumno->apellidos }}, {{ $alumno->nombres }}<br>
-                                            @if ($alumno->ciclo_id !== $curso->ciclo_id)
-                                                <span class="badge badge-info">Ciclo {{ $alumno->ciclo->nombre }}</span>
-                                            @endif
+                                            <div class="alumno-identidad">
+                                                @if ($fotoAlumnoUrl)
+                                                    <button type="button" class="alumno-foto-btn"
+                                                        onclick='openAlumnoFotoCalif(@json($fotoAlumnoUrl), @json($nombreAlumno))'
+                                                        title="Ver foto de {{ $nombreAlumno }}">
+                                                        <img src="{{ $fotoAlumnoUrl }}" alt="Foto de {{ $nombreAlumno }}"
+                                                            class="alumno-foto-thumb">
+                                                    </button>
+                                                @else
+                                                    <span class="alumno-foto-placeholder" title="Sin foto">
+                                                        <i class="fas fa-user"></i>
+                                                    </span>
+                                                @endif
+                                                <div>
+                                                    <div class="alumno-identidad-nombre">{{ $nombreAlumno }}</div>
+                                                    <div class="alumno-identidad-badges">
+                                                        @if ($alumno->ciclo_id !== $curso->ciclo_id)
+                                                            <span class="badge badge-info">Ciclo {{ $alumno->ciclo->nombre }}</span>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </td>
                                         <td>
                                             <p class="mt-1 text-primary mb-0 font-weight-bold">Parcial 1:</p>
@@ -494,6 +666,13 @@
                             </thead>
                             <tbody>
                                 @foreach ($alumnos as $index => $alumno)
+                                    @php
+                                        $fotoAlumnoUrl =
+                                            $alumno->user && $alumno->user->foto
+                                                ? asset('img/estudiantes/' . $alumno->user->foto)
+                                                : null;
+                                        $nombreAlumno = $alumno->apellidos . ', ' . $alumno->nombres;
+                                    @endphp
                                     <input type="hidden" name="alumnos[{{ $alumno->id }}][alumno_id]"
                                         value="{{ $alumno->id }}">
                                     <tr>
@@ -502,10 +681,28 @@
                                             {{ $index + 1 }}.</td>
                                         <td rowspan="3" class="font-weight-bold text-secondary"
                                             style="vertical-align: middle; border-bottom: 1px solid #39779b">
-                                            {{ $alumno->apellidos }}, {{ $alumno->nombres }}<br>
-                                            @if ($alumno->ciclo_id !== $curso->ciclo_id)
-                                                <span class="badge badge-info">Ciclo {{ $alumno->ciclo->nombre }}</span>
-                                            @endif
+                                            <div class="alumno-identidad">
+                                                @if ($fotoAlumnoUrl)
+                                                    <button type="button" class="alumno-foto-btn"
+                                                        onclick='openAlumnoFotoCalif(@json($fotoAlumnoUrl), @json($nombreAlumno))'
+                                                        title="Ver foto de {{ $nombreAlumno }}">
+                                                        <img src="{{ $fotoAlumnoUrl }}" alt="Foto de {{ $nombreAlumno }}"
+                                                            class="alumno-foto-thumb">
+                                                    </button>
+                                                @else
+                                                    <span class="alumno-foto-placeholder" title="Sin foto">
+                                                        <i class="fas fa-user"></i>
+                                                    </span>
+                                                @endif
+                                                <div>
+                                                    <div class="alumno-identidad-nombre">{{ $nombreAlumno }}</div>
+                                                    <div class="alumno-identidad-badges">
+                                                        @if ($alumno->ciclo_id !== $curso->ciclo_id)
+                                                            <span class="badge badge-info">Ciclo {{ $alumno->ciclo->nombre }}</span>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </td>
                                         <td>
                                             <p class="mt-1 text-primary mb-0 font-weight-bold" style="font-size: 14px">
@@ -727,6 +924,18 @@
             <p id="competenciaCapacidades" class="text-justify"></p>
         </div>
     </div>
+    <div id="alumnoFotoModalCalif" class="alumno-foto-modal-overlay" onclick="closeAlumnoFotoCalif(event)">
+        <div class="alumno-foto-modal-card" onclick="event.stopPropagation();">
+            <div class="alumno-foto-modal-head">
+                <strong id="alumnoFotoModalCalifNombre">Foto del estudiante</strong>
+                <button type="button" class="alumno-foto-modal-close" onclick="closeAlumnoFotoCalif(event)"
+                    aria-label="Cerrar">&times;</button>
+            </div>
+            <div class="alumno-foto-modal-body">
+                <img id="alumnoFotoModalCalifImg" src="" alt="Foto del estudiante">
+            </div>
+        </div>
+    </div>
     {{-- Modal --}}
     <!-- Modal de Comunicado Importante -->
     <div id="modalAviso" class="modal-aviso" onclick="cerrarAviso(event)">
@@ -843,6 +1052,33 @@
                 abrirAviso(); // usa tu función real del modal
                 localStorage.setItem('popupCompetenciasVisto', Number(contador) + 1);
             }
+        });
+    </script>
+    <script>
+        function openAlumnoFotoCalif(src, nombre) {
+            var modal = document.getElementById('alumnoFotoModalCalif');
+            var img = document.getElementById('alumnoFotoModalCalifImg');
+            var lbl = document.getElementById('alumnoFotoModalCalifNombre');
+            if (!modal || !img || !lbl) return;
+            img.src = src || '';
+            img.alt = nombre || 'Foto del estudiante';
+            lbl.textContent = nombre || 'Foto del estudiante';
+            modal.classList.add('is-open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeAlumnoFotoCalif(event) {
+            if (event) event.stopPropagation();
+            var modal = document.getElementById('alumnoFotoModalCalif');
+            var img = document.getElementById('alumnoFotoModalCalifImg');
+            if (!modal || !img) return;
+            modal.classList.remove('is-open');
+            img.src = '';
+            document.body.style.overflow = '';
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeAlumnoFotoCalif();
         });
     </script>
     <script>

@@ -128,157 +128,107 @@ class PeriodoActualPpdController extends Controller
             return $redirect;
         }
 
-        // Obtener los registros existentes (con calificaciones)
+        // Registros PeriodoPpd existentes con relaciones
         $registros = PeriodoPpd::where('periodo_actual_ppd_id', $periodo->id)
-            ->with(['alumno', 'curso.ciclo.programa'])
+            ->with(['alumno.user', 'curso.ciclo.programa'])
             ->get();
 
-        // Obtener TODOS los cursos disponibles
-        $todosLosCursos = \App\Models\Curso::with(['ciclo.programa'])->get();
-
-        // Agrupar cursos por programa
-        $cursosPorPrograma = [];
-        foreach ($todosLosCursos as $curso) {
-            $programaNombre = 'Sin Programa';
-            if ($curso->ciclo && $curso->ciclo->programa) {
-                $programaNombre = $curso->ciclo->programa->nombre;
+        // Mapa alumno_id => [curso_id => registro]
+        $registrosPorAlumnoCurso = [];
+        $alumnosConRegistros     = [];
+        foreach ($registros as $reg) {
+            if (! $reg->alumno || ! $reg->curso) {
+                continue;
             }
-
-            if (! isset($cursosPorPrograma[$programaNombre])) {
-                $cursosPorPrograma[$programaNombre] = [];
-            }
-            $cursosPorPrograma[$programaNombre][] = $curso;
+            $aid = $reg->alumno->id;
+            $alumnosConRegistros[$aid]                     = $reg->alumno;
+            $registrosPorAlumnoCurso[$aid][$reg->curso_id] = $reg;
         }
 
-        // Estructurar datos por programa y alumno
-        $registrosPorPrograma = [];
-        $totalRegistros = 0;
-        $totalAlumnos = 0;
-        $totalCursos = 0;
-        $sumaCalificaciones = 0;
+        // Cargar todos los cursos de cada programa (por programa_id del User del alumno)
+        // Esto evita mezclar FID y PPD que puedan tener el mismo nombre de programa
+        $cursosPorProgramaId = [];
+        foreach ($alumnosConRegistros as $aid => $alumno) {
+            $programaId = $alumno->user?->programa_id;
+            if (! $programaId || isset($cursosPorProgramaId[$programaId])) {
+                continue;
+            }
+            $cursosPorProgramaId[$programaId] = \App\Models\Curso::with(['ciclo.programa'])
+                ->whereHas('ciclo', fn ($q) => $q->where('programa_id', $programaId))
+                ->get()
+                ->keyBy('id');
+        }
+
+        // Construir estructura por programa
+        $registrosPorPrograma   = [];
+        $sumaCalificaciones     = 0;
         $calificacionesConValor = 0;
+        $cursosUnicos           = [];
+        $totalFilas             = 0;
 
-        // Obtener todos los alumnos que aparecen en los registros existentes
-        $alumnosConRegistros = [];
-        foreach ($registros as $registro) {
-            if (! $registro->alumno || ! $registro->curso) {
-                continue;
-            }
+        foreach ($alumnosConRegistros as $aid => $alumno) {
+            $programaId = $alumno->user?->programa_id;
 
-            $alumnoId = $registro->alumno->id;
-            if (! isset($alumnosConRegistros[$alumnoId])) {
-                $alumnosConRegistros[$alumnoId] = $registro->alumno;
-            }
-        }
+            // Cursos del programa del alumno (todos, con o sin registro)
+            $cursosDelPrograma = $programaId && isset($cursosPorProgramaId[$programaId])
+                ? $cursosPorProgramaId[$programaId]
+                : collect();
 
-        // Determinar a qué programas pertenece cada alumno (basado en sus cursos calificados)
-        $programasPorAlumno = [];
-        foreach ($registros as $registro) {
-            if (! $registro->alumno || ! $registro->curso) {
-                continue;
-            }
-
-            $alumnoId = $registro->alumno->id;
-            $programaNombre = 'Sin Programa';
-            if ($registro->curso->ciclo && $registro->curso->ciclo->programa) {
-                $programaNombre = $registro->curso->ciclo->programa->nombre;
-            }
-
-            if (! isset($programasPorAlumno[$alumnoId])) {
-                $programasPorAlumno[$alumnoId] = [];
-            }
-
-            if (! in_array($programaNombre, $programasPorAlumno[$alumnoId])) {
-                $programasPorAlumno[$alumnoId][] = $programaNombre;
-            }
-        }
-
-        // Para cada alumno y cada programa al que pertenece, obtener todos los cursos de ese programa
-        foreach ($alumnosConRegistros as $alumnoId => $alumno) {
-            if (! isset($programasPorAlumno[$alumnoId])) {
-                continue;
-            }
-
-            foreach ($programasPorAlumno[$alumnoId] as $programaNombre) {
-                if (! isset($registrosPorPrograma[$programaNombre])) {
-                    $registrosPorPrograma[$programaNombre] = [];
-                }
-
-                // Verificar si el alumno ya está en este programa
-                $alumnoIndex = null;
-                foreach ($registrosPorPrograma[$programaNombre] as $index => $alumnoData) {
-                    if ($alumnoData['alumno']->id === $alumnoId) {
-                        $alumnoIndex = $index;
-                        break;
-                    }
-                }
-
-                // Si el alumno no existe en este programa, crearlo
-                if ($alumnoIndex === null) {
-                    $registrosPorPrograma[$programaNombre][] = [
-                        'alumno' => $alumno,
-                        'cursos' => [],
-                    ];
-                    $alumnoIndex = count($registrosPorPrograma[$programaNombre]) - 1;
-                }
-
-                // Obtener todos los cursos de este programa
-                $cursosDelPrograma = isset($cursosPorPrograma[$programaNombre])
-                    ? $cursosPorPrograma[$programaNombre]
-                    : [];
-
-                // Para cada curso del programa, buscar si existe registro de calificación
-                foreach ($cursosDelPrograma as $curso) {
-                    // Buscar si existe registro para este alumno y curso
-                    $registroExistente = $registros->first(function ($reg) use ($alumnoId, $curso) {
-                        return $reg->alumno_id == $alumnoId && $reg->curso_id == $curso->id;
-                    });
-
-                    // Verificar si este curso ya fue agregado para este alumno
-                    $cursoYaAgregado = false;
-                    foreach ($registrosPorPrograma[$programaNombre][$alumnoIndex]['cursos'] as $cursoExistente) {
-                        if ($cursoExistente['curso']->id == $curso->id) {
-                            $cursoYaAgregado = true;
-                            break;
-                        }
-                    }
-
-                    if (! $cursoYaAgregado) {
-                        $registrosPorPrograma[$programaNombre][$alumnoIndex]['cursos'][] = [
-                            'curso' => $curso,
-                            'registro' => $registroExistente, // Puede ser null si no tiene calificación
-                        ];
-
-                        $totalRegistros++;
-
-                        // Estadísticas solo para calificaciones existentes
-                        if ($registroExistente && $registroExistente->calificacion_sistema) {
-                            $sumaCalificaciones += $registroExistente->calificacion_sistema;
-                            $calificacionesConValor++;
-                        }
+            // Si por alguna razón no hay programa cargado, al menos mostrar los que tienen registro
+            if ($cursosDelPrograma->isEmpty()) {
+                foreach ($registrosPorAlumnoCurso[$aid] ?? [] as $cursoId => $reg) {
+                    if ($reg->curso) {
+                        $cursosDelPrograma[$cursoId] = $reg->curso;
                     }
                 }
             }
-        }
 
-        // Ordenar los cursos dentro de cada alumno (opcional, puedes ordenar por nombre de curso)
-        foreach ($registrosPorPrograma as $programaNombre => &$alumnos) {
-            foreach ($alumnos as &$alumnoData) {
-                usort($alumnoData['cursos'], function ($a, $b) {
-                    return strcmp($a['curso']->nombre, $b['curso']->nombre);
-                });
+            if ($cursosDelPrograma->isEmpty()) {
+                continue;
+            }
+
+            // Nombre del programa (desde el primer curso)
+            $primerCurso    = $cursosDelPrograma->first();
+            $programaNombre = $primerCurso?->ciclo?->programa?->nombre ?? 'Sin Programa';
+
+            // Filas: todos los cursos del programa con o sin registro
+            $filas = [];
+            foreach ($cursosDelPrograma as $cursoId => $curso) {
+                $reg                   = $registrosPorAlumnoCurso[$aid][$cursoId] ?? null;
+                $filas[]               = ['curso' => $curso, 'registro' => $reg];
+                $cursosUnicos[$cursoId] = true;
+                $totalFilas++;
+
+                if ($reg && $reg->calificacion_sistema !== null) {
+                    $sumaCalificaciones    += $reg->calificacion_sistema;
+                    $calificacionesConValor++;
+                }
+            }
+
+            // Ordenar por nombre de curso
+            usort($filas, fn ($a, $b) => strcmp($a['curso']->nombre ?? '', $b['curso']->nombre ?? ''));
+
+            // Buscar o crear entrada del alumno bajo este programa
+            $alumnoIndex = null;
+            foreach ($registrosPorPrograma[$programaNombre] ?? [] as $idx => $ad) {
+                if ($ad['alumno']->id === $aid) {
+                    $alumnoIndex = $idx;
+                    break;
+                }
+            }
+            if ($alumnoIndex === null) {
+                $registrosPorPrograma[$programaNombre][] = ['alumno' => $alumno, 'cursos' => []];
+                $alumnoIndex = count($registrosPorPrograma[$programaNombre]) - 1;
+            }
+
+            foreach ($filas as $fila) {
+                $registrosPorPrograma[$programaNombre][$alumnoIndex]['cursos'][] = $fila;
             }
         }
 
-        // Contar alumnos únicos
-        $totalAlumnos = 0;
-        foreach ($registrosPorPrograma as $programaNombre => $alumnos) {
-            $totalAlumnos += count($alumnos);
-        }
-
-        // Contar cursos únicos
-        $totalCursos = $todosLosCursos->count();
-
+        $totalRegistros       = $registros->count();
+        $totalAlumnos         = count($alumnosConRegistros);
+        $totalCursos          = count($cursosUnicos);
         $promedioCalificacion = $calificacionesConValor > 0
             ? $sumaCalificaciones / $calificacionesConValor
             : 0;
@@ -367,6 +317,65 @@ class PeriodoActualPpdController extends Controller
 
         return redirect()->route('periodoactual.index')
             ->with('success', 'Período PPD actualizado correctamente.');
+    }
+
+    public function updateRegistro(Request $request, PeriodoPpd $registro)
+    {
+        if (! auth()->check() || ! auth()->user()->hasRole('admin')) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'calificacion_curso'  => ['nullable', 'numeric', 'min:0', 'max:20'],
+            'calificacion_sistema'=> ['nullable', 'numeric', 'min:0', 'max:20'],
+            'nivel_desempeno'     => ['nullable', 'integer', 'min:0', 'max:4'],
+        ]);
+
+        $registro->update([
+            'calificacion_curso'   => $this->decimalONull($validated['calificacion_curso'] ?? null),
+            'calificacion_sistema' => $this->decimalONull($validated['calificacion_sistema'] ?? null),
+            'nivel_desempeno'      => $this->enteroONull($validated['nivel_desempeno'] ?? null),
+        ]);
+
+        return response()->json([
+            'ok'                   => true,
+            'calificacion_curso'   => $registro->calificacion_curso,
+            'calificacion_sistema' => $registro->calificacion_sistema,
+            'nivel_desempeno'      => $registro->nivel_desempeno,
+        ]);
+    }
+
+    public function storeRegistro(Request $request)
+    {
+        if (! auth()->check() || ! auth()->user()->hasRole('admin')) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'periodo_actual_ppd_id' => ['required', 'integer', 'exists:periodo_actual_ppds,id'],
+            'alumno_id'             => ['required', 'integer'],
+            'curso_id'              => ['required', 'integer', 'exists:cursos,id'],
+            'calificacion_curso'    => ['nullable', 'numeric', 'min:0', 'max:20'],
+            'calificacion_sistema'  => ['nullable', 'numeric', 'min:0', 'max:20'],
+            'nivel_desempeno'       => ['nullable', 'integer', 'min:0', 'max:4'],
+        ]);
+
+        $registro = PeriodoPpd::create([
+            'periodo_actual_ppd_id' => $validated['periodo_actual_ppd_id'],
+            'alumno_id'             => $validated['alumno_id'],
+            'curso_id'              => $validated['curso_id'],
+            'calificacion_curso'    => $this->decimalONull($validated['calificacion_curso'] ?? null),
+            'calificacion_sistema'  => $this->decimalONull($validated['calificacion_sistema'] ?? null),
+            'nivel_desempeno'       => $this->enteroONull($validated['nivel_desempeno'] ?? null),
+        ]);
+
+        return response()->json([
+            'ok'                    => true,
+            'id'                    => $registro->id,
+            'calificacion_curso'    => $registro->calificacion_curso,
+            'calificacion_sistema'  => $registro->calificacion_sistema,
+            'nivel_desempeno'       => $registro->nivel_desempeno,
+        ]);
     }
 
     public function crearCalificaciones($id)

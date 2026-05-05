@@ -25,12 +25,12 @@
         @hasanyrole('admin|docente|adminB|tutor')
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
             {{-- Logo --}}
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{{ route('index') }}">
+            <div class="sidebar-brand d-flex align-items-center justify-content-center">
                 <div class="sidebar-brand-icon">
                     <img src="{{ asset('admin/img/Logo-Pukllasunchis-blanco.png') }}"
                         alt="Logo Pukllasunchis" class="sidebar-logo-img">
                 </div>
-            </a>
+            </div>
 
             {{-- ══════════ SECCIÓN ADMIN ══════════ --}}
             @role('admin')
@@ -112,15 +112,15 @@
             </li>
             @endrole
 
-            {{-- ══════════ SECCIÓN BOLSA (admin y/o adminB) ══════════ --}}
+            {{-- ══════════ SECCIÓN BOLSA/COMUNICADOS (admin y/o adminB) ══════════ --}}
             @hasanyrole('admin|adminB')
             <hr class="sidebar-divider d-none d-md-block">
             <div class="sidebar-heading" style="font-size:.65rem;letter-spacing:.08em;opacity:.7;">
-                <i class="fas fa-briefcase fa-xs mr-1"></i> Bolsa de Trabajo
+                <i class="fas fa-bullhorn fa-xs mr-1"></i> Bolsa y Comunicados
             </div>
             <li class="nav-item">
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#sBolsa">
-                    <i class="fas fa-fw fa-briefcase"></i><span>Bolsa de trabajo</span>
+                    <i class="fas fa-fw fa-briefcase"></i><span>Bolsa y Comunicados</span>
                 </a>
                 <div id="sBolsa" class="collapse" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
@@ -131,9 +131,9 @@
                         <a class="collapse-item" href="{{ route('listaPostulantes') }}">Postulantes</a>
                         @endrole
                         @role('admin')
-                        <h6 class="collapse-header">Ofertas públicas:</h6>
-                        <a class="collapse-item" href="{{ route('bolsa-trabajo.ofertas.index') }}">Registros y filtros</a>
-                        <a class="collapse-item" href="{{ route('bolsa') }}" target="_blank" rel="noopener noreferrer">Ver página pública</a>
+                        <h6 class="collapse-header">Gestión pública:</h6>
+                        <a class="collapse-item" href="{{ route('bolsa-trabajo.ofertas.index') }}">Bolsa de Trabajo</a>
+                        <a class="collapse-item" href="{{ route('admin.comunicados.index') }}">Comunicados</a>
                         @endrole
                     </div>
                 </div>
@@ -190,6 +190,12 @@
                     <a class="nav-link collapsed" href="{{ route('calificaciones', $alumno->id) }}">
                         <i class="fas fa-fw fa-newspaper"></i>
                         <span>Calificaciones</span>
+                    </a>
+                </li>
+                <li class="nav-item {{ request()->routeIs('alumno.comunicados') ? 'active' : '' }}">
+                    <a class="nav-link collapsed" href="{{ route('alumno.comunicados') }}">
+                        <i class="fas fa-fw fa-bullhorn"></i>
+                        <span>Comunicados</span>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -267,13 +273,12 @@
                         <i class="fa fa-bars fa-fw"></i>
                     </button>
 
-                    {{-- Título de rol (oculto en xs para no reventar el topbar) --}}
+                    {{-- Acceso rápido a la web pública (oculto en xs) --}}
                     @hasanyrole('admin|adminB|tutor')
-                    <span class="font-weight-bold text-primary d-none d-sm-inline ml-1" style="font-size:.9rem;">
-                        @role('admin') Administrador @endrole
-                        @role('adminB') Admin Bolsa @endrole
-                        @role('tutor') Tutor @endrole
-                    </span>
+                    <a href="{{ route('index') }}" class="font-weight-bold d-none d-sm-inline ml-1"
+                        style="font-size:.9rem; color:#1f6feb; text-decoration:none;">
+                        Ir a la página principal
+                    </a>
                     @endhasanyrole
 
                     {{-- Navegación derecha --}}
@@ -286,14 +291,22 @@
                                 <i class="fas fa-user-circle fa-fw mr-1 text-gray-400 d-sm-none"></i>
                                 <span class="d-none d-sm-inline mr-1" style="font-size:.85rem;">
                                     @if (Auth::check() && Auth::user())
-                                        {{ Auth::user()->name }} {{ Auth::user()->apellidos }}
+                                        @php
+                                            $primerNombre = explode(' ', trim((string) Auth::user()->name))[0] ?? '';
+                                            $primerApellido = explode(' ', trim((string) Auth::user()->apellidos))[0] ?? '';
+                                        @endphp
+                                        Hola {{ trim($primerNombre . ' ' . $primerApellido) }}!
                                     @endif
                                 </span>
                             </a>
                             <div class="dropdown-menu dropdown-menu-right shadow" aria-labelledby="userDropdown">
                                 <div class="dropdown-header d-sm-none text-truncate px-3 py-2" style="font-size:.8rem;">
                                     @if (Auth::check() && Auth::user())
-                                        {{ Auth::user()->name }} {{ Auth::user()->apellidos }}
+                                        @php
+                                            $primerNombre = explode(' ', trim((string) Auth::user()->name))[0] ?? '';
+                                            $primerApellido = explode(' ', trim((string) Auth::user()->apellidos))[0] ?? '';
+                                        @endphp
+                                        Hola {{ trim($primerNombre . ' ' . $primerApellido) }}!
                                     @endif
                                 </div>
                                 <div class="dropdown-divider d-sm-none"></div>
@@ -393,7 +406,6 @@
     {{-- PORCENTAJE --}}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 </body>
 
 </html>
