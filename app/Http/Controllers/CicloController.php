@@ -25,19 +25,9 @@ class CicloController extends Controller
                 ->orderBy('apellidos')
                 ->get();
             $alumnosB = User::whereHas('roles', function ($query) {
-                $query->where('name', 'alumnoB');
+                $query->whereIn('name', ['alumnoB', 'inhabilitado']);
             })
-                ->where('ciclo_id', $ciclo->id) // ← Asegúrate de que User tenga este campo
-                ->where(function ($q) {
-                    $q->whereDoesntHave('roles', function ($roleQuery) {
-                        $roleQuery->where('name', 'inhabilitado');
-                    })
-                        ->orWhere(function ($subQuery) {
-                            $subQuery->whereHas('roles', function ($roleQuery) {
-                                $roleQuery->where('name', 'inhabilitado');
-                            })->where('perfil', 'Licencia');
-                        });
-                })
+                ->where('ciclo_id', $ciclo->id)
                 ->orderBy('apellidos')
                 ->get();
             $ciclo->alumnos_validos = $alumnos;
@@ -122,21 +112,11 @@ class CicloController extends Controller
             ->orderBy('apellidos')
             ->get();
 
-        // Alumnos B (con ciclo_id en users) - Misma lógica que en index()
+        // Alumnos B — filtro por ciclo_id, igual que el docente al calificar
         $alumnosB = User::whereHas('roles', function ($query) {
-            $query->where('name', 'alumnoB');
+            $query->whereIn('name', ['alumnoB', 'inhabilitado']);
         })
             ->where('ciclo_id', $ciclo->id)
-            ->where(function ($q) {
-                $q->whereDoesntHave('roles', function ($roleQuery) {
-                    $roleQuery->where('name', 'inhabilitado');
-                })
-                    ->orWhere(function ($subQuery) {
-                        $subQuery->whereHas('roles', function ($roleQuery) {
-                            $roleQuery->where('name', 'inhabilitado');
-                        })->where('perfil', 'Licencia');
-                    });
-            })
             ->orderBy('apellidos')
             ->get();
 
@@ -183,18 +163,16 @@ class CicloController extends Controller
         $usuariosValidos = [];
 
         foreach ($usuarios as $user) {
-            if ($user->hasRole('alumno') && $user->alumno) {
-                // Validar que el ciclo pertenezca al mismo programa
-                if ($user->programa_id === $nuevoCiclo->programa_id) {
-                    $alumnosNormalesIds[] = $user->alumno->id;
-                    $usuariosValidos[] = $user->id;
-                }
-            } elseif ($user->hasRole('alumnoB') && $user->alumnoB) {
-                // Validar por el programa del modelo PPD
-                if ($user->alumnoB->programa_id === $nuevoCiclo->programa_id) {
-                    $alumnosPpdIds[] = $user->alumnoB->id;
-                    $usuariosValidos[] = $user->id;
-                }
+            if ($user->perfil === 'Licencia') {
+                continue;
+            }
+
+            if ($user->alumno && $user->alumno->programa_id === $nuevoCiclo->programa_id) {
+                $alumnosNormalesIds[] = $user->alumno->id;
+                $usuariosValidos[] = $user->id;
+            } elseif ($user->alumnoB && $user->alumnoB->programa_id === $nuevoCiclo->programa_id) {
+                $alumnosPpdIds[] = $user->alumnoB->id;
+                $usuariosValidos[] = $user->id;
             }
         }
 
@@ -250,6 +228,23 @@ class CicloController extends Controller
 
     public function destroy(Ciclo $ciclo)
     {
+        $cursos    = $ciclo->cursos()->count();
+        $alumnos   = $ciclo->alumnos()->count();
+        $alumnosB  = $ciclo->alumnosB()->count();
+
+        if ($cursos > 0 || $alumnos > 0 || $alumnosB > 0) {
+            $detalle = implode(', ', array_filter([
+                $cursos   ? "{$cursos} curso(s)"  : null,
+                $alumnos  ? "{$alumnos} alumno(s) FID" : null,
+                $alumnosB ? "{$alumnosB} alumno(s) PPD" : null,
+            ]));
+
+            return redirect()->back()->with(
+                'error',
+                "No se puede eliminar el ciclo porque tiene registros asociados: {$detalle}. Reasigna o elimina esos registros primero."
+            );
+        }
+
         $ciclo->delete();
 
         return redirect()->route('ciclo.index')->with('success', 'Ciclo eliminado exitosamente');

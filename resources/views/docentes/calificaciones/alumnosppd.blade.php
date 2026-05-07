@@ -149,7 +149,7 @@
                                     <th rowspan="3"
                                         class="text-center align-middle sortable sticky-col-left-1 bg-dark text-white">
                                         Alumno</th>
-                                    <th colspan="{{ count($competenciasSeleccionadas) * 4 }}"
+                                    <th colspan="{{ count($competenciasSeleccionadas) * 3 }}"
                                         class="text-center align-middle sortable" style="background-color: #e5973a">
                                         Productos de Proceso 40%</th>
                                     <th colspan="{{ count($competenciasSeleccionadas) * 3 }}"
@@ -169,7 +169,7 @@
 
                                 <tr style="pointer-events: none">
                                     @foreach ($competenciasSeleccionadas as $competencia)
-                                        <th colspan="4" class="text-center sortable" style="background-color: #e5973a">
+                                        <th colspan="3" class="text-center sortable" style="background-color: #e5973a">
                                             {{ $competencia->nombre }}<br>
                                             <small style="font-size: 10px">
                                                 {{ implode(' ', array_slice(explode(' ', $competencia->descripcion), 0, 12)) }}
@@ -208,8 +208,7 @@
                                 <tr style="pointer-events: none; font-size: 12px">
                                     @foreach ($competenciasSeleccionadas as $competencia)
                                         <th style="background: #e5973a">Participación</th>
-                                        <th style="background: #e5973a">Trabajo Individual</th>
-                                        <th style="background: #e5973a">Trabajo Grupal</th>
+                                        <th style="background: #e5973a">Actividad</th>
                                         <th style="background: #e5973a">Promedio</th>
                                     @endforeach
 
@@ -260,7 +259,7 @@
                                         </td>
                                         {{-- Proceso --}}
                                         @foreach ([1, 2, 3] as $c)
-                                            @foreach (range(1, 4) as $i)
+                                            @foreach ([1, 2, 4] as $i)
                                                 @php $campo = "pp_c{$c}_{$i}"; @endphp
                                                 <td>
                                                     <input type="number" style="width: 60px"
@@ -392,18 +391,14 @@
                     const i2 = document.querySelector(
                         `input[data-alumno="${alumnoId}"][data-competencia="${competenciaId}"][data-indicador="2"]`
                     );
-                    const i3 = document.querySelector(
-                        `input[data-alumno="${alumnoId}"][data-competencia="${competenciaId}"][data-indicador="3"]`
-                    );
                     const i4 = document.querySelector(
                         `input[data-alumno="${alumnoId}"][data-competencia="${competenciaId}"][data-indicador="4"]`
                     );
 
                     const v1 = parseInt(i1.value) || 0;
                     const v2 = parseInt(i2.value) || 0;
-                    const v3 = parseInt(i3.value) || 0;
 
-                    const promedio = Math.round((v1 + v2 + v3) / 3); // Solo enteros
+                    const promedio = Math.round((v1 + v2) / 2);
 
                     i4.value = promedio;
                 });
@@ -454,9 +449,10 @@
 
                         let grupo = [];
                         for (let i = 1; i < resultadoIndex; i++) {
-                            grupo.push(document.querySelector(
+                            const el = document.querySelector(
                                 `${selector}[data-alumno="${alumnoId}"][data-competencia="${competenciaId}"][data-indicador="${i}"]`
-                            ));
+                            );
+                            if (el) grupo.push(el);
                         }
 
                         const resultado = document.querySelector(
@@ -524,15 +520,11 @@
                     this.value = this.value.replace(/[^0-9]/g, '');
                     const alumnoId = this.dataset.alumno;
                     const competenciaId = this.dataset.competencia;
-                    // obtener inputs 1,2,3
                     const i1 = document.querySelector(
                         `input[data-alumno="${alumnoId}"][data-competencia="${competenciaId}"][data-indicador="1"]`
                     );
                     const i2 = document.querySelector(
                         `input[data-alumno="${alumnoId}"][data-competencia="${competenciaId}"][data-indicador="2"]`
-                    );
-                    const i3 = document.querySelector(
-                        `input[data-alumno="${alumnoId}"][data-competencia="${competenciaId}"][data-indicador="3"]`
                     );
                     const i4 = document.querySelector(
                         `input[data-alumno="${alumnoId}"][data-competencia="${competenciaId}"][data-indicador="4"]`
@@ -540,8 +532,7 @@
 
                     const v1 = parseInt(i1?.value) || 0;
                     const v2 = parseInt(i2?.value) || 0;
-                    const v3 = parseInt(i3?.value) || 0;
-                    const promedio = Math.round((v1 + v2 + v3) / 3);
+                    const promedio = Math.round((v1 + v2) / 2);
                     if (i4) i4.value = promedio;
                 });
             });
@@ -710,5 +701,187 @@
                 });
             }
         });
+    </script>
+    <script>
+    /* ── Excel-like navigation & fill handle ── */
+    document.addEventListener('DOMContentLoaded', function () {
+        const tbody = document.querySelector('tbody');
+        if (!tbody) return;
+
+        /* helpers */
+        function buildGrid() {
+            return Array.from(tbody.querySelectorAll('tr'))
+                .map(tr => Array.from(tr.querySelectorAll(
+                    'input[type=number]:not([readonly]):not([disabled])'
+                )))
+                .filter(row => row.length > 0);
+        }
+
+        function findInGrid(grid, el) {
+            for (let r = 0; r < grid.length; r++)
+                for (let c = 0; c < grid[r].length; c++)
+                    if (grid[r][c] === el) return [r, c];
+            return null;
+        }
+
+        function focusCell(grid, r, c) {
+            const row = grid[r];
+            if (!row) return;
+            const inp = row[Math.min(c, row.length - 1)];
+            if (inp) { inp.focus(); inp.select(); }
+        }
+
+        /* ── Arrow keys + Enter navigation ── */
+        tbody.addEventListener('keydown', function (e) {
+            const el = e.target;
+            if (el.tagName !== 'INPUT' || el.type !== 'number' || el.readOnly || el.disabled) return;
+
+            const grid = buildGrid();
+            const pos  = findInGrid(grid, el);
+            if (!pos) return;
+            let [r, c] = pos;
+
+            if (e.key === 'ArrowUp') {
+                e.preventDefault(); r = Math.max(0, r - 1); focusCell(grid, r, c);
+            } else if (e.key === 'ArrowDown' || e.key === 'Enter') {
+                e.preventDefault(); r = Math.min(grid.length - 1, r + 1); focusCell(grid, r, c);
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault(); c = Math.max(0, c - 1); focusCell(grid, r, c);
+            } else if (e.key === 'ArrowRight') {
+                e.preventDefault(); c = Math.min((grid[r]?.length ?? 1) - 1, c + 1); focusCell(grid, r, c);
+
+            /* Ctrl+D: fill down */
+            } else if (e.ctrlKey && e.key.toLowerCase() === 'd') {
+                e.preventDefault();
+                const val = el.value;
+                for (let i = r + 1; i < grid.length; i++) {
+                    const t = grid[i]?.[c];
+                    if (t) { t.value = val; t.dispatchEvent(new Event('input', { bubbles: true })); }
+                }
+
+            /* Ctrl+R: fill right */
+            } else if (e.ctrlKey && e.key.toLowerCase() === 'r') {
+                e.preventDefault();
+                const val = el.value;
+                const row = grid[r];
+                for (let j = c + 1; j < row.length; j++) {
+                    row[j].value = val;
+                    row[j].dispatchEvent(new Event('input', { bubbles: true }));
+                }
+            }
+        });
+
+        /* ── Fill handle ── */
+        const handle = document.createElement('div');
+        handle.id = 'xl-fill-handle';
+        Object.assign(handle.style, {
+            position: 'fixed', width: '8px', height: '8px',
+            background: '#1E3A6F', border: '1.5px solid #fff',
+            cursor: 'crosshair', zIndex: '9999', display: 'none',
+            boxSizing: 'border-box',
+        });
+        document.body.appendChild(handle);
+
+        let activeEl   = null;
+        let dragging   = false;
+        let dragSource = null;
+        let fillRange  = [];
+
+        function placeHandle(inp) {
+            const r = inp.getBoundingClientRect();
+            handle.style.left    = (r.right  - 5) + 'px';
+            handle.style.top     = (r.bottom - 5) + 'px';
+            handle.style.display = 'block';
+        }
+
+        function clearFill() {
+            fillRange.forEach(el => el.style.outline = '');
+            fillRange = [];
+        }
+
+        tbody.addEventListener('focusin', function (e) {
+            const el = e.target;
+            if (el.tagName !== 'INPUT' || el.type !== 'number' || el.readOnly || el.disabled) {
+                if (!dragging) { handle.style.display = 'none'; activeEl = null; }
+                return;
+            }
+            activeEl = el;
+            placeHandle(el);
+        });
+
+        tbody.addEventListener('focusout', function () {
+            if (!dragging) setTimeout(() => {
+                if (document.activeElement !== activeEl) {
+                    handle.style.display = 'none'; activeEl = null;
+                }
+            }, 120);
+        });
+
+        const scrollable = document.querySelector('div[style*="overflow-x"]');
+        if (scrollable) scrollable.addEventListener('scroll', () => {
+            if (activeEl && !dragging) placeHandle(activeEl);
+        });
+
+        handle.addEventListener('mousedown', function (e) {
+            if (!activeEl) return;
+            e.preventDefault();
+            dragging   = true;
+            dragSource = activeEl;
+        });
+
+        document.addEventListener('mousemove', function (e) {
+            if (!dragging || !dragSource) return;
+            handle.style.left = (e.clientX - 4) + 'px';
+            handle.style.top  = (e.clientY - 4) + 'px';
+            clearFill();
+
+            const grid     = buildGrid();
+            const startPos = findInGrid(grid, dragSource);
+            if (!startPos) return;
+            const [sr, sc] = startPos;
+
+            handle.style.pointerEvents = 'none';
+            const els = document.elementsFromPoint(e.clientX, e.clientY);
+            handle.style.pointerEvents = 'auto';
+
+            const target = els.find(el =>
+                el.tagName === 'INPUT' && el.type === 'number' && !el.readOnly && !el.disabled
+            );
+            if (!target) return;
+            const tp = findInGrid(grid, target);
+            if (!tp) return;
+            const [tr_, tc_] = tp;
+
+            const dr = Math.abs(tr_ - sr), dc = Math.abs(tc_ - sc);
+            if (dr >= dc) {
+                const [mn, mx] = [Math.min(sr, tr_), Math.max(sr, tr_)];
+                for (let r = mn; r <= mx; r++) {
+                    if (r === sr) continue;
+                    const inp = grid[r]?.[sc];
+                    if (inp) { inp.style.outline = '2px solid #1E3A6F'; fillRange.push(inp); }
+                }
+            } else {
+                const [mn, mx] = [Math.min(sc, tc_), Math.max(sc, tc_)];
+                for (let c = mn; c <= mx; c++) {
+                    if (c === sc) continue;
+                    const inp = grid[sr]?.[c];
+                    if (inp) { inp.style.outline = '2px solid #1E3A6F'; fillRange.push(inp); }
+                }
+            }
+        });
+
+        document.addEventListener('mouseup', function () {
+            if (!dragging) return;
+            dragging = false;
+            const val = dragSource?.value ?? '';
+            fillRange.forEach(inp => {
+                inp.value = val;
+                inp.dispatchEvent(new Event('input', { bubbles: true }));
+            });
+            clearFill();
+            dragSource = null;
+            if (activeEl) placeHandle(activeEl); else handle.style.display = 'none';
+        });
+    });
     </script>
 @endsection

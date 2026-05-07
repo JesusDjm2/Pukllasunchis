@@ -18,6 +18,15 @@
             </div>
         @endif
 
+        @if (session('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ session('error') }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        @endif
+
         <div class="accordion" id="accordionCiclos">
             @foreach ([1 => 'Programa Inicial', 2 => 'Programa Primaria EIB', 3 => 'Programa Inicial PPD', 4 => 'Programa Primaria PPD', 5 => 'Otro Programa'] as $programaId => $programaNombre)
                 <div class="card">

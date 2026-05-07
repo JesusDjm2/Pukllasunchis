@@ -13,12 +13,12 @@
         <div class="row bg-white">
             @if (str_contains($ciclo->nombre, 'Egresados'))
                 <div class="col-lg-12 mt-0">
-                    <h5 class="font-weight-bold">Alumnos: 42</h5>
+                    <h5 class="font-weight-bold">Alumnos: {{ $alumnos->count() + $alumnosB->count() }}</h5>
                     <div class="table-responsive">
                         <table class="table table-striped table-bordered">
                             <thead class="thead-dark">
                                 <tr>
-                                    <th scope="col">#</th> 
+                                    <th scope="col">#</th>
                                     <th scope="col">Nombres</th>
                                     <th scope="col">Programa</th>
                                     <th scope="col">Teléfono</th>
@@ -27,7 +27,7 @@
                             <tbody>
                                 @foreach ($alumnos as $alumno)
                                     <tr>
-                                        <td>{{ $loop->iteration }}</td> 
+                                        <td>{{ $loop->iteration }}</td>
                                         <td>{{ $alumno->nombres }}, {{ $alumno->apellidos }}</td>
                                         <td>{{ $ciclo->programa->nombre }}</td>
                                         <td>{{ $alumno->numero }}</td>
@@ -36,6 +36,100 @@
                             </tbody>
                         </table>
                     </div>
+
+                    @if (Session::has('success'))
+                        <div class="alert alert-info alert-dismissible fade show" role="alert">
+                            {{ Session::get('success') }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    @endif
+                    @if (session('error'))
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            {{ session('error') }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    @endif
+
+                    <form action="{{ route('ciclo.updateAlumnos') }}" method="POST" class="mt-3">
+                        @csrf
+                        @method('PUT')
+                        <input type="hidden" name="ciclo_id" value="{{ $ciclo->id }}">
+                        <div class="form-group">
+                            <label for="nuevo_ciclo_egresados"><strong>Mover al ciclo:</strong></label>
+                            <select name="nuevo_ciclo_id" id="nuevo_ciclo_egresados" class="form-control" required>
+                                @foreach ($ciclosDisponibles as $cicloDisponible)
+                                    @if ($cicloDisponible->id != $ciclo->id)
+                                        <option value="{{ $cicloDisponible->id }}">{{ $cicloDisponible->nombre }}</option>
+                                    @endif
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label><strong>Seleccionar alumnos para cambiar de ciclo:</strong></label>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover">
+                                    <thead class="thead-dark">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Seleccionar</th>
+                                            <th>Nombre y Apellido</th>
+                                            <th>DNI</th>
+                                            <th>Teléfono</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($alumnos as $alumno)
+                                            @if ($alumno->user)
+                                                @php $esLicencia = $alumno->user->perfil === 'Licencia'; @endphp
+                                                <tr @if ($esLicencia) style="background-color: #fdcbbf" @endif>
+                                                    <td>{{ $loop->iteration }}</td>
+                                                    <td class="text-center">
+                                                        <input type="checkbox" name="alumnos[]"
+                                                            value="{{ $alumno->user->id }}"
+                                                            style="width:15px;height:15px;{{ $esLicencia ? 'cursor:not-allowed' : 'cursor:pointer' }}"
+                                                            {{ $esLicencia ? 'disabled title="En licencia — no se puede cambiar de ciclo"' : '' }}>
+                                                    </td>
+                                                    <td>
+                                                        {{ $alumno->apellidos }}, {{ $alumno->nombres }}
+                                                        @if ($esLicencia)
+                                                            <span class="badge badge-secondary ml-1">Licencia</span>
+                                                        @endif
+                                                    </td>
+                                                    <td>{{ $alumno->dni }}</td>
+                                                    <td>{{ $alumno->numero }}</td>
+                                                </tr>
+                                            @endif
+                                        @endforeach
+                                        @foreach ($alumnosB as $alumno)
+                                            @php $esLicenciaB = $alumno->perfil === 'Licencia'; @endphp
+                                            <tr @if ($esLicenciaB) style="background-color: #fdcbbf" @endif>
+                                                <td></td>
+                                                <td class="text-center">
+                                                    <input type="checkbox" name="alumnos[]"
+                                                        value="{{ $alumno->id }}"
+                                                        style="width:15px;height:15px;{{ $esLicenciaB ? 'cursor:not-allowed' : 'cursor:pointer' }}"
+                                                        {{ $esLicenciaB ? 'disabled title="En licencia — no se puede cambiar de ciclo"' : '' }}>
+                                                </td>
+                                                <td>
+                                                    {{ $alumno->apellidos }}, {{ $alumno->name }}
+                                                    @if ($esLicenciaB)
+                                                        <span class="badge badge-secondary ml-1">Licencia</span>
+                                                    @endif
+                                                </td>
+                                                <td>{{ $alumno->dni }}</td>
+                                                <td>{{ $alumno->telefono }}</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Cambiar Ciclo</button>
+                    </form>
                 </div>
             @else
                 <div class="col-lg-12">
@@ -180,6 +274,7 @@
                                                     $esResaltado =
                                                         $alumno->user->hasRole('inhabilitado') &&
                                                         in_array($alumno->user->perfil, ['Licencia', 'Sin reserva']);
+                                                    $esLicencia = $alumno->user->perfil === 'Licencia';
                                                 @endphp
                                                 <tr
                                                     @if ($esResaltado) style="background-color: #fdcbbf" @endif>
@@ -189,16 +284,18 @@
                                                             <input class="form-check-input" type="checkbox" name="alumnos[]"
                                                                 value="{{ $alumno->user->id }}"
                                                                 id="alumno{{ $alumno->id }}"
-                                                                style="width: 15px;height: 15px; cursor: pointer;">
+                                                                style="width: 15px;height: 15px; {{ $esLicencia ? 'cursor: not-allowed;' : 'cursor: pointer;' }}"
+                                                                {{ $esLicencia ? 'disabled title="En licencia — no se puede cambiar de ciclo"' : '' }}>
                                                         </div>
                                                     </td>
                                                     <td>
                                                         <label class="form-check-label" for="alumno{{ $alumno->id }}">
                                                             {{ $alumno->apellidos }}, {{ $alumno->nombres }}
                                                         </label>
-                                                        @if ($esResaltado)
-                                                            <span
-                                                                class="badge bg-secondary text-white ms-2">{{ $alumno->user->perfil }}</span>
+                                                        @if ($esLicencia)
+                                                            <span class="badge badge-secondary ml-1">Licencia</span>
+                                                        @elseif ($esResaltado)
+                                                            <span class="badge bg-secondary text-white ms-2">{{ $alumno->user->perfil }}</span>
                                                         @endif
                                                     </td>
                                                     <td>
@@ -225,12 +322,14 @@
                                         @endforeach
 
                                         @foreach ($alumnosB as $alumno)
-                                            <tr>
+                                            @php $esLicenciaB = $alumno->perfil === 'Licencia'; @endphp
+                                            <tr @if ($esLicenciaB) style="background-color: #fdcbbf" @endif>
                                                 <td class="text-center">
                                                     <div class="form-check">
                                                         <input class="form-check-input" type="checkbox" name="alumnos[]"
                                                             value="{{ $alumno->id }}" id="alumnoB{{ $alumno->id }}"
-                                                            style="width: 15px;height: 15px; cursor: pointer;">
+                                                            style="width: 15px;height: 15px; {{ $esLicenciaB ? 'cursor: not-allowed;' : 'cursor: pointer;' }}"
+                                                            {{ $esLicenciaB ? 'disabled title="En licencia — no se puede cambiar de ciclo"' : '' }}>
                                                     </div>
                                                 </td>
                                                 <td>
@@ -238,6 +337,9 @@
                                                         {{ $alumno->apellidos }}, {{ $alumno->name }} <br>
                                                         Número: {{ $alumno->telefono }}
                                                     </label>
+                                                    @if ($esLicenciaB)
+                                                        <span class="badge badge-secondary ml-1">Licencia</span>
+                                                    @endif
                                                 </td>
                                                 <td>{{ $alumno->dni }}</td>
                                                 <td>{{ $alumno->pendiente ?? '---' }}</td>

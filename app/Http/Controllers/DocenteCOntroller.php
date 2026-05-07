@@ -304,14 +304,11 @@ class DocenteCOntroller extends Controller
         $alumnos = User::whereHas('roles', function ($q) {
             $q->whereIn('name', ['alumnoB', 'inhabilitado']);
         })
-            ->whereHas('programa.ciclos.cursos', function ($query) use ($cursoId) {
-                $query->where('id', $cursoId);
-            })
+            ->where('ciclo_id', $curso->ciclo_id)
             ->whereDoesntHave('alumnoB', function ($query) {
-                // 🔥 SOLO TRAER ALUMNOS QUE NO TIENEN PPD GUARDADO O TIENEN guardado = false
                 $query->where('guardado', true);
             })
-            ->with(['programa.ciclos.cursos', 'roles', 'alumnoB'])
+            ->with(['roles', 'alumnoB'])
             ->orderBy('apellidos')
             ->get();
 
