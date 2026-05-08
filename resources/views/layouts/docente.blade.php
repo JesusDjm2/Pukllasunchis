@@ -25,6 +25,7 @@
         rel="stylesheet">
     <link href="{{ asset('admin/css/sb-admin-2.min.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('admin/css/estilos.css') }}">
+    <link rel="stylesheet" href="{{ asset('admin/css/darkmode.css') }}">
     <style>
         .docente-panel #content-wrapper {
             background-color: #f8f9fc;
@@ -38,11 +39,96 @@
             box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.04);
         }
 
-        @media (max-width: 767.98px) {
-            .docente-topbar-horario {
-                order: 3;
+        /* ── Sidebar: sticky + scrollable solo cuando está EXPANDIDO ──
+           overflow-x/y en un mismo elemento crea un clipping context que corta
+           los flyout menus (.collapse position:absolute) del sidebar colapsado.
+           Con :not(.toggled) solo aplicamos overflow cuando SB Admin 2 NO muestra flyouts. ── */
+        @media (min-width: 768px) {
+            /* z-index en flex item → stacking context, sidebar siempre sobre #content-wrapper */
+            #accordionSidebar {
+                z-index: 100;
+            }
+
+            /* Expandido: sticky + scroll vertical para menús largos.
+               SIN overflow-x:hidden — en Windows la barra de scroll ocupa ~17px y recortaría
+               los chevrons ::after que flotan al extremo derecho del nav-link. */
+            #accordionSidebar:not(.toggled) {
+                position: sticky;
+                top: 0;
+                height: 100vh;
+                overflow-y: auto;
+                scrollbar-width: thin;
+                scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+            }
+
+            /* Nav-links al 100% del ancho disponible (incluye espacio del scrollbar),
+               evita que desborden horizontalmente cuando hay scrollbar clásico */
+            #accordionSidebar:not(.toggled) .nav-item .nav-link {
                 width: 100%;
-                margin-top: 0.25rem;
+            }
+
+            /* Chevrons: forzar visibilidad en sidebar expandido */
+            #accordionSidebar:not(.toggled) .nav-item .nav-link[data-toggle="collapse"]::after {
+                display: inline-block !important;
+                float: right;
+                width: 1rem;
+                text-align: center;
+                content: '\f105';
+                font-family: 'Font Awesome 5 Free';
+                font-weight: 900;
+                color: rgba(255, 255, 255, 0.55) !important;
+            }
+
+            #accordionSidebar:not(.toggled) .nav-item .nav-link[data-toggle="collapse"]:not(.collapsed)::after {
+                content: '\f107';
+                color: rgba(255, 255, 255, 0.85) !important;
+            }
+
+            /* Colapsado: SB Admin 2 maneja overflow:visible para los flyouts */
+            #accordionSidebar.toggled {
+                overflow: visible !important;
+            }
+
+            /* En modo colapsado el sidebar NO muestra chevrons (icono-only, SB Admin 2 by design) */
+            #accordionSidebar.toggled .nav-item .nav-link[data-toggle="collapse"]::after {
+                display: none !important;
+            }
+        }
+
+        #accordionSidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        #accordionSidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #accordionSidebar::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+        }
+
+        /* ── Topbar: botón horario responsive ── */
+        @media (max-width: 767.98px) {
+            /* El botón de hamburguesa y el user-nav se quedan en la fila 1 */
+            #sidebarToggleTop {
+                order: 1;
+                flex-shrink: 0;
+            }
+
+            .topbar .navbar-nav.ml-auto {
+                order: 2;
+            }
+
+            /* El bloque de horario baja a su propia línea (fila 2) */
+            .docente-topbar-horario {
+                order: 3 !important;
+                flex: 0 0 100% !important;
+                max-width: 100%;
+                margin-top: 0.35rem;
+                padding-bottom: 0.35rem;
+                border-top: 1px solid #e3e6f0;
+                padding-top: 0.35rem;
             }
         }
 
@@ -203,6 +289,7 @@
 </head>
 
 <body id="page-top" class="docente-panel">
+<script>if(localStorage.getItem('puklla-theme')==='dark'){document.body.classList.add('dark-mode');}</script>
     <div id="wrapper">
         <ul class="navbar-nav bg-gradient-dark sidebar sidebar-dark accordion" id="accordionSidebar">
             <a class="sidebar-brand d-flex align-items-center justify-content-center mb-3" href="{{ route('index') }}">
@@ -235,8 +322,7 @@
                     <span>Alumnos</span>
                 </a>
                 <div id="alumnos" class="collapse" aria-labelledby="headingUtilities" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">Ver alumnos</h6>
+                    <div class="bg-white py-2 collapse-inner rounded">                       
                         @if ($mostrarAlumnosFid)
                             <a class="collapse-item" href="{{ route('vistaAlumnos', ['docente' => $docente->id]) }}">
                                 Alumnos FID
@@ -403,6 +489,13 @@
                     </div>
 
                     <ul class="navbar-nav ml-auto flex-row align-items-center">
+                        <li class="nav-item d-flex align-items-center">
+                            <button id="darkModeToggle" type="button"
+                                title="Cambiar a modo oscuro"
+                                aria-label="Cambiar tema claro/oscuro">
+                                <i class="fas fa-moon" id="darkModeIcon"></i>
+                            </button>
+                        </li>
                         <div class="topbar-divider d-none d-sm-block"></div>
                         <li class="nav-item dropdown no-arrow mx-1">
                             <a class="nav-link dropdown-toggle text-truncate docente-user-name" href="#"
@@ -474,6 +567,30 @@
     <script src="{{ asset('admin/js/demo/chart-pie-demo.js') }}"></script>
     <script src="{{ asset('admin/js/djm.js') }}"></script>
     @stack('scripts')
+    <script>
+    (function () {
+        var THEME_KEY = 'puklla-theme';
+        var body   = document.body;
+        var toggle = document.getElementById('darkModeToggle');
+        var icon   = document.getElementById('darkModeIcon');
+
+        function syncUI() {
+            var dark = body.classList.contains('dark-mode');
+            if (icon)   icon.className = dark ? 'fas fa-sun' : 'fas fa-moon';
+            if (toggle) toggle.setAttribute('title', dark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
+        }
+
+        syncUI();
+
+        if (toggle) {
+            toggle.addEventListener('click', function () {
+                var nowDark = body.classList.toggle('dark-mode');
+                localStorage.setItem(THEME_KEY, nowDark ? 'dark' : 'light');
+                syncUI();
+            });
+        }
+    })();
+    </script>
 
 </body>
 

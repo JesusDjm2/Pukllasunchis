@@ -1,0 +1,943 @@
+/* ════════════════════════════════════════════════════════════
+   MODO OSCURO — Pukllasunchis
+   Paleta: bg #0d1117 · surface #161b22 · border #30363d
+   ════════════════════════════════════════════════════════════ */
+
+/* ── Botón toggle (siempre visible, tema independiente) ── */
+#darkModeToggle {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50% !important;
+    border: 1px solid transparent !important;
+    background: transparent !important;
+    color: #858796;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.18s, color 0.18s, border-color 0.18s;
+    padding: 0;
+    font-size: 0.85rem;
+    cursor: pointer;
+    line-height: 1;
+}
+
+#darkModeToggle:hover {
+    background-color: rgba(0, 0, 0, 0.07) !important;
+    border-color: rgba(0, 0, 0, 0.12) !important;
+    color: #4e73df !important;
+}
+
+body.dark-mode #darkModeToggle {
+    color: #e3b341;
+}
+
+body.dark-mode #darkModeToggle:hover {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    color: #f6cc40 !important;
+}
+
+/* ── Página y wrappers ── */
+body.dark-mode {
+    background-color: #0d1117 !important;
+    color: #c9d1d9 !important;
+}
+
+body.dark-mode #content-wrapper,
+body.dark-mode #content,
+body.dark-mode.docente-panel #content-wrapper {
+    background-color: #0d1117 !important;
+}
+
+body.dark-mode #preloader {
+    background-color: #0d1117 !important;
+}
+
+/* ── Topbar ── */
+body.dark-mode .topbar {
+    background-color: #161b22 !important;
+    box-shadow: 0 0.15rem 0.5rem rgba(0, 0, 0, 0.45) !important;
+}
+
+body.dark-mode .topbar .nav-link,
+body.dark-mode .topbar span {
+    color: #c9d1d9 !important;
+}
+
+body.dark-mode .topbar-divider {
+    border-right-color: #30363d !important;
+}
+
+/* ── Sidebar: chevrons siempre visibles (sidebar ya es oscuro en ambos modos) ── */
+.sidebar .nav-item .nav-link[data-toggle="collapse"]::after {
+    color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.sidebar .nav-item .nav-link:not(.collapsed)[data-toggle="collapse"]::after {
+    color: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* ── Sidebar: submenús desplegables ── */
+body.dark-mode .collapse-inner {
+    background-color: #1c2128 !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.4) !important;
+}
+
+body.dark-mode .collapse-inner .collapse-item {
+    color: #c9d1d9 !important;
+}
+
+body.dark-mode .collapse-inner .collapse-item:hover,
+body.dark-mode .collapse-inner .collapse-item:focus {
+    background-color: #2d333b !important;
+    color: #e6edf3 !important;
+}
+
+body.dark-mode .collapse-header {
+    color: #6e7681 !important;
+}
+
+/* ── Cards ── */
+body.dark-mode .card {
+    background-color: #161b22 !important;
+    border-color: #30363d !important;
+}
+
+body.dark-mode .card-header {
+    background-color: #161b22 !important;
+    border-bottom-color: #30363d !important;
+}
+
+body.dark-mode .card-body {
+    background-color: #161b22 !important;
+}
+
+body.dark-mode .card-footer {
+    background-color: #161b22 !important;
+    border-top-color: #30363d !important;
+}
+
+body.dark-mode .docente-ui-card {
+    background-color: #161b22 !important;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(0, 0, 0, 0.45) !important;
+}
+
+body.dark-mode .docente-ui-card .card-header {
+    background-color: #161b22 !important;
+    border-bottom-color: #30363d !important;
+}
+
+/* ── Fondos utilitarios ── */
+body.dark-mode .bg-white {
+    background-color: #161b22 !important;
+}
+
+body.dark-mode .bg-light,
+body.dark-mode .container-fluid.bg-light,
+body.dark-mode .container-fluid.bg-white,
+body.dark-mode .row.bg-white {
+    background-color: #0d1117 !important;
+}
+
+/* ── Texto ── */
+body.dark-mode .text-gray-800,
+body.dark-mode .text-dark {
+    color: #e6edf3 !important;
+}
+
+body.dark-mode .text-gray-600,
+body.dark-mode .text-secondary {
+    color: #8b949e !important;
+}
+
+body.dark-mode .text-muted,
+body.dark-mode .docente-ui-subtitle,
+body.dark-mode .docente-ui-kicker {
+    color: #6e7681 !important;
+}
+
+body.dark-mode h1, body.dark-mode h2, body.dark-mode h3,
+body.dark-mode h4, body.dark-mode h5, body.dark-mode h6,
+body.dark-mode .h1, body.dark-mode .h2, body.dark-mode .h3,
+body.dark-mode .h4, body.dark-mode .h5, body.dark-mode .h6,
+body.dark-mode .docente-ui-title {
+    color: #e6edf3 !important;
+}
+
+/* Solo aplicar a contenido, NO al sidebar (evita romper chevrons) */
+body.dark-mode #content p,
+body.dark-mode #content li,
+body.dark-mode #content label,
+body.dark-mode .card p,
+body.dark-mode .card li,
+body.dark-mode .card label,
+body.dark-mode .collapse-inner .collapse-item {
+    color: #c9d1d9 !important;
+}
+
+/* ── Tablas ── */
+body.dark-mode .table {
+    color: #c9d1d9 !important;
+}
+
+body.dark-mode .table td,
+body.dark-mode .table th {
+    border-color: #30363d !important;
+    color: #c9d1d9 !important;
+}
+
+body.dark-mode .table-bordered td,
+body.dark-mode .table-bordered th {
+    border-color: #30363d !important;
+}
+
+body.dark-mode .table-hover tbody tr:hover,
+body.dark-mode .table-hover tbody tr:hover td {
+    background-color: #1c2128 !important;
+    color: #e6edf3 !important;
+}
+
+body.dark-mode .table-striped tbody tr:nth-of-type(odd) {
+    background-color: #1c2128 !important;
+}
+
+body.dark-mode .table-striped tbody tr:nth-of-type(even) {
+    background-color: #161b22 !important;
+}
+
+body.dark-mode .thead-dark th {
+    background-color: #0d1117 !important;
+    border-color: #30363d !important;
+    color: #e6edf3 !important;
+}
+
+body.dark-mode .table-secondary,
+body.dark-mode .table-secondary td,
+body.dark-mode .table-secondary th {
+    background-color: #1c2128 !important;
+    color: #8b949e !important;
+    border-color: #30363d !important;
+}
+
+body.dark-mode .table thead {
+    background-color: #0d1117 !important;
+}
+
+/* ── Formularios ── */
+body.dark-mode .form-control,
+body.dark-mode input[type="text"],
+body.dark-mode input[type="number"],
+body.dark-mode input[type="email"],
+body.dark-mode input[type="password"],
+body.dark-mode input[type="search"],
+body.dark-mode input[type="date"],
+body.dark-mode textarea,
+body.dark-mode select {
+    background-color: #0d1117 !important;
+    border-color: #30363d !important;
+    color: #c9d1d9 !important;
+}
+
+body.dark-mode .form-control:focus {
+    background-color: #0d1117 !important;
+    border-color: #388bfd !important;
+    color: #e6edf3 !important;
+    box-shadow: 0 0 0 0.15rem rgba(56, 139, 253, 0.2) !important;
+}
+
+body.dark-mode .form-control::placeholder {
+    color: #6e7681 !important;
+}
+
+body.dark-mode .form-control[readonly],
+body.dark-mode .form-control:disabled {
+    background-color: #1c2128 !important;
+    color: #8b949e !important;
+}
+
+body.dark-mode .input-group-text {
+    background-color: #1c2128 !important;
+    border-color: #30363d !important;
+    color: #c9d1d9 !important;
+}
+
+/* ── Dropdowns ── */
+body.dark-mode .dropdown-menu {
+    background-color: #161b22 !important;
+    border-color: #30363d !important;
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.5) !important;
+}
+
+body.dark-mode .dropdown-item {
+    color: #c9d1d9 !important;
+}
+
+body.dark-mode .dropdown-item:hover,
+body.dark-mode .dropdown-item:focus {
+    background-color: #1c2128 !important;
+    color: #e6edf3 !important;
+}
+
+body.dark-mode .dropdown-divider {
+    border-top-color: #30363d !important;
+}
+
+body.dark-mode .dropdown-header {
+    color: #6e7681 !important;
+}
+
+/* ── Modales ── */
+body.dark-mode .modal-content {
+    background-color: #161b22 !important;
+    border-color: #30363d !important;
+}
+
+body.dark-mode .modal-header,
+body.dark-mode .modal-footer {
+    border-color: #30363d !important;
+    background-color: #161b22 !important;
+    color: #e6edf3 !important;
+}
+
+body.dark-mode .modal-body {
+    background-color: #161b22 !important;
+    color: #c9d1d9 !important;
+}
+
+body.dark-mode .modal-title {
+    color: #e6edf3 !important;
+}
+
+body.dark-mode button.close,
+body.dark-mode .close {
+    color: #c9d1d9 !important;
+    text-shadow: none !important;
+}
+
+/* ── Alertas ── */
+body.dark-mode .alert-info {
+    background-color: #0d1f35 !important;
+    border-color: #1f6feb !important;
+    color: #79c0ff !important;
+}
+
+body.dark-mode .alert-success {
+    background-color: #0d2318 !important;
+    border-color: #238636 !important;
+    color: #56d364 !important;
+}
+
+body.dark-mode .alert-warning {
+    background-color: #2d1f06 !important;
+    border-color: #9e6a03 !important;
+    color: #e3b341 !important;
+}
+
+body.dark-mode .alert-danger {
+    background-color: #2d0f0f !important;
+    border-color: #da3633 !important;
+    color: #ff7b72 !important;
+}
+
+/* ── Badges ── */
+body.dark-mode .badge-light {
+    background-color: #30363d !important;
+    color: #c9d1d9 !important;
+}
+
+/* ── Progress bars ── */
+body.dark-mode .progress {
+    background-color: #30363d !important;
+}
+
+/* ── Separadores ── */
+body.dark-mode hr:not(.sidebar-divider) {
+    border-top-color: #30363d !important;
+}
+
+/* ── Footer ── */
+body.dark-mode .sticky-footer {
+    background-color: #161b22 !important;
+    border-top-color: #30363d !important;
+}
+
+body.dark-mode .sticky-footer span,
+body.dark-mode .sticky-footer .text-muted {
+    color: #6e7681 !important;
+}
+
+/* ── Scroll to top ── */
+body.dark-mode .scroll-to-top {
+    background-color: #1f6feb !important;
+}
+
+/* ── Readonly data cells ── */
+body.dark-mode .readonly-data {
+    background-color: #1c2128 !important;
+}
+
+/* ── Docente accordion ── */
+body.dark-mode .docente-ui-accordion .card-header {
+    background: linear-gradient(90deg, #1b3270 0%, #112060 100%) !important;
+}
+
+/* ── Fila resaltada inhabilitado ── */
+body.dark-mode tr[style*="background-color: #fdcbbf"],
+body.dark-mode tr[style*="background-color:#fdcbbf"] {
+    background-color: #2d1a14 !important;
+}
+
+/* ── Sticky col (PPD table) ── */
+body.dark-mode .sticky-col-left-1 {
+    background-color: #161b22 !important;
+}
+
+/* ── Data label helper ── */
+body.dark-mode .data-label {
+    color: #6e7681 !important;
+}
+
+body.dark-mode .data-value {
+    color: #c9d1d9 !important;
+}
+
+/* ════════════════════════════════════════════════════════════
+   MODO TENUE (dim) — Pukllasunchis
+   Paleta Tailwind Slate: bg #0f172a · surface #1e293b · border #334155
+   Tono intermedio elegante entre claro y oscuro
+   ════════════════════════════════════════════════════════════ */
+
+/* ── Toggle button ── */
+body.dim-mode #darkModeToggle {
+    color: #38bdf8;
+}
+
+body.dim-mode #darkModeToggle:hover {
+    background-color: rgba(56, 189, 248, 0.1) !important;
+    border-color: rgba(56, 189, 248, 0.2) !important;
+    color: #7dd3fc !important;
+}
+
+/* ── Página y wrappers ── */
+body.dim-mode {
+    background-color: #0f172a !important;
+    color: #e2e8f0 !important;
+}
+
+body.dim-mode #content-wrapper,
+body.dim-mode #content,
+body.dim-mode.docente-panel #content-wrapper {
+    background-color: #0f172a !important;
+}
+
+body.dim-mode #preloader {
+    background-color: #0f172a !important;
+}
+
+/* ── Topbar ── */
+body.dim-mode .topbar {
+    background-color: #1e293b !important;
+    box-shadow: 0 0.15rem 0.5rem rgba(0, 0, 0, 0.4) !important;
+}
+
+body.dim-mode .topbar .nav-link,
+body.dim-mode .topbar span {
+    color: #e2e8f0 !important;
+}
+
+body.dim-mode .topbar-divider {
+    border-right-color: #334155 !important;
+}
+
+/* ── Sidebar submenús ── */
+body.dim-mode .collapse-inner {
+    background-color: #0f172a !important;
+    border: 1px solid rgba(59, 130, 246, 0.2) !important;
+    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.45) !important;
+}
+
+body.dim-mode .collapse-inner .collapse-item {
+    color: #94a3b8 !important;
+}
+
+body.dim-mode .collapse-inner .collapse-item:hover,
+body.dim-mode .collapse-inner .collapse-item:focus {
+    background-color: #1e293b !important;
+    color: #e2e8f0 !important;
+}
+
+body.dim-mode .collapse-header {
+    color: #475569 !important;
+}
+
+/* ── Cards ── */
+body.dim-mode .card {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+}
+
+body.dim-mode .card-header {
+    background-color: #1e293b !important;
+    border-bottom-color: #334155 !important;
+}
+
+body.dim-mode .card-body {
+    background-color: #1e293b !important;
+}
+
+body.dim-mode .card-footer {
+    background-color: #1e293b !important;
+    border-top-color: #334155 !important;
+}
+
+body.dim-mode .docente-ui-card {
+    background-color: #1e293b !important;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(0, 0, 0, 0.4) !important;
+}
+
+body.dim-mode .docente-ui-card .card-header {
+    background-color: #1e293b !important;
+    border-bottom-color: #334155 !important;
+}
+
+/* ── Fondos utilitarios ── */
+body.dim-mode .bg-white {
+    background-color: #1e293b !important;
+}
+
+body.dim-mode .bg-light,
+body.dim-mode .container-fluid.bg-light,
+body.dim-mode .container-fluid.bg-white,
+body.dim-mode .row.bg-white {
+    background-color: #0f172a !important;
+}
+
+/* ── Texto ── */
+body.dim-mode .text-gray-800,
+body.dim-mode .text-dark {
+    color: #e2e8f0 !important;
+}
+
+body.dim-mode .text-gray-600,
+body.dim-mode .text-secondary {
+    color: #94a3b8 !important;
+}
+
+body.dim-mode .text-muted,
+body.dim-mode .docente-ui-subtitle,
+body.dim-mode .docente-ui-kicker {
+    color: #64748b !important;
+}
+
+body.dim-mode h1, body.dim-mode h2, body.dim-mode h3,
+body.dim-mode h4, body.dim-mode h5, body.dim-mode h6,
+body.dim-mode .h1, body.dim-mode .h2, body.dim-mode .h3,
+body.dim-mode .h4, body.dim-mode .h5, body.dim-mode .h6,
+body.dim-mode .docente-ui-title {
+    color: #e2e8f0 !important;
+}
+
+body.dim-mode #content p,
+body.dim-mode #content li,
+body.dim-mode #content label,
+body.dim-mode .card p,
+body.dim-mode .card li,
+body.dim-mode .card label,
+body.dim-mode .collapse-inner .collapse-item {
+    color: #cbd5e1 !important;
+}
+
+/* ── Tablas ── */
+body.dim-mode .table {
+    color: #cbd5e1 !important;
+}
+
+body.dim-mode .table td,
+body.dim-mode .table th {
+    border-color: #334155 !important;
+    color: #cbd5e1 !important;
+}
+
+body.dim-mode .table-bordered td,
+body.dim-mode .table-bordered th {
+    border-color: #334155 !important;
+}
+
+body.dim-mode .table-hover tbody tr:hover,
+body.dim-mode .table-hover tbody tr:hover td {
+    background-color: #1e293b !important;
+    color: #e2e8f0 !important;
+}
+
+body.dim-mode .table-striped tbody tr:nth-of-type(odd) {
+    background-color: #1e293b !important;
+}
+
+body.dim-mode .table-striped tbody tr:nth-of-type(even) {
+    background-color: #0f172a !important;
+}
+
+body.dim-mode .thead-dark th {
+    background-color: #0f172a !important;
+    border-color: #334155 !important;
+    color: #e2e8f0 !important;
+}
+
+body.dim-mode .table-secondary,
+body.dim-mode .table-secondary td,
+body.dim-mode .table-secondary th {
+    background-color: #1e293b !important;
+    color: #94a3b8 !important;
+    border-color: #334155 !important;
+}
+
+body.dim-mode .table thead {
+    background-color: #0f172a !important;
+}
+
+/* ── Formularios ── */
+body.dim-mode .form-control,
+body.dim-mode input[type="text"],
+body.dim-mode input[type="number"],
+body.dim-mode input[type="email"],
+body.dim-mode input[type="password"],
+body.dim-mode input[type="search"],
+body.dim-mode input[type="date"],
+body.dim-mode textarea,
+body.dim-mode select {
+    background-color: #0f172a !important;
+    border-color: #334155 !important;
+    color: #e2e8f0 !important;
+}
+
+body.dim-mode .form-control:focus {
+    background-color: #0f172a !important;
+    border-color: #3b82f6 !important;
+    color: #e2e8f0 !important;
+    box-shadow: 0 0 0 0.15rem rgba(59, 130, 246, 0.22) !important;
+}
+
+body.dim-mode .form-control::placeholder {
+    color: #475569 !important;
+}
+
+body.dim-mode .form-control[readonly],
+body.dim-mode .form-control:disabled {
+    background-color: #1e293b !important;
+    color: #64748b !important;
+}
+
+body.dim-mode .input-group-text {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+    color: #cbd5e1 !important;
+}
+
+/* ── Dropdowns ── */
+body.dim-mode .dropdown-menu {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.45) !important;
+}
+
+body.dim-mode .dropdown-item {
+    color: #cbd5e1 !important;
+}
+
+body.dim-mode .dropdown-item:hover,
+body.dim-mode .dropdown-item:focus {
+    background-color: #0f172a !important;
+    color: #e2e8f0 !important;
+}
+
+body.dim-mode .dropdown-divider {
+    border-top-color: #334155 !important;
+}
+
+body.dim-mode .dropdown-header {
+    color: #64748b !important;
+}
+
+/* ── Modales ── */
+body.dim-mode .modal-content {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+}
+
+body.dim-mode .modal-header,
+body.dim-mode .modal-footer {
+    border-color: #334155 !important;
+    background-color: #1e293b !important;
+    color: #e2e8f0 !important;
+}
+
+body.dim-mode .modal-body {
+    background-color: #1e293b !important;
+    color: #cbd5e1 !important;
+}
+
+body.dim-mode .modal-title {
+    color: #e2e8f0 !important;
+}
+
+body.dim-mode button.close,
+body.dim-mode .close {
+    color: #cbd5e1 !important;
+    text-shadow: none !important;
+}
+
+/* ── Alertas ── */
+body.dim-mode .alert-info {
+    background-color: #0c2d54 !important;
+    border-color: #1d4ed8 !important;
+    color: #93c5fd !important;
+}
+
+body.dim-mode .alert-success {
+    background-color: #052e16 !important;
+    border-color: #15803d !important;
+    color: #86efac !important;
+}
+
+body.dim-mode .alert-warning {
+    background-color: #3f2d06 !important;
+    border-color: #b45309 !important;
+    color: #fcd34d !important;
+}
+
+body.dim-mode .alert-danger {
+    background-color: #450a0a !important;
+    border-color: #b91c1c !important;
+    color: #fca5a5 !important;
+}
+
+/* ── Badges ── */
+body.dim-mode .badge-light {
+    background-color: #334155 !important;
+    color: #e2e8f0 !important;
+}
+
+/* ── Progress bars ── */
+body.dim-mode .progress {
+    background-color: #334155 !important;
+}
+
+/* ── Separadores ── */
+body.dim-mode hr:not(.sidebar-divider) {
+    border-top-color: #334155 !important;
+}
+
+/* ── Footer ── */
+body.dim-mode .sticky-footer {
+    background-color: #1e293b !important;
+    border-top-color: #334155 !important;
+}
+
+body.dim-mode .sticky-footer span,
+body.dim-mode .sticky-footer .text-muted {
+    color: #64748b !important;
+}
+
+/* ── Scroll to top ── */
+body.dim-mode .scroll-to-top {
+    background-color: #1d4ed8 !important;
+}
+
+/* ── Readonly / data helpers ── */
+body.dim-mode .readonly-data {
+    background-color: #1e293b !important;
+}
+
+body.dim-mode .data-label {
+    color: #64748b !important;
+}
+
+body.dim-mode .data-value {
+    color: #cbd5e1 !important;
+}
+
+body.dim-mode tr[style*="background-color: #fdcbbf"],
+body.dim-mode tr[style*="background-color:#fdcbbf"] {
+    background-color: #3f1f1f !important;
+}
+
+body.dim-mode .sticky-col-left-1 {
+    background-color: #1e293b !important;
+}
+
+/* ── Docente accordion ── */
+body.dim-mode .docente-ui-accordion .card-header {
+    background: linear-gradient(90deg, #1e3a8a 0%, #1e3a8a 100%) !important;
+}
+
+/* ── SIDEBAR ADMIN — modo tenue ── */
+body.dim-mode .sidebar.bg-gradient-primary {
+    background: linear-gradient(180deg, #0f172a 0%, #1e3a8a 100%) !important;
+}
+
+body.dim-mode .sidebar.bg-gradient-primary .collapse-inner {
+    background-color: #0c1423 !important;
+    border: 1px solid rgba(59, 130, 246, 0.2) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
+}
+
+body.dim-mode .sidebar.bg-gradient-primary .collapse-inner .collapse-item {
+    color: #94a3b8 !important;
+}
+
+body.dim-mode .sidebar.bg-gradient-primary .collapse-inner .collapse-item:hover,
+body.dim-mode .sidebar.bg-gradient-primary .collapse-inner .collapse-item:focus {
+    background-color: rgba(59, 130, 246, 0.1) !important;
+    color: #e2e8f0 !important;
+}
+
+body.dim-mode .sidebar.bg-gradient-primary .collapse-inner .collapse-header {
+    color: rgba(148, 163, 184, 0.55) !important;
+}
+
+body.dim-mode .sidebar.bg-gradient-primary .sidebar-heading {
+    color: rgba(255, 255, 255, 0.4) !important;
+}
+
+body.dim-mode .sidebar.bg-gradient-primary hr.sidebar-divider {
+    border-top-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* ── SIDEBAR DOCENTE — modo tenue ── */
+body.dim-mode .sidebar.bg-gradient-dark {
+    background: linear-gradient(
+        180deg,
+        #0f172a 0%,
+        #1e293b 55%,
+        #0c4a6e 100%
+    ) !important;
+}
+
+body.dim-mode .sidebar.bg-gradient-dark .nav-item .nav-link:hover {
+    background: rgba(56, 189, 248, 0.08) !important;
+}
+
+body.dim-mode .sidebar.bg-gradient-dark .collapse-inner {
+    background-color: #0a1020 !important;
+    border: 1px solid rgba(56, 189, 248, 0.16) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
+}
+
+body.dim-mode .sidebar.bg-gradient-dark .collapse-inner .collapse-item {
+    color: #7eb8d4 !important;
+}
+
+body.dim-mode .sidebar.bg-gradient-dark .collapse-inner .collapse-header {
+    color: rgba(56, 189, 248, 0.38) !important;
+}
+
+body.dim-mode .sidebar.bg-gradient-dark .collapse-inner .collapse-item:hover,
+body.dim-mode .sidebar.bg-gradient-dark .collapse-inner .collapse-item:focus {
+    background-color: rgba(56, 189, 248, 0.08) !important;
+    color: #e0f2fe !important;
+}
+
+body.dim-mode .sidebar.bg-gradient-dark .sidebar-heading {
+    color: rgba(56, 189, 248, 0.38) !important;
+}
+
+body.dim-mode .sidebar.bg-gradient-dark hr.sidebar-divider,
+body.dim-mode .sidebar.bg-gradient-dark hr.sidebar-logo-divider {
+    border-top-color: rgba(56, 189, 248, 0.1) !important;
+}
+
+/* ════════════════════════════════════════════════════════════
+   SIDEBAR ADMIN — modo oscuro
+   Solo aplica a .bg-gradient-primary (admin), no afecta docente (.bg-gradient-dark)
+   ════════════════════════════════════════════════════════════ */
+
+body.dark-mode .sidebar.bg-gradient-primary {
+    background: linear-gradient(180deg, #161b22 10%, #224abe 100%) !important;
+}
+
+/* Submenús: color sólido que contraste con ambos extremos del degradado */
+body.dark-mode .sidebar.bg-gradient-primary .collapse-inner {
+    background-color: #0d1117 !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 0.35rem 1rem rgba(0, 0, 0, 0.55) !important;
+}
+
+body.dark-mode .sidebar.bg-gradient-primary .collapse-inner .collapse-item {
+    color: #c9d1d9 !important;
+}
+
+body.dark-mode .sidebar.bg-gradient-primary .collapse-inner .collapse-header {
+    color: #6e7681 !important;
+}
+
+body.dark-mode .sidebar.bg-gradient-primary .collapse-inner .collapse-item:hover,
+body.dark-mode .sidebar.bg-gradient-primary .collapse-inner .collapse-item:focus {
+    background-color: #1c2128 !important;
+    color: #e6edf3 !important;
+}
+
+/* Heading de sección (Administración, Bolsa…) y dividers sobre el degradado oscuro */
+body.dark-mode .sidebar.bg-gradient-primary .sidebar-heading {
+    color: rgba(255, 255, 255, 0.45) !important;
+}
+
+body.dark-mode .sidebar.bg-gradient-primary hr.sidebar-divider {
+    border-top-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* ════════════════════════════════════════════════════════════
+   SIDEBAR DOCENTE — modo oscuro
+   Solo aplica a .bg-gradient-dark (docente)
+   Paleta: medianoche profundo · azul-hielo como acento
+   ════════════════════════════════════════════════════════════ */
+
+body.dark-mode .sidebar.bg-gradient-dark {
+    background: linear-gradient(
+        180deg,
+        #0a0e1a 0%,
+        #0d1117 38%,
+        #111827 72%,
+        #0f1f3d 100%
+    ) !important;
+}
+
+/* Nav-link hover: toque azul-hielo muy sutil */
+body.dark-mode .sidebar.bg-gradient-dark .nav-item .nav-link:hover {
+    background: rgba(79, 172, 254, 0.07) !important;
+}
+
+/* Submenús: fondo aún más profundo para sensación de profundidad / recessed */
+body.dark-mode .sidebar.bg-gradient-dark .collapse-inner {
+    background-color: #080c14 !important;
+    border: 1px solid rgba(79, 172, 254, 0.14) !important;
+    box-shadow:
+        0 4px 20px rgba(0, 0, 0, 0.55),
+        inset 0 1px 0 rgba(255, 255, 255, 0.03) !important;
+}
+
+body.dark-mode .sidebar.bg-gradient-dark .collapse-inner .collapse-item {
+    color: #8b9ab4 !important;
+    transition: color 0.14s ease, background-color 0.14s ease;
+}
+
+body.dark-mode .sidebar.bg-gradient-dark .collapse-inner .collapse-header {
+    color: rgba(96, 165, 250, 0.38) !important;
+    letter-spacing: 0.06em;
+}
+
+body.dark-mode .sidebar.bg-gradient-dark .collapse-inner .collapse-item:hover,
+body.dark-mode .sidebar.bg-gradient-dark .collapse-inner .collapse-item:focus {
+    background-color: rgba(79, 172, 254, 0.09) !important;
+    color: #e2e8f0 !important;
+}
+
+/* Headings de sección y dividers */
+body.dark-mode .sidebar.bg-gradient-dark .sidebar-heading {
+    color: rgba(96, 165, 250, 0.35) !important;
+}
+
+body.dark-mode .sidebar.bg-gradient-dark hr.sidebar-divider,
+body.dark-mode .sidebar.bg-gradient-dark hr.sidebar-logo-divider {
+    border-top-color: rgba(79, 172, 254, 0.1) !important;
+}

@@ -14,10 +14,12 @@
         rel="stylesheet">
     <link href="{{ asset('admin/css/sb-admin-2.min.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('admin/css/estilos.css') }}">
+    <link rel="stylesheet" href="{{ asset('admin/css/darkmode.css') }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 </head>
 
 <body id="page-top">
+<script>var _pt=localStorage.getItem('puklla-theme');if(_pt==='dark')document.body.classList.add('dark-mode');else if(_pt==='dim')document.body.classList.add('dim-mode');</script>
     <div id="wrapper">
         <div id="preloader">
             <div class="loader"></div>
@@ -283,6 +285,13 @@
 
                     {{-- Navegación derecha --}}
                     <ul class="navbar-nav ml-auto align-items-center">
+                        <li class="nav-item d-flex align-items-center">
+                            <button id="darkModeToggle" type="button"
+                                title="Cambiar a modo oscuro"
+                                aria-label="Cambiar tema claro/oscuro">
+                                <i class="fas fa-moon" id="darkModeIcon"></i>
+                            </button>
+                        </li>
                         <div class="topbar-divider d-none d-sm-block"></div>
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle d-flex align-items-center" href="#"
@@ -406,6 +415,42 @@
     {{-- PORCENTAJE --}}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+    (function () {
+        var THEME_KEY = 'puklla-theme';
+        var body   = document.body;
+        var toggle = document.getElementById('darkModeToggle');
+        var icon   = document.getElementById('darkModeIcon');
+
+        var CYCLE  = ['light', 'dim', 'dark'];
+        var ICONS  = { light: 'fas fa-moon', dim: 'fas fa-adjust', dark: 'fas fa-sun' };
+        var TITLES = { light: 'Modo tenue', dim: 'Modo oscuro', dark: 'Modo claro' };
+
+        function getTheme() {
+            if (body.classList.contains('dark-mode')) return 'dark';
+            if (body.classList.contains('dim-mode'))  return 'dim';
+            return 'light';
+        }
+
+        function applyTheme(theme) {
+            body.classList.remove('dark-mode', 'dim-mode');
+            if (theme === 'dark') body.classList.add('dark-mode');
+            if (theme === 'dim')  body.classList.add('dim-mode');
+            localStorage.setItem(THEME_KEY, theme);
+            if (icon)   icon.className = ICONS[theme];
+            if (toggle) toggle.setAttribute('title', TITLES[theme]);
+        }
+
+        applyTheme(getTheme());
+
+        if (toggle) {
+            toggle.addEventListener('click', function () {
+                var next = CYCLE[(CYCLE.indexOf(getTheme()) + 1) % CYCLE.length];
+                applyTheme(next);
+            });
+        }
+    })();
+    </script>
 </body>
 
 </html>
