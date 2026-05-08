@@ -103,20 +103,18 @@ class CicloController extends Controller
 
     public function show(Ciclo $ciclo)
     {
-        // Alumnos regulares (relación directa)
+        // Alumnos regulares (FID) — incluye inhabilitados para mostrar su motivo
         $alumnos = $ciclo->alumnos()
-            ->with('user')
-            ->whereHas('user', function ($query) {
-                $query->where('perfil', '!=', 'Sin matrícula');
-            })
+            ->with(['user', 'user.roles'])
             ->orderBy('apellidos')
             ->get();
 
-        // Alumnos B — filtro por ciclo_id, igual que el docente al calificar
+        // Alumnos PPD — solo usuarios que tienen registro ppd (alumnoB), evita duplicar FID inhabilitados
         $alumnosB = User::whereHas('roles', function ($query) {
             $query->whereIn('name', ['alumnoB', 'inhabilitado']);
         })
             ->where('ciclo_id', $ciclo->id)
+            ->whereHas('alumnoB')
             ->orderBy('apellidos')
             ->get();
 

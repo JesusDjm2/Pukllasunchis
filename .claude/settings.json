@@ -16,7 +16,10 @@
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
       "Bash(git push *)",
-      "Bash(Get the *)"
+      "Bash(Get the *)",
+      "Bash(Get-ChildItem -Path . -Filter \"*docente*\" -Recurse -ErrorAction SilentlyContinue)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(not exist *)"
     ]
   }
 }

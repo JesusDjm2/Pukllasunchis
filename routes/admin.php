@@ -86,6 +86,9 @@ Route::middleware('auth')->prefix('tutor')->name('tutor.')->group(function () {
     Route::get('/ciclo/{ciclo}', [App\Http\Controllers\TutorController::class, 'ciclo'])->name('ciclo');
 });
 
+Route::middleware('auth')->get('admin/incidencias', [App\Http\Controllers\IncidenciaController::class, 'adminAll'])->name('admin.incidencias.todas');
+Route::middleware('auth')->get('admin/docente/{docente}/incidencias', [App\Http\Controllers\IncidenciaController::class, 'adminIndex'])->name('admin.docente.incidencias');
+
 Route::middleware('auth')->prefix('docente/{docente}/incidencias')->name('docente.incidencias.')->group(function () {
     Route::get('/', [App\Http\Controllers\IncidenciaController::class, 'index'])->name('index');
     Route::get('/create', [App\Http\Controllers\IncidenciaController::class, 'create'])->name('create');

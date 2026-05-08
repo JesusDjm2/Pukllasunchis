@@ -78,6 +78,34 @@
                                                         {{ $curso->ciclo->nombre ?? 'Sin ciclo' }}</li>
                                                     <li>Horas: {{ $curso->horas }} · Créditos: {{ $curso->creditos }}</li>
                                                 </ul>
+                                                @php
+                                                    $p1 = $curso->porcentajePeriodo(1);
+                                                    $p2 = $curso->porcentajePeriodo(2);
+                                                    $p3 = $curso->porcentajePeriodo(3);
+                                                @endphp
+                                                <div class="mt-2" style="max-width:320px;">
+                                                    <div class="d-flex align-items-center mb-1" style="gap:6px;">
+                                                        <span style="font-size:11px;width:68px;font-weight:600;color:#4e73df;">Parcial 1:</span>
+                                                        <div class="progress flex-fill" style="height:7px;">
+                                                            <div class="progress-bar bg-primary" role="progressbar" style="width:{{ $p1 }}%;"></div>
+                                                        </div>
+                                                        <small style="width:44px;text-align:right;font-size:11px;">{{ number_format($p1,2) }}%</small>
+                                                    </div>
+                                                    <div class="d-flex align-items-center mb-1" style="gap:6px;">
+                                                        <span style="font-size:11px;width:68px;font-weight:600;color:#1cc88a;">Parcial 2:</span>
+                                                        <div class="progress flex-fill" style="height:7px;">
+                                                            <div class="progress-bar bg-success" role="progressbar" style="width:{{ $p2 }}%;"></div>
+                                                        </div>
+                                                        <small style="width:44px;text-align:right;font-size:11px;">{{ number_format($p2,2) }}%</small>
+                                                    </div>
+                                                    <div class="d-flex align-items-center" style="gap:6px;">
+                                                        <span style="font-size:11px;width:68px;font-weight:600;color:#36b9cc;">Desempeño:</span>
+                                                        <div class="progress flex-fill" style="height:7px;">
+                                                            <div class="progress-bar bg-info" role="progressbar" style="width:{{ $p3 }}%;"></div>
+                                                        </div>
+                                                        <small style="width:44px;text-align:right;font-size:11px;">{{ number_format($p3,2) }}%</small>
+                                                    </div>
+                                                </div>
                                             </td>
                                             <td class="align-middle">
                                                 <form
@@ -160,6 +188,17 @@
                                                             {{ $curso->ciclo->nombre ?? 'Sin ciclo' }}</li>
                                                         <li>Horas: {{ $curso->horas }} · Créditos: {{ $curso->creditos }}</li>
                                                     </ul>
+                                                    @php $pctPPD = $curso->porcentajePPD(); @endphp
+                                                    <div class="mt-2" style="max-width:320px;">
+                                                        <div class="d-flex align-items-center" style="gap:6px;">
+                                                            <span style="font-size:11px;width:72px;font-weight:600;color:#d97706;">Calificado:</span>
+                                                            <div class="progress flex-fill" style="height:7px;">
+                                                                <div class="progress-bar" role="progressbar"
+                                                                    style="width:{{ $pctPPD }}%;background-color:#f59e0b;"></div>
+                                                            </div>
+                                                            <small style="width:44px;text-align:right;font-size:11px;color:#d97706;font-weight:600;">{{ number_format($pctPPD,2) }}%</small>
+                                                        </div>
+                                                    </div>
                                                 </td>
                                                 <td class="align-middle">
                                                     <ul class="small mb-0 pl-3">

@@ -18,10 +18,17 @@
         <div class="d-sm-flex align-items-center justify-content-between mb-2 pt-3 pb-1">
             <h4 class="font-weight-bold text-primary">Lista de Docentes: <small>{{ $docentes->count() }} docentes
                     registrados</small></h4>
-            <a href="{{ route('registerAdmin') }}"
-                class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm float-right">
-                Crear nuevo Docente <i class="fa fa-plus fa-sm"></i>
-            </a>
+            <div class="d-flex gap-2" style="gap:8px">
+                <a href="{{ route('admin.incidencias.todas') }}"
+                    class="d-none d-sm-inline-block btn btn-sm btn-warning shadow-sm">
+                    <i class="fa fa-exclamation-triangle fa-sm mr-1"></i> Ver todas las incidencias →
+                    {{ $totalIncidencias }}
+                </a>
+                <a href="{{ route('registerAdmin') }}"
+                    class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+                    <i class="fa fa-plus fa-sm mr-1"></i> Crear nuevo Docente
+                </a>
+            </div>
             {{-- <a href="{{ route('calificaciones.eliminarTodas') }}" class="btn btn-sm btn-info"
                 onclick="return confirm('¿Estás seguro de que deseas eliminar todas las calificaciones?')">
                 <i class="fa fa-trash"></i> Eliminar calificaciones
@@ -113,8 +120,7 @@
                                 <h6 class="text-secondary fw-bold">
                                     <i class="fa fa-link"></i> Asignaciones FID
                                 </h6>
-                                <button type="button" class="btn btn-outline-danger btn-sm mt-2"
-                                    data-form="formGlobal"
+                                <button type="button" class="btn btn-outline-danger btn-sm mt-2" data-form="formGlobal"
                                     data-mensaje="⚠️ Esto eliminará TODOS los cursos asignados de FID a TODOS los docentes">
                                     <i class="fa fa-unlink"></i> Quitar designación a docentes PPD
                                 </button>
@@ -233,7 +239,7 @@
             <div class="col-lg-12">
                 <div class="table-responsive table-container">
                     <table class="table table-bordered" id="docentes-table">
-                        <thead class="thead-dark">
+                        <thead class="thead-dark" style="position: sticky; top: 0; z-index: 2;">
                             <tr>
                                 <th>ID</th>
                                 <th>Docente</th>
@@ -253,11 +259,66 @@
                                 <tr style="border-bottom: 2.2px solid #919191 !important">
                                     <td>{{ $docente->id }}</td>
                                     <td>
-                                        <div class="div" style="position: sticky;top:2em">
+                                        <div style="position: sticky; top:2em">
                                             <strong>{{ $docente->nombre }}</strong>
-                                            <ul>
-                                                <li>{{ $docente->email }}</li>
-                                                <li>{{ $docente->dni }}</li>
+                                            @php
+                                                $totalEnviadas = $docente->incidencias->count();
+                                                $totalRecibidas = $docente->user?->hasRole('tutor')
+                                                    ? $docente->user->tutorCiclos->sum(fn($c) => $c->incidencias->count())
+                                                    : 0;
+                                            @endphp
+                                            <ul class="mt-1">
+                                                <li>Email: {{ $docente->email }}</li>
+                                                <li>DNI: {{ $docente->dni }}</li>
+                                                @if ($docente->user?->hasRole('tutor'))
+                                                    <li class="mt-1">
+                                                        <span>
+                                                            <i class="fa fa-user-shield fa-xs mr-1"></i> Tutor:
+                                                        </span>
+                                                        @foreach ($docente->user->tutorCiclos as $cicloTutor)
+                                                            @php
+                                                                $progNombre = $cicloTutor->programa->nombre ?? '';
+                                                                $progAbrev = match(true) {
+                                                                    str_contains($progNombre, 'Inicial') => 'INI',
+                                                                    str_contains($progNombre, 'EIB')     => 'EIB',
+                                                                    default => $progNombre,
+                                                                };
+                                                            @endphp
+                                                            <span class="badge badge-pill badge-secondary ml-1"
+                                                                style="font-size:10px">
+                                                                @if ($progAbrev) {{ $progAbrev }} · @endif{{ $cicloTutor->nombre }}
+                                                            </span>
+                                                        @endforeach
+                                                    </li>
+                                                @endif
+                                                <li>
+                                                    @if ($totalEnviadas > 0)
+                                                        <a href="{{ route('admin.docente.incidencias', $docente->id) }}">
+                                                            <i class="fa fa-exclamation-triangle fa-xs mr-1"></i>
+                                                            Incidencias enviadas: {{ $totalEnviadas }}                                                             
+                                                        </a>
+                                                    @else
+                                                        <span>
+                                                            <i class="fa fa-exclamation-triangle fa-xs mr-1"></i>
+                                                            Incidencias enviadas: 0
+                                                        </span>
+                                                    @endif
+                                                </li>
+                                                @if ($docente->user?->hasRole('tutor'))
+                                                    <li>
+                                                        @if ($totalRecibidas > 0)
+                                                            <a href="{{ route('admin.docente.incidencias', $docente->id) }}">
+                                                                <i class="fa fa-inbox fa-xs mr-1"></i>
+                                                                Incidencias recibidas: {{ $totalRecibidas }}
+                                                            </a>
+                                                        @else
+                                                            <span>
+                                                                <i class="fa fa-inbox fa-xs mr-1"></i>
+                                                                Incidencias recibidas: 0
+                                                            </span>
+                                                        @endif
+                                                    </li>
+                                                @endif
                                             </ul>
                                         </div>
                                     </td>
@@ -397,7 +458,7 @@
                                                                                         </div>
                                                                                         <small
                                                                                             style="width: 40px; text-align: right;">
-                                                                                            {{ $curso->porcentajePeriodo(1) }}%
+                                                                                            {{ number_format($curso->porcentajePeriodo(1), 2) }}%
                                                                                         </small>
                                                                                     </div>
 
@@ -419,7 +480,7 @@
                                                                                         </div>
                                                                                         <small
                                                                                             style="width: 40px; text-align: right;">
-                                                                                            {{ $curso->porcentajePeriodo(2) }}%
+                                                                                            {{ number_format($curso->porcentajePeriodo(2), 2) }}%
                                                                                         </small>
                                                                                     </div>
 
@@ -440,9 +501,31 @@
                                                                                         </div>
                                                                                         <small
                                                                                             style="width: 40px; text-align: right;">
-                                                                                            {{ $curso->porcentajePeriodo(3) }}%
+                                                                                            {{ number_format($curso->porcentajePeriodo(3), 2) }}%
                                                                                         </small>
                                                                                     </div>
+                                                                                </div>
+                                                                            </li>
+                                                                        </ul>
+                                                                    @else
+                                                                        @php $pctPPD = $curso->porcentajePPD(); @endphp
+                                                                        <ul>
+                                                                            <li>
+                                                                                <div class="d-flex align-items-center"
+                                                                                    style="gap: 6px; width: 100%; max-width: 400px;">
+                                                                                    <span style="font-size: 12px; width: 80px; font-weight:600; color:#d97706;">Calificado:</span>
+                                                                                    <div class="progress flex-fill" style="height: 8px;">
+                                                                                        <div class="progress-bar"
+                                                                                            role="progressbar"
+                                                                                            style="width: {{ $pctPPD }}%; background-color: #f59e0b;"
+                                                                                            aria-valuenow="{{ $pctPPD }}"
+                                                                                            aria-valuemin="0"
+                                                                                            aria-valuemax="100">
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <small style="width: 48px; text-align: right; color:#d97706; font-weight:600;">
+                                                                                        {{ number_format($pctPPD, 2) }}%
+                                                                                    </small>
                                                                                 </div>
                                                                             </li>
                                                                         </ul>
@@ -486,6 +569,11 @@
                                             class="btn btn-info btn-sm">
                                             <i class="fa fa-pen fa-sm"></i>
                                         </a>
+                                        {{-- <a href="{{ route('admin.docente.incidencias', $docente->id) }}"
+                                            class="btn btn-warning btn-sm"
+                                            title="Ver incidencias{{ $docente->user?->hasRole('tutor') ? ' (Tutor)' : '' }}">
+                                            <i class="fa fa-exclamation-triangle fa-sm"></i>
+                                        </a> --}}
 
                                         <button type="button" class="btn btn-danger btn-sm" data-toggle="modal"
                                             data-target="#confirmDeleteModal">

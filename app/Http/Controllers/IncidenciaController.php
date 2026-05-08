@@ -14,6 +14,27 @@ use Illuminate\Support\Facades\Log;
 
 class IncidenciaController extends Controller
 {
+    public function adminAll()
+    {
+        $incidencias = Incidencia::with(['alumno', 'ciclo.programa', 'docente'])
+            ->orderByDesc('fecha')
+            ->orderByDesc('created_at')
+            ->paginate(30);
+
+        return view('admin.docentes.incidencias-todas', compact('incidencias'));
+    }
+
+    public function adminIndex(\App\Models\Docente $docente)
+    {
+        $incidencias = Incidencia::with(['alumno', 'ciclo.programa', 'docente'])
+            ->where('docente_id', $docente->id)
+            ->orderByDesc('fecha')
+            ->orderByDesc('created_at')
+            ->paginate(20);
+
+        return view('admin.docentes.incidencias', compact('docente', 'incidencias'));
+    }
+
     public function index($docenteId)
     {
         $docente = auth()->user()->docente;

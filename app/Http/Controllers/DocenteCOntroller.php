@@ -16,10 +16,11 @@ class DocenteCOntroller extends Controller
 {
     public function index()
     {
-        $docentes = Docente::all();
+        $docentes = Docente::with(['user.roles', 'user.tutorCiclos.incidencias', 'user.tutorCiclos.programa', 'incidencias'])->get();
         $totalDocentes = $docentes->count();
+        $totalIncidencias = $docentes->sum(fn($d) => $d->incidencias->count());
 
-        return view('docentes.index', compact('docentes', 'totalDocentes'));
+        return view('docentes.index', compact('docentes', 'totalDocentes', 'totalIncidencias'));
     }
 
     public function vistaDocente($docenteId)
@@ -292,7 +293,7 @@ class DocenteCOntroller extends Controller
 
     public function calificarCursoPPD(Request $request, $docenteId, $cursoId)
     {
-        $curso = Curso::with('ciclo.programa')->findOrFail($cursoId);
+        $curso = Curso::with('ciclo.programa', 'competencias', 'calificacionesppd')->findOrFail($cursoId);
         $docente = Docente::findOrFail($docenteId);
         $competenciasSeleccionadas = Competencia::whereIn('id', $request->input('competencias'))->get();
         $programaId = $curso->ciclo->programa->id;
@@ -301,16 +302,22 @@ class DocenteCOntroller extends Controller
         // 1. Tienen rol 'alumnoB' o 'inhabilitado'
         // 2. Están en el curso específico
         // 3. NO tienen el campo 'guardado' = true (es decir, aún no han guardado sus calificaciones)
-        $alumnos = User::whereHas('roles', function ($q) {
+        $query = User::whereHas('roles', function ($q) {
             $q->whereIn('name', ['alumnoB', 'inhabilitado']);
         })
             ->where('ciclo_id', $curso->ciclo_id)
-            ->whereDoesntHave('alumnoB', function ($query) {
-                $query->where('guardado', true);
-            })
             ->with(['roles', 'alumnoB'])
-            ->orderBy('apellidos')
-            ->get();
+            ->orderBy('apellidos');
+
+        // El docente solo ve quienes aún no tienen calificaciones guardadas;
+        // el admin ve todos para tener visibilidad completa.
+        if (!auth()->user()->hasRole('admin')) {
+            $query->whereDoesntHave('alumnoB', function ($q) {
+                $q->where('guardado', true);
+            });
+        }
+
+        $alumnos = $query->get();
 
         $alumnos = $alumnos->map(function ($alumno) {
             $alumno->es_inhabilitado = $alumno->roles->contains('name', 'inhabilitado');

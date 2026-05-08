@@ -105,19 +105,24 @@
                                             @endif
                                         @endforeach
                                         @foreach ($alumnosB as $alumno)
-                                            @php $esLicenciaB = $alumno->perfil === 'Licencia'; @endphp
-                                            <tr @if ($esLicenciaB) style="background-color: #fdcbbf" @endif>
+                                            @php
+                                                $esInhabilitadoBEgr = $alumno->hasRole('inhabilitado');
+                                                $motivoBEgr = $alumno->perfil ?? null;
+                                            @endphp
+                                            <tr @if ($esInhabilitadoBEgr) style="background-color: #fdcbbf;" @endif>
                                                 <td></td>
                                                 <td class="text-center">
                                                     <input type="checkbox" name="alumnos[]"
                                                         value="{{ $alumno->id }}"
-                                                        style="width:15px;height:15px;{{ $esLicenciaB ? 'cursor:not-allowed' : 'cursor:pointer' }}"
-                                                        {{ $esLicenciaB ? 'disabled title="En licencia — no se puede cambiar de ciclo"' : '' }}>
+                                                        style="width:15px;height:15px;{{ $esInhabilitadoBEgr ? 'cursor:not-allowed' : 'cursor:pointer' }}"
+                                                        {{ $esInhabilitadoBEgr ? 'disabled title="Inhabilitado — no se puede cambiar de ciclo"' : '' }}>
                                                 </td>
                                                 <td>
                                                     {{ $alumno->apellidos }}, {{ $alumno->name }}
-                                                    @if ($esLicenciaB)
-                                                        <span class="badge badge-secondary ml-1">Licencia</span>
+                                                    @if ($esInhabilitadoBEgr && $motivoBEgr)
+                                                        <br>
+                                                        <span class="badge badge-warning text-dark mt-1"
+                                                            title="Motivo de inhabilitación">⚠ {{ $motivoBEgr }}</span>
                                                     @endif
                                                 </td>
                                                 <td>{{ $alumno->dni }}</td>
@@ -271,31 +276,28 @@
                                         @foreach ($alumnos as $alumno)
                                             @if ($alumno->user)
                                                 @php
-                                                    $esResaltado =
-                                                        $alumno->user->hasRole('inhabilitado') &&
-                                                        in_array($alumno->user->perfil, ['Licencia', 'Sin reserva']);
-                                                    $esLicencia = $alumno->user->perfil === 'Licencia';
+                                                    $esInhabilitado = $alumno->user->hasRole('inhabilitado');
+                                                    $motivo = $alumno->user->perfil ?? null;
                                                 @endphp
-                                                <tr
-                                                    @if ($esResaltado) style="background-color: #fdcbbf" @endif>
+                                                <tr @if ($esInhabilitado) style="background-color: #fdcbbf;" @endif>
                                                     <td>{{ $loop->iteration }}</td>
                                                     <td class="text-center">
                                                         <div class="form-check">
                                                             <input class="form-check-input" type="checkbox" name="alumnos[]"
                                                                 value="{{ $alumno->user->id }}"
                                                                 id="alumno{{ $alumno->id }}"
-                                                                style="width: 15px;height: 15px; {{ $esLicencia ? 'cursor: not-allowed;' : 'cursor: pointer;' }}"
-                                                                {{ $esLicencia ? 'disabled title="En licencia — no se puede cambiar de ciclo"' : '' }}>
+                                                                style="width: 15px; height: 15px; {{ $esInhabilitado ? 'cursor: not-allowed;' : 'cursor: pointer;' }}"
+                                                                {{ $esInhabilitado ? 'disabled title="Inhabilitado — no se puede cambiar de ciclo"' : '' }}>
                                                         </div>
                                                     </td>
                                                     <td>
                                                         <label class="form-check-label" for="alumno{{ $alumno->id }}">
                                                             {{ $alumno->apellidos }}, {{ $alumno->nombres }}
                                                         </label>
-                                                        @if ($esLicencia)
-                                                            <span class="badge badge-secondary ml-1">Licencia</span>
-                                                        @elseif ($esResaltado)
-                                                            <span class="badge bg-secondary text-white ms-2">{{ $alumno->user->perfil }}</span>
+                                                        @if ($esInhabilitado && $motivo)
+                                                            <br>
+                                                            <span class="badge badge-warning text-dark mt-1"
+                                                                title="Motivo de inhabilitación">⚠ {{ $motivo }}</span>
                                                         @endif
                                                     </td>
                                                     <td>
@@ -322,14 +324,17 @@
                                         @endforeach
 
                                         @foreach ($alumnosB as $alumno)
-                                            @php $esLicenciaB = $alumno->perfil === 'Licencia'; @endphp
-                                            <tr @if ($esLicenciaB) style="background-color: #fdcbbf" @endif>
+                                            @php
+                                                $esInhabilitadoB = $alumno->hasRole('inhabilitado');
+                                                $motivoB = $alumno->perfil ?? null;
+                                            @endphp
+                                            <tr @if ($esInhabilitadoB) style="background-color: #fdcbbf;" @endif>
                                                 <td class="text-center">
                                                     <div class="form-check">
                                                         <input class="form-check-input" type="checkbox" name="alumnos[]"
                                                             value="{{ $alumno->id }}" id="alumnoB{{ $alumno->id }}"
-                                                            style="width: 15px;height: 15px; {{ $esLicenciaB ? 'cursor: not-allowed;' : 'cursor: pointer;' }}"
-                                                            {{ $esLicenciaB ? 'disabled title="En licencia — no se puede cambiar de ciclo"' : '' }}>
+                                                            style="width: 15px; height: 15px; {{ $esInhabilitadoB ? 'cursor: not-allowed;' : 'cursor: pointer;' }}"
+                                                            {{ $esInhabilitadoB ? 'disabled title="Inhabilitado — no se puede cambiar de ciclo"' : '' }}>
                                                     </div>
                                                 </td>
                                                 <td>
@@ -337,8 +342,10 @@
                                                         {{ $alumno->apellidos }}, {{ $alumno->name }} <br>
                                                         Número: {{ $alumno->telefono }}
                                                     </label>
-                                                    @if ($esLicenciaB)
-                                                        <span class="badge badge-secondary ml-1">Licencia</span>
+                                                    @if ($esInhabilitadoB && $motivoB)
+                                                        <br>
+                                                        <span class="badge badge-warning text-dark mt-1"
+                                                            title="Motivo de inhabilitación">⚠ {{ $motivoB }}</span>
                                                     @endif
                                                 </td>
                                                 <td>{{ $alumno->dni }}</td>

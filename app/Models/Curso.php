@@ -106,6 +106,21 @@ class Curso extends Model
         return $ciclo->merge($rel)->unique()->values();
     }
 
+    public function porcentajePPD(): float
+    {
+        $ppdIdsEnCiclo = \App\Models\ppd::where('ciclo_id', $this->ciclo_id)->pluck('id');
+        $total = $ppdIdsEnCiclo->count();
+        if ($total === 0) {
+            return 0.0;
+        }
+        $calificados = $this->calificacionesppd()
+            ->whereNotNull('calificacion_curso')
+            ->whereIn('ppd_id', $ppdIdsEnCiclo)
+            ->count(DB::raw('DISTINCT ppd_id'));
+
+        return round(($calificados / $total) * 100, 2);
+    }
+
     public function porcentajePeriodo(int $periodo, array $camposClave = ['calificacion_curso']): float
     {
         $ids = $this->alumnosValidosIds();
