@@ -2,7 +2,6 @@
 
 return [
     'retrieval' => 'lexical',
-
     /** Fragmentos de corpus que se inyectan al LLM (menos = contexto más corto y algo más rápido) */
     'top_k' => (int) env('PUKLLABOT_TOP_K', 5),
 
@@ -38,8 +37,10 @@ return [
     'corpora' => [
         ['file' => 'corpus-admision-ordinario.md', 'scope' => 'admision-ordinario'],
         ['file' => 'corpus-admision-profesionalizacion-docente.md', 'scope' => 'admision-profesionalizacion-docente'],
+        ['file' => 'corpus-titulacion.md', 'scope' => 'titulacion'],
         ['file' => 'corpus-programas-inicial.md', 'scope' => 'programas-inicial'],
         ['file' => 'corpus-programas-eib.md', 'scope' => 'programas-eib'],
+        
     ],
 
     /**
@@ -53,6 +54,10 @@ return [
         'admision-profesionalizacion-docente' => [
             'label' => 'Admisión: Profesionalización docente (PPD)',
             'description' => 'Página /profesionalizacion-docente: programa de 1 año, requisitos, examen de admisión PPD; distinto del ingreso ordinario FID salvo que el contexto lo relacione.',
+        ],
+        'titulacion' => [
+            'label' => 'Titulación (PTI / TI / Tesis)',
+            'description' => 'Trámites de titulación: Plan de Trabajo de Investigación (PTI), Trabajo de Investigación (TI) para Bachiller, Tesis para Licenciatura, pagos ordinarios Caja Cusco.',
         ],
         'programas-inicial' => [
             'label' => 'Programa: Educación Inicial',
@@ -80,3 +85,4 @@ return [
         'connect_timeout' => (float) env('PUKLLABOT_OPENROUTER_CONNECT_TIMEOUT', 12),
     ],
 ];
+

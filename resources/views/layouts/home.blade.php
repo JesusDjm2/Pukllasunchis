@@ -822,9 +822,7 @@
     <script src="{{ asset('js/plugins.js') }}"></script>
     <script src="{{ asset('js/gijgo.min.js') }}"></script>
     <script src="{{ asset('js/main.js') }}"></script>
-    @unless(app()->environment('production'))
-        @include('partials.pukllabot-widget')
-    @endunless
+    @include('partials.pukllabot-widget')
     <!--contact js-->
     {{-- <script src="{{ asset('js/contact.js') }}"></script>
     <script src="{{ asset('js/jquery.ajaxchimp.min.js') }}"></script>

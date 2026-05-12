@@ -19,7 +19,14 @@
       "Bash(Get the *)",
       "Bash(Get-ChildItem -Path . -Filter \"*docente*\" -Recurse -ErrorAction SilentlyContinue)",
       "Bash(Select-Object -ExpandProperty FullName)",
-      "Bash(not exist *)"
+      "Bash(not exist *)",
+      "Bash(claude --version)",
+      "Bash(claude doctor *)",
+      "PowerShell(claude --version)",
+      "PowerShell(Get-ChildItem \"$env:USERPROFILE\\\\.claude\" -ErrorAction SilentlyContinue | Select-Object Name, LastWriteTime)",
+      "PowerShell(claude config list 2>&1)",
+      "PowerShell(Get-ChildItem \"$env:USERPROFILE\\\\.claude\" -Recurse -ErrorAction SilentlyContinue | Select-Object Name, LastWriteTime, Length | Format-Table)",
+      "Read(//c/Users/Jaime/.claude/**)"
     ]
   }
 }
