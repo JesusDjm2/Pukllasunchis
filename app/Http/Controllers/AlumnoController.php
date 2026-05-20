@@ -7,6 +7,7 @@ use App\Models\Alumno;
 use App\Models\Ciclo;
 use App\Models\Departamento;
 use App\Models\Distrito;
+use App\Models\Matricula;
 use App\Models\PeriodoActual;
 use App\Models\ppd;
 use App\Models\Programa;
@@ -31,10 +32,12 @@ class AlumnoController extends Controller
         if ($alumno) {
             $usuario = $alumno->user;
             $alumno->load('programa', 'ciclo.cursos.docentes');
-            // Obtener el periodo actual marcado como "actual"
             $periodoActual = PeriodoActual::where('actual', true)->first();
+            $yaMatriculado = $periodoActual
+                ? $alumno->matriculas()->where('periodo_actual_id', $periodoActual->id)->exists()
+                : false;
 
-            return view('alumnos.vistasAlumnos.index', compact('alumno', 'usuario', 'periodoActual'));
+            return view('alumnos.vistasAlumnos.index', compact('alumno', 'usuario', 'periodoActual', 'yaMatriculado'));
         } else {
             return view('alumnos.vistasAlumnos.index');
         }
@@ -43,8 +46,11 @@ class AlumnoController extends Controller
     public function ficha(Alumno $alumno)
     {
         $periodoActual = PeriodoActual::where('actual', true)->first();
+        $cursosAsignados = $periodoActual
+            ? $alumno->cursosDelPeriodo($periodoActual->id)->with('ciclo')->get()
+            : collect();
 
-        return view('alumnos.ficha', compact('alumno', 'periodoActual'));
+        return view('alumnos.ficha', compact('alumno', 'periodoActual', 'cursosAsignados'));
     }
 
     public function mostrarContenido(Request $request)
@@ -264,7 +270,26 @@ class AlumnoController extends Controller
         if (auth()->check()) {
             Alumno::asociarPorEmail($nuevoAlumno->email);
 
-            return redirect()->route('alumnos.index')->with('success', 'Alumno registrado exitosamente!');
+            // Crear registro de matrícula vinculado al periodo actual
+            $periodoActual = PeriodoActual::where('actual', true)->first();
+            if ($periodoActual) {
+                Matricula::updateOrCreate(
+                    ['alumno_id' => $nuevoAlumno->id, 'periodo_actual_id' => $periodoActual->id],
+                    ['fecha_completado' => now(), 'estado' => 'matriculado']
+                );
+            }
+
+            // Enviar email de notificación automáticamente al completar el formulario
+            try {
+                Mail::to([
+                    'davidmiranda.puk@gmail.com',
+                    'cobranzas.eesp@pukllavirtual.edu.pe',
+                ])->send(new NotificacionRegistro($nuevoAlumno));
+            } catch (\Exception $e) {
+                // No interrumpir el flujo si el email falla
+            }
+
+            return redirect()->route('alumnos.index')->with('success', '¡Matrícula completada exitosamente! Se ha enviado una notificación al administrador.');
         } else {
             return redirect()->route('index')->with('success', 'Has sido registrado exitosamente, le enviaremos un correo con sus credenciales de acceso.');
         }
@@ -574,5 +599,151 @@ class AlumnoController extends Controller
     public function formatos()
     {
         return view('alumnos.formatos.formato');
+    }
+
+    public function editarDatos()
+    {
+        $alumno = auth()->user()->alumno;
+        if (! $alumno) {
+            return redirect()->route('alumnos.index');
+        }
+
+        $periodoActual = PeriodoActual::where('actual', true)->first();
+        $matriculaActual = $periodoActual
+            ? $alumno->matriculas()->where('periodo_actual_id', $periodoActual->id)->first()
+            : null;
+        $formularioHabilitado = $periodoActual?->formulario_habilitado ?? false;
+
+        return view('alumnos.vistasAlumnos.actualizar-datos', compact('alumno', 'periodoActual', 'matriculaActual', 'formularioHabilitado'));
+    }
+
+    public function actualizarDatos(Request $request)
+    {
+        $alumno = auth()->user()->alumno;
+        if (! $alumno) {
+            return redirect()->route('alumnos.index');
+        }
+
+        $periodoActual = PeriodoActual::where('actual', true)->first();
+        $matriculaActual = $periodoActual
+            ? $alumno->matriculas()->where('periodo_actual_id', $periodoActual->id)->first()
+            : null;
+
+        $esBecado = (bool) auth()->user()->beca;
+
+        $rules = [
+            'foto'               => 'nullable|image|mimes:jpg,jpeg,png,webp|max:3048',
+            'numero'             => 'required|string|max:20',
+            'numero_referencia'  => 'required|string|max:20',
+            'direccion'          => 'required|string|max:255',
+            'departamento'       => 'nullable|string|max:100',
+            'provincia'          => 'nullable|string|max:100',
+            'distrito'           => 'nullable|string|max:100',
+            'estado_civil'       => 'required|string',
+            'p_m_soltero'        => 'required|boolean',
+            'num_hijos'          => 'required|integer|min:0',
+            'sector_socioeconomico' => 'required|string',
+            'trabajas'           => 'required|string',
+            'donde_trabajas'     => 'nullable|string|max:255',
+            'ingreso_mensual'    => 'nullable|string|max:100',
+            'egreso'             => 'required|string|max:100',
+            'hrs_laboradas_sem'  => 'required|integer|min:0',
+            'sector_laboral'     => 'nullable|string|max:100',
+            'ayuda_economica'    => 'required|boolean',
+            'tiempo_ayuda'       => 'required|string|max:100',
+            'tipo_apoyo_formacion' => 'required|string|max:100',
+            'convivientes'       => 'required|string|max:255',
+            'quien_mantiene'     => 'required|string|max:255',
+            'cant_dependientes_child' => 'required|string|max:50',
+            'cant_dependientes_old'   => 'required|string|max:50',
+            'cant_dependientes_otros' => 'required|string|max:50',
+            'tipo_vivienda'      => 'required|string',
+            'situacion_vivienda' => 'required|string',
+            'dormitorios_vivienda' => 'required|integer|min:0',
+            'banos_vivienda'     => 'required|integer|min:0',
+            'material_vivienda'  => 'required|string',
+            'hrs_disponibles_agua'    => 'required|integer|min:0',
+            'hrs_disponibles_desague' => 'required|integer|min:0',
+            'hrs_disponibles_luz'     => 'required|integer|min:0',
+            'tipo_seguro'        => 'required|string',
+            'bienes_vivienda'    => 'required|array|min:1',
+            'otros_servicios'    => 'nullable|array',
+            'estudio_beca'       => 'required',
+            'permanencia_vivienda' => 'required|string',
+        ];
+
+        if (! $alumno->alumnoTieneFechaNacimientoCapturada()) {
+            $rules['fecha_nacimiento'] = 'required|date';
+        }
+        if (! $alumno->genero) {
+            $rules['genero'] = 'required|string';
+        }
+
+        $formularioHabilitado = $periodoActual?->formulario_habilitado ?? false;
+        $requiereVoucher = $formularioHabilitado && ! $esBecado;
+        if ($requiereVoucher) {
+            $rules['comprobante'] = 'required|string|max:100';
+        }
+
+        $request->validate($rules);
+
+        if ($request->numero === $request->numero_referencia) {
+            return redirect()->back()->withInput()->withErrors(['numero' => 'El celular y el celular de emergencia deben ser diferentes.']);
+        }
+
+        $bienes = implode(',', $request->input('bienes_vivienda', []));
+        $otrosServicios = implode(',', $request->input('otros_servicios', []));
+
+        $campos = [
+            'numero', 'numero_referencia', 'direccion', 'departamento', 'provincia', 'distrito',
+            'estado_civil', 'p_m_soltero', 'num_hijos', 'sector_socioeconomico',
+            'trabajas', 'donde_trabajas', 'ingreso_mensual', 'egreso', 'hrs_laboradas_sem',
+            'sector_laboral', 'ayuda_economica', 'tiempo_ayuda', 'tipo_apoyo_formacion',
+            'convivientes', 'quien_mantiene', 'cant_dependientes_child', 'cant_dependientes_old', 'cant_dependientes_otros',
+            'tipo_vivienda', 'situacion_vivienda', 'dormitorios_vivienda', 'banos_vivienda', 'material_vivienda',
+            'hrs_disponibles_agua', 'hrs_disponibles_desague', 'hrs_disponibles_luz',
+            'tipo_seguro', 'estudio_beca', 'permanencia_vivienda',
+        ];
+
+        if (! $alumno->alumnoTieneFechaNacimientoCapturada() && $request->filled('fecha_nacimiento')) {
+            $campos[] = 'fecha_nacimiento';
+        }
+        if (! $alumno->genero && $request->filled('genero')) {
+            $campos[] = 'genero';
+        }
+
+        $datos = $request->only($campos);
+        $datos['bienes_vivienda'] = $bienes;
+        $datos['otros_servicios'] = $otrosServicios;
+
+        $alumno->update($datos);
+
+        if ($request->hasFile('foto')) {
+            $foto = $request->file('foto');
+            $nombreFoto = $foto->getClientOriginalName();
+            $foto->move(public_path('img/estudiantes'), $nombreFoto);
+            auth()->user()->update(['foto' => $nombreFoto]);
+        }
+
+        if ($periodoActual && $formularioHabilitado) {
+            $comprobante = $request->filled('comprobante') ? $request->comprobante : null;
+            Matricula::updateOrCreate(
+                ['alumno_id' => $alumno->id, 'periodo_actual_id' => $periodoActual->id],
+                array_filter(['fecha_completado' => now(), 'estado' => 'matriculado', 'comprobante' => $comprobante])
+            );
+
+            try {
+                Mail::to([
+                    'davidmiranda.puk@gmail.com',
+                    'cobranzas.eesp@pukllavirtual.edu.pe',
+                ])->send(new NotificacionRegistro($alumno));
+            } catch (\Exception $e) {
+                // No interrumpir el flujo si el email falla
+            }
+        } elseif ($matriculaActual && $request->filled('comprobante')) {
+            $matriculaActual->update(['comprobante' => $request->comprobante]);
+        }
+
+        return redirect()->route('alumnos.index')->with('success', '¡Ficha de matrícula completada correctamente!');
     }
 }

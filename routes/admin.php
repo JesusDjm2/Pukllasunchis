@@ -44,6 +44,9 @@ Route::put('/admin/update/{id}', [AdminController::class, 'update'])->name('admi
 Route::get('/registro', [AdminController::class, 'create'])->name('registerAdmin');
 Route::post('/admin/store', [AdminController::class, 'store'])->name('adminStore');
 Route::get('/admin/alumnos', [AdminController::class, 'alumnos'])->name('adminAlumnos');
+Route::delete('/admin/matriculas/{matricula}/quitar', [AdminController::class, 'quitarMatricula'])
+    ->middleware('auth')
+    ->name('matriculas.quitar');
 Route::post('/admin/alumnos/exportar-excel', [AdminController::class, 'exportAlumnosExcel'])
     ->middleware('auth')
     ->name('admin.alumnos.export-excel');
@@ -155,6 +158,9 @@ Route::get('/periodo-actual/{id}/actualizar-notas', [PeriodoActualController::cl
 Route::get('Periodo-Actual/{periodoactual}/registros', [PeriodoActualController::class, 'showRegistros'])
     ->name('periodoactual.showRegistros')->middleware('auth');
 
+Route::post('Periodo-Actual/{periodoactual}/toggle-formulario', [PeriodoActualController::class, 'toggleFormulario'])
+    ->name('periodoactual.toggleFormulario')->middleware('auth');
+
 Route::resource('periodos', PeriodoController::class)
     ->only(['index', 'create', 'store'])
     ->middleware('auth')
@@ -240,6 +246,8 @@ Route::get('/filtrar-datos', [AlumnoController::class, 'filtro'])->name('filtro'
 
 //Vista Alumnos
 Route::get('Alumnos-Formulario', [vistasAlumnosController::class, 'form'])->name('vistAlumno');
+Route::get('alumnos/actualizar-datos', [AlumnoController::class, 'editarDatos'])->name('alumnos.editarDatos')->middleware('auth');
+Route::post('alumnos/actualizar-datos', [AlumnoController::class, 'actualizarDatos'])->name('alumnos.actualizarDatos')->middleware('auth');
 Route::get('/obtener-ciclos/{programa}', [vistasAlumnosController::class, 'obtenerCiclos']);
 Route::get('/get-cursos/{ciclo}', [vistasAlumnosController::class, 'getCursos']);
 Route::get('/obtener-cursos/{cicloId}', [vistasAlumnosController::class, 'getCursos'])->name('obtener.cursos');

@@ -7,6 +7,7 @@ use App\Models\Competencia;
 use App\Models\Curso;
 use App\Models\Docente;
 use App\Models\PeriodoActual;
+use App\Models\ppd;
 use App\Models\Programa;
 use App\Models\User;
 use Hash;
@@ -170,17 +171,24 @@ class DocenteCOntroller extends Controller
     {
         $programa = $curso->ciclo->programa;
         $ciclo = $curso->ciclo;
+        $periodoActual = \App\Models\PeriodoActual::where('actual', true)->first();
 
-        $alumnos = $programa->alumnos()
+        $query = $programa->alumnos()
             ->where('ciclo_id', $ciclo->id)
-            ->whereHas('user', function ($query) {
-                $query->whereDoesntHave('roles', function ($roleQuery) {
-                    $roleQuery->where('name', 'inhabilitado');
-                });
-            })
-            ->orderBy('apellidos')
-            ->get();
+            ->whereHas('user', fn ($q) => $q->whereDoesntHave('roles', fn ($r) => $r->where('name', 'alumnoB'))
+                ->where(function ($q) {
+                    $q->whereHas('roles', fn ($r) => $r->where('name', 'alumno'))
+                      ->orWhereHas('roles', fn ($r) => $r->where('name', 'inhabilitado'));
+                }));
 
+        if ($periodoActual) {
+            $query->where(function ($q) use ($periodoActual) {
+                $q->whereHas('matriculas', fn ($m) => $m->where('periodo_actual_id', $periodoActual->id))
+                  ->orWhereHas('user', fn ($u) => $u->whereHas('roles', fn ($r) => $r->where('name', 'inhabilitado')));
+            });
+        }
+
+        $alumnos = $query->orderBy('apellidos')->get();
         $cantidadAlumnos = $alumnos->count();
 
         return view('docentes.alumnos', compact('curso', 'alumnos', 'cantidadAlumnos', 'ciclo', 'docente'));
@@ -227,46 +235,42 @@ class DocenteCOntroller extends Controller
         $docente = Docente::findOrFail($docenteId);
         $competenciasSeleccionadas = Competencia::whereIn('id', $request->input('competencias'))->get();
 
+        $periodoActual = \App\Models\PeriodoActual::where('actual', true)->first();
+
+        $filtroFid = function ($q) use ($periodoActual) {
+            $q->whereDoesntHave('roles', fn ($r) => $r->where('name', 'alumnoB'))
+              ->where(function ($q) {
+                  $q->whereHas('roles', fn ($r) => $r->where('name', 'alumno'))
+                    ->orWhereHas('roles', fn ($r) => $r->where('name', 'inhabilitado'));
+              });
+        };
+
+        $filtroMatricula = function ($q) use ($periodoActual) {
+            if ($periodoActual) {
+                $q->where(function ($inner) use ($periodoActual) {
+                    $inner->whereHas('matriculas', fn ($m) => $m->where('periodo_actual_id', $periodoActual->id))
+                          ->orWhereHas('user', fn ($u) => $u->whereHas('roles', fn ($r) => $r->where('name', 'inhabilitado')));
+                });
+            }
+        };
+
         $alumnosRelacionados = $curso->alumnos()
-            ->whereHas('user', function ($q) {
-                $q->whereDoesntHave('roles', fn ($r) => $r->where('name', 'inhabilitado'))
-                    ->orWhere(function ($q2) {
-                        $q2->whereHas('roles', fn ($r) => $r->where('name', 'inhabilitado'))
-                            ->where('perfil', '!=', 'Sin matrícula');
-                    });
-            })
+            ->whereHas('user', $filtroFid)
+            ->tap($filtroMatricula)
             ->orderBy('apellidos')
             ->get();
 
         $alumnosCiclo = $curso->ciclo->alumnos()
-            ->whereHas('user', function ($query) {
-                $query->where(function ($q) {
-                    $q->whereDoesntHave('roles', function ($roleQuery) {
-                        $roleQuery->where('name', 'inhabilitado');
-                    })
-                        ->orWhere(function ($subQuery) {
-                            $subQuery->whereHas('roles', function ($roleQuery) {
-                                $roleQuery->where('name', 'inhabilitado');
-                            })->where('perfil', '!=', 'Sin matrícula');
-                        });
-                });
-            })
+            ->whereHas('user', $filtroFid)
+            ->tap($filtroMatricula)
             ->orderBy('apellidos')
             ->get();
 
-        $alumnos = $alumnosRelacionados
-            ->merge($alumnosCiclo)
+        $alumnos = $alumnosCiclo
+            ->merge($alumnosRelacionados)
             ->unique('id')
+            ->sortBy('apellidos')
             ->values();
-
-        $alumnos = $alumnos->filter(function ($alumno) use ($cursoId) {
-            $cursoRelacionIds = $alumno->cursos()->pluck('curso_id');
-            if ($cursoRelacionIds->isNotEmpty() && ! $cursoRelacionIds->contains($cursoId)) {
-                return false;
-            }
-
-            return true;
-        })->values();
 
         $mostrarBotonDesempeno = false;
 
@@ -321,6 +325,21 @@ class DocenteCOntroller extends Controller
 
         $alumnos = $alumnos->map(function ($alumno) {
             $alumno->es_inhabilitado = $alumno->roles->contains('name', 'inhabilitado');
+
+            // Si no hay alumnoB vinculado por user_id, intentar encontrar su registro PPD por email
+            if ($alumno->alumnoB === null && $alumno->email) {
+                $ppdPorEmail = ppd::where('email', $alumno->email)->first();
+                if ($ppdPorEmail) {
+                    // Vincular automáticamente para que futuras consultas funcionen
+                    if (! $ppdPorEmail->user_id) {
+                        $ppdPorEmail->user_id = $alumno->id;
+                        $ppdPorEmail->save();
+                    }
+                    // Recargar la relación con el registro encontrado
+                    $alumno->setRelation('alumnoB', $ppdPorEmail);
+                }
+            }
+
             $alumno->tiene_ppd = $alumno->alumnoB !== null;
 
             // Verificar si ya tiene calificaciones guardadas
@@ -372,62 +391,53 @@ class DocenteCOntroller extends Controller
 
     public function alumnos($id)
     {
-        $docente = Docente::with([
-            'cursos.ciclo.alumnos.user.roles',
-            'cursos.ciclo.programa',
-            'cursos.alumnos.user.roles',
-            'cursos.alumnos.ciclo',
-        ])->findOrFail($id);
-
+        $docente = Docente::with(['cursos.ciclo.programa'])->findOrFail($id);
         $cursos = $docente->cursos;
+        $periodoActual = \App\Models\PeriodoActual::where('actual', true)->first();
         $alumnosPorCurso = [];
+        $curso = null;
 
         foreach ($cursos as $curso) {
-            if ($curso->ciclo && in_array($curso->ciclo->programa_id, [1, 2, 3, 4])) {
-
-                $alumnosCiclo = $curso->ciclo->alumnos->filter(function ($alumno) {
-                    $user = $alumno->user;
-
-                    if (! $user) {
-                        return false;
-                    }
-
-                    // Excluir si el usuario tiene rol inhabilitado Y perfil sin_matricula o reserva
-                    if (
-                        $user->hasRole('inhabilitado') &&
-                        in_array($user->perfil, ['sin_matricula', 'reserva'])
-                    ) {
-                        return false;
-                    }
-
-                    return true;
-                });
-
-                $alumnosRelacionados = $curso->alumnos->filter(function ($alumno) {
-                    $user = $alumno->user;
-
-                    if (! $user) {
-                        return false;
-                    }
-
-                    // Mismo filtro que en alumnosCiclo
-                    if (
-                        $user->hasRole('inhabilitado') &&
-                        in_array($user->perfil, ['sin_matricula', 'reserva'])
-                    ) {
-                        return false;
-                    }
-
-                    return true;
-                });
-
-                $alumnosUnificados = $alumnosCiclo
-                    ->merge($alumnosRelacionados)
-                    ->unique('id')
-                    ->sortBy('apellidos');
-
-                $alumnosPorCurso[$curso->id] = $alumnosUnificados;
+            if (! $curso->ciclo || ! in_array($curso->ciclo->programa_id, [1, 2, 3, 4])) {
+                continue;
             }
+
+            $filtroFid = fn ($q) => $q
+                ->whereDoesntHave('roles', fn ($r) => $r->where('name', 'alumnoB'))
+                ->where(function ($q) {
+                    $q->whereHas('roles', fn ($r) => $r->where('name', 'alumno'))
+                      ->orWhereHas('roles', fn ($r) => $r->where('name', 'inhabilitado'));
+                });
+
+            $aplicarPeriodo = function ($builder) use ($periodoActual) {
+                if ($periodoActual) {
+                    $builder->where(function ($q) use ($periodoActual) {
+                        $q->whereHas('matriculas', fn ($m) => $m->where('periodo_actual_id', $periodoActual->id))
+                          ->orWhereHas('user', fn ($u) => $u->whereHas('roles', fn ($r) => $r->where('name', 'inhabilitado')));
+                    });
+                }
+            };
+
+            $qCiclo = $curso->ciclo->alumnos()->with(['user', 'user.roles'])->whereHas('user', $filtroFid);
+            $aplicarPeriodo($qCiclo);
+            $alumnosCiclo = $qCiclo->orderBy('apellidos')->get();
+
+            $qRelacionados = $curso->alumnos()->with(['user', 'user.roles'])->whereHas('user', $filtroFid);
+            $aplicarPeriodo($qRelacionados);
+            $alumnosRelacionados = $qRelacionados->orderBy('apellidos')->get();
+
+            $alumnosUnificados = $alumnosCiclo
+                ->merge($alumnosRelacionados)
+                ->unique('id')
+                ->filter(function ($alumno) use ($curso) {
+                    $cursoRelacionIds = $alumno->cursos()->pluck('curso_id');
+
+                    return $cursoRelacionIds->isEmpty() || $cursoRelacionIds->contains($curso->id);
+                })
+                ->sortBy('apellidos')
+                ->values();
+
+            $alumnosPorCurso[$curso->id] = $alumnosUnificados;
         }
 
         return view('docentes.alumnos.index', compact('docente', 'alumnosPorCurso', 'curso'));

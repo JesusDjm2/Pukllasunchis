@@ -26,7 +26,6 @@
     </div>
     <div class="form-group">
         <label for="{{ $prefix }}_detalles">Detalles</label>
-        {{-- Sin required: con TinyMCE el textarea queda oculto y el navegador puede bloquear el submit sin aviso. --}}
         <textarea class="form-control" id="{{ $prefix }}_detalles" name="detalles" rows="8">{{ old('detalles') }}</textarea>
     </div>
     <div class="form-group">

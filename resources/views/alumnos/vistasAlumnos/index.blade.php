@@ -6,9 +6,22 @@
         $headerActions = '';
         if (auth()->user()->alumno) {
             $headerActions =
-                '<a class="btn btn-sm btn-info shadow-sm" href="' .
+                '<a class="btn btn-sm btn-info shadow-sm mr-1" href="' .
                 e(route('ficha-matricula', ['alumno' => $alumno->id])) .
                 '"><i class="fas fa-file-alt mr-1"></i> Ficha de matrícula (PDF)</a>';
+
+            if (isset($yaMatriculado) && $yaMatriculado) {
+                $headerActions .=
+                    '<span class="badge badge-success px-2 py-1 align-middle" style="font-size:12px;border-radius:6px;">' .
+                    '<i class="fas fa-check-circle mr-1"></i>Matriculado · ' .
+                    e(optional($periodoActual)->nombre) .
+                    '</span>';
+            } elseif (isset($periodoActual) && $periodoActual?->formulario_habilitado) {
+                $headerActions .=
+                    '<a class="btn btn-sm btn-warning shadow-sm" href="' .
+                    e(route('alumnos.editarDatos')) .
+                    '"><i class="fas fa-graduation-cap mr-1"></i> Completar ficha de matrícula</a>';
+            }
         }
     @endphp
     @include('partials.alumno-page-header', [
@@ -28,6 +41,17 @@
                 </div>
             @endif
         </div>
+        {{-- Aviso de matrícula pendiente --}}
+        @if (auth()->user()->alumno && isset($periodoActual) && $periodoActual && $periodoActual->formulario_habilitado && isset($yaMatriculado) && !$yaMatriculado)
+            <div class="col-12 mb-3">
+                <div class="alert alert-warning d-flex align-items-center shadow-sm mb-0 py-2">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    <span>El período <strong>{{ $periodoActual->nombre }}</strong> está abierto.
+                        Completa tu ficha de matrícula usando el botón del encabezado.</span>
+                </div>
+            </div>
+        @endif
+
         @if (auth()->user()->alumno)
             <div class="col-lg-12">
                 <div class="alumno-shell p-0 overflow-hidden">
@@ -340,32 +364,5 @@
         });
     </script>
 
-    {{-- Script para enviar correo de notificación --}}
-    <script>
-        document.getElementById('mostrar-contenido')?.addEventListener('click', function() {
-            this.style.display = 'none';
-            fetch("{{ route('mostrar-contenido') }}", {
-                method: "POST",
-                headers: {
-                    "X-CSRF-TOKEN": "{{ csrf_token() }}",
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    @if (auth()->user()->alumno)
-                        alumno_id: {{ $alumno->id }}
-                    @endif
-                }),
-            }).then(response => {
-                if (response.ok) {
-                    alert('Correo enviado correctamente.');
-                } else {
-                    alert('Error al enviar el correo.');
-                }
-            }).catch(error => {
-                console.error('Error:', error);
-                alert('Error al enviar el correo.');
-            });
-        });
-    </script>
 
 @endsection

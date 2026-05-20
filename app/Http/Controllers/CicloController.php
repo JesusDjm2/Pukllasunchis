@@ -9,7 +9,6 @@ use App\Models\Programa;
 use App\Models\Proyecto;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
 class CicloController extends Controller
@@ -17,19 +16,27 @@ class CicloController extends Controller
     public function index()
     {
         $ciclos = Ciclo::whereIn('programa_id', [1, 2, 3, 4, 5])->get();
+
         foreach ($ciclos as $ciclo) {
             $alumnos = $ciclo->alumnos()
-                ->whereHas('user', function ($query) {
-                    $query->where('perfil', '!=', 'Sin matrícula');
-                })
+                ->whereHas('user', fn ($q) => $q
+                    ->whereDoesntHave('roles', fn ($r) => $r->where('name', 'alumnoB'))
+                    ->where(fn ($q) => $q
+                        ->whereHas('roles', fn ($r) => $r->where('name', 'alumno'))
+                        ->orWhereHas('roles', fn ($r) => $r->where('name', 'inhabilitado'))
+                    )
+                )
                 ->orderBy('apellidos')
                 ->get();
+
             $alumnosB = User::whereHas('roles', function ($query) {
                 $query->whereIn('name', ['alumnoB', 'inhabilitado']);
             })
                 ->where('ciclo_id', $ciclo->id)
+                ->whereHas('alumnoB')
                 ->orderBy('apellidos')
                 ->get();
+
             $ciclo->alumnos_validos = $alumnos;
             $ciclo->alumnos_b_validos = $alumnosB;
             $ciclo->alumnos_validos_count = $alumnos->count();
@@ -103,13 +110,18 @@ class CicloController extends Controller
 
     public function show(Ciclo $ciclo)
     {
-        // Alumnos regulares (FID) — incluye inhabilitados para mostrar su motivo
         $alumnos = $ciclo->alumnos()
             ->with(['user', 'user.roles'])
+            ->whereHas('user', fn ($q) => $q
+                ->whereDoesntHave('roles', fn ($r) => $r->where('name', 'alumnoB'))
+                ->where(fn ($q) => $q
+                    ->whereHas('roles', fn ($r) => $r->where('name', 'alumno'))
+                    ->orWhereHas('roles', fn ($r) => $r->where('name', 'inhabilitado'))
+                )
+            )
             ->orderBy('apellidos')
             ->get();
 
-        // Alumnos PPD — solo usuarios que tienen registro ppd (alumnoB), evita duplicar FID inhabilitados
         $alumnosB = User::whereHas('roles', function ($query) {
             $query->whereIn('name', ['alumnoB', 'inhabilitado']);
         })
@@ -118,19 +130,10 @@ class CicloController extends Controller
             ->orderBy('apellidos')
             ->get();
 
-        // Total de alumnos (ambos tipos)
         $cantidadAlumnos = $alumnos->count() + $alumnosB->count();
 
         $ciclosDisponibles = Ciclo::where('programa_id', $ciclo->programa_id)->get();
         $cursosConDocentes = $ciclo->cursos()->with('docentes')->get();
-
-        // Debug en la vista (opcional)
-        Log::info('Show method results:', [
-            'ciclo' => $ciclo->nombre ?? $ciclo->name,
-            'alumnos_regulares' => $alumnos->count(),
-            'alumnos_b' => $alumnosB->count(),
-            'total' => $cantidadAlumnos,
-        ]);
 
         return view('admin.ciclo.show', compact(
             'ciclo',

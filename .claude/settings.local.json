@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"c:\\\\xampp\\\\htdocs\\\\Puklla2025\" -Directory)",
+      "Bash(Select-Object Name)",
+      "Bash(php -l \"app/Http/Controllers/AlumnoController.php\")",
+      "Bash(php -l \"app/Http/Controllers/PeriodoActualController.php\")",
+      "Bash(php -l \"app/Http/Controllers/AdminController.php\")",
+      "Bash(php -l \"app/Http/Controllers/vistasAlumnosController.php\")",
+      "Bash(php -l \"app/Models/Matricula.php\")",
+      "Bash(php -l \"app/Console/Commands/ImportarMatriculadosExcel.php\")",
+      "Bash(php -r ' *)",
+      "Bash(Select-Object -ExpandProperty Name)",
+      "Bash(php -l app/Http/Controllers/CicloController.php)",
+      "Bash(php -l app/Http/Controllers/DocenteCOntroller.php)",
+      "Bash(php -l app/Http/Controllers/AlumnoCursoController.php)",
+      "Bash(php -l app/Http/Controllers/AlumnoController.php)",
+      "Bash(php -l app/Models/Alumno.php)"
+    ]
+  }
+}

@@ -16,11 +16,24 @@ class PeriodoActual extends Model
         'fecha_inicio',
         'fecha_cierre',
         'actual',
+        'formulario_habilitado',
+    ];
+
+    protected $casts = [
+        'actual'               => 'boolean',
+        'formulario_habilitado' => 'boolean',
+        'fecha_inicio'         => 'date',
+        'fecha_cierre'         => 'date',
     ];
 
     public function periodos()
     {
         return $this->hasMany(Periodo::class);
+    }
+
+    public function matriculas()
+    {
+        return $this->hasMany(Matricula::class);
     }
     protected static function boot()
     {

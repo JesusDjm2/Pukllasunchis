@@ -19,7 +19,6 @@ class PeriodoActualController extends Controller
     {
         $periodoactuales = PeriodoActual::orderBy('nombre', 'desc')->get();
         $periodosppd = PeriodoActualPpd::orderBy('id', 'desc')->get();
-
         return view('admin.periodos.index', compact('periodoactuales', 'periodosppd'));
     }
 
@@ -116,6 +115,18 @@ class PeriodoActualController extends Controller
         $periodoactual->delete();
 
         return redirect()->route('periodoactual.index')->with('success', 'Período Actual eliminado correctamente.');
+    }
+
+    public function toggleFormulario(PeriodoActual $periodoactual)
+    {
+        $periodoactual->update([
+            'formulario_habilitado' => ! $periodoactual->formulario_habilitado,
+        ]);
+
+        $estado = $periodoactual->formulario_habilitado ? 'habilitado' : 'deshabilitado';
+
+        return redirect()->route('periodoactual.index')
+            ->with('success', "Formulario de matrícula {$estado} para el período: {$periodoactual->nombre}.");
     }
 
     public function crearCalificaciones(PeriodoActual $periodoactual)

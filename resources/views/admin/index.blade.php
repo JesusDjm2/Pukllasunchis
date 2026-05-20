@@ -31,11 +31,6 @@
                 style="border-bottom: 1px dashed #80808078">
                 <h3 class="mb-2 text-gray-800">Ficha Técnica: </h3>
                 @if (auth()->user()->alumno)
-                    @if (!Session::has('mostrar_contenido'))
-                        <button type="button" class="btn btn-info btn-sm mb-2" id="mostrar-contenido">
-                            Notificar que he terminado con mi registro. <i class="fa fa-smile"></i>
-                        </button>
-                    @endif
                     {{-- <a href="{{ route('ficha-matricula', ['alumno' => $alumno->id]) }}" class="btn btn-sm btn-info">Descargar ficha de matricula.</a> --}}
                     <span>
                         <a href="{{ route('alumnos.edit', ['alumno' => $alumno->id]) }}"
@@ -531,32 +526,6 @@
         });
     </script>
     
-    <script>
-        document.getElementById('mostrar-contenido')?.addEventListener('click', function() {
-            this.style.display = 'none';
-            fetch("{{ route('mostrar-contenido') }}", {
-                method: "POST",
-                headers: {
-                    "X-CSRF-TOKEN": "{{ csrf_token() }}",
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    @if (auth()->user()->alumno)
-                        alumno_id: {{ $alumno->id }}
-                    @endif
-                }),
-            }).then(response => {
-                if (response.ok) {
-                    alert('Correo enviado correctamente.');
-                } else {
-                    alert('Error al enviar el correo.');
-                }
-            }).catch(error => {
-                console.error('Error:', error);
-                alert('Error al enviar el correo.');
-            });
-        });
-    </script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {

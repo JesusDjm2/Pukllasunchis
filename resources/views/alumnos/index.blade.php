@@ -74,6 +74,7 @@
                 'search' => request('search'),
                 'search_page' => request('search_page'),
                 'with_user' => request('with_user'),
+                'periodo_id' => $periodoFiltroId,
             ],
             fn($v) => $v !== null && $v !== '',
         );
@@ -124,6 +125,24 @@
                         </div>
                         <p class="small text-muted mb-2 mb-md-3">Programa y ciclo se aplican en el servidor; la tabla
                             sigue agrupada por ciclo.</p>
+                        {{-- Selector de período de matrícula --}}
+                        <div class="mb-3">
+                            <span class="small font-weight-bold text-secondary mr-2 d-block d-sm-inline">
+                                <i class="fas fa-calendar-alt mr-1"></i>Periodo de matrícula
+                            </span>
+                            <div class="btn-group flex-wrap mt-1" role="group">
+                                @foreach ($todosLosPeriodos as $periodo)
+                                    @php $qPer = array_merge($qBase, ['periodo_id' => $periodo->id]); @endphp
+                                    <a href="{{ route('adminAlumnos', $qPer) }}"
+                                        class="btn btn-sm {{ (int) $periodoFiltroId === (int) $periodo->id ? 'btn-dark' : 'btn-outline-dark' }}">
+                                        {{ $periodo->nombre }}
+                                        @if ($periodo->actual)
+                                            <span class="badge badge-success ml-1">Actual</span>
+                                        @endif
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
                         <div class="mb-2">
                             <span class="small font-weight-bold text-secondary mr-2 d-block d-sm-inline">Programa</span>
                             <div class="btn-group flex-wrap mt-1" role="group" aria-label="Filtrar por programa">
@@ -370,6 +389,19 @@
                                                 data-alumno-id="{{ $alumno->id }}" title="Relacionar con Usuario">
                                                 <i class="fa fa-user fa-sm"></i>
                                             </a>|
+                                        @endif
+                                        @php $matriculaActual = $alumno->matriculas->first(); @endphp
+                                        @if($matriculaActual)
+                                            <form action="{{ route('matriculas.quitar', $matriculaActual->id) }}"
+                                                  method="POST" class="d-inline js-quitar-matricula"
+                                                  data-nombre="{{ $alumno->apellidos }}, {{ $alumno->nombres }}">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-warning btn-sm"
+                                                    title="Quitar matrícula del período actual">
+                                                    <i class="fa fa-user-times fa-sm"></i>
+                                                </button>
+                                            </form> | 
                                         @endif
                                         <form id="deleteForm"
                                             action="{{ route('alumnos.destroy', ['alumno' => $alumno->id]) }}"
@@ -682,4 +714,27 @@
         </div>
     </div>
     <iframe name="carnetDownloadFrame" style="display:none;"></iframe>
+
+    <script>
+        document.querySelectorAll('.js-quitar-matricula').forEach(function (form) {
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                var nombre = form.dataset.nombre;
+                Swal.fire({
+                    title: '¿Quitar matrícula?',
+                    html: 'Se eliminará la matrícula del período actual de <strong>' + nombre + '</strong>.<br>Esta acción no elimina al alumno del sistema.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#e67e22',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Sí, quitar',
+                    cancelButtonText: 'Cancelar',
+                }).then(function (result) {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+        });
+    </script>
 @endsection

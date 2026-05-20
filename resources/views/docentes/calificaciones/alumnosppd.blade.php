@@ -63,6 +63,20 @@
             text-decoration: none;
             cursor: pointer;
         }
+
+        /* Quitar flechas de inputs numéricos */
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] { -moz-appearance: textfield; }
+
+        /* Resaltado de selección para copiar */
+        input.xl-selected {
+            outline: 2px solid #e6a817 !important;
+            background-color: #fff9e6 !important;
+        }
     </style>
     <div class="container-fluid docente-ui-page">
         @include('docentes.partials.ui-header', [
@@ -228,10 +242,13 @@
                             <tbody>
                                 @foreach ($alumnos as $index => $alumno)
                                     @php
-                                        $ppd = $alumno->alumnoB; // <-- en vez de $alumno->ppd
-                                        $calificacion = $ppd?->calificaciones->where('curso_id', $curso->id)->first();
-                                        $readonly =
-                                            $alumno->es_inhabilitado || !$alumno->tiene_ppd ? 'readonly disabled' : '';
+                                        $ppd = $alumno->alumnoB;
+                                        // Calificación: primero por ppd_id, luego por user_id (inhabilitados sin PPD)
+                                        $calificacion = $ppd?->calificaciones->where('curso_id', $curso->id)->first()
+                                            ?? \App\Models\Calificacionesppd::where('user_id', $alumno->id)
+                                                ->where('curso_id', $curso->id)->first();
+                                        // Todos los alumnos (incluyendo inhabilitados) tienen inputs habilitados
+                                        $readonly = '';
                                     @endphp
 
                                     <input type="hidden" name="alumnos[{{ $alumno->id }}][ppd_id]"
@@ -241,8 +258,7 @@
                                     <input type="hidden" name="alumnos[{{ $alumno->id }}][curso_id]"
                                         value="{{ $curso->id }}">
 
-                                    <tr class="{{ $alumno->es_inhabilitado ? 'table-secondary' : '' }}"
-                                        style="{{ $alumno->es_inhabilitado ? 'pointer-events: none; cursor: not-allowed;' : '' }}">
+                                    <tr class="{{ $alumno->es_inhabilitado ? 'table-secondary' : '' }}">
                                         <td class="align-middle text-center">{{ $index + 1 }}</td>
                                         <td class="align-middle sticky-col-left-1">
                                             <div>
@@ -252,9 +268,9 @@
                                                 @if ($alumno->es_inhabilitado)
                                                     <span class="badge bg-danger text-white">Inhabilitado</span>
                                                 @endif
-                                                @unless ($alumno->tiene_ppd)
-                                                    <span class="badge bg-warning text-dark">Sin matrícula</span>
-                                                @endunless
+                                                @if (!$alumno->tiene_ppd)
+                                                    <span class="badge bg-warning text-dark" title="No se encontró registro PPD para este alumno">Sin registro PPD</span>
+                                                @endif
                                             </div>
                                         </td>
                                         {{-- Proceso --}}
@@ -703,7 +719,7 @@
         });
     </script>
     <script>
-    /* ── Excel-like navigation & fill handle ── */
+    /* ── Excel-like navigation, fill handle & copy selection ── */
     document.addEventListener('DOMContentLoaded', function () {
         const tbody = document.querySelector('tbody');
         if (!tbody) return;
@@ -731,7 +747,42 @@
             if (inp) { inp.focus(); inp.select(); }
         }
 
-        /* ── Arrow keys + Enter navigation ── */
+        /* ── Selección para copiar ── */
+        let selAnchor      = null;   // [r, c] — esquina fija
+        let selActive      = null;   // [r, c] — esquina móvil
+        let isShiftMouse   = false;
+        let isDragSelecting = false;  // arrastre con mouse para seleccionar
+
+        function getSelRect() {
+            if (!selAnchor || !selActive) return null;
+            return {
+                r1: Math.min(selAnchor[0], selActive[0]),
+                r2: Math.max(selAnchor[0], selActive[0]),
+                c1: Math.min(selAnchor[1], selActive[1]),
+                c2: Math.max(selAnchor[1], selActive[1]),
+            };
+        }
+
+        function updateSelVisual(grid) {
+            tbody.querySelectorAll('input.xl-selected').forEach(el => el.classList.remove('xl-selected'));
+            const rect = getSelRect();
+            if (!rect) return;
+            for (let r = rect.r1; r <= rect.r2; r++)
+                for (let c = rect.c1; c <= rect.c2; c++)
+                    grid[r]?.[c]?.classList.add('xl-selected');
+        }
+
+        function fallbackCopy(text) {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+            document.body.appendChild(ta);
+            ta.focus(); ta.select();
+            try { document.execCommand('copy'); } catch (_) {}
+            document.body.removeChild(ta);
+        }
+
+        /* ── Teclas: flechas, Enter, Ctrl+D/R/C ── */
         tbody.addEventListener('keydown', function (e) {
             const el = e.target;
             if (el.tagName !== 'INPUT' || el.type !== 'number' || el.readOnly || el.disabled) return;
@@ -741,16 +792,54 @@
             if (!pos) return;
             let [r, c] = pos;
 
-            if (e.key === 'ArrowUp') {
-                e.preventDefault(); r = Math.max(0, r - 1); focusCell(grid, r, c);
-            } else if (e.key === 'ArrowDown' || e.key === 'Enter') {
-                e.preventDefault(); r = Math.min(grid.length - 1, r + 1); focusCell(grid, r, c);
-            } else if (e.key === 'ArrowLeft') {
-                e.preventDefault(); c = Math.max(0, c - 1); focusCell(grid, r, c);
-            } else if (e.key === 'ArrowRight') {
-                e.preventDefault(); c = Math.min((grid[r]?.length ?? 1) - 1, c + 1); focusCell(grid, r, c);
+            if (!selAnchor) { selAnchor = [r, c]; selActive = [r, c]; }
 
-            /* Ctrl+D: fill down */
+            if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (e.shiftKey) {
+                    selActive = [Math.max(0, selActive[0] - 1), selActive[1]];
+                    updateSelVisual(grid);
+                } else {
+                    r = Math.max(0, r - 1);
+                    selAnchor = selActive = [r, c];
+                    focusCell(grid, r, c);
+                    updateSelVisual(grid);
+                }
+            } else if (e.key === 'ArrowDown' || e.key === 'Enter') {
+                e.preventDefault();
+                if (e.shiftKey) {
+                    selActive = [Math.min(grid.length - 1, selActive[0] + 1), selActive[1]];
+                    updateSelVisual(grid);
+                } else {
+                    r = Math.min(grid.length - 1, r + 1);
+                    selAnchor = selActive = [r, c];
+                    focusCell(grid, r, c);
+                    updateSelVisual(grid);
+                }
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                if (e.shiftKey) {
+                    selActive = [selActive[0], Math.max(0, selActive[1] - 1)];
+                    updateSelVisual(grid);
+                } else {
+                    c = Math.max(0, c - 1);
+                    selAnchor = selActive = [r, c];
+                    focusCell(grid, r, c);
+                    updateSelVisual(grid);
+                }
+            } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                if (e.shiftKey) {
+                    selActive = [selActive[0], Math.min((grid[selActive[0]]?.length ?? 1) - 1, selActive[1] + 1)];
+                    updateSelVisual(grid);
+                } else {
+                    c = Math.min((grid[r]?.length ?? 1) - 1, c + 1);
+                    selAnchor = selActive = [r, c];
+                    focusCell(grid, r, c);
+                    updateSelVisual(grid);
+                }
+
+            /* Ctrl+D: rellenar hacia abajo */
             } else if (e.ctrlKey && e.key.toLowerCase() === 'd') {
                 e.preventDefault();
                 const val = el.value;
@@ -759,7 +848,7 @@
                     if (t) { t.value = val; t.dispatchEvent(new Event('input', { bubbles: true })); }
                 }
 
-            /* Ctrl+R: fill right */
+            /* Ctrl+R: rellenar hacia la derecha */
             } else if (e.ctrlKey && e.key.toLowerCase() === 'r') {
                 e.preventDefault();
                 const val = el.value;
@@ -768,6 +857,30 @@
                     row[j].value = val;
                     row[j].dispatchEvent(new Event('input', { bubbles: true }));
                 }
+
+            /* Ctrl+C: copiar selección al portapapeles */
+            } else if (e.ctrlKey && e.key.toLowerCase() === 'c') {
+                e.preventDefault();
+                const rect = getSelRect();
+                let text;
+                if (!rect) {
+                    text = el.value;
+                } else {
+                    const lines = [];
+                    for (let row = rect.r1; row <= rect.r2; row++) {
+                        const cols = [];
+                        for (let col = rect.c1; col <= rect.c2; col++)
+                            cols.push(grid[row]?.[col]?.value ?? '');
+                        lines.push(cols.join('\t'));
+                    }
+                    text = lines.join('\n');
+                }
+                navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
+                /* flash verde para confirmar */
+                tbody.querySelectorAll('input.xl-selected').forEach(inp => {
+                    inp.style.setProperty('outline', '2px solid #27ae60', 'important');
+                    setTimeout(() => inp.style.removeProperty('outline'), 600);
+                });
             }
         });
 
@@ -799,6 +912,41 @@
             fillRange = [];
         }
 
+        /* mousedown: Shift+Click extiende / click normal inicia arrastre */
+        tbody.addEventListener('mousedown', function (e) {
+            const el = e.target;
+            if (el.tagName !== 'INPUT' || el.type !== 'number' || el.readOnly || el.disabled) return;
+            isShiftMouse = e.shiftKey;
+            if (e.shiftKey) {
+                const grid = buildGrid();
+                const pos  = findInGrid(grid, el);
+                if (!pos) return;
+                if (!selAnchor) selAnchor = pos;
+                selActive = pos;
+                updateSelVisual(grid);
+            } else {
+                isDragSelecting = true;
+                document.body.style.userSelect = 'none';
+            }
+        });
+
+        /* mousemove: extiende selección mientras se arrastra con el botón presionado */
+        tbody.addEventListener('mousemove', function (e) {
+            if (!isDragSelecting || dragging) return;
+            const raw = document.elementFromPoint(e.clientX, e.clientY);
+            if (!raw) return;
+            const target = (raw.tagName === 'INPUT' && raw.type === 'number')
+                ? raw
+                : raw.closest('td')?.querySelector('input[type=number]:not([readonly]):not([disabled])');
+            if (!target || target.readOnly || target.disabled) return;
+            const grid = buildGrid();
+            const pos  = findInGrid(grid, target);
+            if (!pos) return;
+            if (pos[0] === selActive?.[0] && pos[1] === selActive?.[1]) return; // sin cambio
+            selActive = pos;
+            updateSelVisual(grid);
+        });
+
         tbody.addEventListener('focusin', function (e) {
             const el = e.target;
             if (el.tagName !== 'INPUT' || el.type !== 'number' || el.readOnly || el.disabled) {
@@ -807,6 +955,12 @@
             }
             activeEl = el;
             placeHandle(el);
+            if (!isShiftMouse) {
+                const grid = buildGrid();
+                const pos  = findInGrid(grid, el);
+                if (pos) { selAnchor = pos; selActive = pos; updateSelVisual(grid); }
+            }
+            isShiftMouse = false;
         });
 
         tbody.addEventListener('focusout', function () {
@@ -871,6 +1025,10 @@
         });
 
         document.addEventListener('mouseup', function () {
+            if (isDragSelecting) {
+                isDragSelecting = false;
+                document.body.style.userSelect = '';
+            }
             if (!dragging) return;
             dragging = false;
             const val = dragSource?.value ?? '';

@@ -9,6 +9,8 @@ use App\Models\Ciclo;
 use App\Models\Curso;
 use App\Models\Departamento;
 use App\Models\Docente;
+use App\Models\Matricula;
+use App\Models\PeriodoActual;
 use App\Models\ppd;
 use App\Models\Programa;
 use App\Models\User;
@@ -53,11 +55,26 @@ class AdminController extends Controller
 
     public function alumnos(Request $request)
     {
+        $periodoActual = PeriodoActual::where('actual', true)->first();
+        $periodoFiltroId = $request->filled('periodo_id')
+            ? (int) $request->input('periodo_id')
+            : ($periodoActual?->id);
+
         $query = $this->alumnosFidFilteredQuery($request);
+
+        if ($periodoFiltroId) {
+            $query->whereHas('matriculas', fn ($m) => $m->where('periodo_actual_id', $periodoFiltroId));
+        }
+
         $busquedaActiva = $request->filled('search') && trim((string) $request->input('search')) !== '';
 
         $alumnos = $query
-            ->with(['programa', 'ciclo', 'user.roles'])
+            ->with([
+                'programa',
+                'ciclo',
+                'user.roles',
+                'matriculas' => fn ($q) => $q->where('periodo_actual_id', $periodoFiltroId),
+            ])
             ->orderByRaw('programa_id IS NULL, programa_id')
             ->orderByRaw('ciclo_id IS NULL, ciclo_id')
             ->orderBy('apellidos')
@@ -71,6 +88,7 @@ class AdminController extends Controller
 
         $totalesPorCicloId = Alumno::query()
             ->whereHas('user', fn ($sub) => $this->applyAlumnoFidUserConstraints($sub))
+            ->when($periodoFiltroId, fn ($q) => $q->whereHas('matriculas', fn ($m) => $m->where('periodo_actual_id', $periodoFiltroId)))
             ->whereNotNull('ciclo_id')
             ->selectRaw('ciclo_id, COUNT(*) as total')
             ->groupBy('ciclo_id')
@@ -82,17 +100,24 @@ class AdminController extends Controller
         }
 
         $programasFiltro = Programa::query()
-            ->whereHas('alumnos', function ($q) {
+            ->whereHas('alumnos', function ($q) use ($periodoFiltroId) {
                 $q->whereHas('user', fn ($sub) => $this->applyAlumnoFidUserConstraints($sub));
+                if ($periodoFiltroId) {
+                    $q->whereHas('matriculas', fn ($m) => $m->where('periodo_actual_id', $periodoFiltroId));
+                }
             })
             ->orderBy('nombre')
             ->get();
+
         $ciclosFiltro = collect();
         if ($request->filled('programa_id')) {
             $ciclosFiltro = Ciclo::query()
                 ->where('programa_id', (int) $request->input('programa_id'))
-                ->whereHas('alumnos', function ($q) {
+                ->whereHas('alumnos', function ($q) use ($periodoFiltroId) {
                     $q->whereHas('user', fn ($sub) => $this->applyAlumnoFidUserConstraints($sub));
+                    if ($periodoFiltroId) {
+                        $q->whereHas('matriculas', fn ($m) => $m->where('periodo_actual_id', $periodoFiltroId));
+                    }
                 })
                 ->orderBy('id')
                 ->get();
@@ -100,13 +125,18 @@ class AdminController extends Controller
 
         $ciclosParaExportacion = Ciclo::query()
             ->with('programa')
-            ->whereHas('alumnos', function ($q) {
+            ->whereHas('alumnos', function ($q) use ($periodoFiltroId) {
                 $q->whereHas('user', fn ($sub) => $this->applyAlumnoFidUserConstraints($sub))
                     ->whereNotNull('ciclo_id');
+                if ($periodoFiltroId) {
+                    $q->whereHas('matriculas', fn ($m) => $m->where('periodo_actual_id', $periodoFiltroId));
+                }
             })
             ->orderBy('programa_id')
             ->orderBy('id')
             ->get();
+
+        $todosLosPeriodos = PeriodoActual::orderBy('nombre', 'asc')->get();
 
         return view('alumnos.index', compact(
             'alumnos',
@@ -117,6 +147,9 @@ class AdminController extends Controller
             'totalesPorCicloId',
             'busquedaActiva',
             'ciclosParaExportacion',
+            'periodoActual',
+            'periodoFiltroId',
+            'todosLosPeriodos',
         ));
     }
 
@@ -133,8 +166,16 @@ class AdminController extends Controller
 
         $cicloIds = array_values(array_unique(array_map('intval', $validated['ciclo_ids'])));
 
+        $periodoFiltroId = $request->filled('periodo_id')
+            ? (int) $request->input('periodo_id')
+            : (PeriodoActual::where('actual', true)->first()?->id);
+
         $query = $this->alumnosFidFilteredQuery($request, false)
             ->whereIn('ciclo_id', $cicloIds);
+
+        if ($periodoFiltroId) {
+            $query->whereHas('matriculas', fn ($m) => $m->where('periodo_actual_id', $periodoFiltroId));
+        }
         $alumnos = $query
             ->with(['programa', 'ciclo', 'user.roles'])
             ->orderByRaw('programa_id IS NULL, programa_id')
@@ -664,37 +705,20 @@ class AdminController extends Controller
         return $query;
     }
 
+    public function quitarMatricula(Matricula $matricula)
+    {
+        $matricula->delete();
+
+        return redirect()->back()->with('success', 'Matrícula eliminada correctamente.');
+    }
+
     private function applyAlumnoFidUserConstraints($userQuery): void
     {
         $userQuery
-            ->whereDoesntHave('roles', function ($roleQuery) {
-                $roleQuery->where('name', 'alumnoB');
-            })
-            ->where(function ($outer) {
-                $outer
-                    ->where(function ($inhabilitadoOk) {
-                        $inhabilitadoOk
-                            ->whereDoesntHave('roles', function ($roleQuery) {
-                                $roleQuery->where('name', 'inhabilitado');
-                            })
-                            ->orWhere('perfil', 'Deuda');
-                    })
-                    ->where(function ($esContextoFid) {
-                        $esContextoFid
-                            ->whereHas('roles', function ($roleQuery) {
-                                $roleQuery->where('name', 'alumno');
-                            })
-                            ->orWhere(function ($soloInhabilitadoDeuda) {
-                                $soloInhabilitadoDeuda
-                                    ->whereDoesntHave('roles', function ($roleQuery) {
-                                        $roleQuery->where('name', 'alumno');
-                                    })
-                                    ->whereHas('roles', function ($roleQuery) {
-                                        $roleQuery->where('name', 'inhabilitado');
-                                    })
-                                    ->where('perfil', 'Deuda');
-                            });
-                    });
+            ->whereDoesntHave('roles', fn ($r) => $r->where('name', 'alumnoB'))
+            ->where(function ($q) {
+                $q->whereHas('roles', fn ($r) => $r->where('name', 'alumno'))
+                  ->orWhereHas('roles', fn ($r) => $r->where('name', 'inhabilitado'));
             });
     }
 }

@@ -155,7 +155,10 @@
                         @php
                             $totalHoras = 0;
                             $totalCreditos = 0;
-                            $cursos = $alumno->cursos->isNotEmpty() ? $alumno->cursos : $alumno->ciclo->cursos;
+                            // Si hay cursos asignados para el período actual, usarlos; si no, todos los del ciclo
+                            $cursos = $cursosAsignados->isNotEmpty()
+                                ? $cursosAsignados
+                                : ($alumno->ciclo?->cursos ?? collect());
                         @endphp
 
                         @foreach ($cursos as $index => $curso)

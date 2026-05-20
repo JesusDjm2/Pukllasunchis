@@ -14,6 +14,7 @@ return new class extends Migration {
             $table->date('fecha_inicio')->nullable();
             $table->date('fecha_cierre')->nullable();
             $table->boolean('actual')->default(false);
+            $table->boolean('formulario_habilitado')->default(false)->after('actual');
             $table->timestamps();
         });
     }

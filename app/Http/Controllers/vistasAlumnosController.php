@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Alumno;
 use App\Models\Ciclo;
 use App\Models\Curso;
+use App\Models\PeriodoActual;
 use App\Models\Programa;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -18,7 +19,15 @@ class vistasAlumnosController extends Controller
         $ciclos = Ciclo::all();
         $user = auth()->user();
         if ($user) {
-            return view('alumnos.vistasAlumnos.formulario', compact('programas', 'ciclos', 'user'));
+            $periodoActual = PeriodoActual::where('actual', true)->first();
+            $alumno = $user->alumno;
+            $yaMatriculado = false;
+            if ($periodoActual && $alumno) {
+                $yaMatriculado = $alumno->matriculas()
+                    ->where('periodo_actual_id', $periodoActual->id)
+                    ->exists();
+            }
+            return view('alumnos.vistasAlumnos.formulario', compact('programas', 'ciclos', 'user', 'periodoActual', 'yaMatriculado'));
         }
         return view('alumnos.vistasAlumnos.postulantes');
     }

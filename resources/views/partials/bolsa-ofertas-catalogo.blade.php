@@ -1,7 +1,3 @@
-{{--
-    Listado dinámico de bolsa_trabajo_ofertas (misma lógica que la página pública).
-    Variables: $ofertas, $aniosOfertas, $mesesNombres; opcional $bolsaRouteName (default bolsa).
---}}
 @php($bolsaRouteName = isset($bolsaRouteName) ? $bolsaRouteName : 'bolsa')
 <div class="mb-5 bolsa-ofertas-catalogo-wrap">
     <form method="get" action="{{ route($bolsaRouteName) }}"

@@ -480,7 +480,7 @@
                         <p>
                             Los pagos ordinarios <strong>SOLO SE PUEDEN PAGAR EN VENTANILLAS</strong> de cualquier agencia a
                             nivel nacional de CAJA CUSCO. <a class="text-primary" target="_blank"
-                                href="{{ asset('pdf/Concepto-de-pagos-caja-Cusco-Pukllasunchis-2025-II.pdf') }}">Ver PDF
+                                href="{{ asset('pdf/PAGOS-ORDINARIOS-2026-I.pdf') }}">Ver PDF
                                 para
                                 pagos<small><i class="fa fa-eye"></i></small></a>
                         </p>

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\User;
 
 class Calificacionesppd extends Model
 {
@@ -39,12 +40,13 @@ class Calificacionesppd extends Model
         });
     }
 
-    protected $fillable = [ 
+    protected $fillable = [
         'nombre',
         'fecha',
-        
+
         //Relaciones
         'ppd_id',
+        'user_id',  // llave alternativa para inhabilitados sin registro PPD
         'curso_id',
         
         'comp1',
@@ -110,6 +112,11 @@ class Calificacionesppd extends Model
     public function ppd()
     {
         return $this->belongsTo(ppd::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function curso()

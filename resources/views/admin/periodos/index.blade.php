@@ -44,18 +44,32 @@
             </div>
             <img src="{{ asset('img/Icono-Puklla.png') }}" width="50px" class="logo-rotando">
         </div>
-        {{-- ALERTAS --}}
+        {{-- ALERTAS via SweetAlert2 --}}
         @if (session('success'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <strong>Éxito:</strong> {{ session('success') }}
-                <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
-            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Listo!',
+                        text: '{{ session('success') }}',
+                        confirmButtonColor: '#28a745',
+                        timer: 4000,
+                        timerProgressBar: true,
+                    });
+                });
+            </script>
         @endif
         @if (session('error'))
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <strong>Error:</strong> {{ session('error') }}
-                <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
-            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: '{{ session('error') }}',
+                        confirmButtonColor: '#dc3545',
+                    });
+                });
+            </script>
         @endif
         {{-- TABLA PERIODO ACTUAL --}}
         <div id="tablaActual" class="card shadow-sm mb-4">
@@ -84,6 +98,7 @@
                                 <th>Inicio</th>
                                 <th>Fin</th>
                                 <th class="text-center">Estado</th>
+                                <th class="text-center">Form Matrícula</th>
                                 <th class="text-center pe-4">Acciones</th>
                             </tr>
                         </thead>
@@ -145,6 +160,25 @@
                                                 Inactivo
                                             </span>
                                         @endif
+                                    </td>
+                                    <td class="text-center">
+                                        <form action="{{ route('periodoactual.toggleFormulario', $p) }}" method="POST"
+                                            class="d-inline form-toggle-formulario"
+                                            data-nombre="{{ $p->nombre }}"
+                                            data-habilitado="{{ $p->formulario_habilitado ? '1' : '0' }}">
+                                            @csrf
+                                            @if ($p->formulario_habilitado)
+                                                <button type="button" class="btn btn-sm btn-success btn-toggle-formulario"
+                                                    title="Formulario habilitado — clic para deshabilitar">
+                                                    <i class="fas fa-lock-open me-1"></i> Habilitado
+                                                </button>
+                                            @else
+                                                <button type="button" class="btn btn-sm btn-outline-secondary btn-toggle-formulario"
+                                                    title="Formulario deshabilitado — clic para habilitar">
+                                                    <i class="fas fa-lock me-1"></i> Deshabilitado
+                                                </button>
+                                            @endif
+                                        </form>
                                     </td>
                                     <td>
                                         <div class="d-flex justify-content-end gap-1 pe-4">
@@ -401,5 +435,32 @@
             document.getElementById('tablaPPD').style.display = 'none';
             document.getElementById(id).style.display = 'block';
         }
+
+        document.querySelectorAll('.btn-toggle-formulario').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var form = btn.closest('.form-toggle-formulario');
+                var nombre = form.dataset.nombre;
+                var habilitado = form.dataset.habilitado === '1';
+
+                Swal.fire({
+                    title: habilitado ? '¿Deshabilitar formulario?' : '¿Habilitar formulario?',
+                    html: habilitado
+                        ? 'Los alumnos <strong>ya no podrán</strong> matricularse en:<br><strong>' + nombre + '</strong>'
+                        : 'Los alumnos <strong>podrán matricularse</strong> en:<br><strong>' + nombre + '</strong>',
+                    icon: habilitado ? 'warning' : 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: habilitado ? '#6c757d' : '#28a745',
+                    cancelButtonColor: '#adb5bd',
+                    confirmButtonText: habilitado ? 'Sí, deshabilitar' : 'Sí, habilitar',
+                    cancelButtonText: 'Cancelar',
+                    reverseButtons: true,
+                    focusCancel: true,
+                }).then(function(result) {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+        });
     </script>
 @endsection

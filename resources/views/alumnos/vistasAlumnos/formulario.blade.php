@@ -45,7 +45,26 @@
                         @endif
                         <div class="card-body">
                             @auth
-                                @if (auth()->user()->hasRole('alumno'))
+                                {{-- Verificar si el formulario está habilitado --}}
+                                @if (!isset($periodoActual) || !$periodoActual || !$periodoActual->formulario_habilitado)
+                                    <div class="text-center py-5">
+                                        <i class="fas fa-lock fa-4x text-muted mb-3"></i>
+                                        <h5 class="text-muted">El formulario de matrícula no está disponible en este momento.</h5>
+                                        <p class="text-muted small">El administrador habilitará el formulario cuando comience el período de matrícula.</p>
+                                        <a href="{{ route('alumnos.index') }}" class="btn btn-secondary mt-2">
+                                            <i class="fas fa-arrow-left mr-1"></i> Volver a mi perfil
+                                        </a>
+                                    </div>
+                                @elseif(isset($yaMatriculado) && $yaMatriculado)
+                                    <div class="text-center py-5">
+                                        <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+                                        <h5 class="text-success">¡Ya completaste tu matrícula para este período!</h5>
+                                        <p class="text-muted small">Tu matrícula para el período <strong>{{ $periodoActual->nombre }}</strong> ha sido registrada correctamente.</p>
+                                        <a href="{{ route('alumnos.index') }}" class="btn btn-primary mt-2">
+                                            <i class="fas fa-user mr-1"></i> Ver mi ficha
+                                        </a>
+                                    </div>
+                                @elseif (auth()->user()->hasRole('alumno'))
                                     <form action="{{ route('alumnos.store') }}" method="POST" enctype="multipart/form-data"
                                         id="registroForm">
                                         @csrf

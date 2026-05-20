@@ -436,14 +436,32 @@ class PpdController extends Controller
 
         // 🔥 Guardado / actualización de calificaciones
         foreach ($request->input('alumnos', []) as $alumnoId => $data) {
-            // ignoramos si no tiene matrícula (ppd_id)
-            if (empty($data['ppd_id'])) {
-                continue;
+            $ppdId = !empty($data['ppd_id']) ? $data['ppd_id'] : null;
+
+            // Si no llega ppd_id (inhabilitados sin alumnoB vinculado),
+            // intentamos encontrar el registro PPD por user_id o por email.
+            if (empty($ppdId)) {
+                // 1º intento: buscar ppd cuyo user_id coincide con el usuario
+                $ppdRecord = ppd::where('user_id', $alumnoId)->first();
+
+                // 2º intento: buscar ppd por el email del usuario y vincular
+                if (! $ppdRecord) {
+                    $usuario = User::find($alumnoId);
+                    if ($usuario) {
+                        $ppdRecord = ppd::where('email', $usuario->email)->first();
+                        if ($ppdRecord) {
+                            // Vincular automáticamente para que próximas consultas funcionen
+                            $ppdRecord->user_id = $alumnoId;
+                            $ppdRecord->save();
+                        }
+                    }
+                }
+
+                $ppdId = $ppdRecord?->id;
             }
 
-            $ppdId = $data['ppd_id'];
             $proceso = $data['proceso'] ?? [];
-            $final = $data['final'] ?? [];
+            $final   = $data['final']   ?? [];
             $pp = $pf = [];
 
             // Competencias 1 a 3
@@ -458,20 +476,28 @@ class PpdController extends Controller
                 $pf["pf_c{$c}_3"] = $final["c{$c}"]['indicador_3'] ?? null;
             }
 
-            Calificacionesppd::updateOrCreate(
-                [
-                    'ppd_id' => $ppdId,
-                    'curso_id' => $curso->id,
-                ],
-                array_merge([
-                    'nombre' => $data['nombre'] ?? 'Periodo 1',
-                    'fecha' => $data['fecha'] ?? now(),
-                    'nivel_desempeno' => $data['nivel_desempeno'] ?? null,
-                    'calificacion_curso' => $data['calificacion_curso'] ?? null,
-                    'calificacion_sistema' => $data['calificacion_sistema'] ?? null,
-                    'observaciones' => $data['observaciones'] ?? null,
-                ], $pp, $pf)
-            );
+            $datosExtra = [
+                'nombre'               => $data['nombre']               ?? 'Periodo 1',
+                'fecha'                => $data['fecha']                ?? now(),
+                'nivel_desempeno'      => $data['nivel_desempeno']      ?? null,
+                'calificacion_curso'   => $data['calificacion_curso']   ?? null,
+                'calificacion_sistema' => $data['calificacion_sistema'] ?? null,
+                'observaciones'        => $data['observaciones']        ?? null,
+            ];
+
+            if ($ppdId) {
+                // Alumno con registro PPD: guardar por ppd_id + curso_id
+                Calificacionesppd::updateOrCreate(
+                    ['ppd_id'  => $ppdId,     'curso_id' => $curso->id],
+                    array_merge($datosExtra, $pp, $pf)
+                );
+            } else {
+                // Inhabilitado sin registro PPD: guardar por user_id + curso_id
+                Calificacionesppd::updateOrCreate(
+                    ['user_id' => $alumnoId,  'curso_id' => $curso->id],
+                    array_merge($datosExtra, $pp, $pf, ['ppd_id' => null])
+                );
+            }
         }
 
         // 🔥 Recuperar alumnos con la misma lógica de calificarCursoPPD

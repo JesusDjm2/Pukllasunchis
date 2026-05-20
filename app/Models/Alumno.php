@@ -53,7 +53,25 @@ class Alumno extends Model
 
     public function cursos()
     {
-        return $this->belongsToMany(Curso::class, 'alumno_cursos')->withTimestamps();
+        return $this->belongsToMany(Curso::class, 'alumno_cursos')->withPivot('periodo_actual_id')->withTimestamps();
+    }
+
+    public function cursosDelPeriodo(int $periodoId)
+    {
+        return $this->belongsToMany(Curso::class, 'alumno_cursos')
+            ->withPivot('periodo_actual_id')
+            ->withTimestamps()
+            ->wherePivot('periodo_actual_id', $periodoId);
+    }
+
+    public function matriculas()
+    {
+        return $this->hasMany(Matricula::class);
+    }
+
+    public function matriculaEnPeriodo(int $periodoActualId): ?Matricula
+    {
+        return $this->matriculas()->where('periodo_actual_id', $periodoActualId)->first();
     }
 
     public static function asociarPorEmail($email)

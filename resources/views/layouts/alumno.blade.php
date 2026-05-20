@@ -34,7 +34,7 @@
             <div class="sidebar-heading">
                 Dashboard Alumno
             </div>
-            <li class="nav-item {{ request()->routeIs('alumnos.index') ? 'active' : '' }}">
+            <li class="nav-item {{ request()->routeIs('alumnos.index', 'alumnos.editarDatos') ? 'active' : '' }}">
                 <a class="nav-link collapsed" href="{{ route('alumnos.index') }}">
                     <i class="fas fa-fw fa-id-card"></i>
                     <span>Ficha técnica</span>

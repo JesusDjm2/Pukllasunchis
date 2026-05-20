@@ -179,7 +179,8 @@
                                             <small class="text-info">Codigo: 8 | Concepto: Certificado estudios por Ciclo | Precio: s/50.00                                            </small>
                                         </li>
 										
-                                        <li>Una copia de RD de haber aprobado las prácticas pre profesionales. → s/50.00
+                                        <li>Una copia de RD de haber aprobado las prácticas pre profesionales. <small class="text-info">Codigo: 30 | Concepto: RD DE APROBACION DE PRACTICAS | Monto:
+                                                s/50.00</small>
                                         </li>
                                         <li>Carta de aceptación de la I.E. donde se realiza la investigación, original.
                                             <small class="text-info">Solicitar modelo en secretaría</small>
@@ -218,7 +219,7 @@
                             </div>
                         </div>
                     </div>
-
+ 
                     <div class="card">
                         <div class="card-header" id="headingTwo">
                             <h5 class="mb-0">
