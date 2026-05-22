@@ -92,7 +92,6 @@
                                 <h6 class="collapse-header">Gestionar alumnos:</h6>
                                 <a class="collapse-item" href="{{ route('adminAlumnos') }}">Alumnos</a>
                                 <a class="collapse-item" href="{{ route('vistAlumno') }}">Ingresar nuevo</a>
-                                <a class="collapse-item" href="{{ route('filtro') }}">Filtrar por campos</a>
                             </div>
                         </div>
                     </li>

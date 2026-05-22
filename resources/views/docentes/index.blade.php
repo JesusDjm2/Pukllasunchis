@@ -13,6 +13,61 @@
             transition: 0.4s ease;
             text-decoration: underline
         }
+
+        /* ── Diferenciación FID / PPD (funciona en light, dim y dark) ── */
+        .curso-fid-item {
+            border-left: 4px solid #28a745;
+            padding-left: 10px !important;
+            border-radius: 0 4px 4px 0;
+            background-color: rgba(40, 167, 69, 0.05);
+            transition: background-color .2s;
+        }
+        .curso-ppd-item {
+            border-left: 4px solid #f59e0b;
+            padding-left: 10px !important;
+            border-radius: 0 4px 4px 0;
+            background-color: rgba(245, 158, 11, 0.07);
+            transition: background-color .2s;
+        }
+
+        /* dark / dim mode: fondo un poco más visible */
+        .dark-mode .curso-fid-item,
+        .dim-mode  .curso-fid-item {
+            background-color: rgba(40, 167, 69, 0.13);
+        }
+        .dark-mode .curso-ppd-item,
+        .dim-mode  .curso-ppd-item {
+            background-color: rgba(245, 158, 11, 0.15);
+        }
+
+        /* Badges FID / PPD */
+        .badge-tipo {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 700;
+            letter-spacing: .04em;
+            vertical-align: middle;
+        }
+        .badge-fid {
+            background-color: #28a745;
+            color: #fff;
+        }
+        .badge-ppd {
+            background-color: #f59e0b;
+            color: #fff;
+        }
+        /* en modo oscuro los badges quedan con texto oscuro para contraste */
+        .dark-mode .badge-ppd,
+        .dim-mode  .badge-ppd {
+            background-color: #fbbf24;
+            color: #1a1a1a;
+        }
+        .dark-mode .badge-fid,
+        .dim-mode  .badge-fid {
+            background-color: #34d058;
+            color: #1a1a1a;
+        }
     </style>
     <div class="container-fluid bg-white">
         <div class="d-sm-flex align-items-center justify-content-between mb-2 pt-3 pb-1">
@@ -334,7 +389,7 @@
                                                             $curso->ciclo->programa->nombre ?? '',
                                                             'PPD',
                                                         );
-                                                        $bgCurso = $esPPD ? 'background-color: #fff1e0;' : '';
+                                                        $claseCurso = $esPPD ? 'curso-ppd-item' : 'curso-fid-item';
                                                         $rutaCompetencias = $esPPD
                                                             ? route('competencias.calificar.ppd', [
                                                                 'docente' => $docente->id,
@@ -345,8 +400,12 @@
                                                                 'curso' => $curso->id,
                                                             ]);
                                                     @endphp
-                                                    <li style="{{ $bgCurso }}" class="mb-2">
-                                                        <strong>{{ $curso->nombre }}</strong> (
+                                                    <li class="mb-2 {{ $claseCurso }}">
+                                                        <strong>{{ $curso->nombre }}</strong>
+                                                        <span class="badge-tipo {{ $esPPD ? 'badge-ppd' : 'badge-fid' }}">
+                                                            {{ $esPPD ? 'PPD' : 'FID' }}
+                                                        </span>
+                                                        (
                                                         {{ $curso->ciclo->programa->nombre }} -
                                                         {{ $curso->ciclo->nombre }})
                                                         <ul>

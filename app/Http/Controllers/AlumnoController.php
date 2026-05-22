@@ -9,15 +9,18 @@ use App\Models\Departamento;
 use App\Models\Distrito;
 use App\Models\Matricula;
 use App\Models\PeriodoActual;
+use App\Models\PeriodoActualPpd;
 use App\Models\ppd;
 use App\Models\Programa;
 use App\Models\Provincia;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class AlumnoController extends Controller
 {
@@ -77,10 +80,7 @@ class AlumnoController extends Controller
         }
 
         session(['mostrar_contenido' => true]);
-        Mail::to([
-            'davidmiranda.puk@gmail.com',
-            'cobranzas.eesp@pukllavirtual.edu.pe',
-        ])
+        Mail::to(config('services.notificaciones.emails'))
             ->send(new NotificacionRegistro($alumno));
 
         return redirect()->back()->with('success', 'Correo enviado correctamente.');
@@ -93,14 +93,6 @@ class AlumnoController extends Controller
         $user = auth()->user();
 
         return view('alumnos.vistasAlumnos.formulario', compact('user', 'programas', 'ciclos'));
-    }
-
-    public function filtro(Request $request)
-    {
-        $alumnos = Alumno::with('programa', 'ciclo')->get();
-        $campos = Schema::getColumnListing('alumnos');
-
-        return view('alumnos.filtro', compact('alumnos', 'campos'));
     }
 
     public function store(Request $request)
@@ -256,7 +248,7 @@ class AlumnoController extends Controller
         // Manejo de la imagen
         if ($request->hasFile('foto')) {
             $foto = $request->file('foto');
-            $nombreFoto = $foto->getClientOriginalName();
+            $nombreFoto = Str::uuid() . '.' . $foto->getClientOriginalExtension();
             $foto->move(public_path('img/estudiantes'), $nombreFoto);
 
             if (auth()->check()) {
@@ -281,12 +273,10 @@ class AlumnoController extends Controller
 
             // Enviar email de notificación automáticamente al completar el formulario
             try {
-                Mail::to([
-                    'davidmiranda.puk@gmail.com',
-                    'cobranzas.eesp@pukllavirtual.edu.pe',
-                ])->send(new NotificacionRegistro($nuevoAlumno));
+                Mail::to(config('services.notificaciones.emails'))
+                    ->send(new NotificacionRegistro($nuevoAlumno));
             } catch (\Exception $e) {
-                // No interrumpir el flujo si el email falla
+                Log::error('Error enviando email de matrícula (store): ' . $e->getMessage());
             }
 
             return redirect()->route('alumnos.index')->with('success', '¡Matrícula completada exitosamente! Se ha enviado una notificación al administrador.');
@@ -498,99 +488,154 @@ class AlumnoController extends Controller
         );
     }
 
-    public function estadisticas()
+    public function estadisticas(\Illuminate\Http\Request $request)
     {
-        $alumnos = Alumno::all();
-        $totalAlumnos = Alumno::count();
+        $tab = $request->input('tab', 'fid_periodo');
 
-        // --- Programas (sin "egresados") ---
-        $porPrograma = Alumno::with('programa')
-            ->get()
-            ->filter(fn ($a) => $a->programa && ! str_contains(strtolower($a->programa->nombre), 'egresados'))
-            ->groupBy(fn ($a) => $a->programa?->nombre ?? 'Sin programa')
-            ->map->count();
+        // ── Períodos FID ───────────────────────────────────────────────────
+        $periodos      = PeriodoActual::orderBy('id', 'desc')->get();
+        $periodoActual = PeriodoActual::where('actual', true)->first();
 
-        // --- Ciclos (sin "egresados", ordenados I, II, III...) ---
-        $romanoAInt = fn ($r) => ['I' => 1, 'II' => 2, 'III' => 3, 'IV' => 4, 'V' => 5, 'VI' => 6, 'VII' => 7, 'VIII' => 8, 'IX' => 9, 'X' => 10][strtoupper(trim($r))] ?? 0;
+        // ── Períodos PPD ───────────────────────────────────────────────────
+        $periodosPpd      = PeriodoActualPpd::orderBy('id', 'desc')->get();
+        $periodoActualPpd = PeriodoActualPpd::where('actual', true)->first();
 
-        $porCiclo = Alumno::with('ciclo')
-            ->get()
-            ->filter(fn ($a) => $a->ciclo && ! str_contains(strtolower($a->ciclo->nombre), 'egresados'))
-            ->groupBy(fn ($a) => $a->ciclo?->nombre ?? 'Sin ciclo')
-            ->map->count()
-            ->sortBy(fn ($count, $nombre) => $romanoAInt($nombre));
+        // ── Período seleccionado ───────────────────────────────────────────
+        $periodoId    = $request->input('periodo_id');
+        $periodoPpdId = $request->input('periodo_ppd_id');
 
-        // --- Género ---
-        $generos = Alumno::select('genero')
-            ->whereNotNull('genero')
-            ->get()
-            ->groupBy(fn ($a) => ucfirst(strtolower($a->genero)))
-            ->map->count();
+        $periodoSeleccionado = $periodoId
+            ? PeriodoActual::find($periodoId)
+            : ($periodoActual ?? $periodos->first());
 
-        // --- Rango de edades ---
-        $edad_18_25 = Alumno::edadEntre(18, 25)->count();
-        $edad_26_35 = Alumno::edadEntre(26, 35)->count();
+        $periodoPpdSeleccionado = $periodoPpdId
+            ? PeriodoActualPpd::find($periodoPpdId)
+            : ($periodoActualPpd ?? $periodosPpd->first());
 
-        // --- Sector socioeconómico ---
-        $sectores = Alumno::select('sector_socioeconomico')
-            ->groupBy('sector_socioeconomico')
-            ->selectRaw('sector_socioeconomico, COUNT(*) as total')
-            ->pluck('total', 'sector_socioeconomico');
+        // ── Helper: orden romano ───────────────────────────────────────────
+        $romanoAInt = fn ($r) => [
+            'I' => 1, 'II' => 2, 'III' => 3, 'IV' => 4, 'V'  => 5,
+            'VI' => 6, 'VII' => 7, 'VIII' => 8, 'IX' => 9, 'X' => 10,
+        ][strtoupper(trim($r))] ?? 0;
 
-        // --- NUEVOS DATOS DEMOGRÁFICOS ---
-        $procedencia = Alumno::select('procedencia_familiar')->whereNotNull('procedencia_familiar')
-            ->get()->groupBy('procedencia_familiar')->map->count();
+        // ── Helper: calcula estadísticas de cualquier colección ────────────
+        $computeStats = function ($collection) use ($romanoAInt) {
+            $totalAlumnos = $collection->count();
+            $hoy          = now();
 
-        $sectorLaboral = Alumno::select('sector_laboral')->whereNotNull('sector_laboral')
-            ->get()->groupBy('sector_laboral')->map->count();
+            $porPrograma = $collection
+                ->filter(fn ($a) => $a->programa && ! str_contains(strtolower($a->programa->nombre), 'egresados'))
+                ->groupBy(fn ($a) => $a->programa?->nombre ?? 'Sin programa')
+                ->map->count()
+                ->sortByDesc(fn ($v) => $v);
 
-        $teConsideras = Alumno::select('te_consideras')->whereNotNull('te_consideras')
-            ->get()->groupBy('te_consideras')->map->count();
+            $porCiclo = $collection
+                ->filter(fn ($a) => $a->ciclo && ! str_contains(strtolower($a->ciclo->nombre), 'egresados'))
+                ->groupBy(fn ($a) => $a->ciclo?->nombre ?? 'Sin ciclo')
+                ->map->count()
+                ->sortBy(fn ($count, $nombre) => $romanoAInt($nombre));
 
-        $lenguas = Alumno::select('lengua_1')
-            ->get()
-            ->filter(fn ($a) => trim($a->lengua_1 ?? '') !== '')
-            ->groupBy('lengua_1')
-            ->map->count();
+            $generos = $collection
+                ->filter(fn ($a) => ! empty($a->genero))
+                ->groupBy(fn ($a) => ucfirst(strtolower($a->genero)))
+                ->map->count();
 
-        $estadoCivil = Alumno::select('estado_civil')->whereNotNull('estado_civil')
-            ->get()->groupBy('estado_civil')->map->count();
+            $edad_18_25 = $collection->filter(function ($a) use ($hoy) {
+                if (empty($a->fecha_nacimiento)) {
+                    return false;
+                }
+                try {
+                    $age = $hoy->diffInYears(\Carbon\Carbon::parse($a->fecha_nacimiento));
+                } catch (\Throwable $e) {
+                    return false;
+                }
 
-        $sectorSocio = Alumno::select('sector_socioeconomico')->whereNotNull('sector_socioeconomico')
-            ->get()->groupBy('sector_socioeconomico')->map->count();
+                return $age >= 18 && $age <= 25;
+            })->count();
 
-        $quienMantiene = Alumno::select('quien_mantiene')
-            ->get()
-            ->filter(fn ($a) => trim($a->quien_mantiene ?? '') !== '')
-            ->groupBy('quien_mantiene')
-            ->map->count();
+            $edad_26_35 = $collection->filter(function ($a) use ($hoy) {
+                if (empty($a->fecha_nacimiento)) {
+                    return false;
+                }
+                try {
+                    $age = $hoy->diffInYears(\Carbon\Carbon::parse($a->fecha_nacimiento));
+                } catch (\Throwable $e) {
+                    return false;
+                }
 
-        $ingresoMensual = Alumno::select('ingreso_mensual')
-            ->get()
-            ->filter(fn ($a) => trim($a->ingreso_mensual ?? '') !== '')
-            ->groupBy('ingreso_mensual')
-            ->map->count();
+                return $age >= 26 && $age <= 35;
+            })->count();
 
-        $trabajo = Alumno::select('trabajas')->whereNotNull('trabajas')
-            ->get()->groupBy('trabajas')->map->count();
+            $sectorSocio    = $collection->filter(fn ($a) => ! empty($a->sector_socioeconomico))->groupBy('sector_socioeconomico')->map->count();
+            $sectores       = $sectorSocio;
+            $procedencia    = $collection->filter(fn ($a) => ! empty($a->procedencia_familiar))->groupBy('procedencia_familiar')->map->count()->sortByDesc(fn ($v) => $v);
+            $sectorLaboral  = $collection->filter(fn ($a) => ! empty($a->sector_laboral))->groupBy('sector_laboral')->map->count()->sortByDesc(fn ($v) => $v);
+            $teConsideras   = $collection->filter(fn ($a) => ! empty($a->te_consideras))->groupBy('te_consideras')->map->count();
+            $lenguas        = $collection->filter(fn ($a) => trim($a->lengua_1 ?? '') !== '')->groupBy('lengua_1')->map->count()->sortByDesc(fn ($v) => $v);
+            $estadoCivil    = $collection->filter(fn ($a) => ! empty($a->estado_civil))->groupBy('estado_civil')->map->count();
+            $quienMantiene  = $collection->filter(fn ($a) => trim($a->quien_mantiene ?? '') !== '')->groupBy('quien_mantiene')->map->count()->sortByDesc(fn ($v) => $v);
+            $ingresoMensual = $collection->filter(fn ($a) => trim($a->ingreso_mensual ?? '') !== '')->groupBy('ingreso_mensual')->map->count();
+            $trabajo        = $collection->filter(fn ($a) => ! empty($a->trabajas))->groupBy('trabajas')->map->count();
+
+            return compact(
+                'totalAlumnos', 'porPrograma', 'porCiclo', 'generos',
+                'edad_18_25', 'edad_26_35', 'sectorSocio', 'sectores',
+                'procedencia', 'sectorLaboral', 'teConsideras', 'lenguas',
+                'estadoCivil', 'quienMantiene', 'ingresoMensual', 'trabajo'
+            );
+        };
+
+        // ── Carga de datos según pestaña activa ────────────────────────────
+        switch ($tab) {
+            case 'fid_todos':
+                $collection             = Alumno::with(['programa', 'ciclo'])->get();
+                $periodoSeleccionado    = null;
+                $periodoPpdSeleccionado = null;
+                break;
+
+            case 'ppd_periodo':
+                $periodoSeleccionado = null;
+                if ($periodoPpdSeleccionado) {
+                    $ppdIds     = DB::table('periodo_ppds')
+                        ->where('periodo_actual_ppd_id', $periodoPpdSeleccionado->id)
+                        ->distinct()->pluck('alumno_id');
+                    $collection = ppd::with(['programa', 'ciclo'])->whereIn('id', $ppdIds)->get();
+                } else {
+                    $collection = collect();
+                }
+                break;
+
+            case 'ppd_todos':
+                $collection             = ppd::with(['programa', 'ciclo'])->get();
+                $periodoSeleccionado    = null;
+                $periodoPpdSeleccionado = null;
+                break;
+
+            default: // fid_periodo
+                $tab                    = 'fid_periodo';
+                $periodoPpdSeleccionado = null;
+                if ($periodoSeleccionado) {
+                    $pid        = $periodoSeleccionado->id;
+                    $collection = Alumno::with(['programa', 'ciclo'])
+                        ->whereHas('matriculas', fn ($m) => $m->where('periodo_actual_id', $pid))
+                        ->get();
+                } else {
+                    $collection = collect();
+                }
+                break;
+        }
+
+        extract($computeStats($collection));
 
         return view('admin.demograficos.alumnos', compact(
-            'porPrograma',
-            'porCiclo',
-            'generos',
-            'edad_18_25',
-            'edad_26_35',
-            'sectores',
-            'procedencia',
-            'sectorLaboral',
-            'teConsideras',
-            'lenguas',
-            'estadoCivil',
-            'sectorSocio',
-            'quienMantiene',
-            'trabajo',
-            'ingresoMensual',
-            'alumnos',
+            'tab',
+            'periodos', 'periodoSeleccionado',
+            'periodosPpd', 'periodoPpdSeleccionado',
+            'porPrograma', 'porCiclo', 'generos',
+            'edad_18_25', 'edad_26_35',
+            'sectores', 'procedencia', 'sectorLaboral',
+            'teConsideras', 'lenguas', 'estadoCivil', 'sectorSocio',
+            'quienMantiene', 'trabajo', 'ingresoMensual',
             'totalAlumnos'
         ));
     }
@@ -720,7 +765,7 @@ class AlumnoController extends Controller
 
         if ($request->hasFile('foto')) {
             $foto = $request->file('foto');
-            $nombreFoto = $foto->getClientOriginalName();
+            $nombreFoto = Str::uuid() . '.' . $foto->getClientOriginalExtension();
             $foto->move(public_path('img/estudiantes'), $nombreFoto);
             auth()->user()->update(['foto' => $nombreFoto]);
         }
@@ -733,12 +778,10 @@ class AlumnoController extends Controller
             );
 
             try {
-                Mail::to([
-                    'davidmiranda.puk@gmail.com',
-                    'cobranzas.eesp@pukllavirtual.edu.pe',
-                ])->send(new NotificacionRegistro($alumno));
+                Mail::to(config('services.notificaciones.emails'))
+                    ->send(new NotificacionRegistro($alumno));
             } catch (\Exception $e) {
-                // No interrumpir el flujo si el email falla
+                Log::error('Error enviando email de matrícula (actualizarDatos): ' . $e->getMessage());
             }
         } elseif ($matriculaActual && $request->filled('comprobante')) {
             $matriculaActual->update(['comprobante' => $request->comprobante]);

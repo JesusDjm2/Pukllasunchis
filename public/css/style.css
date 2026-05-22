@@ -2449,7 +2449,10 @@ h3 {
 }
 
 .tramites{
-  background-image: url(../img/fondo-institucion.webp);
+  background-image: url(../img/fondos/biblio-2026.webp);
+  background-position: top center;
+  background-size: cover;
+  background-repeat: no-repeat;
 }
 .lineas{
   background-image: url(../img/fondos/Escuela-Pukllasunchis.webp);

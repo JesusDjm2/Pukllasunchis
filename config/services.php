@@ -35,4 +35,13 @@ return [
         'url' => env('APIPERU_URL', 'https://apiperu.dev/api'),
         'token' => env('APIPERU_TOKEN'),
     ],
+
+    'notificaciones' => [
+        // Destinatarios internos para avisos de matrícula y registro.
+        // Configura NOTIF_EMAIL_ADMIN y NOTIF_EMAIL_COBRANZAS en .env
+        'emails' => array_filter([
+            env('NOTIF_EMAIL_ADMIN'),
+            env('NOTIF_EMAIL_COBRANZAS'),
+        ]),
+    ],
 ];

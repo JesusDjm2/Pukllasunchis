@@ -9,8 +9,9 @@ use App\Models\Incidencia;
 use App\Models\Programa;
 use App\Services\WhatsappService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class IncidenciaController extends Controller
 {
@@ -77,7 +78,7 @@ class IncidenciaController extends Controller
 
         if ($request->hasFile('imagen')) {
             $file = $request->file('imagen');
-            $name = time().'_'.$file->getClientOriginalName();
+            $name = Str::uuid() . '.' . $file->getClientOriginalExtension();
             $file->move(public_path('img/incidencias'), $name);
             $data['imagen'] = $name;
         }
@@ -114,7 +115,7 @@ class IncidenciaController extends Controller
 
         if ($request->hasFile('imagen')) {
             $file = $request->file('imagen');
-            $name = time().'_'.$file->getClientOriginalName();
+            $name = Str::uuid() . '.' . $file->getClientOriginalExtension();
             $file->move(public_path('img/incidencias'), $name);
             $data['imagen'] = $name;
         }

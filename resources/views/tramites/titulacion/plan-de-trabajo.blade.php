@@ -115,7 +115,7 @@
             margin-top: 10px;
         }
     </style>
-    <div class="bradcam_area admision bradcam_overlay">
+    <div class="bradcam_area tramites bradcam_overlay">
         <div class="container">
             <div class="row">
                 <div class="col-lg-12">

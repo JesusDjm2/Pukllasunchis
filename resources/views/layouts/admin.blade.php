@@ -60,17 +60,14 @@
                 </div>
             </li>
             <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#sPerfiles">
+                <a class="nav-link" href="{{ route('admin') }}">
                     <i class="fas fa-fw fa-users-cog"></i><span>Perfiles</span>
                 </a>
-                <div id="sPerfiles" class="collapse" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">Gestionar perfiles:</h6>
-                        <a class="collapse-item" href="{{ route('admin') }}">Perfiles registrados</a>
-                        <a class="collapse-item" href="{{ route('registerAdmin') }}">Registrar nuevo</a>
-                        <a class="collapse-item" href="{{ route('docente.index') }}">Lista de docentes</a>
-                    </div>
-                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('docente.index') }}">
+                    <i class="fas fa-fw fa-chalkboard-teacher"></i><span>Docentes</span>
+                </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#sAlumnos">
@@ -82,7 +79,6 @@
                         <a class="collapse-item" href="{{ route('adminAlumnos') }}">Alumnos FID</a>
                         <a class="collapse-item" href="{{ route('alumnosppd') }}">Alumnos PPD</a>
                         <a class="collapse-item" href="{{ route('alumnos.demograficos') }}">Datos demográficos</a>
-                        <a class="collapse-item" href="{{ route('filtro') }}">Filtrar por campos</a>
                     </div>
                 </div>
             </li>

@@ -15,7 +15,8 @@
       "Bash(php -l app/Http/Controllers/DocenteCOntroller.php)",
       "Bash(php -l app/Http/Controllers/AlumnoCursoController.php)",
       "Bash(php -l app/Http/Controllers/AlumnoController.php)",
-      "Bash(php -l app/Models/Alumno.php)"
+      "Bash(php -l app/Models/Alumno.php)",
+      "Bash(php -r \"echo json_decode\\(file_get_contents\\('composer.json'\\), true\\)['require']['spatie/laravel-permission'] ?? 'no encontrado';\")"
     ]
   }
 }
