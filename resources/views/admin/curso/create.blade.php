@@ -65,7 +65,9 @@
                                         <option value="Formacion Específica" {{ old('cc') == 'Formacion Específica' ? 'selected' : '' }}>Formación Específica</option>
                                         <option value="Formacion Práctica e Investigación" {{ old('cc') == 'Formacion Práctica e Investigación' ? 'selected' : '' }}>Formación Práctica e Investigación</option>
                                         <option value="Electivo" {{ old('cc') == 'Electivo' ? 'selected' : '' }}>Electivo</option>
+                                        @role('super-admin')
                                         <option value="Extracurricular" {{ old('cc') == 'Extracurricular' ? 'selected' : '' }}>Extracurricular</option>
+                                        @endrole
                                     </select>
                                     @error('cc')
                                         <div class="invalid-feedback">{{ $message }}</div>

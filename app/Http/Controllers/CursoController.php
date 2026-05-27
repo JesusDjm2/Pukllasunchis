@@ -13,38 +13,43 @@ use Illuminate\Http\Request;
 
 class CursoController extends Controller
 {
+    /** Devuelve true solo si el usuario autenticado tiene el rol super-admin. */
+    private function esSuperAdmin(): bool
+    {
+        return auth()->check() && auth()->user()->hasRole('super-admin');
+    }
+
     public function index()
     {
-        $cursos = Curso::all();
-        $cant = Curso::count();
-        $cursosInicial = Curso::whereHas('ciclo', function ($query) {
-            $query->where('programa_id', 1);
-        })->get();
-        $inicial = Curso::whereHas('ciclo', function ($query) {
-            $query->where('programa_id', 1);
-        })->count();
+        $cursos       = Curso::all();
+        $cursosInicial = Curso::whereHas('ciclo', fn($q) => $q->where('programa_id', 1))->get();
+        $cursosEib     = Curso::whereHas('ciclo', fn($q) => $q->where('programa_id', 2))->get();
+        $inicialPPD    = Curso::whereHas('ciclo', fn($q) => $q->where('programa_id', 3))->get();
+        $primariaPPD   = Curso::whereHas('ciclo', fn($q) => $q->where('programa_id', 4))->get();
 
-        $cursosEib = Curso::whereHas('ciclo', function ($query) {
-            $query->where('programa_id', 2);
-        })->get();
-        $EIB = Curso::whereHas('ciclo', function ($query) {
-            $query->where('programa_id', 2);
-        })->count();
-        $inicialPPD = Curso::whereHas('ciclo', function ($query) {
-            $query->where('programa_id', 3);
-        })->get();
-        $iniPPD = Curso::whereHas('ciclo', function ($query) {
-            $query->where('programa_id', 3);
-        })->count();
-        $primariaPPD = Curso::whereHas('ciclo', function ($query) {
-            $query->where('programa_id', 4);
-        })->get();
-        $priPPD = Curso::whereHas('ciclo', function ($query) {
-            $query->where('programa_id', 4);
-        })->count();
+        // ── Ocultar extracurriculares para admin (no super-admin) ──────────
+        if (! $this->esSuperAdmin()) {
+            $sinExtra = fn($c) => strtolower(trim($c->cc ?? '')) !== 'extracurricular';
+            $cursos        = $cursos->filter($sinExtra)->values();
+            $cursosInicial = $cursosInicial->filter($sinExtra)->values();
+            $cursosEib     = $cursosEib->filter($sinExtra)->values();
+            $inicialPPD    = $inicialPPD->filter($sinExtra)->values();
+            $primariaPPD   = $primariaPPD->filter($sinExtra)->values();
+        }
+
+        $cant   = $cursos->count();
+        $inicial = $cursosInicial->count();
+        $EIB    = $cursosEib->count();
+        $iniPPD = $inicialPPD->count();
+        $priPPD = $primariaPPD->count();
+
         $competencias = Competencia::all();
 
-        return view('admin.curso.index', compact('cursos', 'cant', 'inicial', 'cursosInicial', 'EIB', 'cursosEib', 'competencias', 'inicialPPD', 'primariaPPD', 'iniPPD', 'priPPD'));
+        return view('admin.curso.index', compact(
+            'cursos', 'cant', 'inicial', 'cursosInicial',
+            'EIB', 'cursosEib', 'competencias',
+            'inicialPPD', 'primariaPPD', 'iniPPD', 'priPPD'
+        ));
     }
 
     public function create()
@@ -67,7 +72,7 @@ class CursoController extends Controller
             'silabo.max' => 'El archivo no debe exceder los 2 MB.',
         ]);
 
-        $periodoActual = PeriodoActual::where('actual', true)->first();
+        $periodoActual = PeriodoActual::actual();
         if (! $periodoActual) {
             return redirect()->back()->with('error', 'No hay un periodo activo en este momento.');
         }
@@ -160,6 +165,13 @@ class CursoController extends Controller
 
     public function store(Request $request)
     {
+        // Bloquear creación de extracurriculares para admin
+        if (! $this->esSuperAdmin() && strtolower(trim($request->input('cc', ''))) === 'extracurricular') {
+            return redirect()->back()
+                ->with('error', 'No tienes permisos para crear cursos extracurriculares.')
+                ->withInput();
+        }
+
         $request->validate([
             'programa_id' => 'required|exists:programas,id',
             'ciclo_id' => 'required|exists:ciclos,id',
@@ -203,6 +215,12 @@ class CursoController extends Controller
 
     public function edit(Curso $curso)
     {
+        // Bloquear edición de extracurriculares para admin
+        if (! $this->esSuperAdmin() && strtolower(trim($curso->cc ?? '')) === 'extracurricular') {
+            return redirect()->route('curso.index')
+                ->with('error', 'No tienes permisos para editar cursos extracurriculares.');
+        }
+
         $programa = $curso->ciclo->programa;
         $programas = Programa::all();
         $ciclos = Ciclo::all();
@@ -213,6 +231,13 @@ class CursoController extends Controller
 
     public function update(Request $request, $id)
     {
+        // Bloquear asignación de cc=Extracurricular para admin
+        if (! $this->esSuperAdmin() && strtolower(trim($request->input('cc', ''))) === 'extracurricular') {
+            return redirect()->back()
+                ->with('error', 'No tienes permisos para asignar el tipo Extracurricular a un curso.')
+                ->withInput();
+        }
+
         $request->validate([
             'programa_id' => 'required|exists:programas,id',
             'ciclo_id' => 'required|exists:ciclos,id',
@@ -268,6 +293,12 @@ class CursoController extends Controller
     } */
     public function show(Curso $curso)
     {
+        // Bloquear vista de extracurriculares para admin
+        if (! $this->esSuperAdmin() && strtolower(trim($curso->cc ?? '')) === 'extracurricular') {
+            return redirect()->route('curso.index')
+                ->with('error', 'No tienes permisos para ver cursos extracurriculares.');
+        }
+
         $programa = $curso->ciclo->programa;
         $ciclo = $curso->ciclo;
         $alumno = auth()->user()->alumnoB;
@@ -290,6 +321,12 @@ class CursoController extends Controller
 
     public function destroy(Curso $curso)
     {
+        // Bloquear eliminación de extracurriculares para admin
+        if (! $this->esSuperAdmin() && strtolower(trim($curso->cc ?? '')) === 'extracurricular') {
+            return redirect()->route('curso.index')
+                ->with('error', 'No tienes permisos para eliminar cursos extracurriculares.');
+        }
+
         $curso->delete();
 
         return redirect()->route('curso.index')->with('success', 'Curso eliminado exitosamente');

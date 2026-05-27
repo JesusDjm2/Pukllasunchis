@@ -75,7 +75,13 @@
                                     <select name="cc"
                                         class="form-control form-control-sm @error('cc') is-invalid @enderror" required>
                                         <option value="">Selecciona una opción</option>
-                                        @foreach (['Formacion General', 'Formacion Específica', 'Formacion Práctica e Investigación', 'Electivo', 'Extracurricular'] as $option)
+                                        @php
+                                            $ccOpciones = ['Formacion General', 'Formacion Específica', 'Formacion Práctica e Investigación', 'Electivo'];
+                                            if (auth()->user()?->hasRole('super-admin')) {
+                                                $ccOpciones[] = 'Extracurricular';
+                                            }
+                                        @endphp
+                                        @foreach ($ccOpciones as $option)
                                             <option value="{{ $option }}"
                                                 {{ $curso->cc == $option ? 'selected' : '' }}>{{ $option }}</option>
                                         @endforeach

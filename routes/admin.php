@@ -227,7 +227,7 @@ Route::middleware('auth')->group(function () {
     // 🛡️ RUTAS SOLO ADMINISTRADOR
     // ═══════════════════════════════════════════════════════════
 
-    Route::middleware('role:admin')->group(function () {
+    Route::middleware('role:admin|super-admin')->group(function () {
 
         // Panel principal y gestión de usuarios
         Route::get('Administrador', [AdminController::class, 'index'])->name('admin');

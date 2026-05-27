@@ -57,10 +57,7 @@
                         <h6 class="collapse-header">Programas y estructura:</h6>
                         <a class="collapse-item" href="{{ route('programa.index') }}">Programas</a>
                         <a class="collapse-item" href="{{ route('ciclo.index') }}">Ciclos</a>
-                        {{-- Cursos extracurriculares FID: solo Super Admin --}}
-                        @role('super-admin')
                         <a class="collapse-item" href="{{ route('curso.index') }}">Cursos</a>
-                        @endrole
                         <a class="collapse-item" href="{{ route('competencias.index') }}">Competencias</a>
                         <a class="collapse-item" href="{{ route('capacidades.index') }}">Capacidades</a>
                         <a class="collapse-item" href="{{ route('estandares.index') }}">Estándares</a>
