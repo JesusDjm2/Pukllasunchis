@@ -129,102 +129,69 @@
                                 <tr>
                                     <td class="alumno-th-label align-top pt-3">Cursos del semestre</td>
                                     <td colspan="2">
-                                        @if ($alumno->cursos->isNotEmpty())
-                                            <ul class="alumno-curso-list">
-                                            @foreach ($alumno->cursos as $curso)
-                                                <li class="alumno-curso-item">
-                                                    <div>
-                                                        <a href="{{ route('curso.show', $curso->id) }}" class="mr-2">
-                                                            {{ $curso->nombre }}
-                                                        </a>
-                                                        @if ($curso->ciclo_id != $alumno->ciclo_id)
-                                                            <span class="badge badge-info">
-                                                                Ciclo {{ $curso->ciclo->nombre }}
-                                                            </span>
-                                                        @endif
-                                                    </div>
-                                                    <div class="d-flex align-items-center">
-                                                        @if (!str_contains($curso->cc, 'Extracurricular'))
-                                                            @if ($curso->relacionsilabo || $curso->silabo)
-                                                                @php
-                                                                    $silaboObj = $curso->relacionsilabo ?? null;
-                                                                    $periodoSilabo = $silaboObj->periodo ?? null;
-                                                                @endphp
+                                        {{--
+                                            Fuente de cursos:
+                                            • Si el admin asignó cursos para el período actual via alumno_cursos
+                                              → se muestran esos ($cursosActuales), filtrados por período.
+                                            • Si no hay asignación para este período
+                                              → se muestran todos los cursos del ciclo propio.
+                                            Así se evita mostrar cursos de períodos anteriores.
+                                        --}}
+                                        @php
+                                            $cursosAMostrar = $cursosActuales->isNotEmpty()
+                                                ? $cursosActuales
+                                                : ($alumno->ciclo?->cursos ?? collect());
+                                        @endphp
 
-                                                                @if ($periodoSilabo === $periodoActual->nombre)
-                                                                    @php
-                                                                        $sílaboURL = $curso->relacionsilabo
-                                                                            ? route(
-                                                                                'silabos.show',
-                                                                                $curso->relacionsilabo->id,
-                                                                            )
-                                                                            : asset(
-                                                                                'docentes/silabo/' . $curso->silabo,
-                                                                            );
-                                                                    @endphp
-                                                                    <a href="{{ $sílaboURL }}" target="_blank"
-                                                                        class="btn btn-success btn-sm mb-2">
-                                                                        <i class="fa fa-eye"></i> Ver Sílabo
-                                                                    </a>
-                                                                @else
-                                                                    <span>No hay sílabo disponible</span>
-                                                                @endif
+                                        <ul class="alumno-curso-list">
+                                        @forelse ($cursosAMostrar as $curso)
+                                            <li class="alumno-curso-item">
+                                                <div>
+                                                    <a href="{{ route('curso.show', $curso->id) }}" class="mr-2">
+                                                        {{ $curso->nombre }}
+                                                    </a>
+                                                    {{-- Badge si el curso es de un ciclo distinto al del alumno --}}
+                                                    @if ($curso->ciclo_id != $alumno->ciclo_id)
+                                                        <span class="badge badge-info">
+                                                            Ciclo {{ $curso->ciclo->nombre ?? '–' }}
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                                <div class="d-flex align-items-center">
+                                                    @if (!str_contains($curso->cc ?? '', 'Extracurricular'))
+                                                        @php
+                                                            $silaboObj   = $curso->relacionsilabo ?? null;
+                                                            $periodoSilabo = $silaboObj->periodo ?? null;
+                                                        @endphp
+                                                        @if ($silaboObj || $curso->silabo)
+                                                            @if ($periodoSilabo === ($periodoActual->nombre ?? null))
+                                                                @php
+                                                                    $sílaboURL = $silaboObj
+                                                                        ? route('silabos.show', $silaboObj->id)
+                                                                        : asset('docentes/silabo/' . $curso->silabo);
+                                                                @endphp
+                                                                <a href="{{ $sílaboURL }}" target="_blank"
+                                                                   class="btn btn-success btn-sm mb-2">
+                                                                    <i class="fa fa-eye"></i> Ver Sílabo
+                                                                </a>
                                                             @else
-                                                                <span>No hay sílabo</span>
+                                                                <span>No hay sílabo disponible</span>
                                                             @endif
                                                         @else
-                                                            <span>No disponible</span>
+                                                            <span>No hay sílabo</span>
                                                         @endif
-                                                    </div>
-                                                </li>
-                                            @endforeach
-                                            </ul>
-                                        @else
-                                            <ul class="alumno-curso-list">
-                                            @foreach ($alumno->ciclo->cursos as $curso)
-                                                <li class="alumno-curso-item">
-                                                    <div>
-                                                        <a href="{{ route('curso.show', $curso->id) }}" class="mr-2">
-                                                            {{ $curso->nombre }}
-                                                        </a>
-                                                    </div>
-                                                    <div class="d-flex align-items-center">
-                                                        @if (!str_contains($curso->cc, 'Extracurricular'))
-                                                            @if ($curso->relacionsilabo || $curso->silabo)
-                                                                @php
-                                                                    $silaboObj = $curso->relacionsilabo ?? null;
-                                                                    $periodoSilabo = $silaboObj->periodo ?? null;
-                                                                @endphp
-
-                                                                @if ($periodoSilabo === $periodoActual->nombre)
-                                                                    @php
-                                                                        $sílaboURL = $curso->relacionsilabo
-                                                                            ? route(
-                                                                                'silabos.show',
-                                                                                $curso->relacionsilabo->id,
-                                                                            )
-                                                                            : asset(
-                                                                                'docentes/silabo/' . $curso->silabo,
-                                                                            );
-                                                                    @endphp
-                                                                    <a href="{{ $sílaboURL }}" target="_blank"
-                                                                        class="btn btn-success btn-sm mb-2">
-                                                                        <i class="fa fa-eye"></i> Ver Sílabo
-                                                                    </a>
-                                                                @else
-                                                                    <span>No hay sílabo disponible</span>
-                                                                @endif
-                                                            @else
-                                                                <span>No hay sílabo</span>
-                                                            @endif
-                                                        @else
-                                                            <span>No disponible</span>
-                                                        @endif
-                                                    </div>
-                                                </li>
-                                            @endforeach
-                                            </ul>
-                                        @endif
+                                                    @else
+                                                        <span>No disponible</span>
+                                                    @endif
+                                                </div>
+                                            </li>
+                                        @empty
+                                            <li class="text-muted py-2">
+                                                <i class="fas fa-info-circle mr-1"></i>
+                                                No hay cursos registrados para este período.
+                                            </li>
+                                        @endforelse
+                                        </ul>
                                     </td>
                                 </tr>
                                 {{-- <tr>

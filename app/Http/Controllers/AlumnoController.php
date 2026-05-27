@@ -40,7 +40,27 @@ class AlumnoController extends Controller
                 ? $alumno->matriculas()->where('periodo_actual_id', $periodoActual->id)->exists()
                 : false;
 
-            return view('alumnos.vistasAlumnos.index', compact('alumno', 'usuario', 'periodoActual', 'yaMatriculado'));
+            /*
+             * Cursos del período actual:
+             *   1. Si el admin asignó cursos para este período via alumno_cursos
+             *      → usar esa lista (puede incluir cursos propios del ciclo + extras)
+             *   2. Si NO hay asignación para el período actual
+             *      → mostrar todos los cursos del ciclo propio (comportamiento por defecto)
+             *
+             * IMPORTANTE: se filtra por periodo_actual_id para no mostrar
+             * cursos de períodos anteriores que están en alumno_cursos.
+             */
+            if ($periodoActual) {
+                $cursosActuales = $alumno->cursosDelPeriodo($periodoActual->id)
+                    ->with('ciclo', 'relacionsilabo')
+                    ->get();
+            } else {
+                $cursosActuales = collect();
+            }
+
+            return view('alumnos.vistasAlumnos.index', compact(
+                'alumno', 'usuario', 'periodoActual', 'yaMatriculado', 'cursosActuales'
+            ));
         } else {
             return view('alumnos.vistasAlumnos.index');
         }
@@ -129,19 +149,15 @@ class AlumnoController extends Controller
             return redirect()->back()->withInput()->withErrors(['bienes_vivienda' => 'Debe seleccionar al menos un bien de vivienda.']);
         }
 
-        $bienes = implode(',', $bienes_vivienda);
-
         $otros_servicios = $request->input('otros_servicios', []);
         if (empty($otros_servicios)) {
             return redirect()->back()->withInput()->withErrors(['otros_servicios' => 'Debe seleccionar al menos un Servicio Adicionales en Vivienda.']);
         }
-        $otrosServicios = implode(',', $otros_servicios);
 
         $habilidades = $request->input('habilidades', []);
         if (empty($habilidades)) {
             return redirect()->back()->withInput()->withErrors(['habilidades' => 'Debe seleccionar al menos una opción en Habilidades.']);
         }
-        $talentos = implode('-', $habilidades);
 
         // Verificar que los valores de 'numero' y 'numero_referencia' sean diferentes
         if ($numero === $numero_referencia) {
@@ -239,9 +255,9 @@ class AlumnoController extends Controller
                 'actividades_internet',
                 'tiempo_libre',
             ]) + [
-                'bienes_vivienda' => $bienes,
-                'otros_servicios' => $otrosServicios,
-                'habilidades' => $talentos,
+                'bienes_vivienda' => $bienes_vivienda,
+                'otros_servicios' => $otros_servicios,
+                'habilidades' => $habilidades,
             ]
         );
 
@@ -334,7 +350,7 @@ class AlumnoController extends Controller
     {
         $programas = Programa::all();
         $user = auth()->user();
-        $alumno->bienes_vivienda = explode(',', $alumno->bienes_vivienda);
+        // Los casts automáticamente convierten JSON a array, no necesitamos explode
         $departamentos = Departamento::with('provincias.distritos')->get();
         $departamentosData = [];
         foreach ($departamentos as $dep) {
@@ -369,7 +385,7 @@ class AlumnoController extends Controller
             'Refrigeradora',
             'Ninguna de las anteriores',
         ];
-        $alumno->otros_servicios = explode(',', $alumno->otros_servicios);
+        // Los casts automáticamente convierten JSON a array
         $opcionesServicios = [
             'Empleado(a) doméstico',
             'Servicio de teléfono',
@@ -377,7 +393,7 @@ class AlumnoController extends Controller
             'Servicio de Internet',
             'Ninguna de las anteriores',
         ];
-        $alumno->habilidades = explode('-', $alumno->habilidades);
+        // Los casts automáticamente convierten JSON a array
         $opcionesHabilidades = [
             'Música (Instrumentos, canto)',
             'Artes pláticas (Pintura, Escultura, etc)',
@@ -736,9 +752,6 @@ class AlumnoController extends Controller
             return redirect()->back()->withInput()->withErrors(['numero' => 'El celular y el celular de emergencia deben ser diferentes.']);
         }
 
-        $bienes = implode(',', $request->input('bienes_vivienda', []));
-        $otrosServicios = implode(',', $request->input('otros_servicios', []));
-
         $campos = [
             'numero', 'numero_referencia', 'direccion', 'departamento', 'provincia', 'distrito',
             'estado_civil', 'p_m_soltero', 'num_hijos', 'sector_socioeconomico',
@@ -758,8 +771,8 @@ class AlumnoController extends Controller
         }
 
         $datos = $request->only($campos);
-        $datos['bienes_vivienda'] = $bienes;
-        $datos['otros_servicios'] = $otrosServicios;
+        $datos['bienes_vivienda'] = $request->input('bienes_vivienda', []);
+        $datos['otros_servicios'] = $request->input('otros_servicios', []);
 
         $alumno->update($datos);
 
