@@ -340,7 +340,394 @@ body.alumno-app .alumno-section-heading {
     gap: 0.5rem;
 }
 
-/* Calificaciones */
+/* ─────────────────────────────────────────────────────────────
+   FICHA TÉCNICA
+   ───────────────────────────────────────────────────────────── */
+
+/* Encabezado de sección dentro de alumno-shell */
+.alumno-ficha-section-header {
+    background: linear-gradient(90deg, var(--alumno-teal-dark) 0%, var(--alumno-teal) 100%);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.875rem;
+    padding: 0.7rem 1.25rem;
+    letter-spacing: 0.02em;
+}
+
+/* Contenedor foto + datos — flex horizontal, stack en móvil */
+.alumno-ficha-profile-wrap {
+    display: flex;
+    gap: 1.75rem;
+    padding: 1.25rem 1.5rem;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+.alumno-ficha-photo {
+    flex: 0 0 160px;
+    max-width: 160px;
+}
+
+.alumno-ficha-foto-img {
+    width: 100%;
+    max-width: 160px;
+    height: auto;
+    object-fit: cover;
+    border-radius: var(--alumno-radius-sm);
+    border: 1px solid var(--alumno-border);
+}
+
+.alumno-ficha-data {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Lista de datos clave-valor */
+.alumno-data-list {
+    display: block;
+    margin: 0;
+    padding: 0;
+}
+
+.alumno-data-row {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 0.25rem 1rem;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid var(--alumno-border);
+}
+
+.alumno-data-row:last-child {
+    border-bottom: none;
+}
+
+.alumno-data-row dt {
+    font-weight: 600;
+    font-size: 0.82rem;
+    color: var(--alumno-teal-dark);
+    margin: 0;
+    display: flex;
+    align-items: center;
+}
+
+.alumno-data-row dd {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--alumno-text);
+    word-break: break-word;
+}
+
+/* Programa y ciclo */
+.alumno-prog-ciclo-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 2rem;
+}
+
+.alumno-prog-divider {
+    width: 1px;
+    height: 2.5rem;
+    background: var(--alumno-border);
+    flex-shrink: 0;
+}
+
+.alumno-prog-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.alumno-prog-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--alumno-muted);
+}
+
+.alumno-prog-value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--alumno-teal-dark);
+    line-height: 1.3;
+}
+
+.alumno-ciclo-mono {
+    font-family: 'Courier New', Courier, monospace;
+}
+
+/* Nombres en la lista de cursos */
+.alumno-curso-nombre {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.alumno-curso-accion {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+/* Botón sílabo — usa acento teal del área alumno */
+.alumno-silabo-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.28rem 0.7rem;
+    border-radius: var(--alumno-radius-sm);
+    background: linear-gradient(135deg, var(--alumno-teal) 0%, var(--alumno-teal-dark) 100%);
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-decoration: none;
+    border: none;
+    transition: filter 0.2s ease;
+    white-space: nowrap;
+}
+
+.alumno-silabo-btn:hover {
+    color: #fff;
+    text-decoration: none;
+    filter: brightness(1.1);
+}
+
+.alumno-no-silabo {
+    font-size: 0.8rem;
+    color: var(--alumno-muted);
+    font-style: italic;
+    white-space: nowrap;
+}
+
+.alumno-curso-empty {
+    padding: 1rem 0.75rem;
+    color: var(--alumno-muted);
+    font-size: 0.9rem;
+    list-style: none;
+}
+
+/* Cursos pendientes */
+.alumno-pendiente-shell {
+    border-left: 4px solid #dc3545;
+    background: rgba(220, 53, 69, 0.04);
+}
+
+/* Responsive ficha */
+@media (max-width: 575.98px) {
+    .alumno-ficha-profile-wrap {
+        flex-direction: column;
+        padding: 1rem;
+    }
+    .alumno-ficha-photo {
+        flex: unset;
+        max-width: 100%;
+        text-align: center;
+    }
+    .alumno-ficha-foto-img {
+        max-width: 140px;
+    }
+    .alumno-data-row {
+        grid-template-columns: 1fr;
+        gap: 0.1rem;
+        padding: 0.5rem 0;
+    }
+    .alumno-data-row dt {
+        font-size: 0.75rem;
+        color: var(--alumno-muted);
+    }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   CALIFICACIONES
+   ───────────────────────────────────────────────────────────── */
+
+/* Selector de período histórico */
+.alumno-periodo-select-wrap {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.alumno-periodo-select-wrap .form-control {
+    border-radius: var(--alumno-radius-sm);
+    border-color: var(--alumno-border);
+    color: var(--alumno-teal-dark);
+    font-weight: 500;
+    text-align: center;
+}
+
+/* Encabezado de período dentro del histórico */
+.alumno-cal-hist-header {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(37, 52, 73, 0.08);
+    color: var(--alumno-teal-dark);
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 0.4rem 0.85rem;
+    border-radius: var(--alumno-radius-sm);
+    margin-bottom: 0.75rem;
+}
+
+/* Tabla del histórico */
+.alumno-table-cal {
+    border-radius: var(--alumno-radius-sm);
+    overflow: hidden;
+}
+
+.alumno-table-cal thead th {
+    background: linear-gradient(90deg, var(--alumno-teal-dark), var(--alumno-teal)) !important;
+    color: #fff !important;
+    font-weight: 600;
+    font-size: 0.8rem;
+    border: none;
+    padding: 0.6rem 0.75rem;
+}
+
+/* Score pills */
+.alumno-score {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.2rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    line-height: 1;
+}
+
+.alumno-score-good {
+    background: rgba(25, 135, 84, 0.12);
+    color: #0f5132;
+}
+
+.alumno-score-fail {
+    background: rgba(220, 53, 69, 0.12);
+    color: #842029;
+}
+
+.alumno-score-pending {
+    background: rgba(255, 193, 7, 0.15);
+    color: #664d03;
+}
+
+/* Grid de tarjetas por curso */
+.alumno-grade-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+/* Tarjeta individual de curso */
+.alumno-grade-card {
+    border-radius: var(--alumno-radius);
+    border: 1px solid var(--alumno-border);
+    box-shadow: var(--alumno-shadow);
+    overflow: hidden;
+    background: var(--alumno-surface);
+    display: flex;
+    flex-direction: column;
+    transition: box-shadow 0.2s ease;
+}
+
+.alumno-grade-card:hover {
+    box-shadow: var(--alumno-shadow-hover);
+}
+
+.alumno-grade-card-header {
+    background: linear-gradient(90deg, var(--alumno-teal-dark) 0%, var(--alumno-teal) 100%);
+    color: #fff;
+    padding: 0.7rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    min-height: 3rem;
+}
+
+.alumno-grade-card-title {
+    font-weight: 600;
+    font-size: 0.88rem;
+    line-height: 1.35;
+    flex: 1;
+}
+
+.alumno-grade-ciclo-badge {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+/* Tabla de notas dentro de la tarjeta */
+.alumno-grade-table {
+    margin-bottom: 0;
+}
+
+.alumno-grade-table .alumno-grade-th-parcial {
+    width: 80px;
+    min-width: 80px;
+    border-top: none;
+}
+
+.alumno-grade-table .alumno-grade-th {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--alumno-muted);
+    border-top: none;
+    padding: 0.4rem 0.5rem;
+}
+
+/* Etiqueta de parcial con color por fila */
+.alumno-grade-parcial-label {
+    font-weight: 600;
+    font-size: 0.78rem;
+    white-space: nowrap;
+    padding: 0.5rem 0.75rem;
+}
+
+.alumno-grade-parcial-label.p1 { color: #0d6efd; }
+.alumno-grade-parcial-label.p2 { color: #0dcaf0; }
+.alumno-grade-parcial-label.promedio { color: #198754; }
+
+/* Fila de promedio con fondo sutil */
+.alumno-grade-row-promedio td {
+    background: rgba(25, 135, 84, 0.04);
+    border-top: 1px dashed var(--alumno-border);
+}
+
+/* Bloque de observaciones */
+.alumno-grade-obs {
+    padding: 0.55rem 1rem;
+    font-size: 0.8rem;
+    color: var(--alumno-muted);
+    border-top: 1px dashed var(--alumno-border);
+    background: rgba(238, 242, 247, 0.6);
+    line-height: 1.5;
+}
+
+.alumno-grade-obs-label {
+    font-weight: 600;
+    color: var(--alumno-teal-dark);
+    margin-right: 0.25rem;
+}
+
+/* Responsive: 1 columna en móvil */
+@media (max-width: 575.98px) {
+    .alumno-grade-cards {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ── Legado — se mantiene por compatibilidad con otras vistas ── */
 .alumno-cal-filter {
     max-width: 420px;
     margin-left: auto;
@@ -352,12 +739,6 @@ body.alumno-app .alumno-section-heading {
     font-size: 0.8rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-}
-
-.alumno-table-cal {
-    border-radius: var(--alumno-radius-sm);
-    overflow: hidden;
-    box-shadow: var(--alumno-shadow);
 }
 
 .alumno-table-cal thead .alumno-cal-period-title {
