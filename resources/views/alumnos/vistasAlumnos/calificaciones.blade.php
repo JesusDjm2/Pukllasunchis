@@ -107,7 +107,7 @@
             @endif
 
 
-            @if ($alumno->ciclo->cursos->isNotEmpty())
+            @if ($cursosDelAlumno->isNotEmpty())
                 <div class="alumno-shell p-0 overflow-hidden">
                     <div class="p-3 border-bottom bg-light">
                         <h2 class="h5 mb-0 font-weight-bold text-primary">
@@ -127,11 +127,8 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @php
-                                    $cursosParaMostrar = $alumno->cursos->isNotEmpty()
-                                        ? $alumno->cursos
-                                        : $alumno->ciclo->cursos;
-                                @endphp
+                                {{-- $cursosDelAlumno = ciclo->cursos + extras de otros ciclos del período actual --}}
+                                @php $cursosParaMostrar = $cursosDelAlumno; @endphp
 
                                 @foreach ($cursosParaMostrar as $curso)
                                     @php

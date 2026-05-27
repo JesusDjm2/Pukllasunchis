@@ -131,16 +131,13 @@
                                     <td colspan="2">
                                         {{--
                                             Fuente de cursos:
-                                            • Si el admin asignó cursos para el período actual via alumno_cursos
-                                              → se muestran esos ($cursosActuales), filtrados por período.
-                                            • Si no hay asignación para este período
-                                              → se muestran todos los cursos del ciclo propio.
-                                            Así se evita mostrar cursos de períodos anteriores.
+                                            • SIEMPRE se muestran los cursos del ciclo propio del alumno.
+                                            • ADICIONALMENTE, cursos de otros ciclos asignados
+                                              explícitamente via alumno_cursos para el período actual.
+                                            $cursosDelAlumno viene consolidado desde el controlador.
                                         --}}
                                         @php
-                                            $cursosAMostrar = $cursosActuales->isNotEmpty()
-                                                ? $cursosActuales
-                                                : ($alumno->ciclo?->cursos ?? collect());
+                                            $cursosAMostrar = $cursosDelAlumno ?? collect();
                                         @endphp
 
                                         <ul class="alumno-curso-list">

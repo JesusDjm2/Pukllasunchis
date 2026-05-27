@@ -41,25 +41,31 @@ class AlumnoController extends Controller
                 : false;
 
             /*
-             * Cursos del período actual:
-             *   1. Si el admin asignó cursos para este período via alumno_cursos
-             *      → usar esa lista (puede incluir cursos propios del ciclo + extras)
-             *   2. Si NO hay asignación para el período actual
-             *      → mostrar todos los cursos del ciclo propio (comportamiento por defecto)
+             * Cursos del alumno para el período actual:
+             *   FUENTE PRIMARIA → ciclo->cursos (todos los cursos del ciclo al que pertenece)
+             *   EXTRAS          → alumno_cursos filtrado por periodo_actual_id
+             *                     SOLO se añaden si ciclo_id ≠ alumno->ciclo_id
+             *                     (cursos de otro ciclo asignados explícitamente por el admin)
              *
-             * IMPORTANTE: se filtra por periodo_actual_id para no mostrar
-             * cursos de períodos anteriores que están en alumno_cursos.
+             * alumno_cursos NO es la fuente primaria; es únicamente para asignaciones
+             * extracurriculares de ciclos distintos al propio del alumno.
              */
+            // Base: todos los cursos del ciclo propio (ya cargados vía eager load)
+            $cursosBase = $alumno->ciclo ? $alumno->ciclo->cursos : collect();
+
+            // Extras: cursos de OTROS ciclos asignados para el período actual
+            $cursosExtra = collect();
             if ($periodoActual) {
-                $cursosActuales = $alumno->cursosDelPeriodo($periodoActual->id)
-                    ->with('ciclo', 'relacionsilabo')
-                    ->get();
-            } else {
-                $cursosActuales = collect();
+                $cursosExtra = $alumno->cursosDelPeriodo($periodoActual->id)
+                    ->get()
+                    ->filter(fn ($c) => $c->ciclo_id !== $alumno->ciclo_id);
             }
 
+            // Unión sin duplicados
+            $cursosDelAlumno = $cursosBase->merge($cursosExtra)->unique('id')->values();
+
             return view('alumnos.vistasAlumnos.index', compact(
-                'alumno', 'usuario', 'periodoActual', 'yaMatriculado', 'cursosActuales'
+                'alumno', 'usuario', 'periodoActual', 'yaMatriculado', 'cursosDelAlumno'
             ));
         } else {
             return view('alumnos.vistasAlumnos.index');
@@ -485,22 +491,25 @@ class AlumnoController extends Controller
             return optional($p->periodoActual)->nombre ?? 'Sin periodo';
         })->sortKeys();
 
-        // Si además quieres los parciales actuales como en tu otra vista:
-        $periodoUno = $alumno->ciclo->cursos->flatMap(function ($curso) use ($alumno) {
-            return $curso->periodos()->where('alumno_id', $alumno->id)->get();
-        });
+        /*
+         * Cursos para "Período actual":
+         *   PRIMARIO → ciclo->cursos (todos los cursos del ciclo propio)
+         *   EXTRAS   → alumno_cursos del período actual de OTRO ciclo
+         */
+        $periodoActual = PeriodoActual::where('actual', true)->first();
 
-        $periodoDos = $alumno->ciclo->cursos->flatMap(function ($curso) use ($alumno) {
-            return $curso->periododos()->where('alumno_id', $alumno->id)->get();
-        });
-
-        $periodoTres = $alumno->ciclo->cursos->flatMap(function ($curso) use ($alumno) {
-            return $curso->periodotres()->where('alumno_id', $alumno->id)->get();
-        });
+        $cursosBase  = $alumno->ciclo ? $alumno->ciclo->cursos : collect();
+        $cursosExtra = collect();
+        if ($periodoActual) {
+            $cursosExtra = $alumno->cursosDelPeriodo($periodoActual->id)
+                ->get()
+                ->filter(fn ($c) => $c->ciclo_id !== $alumno->ciclo_id);
+        }
+        $cursosDelAlumno = $cursosBase->merge($cursosExtra)->unique('id')->values();
 
         return view(
             'alumnos.vistasAlumnos.calificaciones',
-            compact('alumno', 'periodoUno', 'periodoDos', 'periodoTres', 'periodosAgrupados')
+            compact('alumno', 'periodosAgrupados', 'cursosDelAlumno')
         );
     }
 
