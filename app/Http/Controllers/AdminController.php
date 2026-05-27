@@ -30,27 +30,39 @@ class AdminController extends Controller
 
     public function index()
     {
-        $alumno = auth()->user()->alumno;
+        $alumno = auth()->user()?->alumno;
         $admins = User::all();
         $totalAlumnos = User::whereHas('roles', function ($query) {
             $query->where('name', 'alumno');
         })->count();
 
-        //Conteos
-        $totalRecords = User::count();
-        $conteoDocentes = User::role('docente')->count();
-        $conteoAlumnos = User::role('alumno')->count();
-        $conteoPpd = User::role('alumnoB')->count();
-        $conteoAdmin = User::role('admin')->count();
+        // Conteos
+        $totalRecords        = User::count();
+        $conteoDocentes      = User::role('docente')->count();
+        $conteoAlumnos       = User::role('alumno')->count();
+        $conteoPpd           = User::role('alumnoB')->count();
+        $conteoAdmin         = User::role('admin')->count();
+        $conteoSuperAdmin    = User::role('super-admin')->count();
         $conteoInhabilitados = User::role('inhabilitado')->count();
-        $conteoTutores = User::role('tutor')->count();
+        $conteoTutores       = User::role('tutor')->count();
         $alumnosConBeca = User::where('beca', 1)
             ->whereHas('roles', function ($query) {
                 $query->where('name', 'alumno');
             })
             ->count();
 
-        return view('admin.index', compact('alumno', 'admins', 'totalAlumnos', 'totalRecords', 'alumnosConBeca', 'conteoDocentes', 'conteoAdmin', 'conteoInhabilitados', 'conteoAlumnos', 'conteoPpd', 'conteoTutores'));
+        $data = compact(
+            'alumno', 'admins', 'totalAlumnos', 'totalRecords', 'alumnosConBeca',
+            'conteoDocentes', 'conteoAdmin', 'conteoSuperAdmin', 'conteoInhabilitados',
+            'conteoAlumnos', 'conteoPpd', 'conteoTutores'
+        );
+
+        // Super-admin usa layout y vista propios (sin conflicto con admin)
+        if (auth()->user()?->hasRole('super-admin')) {
+            return view('superadmin.dashboard', $data);
+        }
+
+        return view('admin.index', $data);
     }
 
     public function alumnos(Request $request)
@@ -366,7 +378,7 @@ class AdminController extends Controller
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:7|confirmed',
             'roles' => 'required|array|min:1',
-            'roles.*' => 'string|in:admin,docente,alumno,adminB,alumnoB,inhabilitado,tutor',
+            'roles.*' => 'string|in:super-admin,admin,docente,alumno,adminB,alumnoB,inhabilitado,tutor',
             'programa_id' => [\Illuminate\Validation\Rule::requiredIf(fn () => !empty(array_intersect($request->input('roles', []), ['alumno', 'alumnoB']))), 'nullable', 'exists:programas,id'],
             'ciclo_id' => [\Illuminate\Validation\Rule::requiredIf(fn () => !empty(array_intersect($request->input('roles', []), ['alumno', 'alumnoB']))), 'nullable', 'exists:ciclos,id'],
         ]);
@@ -420,7 +432,7 @@ class AdminController extends Controller
             'email' => 'required|email|unique:users,email,'.$id,
             'password' => 'nullable|string|min:7|confirmed',
             'roles' => 'required|array|min:1',
-            'roles.*' => 'string|in:admin,docente,alumno,adminB,alumnoB,inhabilitado,tutor',
+            'roles.*' => 'string|in:super-admin,admin,docente,alumno,adminB,alumnoB,inhabilitado,tutor',
             'programa_id' => [\Illuminate\Validation\Rule::requiredIf(fn () => !empty(array_intersect($request->input('roles', []), ['alumno', 'alumnoB']))), 'nullable', 'exists:programas,id'],
             'ciclo_id' => [\Illuminate\Validation\Rule::requiredIf(fn () => !empty(array_intersect($request->input('roles', []), ['alumno', 'alumnoB']))), 'nullable', 'exists:ciclos,id'],
             'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',

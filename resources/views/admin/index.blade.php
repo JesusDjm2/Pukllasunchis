@@ -4,24 +4,29 @@
         .curso-item {
             transition: background-color 0.3s ease;
         }
-
         .curso-item:hover {
             background-color: #e7e7e7;
         }
-
         .becado {
             background-color: #e6f4ea;
-            /* Verde suave */
         }
     </style>
     <div class="container-fluid bg-white pt-2">
+        {{-- Encabezado exclusivo para rol admin (super-admin tiene su propio dashboard) --}}
         @role('admin')
             <div class="d-sm-flex align-items-center justify-content-between mb-4">
-                <h3 class="mb-0 text-primary font-weight-bold"> Registros: {{ $totalRecords }} </h3>
-                <p class="text-info">Becas: <strong>{{ $alumnosConBeca }} - <small
-                            class="font-weight-bold">({{ round(($alumnosConBeca / $totalAlumnos) * 100, 1) }}%)</small></strong>
+                <h3 class="mb-0 text-primary font-weight-bold">Registros: {{ $totalRecords }}</h3>
+                <p class="text-info mb-0">
+                    Becas: <strong>{{ $alumnosConBeca }}
+                        @if($totalAlumnos > 0)
+                            <small class="font-weight-bold">
+                                ({{ round(($alumnosConBeca / $totalAlumnos) * 100, 1) }}%)
+                            </small>
+                        @endif
+                    </strong>
                 </p>
-                <a href="{{ route('registerAdmin') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+                <a href="{{ route('registerAdmin') }}"
+                   class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
                     Nuevo Registro <i class="fa fa-plus fa-sm"></i>
                 </a>
             </div>
@@ -31,17 +36,14 @@
                 style="border-bottom: 1px dashed #80808078">
                 <h3 class="mb-2 text-gray-800">Ficha Técnica: </h3>
                 @if (auth()->user()->alumno)
-                    {{-- <a href="{{ route('ficha-matricula', ['alumno' => $alumno->id]) }}" class="btn btn-sm btn-info">Descargar ficha de matricula.</a> --}}
                     <span>
                         <a href="{{ route('alumnos.edit', ['alumno' => $alumno->id]) }}"
-                            class="btn btn-sm btn-primary">Actualizar
-                            Matricula
-                        </a>
+                            class="btn btn-sm btn-primary">Actualizar Matricula</a>
                     </span>
                 @endif
             </div>
         @endrole
-        @role('admin')
+        @hasanyrole('admin|super-admin')
             <div class="row">
                 <div class="col-12">
                     @if (Session::has('success'))
@@ -75,39 +77,23 @@
                             </button>
                             <button class="btn btn-warning btn-sm" onclick="mostrarTabla('alumnos')">Administradores
                                 <small>{{ $conteoAdmin }}</small></button>
+                            <button class="btn btn-dark btn-sm" onclick="mostrarTabla('superadmins')">Super Admins</button>
                             <button class="btn btn-success btn-sm" onclick="mostrarTabla('adminsB')">Admins Bolsa</button>
                             <button class="btn btn-dark btn-sm" onclick="mostrarTabla('tutores')">Tutores
                                 <small>{{ $conteoTutores }}</small></button>
                         </div>
                         <div class="col-lg-6 mb-3" style="float: right">
-                            <input type="text" id="search-box"0 class="form-control" placeholder="Buscar Alumnos">
+                            <input type="text" id="search-box" class="form-control" placeholder="Buscar Alumnos">
                         </div>
                     </div>
                     <div class="table-responsive">
                         <table id="admins-table" class="table table-hover table-sortable">
                             <thead class="thead-dark">
                                 <tr>
-                                    <th>Nombre
-                                        <button class="arrow-icon btn btn-link" data-column="1">
-                                            <span class="fa fa-caret-up text-white" style="font-size: 12px"></span>
-                                        </button>
-                                    </th>
-                                    <th>Editar Cursos
-                                        <button class="arrow-icon btn btn-link sort-btn" data-column="2">
-                                            <span class="fa fa-caret-up text-white" style="font-size: 12px"></span>
-                                        </button>
-                                    </th>
-
-                                    <th>Foto
-                                        <button class="arrow-icon btn btn-link sort-btn" data-column="3">
-                                            <span class="fa fa-caret-up text-white" style="font-size: 12px"></span>
-                                        </button>
-                                    </th>
-                                    <th width="30%">Cursos pendientes
-                                        <button class="arrow-icon btn btn-link sort-btn" data-column="2">
-                                            <span class="fa fa-caret-up text-white" style="font-size: 12px"></span>
-                                        </button>
-                                    </th>
+                                    <th>Nombre</th>
+                                    <th>Editar Cursos</th>
+                                    <th>Foto</th>
+                                    <th width="30%">Cursos pendientes</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -116,75 +102,38 @@
                                     @if ($admin->hasRole('alumno'))
                                         <tr class="alumno-row {{ $admin->beca == 1 ? 'becado' : '' }}">
                                             <td>
-                                                <span class="font-weight-bold">{{ $admin->apellidos }},
-                                                    {{ $admin->name }}</span>
+                                                <span class="font-weight-bold">{{ $admin->apellidos }}, {{ $admin->name }}</span>
                                                 <ul>
-                                                    <li>Beca:
-                                                        @if ($admin->beca == 1)
-                                                            Sí
-                                                        @else
-                                                            No
-                                                        @endif
-                                                    </li>
+                                                    <li>Beca: @if ($admin->beca == 1) Sí @else No @endif</li>
                                                     <li>Correo: {{ $admin->email }}</li>
-                                                    <li>{{ optional($admin->programa)->nombre ?? 'N/A' }} -
-                                                        Ciclo {{ optional($admin->ciclo)->nombre ?? 'N/A' }}
-                                                    </li>
+                                                    <li>{{ optional($admin->programa)->nombre ?? 'N/A' }} - Ciclo {{ optional($admin->ciclo)->nombre ?? 'N/A' }}</li>
                                                     <li>DNI: {{ $admin->dni }}</li>
-                                                    {{-- <li>Número: {{ $admin->alumno?->numero ?? 'No tiene número asignado' }} | </li> --}}
-                                                    <li>
-                                                        Número: {{ $admin->alumno?->numero ?? 'No tiene número asignado' }} |
-                                                        Referencia:
-                                                        {{ $admin->alumno?->numero_referencia ?? 'No tiene referencia' }}
-                                                    </li>
+                                                    <li>Número: {{ $admin->alumno?->numero ?? 'No tiene número asignado' }} | Referencia: {{ $admin->alumno?->numero_referencia ?? 'No tiene referencia' }}</li>
                                                     <li>ID: {{ $admin->id }}</li>
                                                 </ul>
                                             </td>
-
-                                            <td>
-                                                <a href="{{ route('asignar.cursos', ['id' => $admin->id]) }}"
-                                                    class="btn btn-primary btn-sm"><i class="fa fa-books"></i> Asignar
-                                                    Cursos</a>
-                                            </td>
+                                            <td><a href="{{ route('asignar.cursos', ['id' => $admin->id]) }}" class="btn btn-primary btn-sm"><i class="fa fa-books"></i> Asignar Cursos</a></td>
                                             <td>
                                                 @if ($admin->foto)
-                                                    <img src="{{ asset('img/estudiantes/' . $admin->foto) }}"
-                                                        alt="Foto de {{ $admin->nombre }}" loading="lazy" class="img-fluid"
-                                                        style="width: 40px; height: 40px; border-radius: 50%; cursor: pointer;"
-                                                        onclick="openModal('{{ asset('img/estudiantes/' . $admin->foto) }}')"
-                                                        oncontextmenu="return false;">
+                                                    <img src="{{ asset('img/estudiantes/' . $admin->foto) }}" alt="Foto" loading="lazy" class="img-fluid" style="width: 40px; height: 40px; border-radius: 50%;">
                                                 @else
                                                     <span class="text-muted">Sin foto</span>
                                                 @endif
                                             </td>
                                             <td>
-                                                @php
-                                                    $cursos = array_map('trim', explode(',', $admin->pendiente ?? ''));
-                                                @endphp
-
+                                                @php $cursos = array_map('trim', explode(',', $admin->pendiente ?? '')); @endphp
                                                 @if (!empty($cursos[0]))
                                                     <ol class="mb-0" style="padding-left:4px">
-                                                        @foreach ($cursos as $curso)
-                                                            <li>{{ $curso }}</li>
-                                                        @endforeach
+                                                        @foreach ($cursos as $curso) <li>{{ $curso }}</li> @endforeach
                                                     </ol>
                                                 @else
                                                     Sin cursos pendientes
                                                 @endif
                                             </td>
                                             <td>
-                                                <a href="{{ route('adminEdit', ['id' => $admin->id]) }}"
-                                                    class="btn btn-info btn-sm" title="Editar"><i class="fa fa-pen"></i></a>
-                                                <a onclick="confirmarEliminacion('{{ route('adminDestroy', ['id' => $admin->id]) }}')"
-                                                    class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></a>
+                                                <a href="{{ route('adminEdit', ['id' => $admin->id]) }}" class="btn btn-info btn-sm" title="Editar"><i class="fa fa-pen"></i></a>
+                                                <a onclick="confirmarEliminacion('{{ route('adminDestroy', ['id' => $admin->id]) }}')" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></a>
                                             </td>
-                                            <script>
-                                                function confirmarEliminacion(url) {
-                                                    if (confirm('¿Estás seguro de que deseas eliminar este administrador?')) {
-                                                        window.location.href = url;
-                                                    }
-                                                }
-                                            </script>
                                         </tr>
                                     @endif
                                 @endforeach
@@ -195,31 +144,11 @@
                         <table id="alumnosppd" class="table table-hover table-sortable" style="display: none">
                             <thead class="thead-dark">
                                 <tr>
-                                    <th>Nombres ppd
-                                        <button class="arrow-icon btn btn-link" data-column="1">
-                                            <span class="fa fa-caret-up text-white" style="font-size: 12px"></span>
-                                        </button>
-                                    </th>
-                                    <th>Correo
-                                        <button class="arrow-icon btn btn-link sort-btn" data-column="2">
-                                            <span class="fa fa-caret-up text-white" style="font-size: 12px"></span>
-                                        </button>
-                                    </th>
-                                    <th>Programa
-                                        <button class="arrow-icon btn btn-link sort-btn" data-column="3">
-                                            <span class="fa fa-caret-up text-white" style="font-size: 12px"></span>
-                                        </button>
-                                    </th>
-                                    <th>Ciclo
-                                        <button class="arrow-icon btn btn-link sort-btn" data-column="4">
-                                            <span class="fa fa-caret-up text-white" style="font-size: 12px"></span>
-                                        </button>
-                                    </th>
-                                    <th>DNI
-                                        <button class="arrow-icon btn btn-link sort-btn" data-column="6">
-                                            <span class="fa fa-caret-up text-white" style="font-size: 12px"></span>
-                                        </button>
-                                    </th>
+                                    <th>Nombres ppd</th>
+                                    <th>Correo</th>
+                                    <th>Programa</th>
+                                    <th>Ciclo</th>
+                                    <th>DNI</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -231,66 +160,65 @@
                                             <td>{{ $admin->email }}</td>
                                             <td>{{ optional($admin->programa)->nombre ?? 'N/A' }}</td>
                                             <td style="font-family: serif">{{ optional($admin->ciclo)->nombre ?? 'N/A' }}</td>
-                                            {{-- <td>@if ($admin->beca == 1)
-                                                Sí
-                                            @else
-                                                No
-                                            @endif</td> --}}
                                             <td>{{ $admin->dni }}</td>
                                             <td>
-                                                <a href="{{ route('adminEdit', ['id' => $admin->id]) }}"
-                                                    class="btn btn-info btn-sm" title="Editar"><i class="fa fa-pen"></i></a>
-                                                <a onclick="confirmarEliminacion('{{ route('adminDestroy', ['id' => $admin->id]) }}')"
-                                                    class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></a>
+                                                <a href="{{ route('adminEdit', ['id' => $admin->id]) }}" class="btn btn-info btn-sm" title="Editar"><i class="fa fa-pen"></i></a>
+                                                <a onclick="confirmarEliminacion('{{ route('adminDestroy', ['id' => $admin->id]) }}')" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></a>
                                             </td>
-                                            <script>
-                                                function confirmarEliminacion(url) {
-                                                    if (confirm('¿Estás seguro de que deseas eliminar este administrador?')) {
-                                                        window.location.href = url;
-                                                    }
-                                                }
-                                            </script>
                                         </tr>
                                     @endif
                                 @endforeach
                             </tbody>
                         </table>
                     </div>
-                    <table id="alumnos-table" class="table" style="display: none">
-                        <thead class="thead-dark">
-                            <tr>
-                                <th>#</th>
-                                <th>Nombre</th>
-                                <th>Correo</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($admins as $key => $admin)
-                                @if ($admin->hasRole('admin'))
-                                    <tr>
-                                        <td>{{ $key + 1 }}</td>
-                                        <td>{{ $admin->name }} {{ $admin->apellidos }}</td>
-                                        <td>{{ $admin->email }}</td>
-                                        <td>
-                                            <a href="{{ route('adminEdit', ['id' => $admin->id]) }}"
-                                                class="btn btn-info btn-sm"><i class="fa fa-pen"></i></a>
-                                            <a href="{{ route('adminDestroy', ['id' => $admin->id]) }}"
-                                                class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></a>
-                                        </td>
-                                    </tr>
-                                @endif
-                            @endforeach
-                        </tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table id="alumnos-table" class="table" style="display: none">
+                            <thead class="thead-dark">
+                                <tr><th>#</th><th>Nombre</th><th>Correo</th><th>Acciones</th></tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($admins as $key => $admin)
+                                    @if ($admin->hasRole('admin'))
+                                        <tr>
+                                            <td>{{ $key + 1 }}</td>
+                                            <td>{{ $admin->name }} {{ $admin->apellidos }}</td>
+                                            <td>{{ $admin->email }}</td>
+                                            <td>
+                                                <a href="{{ route('adminEdit', ['id' => $admin->id]) }}" class="btn btn-info btn-sm"><i class="fa fa-pen"></i></a>
+                                                <a href="{{ route('adminDestroy', ['id' => $admin->id]) }}" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></a>
+                                            </td>
+                                        </tr>
+                                    @endif
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="table-responsive">
+                        <table id="superadmins-table" class="table" style="display: none">
+                            <thead class="thead-dark">
+                                <tr><th>#</th><th>Nombre</th><th>Correo</th><th>Acciones</th></tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($admins as $key => $admin)
+                                    @if ($admin->hasRole('super-admin'))
+                                        <tr>
+                                            <td>{{ $key + 1 }}</td>
+                                            <td>{{ $admin->name }} {{ $admin->apellidos }} <span class="badge badge-warning ml-1">Super Admin</span></td>
+                                            <td>{{ $admin->email }}</td>
+                                            <td>
+                                                <a href="{{ route('adminEdit', ['id' => $admin->id]) }}" class="btn btn-info btn-sm"><i class="fa fa-pen"></i></a>
+                                                <a href="{{ route('adminDestroy', ['id' => $admin->id]) }}" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></a>
+                                            </td>
+                                        </tr>
+                                    @endif
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                     <div class="table-responsive">
                         <table id="adminsB-table" class="table" style="display: none">
                             <thead class="thead-dark">
-                                <tr>
-                                    <th>Nombre</th>
-                                    <th>Correo</th>
-                                    <th>Acciones</th>
-                                </tr>
+                                <tr><th>Nombre</th><th>Correo</th><th>Acciones</th></tr>
                             </thead>
                             <tbody>
                                 @foreach ($admins as $key => $admin)
@@ -299,13 +227,8 @@
                                             <td>{{ $admin->name }} {{ $admin->apellidos }}</td>
                                             <td>{{ $admin->email }}</td>
                                             <td>
-                                                <a href="{{ route('adminEdit', ['id' => $admin->id]) }}"
-                                                    class="btn btn-info btn-sm"><i class="fa fa-pen"></i></a>
-                                                <a href="#" class="btn btn-danger btn-sm" data-toggle="modal"
-                                                    data-target="#confirmDeleteModal"
-                                                    data-href="{{ route('adminDestroy', ['id' => $admin->id]) }}">
-                                                    <i class="fa fa-trash"></i>
-                                                </a>
+                                                <a href="{{ route('adminEdit', ['id' => $admin->id]) }}" class="btn btn-info btn-sm"><i class="fa fa-pen"></i></a>
+                                                <a href="#" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#confirmDeleteModal" data-href="{{ route('adminDestroy', ['id' => $admin->id]) }}"><i class="fa fa-trash"></i></a>
                                             </td>
                                         </tr>
                                     @endif
@@ -316,51 +239,21 @@
                     <div class="table-responsive">
                         <table class="table table-hover" id="docentes-table" style="display:none">
                             <thead class="thead-dark">
-                                <tr>
-                                    <th>#</th>
-                                    <th>Nombre</th>
-                                    <th>Correo</th>
-                                    <th>DNI</th>
-                                    <th>Acciones</th>
-                                </tr>
+                                <tr><th>#</th><th>Nombre</th><th>Correo</th><th>DNI</th><th>Acciones</th></tr>
                             </thead>
                             <tbody>
-                                @php
-                                    $docenteCount = 0;
-                                @endphp
+                                @php $docenteCount = 0; @endphp
                                 @foreach ($admins as $admin)
                                     @if ($admin->hasRole('docente'))
-                                        @php
-                                            $docenteCount++;
-                                        @endphp
+                                        @php $docenteCount++; @endphp
                                         <tr>
                                             <td>{{ $docenteCount }}</td>
                                             <td>{{ $admin->name }} {{ $admin->apellidos }}</td>
                                             <td>{{ $admin->email }}</td>
                                             <td>{{ $admin->dni }}</td>
-                                            {{-- <td>
-                                                <a href="{{ route('asignar', ['id' => $admin->id]) }}"
-                                                    class="btn btn-success btn-sm" title="Asignar Curso"><i
-                                                        class="fa fa-plus fa-sm"></i>
-                                                </a>
-                                                <a href="{{ route('editcursosasignados', ['id' => $admin->id]) }}"
-                                                    class="btn btn-warning btn-sm" title="Editar Cursos Asignados">
-                                                    <i class="fa fa-edit"></i>
-                                                </a>
-                                            </td> --}}
                                             <td>
-                                                <a href="{{ route('adminEdit', ['id' => $admin->id]) }}"
-                                                    class="btn btn-info btn-sm" title="Editar Docente">
-                                                    <i class="fa fa-edit"></i> <i class="fa fa-user"></i>
-                                                </a>
-                                                {{-- <a href="{{ route('adminDestroy', ['id' => $admin->id]) }}"
-                                                    class="btn btn-danger btn-sm"><i class="fa fa-trash"></i>
-                                                </a> --}}
-                                                <a href="#" class="btn btn-danger btn-sm" data-toggle="modal"
-                                                    data-target="#confirmDeleteModal"
-                                                    data-href="{{ route('adminDestroy', ['id' => $admin->id]) }}">
-                                                    <i class="fa fa-trash"></i>
-                                                </a>
+                                                <a href="{{ route('adminEdit', ['id' => $admin->id]) }}" class="btn btn-info btn-sm" title="Editar Docente"><i class="fa fa-edit"></i> <i class="fa fa-user"></i></a>
+                                                <a href="#" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#confirmDeleteModal" data-href="{{ route('adminDestroy', ['id' => $admin->id]) }}"><i class="fa fa-trash"></i></a>
                                             </td>
                                         </tr>
                                     @endif
@@ -371,13 +264,7 @@
                     <div class="table-responsive">
                         <table class="table table-hover" id="tutores-table" style="display: none">
                             <thead class="thead-dark">
-                                <tr>
-                                    <th>#</th>
-                                    <th>Nombre</th>
-                                    <th>Correo</th>
-                                    <th>DNI</th>
-                                    <th>Acciones</th>
-                                </tr>
+                                <tr><th>#</th><th>Nombre</th><th>Correo</th><th>DNI</th><th>Acciones</th></tr>
                             </thead>
                             <tbody>
                                 @php $tutorCount = 0; @endphp
@@ -390,17 +277,9 @@
                                             <td>{{ $admin->email }}</td>
                                             <td>{{ $admin->dni }}</td>
                                             <td>
-                                                <a href="{{ route('adminEdit', ['id' => $admin->id]) }}"
-                                                    class="btn btn-info btn-sm" title="Editar"><i class="fa fa-pen"></i></a>
-                                                <a href="{{ route('admin.tutor.ciclos', $admin->id) }}"
-                                                    class="btn btn-success btn-sm" title="Asignar ciclos">
-                                                    <i class="fas fa-layer-group"></i>
-                                                </a>
-                                                <a href="#" class="btn btn-danger btn-sm" data-toggle="modal"
-                                                    data-target="#confirmDeleteModal"
-                                                    data-href="{{ route('adminDestroy', ['id' => $admin->id]) }}">
-                                                    <i class="fa fa-trash"></i>
-                                                </a>
+                                                <a href="{{ route('adminEdit', ['id' => $admin->id]) }}" class="btn btn-info btn-sm" title="Editar"><i class="fa fa-pen"></i></a>
+                                                <a href="{{ route('admin.tutor.ciclos', $admin->id) }}" class="btn btn-success btn-sm" title="Asignar ciclos"><i class="fas fa-layer-group"></i></a>
+                                                <a href="#" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#confirmDeleteModal" data-href="{{ route('adminDestroy', ['id' => $admin->id]) }}"><i class="fa fa-trash"></i></a>
                                             </td>
                                         </tr>
                                     @endif
@@ -411,78 +290,45 @@
                     <div class="table-responsive">
                         <table class="table table-hover" id="inhabilitado-table" style="display: none">
                             <thead class="thead-dark">
-                                <tr>
-                                    <th>Nombre</th>
-                                    <th>Editar Cursos</th>
-                                    <th>Foto</th>
-                                    <th width="30%">Cursos pendientes</th>
-                                    <th>Acciones</th>
-                                </tr>
+                                <tr><th>Nombre</th><th>Editar Cursos</th><th>Foto</th><th width="30%">Cursos pendientes</th><th>Acciones</th></tr>
                             </thead>
                             <tbody>
                                 @foreach ($admins as $admin)
                                     @if ($admin->hasRole('inhabilitado'))
                                         <tr class="alumno-row {{ $admin->beca == 1 ? 'becado' : '' }}">
                                             <td>
-                                                <span class="font-weight-bold">{{ $admin->apellidos }},
-                                                    {{ $admin->name }}</span>
+                                                <span class="font-weight-bold">{{ $admin->apellidos }}, {{ $admin->name }}</span>
                                                 <ul>
-                                                    <li>Beca:
-                                                        @if ($admin->beca == 1)
-                                                            Sí
-                                                        @else
-                                                            No
-                                                        @endif
-                                                    </li>
+                                                    <li>Beca: @if ($admin->beca == 1) Sí @else No @endif</li>
                                                     <li>Correo: {{ $admin->email }}</li>
-                                                    <li>{{ optional($admin->programa)->nombre ?? 'N/A' }} -
-                                                        Ciclo {{ optional($admin->ciclo)->nombre ?? 'N/A' }}</li>
+                                                    <li>{{ optional($admin->programa)->nombre ?? 'N/A' }} - Ciclo {{ optional($admin->ciclo)->nombre ?? 'N/A' }}</li>
                                                     <li>DNI: {{ $admin->dni }}</li>
-                                                    <li>
-                                                        Número: {{ $admin->alumno?->numero ?? 'No tiene número asignado' }} |
-                                                        Referencia:
-                                                        {{ $admin->alumno?->numero_referencia ?? 'No tiene referencia' }}
-                                                    </li>
+                                                    <li>Número: {{ $admin->alumno?->numero ?? 'No tiene número asignado' }} | Referencia: {{ $admin->alumno?->numero_referencia ?? 'No tiene referencia' }}</li>
                                                     <li>ID: {{ $admin->id }}</li>
                                                     <li>Inhabilitado por: {{ $admin->perfil }}</li>
                                                 </ul>
                                             </td>
-                                            <td>
-                                                <a href="{{ route('asignar.cursos', ['id' => $admin->id]) }}"
-                                                    class="btn btn-primary btn-sm"><i class="fa fa-books"></i> Asignar
-                                                    Cursos</a>
-                                            </td>
+                                            <td><a href="{{ route('asignar.cursos', ['id' => $admin->id]) }}" class="btn btn-primary btn-sm"><i class="fa fa-books"></i> Asignar Cursos</a></td>
                                             <td>
                                                 @if ($admin->foto)
-                                                    <img src="{{ asset('img/estudiantes/' . $admin->foto) }}"
-                                                        alt="Foto de {{ $admin->nombre }}" loading="lazy" class="img-fluid"
-                                                        style="width: 40px; height: 40px; border-radius: 50%; cursor: pointer;"
-                                                        onclick="openModal('{{ asset('img/estudiantes/' . $admin->foto) }}')"
-                                                        oncontextmenu="return false;">
+                                                    <img src="{{ asset('img/estudiantes/' . $admin->foto) }}" alt="Foto" loading="lazy" class="img-fluid" style="width: 40px; height: 40px; border-radius: 50%;">
                                                 @else
                                                     <span class="text-muted">Sin foto</span>
                                                 @endif
                                             </td>
                                             <td>
-                                                @php
-                                                    $cursos = array_map('trim', explode(',', $admin->pendiente ?? ''));
-                                                @endphp
-
+                                                @php $cursos = array_map('trim', explode(',', $admin->pendiente ?? '')); @endphp
                                                 @if (!empty($cursos[0]))
                                                     <ol class="mb-0" style="padding-left:4px">
-                                                        @foreach ($cursos as $curso)
-                                                            <li>{{ $curso }}</li>
-                                                        @endforeach
+                                                        @foreach ($cursos as $curso) <li>{{ $curso }}</li> @endforeach
                                                     </ol>
                                                 @else
                                                     Sin cursos pendientes
                                                 @endif
                                             </td>
                                             <td>
-                                                <a href="{{ route('adminEdit', ['id' => $admin->id]) }}"
-                                                    class="btn btn-info btn-sm" title="Editar"><i class="fa fa-pen"></i></a>
-                                                <a onclick="confirmarEliminacion('{{ route('adminDestroy', ['id' => $admin->id]) }}')"
-                                                    class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></a>
+                                                <a href="{{ route('adminEdit', ['id' => $admin->id]) }}" class="btn btn-info btn-sm" title="Editar"><i class="fa fa-pen"></i></a>
+                                                <a onclick="confirmarEliminacion('{{ route('adminDestroy', ['id' => $admin->id]) }}')" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></a>
                                             </td>
                                         </tr>
                                     @endif
@@ -492,23 +338,17 @@
                     </div>
                 </div>
             </div>
-        @endrole
+        @endhasanyrole
     </div>
 
-    <!-- Modal de Confirmación -->
-    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog"
-        aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar Eliminación</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 </div>
-                <div class="modal-body">
-                    ¿Estás seguro de que deseas eliminar este administrador?
-                </div>
+                <div class="modal-body">¿Estás seguro de que deseas eliminar este administrador?</div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                     <a id="confirm-delete" class="btn btn-danger" href="#">Eliminar</a>
@@ -516,18 +356,16 @@
             </div>
         </div>
     </div>
+
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script>
         $('#confirmDeleteModal').on('show.bs.modal', function(e) {
-            var button = $(e.relatedTarget); // Botón que activó el modal
-            var url = button.data('href'); // Obtiene la URL del atributo data-href
+            var button = $(e.relatedTarget);
+            var url = button.data('href');
             var modal = $(this);
-            modal.find('#confirm-delete').attr('href', url); // Configura el enlace de eliminación
+            modal.find('#confirm-delete').attr('href', url);
         });
-    </script>
-    
 
-    <script>
         document.addEventListener('DOMContentLoaded', function() {
             const searchBox = document.getElementById('search-box');
             const tables = document.querySelectorAll('.table');
@@ -546,10 +384,8 @@
                 });
             });
         });
-    </script>
 
-    <script>
-        const allTables = ['admins-table', 'alumnos-table', 'alumnosppd', 'adminsB-table', 'docentes-table', 'inhabilitado-table', 'tutores-table'];
+        const allTables = ['admins-table', 'alumnos-table', 'alumnosppd', 'adminsB-table', 'docentes-table', 'inhabilitado-table', 'tutores-table', 'superadmins-table'];
 
         function mostrarTabla(tipo) {
             allTables.forEach(id => document.getElementById(id).style.display = 'none');
@@ -561,6 +397,7 @@
                 docentes: 'docentes-table',
                 inhabilitados: 'inhabilitado-table',
                 tutores: 'tutores-table',
+                superadmins: 'superadmins-table',
             };
             if (map[tipo]) document.getElementById(map[tipo]).style.display = 'table';
         }

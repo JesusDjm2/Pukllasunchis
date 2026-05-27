@@ -24,8 +24,10 @@
         <div id="preloader">
             <div class="loader"></div>
         </div>
-        @hasanyrole('admin|docente|adminB|tutor')
-        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+        @hasanyrole('super-admin|admin|docente|adminB|tutor')
+        <ul class="navbar-nav sidebar sidebar-dark accordion
+            @role('super-admin') bg-gradient-superadmin @else bg-gradient-primary @endrole"
+            id="accordionSidebar">
             {{-- Logo --}}
             <div class="sidebar-brand d-flex align-items-center justify-content-center">
                 <div class="sidebar-brand-icon">
@@ -35,11 +37,17 @@
             </div>
 
             {{-- ══════════ SECCIÓN ADMIN ══════════ --}}
-            @role('admin')
+            @hasanyrole('super-admin|admin')
             <hr class="sidebar-divider sidebar-logo-divider">
+            @role('super-admin')
+            <div class="sidebar-heading" style="font-size:.65rem;letter-spacing:.08em;opacity:.7;">
+                <i class="fas fa-crown fa-xs mr-1"></i> Super Administración
+            </div>
+            @else
             <div class="sidebar-heading" style="font-size:.65rem;letter-spacing:.08em;opacity:.7;">
                 <i class="fas fa-shield-alt fa-xs mr-1"></i> Administración
             </div>
+            @endrole
             <li class="nav-item">
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#sGestion">
                     <i class="fas fa-fw fa-book"></i><span>Gestión académica</span>
@@ -49,7 +57,10 @@
                         <h6 class="collapse-header">Programas y estructura:</h6>
                         <a class="collapse-item" href="{{ route('programa.index') }}">Programas</a>
                         <a class="collapse-item" href="{{ route('ciclo.index') }}">Ciclos</a>
+                        {{-- Cursos extracurriculares FID: solo Super Admin --}}
+                        @role('super-admin')
                         <a class="collapse-item" href="{{ route('curso.index') }}">Cursos</a>
+                        @endrole
                         <a class="collapse-item" href="{{ route('competencias.index') }}">Competencias</a>
                         <a class="collapse-item" href="{{ route('capacidades.index') }}">Capacidades</a>
                         <a class="collapse-item" href="{{ route('estandares.index') }}">Estándares</a>
@@ -97,8 +108,8 @@
             </li>
             @endrole
 
-            {{-- ══════════ MINK'ARIKUY (solo admin) ══════════ --}}
-            @role('admin')
+            {{-- ══════════ MINK'ARIKUY (solo super-admin) ══════════ --}}
+            @role('super-admin')
             <hr class="sidebar-divider d-none d-md-block">
             <div class="sidebar-heading" style="font-size:.65rem;letter-spacing:.08em;opacity:.7;">
                 <i class="fas fa-qrcode fa-xs mr-1"></i> Mink'arikuy
@@ -111,7 +122,7 @@
             @endrole
 
             {{-- ══════════ SECCIÓN BOLSA/COMUNICADOS (admin y/o adminB) ══════════ --}}
-            @hasanyrole('admin|adminB')
+            @hasanyrole('super-admin|admin|adminB')
             <hr class="sidebar-divider d-none d-md-block">
             <div class="sidebar-heading" style="font-size:.65rem;letter-spacing:.08em;opacity:.7;">
                 <i class="fas fa-bullhorn fa-xs mr-1"></i> Bolsa y Comunicados
@@ -272,12 +283,23 @@
                     </button>
 
                     {{-- Acceso rápido a la web pública (oculto en xs) --}}
-                    @hasanyrole('admin|adminB|tutor')
-                    <a href="{{ route('index') }}" class="font-weight-bold d-none d-sm-inline ml-1"
-                        style="font-size:.9rem; color:#1f6feb; text-decoration:none;">
-                        Ir a la página principal
-                    </a>
-                    @endhasanyrole
+                    @role('super-admin')
+                        {{-- Super Admin: botón premium con identidad visual SA --}}
+                        <a href="{{ route('index') }}"
+                           class="sa-home-btn d-none d-md-inline-flex ml-2"
+                           title="Volver a la página principal">
+                            <i class="fas fa-home fa-sm"></i>
+                            <span>Página principal</span>
+                        </a>
+                    @else
+                        @hasanyrole('admin|adminB|tutor')
+                        <a href="{{ route('index') }}"
+                           class="font-weight-bold d-none d-sm-inline ml-1"
+                           style="font-size:.9rem; color:#1f6feb; text-decoration:none;">
+                            Ir a la página principal
+                        </a>
+                        @endhasanyrole
+                    @endrole
 
                     {{-- Navegación derecha --}}
                     <ul class="navbar-nav ml-auto align-items-center">

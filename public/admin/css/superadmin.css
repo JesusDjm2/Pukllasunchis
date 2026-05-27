@@ -1,0 +1,360 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   SUPERADMIN.CSS — Layout dedicado al rol Super Admin
+   Clase: .sidebar.sidebar-sa   (no conflicta con .bg-gradient-superadmin)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Sidebar base ── */
+.sidebar.sidebar-sa {
+    background: linear-gradient(180deg,
+        #07070f 0%,
+        #0c0c1e 20%,
+        #0f0f28 50%,
+        #130b30 80%,
+        #07070f 100%) !important;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* ── Línea neón vertical (izquierda) ── */
+.sidebar.sidebar-sa::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px;
+    height: 100%;
+    background: linear-gradient(180deg,
+        transparent 0%,
+        #7c3aed 20%,
+        #06b6d4 50%,
+        #7c3aed 80%,
+        transparent 100%);
+    opacity: 0.6;
+    pointer-events: none;
+    animation: saNeonGlow 3s ease-in-out infinite;
+    z-index: 1;
+}
+
+/* ── Línea neón horizontal (arriba) ── */
+.sidebar.sidebar-sa::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        #7c3aed 15%,
+        #06b6d4 50%,
+        #7c3aed 85%,
+        transparent 100%);
+    opacity: 0.7;
+    pointer-events: none;
+    z-index: 1;
+}
+
+@keyframes saNeonGlow {
+    0%, 100% { opacity: 0.4; }
+    50%       { opacity: 0.9; }
+}
+
+@keyframes saShimmer {
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(200%); }
+}
+
+/* ── Divisores con shimmer ── */
+.sidebar.sidebar-sa hr.sidebar-divider,
+.sidebar.sidebar-sa hr.sidebar-logo-divider {
+    position: relative;
+    overflow: hidden;
+    border-top: none !important;
+    height: 1px;
+    background: rgba(124, 58, 237, 0.2) !important;
+}
+
+.sidebar.sidebar-sa hr.sidebar-divider::after,
+.sidebar.sidebar-sa hr.sidebar-logo-divider::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(6, 182, 212, 0.6) 50%,
+        transparent 100%);
+    animation: saShimmer 3.5s ease-in-out infinite;
+    pointer-events: none;
+}
+
+/* ── Logo ── */
+.sidebar.sidebar-sa .sidebar-logo-img {
+    filter: drop-shadow(0 0 10px rgba(124, 58, 237, 0.5));
+    transition: filter .3s ease;
+}
+
+.sidebar.sidebar-sa .sidebar-logo-img:hover {
+    filter: drop-shadow(0 0 18px rgba(6, 182, 212, 0.7));
+}
+
+/* ── Crown badge dentro del sidebar ── */
+.sa-crown-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    background: linear-gradient(90deg,
+        rgba(124,58,237,.25),
+        rgba(6,182,212,.2));
+    border: 1px solid rgba(124,58,237,.4);
+    color: #a78bfa;
+    font-size: .6rem;
+    font-weight: 800;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    padding: .2rem .7rem;
+    border-radius: 999px;
+    box-shadow: 0 0 10px rgba(124,58,237,.2);
+    white-space: nowrap;
+}
+
+/* ── Headings de sección ── */
+.sidebar.sidebar-sa .sidebar-heading {
+    color: #e2e8f0 !important;
+    font-family: 'Nunito', sans-serif !important;
+    letter-spacing: .12em !important;
+    font-weight: 700 !important;
+    font-size: .63rem !important;
+    text-transform: uppercase;
+    text-shadow: 0 0 10px rgba(6, 182, 212, .15);
+    border-bottom: 1px solid rgba(124, 58, 237, .2);
+    padding: .55rem 1rem .4rem !important;
+    margin-bottom: .3rem !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: .3rem !important;
+}
+
+/* ── Nav links ── */
+.sidebar.sidebar-sa .nav-item .nav-link {
+    padding: .72rem 1rem !important;
+    font-size: .855rem;
+    border-left: 2px solid transparent;
+    transition: all .2s ease;
+    color: #cbd5e1 !important;
+    font-weight: 400;
+}
+
+.sidebar.sidebar-sa .nav-item .nav-link:hover {
+    background: linear-gradient(90deg,
+        rgba(124, 58, 237, .15) 0%,
+        transparent 100%);
+    border-left-color: #06b6d4;
+    padding-left: 1.35rem !important;
+    color: #f1f5f9 !important;
+    text-shadow: 0 0 8px rgba(6, 182, 212, .25);
+}
+
+.sidebar.sidebar-sa .nav-item .nav-link.active {
+    background: linear-gradient(90deg,
+        rgba(124, 58, 237, .25) 0%,
+        transparent 100%);
+    border-left-color: #f472b6;
+    color: #fff !important;
+    text-shadow: 0 0 10px rgba(244, 114, 182, .4);
+}
+
+/* ── FLECHAS: SB Admin 2 gestiona posición/contenido/float.
+   Solo sobreescribimos el color para que sea visible en fondo oscuro.  ── */
+.sidebar.sidebar-sa .nav-item .nav-link[data-toggle="collapse"]::after {
+    color: rgba(196, 181, 253, 0.95); /* lila claro — alto contraste */
+    transition: color .25s ease;
+}
+
+.sidebar.sidebar-sa .nav-item .nav-link:not(.collapsed)[data-toggle="collapse"]::after {
+    color: #67e8f9; /* cyan claro al expandir */
+}
+
+/* ── Submenús (vidrio esmerilado) ── */
+.sidebar.sidebar-sa .collapse-inner {
+    background: rgba(12, 12, 30, .93) !important;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(124, 58, 237, .25) !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,.7),
+                inset 0 0 40px rgba(124,58,237,.05) !important;
+    border-radius: 8px;
+}
+
+.sidebar.sidebar-sa .collapse-inner .collapse-item {
+    color: rgba(200, 200, 225, .85) !important;
+    transition: all .15s ease;
+    padding: .45rem 1.2rem !important;
+    font-size: .85rem;
+    font-weight: 400;
+}
+
+.sidebar.sidebar-sa .collapse-inner .collapse-item:hover {
+    background: rgba(6, 182, 212, .08) !important;
+    color: #e0f2fe !important;
+    padding-left: 1.6rem !important;
+    text-shadow: 0 0 6px rgba(6, 182, 212, .2);
+}
+
+.sidebar.sidebar-sa .collapse-inner .collapse-item.active {
+    color: #fca5a5 !important;
+    background: rgba(244, 114, 182, .06) !important;
+}
+
+/* ── Collapse headers ── */
+.sidebar.sidebar-sa .collapse-header {
+    color: #94a3b8 !important;
+    letter-spacing: .05em;
+    font-family: 'Nunito', sans-serif;
+    font-size: .7rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase;
+    padding: .5rem 1rem .25rem !important;
+    border-bottom: 1px solid rgba(124, 58, 237, .12);
+    margin-bottom: .3rem;
+}
+
+/* ── Toggle button ── */
+.sidebar.sidebar-sa #sidebarToggle {
+    background: rgba(124, 58, 237, .25);
+    border: 1px solid rgba(124, 58, 237, .3) !important;
+    transition: all .2s ease;
+}
+
+.sidebar.sidebar-sa #sidebarToggle:hover {
+    background: rgba(124, 58, 237, .5);
+    border-color: rgba(6, 182, 212, .6) !important;
+    box-shadow: 0 0 15px rgba(6, 182, 212, .3);
+}
+
+/* ── Scrollbar ── */
+.sidebar.sidebar-sa::-webkit-scrollbar-track { background: rgba(7, 7, 15, .5); }
+.sidebar.sidebar-sa::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #7c3aed, #06b6d4);
+    border-radius: 3px;
+}
+
+/* ── Badge SUPER ADMIN en la topbar ── */
+.sa-topbar-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    background: linear-gradient(90deg, #7c3aed, #06b6d4);
+    color: #fff;
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    padding: .22rem .6rem;
+    border-radius: 999px;
+    box-shadow: 0 0 12px rgba(124, 58, 237, .35);
+    white-space: nowrap;
+    user-select: none;
+}
+
+/* ── Topbar — línea inferior degradada ── */
+.topbar-sa {
+    border-bottom: 2px solid rgba(124, 58, 237, .35) !important;
+    box-shadow: 0 3px 12px rgba(124, 58, 237, .1) !important;
+}
+
+/* Nota: .sa-home-btn definido en estilos.css (cargado en todos los layouts admin) */
+
+/* ── Sidebar toggled (solo iconos) ── */
+body.sidebar-toggled .sidebar.sidebar-sa .sidebar-logo-img {
+    max-height: 36px !important;
+    max-width: 36px !important;
+    transform: translateY(1px) scale(.92);
+    opacity: .96;
+}
+
+body.sidebar-toggled .sidebar.sidebar-sa .sidebar-heading,
+body.sidebar-toggled .sidebar.sidebar-sa hr.sidebar-logo-divider,
+body.sidebar-toggled .sidebar.sidebar-sa .sa-crown-badge {
+    display: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MODO OSCURO
+   ═══════════════════════════════════════════════════════════════════════════ */
+body.dark-mode .sidebar.sidebar-sa {
+    background: linear-gradient(180deg,
+        #030308 0%,
+        #080818 30%,
+        #0a0a24 60%,
+        #0d0820 85%,
+        #030308 100%) !important;
+}
+
+body.dark-mode .sidebar.sidebar-sa .sidebar-heading    { color: #cbd5e1 !important; }
+body.dark-mode .sidebar.sidebar-sa .nav-item .nav-link { color: #94a3b8 !important; }
+body.dark-mode .sidebar.sidebar-sa .nav-item .nav-link:hover { color: #e2e8f0 !important; }
+body.dark-mode .sidebar.sidebar-sa .collapse-inner {
+    background: rgba(3, 3, 8, .96) !important;
+    border-color: rgba(124, 58, 237, .35) !important;
+}
+body.dark-mode .sidebar.sidebar-sa .collapse-inner .collapse-item { color: rgba(180,180,200,.85) !important; }
+body.dark-mode .sidebar.sidebar-sa .collapse-inner .collapse-item:hover { color: #bae6fd !important; }
+body.dark-mode .sidebar.sidebar-sa .collapse-header { color: #94a3b8 !important; }
+body.dark-mode .topbar-sa {
+    background-color: #1e1e2e !important;
+    border-bottom-color: rgba(124, 58, 237, .5) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MODO TENUE
+   ═══════════════════════════════════════════════════════════════════════════ */
+body.dim-mode .sidebar.sidebar-sa {
+    background: linear-gradient(180deg,
+        #08081c 0%,
+        #0f0f30 30%,
+        #14143e 60%,
+        #170d38 85%,
+        #08081c 100%) !important;
+}
+body.dim-mode .sidebar.sidebar-sa::before { opacity: .35; }
+body.dim-mode .sidebar.sidebar-sa .sidebar-heading    { color: #cbd5e1 !important; }
+body.dim-mode .sidebar.sidebar-sa .nav-item .nav-link { color: #94a3b8 !important; }
+body.dim-mode .sidebar.sidebar-sa .nav-item .nav-link:hover { color: #cbd5e1 !important; }
+body.dim-mode .sidebar.sidebar-sa .collapse-inner {
+    background: rgba(10, 10, 26, .9) !important;
+    border-color: rgba(124, 58, 237, .2) !important;
+}
+body.dim-mode .sidebar.sidebar-sa .collapse-inner .collapse-item { color: rgba(180,180,210,.75) !important; }
+body.dim-mode .sidebar.sidebar-sa .collapse-inner .collapse-item:hover { color: #bae6fd !important; }
+body.dim-mode .sidebar.sidebar-sa .collapse-header { color: #94a3b8 !important; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ANCHO DESKTOP — 16rem
+   SB Admin 2 fija sidebar y nav-link a 14rem en @media(min-width:768px).
+   Con padding 1rem c/lado → 12rem útiles → icono + "Gestión académica" +
+   flecha no caben (overflow).  Aumentando a 16rem → 14rem útiles → ✓
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (min-width: 768px) {
+    .sidebar.sidebar-sa {
+        width: 18rem !important;
+        flex-shrink: 0 !important;   /* evita que flex encoja el sidebar */
+        transition: width .3s ease !important;
+    }
+    /* nav-link debe coincidir exactamente con el sidebar */
+    .sidebar.sidebar-sa .nav-item .nav-link {
+        width: 18rem !important;
+    }
+
+    /* ── TOGGLE FIX (especificidad 0,3,0 > 0,2,0) ───────────────────────────
+       Cuando el usuario hace clic en el botón de colapsar/expandir sidebar,
+       SB Admin 2 agrega .toggled al sidebar y sidebar-toggled al body.
+       Necesitamos que .sidebar.sidebar-sa.toggled (3 clases) anule nuestro
+       .sidebar.sidebar-sa (2 clases) para que el colapso funcione.
+       ──────────────────────────────────────────────────────────────────────── */
+    .sidebar.sidebar-sa.toggled {
+        width: 6.5rem !important;     /* modo icon-only — igual que SB Admin 2 */
+        overflow: visible !important; /* iconos no se recortan */
+    }
+    .sidebar.sidebar-sa.toggled .nav-item .nav-link {
+        width: 6.5rem !important;
+    }
+}

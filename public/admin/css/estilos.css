@@ -68,21 +68,14 @@
 }
 
 @keyframes spin {
-    0% {
-        transform: rotate(0deg);
-    }
-
-    100% {
-        transform: rotate(360deg);
-    }
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
    SIDEBAR — Logo, headings, nav items, toggle, responsive
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* Área del logo: anulamos la altura fija de SB-Admin-2 (4.375rem)
-   y dejamos que el logo defina su propio alto con padding controlado */
 .sidebar .sidebar-brand {
     height: auto !important;
     padding: 1.25rem .75rem 1rem !important;
@@ -90,7 +83,6 @@
     transition: padding .38s cubic-bezier(.22, 1, .36, 1);
 }
 
-/* Imagen del logo — tamaño máximo y centrada */
 .sidebar-logo-img {
     display: block;
     max-height: 80px;
@@ -108,14 +100,11 @@
         filter .36s ease;
 }
 
-/* Separador inmediatamente debajo del logo:
-   espacio extra para que el heading no quede pegado */
 hr.sidebar-logo-divider {
     margin-top: 0 !important;
     margin-bottom: .6rem !important;
 }
 
-/* Headings de sección (Administración, Bolsa, Tutor…) */
 .sidebar .sidebar-heading {
     padding: .55rem 1rem .2rem !important;
     font-size: .62rem !important;
@@ -128,7 +117,6 @@ hr.sidebar-logo-divider {
     gap: .3rem;
 }
 
-/* Nav links: altura cómoda y transición suave */
 .sidebar .nav-item .nav-link {
     padding: .72rem 1rem !important;
     font-size: .855rem;
@@ -140,12 +128,10 @@ hr.sidebar-logo-divider {
     padding-left: 1.25rem !important;
 }
 
-/* Dividers internos entre secciones */
 .sidebar .sidebar-divider {
     border-top: 1px solid rgba(255, 255, 255, .15);
 }
 
-/* Botón de colapso (flecha en el pie del sidebar) */
 #sidebarToggle {
     width: 2rem;
     height: 2rem;
@@ -157,7 +143,6 @@ hr.sidebar-logo-divider {
     background: rgba(255, 255, 255, .35);
 }
 
-/* ── Sidebar COLAPSADO (desktop: icono-only) ──────────────────────────── */
 body.sidebar-toggled .sidebar .sidebar-logo-img {
     max-height: 36px !important;
     max-width: 36px !important;
@@ -185,7 +170,6 @@ body.sidebar-toggled .sidebar hr.sidebar-logo-divider {
     height: 4.375rem;
 }
 
-/* Botón hamburguesa visible solo en móvil */
 #sidebarToggleTop {
     color: #5a5c69;
     padding: .4rem .6rem;
@@ -198,68 +182,444 @@ body.sidebar-toggled .sidebar hr.sidebar-logo-divider {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   RESPONSIVE — ajustes específicos por breakpoint
+   BOTÓN "PÁGINA PRINCIPAL" — Topbar Super Admin
+   Disponible en layouts/admin y layouts/superadmin (ambos cargan estilos.css)
+   ═══════════════════════════════════════════════════════════════════════════ */
+.sa-home-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .32rem .88rem;
+    border-radius: 999px;
+    font-size: .8rem;
+    font-weight: 700;
+    letter-spacing: .05em;
+    color: #7c3aed !important;
+    background: linear-gradient(135deg,
+        rgba(124, 58, 237, .08) 0%,
+        rgba(6, 182, 212, .06) 100%);
+    border: 1.5px solid rgba(124, 58, 237, .4);
+    text-decoration: none !important;
+    transition: color .22s ease, background .22s ease,
+                border-color .22s ease, box-shadow .22s ease,
+                transform .18s ease;
+    white-space: nowrap;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Shimmer que cruza al hacer hover */
+.sa-home-btn::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 55%;
+    height: 100%;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(255, 255, 255, .18) 50%,
+        transparent 100%);
+    transition: left .38s ease;
+    pointer-events: none;
+    z-index: 1;
+}
+.sa-home-btn:hover::before { left: 160%; }
+
+/* Estado hover / focus */
+.sa-home-btn:hover,
+.sa-home-btn:focus {
+    color: #fff !important;
+    background: linear-gradient(135deg, #7c3aed 0%, #06b6d4 100%);
+    border-color: transparent;
+    box-shadow: 0 0 16px rgba(124, 58, 237, .5),
+                0 2px 8px rgba(0, 0, 0, .12);
+    transform: translateY(-1px);
+    text-decoration: none !important;
+    outline: none;
+}
+
+/* ── Modo oscuro & tenue ── */
+body.dark-mode .sa-home-btn,
+body.dim-mode  .sa-home-btn {
+    color: #a78bfa !important;
+    background: linear-gradient(135deg,
+        rgba(124, 58, 237, .14) 0%,
+        rgba(6, 182, 212, .09) 100%);
+    border-color: rgba(124, 58, 237, .5);
+}
+
+body.dark-mode .sa-home-btn:hover,
+body.dark-mode .sa-home-btn:focus,
+body.dim-mode  .sa-home-btn:hover,
+body.dim-mode  .sa-home-btn:focus {
+    color: #fff !important;
+    background: linear-gradient(135deg, #7c3aed 0%, #06b6d4 100%);
+    border-color: transparent;
+    box-shadow: 0 0 20px rgba(124, 58, 237, .6),
+                0 0 8px  rgba(6, 182, 212, .3);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESPONSIVE
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* ── Móvil (< 768 px) ──────────────────────────────────────────────────── */
 @media (max-width: 767.98px) {
+    .sidebar { width: 14rem !important; }
+    .sidebar-logo-img { max-height: 64px; max-width: 120px; }
+    .topbar .navbar-nav { flex-direction: row; align-items: center; }
+    .topbar .topbar-divider { display: none !important; }
+    .table-responsive { -webkit-overflow-scrolling: touch; }
+    #content-wrapper { min-width: 0; }
+    .btn-group-sm > .btn, .btn-sm { white-space: nowrap; }
+}
 
-    /* Sidebar oculto en móvil (SB Admin 2 lo maneja con .sidebar-toggled en body) */
-    .sidebar {
-        width: 14rem !important;
-    }
+@media (min-width: 768px) and (max-width: 991.98px) {
+    .sidebar-logo-img { max-height: 70px; max-width: 130px; }
+    .card-columns { column-count: 2; }
+}
 
-    /* Logo más pequeño en móvil para no ocupar demasiado */
-    .sidebar-logo-img {
-        max-height: 64px;
-        max-width: 120px;
-    }
+@media (min-width: 1200px) {
+    .sidebar-logo-img { max-height: 84px; max-width: 158px; }
+}
 
-    /* Topbar: hamburguesa al inicio, nombre a la derecha */
-    .topbar .navbar-nav {
-        flex-direction: row;
-        align-items: center;
-    }
+/* ═══════════════════════════════════════════════════════════════════════════
+   SIDEBAR SUPER-ADMIN — Ancho aumentado en desktop para que las flechas
+   de submenú tengan suficiente espacio y no se pierdan de la vista.
+   SB Admin 2 fija .sidebar y .nav-link a 14rem; aquí lo sobreescribimos
+   a 16rem para que icono + texto + flecha quepan holgadamente.
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (min-width: 768px) {
+    /* ─────────────────────────────────────────────────────────────
+       DIAGNÓSTICO: #wrapper usa display:flex. El sidebar con
+       width:18rem pero sin flex-shrink:0 se comprimía ~15rem por
+       la presión de #content-wrapper(width:100%). El nav-link
+       (18rem hardcodeado) desbordaba el sidebar real y las flechas
+       quedaban fuera del área visible, clippeadas por overflow-x.
 
-    .topbar .topbar-divider {
-        display: none !important;
-    }
+       FIX:
+         - flex-shrink:0 → sidebar mantiene exactamente 18rem
+         - #content-wrapper min-width:0 → puede encogerse sin overflow
+    ───────────────────────────────────────────────────────────── */
 
-    /* Tablas — siempre envueltas en tabla-responsive; por si alguna no lo tiene */
-    .table-responsive {
-        -webkit-overflow-scrolling: touch;
-    }
-
-    /* Contenido principal: sin margen lateral extra cuando sidebar está cerrado */
-    #content-wrapper {
+    /* El content-wrapper debe poder encogerse como flex-child */
+    #wrapper #content-wrapper {
         min-width: 0;
     }
 
-    /* Botones de acción en tablas: no rompan línea */
-    .btn-group-sm > .btn,
-    .btn-sm {
-        white-space: nowrap;
+    /* --- sidebar bg-gradient-superadmin (admin.blade.php) --- */
+    .sidebar.bg-gradient-superadmin {
+        width: 18rem !important;
+        flex-shrink: 0 !important;
+        transition: width .3s ease !important;
+    }
+    .sidebar.bg-gradient-superadmin .nav-item .nav-link {
+        width: 18rem !important;
+    }
+
+    /* --- sidebar-sa (layouts/superadmin.blade.php) --- */
+    .sidebar.sidebar-sa {
+        width: 18rem !important;
+        flex-shrink: 0 !important;
+        transition: width .3s ease !important;
+    }
+    .sidebar.sidebar-sa .nav-item .nav-link {
+        width: 18rem !important;
+    }
+
+    /* ── TOGGLE FIX ─────────────────────────────────────────────────────────
+       Problema: nuestros (0,2,0) "width:18rem !important" anulan el
+       ".sidebar.toggled { width:6.5rem }" de SB Admin 2 (misma especificidad,
+       pero cargado antes → pierde por orden de fuente).
+
+       Solución: agregar la clase .toggled → tres clases = especificidad (0,3,0)
+       → supera nuestra regla (0,2,0) incluso con !important.
+       ──────────────────────────────────────────────────────────────────────── */
+    .sidebar.bg-gradient-superadmin.toggled,
+    .sidebar.sidebar-sa.toggled {
+        width: 6.5rem !important;         /* icon-only igual que SB Admin 2 */
+        overflow: visible !important;     /* iconos visibles fuera del 6.5rem */
+    }
+    .sidebar.bg-gradient-superadmin.toggled .nav-item .nav-link,
+    .sidebar.sidebar-sa.toggled .nav-item .nav-link {
+        width: 6.5rem !important;
     }
 }
 
-/* ── Tablet (768 px – 991 px) ──────────────────────────────────────────── */
-@media (min-width: 768px) and (max-width: 991.98px) {
+/* ═══════════════════════════════════════════════════════════════════════════
+   SIDEBAR SUPER-ADMIN — Estilo futurista / cyberpunk
+   Clase: .sidebar.bg-gradient-superadmin
+   ═══════════════════════════════════════════════════════════════════════════ */
 
-    .sidebar-logo-img {
-        max-height: 70px;
-        max-width: 130px;
-    }
-
-    /* Tarjetas en grid de 2 columnas si están en row */
-    .card-columns {
-        column-count: 2;
-    }
+.sidebar.bg-gradient-superadmin {
+    background: linear-gradient(180deg, #0a0a0f 0%, #0d0d1a 25%, #0f0f24 50%, #120b2e 75%, #0a0a0f 100%) !important;
+    position: relative;
+    overflow-x: hidden; /* solo horizontal, no clipa hijos */
 }
 
-/* ── Desktop grande (>= 1200 px) ───────────────────────────────────────── */
-@media (min-width: 1200px) {
-    .sidebar-logo-img {
-        max-height: 84px;
-        max-width: 158px;
-    }
+.sidebar.bg-gradient-superadmin::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 100%;
+    background: linear-gradient(180deg, transparent 0%, #6c2bd9 20%, #00d4ff 50%, #6c2bd9 80%, transparent 100%);
+    opacity: 0.5;
+    pointer-events: none;
+    animation: neonGlow 3s ease-in-out infinite;
+}
+
+.sidebar.bg-gradient-superadmin::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent 0%, #6c2bd9 15%, #00d4ff 50%, #6c2bd9 85%, transparent 100%);
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+@keyframes neonGlow {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.8; }
+}
+
+/* ── Animación de brillo en divisores (izq → der) ── */
+@keyframes shimmerDivider {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(200%); }
+}
+
+.sidebar.bg-gradient-superadmin hr.sidebar-divider,
+.sidebar.bg-gradient-superadmin hr.sidebar-logo-divider {
+    position: relative;
+    overflow: hidden;
+    border-top: none !important;
+    height: 1px;
+    background: rgba(108, 43, 217, 0.2) !important;
+}
+
+.sidebar.bg-gradient-superadmin hr.sidebar-divider::after,
+.sidebar.bg-gradient-superadmin hr.sidebar-logo-divider::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent 0%, rgba(0, 212, 255, 0.6) 50%, transparent 100%);
+    animation: shimmerDivider 3s ease-in-out infinite;
+    pointer-events: none;
+}
+
+.sidebar.bg-gradient-superadmin .sidebar-logo-img {
+    filter: drop-shadow(0 0 8px rgba(108, 43, 217, 0.4));
+    transition: filter .3s ease;
+}
+
+.sidebar.bg-gradient-superadmin .sidebar-logo-img:hover {
+    filter: drop-shadow(0 0 14px rgba(108, 43, 217, 0.7));
+}
+
+/* ── Headings (SUPER ADMINISTRACIÓN, etc.) — blancos legibles ── */
+.sidebar.bg-gradient-superadmin .sidebar-heading {
+    color: #e2e8f0 !important;
+    font-family: 'Nunito', sans-serif !important;
+    letter-spacing: 0.12em !important;
+    font-weight: 700 !important;
+    font-size: .68rem !important;
+    text-transform: uppercase;
+    text-shadow: 0 0 12px rgba(0, 212, 255, 0.15);
+    border-bottom: 1px solid rgba(108, 43, 217, 0.2);
+    padding-bottom: 0.5rem !important;
+    margin-bottom: 0.4rem !important;
+}
+
+/* ── Nav items con hover futurista ── */
+.sidebar.bg-gradient-superadmin .nav-item .nav-link {
+    border-left: 2px solid transparent;
+    transition: all .2s ease;
+    position: relative;
+    color: #cbd5e1 !important;
+    font-weight: 400;
+}
+
+.sidebar.bg-gradient-superadmin .nav-item .nav-link:hover {
+    background: linear-gradient(90deg, rgba(108, 43, 217, 0.15) 0%, transparent 100%);
+    border-left-color: #00d4ff;
+    padding-left: 1.35rem !important;
+    color: #f1f5f9 !important;
+    text-shadow: 0 0 8px rgba(0, 212, 255, 0.2);
+}
+
+.sidebar.bg-gradient-superadmin .nav-item .nav-link.active {
+    background: linear-gradient(90deg, rgba(108, 43, 217, 0.2) 0%, transparent 100%);
+    border-left-color: #ff007f;
+    color: #fff !important;
+    text-shadow: 0 0 10px rgba(255, 0, 127, 0.4);
+}
+
+/* ── Flechas de submenú: SB Admin 2 gestiona posición/contenido/float.
+   Solo sobreescribimos el color para que sea visible en el fondo oscuro.
+   Colores claros con contraste ≥7:1 sobre #0a0a0f. ── */
+.sidebar.bg-gradient-superadmin .nav-item .nav-link[data-toggle="collapse"]::after {
+    color: rgba(196, 181, 253, 0.95) !important; /* lila claro — ratio ~11:1 */
+    transition: color .25s ease !important;
+}
+
+.sidebar.bg-gradient-superadmin .nav-item .nav-link:not(.collapsed)[data-toggle="collapse"]::after {
+    color: #67e8f9 !important; /* cyan claro al expandir — ratio ~14:1 */
+}
+
+/* ── Submenús (collapse) con vidrio esmerilado ── */
+.sidebar.bg-gradient-superadmin .collapse-inner {
+    background: rgba(15, 15, 30, 0.9) !important;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(108, 43, 217, 0.25) !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.6), inset 0 0 40px rgba(108,43,217,0.05) !important;
+    border-radius: 8px;
+}
+
+.sidebar.bg-gradient-superadmin .collapse-inner .collapse-item {
+    color: rgba(200, 200, 220, 0.85) !important;
+    transition: all .15s ease;
+    padding: .45rem 1.2rem !important;
+    font-size: .85rem;
+    font-weight: 400;
+}
+
+.sidebar.bg-gradient-superadmin .collapse-inner .collapse-item:hover {
+    background: rgba(0, 212, 255, 0.08) !important;
+    color: #e0f2fe !important;
+    padding-left: 1.6rem !important;
+    text-shadow: 0 0 6px rgba(0, 212, 255, 0.2);
+}
+
+.sidebar.bg-gradient-superadmin .collapse-inner .collapse-item.active {
+    color: #fca5a5 !important;
+    background: rgba(255, 0, 127, 0.06) !important;
+}
+
+/* ── Collapse headers (ej: "Programas y estructura:") más legibles ── */
+.sidebar.bg-gradient-superadmin .collapse-header {
+    color: #94a3b8 !important;
+    letter-spacing: 0.05em;
+    font-family: 'Nunito', sans-serif;
+    font-size: .7rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase;
+    padding: .5rem 1rem .25rem !important;
+    border-bottom: 1px solid rgba(108, 43, 217, 0.12);
+    margin-bottom: .3rem;
+}
+
+.sidebar.bg-gradient-superadmin hr.sidebar-divider {
+    border-top-color: rgba(108, 43, 217, 0.2) !important;
+}
+
+.sidebar.bg-gradient-superadmin hr.sidebar-logo-divider {
+    border-top-color: rgba(108, 43, 217, 0.25) !important;
+}
+
+.sidebar.bg-gradient-superadmin #sidebarToggle {
+    background: rgba(108, 43, 217, 0.25);
+    border: 1px solid rgba(108, 43, 217, 0.3);
+    transition: all .2s ease;
+}
+
+.sidebar.bg-gradient-superadmin #sidebarToggle:hover {
+    background: rgba(108, 43, 217, 0.45);
+    border-color: rgba(0, 212, 255, 0.5);
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+}
+
+.sidebar.bg-gradient-superadmin::-webkit-scrollbar-track {
+    background: rgba(10, 10, 15, 0.5);
+}
+
+.sidebar.bg-gradient-superadmin::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #6c2bd9, #00d4ff);
+    border-radius: 3px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MODO OSCURO — super-admin
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+body.dark-mode .sidebar.bg-gradient-superadmin {
+    background: linear-gradient(180deg, #050508 0%, #08081a 30%, #0a0a24 60%, #0d0820 85%, #050508 100%) !important;
+}
+
+body.dark-mode .sidebar.bg-gradient-superadmin .sidebar-heading {
+    color: #cbd5e1 !important;
+    text-shadow: 0 0 8px rgba(0, 212, 255, 0.1);
+}
+
+body.dark-mode .sidebar.bg-gradient-superadmin .nav-item .nav-link {
+    color: #94a3b8 !important;
+}
+
+body.dark-mode .sidebar.bg-gradient-superadmin .nav-item .nav-link:hover {
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .sidebar.bg-gradient-superadmin .collapse-inner {
+    background: rgba(5, 5, 8, 0.92) !important;
+    border-color: rgba(108, 43, 217, 0.35) !important;
+}
+
+body.dark-mode .sidebar.bg-gradient-superadmin .collapse-inner .collapse-item {
+    color: rgba(180, 180, 200, 0.85) !important;
+}
+
+body.dark-mode .sidebar.bg-gradient-superadmin .collapse-inner .collapse-item:hover {
+    color: #bae6fd !important;
+    background: rgba(0, 212, 255, 0.05) !important;
+}
+
+body.dark-mode .sidebar.bg-gradient-superadmin .collapse-header {
+    color: #94a3b8 !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MODO TENUE — super-admin
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+body.dim-mode .sidebar.bg-gradient-superadmin {
+    background: linear-gradient(180deg, #0a0a1a 0%, #0f0f2e 30%, #12123a 60%, #150d38 85%, #0a0a1a 100%) !important;
+}
+
+body.dim-mode .sidebar.bg-gradient-superadmin::before {
+    opacity: 0.35;
+}
+
+body.dim-mode .sidebar.bg-gradient-superadmin .sidebar-heading {
+    color: #cbd5e1 !important;
+}
+
+body.dim-mode .sidebar.bg-gradient-superadmin .nav-item .nav-link {
+    color: #94a3b8 !important;
+}
+
+body.dim-mode .sidebar.bg-gradient-superadmin .nav-item .nav-link:hover {
+    color: #cbd5e1 !important;
+}
+
+body.dim-mode .sidebar.bg-gradient-superadmin .collapse-inner {
+    background: rgba(10, 10, 26, 0.9) !important;
+    border-color: rgba(108, 43, 217, 0.2) !important;
+}
+
+body.dim-mode .sidebar.bg-gradient-superadmin .collapse-inner .collapse-item {
+    color: rgba(180, 180, 210, 0.75) !important;
+}
+
+body.dim-mode .sidebar.bg-gradient-superadmin .collapse-inner .collapse-item:hover {
+    color: #bae6fd !important;
+}
+
+body.dim-mode .sidebar.bg-gradient-superadmin .collapse-header {
+    color: #94a3b8 !important;
 }
