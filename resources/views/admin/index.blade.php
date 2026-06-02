@@ -1,405 +1,594 @@
 @extends('layouts.admin')
 @section('contenido')
-    <style>
-        .curso-item {
-            transition: background-color 0.3s ease;
-        }
-        .curso-item:hover {
-            background-color: #e7e7e7;
-        }
-        .becado {
-            background-color: #e6f4ea;
-        }
-    </style>
-    <div class="container-fluid bg-white pt-2">
-        {{-- Encabezado exclusivo para rol admin (super-admin tiene su propio dashboard) --}}
-        @role('admin')
-            <div class="d-sm-flex align-items-center justify-content-between mb-4">
-                <h3 class="mb-0 text-primary font-weight-bold">Registros: {{ $totalRecords }}</h3>
-                <p class="text-info mb-0">
-                    Becas: <strong>{{ $alumnosConBeca }}
-                        @if($totalAlumnos > 0)
-                            <small class="font-weight-bold">
-                                ({{ round(($alumnosConBeca / $totalAlumnos) * 100, 1) }}%)
-                            </small>
-                        @endif
-                    </strong>
-                </p>
-                <a href="{{ route('registerAdmin') }}"
-                   class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
-                    Nuevo Registro <i class="fa fa-plus fa-sm"></i>
-                </a>
-            </div>
-        @endrole
-        @role('alumno')
-            <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3 pb-3"
-                style="border-bottom: 1px dashed #80808078">
-                <h3 class="mb-2 text-gray-800">Ficha Técnica: </h3>
-                @if (auth()->user()->alumno)
-                    <span>
-                        <a href="{{ route('alumnos.edit', ['alumno' => $alumno->id]) }}"
-                            class="btn btn-sm btn-primary">Actualizar Matricula</a>
-                    </span>
+<style>
+/* ── Dashboard Admin ── */
+.adm-stat-card { border-radius:.7rem; transition:transform .15s,box-shadow .15s; }
+.adm-stat-card:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,.1)!important; }
+
+.adm-tabs { display:flex; flex-wrap:wrap; gap:.35rem; }
+.adm-tab {
+    display:inline-flex; align-items:center; gap:.35rem; padding:.32rem .85rem;
+    border-radius:2rem; font-size:.78rem; font-weight:600; border:2px solid transparent;
+    cursor:pointer; background:#f1f5f9; color:#475569; transition:all .2s; white-space:nowrap;
+    line-height:1.4;
+}
+.adm-tab:hover { filter:brightness(.95); }
+.adm-tab .adm-badge {
+    background:rgba(0,0,0,.13); color:inherit; border-radius:1rem;
+    padding:.05rem .45rem; font-size:.7rem; font-weight:700;
+}
+.adm-tab-fid.active   { background:#3b82f6; color:#fff; border-color:#3b82f6; }
+.adm-tab-ppd.active   { background:#6366f1; color:#fff; border-color:#6366f1; }
+.adm-tab-doc.active   { background:#06b6d4; color:#fff; border-color:#06b6d4; }
+.adm-tab-inh.active   { background:#ef4444; color:#fff; border-color:#ef4444; }
+.adm-tab-adm.active   { background:#f59e0b; color:#fff; border-color:#f59e0b; }
+.adm-tab-bolsa.active { background:#64748b; color:#fff; border-color:#64748b; }
+.adm-tab-tutor.active { background:#10b981; color:#fff; border-color:#10b981; }
+
+.adm-search-wrap { position:relative; }
+.adm-search-icon { position:absolute; left:.75rem; top:50%; transform:translateY(-50%); color:#9ca3af; pointer-events:none; }
+.adm-search-wrap input { padding-left:2.2rem; border-radius:2rem; border-color:#e2e8f0; }
+.adm-search-wrap input:focus { border-color:#3b82f6; box-shadow:0 0 0 .2rem rgba(59,130,246,.2); }
+
+.adm-table { border-collapse:separate; border-spacing:0; }
+.adm-table thead th {
+    background:#1e293b; color:#cbd5e1; font-size:.71rem; font-weight:600;
+    letter-spacing:.05em; text-transform:uppercase; padding:.65rem 1rem; border:none;
+}
+.adm-table thead th:first-child { border-radius:.5rem 0 0 0; }
+.adm-table thead th:last-child  { border-radius:0 .5rem 0 0; }
+.adm-table tbody tr { transition:background .12s; }
+.adm-table tbody tr:hover { background:#f8fafc; }
+.adm-table tbody td { vertical-align:middle; padding:.65rem 1rem; font-size:.84rem; border-color:#f1f5f9; }
+
+.adm-avatar { width:38px; height:38px; border-radius:50%; object-fit:cover; border:2px solid #e2e8f0; flex-shrink:0; }
+.adm-avatar-ph {
+    width:38px; height:38px; border-radius:50%; flex-shrink:0;
+    background:linear-gradient(135deg,#dbeafe,#bfdbfe);
+    display:inline-flex; align-items:center; justify-content:center;
+    font-size:.73rem; font-weight:800; color:#1d4ed8; letter-spacing:.03em;
+}
+.adm-avatar-ph.ph-red    { background:linear-gradient(135deg,#fee2e2,#fecaca); color:#b91c1c; }
+.adm-avatar-ph.ph-violet { background:linear-gradient(135deg,#ede9fe,#ddd6fe); color:#6d28d9; }
+
+.adm-uname { font-weight:700; font-size:.86rem; color:#1e293b; line-height:1.3; }
+.adm-umeta { font-size:.75rem; color:#64748b; margin-top:.1rem; line-height:1.4; }
+
+.chip { display:inline-block; padding:.1rem .55rem; border-radius:1rem; font-size:.68rem; font-weight:700; }
+.chip-blue   { background:#dbeafe; color:#1d4ed8; }
+.chip-green  { background:#dcfce7; color:#15803d; }
+.chip-red    { background:#fee2e2; color:#b91c1c; }
+.chip-amber  { background:#fef9c3; color:#92400e; }
+.chip-gray   { background:#f1f5f9; color:#475569; }
+
+.becado > td:first-child { border-left:3px solid #22c55e; }
+
+.adm-btn { display:inline-flex; align-items:center; gap:.3rem; border:none; border-radius:.45rem; padding:.28rem .6rem; font-size:.78rem; font-weight:600; cursor:pointer; transition:background .15s; }
+.adm-btn-edit   { background:#dbeafe; color:#1d4ed8; }
+.adm-btn-edit:hover   { background:#bfdbfe; }
+.adm-btn-del    { background:#fee2e2; color:#b91c1c; }
+.adm-btn-del:hover    { background:#fecaca; }
+.adm-btn-assign { background:#ede9fe; color:#6d28d9; }
+.adm-btn-assign:hover { background:#ddd6fe; }
+.adm-btn-ciclos { background:#d1fae5; color:#065f46; }
+.adm-btn-ciclos:hover { background:#a7f3d0; }
+
+.adm-pending-list { margin:0; padding-left:1.1rem; font-size:.77rem; color:#64748b; }
+</style>
+
+<div class="container-fluid py-3">
+
+    @role('admin')
+    {{-- Header --}}
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-4" style="gap:.75rem;">
+        <div>
+            <h4 class="mb-0 font-weight-bold" style="color:#1e293b;">Panel de Administración</h4>
+            <small class="text-muted">
+                {{ $totalRecords }} usuarios &nbsp;·&nbsp;
+                {{ $alumnosConBeca }} beca{{ $alumnosConBeca != 1 ? 's' : '' }}
+                @if($totalAlumnos > 0)
+                    ({{ round(($alumnosConBeca / $totalAlumnos) * 100, 1) }}%)
                 @endif
-            </div>
-        @endrole
-        @hasanyrole('admin|super-admin')
-            <div class="row">
-                <div class="col-12">
-                    @if (Session::has('success'))
-                        <div class="alert alert-info alert-dismissible fade show" role="alert">
-                            {{ Session::get('success') }}
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                    @endif
-                    @if (session('error'))
-                        <div class="alert alert-danger">
-                            {{ session('error') }}
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                    @endif
-                </div>                
-                <div class="col-lg-12">
-                    <div class="row">
-                        <div class="col-lg-6 mb-3">
-                            <button class="btn btn-primary btn-sm" onclick="mostrarTabla('admins')">Alumnos
-                                <small>{{ $conteoAlumnos }}</small></button>
-                            <button class="btn btn-secondary btn-sm" onclick="mostrarTabla('alumnosppd')">Alumnos PPD
-                                <small>{{ $conteoPpd }}</small></button>
-                            <button class="btn btn-info btn-sm" onclick="mostrarTabla('docentes')">Docentes
-                                <small>{{ $conteoDocentes }}</small></button>
-                            <button class="btn btn-danger btn-sm" onclick="mostrarTabla('inhabilitados')">Inhabilitados
-                                <small>{{ $conteoInhabilitados }}</small>
-                            </button>
-                            <button class="btn btn-warning btn-sm" onclick="mostrarTabla('alumnos')">Administradores
-                                <small>{{ $conteoAdmin }}</small></button>
-                            <button class="btn btn-dark btn-sm" onclick="mostrarTabla('superadmins')">Super Admins</button>
-                            <button class="btn btn-success btn-sm" onclick="mostrarTabla('adminsB')">Admins Bolsa</button>
-                            <button class="btn btn-dark btn-sm" onclick="mostrarTabla('tutores')">Tutores
-                                <small>{{ $conteoTutores }}</small></button>
-                        </div>
-                        <div class="col-lg-6 mb-3" style="float: right">
-                            <input type="text" id="search-box" class="form-control" placeholder="Buscar Alumnos">
-                        </div>
-                    </div>
-                    <div class="table-responsive">
-                        <table id="admins-table" class="table table-hover table-sortable">
-                            <thead class="thead-dark">
-                                <tr>
-                                    <th>Nombre</th>
-                                    <th>Editar Cursos</th>
-                                    <th>Foto</th>
-                                    <th width="30%">Cursos pendientes</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($admins as $key => $admin)
-                                    @if ($admin->hasRole('alumno'))
-                                        <tr class="alumno-row {{ $admin->beca == 1 ? 'becado' : '' }}">
-                                            <td>
-                                                <span class="font-weight-bold">{{ $admin->apellidos }}, {{ $admin->name }}</span>
-                                                <ul>
-                                                    <li>Beca: @if ($admin->beca == 1) Sí @else No @endif</li>
-                                                    <li>Correo: {{ $admin->email }}</li>
-                                                    <li>{{ optional($admin->programa)->nombre ?? 'N/A' }} - Ciclo {{ optional($admin->ciclo)->nombre ?? 'N/A' }}</li>
-                                                    <li>DNI: {{ $admin->dni }}</li>
-                                                    <li>Número: {{ $admin->alumno?->numero ?? 'No tiene número asignado' }} | Referencia: {{ $admin->alumno?->numero_referencia ?? 'No tiene referencia' }}</li>
-                                                    <li>ID: {{ $admin->id }}</li>
-                                                </ul>
-                                            </td>
-                                            <td><a href="{{ route('asignar.cursos', ['id' => $admin->id]) }}" class="btn btn-primary btn-sm"><i class="fa fa-books"></i> Asignar Cursos</a></td>
-                                            <td>
-                                                @if ($admin->foto)
-                                                    <img src="{{ asset('img/estudiantes/' . $admin->foto) }}" alt="Foto" loading="lazy" class="img-fluid" style="width: 40px; height: 40px; border-radius: 50%;">
-                                                @else
-                                                    <span class="text-muted">Sin foto</span>
-                                                @endif
-                                            </td>
-                                            <td>
-                                                @php $cursos = array_map('trim', explode(',', $admin->pendiente ?? '')); @endphp
-                                                @if (!empty($cursos[0]))
-                                                    <ol class="mb-0" style="padding-left:4px">
-                                                        @foreach ($cursos as $curso) <li>{{ $curso }}</li> @endforeach
-                                                    </ol>
-                                                @else
-                                                    Sin cursos pendientes
-                                                @endif
-                                            </td>
-                                            <td>
-                                                <a href="{{ route('adminEdit', ['id' => $admin->id]) }}" class="btn btn-info btn-sm" title="Editar"><i class="fa fa-pen"></i></a>
-                                                <a onclick="confirmarEliminacion('{{ route('adminDestroy', ['id' => $admin->id]) }}')" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></a>
-                                            </td>
-                                        </tr>
-                                    @endif
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="table-responsive">
-                        <table id="alumnosppd" class="table table-hover table-sortable" style="display: none">
-                            <thead class="thead-dark">
-                                <tr>
-                                    <th>Nombres ppd</th>
-                                    <th>Correo</th>
-                                    <th>Programa</th>
-                                    <th>Ciclo</th>
-                                    <th>DNI</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($admins as $key => $admin)
-                                    @if ($admin->hasRole('alumnoB'))
-                                        <tr class="alumno-row">
-                                            <td>{{ $admin->apellidos }}, {{ $admin->name }}</td>
-                                            <td>{{ $admin->email }}</td>
-                                            <td>{{ optional($admin->programa)->nombre ?? 'N/A' }}</td>
-                                            <td style="font-family: serif">{{ optional($admin->ciclo)->nombre ?? 'N/A' }}</td>
-                                            <td>{{ $admin->dni }}</td>
-                                            <td>
-                                                <a href="{{ route('adminEdit', ['id' => $admin->id]) }}" class="btn btn-info btn-sm" title="Editar"><i class="fa fa-pen"></i></a>
-                                                <a onclick="confirmarEliminacion('{{ route('adminDestroy', ['id' => $admin->id]) }}')" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></a>
-                                            </td>
-                                        </tr>
-                                    @endif
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="table-responsive">
-                        <table id="alumnos-table" class="table" style="display: none">
-                            <thead class="thead-dark">
-                                <tr><th>#</th><th>Nombre</th><th>Correo</th><th>Acciones</th></tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($admins as $key => $admin)
-                                    @if ($admin->hasRole('admin'))
-                                        <tr>
-                                            <td>{{ $key + 1 }}</td>
-                                            <td>{{ $admin->name }} {{ $admin->apellidos }}</td>
-                                            <td>{{ $admin->email }}</td>
-                                            <td>
-                                                <a href="{{ route('adminEdit', ['id' => $admin->id]) }}" class="btn btn-info btn-sm"><i class="fa fa-pen"></i></a>
-                                                <a href="{{ route('adminDestroy', ['id' => $admin->id]) }}" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></a>
-                                            </td>
-                                        </tr>
-                                    @endif
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="table-responsive">
-                        <table id="superadmins-table" class="table" style="display: none">
-                            <thead class="thead-dark">
-                                <tr><th>#</th><th>Nombre</th><th>Correo</th><th>Acciones</th></tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($admins as $key => $admin)
-                                    @if ($admin->hasRole('super-admin'))
-                                        <tr>
-                                            <td>{{ $key + 1 }}</td>
-                                            <td>{{ $admin->name }} {{ $admin->apellidos }} <span class="badge badge-warning ml-1">Super Admin</span></td>
-                                            <td>{{ $admin->email }}</td>
-                                            <td>
-                                                <a href="{{ route('adminEdit', ['id' => $admin->id]) }}" class="btn btn-info btn-sm"><i class="fa fa-pen"></i></a>
-                                                <a href="{{ route('adminDestroy', ['id' => $admin->id]) }}" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></a>
-                                            </td>
-                                        </tr>
-                                    @endif
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="table-responsive">
-                        <table id="adminsB-table" class="table" style="display: none">
-                            <thead class="thead-dark">
-                                <tr><th>Nombre</th><th>Correo</th><th>Acciones</th></tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($admins as $key => $admin)
-                                    @if ($admin->hasRole('adminB'))
-                                        <tr>
-                                            <td>{{ $admin->name }} {{ $admin->apellidos }}</td>
-                                            <td>{{ $admin->email }}</td>
-                                            <td>
-                                                <a href="{{ route('adminEdit', ['id' => $admin->id]) }}" class="btn btn-info btn-sm"><i class="fa fa-pen"></i></a>
-                                                <a href="#" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#confirmDeleteModal" data-href="{{ route('adminDestroy', ['id' => $admin->id]) }}"><i class="fa fa-trash"></i></a>
-                                            </td>
-                                        </tr>
-                                    @endif
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="table-responsive">
-                        <table class="table table-hover" id="docentes-table" style="display:none">
-                            <thead class="thead-dark">
-                                <tr><th>#</th><th>Nombre</th><th>Correo</th><th>DNI</th><th>Acciones</th></tr>
-                            </thead>
-                            <tbody>
-                                @php $docenteCount = 0; @endphp
-                                @foreach ($admins as $admin)
-                                    @if ($admin->hasRole('docente'))
-                                        @php $docenteCount++; @endphp
-                                        <tr>
-                                            <td>{{ $docenteCount }}</td>
-                                            <td>{{ $admin->name }} {{ $admin->apellidos }}</td>
-                                            <td>{{ $admin->email }}</td>
-                                            <td>{{ $admin->dni }}</td>
-                                            <td>
-                                                <a href="{{ route('adminEdit', ['id' => $admin->id]) }}" class="btn btn-info btn-sm" title="Editar Docente"><i class="fa fa-edit"></i> <i class="fa fa-user"></i></a>
-                                                <a href="#" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#confirmDeleteModal" data-href="{{ route('adminDestroy', ['id' => $admin->id]) }}"><i class="fa fa-trash"></i></a>
-                                            </td>
-                                        </tr>
-                                    @endif
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="table-responsive">
-                        <table class="table table-hover" id="tutores-table" style="display: none">
-                            <thead class="thead-dark">
-                                <tr><th>#</th><th>Nombre</th><th>Correo</th><th>DNI</th><th>Acciones</th></tr>
-                            </thead>
-                            <tbody>
-                                @php $tutorCount = 0; @endphp
-                                @foreach ($admins as $admin)
-                                    @if ($admin->hasRole('tutor'))
-                                        @php $tutorCount++; @endphp
-                                        <tr>
-                                            <td>{{ $tutorCount }}</td>
-                                            <td>{{ $admin->apellidos }}, {{ $admin->name }}</td>
-                                            <td>{{ $admin->email }}</td>
-                                            <td>{{ $admin->dni }}</td>
-                                            <td>
-                                                <a href="{{ route('adminEdit', ['id' => $admin->id]) }}" class="btn btn-info btn-sm" title="Editar"><i class="fa fa-pen"></i></a>
-                                                <a href="{{ route('admin.tutor.ciclos', $admin->id) }}" class="btn btn-success btn-sm" title="Asignar ciclos"><i class="fas fa-layer-group"></i></a>
-                                                <a href="#" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#confirmDeleteModal" data-href="{{ route('adminDestroy', ['id' => $admin->id]) }}"><i class="fa fa-trash"></i></a>
-                                            </td>
-                                        </tr>
-                                    @endif
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="table-responsive">
-                        <table class="table table-hover" id="inhabilitado-table" style="display: none">
-                            <thead class="thead-dark">
-                                <tr><th>Nombre</th><th>Editar Cursos</th><th>Foto</th><th width="30%">Cursos pendientes</th><th>Acciones</th></tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($admins as $admin)
-                                    @if ($admin->hasRole('inhabilitado'))
-                                        <tr class="alumno-row {{ $admin->beca == 1 ? 'becado' : '' }}">
-                                            <td>
-                                                <span class="font-weight-bold">{{ $admin->apellidos }}, {{ $admin->name }}</span>
-                                                <ul>
-                                                    <li>Beca: @if ($admin->beca == 1) Sí @else No @endif</li>
-                                                    <li>Correo: {{ $admin->email }}</li>
-                                                    <li>{{ optional($admin->programa)->nombre ?? 'N/A' }} - Ciclo {{ optional($admin->ciclo)->nombre ?? 'N/A' }}</li>
-                                                    <li>DNI: {{ $admin->dni }}</li>
-                                                    <li>Número: {{ $admin->alumno?->numero ?? 'No tiene número asignado' }} | Referencia: {{ $admin->alumno?->numero_referencia ?? 'No tiene referencia' }}</li>
-                                                    <li>ID: {{ $admin->id }}</li>
-                                                    <li>Inhabilitado por: {{ $admin->perfil }}</li>
-                                                </ul>
-                                            </td>
-                                            <td><a href="{{ route('asignar.cursos', ['id' => $admin->id]) }}" class="btn btn-primary btn-sm"><i class="fa fa-books"></i> Asignar Cursos</a></td>
-                                            <td>
-                                                @if ($admin->foto)
-                                                    <img src="{{ asset('img/estudiantes/' . $admin->foto) }}" alt="Foto" loading="lazy" class="img-fluid" style="width: 40px; height: 40px; border-radius: 50%;">
-                                                @else
-                                                    <span class="text-muted">Sin foto</span>
-                                                @endif
-                                            </td>
-                                            <td>
-                                                @php $cursos = array_map('trim', explode(',', $admin->pendiente ?? '')); @endphp
-                                                @if (!empty($cursos[0]))
-                                                    <ol class="mb-0" style="padding-left:4px">
-                                                        @foreach ($cursos as $curso) <li>{{ $curso }}</li> @endforeach
-                                                    </ol>
-                                                @else
-                                                    Sin cursos pendientes
-                                                @endif
-                                            </td>
-                                            <td>
-                                                <a href="{{ route('adminEdit', ['id' => $admin->id]) }}" class="btn btn-info btn-sm" title="Editar"><i class="fa fa-pen"></i></a>
-                                                <a onclick="confirmarEliminacion('{{ route('adminDestroy', ['id' => $admin->id]) }}')" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></a>
-                                            </td>
-                                        </tr>
-                                    @endif
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        @endhasanyrole
+            </small>
+        </div>
+        <a href="{{ route('registerAdmin') }}"
+           class="btn btn-sm btn-primary shadow-sm" style="border-radius:.5rem; font-weight:600;">
+            <i class="fa fa-plus fa-xs mr-1"></i> Nuevo Registro
+        </a>
     </div>
 
-    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar Eliminación</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    {{-- Stat cards --}}
+    <div class="row mb-4">
+        <div class="col-xl-2 col-md-4 col-6 mb-3">
+            <div class="card border-left-primary shadow-sm adm-stat-card h-100">
+                <div class="card-body py-2 px-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">FID</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $conteoAlumnos }}</div>
+                        </div>
+                        <i class="fas fa-graduation-cap fa-2x text-gray-300"></i>
+                    </div>
                 </div>
-                <div class="modal-body">¿Estás seguro de que deseas eliminar este administrador?</div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                    <a id="confirm-delete" class="btn btn-danger" href="#">Eliminar</a>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-4 col-6 mb-3">
+            <div class="card border-left-secondary shadow-sm adm-stat-card h-100">
+                <div class="card-body py-2 px-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">PPD</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $conteoPpd }}</div>
+                        </div>
+                        <i class="fas fa-user-graduate fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-4 col-6 mb-3">
+            <div class="card border-left-info shadow-sm adm-stat-card h-100">
+                <div class="card-body py-2 px-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Docentes</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $conteoDocentes }}</div>
+                        </div>
+                        <i class="fas fa-chalkboard-teacher fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-4 col-6 mb-3">
+            <div class="card border-left-warning shadow-sm adm-stat-card h-100">
+                <div class="card-body py-2 px-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Admins</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $conteoAdmin }}</div>
+                        </div>
+                        <i class="fas fa-users-cog fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-4 col-6 mb-3">
+            <div class="card border-left-danger shadow-sm adm-stat-card h-100">
+                <div class="card-body py-2 px-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Inhabilitados</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $conteoInhabilitados }}</div>
+                        </div>
+                        <i class="fas fa-ban fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-4 col-6 mb-3">
+            <div class="card shadow-sm adm-stat-card h-100" style="border-left:4px solid #10b981;">
+                <div class="card-body py-2 px-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-xs font-weight-bold text-uppercase mb-1" style="color:#10b981;">Tutores</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $conteoTutores }}</div>
+                        </div>
+                        <i class="fas fa-chalkboard fa-2x text-gray-300"></i>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+    @endrole
 
-    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-    <script>
-        $('#confirmDeleteModal').on('show.bs.modal', function(e) {
-            var button = $(e.relatedTarget);
-            var url = button.data('href');
-            var modal = $(this);
-            modal.find('#confirm-delete').attr('href', url);
-        });
+    @role('alumno')
+    <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3 pb-3"
+         style="border-bottom:1px dashed #80808078">
+        <h3 class="mb-2 text-gray-800">Ficha Técnica:</h3>
+        @if (auth()->user()->alumno)
+            <a href="{{ route('alumnos.edit', ['alumno' => $alumno->id]) }}"
+               class="btn btn-sm btn-primary">Actualizar Matrícula</a>
+        @endif
+    </div>
+    @endrole
 
-        document.addEventListener('DOMContentLoaded', function() {
-            const searchBox = document.getElementById('search-box');
-            const tables = document.querySelectorAll('.table');
-            searchBox.addEventListener('keyup', function() {
-                const searchTerm = searchBox.value.toLowerCase();
-                tables.forEach(table => {
-                    const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
-                    for (let i = 0; i < rows.length; i++) {
-                        let rowText = rows[i].innerText.toLowerCase();
-                        if (rowText.includes(searchTerm)) {
-                            rows[i].style.display = '';
-                        } else {
-                            rows[i].style.display = 'none';
-                        }
-                    }
+    {{-- Alertas --}}
+    @if(Session::has('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle mr-1"></i> {{ Session::get('success') }}
+            <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+        </div>
+    @endif
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle mr-1"></i> {{ session('error') }}
+            <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+        </div>
+    @endif
+
+    @hasanyrole('admin|super-admin')
+    {{-- Tab nav + search --}}
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-3" style="gap:.5rem;">
+        <div class="adm-tabs">
+            <button class="adm-tab adm-tab-fid active" id="btn-admins" onclick="mostrarTabla('admins')">
+                <i class="fas fa-graduation-cap fa-xs"></i> FID
+                <span class="adm-badge">{{ $conteoAlumnos }}</span>
+            </button>
+            <button class="adm-tab adm-tab-ppd" id="btn-alumnosppd" onclick="mostrarTabla('alumnosppd')">
+                <i class="fas fa-user-graduate fa-xs"></i> PPD
+                <span class="adm-badge">{{ $conteoPpd }}</span>
+            </button>
+            <button class="adm-tab adm-tab-doc" id="btn-docentes" onclick="mostrarTabla('docentes')">
+                <i class="fas fa-chalkboard-teacher fa-xs"></i> Docentes
+                <span class="adm-badge">{{ $conteoDocentes }}</span>
+            </button>
+            <button class="adm-tab adm-tab-inh" id="btn-inhabilitados" onclick="mostrarTabla('inhabilitados')">
+                <i class="fas fa-ban fa-xs"></i> Inhabilitados
+                <span class="adm-badge">{{ $conteoInhabilitados }}</span>
+            </button>
+            <button class="adm-tab adm-tab-adm" id="btn-alumnos" onclick="mostrarTabla('alumnos')">
+                <i class="fas fa-users-cog fa-xs"></i> Admins
+                <span class="adm-badge">{{ $conteoAdmin }}</span>
+            </button>
+            <button class="adm-tab adm-tab-bolsa" id="btn-adminsB" onclick="mostrarTabla('adminsB')">
+                <i class="fas fa-briefcase fa-xs"></i> Bolsa
+            </button>
+            <button class="adm-tab adm-tab-tutor" id="btn-tutores" onclick="mostrarTabla('tutores')">
+                <i class="fas fa-chalkboard fa-xs"></i> Tutores
+                <span class="adm-badge">{{ $conteoTutores }}</span>
+            </button>
+        </div>
+        <div class="adm-search-wrap mt-2 mt-md-0" style="min-width:220px; flex:1; max-width:300px;">
+            <i class="fas fa-search adm-search-icon fa-sm"></i>
+            <input type="text" id="search-box" class="form-control form-control-sm"
+                   placeholder="Buscar usuarios...">
+        </div>
+    </div>
+
+    {{-- Tabla: Alumnos FID --}}
+    <div class="table-responsive">
+        <table id="admins-table" class="table adm-table mb-0">
+            <thead>
+                <tr>
+                    <th>Usuario</th>
+                    <th>Cursos</th>
+                    <th>Pendientes</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($admins as $admin)
+                    @if ($admin->hasRole('alumno'))
+                    <tr class="alumno-row {{ $admin->beca == 1 ? 'becado' : '' }}">
+                        <td>
+                            <div class="d-flex align-items-center" style="gap:.75rem;">
+                                @if ($admin->foto)
+                                    <img src="{{ asset('img/estudiantes/' . $admin->foto) }}" alt="" class="adm-avatar">
+                                @else
+                                    <div class="adm-avatar-ph">
+                                        {{ strtoupper(substr($admin->name,0,1)) }}{{ strtoupper(substr($admin->apellidos,0,1)) }}
+                                    </div>
+                                @endif
+                                <div>
+                                    <div class="adm-uname">{{ $admin->apellidos }}, {{ $admin->name }}</div>
+                                    <div class="adm-umeta">
+                                        <i class="fas fa-envelope fa-xs mr-1"></i>{{ $admin->email }}
+                                    </div>
+                                    <div class="adm-umeta">
+                                        {{ optional($admin->programa)->nombre ?? 'N/A' }}
+                                        &nbsp;·&nbsp; Ciclo {{ optional($admin->ciclo)->nombre ?? 'N/A' }}
+                                        &nbsp;·&nbsp; DNI {{ $admin->dni }}
+                                        @if($admin->beca == 1)
+                                            <span class="chip chip-green ml-1">Beca</span>
+                                        @endif
+                                    </div>
+                                    <div class="adm-umeta text-muted">ID {{ $admin->id }}
+                                        &nbsp;·&nbsp; N° {{ $admin->alumno?->numero ?? '—' }}
+                                        &nbsp;·&nbsp; Ref {{ $admin->alumno?->numero_referencia ?? '—' }}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <a href="{{ route('asignar.cursos', ['id' => $admin->id]) }}" class="adm-btn adm-btn-assign">
+                                <i class="fa fa-books fa-xs"></i> Asignar
+                            </a>
+                        </td>
+                        <td>
+                            @php $cursos = array_map('trim', explode(',', $admin->pendiente ?? '')); @endphp
+                            @if (!empty($cursos[0]))
+                                <ol class="adm-pending-list mb-0">
+                                    @foreach ($cursos as $c)<li>{{ $c }}</li>@endforeach
+                                </ol>
+                            @else
+                                <span class="text-muted small">Sin pendientes</span>
+                            @endif
+                        </td>
+                        <td style="white-space:nowrap;">
+                            <a href="{{ route('adminEdit', ['id' => $admin->id]) }}" class="adm-btn adm-btn-edit">
+                                <i class="fa fa-pen"></i>
+                            </a>
+                            <a onclick="confirmarEliminacion('{{ route('adminDestroy', ['id' => $admin->id]) }}')"
+                               class="adm-btn adm-btn-del ml-1">
+                                <i class="fa fa-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    @endif
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+
+    {{-- Tabla: Alumnos PPD --}}
+    <div class="table-responsive">
+        <table id="alumnosppd" class="table adm-table mb-0" style="display:none;">
+            <thead>
+                <tr><th>Usuario</th><th>Programa</th><th>Ciclo</th><th>DNI</th><th>Acciones</th></tr>
+            </thead>
+            <tbody>
+                @foreach ($admins as $admin)
+                    @if ($admin->hasRole('alumnoB'))
+                    <tr class="alumno-row">
+                        <td>
+                            <div class="adm-uname">{{ $admin->apellidos }}, {{ $admin->name }}</div>
+                            <div class="adm-umeta"><i class="fas fa-envelope fa-xs mr-1"></i>{{ $admin->email }}</div>
+                        </td>
+                        <td><span class="small">{{ optional($admin->programa)->nombre ?? 'N/A' }}</span></td>
+                        <td><span class="small">{{ optional($admin->ciclo)->nombre ?? 'N/A' }}</span></td>
+                        <td><span class="small">{{ $admin->dni }}</span></td>
+                        <td style="white-space:nowrap;">
+                            <a href="{{ route('adminEdit', ['id' => $admin->id]) }}" class="adm-btn adm-btn-edit"><i class="fa fa-pen"></i></a>
+                            <a onclick="confirmarEliminacion('{{ route('adminDestroy', ['id' => $admin->id]) }}')"
+                               class="adm-btn adm-btn-del ml-1"><i class="fa fa-trash"></i></a>
+                        </td>
+                    </tr>
+                    @endif
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+
+    {{-- Tabla: Administradores --}}
+    <div class="table-responsive">
+        <table id="alumnos-table" class="table adm-table" style="display:none;">
+            <thead>
+                <tr><th>#</th><th>Nombre</th><th>Correo</th><th>Acciones</th></tr>
+            </thead>
+            <tbody>
+                @foreach ($admins as $key => $admin)
+                    @if ($admin->hasRole('admin'))
+                    <tr>
+                        <td class="text-muted small">{{ $key + 1 }}</td>
+                        <td>
+                            <div class="adm-uname">{{ $admin->name }} {{ $admin->apellidos }}</div>
+                        </td>
+                        <td><span class="small text-muted">{{ $admin->email }}</span></td>
+                        <td style="white-space:nowrap;">
+                            <a href="{{ route('adminEdit', ['id' => $admin->id]) }}" class="adm-btn adm-btn-edit"><i class="fa fa-pen"></i></a>
+                            <a href="{{ route('adminDestroy', ['id' => $admin->id]) }}" class="adm-btn adm-btn-del ml-1"><i class="fa fa-trash"></i></a>
+                        </td>
+                    </tr>
+                    @endif
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+
+    {{-- Tabla: Admins Bolsa --}}
+    <div class="table-responsive">
+        <table id="adminsB-table" class="table adm-table" style="display:none;">
+            <thead>
+                <tr><th>Nombre</th><th>Correo</th><th>Acciones</th></tr>
+            </thead>
+            <tbody>
+                @foreach ($admins as $admin)
+                    @if ($admin->hasRole('adminB'))
+                    <tr>
+                        <td><div class="adm-uname">{{ $admin->name }} {{ $admin->apellidos }}</div></td>
+                        <td><span class="small text-muted">{{ $admin->email }}</span></td>
+                        <td>
+                            <a href="{{ route('adminEdit', ['id' => $admin->id]) }}" class="adm-btn adm-btn-edit"><i class="fa fa-pen"></i></a>
+                            <a href="#" class="adm-btn adm-btn-del ml-1" data-toggle="modal"
+                               data-target="#confirmDeleteModal"
+                               data-href="{{ route('adminDestroy', ['id' => $admin->id]) }}"><i class="fa fa-trash"></i></a>
+                        </td>
+                    </tr>
+                    @endif
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+
+    {{-- Tabla: Docentes --}}
+    <div class="table-responsive">
+        <table id="docentes-table" class="table adm-table" style="display:none;">
+            <thead>
+                <tr><th>#</th><th>Nombre</th><th>Correo</th><th>DNI</th><th>Acciones</th></tr>
+            </thead>
+            <tbody>
+                @php $dc = 0; @endphp
+                @foreach ($admins as $admin)
+                    @if ($admin->hasRole('docente'))
+                    @php $dc++; @endphp
+                    <tr>
+                        <td class="text-muted small">{{ $dc }}</td>
+                        <td><div class="adm-uname">{{ $admin->name }} {{ $admin->apellidos }}</div></td>
+                        <td><span class="small text-muted">{{ $admin->email }}</span></td>
+                        <td><span class="small">{{ $admin->dni }}</span></td>
+                        <td style="white-space:nowrap;">
+                            <a href="{{ route('adminEdit', ['id' => $admin->id]) }}" class="adm-btn adm-btn-edit"><i class="fa fa-edit"></i></a>
+                            <a href="#" class="adm-btn adm-btn-del ml-1" data-toggle="modal"
+                               data-target="#confirmDeleteModal"
+                               data-href="{{ route('adminDestroy', ['id' => $admin->id]) }}"><i class="fa fa-trash"></i></a>
+                        </td>
+                    </tr>
+                    @endif
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+
+    {{-- Tabla: Tutores --}}
+    <div class="table-responsive">
+        <table id="tutores-table" class="table adm-table" style="display:none;">
+            <thead>
+                <tr><th>#</th><th>Nombre</th><th>Correo</th><th>DNI</th><th>Acciones</th></tr>
+            </thead>
+            <tbody>
+                @php $tc = 0; @endphp
+                @foreach ($admins as $admin)
+                    @if ($admin->hasRole('tutor'))
+                    @php $tc++; @endphp
+                    <tr>
+                        <td class="text-muted small">{{ $tc }}</td>
+                        <td><div class="adm-uname">{{ $admin->apellidos }}, {{ $admin->name }}</div></td>
+                        <td><span class="small text-muted">{{ $admin->email }}</span></td>
+                        <td><span class="small">{{ $admin->dni }}</span></td>
+                        <td style="white-space:nowrap;">
+                            <a href="{{ route('adminEdit', ['id' => $admin->id]) }}" class="adm-btn adm-btn-edit"><i class="fa fa-pen"></i></a>
+                            <a href="{{ route('admin.tutor.ciclos', $admin->id) }}" class="adm-btn adm-btn-ciclos ml-1" title="Asignar ciclos"><i class="fas fa-layer-group"></i></a>
+                            <a href="#" class="adm-btn adm-btn-del ml-1" data-toggle="modal"
+                               data-target="#confirmDeleteModal"
+                               data-href="{{ route('adminDestroy', ['id' => $admin->id]) }}"><i class="fa fa-trash"></i></a>
+                        </td>
+                    </tr>
+                    @endif
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+
+    {{-- Tabla: Inhabilitados --}}
+    <div class="table-responsive">
+        <table id="inhabilitado-table" class="table adm-table" style="display:none;">
+            <thead>
+                <tr><th>Usuario</th><th>Cursos</th><th>Pendientes</th><th>Acciones</th></tr>
+            </thead>
+            <tbody>
+                @foreach ($admins as $admin)
+                    @if ($admin->hasRole('inhabilitado'))
+                    <tr class="alumno-row">
+                        <td>
+                            <div class="d-flex align-items-center" style="gap:.75rem;">
+                                @if ($admin->foto)
+                                    <img src="{{ asset('img/estudiantes/' . $admin->foto) }}" alt="" class="adm-avatar">
+                                @else
+                                    <div class="adm-avatar-ph ph-red">
+                                        {{ strtoupper(substr($admin->name,0,1)) }}{{ strtoupper(substr($admin->apellidos,0,1)) }}
+                                    </div>
+                                @endif
+                                <div>
+                                    <div class="adm-uname">{{ $admin->apellidos }}, {{ $admin->name }}</div>
+                                    <div class="adm-umeta"><i class="fas fa-envelope fa-xs mr-1"></i>{{ $admin->email }}</div>
+                                    <div class="adm-umeta">
+                                        {{ optional($admin->programa)->nombre ?? 'N/A' }}
+                                        &nbsp;·&nbsp; Ciclo {{ optional($admin->ciclo)->nombre ?? 'N/A' }}
+                                        <span class="chip chip-red ml-1">{{ $admin->perfil ?? 'Inhabilitado' }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <a href="{{ route('asignar.cursos', ['id' => $admin->id]) }}" class="adm-btn adm-btn-assign">
+                                <i class="fa fa-books fa-xs"></i> Asignar
+                            </a>
+                        </td>
+                        <td>
+                            @php $cursos = array_map('trim', explode(',', $admin->pendiente ?? '')); @endphp
+                            @if (!empty($cursos[0]))
+                                <ol class="adm-pending-list mb-0">
+                                    @foreach ($cursos as $c)<li>{{ $c }}</li>@endforeach
+                                </ol>
+                            @else
+                                <span class="text-muted small">Sin pendientes</span>
+                            @endif
+                        </td>
+                        <td style="white-space:nowrap;">
+                            <a href="{{ route('adminEdit', ['id' => $admin->id]) }}" class="adm-btn adm-btn-edit"><i class="fa fa-pen"></i></a>
+                            <a onclick="confirmarEliminacion('{{ route('adminDestroy', ['id' => $admin->id]) }}')"
+                               class="adm-btn adm-btn-del ml-1"><i class="fa fa-trash"></i></a>
+                        </td>
+                    </tr>
+                    @endif
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+
+    @endhasanyrole
+</div>
+
+{{-- Modal --}}
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header" style="background:#1e293b;">
+                <h6 class="modal-title text-white font-weight-bold">
+                    <i class="fas fa-exclamation-triangle text-warning mr-2"></i>Confirmar Eliminación
+                </h6>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer.</div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-sm btn-light" data-dismiss="modal">Cancelar</button>
+                <a id="confirm-delete" class="btn btn-sm btn-danger font-weight-bold" href="#">
+                    <i class="fa fa-trash mr-1"></i> Eliminar
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+    $('#confirmDeleteModal').on('show.bs.modal', function(e) {
+        $(this).find('#confirm-delete').attr('href', $(e.relatedTarget).data('href'));
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('search-box').addEventListener('keyup', function () {
+            var term = this.value.toLowerCase();
+            document.querySelectorAll('.table').forEach(function (t) {
+                t.querySelectorAll('tbody tr').forEach(function (r) {
+                    r.style.display = r.innerText.toLowerCase().includes(term) ? '' : 'none';
                 });
             });
         });
+    });
 
-        const allTables = ['admins-table', 'alumnos-table', 'alumnosppd', 'adminsB-table', 'docentes-table', 'inhabilitado-table', 'tutores-table', 'superadmins-table'];
+    var allTables = ['admins-table','alumnos-table','alumnosppd','adminsB-table','docentes-table','inhabilitado-table','tutores-table'];
+    var tabMap = {
+        admins:        { table:'admins-table',      btn:'btn-admins' },
+        alumnosppd:    { table:'alumnosppd',         btn:'btn-alumnosppd' },
+        docentes:      { table:'docentes-table',     btn:'btn-docentes' },
+        inhabilitados: { table:'inhabilitado-table', btn:'btn-inhabilitados' },
+        alumnos:       { table:'alumnos-table',      btn:'btn-alumnos' },
+        adminsB:       { table:'adminsB-table',      btn:'btn-adminsB' },
+        tutores:       { table:'tutores-table',      btn:'btn-tutores' },
+    };
 
-        function mostrarTabla(tipo) {
-            allTables.forEach(id => document.getElementById(id).style.display = 'none');
-            const map = {
-                admins: 'admins-table',
-                alumnos: 'alumnos-table',
-                alumnosppd: 'alumnosppd',
-                adminsB: 'adminsB-table',
-                docentes: 'docentes-table',
-                inhabilitados: 'inhabilitado-table',
-                tutores: 'tutores-table',
-                superadmins: 'superadmins-table',
-            };
-            if (map[tipo]) document.getElementById(map[tipo]).style.display = 'table';
+    function mostrarTabla(tipo) {
+        allTables.forEach(function(id) {
+            var el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+        });
+        Object.keys(tabMap).forEach(function(k) {
+            var b = document.getElementById(tabMap[k].btn);
+            if (b) b.classList.remove('active');
+        });
+        var cfg = tabMap[tipo];
+        if (cfg) {
+            var el = document.getElementById(cfg.table);
+            if (el) el.style.display = 'table';
+            var btn = document.getElementById(cfg.btn);
+            if (btn) btn.classList.add('active');
         }
-    </script>
+    }
+
+    function confirmarEliminacion(url) {
+        if (confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
+            window.location.href = url;
+        }
+    }
+</script>
 @endsection

@@ -16,7 +16,7 @@ class AlumnoCursoController extends Controller
     {
         $user = User::with(['alumno.ciclo.cursos', 'alumno.programa'])->findOrFail($id);
         $alumno = $user->alumno;
-        $periodoActual = PeriodoActual::where('actual', true)->first();
+        $periodoActual = PeriodoActual::actual();
 
         $cursosCiclo = Curso::where('ciclo_id', $alumno->ciclo_id)
             ->whereHas('ciclo', fn ($q) => $q->where('programa_id', $alumno->programa_id))
@@ -49,7 +49,7 @@ class AlumnoCursoController extends Controller
     public function guardarCursos(Request $request, $alumnoId)
     {
         $alumno = Alumno::with('user')->findOrFail($alumnoId);
-        $periodoActual = PeriodoActual::where('actual', true)->first();
+        $periodoActual = PeriodoActual::actual();
 
         $cursoIds = $request->input('cursos', []);
 

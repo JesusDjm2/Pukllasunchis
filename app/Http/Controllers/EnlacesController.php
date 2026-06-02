@@ -247,6 +247,62 @@ class EnlacesController extends Controller
         return view('foot.informacion-institucional');
     }
 
+    public function planaDocente()
+    {
+        $docentes = [
+            [
+                'nombre'       => 'Cecilia Eguiluz D.',
+                'cargo'        => 'Jefa de Unidad Académica',
+                'especialidad' => 'Educación Intercultural',
+                'descripcion'  => 'Especialista en educación intercultural bilingüe con amplia trayectoria en gestión pedagógica y formación docente en contextos de diversidad cultural.',
+                'foto'         => 'img/docentes/Cecilia-Eguiluz.png',
+                'cv'           => 'pdf/03-TUPA-EESPP-2025-08022024.pdf',
+            ],
+            [
+                'nombre'       => 'Richard Suarez',
+                'cargo'        => 'Coordinadora de Formación Continua',
+                'especialidad' => 'Formación Docente',
+                'descripcion'  => 'Docente comprometida con la innovación pedagógica y el desarrollo profesional continuo, con experiencia en diseño curricular y evaluación educativa.',
+                'foto'         => 'img/docentes/Richard-Suarez.png',
+                'cv'           => null,
+            ],
+            [
+                'nombre'       => 'Cecilia Mar S.',
+                'cargo'        => 'Coordinadora de Práctica Pre Profesional',
+                'especialidad' => 'Práctica Pedagógica',
+                'descripcion'  => 'Experta en acompañamiento y supervisión de prácticas pre profesionales, con enfoque en el desarrollo de competencias pedagógicas en contextos reales.',
+                'foto'         => 'img/docentes/Cecilia-Mar-foto.jpg',
+                'cv'           => null,
+            ],
+            [
+                'nombre'       => 'Carlos Andrés Guevara Z.',
+                'cargo'        => 'Coord. de Bienestar y Empleabilidad',
+                'especialidad' => 'Orientación Educativa',
+                'descripcion'  => 'Especialista en bienestar estudiantil y empleabilidad docente, con experiencia en programas de tutoría y acompañamiento integral al estudiante.',
+                'foto'         => null,
+                'cv'           => null,
+            ],
+            [
+                'nombre'       => 'María Graciela Guevara Valdivia',
+                'cargo'        => 'Coordinadora de Calidad',
+                'especialidad' => 'Gestión de Calidad Educativa',
+                'descripcion'  => 'Especialista en procesos de aseguramiento de la calidad educativa, autoevaluación institucional y mejora continua de programas de formación docente.',
+                'foto'         => null,
+                'cv'           => null,
+            ],
+            [
+                'nombre'       => 'Carlos Andrés',
+                'cargo'        => 'Coord. de Investigación y Práctica',
+                'especialidad' => 'Investigación Educativa',
+                'descripcion'  => 'Docente investigador con experiencia en metodologías cualitativas aplicadas a contextos educativos interculturales y comunitarios.',
+                'foto'         => null,
+                'cv'           => null,
+            ],
+        ];
+
+        return view('foot.plana-docente', compact('docentes'));
+    }
+
     public function politica()
     {
         return view('foot.politica-de-privacidad');

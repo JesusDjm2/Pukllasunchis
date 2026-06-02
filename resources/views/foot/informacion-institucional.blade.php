@@ -101,7 +101,7 @@
                     </div> 
                     <div class="col-lg-4 mb-4">
                         <div class="card text-center pt-4">
-                            <a href="" target="_blank">
+                            <a href="{{ route('planaDocente') }}">
                                 <div style="height: 100px">
                                     <img height="100%" src="{{ asset('img/min/plana-docente-eesp-pukllasunchis.png') }}"
                                         alt="Ficha de Inscrición Pukllasunchis">

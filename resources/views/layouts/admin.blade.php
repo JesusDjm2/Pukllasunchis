@@ -19,167 +19,163 @@
 </head>
 
 <body id="page-top">
-<script>var _pt=localStorage.getItem('puklla-theme');if(_pt==='dark')document.body.classList.add('dark-mode');else if(_pt==='dim')document.body.classList.add('dim-mode');</script>
+    <script>
+        var _pt = localStorage.getItem('puklla-theme');
+        if (_pt === 'dark') document.body.classList.add('dark-mode');
+        else if (_pt === 'dim') document.body.classList.add('dim-mode');
+    </script>
     <div id="wrapper">
         <div id="preloader">
-            <div class="loader"></div>
+            <img class="pl-logo" src="{{ asset('admin/img/Logo-Pukllasunchis-blanco.png') }}" alt="Pukllasunchis">
+            <p class="pl-name">Pukllasunchis</p>
+            <p class="pl-tagline">Sistema de Gestión</p>
+            <div class="pl-dots"><span></span><span></span><span></span></div>
+            <div class="pl-bar"></div>
         </div>
         @hasanyrole('super-admin|admin|docente|adminB|tutor')
-        <ul class="navbar-nav sidebar sidebar-dark accordion
+            <ul class="navbar-nav sidebar sidebar-dark accordion
             @role('super-admin') bg-gradient-superadmin @else bg-gradient-primary @endrole"
-            id="accordionSidebar">
-            {{-- Logo --}}
-            <div class="sidebar-brand d-flex align-items-center justify-content-center">
-                <div class="sidebar-brand-icon">
-                    <img src="{{ asset('admin/img/Logo-Pukllasunchis-blanco.png') }}"
-                        alt="Logo Pukllasunchis" class="sidebar-logo-img">
-                </div>
-            </div>
-
-            {{-- ══════════ SECCIÓN ADMIN ══════════ --}}
-            @hasanyrole('super-admin|admin')
-            <hr class="sidebar-divider sidebar-logo-divider">
-            @role('super-admin')
-            <div class="sidebar-heading" style="font-size:.65rem;letter-spacing:.08em;opacity:.7;">
-                <i class="fas fa-crown fa-xs mr-1"></i> Super Administración
-            </div>
-            @else
-            <div class="sidebar-heading" style="font-size:.65rem;letter-spacing:.08em;opacity:.7;">
-                <i class="fas fa-shield-alt fa-xs mr-1"></i> Administración
-            </div>
-            @endrole
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#sGestion">
-                    <i class="fas fa-fw fa-book"></i><span>Gestión académica</span>
-                </a>
-                <div id="sGestion" class="collapse" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">Programas y estructura:</h6>
-                        <a class="collapse-item" href="{{ route('programa.index') }}">Programas</a>
-                        <a class="collapse-item" href="{{ route('ciclo.index') }}">Ciclos</a>
-                        <a class="collapse-item" href="{{ route('curso.index') }}">Cursos</a>
-                        <a class="collapse-item" href="{{ route('competencias.index') }}">Competencias</a>
-                        <a class="collapse-item" href="{{ route('capacidades.index') }}">Capacidades</a>
-                        <a class="collapse-item" href="{{ route('estandares.index') }}">Estándares</a>
-                        <a class="collapse-item" href="{{ route('enfoques.index') }}">Enfoques</a>
-                        <a class="collapse-item" href="{{ route('proyectos.index') }}">Proyectos integradores</a>
-                        <a class="collapse-item" href="{{ route('periodoactual.index') }}">Periodos</a>
+                id="accordionSidebar">
+                {{-- Logo --}}
+                <div class="sidebar-brand d-flex align-items-center justify-content-center">
+                    <div class="sidebar-brand-icon">
+                        <img src="{{ asset('admin/img/Logo-Pukllasunchis-blanco.png') }}" alt="Logo Pukllasunchis"
+                            class="sidebar-logo-img">
                     </div>
                 </div>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('admin') }}">
-                    <i class="fas fa-fw fa-users-cog"></i><span>Perfiles</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('docente.index') }}">
-                    <i class="fas fa-fw fa-chalkboard-teacher"></i><span>Docentes</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#sAlumnos">
-                    <i class="fas fa-fw fa-graduation-cap"></i><span>Matriculados</span>
-                </a>
-                <div id="sAlumnos" class="collapse" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">Gestionar alumnos:</h6>
-                        <a class="collapse-item" href="{{ route('adminAlumnos') }}">Alumnos FID</a>
-                        <a class="collapse-item" href="{{ route('alumnosppd') }}">Alumnos PPD</a>
-                        <a class="collapse-item" href="{{ route('alumnos.demograficos') }}">Datos demográficos</a>
+
+                {{-- ══════════ SECCIÓN ADMIN ══════════ --}}
+                @hasanyrole('super-admin|admin')
+                    <hr class="sidebar-divider sidebar-logo-divider">
+                    @role('super-admin')
+                        <div class="sidebar-heading" style="font-size:.65rem;letter-spacing:.08em;opacity:.7;">
+                            <i class="fas fa-crown fa-xs mr-1"></i> Super Administración
+                        </div>
+                    @else
+                        <div class="sidebar-heading" style="font-size:.65rem;letter-spacing:.08em;opacity:.7;">
+                            <i class="fas fa-shield-alt fa-xs mr-1"></i> Administración
+                        </div>
+                    @endrole
+                    <li class="nav-item">
+                        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#sGestion">
+                            <i class="fas fa-fw fa-book"></i><span>Gestión académica</span>
+                        </a>
+                        <div id="sGestion" class="collapse" data-parent="#accordionSidebar">
+                            <div class="bg-white py-2 collapse-inner rounded">
+                                <h6 class="collapse-header">Programas y estructura:</h6>
+                                <a class="collapse-item" href="{{ route('programa.index') }}">Programas</a>
+                                <a class="collapse-item" href="{{ route('ciclo.index') }}">Ciclos</a>
+                                <a class="collapse-item" href="{{ route('curso.index') }}">Cursos</a>
+                                <a class="collapse-item" href="{{ route('competencias.index') }}">Competencias</a>
+                                <a class="collapse-item" href="{{ route('capacidades.index') }}">Capacidades</a>
+                                <a class="collapse-item" href="{{ route('estandares.index') }}">Estándares</a>
+                                <a class="collapse-item" href="{{ route('enfoques.index') }}">Enfoques</a>
+                                <a class="collapse-item" href="{{ route('proyectos.index') }}">Proyectos integradores</a>
+                                <a class="collapse-item" href="{{ route('periodoactual.index') }}">Periodos</a>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('admin') }}">
+                            <i class="fas fa-fw fa-users-cog"></i><span>Perfiles</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('docente.index') }}">
+                            <i class="fas fa-fw fa-chalkboard-teacher"></i><span>Docentes</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#sAlumnos">
+                            <i class="fas fa-fw fa-graduation-cap"></i><span>Matriculados</span>
+                        </a>
+                        <div id="sAlumnos" class="collapse" data-parent="#accordionSidebar">
+                            <div class="bg-white py-2 collapse-inner rounded">
+                                <h6 class="collapse-header">Gestionar alumnos:</h6>
+                                <a class="collapse-item" href="{{ route('adminAlumnos') }}">Alumnos FID</a>
+                                <a class="collapse-item" href="{{ route('alumnosppd') }}">Alumnos PPD</a>
+                                <a class="collapse-item" href="{{ route('alumnos.demograficos') }}">Datos demográficos</a>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#sAdmision">
+                            <i class="fas fa-fw fa-user-plus"></i><span>Admisión</span>
+                        </a>
+                        <div id="sAdmision" class="collapse" data-parent="#accordionSidebar">
+                            <div class="bg-white py-2 collapse-inner rounded">
+                                <h6 class="collapse-header">Proceso de admisión:</h6>
+                                <a class="collapse-item" href="{{ route('regulares.index') }}">Postulantes FID</a>
+                                <a class="collapse-item" href="{{ route('postulantes.ppd.index') }}">Postulantes PPD</a>
+                                <a class="collapse-item" href="{{ route('admin-fids.index') }}">Admisiones</a>
+                            </div>
+                        </div>
+                    </li>
+                @endrole
+
+                {{-- ══════════ SECCIÓN BOLSA/COMUNICADOS (admin y/o adminB) ══════════ --}}
+                @hasanyrole('super-admin|admin|adminB')
+                    <hr class="sidebar-divider d-none d-md-block">
+                    <div class="sidebar-heading" style="font-size:.65rem;letter-spacing:.08em;opacity:.7;">
+                        <i class="fas fa-bullhorn fa-xs mr-1"></i> Bolsa y Comunicados
                     </div>
-                </div>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#sAdmision">
-                    <i class="fas fa-fw fa-user-plus"></i><span>Admisión</span>
-                </a>
-                <div id="sAdmision" class="collapse" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">Proceso de admisión:</h6>
-                        <a class="collapse-item" href="{{ route('regulares.index') }}">Postulantes FID</a>
-                        <a class="collapse-item" href="{{ route('postulantes.ppd.index') }}">Postulantes PPD</a>
-                        <a class="collapse-item" href="{{ route('admin-fids.index') }}">Admisiones</a>
+                    <li class="nav-item">
+                        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#sBolsa">
+                            <i class="fas fa-fw fa-briefcase"></i><span>Bolsa y Comunicados</span>
+                        </a>
+                        <div id="sBolsa" class="collapse" data-parent="#accordionSidebar">
+                            <div class="bg-white py-2 collapse-inner rounded">
+                                @role('adminB')
+                                    <h6 class="collapse-header">Gestión de bolsa:</h6>
+                                    <a class="collapse-item" href="{{ route('trabajo.index') }}">Lista de registros</a>
+                                    <a class="collapse-item" href="{{ route('trabajo.create') }}">Registrar nuevo</a>
+                                    <a class="collapse-item" href="{{ route('listaPostulantes') }}">Postulantes</a>
+                                @endrole
+                                @role('admin')
+                                    <h6 class="collapse-header">Gestión pública:</h6>
+                                    <a class="collapse-item" href="{{ route('bolsa-trabajo.ofertas.index') }}">Bolsa de
+                                        Trabajo</a>
+                                    <a class="collapse-item" href="{{ route('admin.comunicados.index') }}">Comunicados</a>
+                                @endrole
+                            </div>
+                        </div>
+                    </li>
+                @endhasanyrole
+
+                {{-- ══════════ SECCIÓN TUTOR ══════════ --}}
+                @role('tutor')
+                    <hr class="sidebar-divider d-none d-md-block">
+                    <div class="sidebar-heading" style="font-size:.65rem;letter-spacing:.08em;opacity:.7;">
+                        <i class="fas fa-chalkboard-teacher fa-xs mr-1"></i> Tutor
                     </div>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('tutor.dashboard') }}">
+                            <i class="fas fa-fw fa-chalkboard-teacher"></i><span>Panel de Tutor</span>
+                        </a>
+                    </li>
+                @endrole
+
+                {{-- ══════════ COMUNES ══════════ --}}
+                <hr class="sidebar-divider d-none d-md-block">
+                <li class="nav-item">
+                    <a class="nav-link" href="https://sites.google.com/pukllavirtual.edu.pe/bibliotecaeesppuklla/inicio"
+                        target="_blank">
+                        <i class="fas fa-fw fa-book-open"></i><span>Biblioteca</span>
+                    </a>
+                </li>
+                <hr class="sidebar-divider d-none d-md-block">
+                <div class="text-center d-none d-md-inline">
+                    <button class="rounded-circle border-0" id="sidebarToggle"></button>
                 </div>
-            </li>
-            @endrole
-
-            {{-- ══════════ MINK'ARIKUY (solo super-admin) ══════════ --}}
-            @role('super-admin')
-            <hr class="sidebar-divider d-none d-md-block">
-            <div class="sidebar-heading" style="font-size:.65rem;letter-spacing:.08em;opacity:.7;">
-                <i class="fas fa-qrcode fa-xs mr-1"></i> Mink'arikuy
-            </div>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('admin.minkarikuy.index') }}">
-                    <i class="fas fa-fw fa-qrcode"></i><span>Mink'arikuy</span>
-                </a>
-            </li>
-            @endrole
-
-            {{-- ══════════ SECCIÓN BOLSA/COMUNICADOS (admin y/o adminB) ══════════ --}}
-            @hasanyrole('super-admin|admin|adminB')
-            <hr class="sidebar-divider d-none d-md-block">
-            <div class="sidebar-heading" style="font-size:.65rem;letter-spacing:.08em;opacity:.7;">
-                <i class="fas fa-bullhorn fa-xs mr-1"></i> Bolsa y Comunicados
-            </div>
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#sBolsa">
-                    <i class="fas fa-fw fa-briefcase"></i><span>Bolsa y Comunicados</span>
-                </a>
-                <div id="sBolsa" class="collapse" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        @role('adminB')
-                        <h6 class="collapse-header">Gestión de bolsa:</h6>
-                        <a class="collapse-item" href="{{ route('trabajo.index') }}">Lista de registros</a>
-                        <a class="collapse-item" href="{{ route('trabajo.create') }}">Registrar nuevo</a>
-                        <a class="collapse-item" href="{{ route('listaPostulantes') }}">Postulantes</a>
-                        @endrole
-                        @role('admin')
-                        <h6 class="collapse-header">Gestión pública:</h6>
-                        <a class="collapse-item" href="{{ route('bolsa-trabajo.ofertas.index') }}">Bolsa de Trabajo</a>
-                        <a class="collapse-item" href="{{ route('admin.comunicados.index') }}">Comunicados</a>
-                        @endrole
-                    </div>
-                </div>
-            </li>
-            @endhasanyrole
-
-            {{-- ══════════ SECCIÓN TUTOR ══════════ --}}
-            @role('tutor')
-            <hr class="sidebar-divider d-none d-md-block">
-            <div class="sidebar-heading" style="font-size:.65rem;letter-spacing:.08em;opacity:.7;">
-                <i class="fas fa-chalkboard-teacher fa-xs mr-1"></i> Tutor
-            </div>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('tutor.dashboard') }}">
-                    <i class="fas fa-fw fa-chalkboard-teacher"></i><span>Panel de Tutor</span>
-                </a>
-            </li>
-            @endrole
-
-            {{-- ══════════ COMUNES ══════════ --}}
-            <hr class="sidebar-divider d-none d-md-block">
-            <li class="nav-item">
-                <a class="nav-link" href="https://sites.google.com/pukllavirtual.edu.pe/bibliotecaeesppuklla/inicio" target="_blank">
-                    <i class="fas fa-fw fa-book-open"></i><span>Biblioteca</span>
-                </a>
-            </li>
-            <hr class="sidebar-divider d-none d-md-block">
-            <div class="text-center d-none d-md-inline">
-                <button class="rounded-circle border-0" id="sidebarToggle"></button>
-            </div>
-        </ul>
+            </ul>
         @endhasanyrole
 
         @role('alumno')
             <ul class="navbar-nav bg-gradient-info sidebar sidebar-dark accordion" id="accordionSidebar">
-                <a class="sidebar-brand d-flex align-items-center justify-content-center"
-                    href="{{ route('index') }}">
+                <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{{ route('index') }}">
                     <div class="sidebar-brand-icon">
-                        <img src="{{ asset('admin/img/Logo-Pukllasunchis-blanco.png') }}"
-                            alt="Logo Pukllasunchis" class="sidebar-logo-img">
+                        <img src="{{ asset('admin/img/Logo-Pukllasunchis-blanco.png') }}" alt="Logo Pukllasunchis"
+                            class="sidebar-logo-img">
                     </div>
                 </a>
                 <hr class="sidebar-divider sidebar-logo-divider">
@@ -224,11 +220,10 @@
         @endrole
         @role('alumnoB')
             <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
-                <a class="sidebar-brand d-flex align-items-center justify-content-center"
-                    href="{{ route('index') }}">
+                <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{{ route('index') }}">
                     <div class="sidebar-brand-icon">
-                        <img src="{{ asset('admin/img/Logo-Pukllasunchis-blanco.png') }}"
-                            alt="Logo Pukllasunchis" class="sidebar-logo-img">
+                        <img src="{{ asset('admin/img/Logo-Pukllasunchis-blanco.png') }}" alt="Logo Pukllasunchis"
+                            class="sidebar-logo-img">
                     </div>
                 </a>
                 <hr class="sidebar-divider sidebar-logo-divider">
@@ -282,27 +277,24 @@
                     {{-- Acceso rápido a la web pública (oculto en xs) --}}
                     @role('super-admin')
                         {{-- Super Admin: botón premium con identidad visual SA --}}
-                        <a href="{{ route('index') }}"
-                           class="sa-home-btn d-none d-md-inline-flex ml-2"
-                           title="Volver a la página principal">
+                        <a href="{{ route('index') }}" class="sa-home-btn d-none d-md-inline-flex ml-2"
+                            title="Volver a la página principal">
                             <i class="fas fa-home fa-sm"></i>
                             <span>Página principal</span>
                         </a>
                     @else
                         @hasanyrole('admin|adminB|tutor')
-                        <a href="{{ route('index') }}"
-                           class="font-weight-bold d-none d-sm-inline ml-1"
-                           style="font-size:.9rem; color:#1f6feb; text-decoration:none;">
-                            Ir a la página principal
-                        </a>
+                            <a href="{{ route('index') }}" class="font-weight-bold d-none d-sm-inline ml-1"
+                                style="font-size:.9rem; color:#1f6feb; text-decoration:none;">
+                                Ir a la página principal
+                            </a>
                         @endhasanyrole
                     @endrole
 
                     {{-- Navegación derecha --}}
                     <ul class="navbar-nav ml-auto align-items-center">
                         <li class="nav-item d-flex align-items-center">
-                            <button id="darkModeToggle" type="button"
-                                title="Cambiar a modo oscuro"
+                            <button id="darkModeToggle" type="button" title="Cambiar a modo oscuro"
                                 aria-label="Cambiar tema claro/oscuro">
                                 <i class="fas fa-moon" id="darkModeIcon"></i>
                             </button>
@@ -310,25 +302,28 @@
                         <div class="topbar-divider d-none d-sm-block"></div>
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle d-flex align-items-center" href="#"
-                               id="userDropdown" role="button"
-                               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true"
+                                aria-expanded="false">
                                 <i class="fas fa-user-circle fa-fw mr-1 text-gray-400 d-sm-none"></i>
                                 <span class="d-none d-sm-inline mr-1" style="font-size:.85rem;">
                                     @if (Auth::check() && Auth::user())
                                         @php
                                             $primerNombre = explode(' ', trim((string) Auth::user()->name))[0] ?? '';
-                                            $primerApellido = explode(' ', trim((string) Auth::user()->apellidos))[0] ?? '';
+                                            $primerApellido =
+                                                explode(' ', trim((string) Auth::user()->apellidos))[0] ?? '';
                                         @endphp
                                         Hola {{ trim($primerNombre . ' ' . $primerApellido) }}!
                                     @endif
                                 </span>
                             </a>
                             <div class="dropdown-menu dropdown-menu-right shadow" aria-labelledby="userDropdown">
-                                <div class="dropdown-header d-sm-none text-truncate px-3 py-2" style="font-size:.8rem;">
+                                <div class="dropdown-header d-sm-none text-truncate px-3 py-2"
+                                    style="font-size:.8rem;">
                                     @if (Auth::check() && Auth::user())
                                         @php
                                             $primerNombre = explode(' ', trim((string) Auth::user()->name))[0] ?? '';
-                                            $primerApellido = explode(' ', trim((string) Auth::user()->apellidos))[0] ?? '';
+                                            $primerApellido =
+                                                explode(' ', trim((string) Auth::user()->apellidos))[0] ?? '';
                                         @endphp
                                         Hola {{ trim($primerNombre . ' ' . $primerApellido) }}!
                                     @endif
@@ -339,63 +334,14 @@
                                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
                                     {{ __('Cerrar sesión') }}
                                 </a>
-                                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                                <form id="logout-form" action="{{ route('logout') }}" method="POST"
+                                    class="d-none">
                                     @csrf
                                 </form>
                             </div>
                         </li>
                     </ul>
                 </nav>
-                {{-- @if (isset($periodoActual) && $periodoActual->horario)
-                    <div class="modal fade" id="modalHorario" tabindex="-1" aria-labelledby="modalHorarioLabel"
-                        aria-hidden="true">
-                        <div class="modal-dialog modal-xl modal-dialog-centered">
-                            <div class="modal-content">
-                                <div class="modal-body text-center bg-light position-relative">
-                                    <button type="button" class="btn btn-danger float-right" data-bs-dismiss="modal"
-                                        aria-label="Cerrar">✕</button>
-                                    <img src="{{ asset($periodoActual->horario) }}"
-                                        alt="Horario {{ $periodoActual->nombre }}" loading="lazy"
-                                        class="img-fluid rounded shadow">
-                                </div>
-                                <div class="modal-footer justify-content-center">
-                                    <button type="button" class="btn btn-secondary btn-sm"
-                                        data-bs-dismiss="modal">Cerrar</button>
-                                    <a href="{{ asset($periodoActual->horario) }}" target="_blank"
-                                        class="btn btn-primary btn-sm">Ver en nueva pestaña</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                @endif
-                @if (isset($periodoActualPpd) && $periodoActualPpd->calendario)
-                    <div class="modal fade" id="modalHorarioPpd" tabindex="-1"
-                        aria-labelledby="modalHorarioPpdLabel" aria-hidden="true">
-                        <div class="modal-dialog modal-xl modal-dialog-centered">
-                            <div class="modal-content">
-                                <div class="modal-body text-center bg-light position-relative">
-                                    <button type="button" class="btn btn-danger float-right" data-bs-dismiss="modal"
-                                        aria-label="Cerrar">✕</button>
-                                    @if (Str::endsWith($periodoActualPpd->calendario, ['.jpg', '.jpeg', '.png', '.webp']))
-                                        <img src="{{ asset($periodoActualPpd->calendario) }}"
-                                            alt="Calendario {{ $periodoActualPpd->nombre }}" loading="lazy"
-                                            class="img-fluid rounded shadow">
-                                    @else
-                                        <iframe src="{{ asset($periodoActualPpd->calendario) }}" class="w-100"
-                                            style="height: 80vh;" frameborder="0"></iframe>
-                                    @endif
-                                </div>
-
-                                <div class="modal-footer justify-content-center">
-                                    <button type="button" class="btn btn-secondary btn-sm"
-                                        data-bs-dismiss="modal">Cerrar</button>
-                                    <a href="{{ asset($periodoActualPpd->calendario) }}" target="_blank"
-                                        class="btn btn-primary btn-sm">Abrir en nueva pestaña</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                @endif --}}
                 @yield('contenido')
             </div>
             <footer class="sticky-footer bg-white">
@@ -413,9 +359,11 @@
         <i class="fas fa-angle-up"></i>
     </a>
     <script>
-        window.addEventListener('load', function() {
-            const preloader = document.getElementById('preloader');
-            if (preloader) preloader.style.display = 'none';
+        document.addEventListener('DOMContentLoaded', function () {
+            var pl = document.getElementById('preloader');
+            if (!pl) return;
+            pl.classList.add('pl-out');
+            setTimeout(function () { pl.style.display = 'none'; }, 90);
         });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -431,40 +379,48 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-    (function () {
-        var THEME_KEY = 'puklla-theme';
-        var body   = document.body;
-        var toggle = document.getElementById('darkModeToggle');
-        var icon   = document.getElementById('darkModeIcon');
+        (function() {
+            var THEME_KEY = 'puklla-theme';
+            var body = document.body;
+            var toggle = document.getElementById('darkModeToggle');
+            var icon = document.getElementById('darkModeIcon');
 
-        var CYCLE  = ['light', 'dim', 'dark'];
-        var ICONS  = { light: 'fas fa-moon', dim: 'fas fa-adjust', dark: 'fas fa-sun' };
-        var TITLES = { light: 'Modo tenue', dim: 'Modo oscuro', dark: 'Modo claro' };
+            var CYCLE = ['light', 'dim', 'dark'];
+            var ICONS = {
+                light: 'fas fa-moon',
+                dim: 'fas fa-adjust',
+                dark: 'fas fa-sun'
+            };
+            var TITLES = {
+                light: 'Modo tenue',
+                dim: 'Modo oscuro',
+                dark: 'Modo claro'
+            };
 
-        function getTheme() {
-            if (body.classList.contains('dark-mode')) return 'dark';
-            if (body.classList.contains('dim-mode'))  return 'dim';
-            return 'light';
-        }
+            function getTheme() {
+                if (body.classList.contains('dark-mode')) return 'dark';
+                if (body.classList.contains('dim-mode')) return 'dim';
+                return 'light';
+            }
 
-        function applyTheme(theme) {
-            body.classList.remove('dark-mode', 'dim-mode');
-            if (theme === 'dark') body.classList.add('dark-mode');
-            if (theme === 'dim')  body.classList.add('dim-mode');
-            localStorage.setItem(THEME_KEY, theme);
-            if (icon)   icon.className = ICONS[theme];
-            if (toggle) toggle.setAttribute('title', TITLES[theme]);
-        }
+            function applyTheme(theme) {
+                body.classList.remove('dark-mode', 'dim-mode');
+                if (theme === 'dark') body.classList.add('dark-mode');
+                if (theme === 'dim') body.classList.add('dim-mode');
+                localStorage.setItem(THEME_KEY, theme);
+                if (icon) icon.className = ICONS[theme];
+                if (toggle) toggle.setAttribute('title', TITLES[theme]);
+            }
 
-        applyTheme(getTheme());
+            applyTheme(getTheme());
 
-        if (toggle) {
-            toggle.addEventListener('click', function () {
-                var next = CYCLE[(CYCLE.indexOf(getTheme()) + 1) % CYCLE.length];
-                applyTheme(next);
-            });
-        }
-    })();
+            if (toggle) {
+                toggle.addEventListener('click', function() {
+                    var next = CYCLE[(CYCLE.indexOf(getTheme()) + 1) % CYCLE.length];
+                    applyTheme(next);
+                });
+            }
+        })();
     </script>
 </body>
 

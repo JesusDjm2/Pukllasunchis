@@ -40,29 +40,15 @@ class AlumnoController extends Controller
                 ? $alumno->matriculas()->where('periodo_actual_id', $periodoActual->id)->exists()
                 : false;
 
-            /*
-             * Cursos del alumno para el período actual:
-             *   FUENTE PRIMARIA → ciclo->cursos (todos los cursos del ciclo al que pertenece)
-             *   EXTRAS          → alumno_cursos filtrado por periodo_actual_id
-             *                     SOLO se añaden si ciclo_id ≠ alumno->ciclo_id
-             *                     (cursos de otro ciclo asignados explícitamente por el admin)
-             *
-             * alumno_cursos NO es la fuente primaria; es únicamente para asignaciones
-             * extracurriculares de ciclos distintos al propio del alumno.
-             */
-            // Base: todos los cursos del ciclo propio (ya cargados vía eager load)
-            $cursosBase = $alumno->ciclo ? $alumno->ciclo->cursos : collect();
+            // Fuente primaria: asignaciones explícitas en alumno_cursos para el período actual.
+            // Fallback: todos los cursos del ciclo propio si no hay asignaciones.
+            $cursosAsignados = $periodoActual
+                ? $alumno->cursosDelPeriodo($periodoActual->id)->with('ciclo')->get()
+                : collect();
 
-            // Extras: cursos de OTROS ciclos asignados para el período actual
-            $cursosExtra = collect();
-            if ($periodoActual) {
-                $cursosExtra = $alumno->cursosDelPeriodo($periodoActual->id)
-                    ->get()
-                    ->filter(fn ($c) => $c->ciclo_id !== $alumno->ciclo_id);
-            }
-
-            // Unión sin duplicados
-            $cursosDelAlumno = $cursosBase->merge($cursosExtra)->unique('id')->values();
+            $cursosDelAlumno = $cursosAsignados->isNotEmpty()
+                ? $cursosAsignados
+                : ($alumno->ciclo ? $alumno->ciclo->cursos : collect());
 
             return view('alumnos.vistasAlumnos.index', compact(
                 'alumno', 'usuario', 'periodoActual', 'yaMatriculado', 'cursosDelAlumno'
@@ -491,25 +477,19 @@ class AlumnoController extends Controller
             return optional($p->periodoActual)->nombre ?? 'Sin periodo';
         })->sortKeys();
 
-        /*
-         * Cursos para "Período actual":
-         *   PRIMARIO → ciclo->cursos (todos los cursos del ciclo propio)
-         *   EXTRAS   → alumno_cursos del período actual de OTRO ciclo
-         */
         $periodoActual = PeriodoActual::where('actual', true)->first();
 
-        $cursosBase  = $alumno->ciclo ? $alumno->ciclo->cursos : collect();
-        $cursosExtra = collect();
-        if ($periodoActual) {
-            $cursosExtra = $alumno->cursosDelPeriodo($periodoActual->id)
-                ->get()
-                ->filter(fn ($c) => $c->ciclo_id !== $alumno->ciclo_id);
-        }
-        $cursosDelAlumno = $cursosBase->merge($cursosExtra)->unique('id')->values();
+        $cursosAsignados = $periodoActual
+            ? $alumno->cursosDelPeriodo($periodoActual->id)->with('ciclo')->get()
+            : collect();
+
+        $cursosDelAlumno = $cursosAsignados->isNotEmpty()
+            ? $cursosAsignados
+            : ($alumno->ciclo ? $alumno->ciclo->cursos : collect());
 
         return view(
             'alumnos.vistasAlumnos.calificaciones',
-            compact('alumno', 'periodosAgrupados', 'cursosDelAlumno')
+            compact('alumno', 'periodosAgrupados', 'cursosDelAlumno', 'periodoActual')
         );
     }
 

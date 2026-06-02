@@ -26,14 +26,14 @@ class AppServiceProvider extends ServiceProvider
         });
         view()->composer('layouts.admin', function ($view) {
             $admision = AdminFid::where('estado', true)->first();
-            $periodoActualPpd = PeriodoActualPpd::where('actual', true)->first();
+            $periodoActualPpd = PeriodoActualPpd::actual();
 
             $view->with('admision', $admision);
             $view->with('periodoActualPpd', $periodoActualPpd);
         });
 
         Paginator::useBootstrap();
-        $periodoActual = PeriodoActual::where('actual', true)->first();
+        $periodoActual = PeriodoActual::actual();
 
         View::composer('layouts.docente', function ($view) use ($periodoActual) {
             if (auth()->check()) {

@@ -31,7 +31,7 @@ class ImportarMatriculadosExcel extends Command
         if ($periodoId) {
             $periodo = PeriodoActual::find((int) $periodoId);
         } else {
-            $periodo = PeriodoActual::where('actual', true)->first();
+            $periodo = PeriodoActual::actual();
         }
 
         if (! $periodo) {

@@ -19,7 +19,7 @@ class vistasAlumnosController extends Controller
         $ciclos = Ciclo::all();
         $user = auth()->user();
         if ($user) {
-            $periodoActual = PeriodoActual::where('actual', true)->first();
+            $periodoActual = PeriodoActual::actual();
             $alumno = $user->alumno;
             $yaMatriculado = false;
             if ($periodoActual && $alumno) {

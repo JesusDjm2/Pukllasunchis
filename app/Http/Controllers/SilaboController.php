@@ -30,7 +30,7 @@ class SilaboController extends Controller
     public function create(Request $request)
     {
         $proyectos = Proyecto::all();
-        $periodoActual = PeriodoActual::where('actual', true)->first();
+        $periodoActual = PeriodoActual::actual();
         $enfoques = Enfoques::all();
         $curso = Curso::findOrFail($request->curso_id);
         $docente = Docente::findOrFail($request->docente_id);
@@ -61,7 +61,7 @@ class SilaboController extends Controller
 
     public function store(Request $request)
     {
-        $periodoActual = PeriodoActual::where('actual', true)->first();
+        $periodoActual = PeriodoActual::actual();
 
         if (! $periodoActual) {
             return redirect()->back()->with('error', 'No hay un periodo activo configurado.');

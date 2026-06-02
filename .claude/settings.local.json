@@ -16,7 +16,10 @@
       "Bash(php -l app/Http/Controllers/AlumnoCursoController.php)",
       "Bash(php -l app/Http/Controllers/AlumnoController.php)",
       "Bash(php -l app/Models/Alumno.php)",
-      "Bash(php -r \"echo json_decode\\(file_get_contents\\('composer.json'\\), true\\)['require']['spatie/laravel-permission'] ?? 'no encontrado';\")"
+      "Bash(php -r \"echo json_decode\\(file_get_contents\\('composer.json'\\), true\\)['require']['spatie/laravel-permission'] ?? 'no encontrado';\")",
+      "Bash(grep -rn 'getValidationRules\\\\|rules\\(\\)\\\\|protected $rules' c:/xampp/htdocs/Puklla2025/app/)",
+      "Bash(php \"c:/xampp/htdocs/Puklla2026/artisan\" route:list --name=\"curso.show\")",
+      "Bash(powershell -command \"\\(Get-Item 'c:\\\\xampp\\\\htdocs\\\\Puklla2026\\\\public\\\\admin\\\\img\\\\Logo-Pukllasunchis-blanco.png'\\).length / 1KB\")"
     ]
   }
 }

@@ -40,7 +40,7 @@ class LoginController extends Controller
 
     protected function authenticated(Request $request, $user)
     {
-        if ($user->hasRole('admin')) {
+        if ($user->hasRole('super-admin') || $user->hasRole('admin')) {
             return redirect()->route('admin')->with('userData', $user);
         } elseif ($user->hasRole('docente')) {
             return redirect()->route('vistaDocente', ['docente' => $user->docente->id]);

@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends($layout ?? 'layouts.admin')
 @section('contenido')
     <div class="container-fluid">
         <div class="d-sm-flex align-items-center justify-content-between mb-4"
@@ -180,6 +180,17 @@
                                     <label class="form-check-label" for="role_{{ $val }}">{{ $label }}</label>
                                 </div>
                             @endforeach
+                            @hasrole('super-admin')
+                                <div class="form-check mt-1">
+                                    <input class="form-check-input role-checkbox" type="checkbox"
+                                        name="roles[]" value="super-admin" id="role_superadmin"
+                                        {{ in_array('super-admin', $selectedRoles) ? 'checked' : '' }}>
+                                    <label class="form-check-label font-weight-bold" for="role_superadmin"
+                                           style="color:#7c3aed;">
+                                        <i class="fas fa-crown fa-xs mr-1"></i>Super Admin
+                                    </label>
+                                </div>
+                            @endhasrole
                             @error('roles')
                                 <div class="text-danger small mt-1">{{ $message }}</div>
                             @enderror

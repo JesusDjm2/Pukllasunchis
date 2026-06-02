@@ -223,15 +223,15 @@
                         carta modelo de Aceptación de Trabajo de Investigación.
                     </li>
                 </ul>
-                
-                
+
+
                 <div class="row mb-3">
                     <div class="col-lg-12">
                         <h3 class="mt-3 linea-debajo">Para pagos Ordinarios:</h3>
                         <p>
                             Los pagos ordinarios <strong>SOLO SE PUEDEN PAGAR EN VENTANILLAS</strong> de cualquier agencia a
                             nivel nacional de CAJA CUSCO. <a class="text-primary" target="_blank"
-                                href="{{ asset('pdf/PAGOS-ORDINARIOS-2026-I.pdf') }}">Ver PDF para
+                                href="{{ asset('pdf/Conceptos-ordinarios-caja-cusco-2026-2.pdf') }}">Ver PDF para
                                 pagos<small><i class="fa fa-eye"></i></small></a>
                         </p>
                     </div>
@@ -250,60 +250,7 @@
             </div>
         </div>
     </div>
-    <!-- Pop-up Modal -->
-    <div class="modal-overlay" id="modalOverlay"></div>
-    <div class="modal" id="modal">
-        <div class="modal-header text-center">
-            <h4 class="mx-auto font-weight-bold">¿Cómo pagar en Caja Cusco?</h4>
-        </div>
-        <div class="modal-body">
-            <p class="font-weight-bold">Todos los pagos del proceso de titulación son pagos ordinarios. <small
-                    class="text-danger">
-                    <i class="font-weight-bold">(No se considera pago ordinario matriculas ni cuotas semestrales.)</i>
-                </small></p>
-            <ul>
-                <li> <span class="span">1</span>
-                    Acercarse a las oficinas de <span class="text-danger font-weight-bold">Caja Cusco</span> e indicar que
-                    realizarás un pago ordinario de la Asociación
-                    Pukllasunchis.
-                </li>
-                <li>
-					<span class="span">2</span>
-                    Indicar el concepto y código de pago.<a class="text-primary" target="_blank"
-                        href="{{ asset('pdf/PAGOS-ORDINARIOS-2026-I.pdf') }}"> Ver PDF para
-                        pagos<small><i class="fa fa-eye"></i></small></a>
-                </li>
-                <li><span class="span">3</span>
-                    Indicar en ventanilla el número de DNI y nombre del estudiante.
-                </li>
-                <li><span class="span">4</span>
-                    <strong>NO</strong> es necesario enviar el voucher ya que en el lapso de <strong>2 días hábiles</strong>
-                    le llegará la boleta electrónica
-                    emitida por la EESPP a tu correo institucional.
-                </li>
-                <li><span class="span">5</span>
-                    Con esta boleta electrónica podrás realizar tu trámite correspondiente.
-                </li>
-            </ul>
-            <div class="mx-auto text-center mt-3" style="width: 100%;">
-                <button class="btn btn-sm btn-primary" onclick="closeModal()">Cerrar</button>
-            </div>
-        </div>
-    </div>
-    <script>
-        // Función para abrir el modal
-        function openModal() {
-            document.getElementById('modal').style.display = 'block';
-            document.getElementById('modalOverlay').style.display = 'block';
-        }
 
-        // Función para cerrar el modal
-        function closeModal() {
-            document.getElementById('modal').style.display = 'none';
-            document.getElementById('modalOverlay').style.display = 'none';
-        }
-    </script>
-   
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous">
     </script>

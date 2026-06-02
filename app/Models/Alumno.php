@@ -10,17 +10,14 @@ use Illuminate\Database\Eloquent\Model;
 class Alumno extends Model
 {
     use HasFactory;
-
     public function user()
     {
         return $this->belongsTo(User::class);
     }
-
     public function programa()
     {
         return $this->belongsTo(Programa::class);
-    }
-
+    } 
     public function ciclo()
     {
         return $this->belongsTo(Ciclo::class);
@@ -175,6 +172,12 @@ class Alumno extends Model
         'actividades_internet',
         'habilidades',
         'tiempo_libre',
+    ];
+
+    protected $casts = [
+        'bienes_vivienda' => 'array',
+        'otros_servicios' => 'array',
+        'habilidades' => 'array',
     ];
 
     public static function getValidationRules($updating = false, $id = null)

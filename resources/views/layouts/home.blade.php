@@ -257,6 +257,9 @@
             </div>
         </div>
     </header>
+    {{-- GSAP disponible antes del contenido para animaciones inline --}}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
     @yield('contenido')
     <footer class="footer">
         <div class="footer_top">

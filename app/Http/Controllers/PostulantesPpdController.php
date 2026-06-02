@@ -220,7 +220,6 @@ class PostulantesPpdController extends Controller
             }
         }
 
-        dd($data);
         // Actualizar el postulante
         $postulante->update($data);
 

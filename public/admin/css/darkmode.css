@@ -49,9 +49,7 @@ body.dark-mode.docente-panel #content-wrapper {
     background-color: #0d1117 !important;
 }
 
-body.dark-mode #preloader {
-    background-color: #0d1117 !important;
-}
+/* #preloader tiene fondo propio oscuro, no necesita override de dark-mode */
 
 /* ── Topbar ── */
 body.dark-mode .topbar {
@@ -431,9 +429,7 @@ body.dim-mode.docente-panel #content-wrapper {
     background-color: #0f172a !important;
 }
 
-body.dim-mode #preloader {
-    background-color: #0f172a !important;
-}
+/* #preloader tiene fondo propio oscuro, no necesita override de dim-mode */
 
 /* ── Topbar ── */
 body.dim-mode .topbar {

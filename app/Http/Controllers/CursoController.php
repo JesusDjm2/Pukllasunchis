@@ -301,7 +301,6 @@ class CursoController extends Controller
 
         $programa = $curso->ciclo->programa;
         $ciclo = $curso->ciclo;
-        $alumno = auth()->user()->alumnoB;
 
         $usersPrograma = User::where('programa_id', $programa->id)
             ->with('alumnoB')
@@ -312,11 +311,19 @@ class CursoController extends Controller
         $alumnos = $alumnosPrograma->merge($alumnosRelacionados)->unique('id')->values();
         $cantidadAlumnos = $alumnos->count();
         $docentes = $curso->docentes;
+
         if (auth()->check() && auth()->user()->hasRole('alumnoB')) {
+            $alumno = auth()->user()->alumnoB;
             return view('alumnos.ppd.curso', compact('curso', 'alumnos', 'docentes', 'cantidadAlumnos', 'alumno'));
         }
 
-        return view('admin.curso.show', compact('curso', 'alumnos', 'cantidadAlumnos', 'docentes'));
+        if (auth()->check() && auth()->user()->hasRole('alumno')) {
+            $alumno = auth()->user()->alumno;
+            return view('alumnos.vistasAlumnos.curso', compact('curso', 'docentes', 'alumno'));
+        }
+
+        $alumno = null;
+        return view('admin.curso.show', compact('curso', 'alumnos', 'cantidadAlumnos', 'docentes', 'alumno'));
     }
 
     public function destroy(Curso $curso)

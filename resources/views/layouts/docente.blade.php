@@ -529,7 +529,7 @@
                     <div class="copyright text-center my-auto small text-muted">
                         <span>Copyright &copy; {{ date('Y') }} · <a class="text-primary"
                                 href="https://www.facebook.com/DjmWebMaster" target="_blank"
-                                rel="noopener noreferrer">DJM2</a> · v2025.2</span>
+                                rel="noopener noreferrer">DJM2</a> · v2026.2</span>
                     </div>
                 </div>
             </footer>

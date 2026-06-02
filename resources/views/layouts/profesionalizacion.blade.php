@@ -36,7 +36,7 @@
                     <span>Ficha Técnica</span>
                 </a>
             </li>
-            
+
 
             {{-- 
             <hr class="sidebar-divider d-none d-md-block">
@@ -137,12 +137,12 @@
                         <span>Copyright &copy; {{ date('Y') }} | Hecho por <a class="text-primary"
                                 href="https://www.facebook.com/DjmWebMaster" target="_blank"
                                 rel="noopener noreferrer">
-                                DJM2</a></span>
+                                DJM2</a> | Versión 2026.2
+                        </span>
                     </div>
                 </div>
             </footer>
         </div>
-
     </div>
     <a class="scroll-to-top rounded" href="#page-top">
         <i class="fas fa-angle-up"></i>

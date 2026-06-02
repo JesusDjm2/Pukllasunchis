@@ -198,59 +198,22 @@
                             </a>
                         </div>
                     </div>
+                    <div class="col-lg-4 col-6 text-center mb-3">
+                        <div class="card">
+                            <a href="https://docs.google.com/forms/d/1m7kWkj6C_Uoz252CHr_IsM1xkRhygy5DsCYKl_bH36E/edit"
+                                target="_blank">
+                                <div style="height: 100px">
+                                    <img height="100%" src="{{ asset('img/min/cambio.png') }}"
+                                        alt="Formulario de cambio de Asesor">
+                                </div>
+                                <p class="text-center">Formulario de cambio de Asesor<br>
+                                    <small class="text-info">Llenar este formulario para solicitar cambio de asesor<br>
+                                        Código: 13,00 - Costo: s/30,00</small>
+                                </p>
+                            </a>
+                        </div>
+                    </div>
                 </div>
-
-                {{-- <ul class="listasCuerpo">
-                    <li>Modificación o cambio de tema de investigación. (Costo: S/ 30.00)
-                        <small>
-                            <a href="https://forms.gle/BZkUAmeHVyDfWuvu7" target="_blank" class="text-primary"> Enlace <i
-                                    class="fa fa-external-link"></i></a>
-                        </small>
-                    </li>
-                    <li>Disolución del grupo de investigación. (Costo: S/ 30.00)
-                        <small>
-                            <a href="https://forms.gle/Ud4m3WAprGyAjRSj6" target="_blank" class="text-primary">
-                                Enlace <i class="fa fa-external-link"></i></a>
-                        </small>
-                    </li>
-                    <li>Extensión de plazo. (Costo: S/ 50.00)
-                        <small>
-                            <a href="https://forms.gle/nZFvLRoRLTXbmikp9" target="_blank" class="text-primary">
-                                Enlace <i class="fa fa-external-link"></i></a>
-                        </small>
-                    </li>
-                    <li>Anulacion de Resolución Directoral de PTI. (Costo: S/ 50.00)
-                        <small>
-                            <a href="https://forms.gle/caBr9kMvu5tStzTS8" target="_blank" class="text-primary">
-                                Enlace <i class="fa fa-external-link"></i></a>
-                        </small>
-                    </li>
-                    <li>Asesoría adicional.
-                        <small><a
-                                href="https://docs.google.com/forms/d/18yuH2gbrM5GVr8DHGvYeA7t5hrBIx9aXyIsbAcEdIAs/viewform?edit_requested=true"
-                                target="_blank" class="text-primary">
-                                Enlace <i class="fa fa-external-link"></i>
-                            </a>
-                        </small>
-                    </li>
-                     <li>Cambio de Asesor
-                        <small><a
-                                href="https://docs.google.com/forms/d/e/1FAIpQLSe95m3LlPs8Ii-ZtWGxCL7ZQktBcu7eEzeMmBFTbIHBl-NclA/viewform"
-                                target="_blank" class="text-primary">
-                                Enlace <i class="fa fa-external-link"></i>
-                            </a>
-                        </small>
-                    </li> 
-                    <li>Cambio de tema (Costo: s/30.00)
-                        <small><a
-                                href="https://docs.google.com/forms/d/e/1FAIpQLSdA5VN9oAVh_aetqvoMwoZmuuez42ki3Y0xjQqXTgLygGkbrw/viewform"
-                                target="_blank" class="text-primary">
-                                Enlace <i class="fa fa-external-link"></i>
-                            </a>
-                        </small>
-                    </li>
-                </ul> --}}
-
 
                 {{-- <h2 class="mt-4 linea-debajo">Documentos para el proceso de aprobación de PTI</h2> --}}
                 <!-- Pop-up Modal -->

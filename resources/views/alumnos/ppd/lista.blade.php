@@ -114,32 +114,29 @@
                 </div>
             </div>
 
-            {{-- Buscador servidor --}}
+            {{-- Buscador client-side --}}
             <div class="col-12 mb-2">
-                <form id="searchForm" action="{{ route('alumnosppd') }}" method="GET">
+                <form id="searchForm" onsubmit="return false">
                     <div class="input-group mb-2">
                         <input type="text" class="form-control form-control-sm"
-                            placeholder="Buscar por nombre, apellido o DNI..." name="search" id="searchInput"
-                            value="{{ request('search') }}">
-                        <input type="hidden" name="search_page" value="true">
+                            placeholder="Buscar por nombre, apellido o DNI..." id="searchInput"
+                            value="{{ request('search') }}" autocomplete="off">
                         <div class="input-group-append">
-                            <button class="btn btn-sm btn-outline-secondary" type="submit">Buscar</button>
+                            <button class="btn btn-sm btn-outline-secondary" type="button" id="searchButton">Buscar</button>
                         </div>
                     </div>
                     <p class="small text-muted mb-0">La búsqueda recorre <strong>todos</strong> los alumnos PPD
                         (sin filtrar por programa ni ciclo).</p>
-                    @if (!empty($busquedaActiva))
-                        <p class="small text-info mb-0 mt-1">
-                            <i class="fas fa-info-circle"></i> Filtros de programa/ciclo no aplican mientras haya texto
-                            en el buscador.
-                        </p>
-                    @endif
+                    <p class="small text-info mb-0 mt-1" id="busquedaActivaPpd"
+                        @if(empty($busquedaActiva)) style="display:none" @endif>
+                        <i class="fas fa-info-circle"></i> Filtros de programa/ciclo no aplican mientras haya texto en el buscador.
+                    </p>
                 </form>
             </div>
 
             {{-- Tabla --}}
             <div class="col-12">
-                <div class="table-responsive">
+                <div class="table-responsive" id="ppd-tabla-responsive">
                     <table class="table table-hover" style="font-size: 14px">
                         <thead class="thead-dark">
                             <tr>
@@ -464,5 +461,39 @@
 
             refreshPpdPreview();
         });
+
+        (function () {
+            var input     = document.getElementById('searchInput');
+            var container = document.getElementById('ppd-tabla-responsive');
+            var aviso     = document.getElementById('busquedaActivaPpd');
+            if (!input || !container) return;
+
+            var urlSearch = new URLSearchParams(window.location.search).get('search') || '';
+
+            function filtrar(term) {
+                term = (term || '').toLowerCase().trim();
+                if (!term && urlSearch) {
+                    window.location.href = '{{ route("alumnosppd") }}';
+                    return;
+                }
+                var rows = container.querySelectorAll('tbody tr');
+                var grupoActual = null, grupoVisible = false;
+                rows.forEach(function (row) {
+                    if (row.classList.contains('table-active')) {
+                        if (grupoActual) grupoActual.style.display = grupoVisible ? '' : 'none';
+                        grupoActual = row; grupoVisible = false;
+                    } else {
+                        var v = !term || row.textContent.toLowerCase().includes(term);
+                        row.style.display = v ? '' : 'none';
+                        if (v) grupoVisible = true;
+                    }
+                });
+                if (grupoActual) grupoActual.style.display = grupoVisible ? '' : 'none';
+                if (aviso) aviso.style.display = term ? '' : 'none';
+            }
+
+            if (input.value) filtrar(input.value);
+            input.addEventListener('input', function () { filtrar(this.value); });
+        }());
     </script>
 @endsection

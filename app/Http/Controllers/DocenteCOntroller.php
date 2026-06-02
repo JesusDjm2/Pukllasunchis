@@ -26,7 +26,7 @@ class DocenteCOntroller extends Controller
 
     public function vistaDocente($docenteId)
     {
-        $periodoActual = PeriodoActual::where('actual', true)->first();
+        $periodoActual = PeriodoActual::actual();
         $nombrePeriodoActual = $periodoActual->nombre ?? null;
         $docente = Docente::findOrFail($docenteId);
         $user = $docente->user;

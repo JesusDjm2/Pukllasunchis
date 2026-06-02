@@ -25,9 +25,22 @@ class PeriodoActualPpd extends Model
         return $this->hasMany(PeriodoPpd::class, 'periodo_actual_ppd_id');
     }
 
+    /**
+     * Obtener el periodo PPD actual con caché
+     */
+    public static function actual(): ?self
+    {
+        return cache()->remember('periodo_actual_ppd', 3600, function () {
+            return self::where('actual', true)->first();
+        });
+    }
+
     protected static function boot()
     {
         parent::boot();
+        static::saved(function ($model) {
+            cache()->forget('periodo_actual_ppd');
+        });
         static::saving(function ($model) {
             if ($model->actual) {
                 // Desactivar otros períodos actuales

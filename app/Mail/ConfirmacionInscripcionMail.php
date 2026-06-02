@@ -6,12 +6,13 @@ use App\Models\AdminFid;
 use App\Models\PostulantesRegular;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class ConfirmacionInscripcionMail extends Mailable
+class ConfirmacionInscripcionMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
     public $postulante;    

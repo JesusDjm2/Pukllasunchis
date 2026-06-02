@@ -173,7 +173,7 @@
                         <span>Copyright &copy; {{ date('Y') }} | Hecho por <a class="text-primary"
                                 href="https://www.facebook.com/DjmWebMaster" target="_blank"
                                 rel="noopener noreferrer">
-                                DJM2 </a> | Versión 2025.2</span>
+                                DJM2 </a> | Versión 2026.2</span>
                     </div>
                 </div>
             </footer>

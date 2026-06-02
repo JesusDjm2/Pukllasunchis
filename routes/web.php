@@ -57,6 +57,7 @@ Route::get('informacion/bolsa-de-trabajo', [EnlacesController::class, 'bolsa'])-
 
 //Foot
 Route::get('informacion-institucional', [EnlacesController::class, 'informacion'])->name('informacion');
+Route::get('informacion-institucional/plana-docente', [EnlacesController::class, 'planaDocente'])->name('planaDocente');
 Route::get('politica-de-privacidad', [EnlacesController::class, 'politica'])->name('politica');
 Route::get('terminos-y-condiciones', [EnlacesController::class, 'terminos'])->name('terminos');
 

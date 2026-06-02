@@ -32,7 +32,13 @@
 
 <div id="wrapper">
     {{-- ══ PRELOADER ══ --}}
-    <div id="preloader"><div class="loader"></div></div>
+    <div id="preloader">
+        <img class="pl-logo" src="{{ asset('admin/img/Logo-Pukllasunchis-blanco.png') }}" alt="Pukllasunchis">
+        <p class="pl-name">Pukllasunchis</p>
+        <p class="pl-tagline">Sistema de Gestión</p>
+        <div class="pl-dots"><span></span><span></span><span></span></div>
+        <div class="pl-bar"></div>
+    </div>
 
     {{-- ══════════════════════════════════════════════════════
          SIDEBAR — Solo para Super Admin
@@ -283,7 +289,7 @@
                         &nbsp;|&nbsp;Hecho por
                         <a class="text-primary" href="https://www.facebook.com/DjmWebMaster"
                            target="_blank" rel="noopener noreferrer">DJM2</a>
-                        &nbsp;|&nbsp;Versión 2025.1
+                        &nbsp;|&nbsp;Versión 2026.2
                     </span>
                 </div>
             </div>
@@ -298,9 +304,11 @@
 
 {{-- ══ SCRIPTS ══ --}}
 <script>
-    window.addEventListener('load', function () {
-        var preloader = document.getElementById('preloader');
-        if (preloader) preloader.style.display = 'none';
+    document.addEventListener('DOMContentLoaded', function () {
+        var pl = document.getElementById('preloader');
+        if (!pl) return;
+        pl.classList.add('pl-out');
+        setTimeout(function () { pl.style.display = 'none'; }, 90);
     });
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

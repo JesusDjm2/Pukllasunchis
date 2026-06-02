@@ -72,6 +72,8 @@ class AdminController extends Controller
             ? (int) $request->input('periodo_id')
             : ($periodoActual?->id);
 
+        $soloBecas = $request->get('solo_becas') === '1';
+
         $query = $this->alumnosFidFilteredQuery($request);
 
         if ($periodoFiltroId) {
@@ -101,6 +103,7 @@ class AdminController extends Controller
         $totalesPorCicloId = Alumno::query()
             ->whereHas('user', fn ($sub) => $this->applyAlumnoFidUserConstraints($sub))
             ->when($periodoFiltroId, fn ($q) => $q->whereHas('matriculas', fn ($m) => $m->where('periodo_actual_id', $periodoFiltroId)))
+            ->when($soloBecas, fn ($q) => $q->whereHas('user', fn ($u) => $u->where('beca', 1)))
             ->whereNotNull('ciclo_id')
             ->selectRaw('ciclo_id, COUNT(*) as total')
             ->groupBy('ciclo_id')
@@ -112,10 +115,13 @@ class AdminController extends Controller
         }
 
         $programasFiltro = Programa::query()
-            ->whereHas('alumnos', function ($q) use ($periodoFiltroId) {
+            ->whereHas('alumnos', function ($q) use ($periodoFiltroId, $soloBecas) {
                 $q->whereHas('user', fn ($sub) => $this->applyAlumnoFidUserConstraints($sub));
                 if ($periodoFiltroId) {
                     $q->whereHas('matriculas', fn ($m) => $m->where('periodo_actual_id', $periodoFiltroId));
+                }
+                if ($soloBecas) {
+                    $q->whereHas('user', fn ($u) => $u->where('beca', 1));
                 }
             })
             ->orderBy('nombre')
@@ -125,10 +131,13 @@ class AdminController extends Controller
         if ($request->filled('programa_id')) {
             $ciclosFiltro = Ciclo::query()
                 ->where('programa_id', (int) $request->input('programa_id'))
-                ->whereHas('alumnos', function ($q) use ($periodoFiltroId) {
+                ->whereHas('alumnos', function ($q) use ($periodoFiltroId, $soloBecas) {
                     $q->whereHas('user', fn ($sub) => $this->applyAlumnoFidUserConstraints($sub));
                     if ($periodoFiltroId) {
                         $q->whereHas('matriculas', fn ($m) => $m->where('periodo_actual_id', $periodoFiltroId));
+                    }
+                    if ($soloBecas) {
+                        $q->whereHas('user', fn ($u) => $u->where('beca', 1));
                     }
                 })
                 ->orderBy('id')
@@ -137,11 +146,14 @@ class AdminController extends Controller
 
         $ciclosParaExportacion = Ciclo::query()
             ->with('programa')
-            ->whereHas('alumnos', function ($q) use ($periodoFiltroId) {
+            ->whereHas('alumnos', function ($q) use ($periodoFiltroId, $soloBecas) {
                 $q->whereHas('user', fn ($sub) => $this->applyAlumnoFidUserConstraints($sub))
                     ->whereNotNull('ciclo_id');
                 if ($periodoFiltroId) {
                     $q->whereHas('matriculas', fn ($m) => $m->where('periodo_actual_id', $periodoFiltroId));
+                }
+                if ($soloBecas) {
+                    $q->whereHas('user', fn ($u) => $u->where('beca', 1));
                 }
             })
             ->orderBy('programa_id')
@@ -149,6 +161,10 @@ class AdminController extends Controller
             ->get();
 
         $todosLosPeriodos = PeriodoActual::orderBy('nombre', 'asc')->get();
+
+        if ($request->boolean('partial')) {
+            return view('alumnos._tabla_fid', compact('alumnos', 'conteoGrupoListado', 'totalesPorCicloId'));
+        }
 
         return view('alumnos.index', compact(
             'alumnos',
@@ -162,6 +178,7 @@ class AdminController extends Controller
             'periodoActual',
             'periodoFiltroId',
             'todosLosPeriodos',
+            'soloBecas',
         ));
     }
 
@@ -196,7 +213,8 @@ class AdminController extends Controller
             ->orderBy('nombres')
             ->get();
 
-        $nombreArchivo = 'alumnos_fid_'.now()->format('Y-m-d_His').'.xlsx';
+        $prefijo = $request->get('solo_becas') === '1' ? 'alumnos_becas_fid' : 'alumnos_fid';
+        $nombreArchivo = $prefijo.'_'.now()->format('Y-m-d_His').'.xlsx';
 
         return Excel::download(new AlumnosFidExport($alumnos), $nombreArchivo);
     }
@@ -274,6 +292,10 @@ class AdminController extends Controller
             ->orderBy('id')
             ->get();
 
+        if ($request->boolean('partial')) {
+            return view('alumnos.ppd._tabla_ppd', compact('alumnos', 'conteoGrupoListado', 'totalesPorCicloId'));
+        }
+
         return view('alumnos.ppd.lista', compact(
             'alumnos',
             'totalRecords',
@@ -348,8 +370,9 @@ class AdminController extends Controller
         $programas = Programa::all();
         $ciclos = Ciclo::all();
         $cursos = Curso::all();
+        $layout = auth()->user()?->hasRole('super-admin') ? 'layouts.superadmin' : 'layouts.admin';
 
-        return view('admin.create', compact('programas', 'ciclos', 'cursos'));
+        return view('admin.create', compact('programas', 'ciclos', 'cursos', 'layout'));
     }
 
     public function edit($id)
@@ -361,8 +384,9 @@ class AdminController extends Controller
         $currentRoles = $admin->getRoleNames()->toArray();
         $currentCicloId = $admin->ciclo_id;
         $departamentosData = Departamento::all();
+        $layout = auth()->user()?->hasRole('super-admin') ? 'layouts.superadmin' : 'layouts.admin';
 
-        return view('admin.edit', compact('admin', 'programas', 'ciclos', 'currentRoles', 'currentCicloId', 'currentProgramId', 'departamentosData'));
+        return view('admin.edit', compact('admin', 'programas', 'ciclos', 'currentRoles', 'currentCicloId', 'currentProgramId', 'departamentosData', 'layout'));
     }
 
     public function store(Request $request)
@@ -679,6 +703,10 @@ class AdminController extends Controller
                         });
                 }
             });
+        }
+
+        if ($request->get('solo_becas') === '1') {
+            $query->whereHas('user', fn ($q) => $q->where('beca', 1));
         }
 
         return $query;
