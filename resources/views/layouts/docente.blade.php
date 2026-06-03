@@ -1,6 +1,7 @@
 @php
     $docente = $docente ?? auth()->user()?->docente;
     $cursosDocente = $docente?->cursos ?? collect();
+    $cursosAsincronicos = $docente?->cursosEspeciales ?? collect();
     $mostrarAlumnosFid = $cursosDocente->contains(function ($curso) {
         return !str_contains(strtoupper(optional(optional($curso)->ciclo?->programa)->nombre ?? ''), 'PPD');
     });
@@ -360,6 +361,15 @@
                     <span>Calificar</span>
                 </a>
             </li>
+            <hr class="sidebar-divider d-none d-md-block">
+            <li class="nav-item mt-2">
+                <a class="nav-link {{ request()->routeIs('ce.docente.*') ? 'active' : '' }}"
+                   href="{{ route('ce.docente.index') }}">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>Cursos Asincrónicos</span>
+                </a>
+            </li>
+            <hr class="sidebar-divider d-none d-md-block">
             <li class="nav-item mt-2">
                 <a class="nav-link collapsed" href="{{ route('repositorio', $docente->id) }}">
                     <i class="fas fa-file-pdf"></i>

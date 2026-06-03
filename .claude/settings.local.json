@@ -19,7 +19,12 @@
       "Bash(php -r \"echo json_decode\\(file_get_contents\\('composer.json'\\), true\\)['require']['spatie/laravel-permission'] ?? 'no encontrado';\")",
       "Bash(grep -rn 'getValidationRules\\\\|rules\\(\\)\\\\|protected $rules' c:/xampp/htdocs/Puklla2025/app/)",
       "Bash(php \"c:/xampp/htdocs/Puklla2026/artisan\" route:list --name=\"curso.show\")",
-      "Bash(powershell -command \"\\(Get-Item 'c:\\\\xampp\\\\htdocs\\\\Puklla2026\\\\public\\\\admin\\\\img\\\\Logo-Pukllasunchis-blanco.png'\\).length / 1KB\")"
+      "Bash(powershell -command \"\\(Get-Item 'c:\\\\xampp\\\\htdocs\\\\Puklla2026\\\\public\\\\admin\\\\img\\\\Logo-Pukllasunchis-blanco.png'\\).length / 1KB\")",
+      "Bash(Get-ChildItem -Path \"C:\\\\xampp\\\\htdocs\\\\Puklla2026\\\\app\\\\Models\" -File)",
+      "Bash(xargs sed -i \"s/@extends\\('layouts.admin'\\)/@extends\\('layouts.superadmin'\\)/g\")",
+      "WebFetch(domain:www.youtube.com)",
+      "Bash(composer dump-autoload *)",
+      "Bash(Get-ChildItem -Path \"c:\\\\xampp\\\\htdocs\\\\Puklla2026\\\\app\\\\Http\\\\Controllers\" -Filter \"*ocente*\" -Recurse)"
     ]
   }
 }

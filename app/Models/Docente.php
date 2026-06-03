@@ -36,4 +36,9 @@ class Docente extends Model
     {
         return $this->hasMany(Incidencia::class);
     }
+
+    public function cursosEspeciales()
+    {
+        return $this->hasMany(\App\Models\CursosEspeciales\CursoEspecial::class, 'docente_id');
+    }
 }

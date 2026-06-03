@@ -20,6 +20,7 @@
     {{-- Super Admin exclusivo (sin conflicto con admin.blade.php) --}}
     <link rel="stylesheet" href="{{ asset('admin/css/superadmin.css') }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    @stack('styles')
 </head>
 
 <body id="page-top">
@@ -140,35 +141,43 @@
 
         <hr class="sidebar-divider d-none d-md-block">
 
-        {{-- ══ SECCIÓN: MINK'ARIKUY ══ --}}
+        {{-- ══ SECCIÓN: BOLSA Y COMUNICADOS ══ --}}
         <div class="sidebar-heading">
-            <i class="fas fa-qrcode fa-xs"></i> Mink'arikuy
+            <i class="fas fa-bullhorn fa-xs"></i> publicaciones internas
         </div>
         <li class="nav-item">
-            <a class="nav-link {{ request()->routeIs('admin.minkarikuy.index') ? 'active' : '' }}"
-               href="{{ route('admin.minkarikuy.index') }}">
-                <i class="fas fa-fw fa-qrcode"></i><span>Mink'arikuy</span>
+            <a class="nav-link {{ request()->routeIs('bolsa-trabajo.*', 'admin.comunicados.*', 'admin.minkarikuy.*') ? '' : 'collapsed' }}"
+               href="#" data-toggle="collapse" data-target="#saBolsa"
+               aria-expanded="{{ request()->routeIs('bolsa-trabajo.*', 'admin.comunicados.*', 'admin.minkarikuy.*') ? 'true' : 'false' }}"
+               aria-controls="saBolsa">
+                <i class="fas fa-fw fa-briefcase"></i><span>Bolsa y Comunicados</span>
             </a>
+            <div id="saBolsa" class="collapse {{ request()->routeIs('bolsa-trabajo.*', 'admin.comunicados.*', 'admin.minkarikuy.*') ? 'show' : '' }}"
+                 data-parent="#accordionSidebar">
+                <div class="bg-white py-2 collapse-inner rounded">
+                    <a class="collapse-item {{ request()->routeIs('bolsa-trabajo.*') ? 'active' : '' }}"
+                       href="{{ route('bolsa-trabajo.ofertas.index') }}">Bolsa de Trabajo</a>
+                    <a class="collapse-item {{ request()->routeIs('admin.comunicados.*') ? 'active' : '' }}"
+                       href="{{ route('admin.comunicados.index') }}">Comunicados</a>
+                    <a class="collapse-item {{ request()->routeIs('admin.minkarikuy.*') ? 'active' : '' }}"
+                       href="{{ route('admin.minkarikuy.index') }}">
+                        <i class="fas fa-qrcode fa-xs mr-1"></i>Mink'arikuy
+                    </a>
+                </div>
+            </div>
         </li>
 
         <hr class="sidebar-divider d-none d-md-block">
 
-        {{-- ══ SECCIÓN: BOLSA Y COMUNICADOS ══ --}}
+        {{-- ══ SECCIÓN: CURSOS ESPECIALES ══ --}}
         <div class="sidebar-heading">
-            <i class="fas fa-bullhorn fa-xs"></i> Bolsa y Comunicados
+            <i class="fas fa-play-circle fa-xs"></i> Formación Asincrónica
         </div>
         <li class="nav-item">
-            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#saBolsa"
-               aria-expanded="false" aria-controls="saBolsa">
-                <i class="fas fa-fw fa-briefcase"></i><span>Bolsa y Comunicados</span>
+            <a class="nav-link {{ request()->routeIs('ce.cursos.*') ? 'active' : '' }}"
+               href="{{ route('ce.cursos.index') }}">
+                <i class="fas fa-fw fa-graduation-cap"></i><span>Cursos Asincrónicos</span>
             </a>
-            <div id="saBolsa" class="collapse" data-parent="#accordionSidebar">
-                <div class="bg-white py-2 collapse-inner rounded">
-                    <h6 class="collapse-header">Gestión pública:</h6>
-                    <a class="collapse-item" href="{{ route('bolsa-trabajo.ofertas.index') }}">Bolsa de Trabajo</a>
-                    <a class="collapse-item" href="{{ route('admin.comunicados.index') }}">Comunicados</a>
-                </div>
-            </div>
         </li>
 
         <hr class="sidebar-divider d-none d-md-block">

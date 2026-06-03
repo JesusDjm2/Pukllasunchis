@@ -2,6 +2,11 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminFidController;
+use App\Http\Controllers\CursosEspeciales\CeAlumnoController;
+use App\Http\Controllers\CursosEspeciales\CeContenidoController;
+use App\Http\Controllers\CursosEspeciales\CeDocenteController;
+use App\Http\Controllers\CursosEspeciales\CeProgresoController;
+use App\Http\Controllers\CursosEspeciales\CursoEspecialController;
 use App\Http\Controllers\AdminPpdController;
 use App\Http\Controllers\AlumnoController;
 use App\Http\Controllers\AlumnoCursoController;
@@ -114,6 +119,48 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/admin/tutor/{user}/ciclos', [AdminController::class, 'tutorCiclosForm'])->name('admin.tutor.ciclos');
     Route::post('/admin/tutor/{user}/ciclos', [AdminController::class, 'tutorCiclosUpdate'])->name('admin.tutor.ciclos.update');
+
+    // ═══════════════════════════════════════════════════════════════
+    // 📚 CURSOS ESPECIALES ASINCRÓNICOS — Panel del Docente
+    // (debe ir ANTES del resource 'docente' para evitar que {docente} capture el prefijo)
+    // ═══════════════════════════════════════════════════════════════
+    Route::middleware('role:docente')
+        ->prefix('docente/mis-cursos-asincronicos')
+        ->name('ce.docente.')
+        ->group(function () {
+            Route::get('/', [CeDocenteController::class, 'index'])->name('index');
+            Route::get('/{curso}', [CeDocenteController::class, 'show'])->name('show');
+            Route::get('/{curso}/edit', [CeDocenteController::class, 'edit'])->name('edit');
+            Route::put('/{curso}', [CeDocenteController::class, 'update'])->name('update');
+
+            // Niveles
+            Route::get('/{curso}/niveles/create', [CeContenidoController::class, 'nivelesCreate'])->name('niveles.create');
+            Route::post('/{curso}/niveles', [CeContenidoController::class, 'nivelesStore'])->name('niveles.store');
+            Route::get('/{curso}/niveles/{nivel}/edit', [CeContenidoController::class, 'nivelesEdit'])->name('niveles.edit');
+            Route::put('/{curso}/niveles/{nivel}', [CeContenidoController::class, 'nivelesUpdate'])->name('niveles.update');
+            Route::delete('/{curso}/niveles/{nivel}', [CeContenidoController::class, 'nivelesDestroy'])->name('niveles.destroy');
+
+            // Unidades
+            Route::get('/{curso}/niveles/{nivel}/unidades/create', [CeContenidoController::class, 'unidadesCreate'])->name('unidades.create');
+            Route::post('/{curso}/niveles/{nivel}/unidades', [CeContenidoController::class, 'unidadesStore'])->name('unidades.store');
+            Route::get('/{curso}/niveles/{nivel}/unidades/{unidad}/edit', [CeContenidoController::class, 'unidadesEdit'])->name('unidades.edit');
+            Route::put('/{curso}/niveles/{nivel}/unidades/{unidad}', [CeContenidoController::class, 'unidadesUpdate'])->name('unidades.update');
+            Route::delete('/{curso}/niveles/{nivel}/unidades/{unidad}', [CeContenidoController::class, 'unidadesDestroy'])->name('unidades.destroy');
+
+            // Lecciones
+            Route::get('/{curso}/niveles/{nivel}/unidades/{unidad}/lecciones/create', [CeContenidoController::class, 'leccionesCreate'])->name('lecciones.create');
+            Route::post('/{curso}/niveles/{nivel}/unidades/{unidad}/lecciones', [CeContenidoController::class, 'leccionesStore'])->name('lecciones.store');
+            Route::get('/{curso}/niveles/{nivel}/unidades/{unidad}/lecciones/{leccion}/edit', [CeContenidoController::class, 'leccionesEdit'])->name('lecciones.edit');
+            Route::put('/{curso}/niveles/{nivel}/unidades/{unidad}/lecciones/{leccion}', [CeContenidoController::class, 'leccionesUpdate'])->name('lecciones.update');
+            Route::delete('/{curso}/niveles/{nivel}/unidades/{unidad}/lecciones/{leccion}', [CeContenidoController::class, 'leccionesDestroy'])->name('lecciones.destroy');
+
+            // Ejercicios
+            Route::get('/{curso}/niveles/{nivel}/unidades/{unidad}/ejercicios/create', [CeContenidoController::class, 'ejerciciosCreate'])->name('ejercicios.create');
+            Route::post('/{curso}/niveles/{nivel}/unidades/{unidad}/ejercicios', [CeContenidoController::class, 'ejerciciosStore'])->name('ejercicios.store');
+            Route::get('/{curso}/niveles/{nivel}/unidades/{unidad}/ejercicios/{ejercicio}/edit', [CeContenidoController::class, 'ejerciciosEdit'])->name('ejercicios.edit');
+            Route::put('/{curso}/niveles/{nivel}/unidades/{unidad}/ejercicios/{ejercicio}', [CeContenidoController::class, 'ejerciciosUpdate'])->name('ejercicios.update');
+            Route::delete('/{curso}/niveles/{nivel}/unidades/{unidad}/ejercicios/{ejercicio}', [CeContenidoController::class, 'ejerciciosDestroy'])->name('ejercicios.destroy');
+        });
 
     // ── Docentes (compartido con admin) ───────────────────────
     Route::resource('docente', DocenteCOntroller::class)->names('docente');
@@ -299,5 +346,64 @@ Route::middleware('auth')->group(function () {
         Route::post('/postulantes/{id}/apto', [PostulantesPpdController::class, 'updateApto']);
 
     }); // fin role:admin
+
+    // ═══════════════════════════════════════════════════════════════
+    // 📚 CURSOS ESPECIALES ASINCRÓNICOS — Vista del alumno
+    // ═══════════════════════════════════════════════════════════════
+    Route::prefix('cursos-especiales')->name('ce.alumno.')->group(function () {
+        Route::get('/', [CeAlumnoController::class, 'index'])->name('index');
+        Route::post('/{curso}/inscribir', [CeAlumnoController::class, 'inscribir'])->name('inscribir');
+        Route::get('/{curso}', [CeAlumnoController::class, 'show'])->name('show');
+        Route::get('/{curso}/leccion/{leccion}', [CeAlumnoController::class, 'leccion'])->name('leccion');
+        Route::get('/{curso}/mi-progreso', [CeAlumnoController::class, 'progreso'])->name('progreso');
+
+        // Progreso
+        Route::post('/{curso}/leccion/{leccion}/completar', [CeProgresoController::class, 'marcarLeccion'])->name('leccion.completar');
+        Route::post('/{curso}/ejercicio/{ejercicio}/resolver', [CeProgresoController::class, 'resolverEjercicio'])->name('ejercicio.resolver');
+    });
+
+    // ═══════════════════════════════════════════════════════════════
+    // 📚 CURSOS ESPECIALES ASINCRÓNICOS — Gestión super-admin
+    // ═══════════════════════════════════════════════════════════════
+    Route::middleware('role:super-admin')
+        ->prefix('admin/cursos-especiales')
+        ->name('ce.cursos.')
+        ->group(function () {
+            Route::get('/', [CursoEspecialController::class, 'index'])->name('index');
+            Route::get('/create', [CursoEspecialController::class, 'create'])->name('create');
+            Route::post('/', [CursoEspecialController::class, 'store'])->name('store');
+            Route::get('/{curso}', [CursoEspecialController::class, 'show'])->name('show');
+            Route::get('/{curso}/edit', [CursoEspecialController::class, 'edit'])->name('edit');
+            Route::put('/{curso}', [CursoEspecialController::class, 'update'])->name('update');
+            Route::delete('/{curso}', [CursoEspecialController::class, 'destroy'])->name('destroy');
+
+            // Niveles
+            Route::get('/{curso}/niveles/create', [CeContenidoController::class, 'nivelesCreate'])->name('niveles.create');
+            Route::post('/{curso}/niveles', [CeContenidoController::class, 'nivelesStore'])->name('niveles.store');
+            Route::get('/{curso}/niveles/{nivel}/edit', [CeContenidoController::class, 'nivelesEdit'])->name('niveles.edit');
+            Route::put('/{curso}/niveles/{nivel}', [CeContenidoController::class, 'nivelesUpdate'])->name('niveles.update');
+            Route::delete('/{curso}/niveles/{nivel}', [CeContenidoController::class, 'nivelesDestroy'])->name('niveles.destroy');
+
+            // Unidades
+            Route::get('/{curso}/niveles/{nivel}/unidades/create', [CeContenidoController::class, 'unidadesCreate'])->name('unidades.create');
+            Route::post('/{curso}/niveles/{nivel}/unidades', [CeContenidoController::class, 'unidadesStore'])->name('unidades.store');
+            Route::get('/{curso}/niveles/{nivel}/unidades/{unidad}/edit', [CeContenidoController::class, 'unidadesEdit'])->name('unidades.edit');
+            Route::put('/{curso}/niveles/{nivel}/unidades/{unidad}', [CeContenidoController::class, 'unidadesUpdate'])->name('unidades.update');
+            Route::delete('/{curso}/niveles/{nivel}/unidades/{unidad}', [CeContenidoController::class, 'unidadesDestroy'])->name('unidades.destroy');
+
+            // Lecciones
+            Route::get('/{curso}/niveles/{nivel}/unidades/{unidad}/lecciones/create', [CeContenidoController::class, 'leccionesCreate'])->name('lecciones.create');
+            Route::post('/{curso}/niveles/{nivel}/unidades/{unidad}/lecciones', [CeContenidoController::class, 'leccionesStore'])->name('lecciones.store');
+            Route::get('/{curso}/niveles/{nivel}/unidades/{unidad}/lecciones/{leccion}/edit', [CeContenidoController::class, 'leccionesEdit'])->name('lecciones.edit');
+            Route::put('/{curso}/niveles/{nivel}/unidades/{unidad}/lecciones/{leccion}', [CeContenidoController::class, 'leccionesUpdate'])->name('lecciones.update');
+            Route::delete('/{curso}/niveles/{nivel}/unidades/{unidad}/lecciones/{leccion}', [CeContenidoController::class, 'leccionesDestroy'])->name('lecciones.destroy');
+
+            // Ejercicios
+            Route::get('/{curso}/niveles/{nivel}/unidades/{unidad}/ejercicios/create', [CeContenidoController::class, 'ejerciciosCreate'])->name('ejercicios.create');
+            Route::post('/{curso}/niveles/{nivel}/unidades/{unidad}/ejercicios', [CeContenidoController::class, 'ejerciciosStore'])->name('ejercicios.store');
+            Route::get('/{curso}/niveles/{nivel}/unidades/{unidad}/ejercicios/{ejercicio}/edit', [CeContenidoController::class, 'ejerciciosEdit'])->name('ejercicios.edit');
+            Route::put('/{curso}/niveles/{nivel}/unidades/{unidad}/ejercicios/{ejercicio}', [CeContenidoController::class, 'ejerciciosUpdate'])->name('ejercicios.update');
+            Route::delete('/{curso}/niveles/{nivel}/unidades/{unidad}/ejercicios/{ejercicio}', [CeContenidoController::class, 'ejerciciosDestroy'])->name('ejercicios.destroy');
+        });
 
 }); // fin auth

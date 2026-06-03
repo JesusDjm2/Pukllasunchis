@@ -1,0 +1,48 @@
+@extends('layouts.superadmin')
+@section('titulo', 'Nuevo Curso Especial')
+
+@push('styles')
+<style>
+.cea-form-page { max-width: 800px; padding-bottom: 2rem; }
+.cea-form-header { padding: 1.5rem 0 1.25rem; border-bottom: 2px solid #f0f0f0; margin-bottom: 1.75rem; }
+.cea-form-header h1 { font-size: 1.35rem; font-weight: 800; color: #2d3561; margin: 0; }
+.cea-form-footer { display: flex; gap: .75rem; flex-wrap: wrap; margin-top: .5rem; }
+.cea-submit-btn {
+    display: inline-flex; align-items: center; gap: .5rem;
+    background: linear-gradient(135deg, #4e73df, #224abe); color: #fff;
+    border: none; border-radius: .6rem; padding: .65rem 1.5rem;
+    font-weight: 700; font-size: .9rem; cursor: pointer; transition: opacity .2s;
+}
+.cea-submit-btn:hover { opacity: .88; }
+.cea-cancel-btn {
+    display: inline-flex; align-items: center; gap: .5rem;
+    background: #f0f0f0; color: #555; border: none; border-radius: .6rem;
+    padding: .65rem 1.2rem; font-weight: 600; font-size: .9rem;
+    text-decoration: none; transition: background .15s;
+}
+.cea-cancel-btn:hover { background: #e0e0e0; text-decoration: none; color: #333; }
+</style>
+@endpush
+
+@section('contenido')
+<div class="container-fluid cea-form-page">
+    <div class="cea-form-header">
+        <h1><i class="fas fa-plus-circle mr-2" style="color:#4e73df"></i>Nuevo Curso Especial</h1>
+    </div>
+
+    @if ($errors->any())
+        <div class="alert alert-danger mb-3">
+            <ul class="mb-0">@foreach ($errors->all() as $e) <li>{{ $e }}</li> @endforeach</ul>
+        </div>
+    @endif
+
+    <form action="{{ route('ce.cursos.store') }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        @include('cursos-especiales.admin._form')
+        <div class="cea-form-footer">
+            <button type="submit" class="cea-submit-btn"><i class="fas fa-save"></i> Crear Curso</button>
+            <a href="{{ route('ce.cursos.index') }}" class="cea-cancel-btn"><i class="fas fa-times"></i> Cancelar</a>
+        </div>
+    </form>
+</div>
+@endsection

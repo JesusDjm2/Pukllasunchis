@@ -61,6 +61,16 @@
                 </a>
             </li>
             <hr class="sidebar-divider d-none d-md-block">
+            <div class="sidebar-heading">
+                Formación Asincrónica
+            </div>
+            <li class="nav-item {{ request()->routeIs('ce.alumno.*') ? 'active' : '' }}">
+                <a class="nav-link collapsed" href="{{ route('ce.alumno.index') }}">
+                    <i class="fas fa-fw fa-graduation-cap"></i>
+                    <span>Cursos Asincrónicos</span>
+                </a>
+            </li>
+            <hr class="sidebar-divider d-none d-md-block">
             <li class="nav-item {{ request()->routeIs('alumno.formatos') ? 'active' : '' }}">
                 <a class="nav-link collapsed" href="{{ route('alumno.formatos') }}">
                     <i class="fas fa-book-open"></i>
@@ -187,7 +197,7 @@
     <script src="{{ asset('admin/vendor/jquery-easing/jquery.easing.min.js') }}"></script>
     <script src="{{ asset('admin/js/sb-admin-2.min.js') }}"></script>
     <script src="{{ asset('admin/js/djm.js') }}"></script>
-
+    @stack('scripts')
 </body>
 
 </html>
