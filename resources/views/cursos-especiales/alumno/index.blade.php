@@ -1,5 +1,5 @@
 @extends('layouts.alumno')
-@section('titulo', 'Cursos Especiales')
+@section('titulo', 'Cursos Asincrónicos')
 
 @push('styles')
 <style>

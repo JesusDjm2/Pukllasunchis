@@ -32,11 +32,20 @@ class CeProgresoController extends Controller
         $correcta = $ejercicio->esCorrecta($request->respuesta);
         $puntaje  = $correcta ? $ejercicio->puntaje_max : 0;
 
-        CeProgresoAlumno::registrarEjercicio(Auth::id(), $ejercicio->id, $puntaje);
+        CeProgresoAlumno::registrarEjercicio(Auth::id(), $ejercicio->id, $puntaje, $correcta);
 
-        $mensaje = $correcta ? '¡Correcto! Bien hecho.' : 'Respuesta incorrecta. Inténtalo nuevamente.';
+        // Volver exactamente al ejercicio (strip fragment anterior por si acaso)
+        $base     = strtok(url()->previous(), '#');
+        $fragment = '#exercise-' . $ejercicio->id;
 
-        return back()->with($correcta ? 'success' : 'error', $mensaje);
+        if ($correcta) {
+            return redirect($base . $fragment)
+                ->with('success', '¡Correcto! Ejercicio completado.');
+        }
+
+        return redirect($base . $fragment)
+            ->with('error_ej_' . $ejercicio->id, true)
+            ->with('resp_ej_'  . $ejercicio->id, $request->respuesta);
     }
 
     private function verificarInscripcion(CursoEspecial $curso): void

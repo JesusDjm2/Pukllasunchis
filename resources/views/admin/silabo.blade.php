@@ -1,4 +1,5 @@
-@extends('layouts.admin')
+﻿@php $layout = auth()->user()?->hasRole('super-admin') ? 'layouts.superadmin' : 'layouts.admin'; @endphp
+@extends($layout)
 @section('titulo', 'Datos del Sílabo')
 @section('contenido')
     <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400&display=swap" rel="stylesheet">
@@ -43,7 +44,7 @@
         }
 
         /* Animación personalizada */
-        @keyframes entradaBoton {
+        @@keyframes entradaBoton {
             0% {
                 opacity: 0;
                 transform: translate(100%, -50%) scale(0.6) rotate(10deg);

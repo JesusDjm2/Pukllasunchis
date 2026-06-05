@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\CursosEspeciales;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\CursosEspeciales\CeCursoEstadisticasTrait;
 use App\Models\CursosEspeciales\CursoEspecial;
 use App\Models\Docente;
 use Illuminate\Http\Request;
@@ -10,9 +11,24 @@ use Illuminate\Support\Facades\Storage;
 
 class CursoEspecialController extends Controller
 {
+    use CeCursoEstadisticasTrait;
+
     public function index()
     {
-        $cursos = CursoEspecial::with('niveles.unidades')->orderBy('orden')->orderBy('nombre')->get();
+        $cursos = CursoEspecial::with([
+            'niveles.unidades.lecciones',
+            'niveles.unidades.ejercicios',
+            'inscripciones.user.programa',
+            'inscripciones.user.ciclo',
+        ])
+            ->withCount('inscripciones')
+            ->orderBy('orden')
+            ->orderBy('nombre')
+            ->get();
+
+        foreach ($cursos as $curso) {
+            $curso->promedio_avance = $this->calcularPromedioAvance($curso);
+        }
 
         return view('cursos-especiales.admin.index', compact('cursos'));
     }
@@ -45,9 +61,16 @@ class CursoEspecialController extends Controller
 
     public function show(CursoEspecial $curso)
     {
-        $curso->load('niveles.unidades.lecciones', 'niveles.unidades.ejercicios');
+        $curso->load([
+            'niveles.unidades.lecciones',
+            'niveles.unidades.ejercicios',
+            'inscripciones.user.programa',
+            'inscripciones.user.ciclo',
+        ]);
 
-        return view('cursos-especiales.admin.show', compact('curso'));
+        $estadisticas = $this->generarEstadisticasPorEstudiante($curso);
+
+        return view('cursos-especiales.admin.show', array_merge(['curso' => $curso], $estadisticas));
     }
 
     public function edit(CursoEspecial $curso)

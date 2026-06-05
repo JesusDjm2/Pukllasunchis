@@ -69,9 +69,10 @@
     display: flex; align-items: center; justify-content: center;
     font-size: 1.05rem; flex-shrink: 0;
 }
-.ce-stat-icon.blue  { background: #e8f0ff; color: var(--ce-blue); }
-.ce-stat-icon.teal  { background: #e0fbf4; color: var(--ce-teal); }
-.ce-stat-icon.amber { background: #fff8e0; color: var(--ce-amber); }
+.ce-stat-icon.blue   { background: #e8f0ff; color: var(--ce-blue); }
+.ce-stat-icon.teal   { background: #e0fbf4; color: var(--ce-teal); }
+.ce-stat-icon.amber  { background: #fff8e0; color: var(--ce-amber); }
+.ce-stat-icon.purple { background: #f0eeff; color: var(--ce-purple); }
 .ce-stat-val { font-size: 1.3rem; font-weight: 800; color: var(--ce-text); line-height: 1; }
 .ce-stat-label { font-size: .75rem; color: var(--ce-muted); margin-top: .15rem; }
 
@@ -158,6 +159,221 @@
     width: 0; transition: width 1s ease .3s;
 }
 
+/* ── Exercises section label ── */
+.ce-content-section-label {
+    display: flex; align-items: center; gap: .45rem;
+    font-size: .74rem; font-weight: 800; letter-spacing: .07em;
+    text-transform: uppercase; color: var(--ce-purple);
+    padding: .75rem 1rem .35rem; opacity: .9;
+}
+.ce-content-section-label span {
+    font-weight: 500; text-transform: none;
+    letter-spacing: 0; opacity: .65; font-size: .76rem;
+}
+
+/* ── Exercise card ── */
+.ce-exercise-card {
+    background: #fff;
+    border: 1.5px solid #e9ecef;
+    border-radius: .85rem;
+    margin: .35rem .75rem .65rem;
+    overflow: hidden;
+    transition: box-shadow .25s, border-color .25s;
+    will-change: transform, opacity;
+}
+.ce-exercise-card:hover { box-shadow: 0 6px 24px rgba(131,56,236,.10); border-color: #d8c8f8; }
+.ce-exercise-card.solved { border-color: var(--ce-teal); background: linear-gradient(135deg,#f0fdf8,#fff); }
+
+.ce-exercise-header {
+    display: flex; align-items: flex-start; gap: .7rem;
+    padding: .85rem 1rem .65rem;
+    background: linear-gradient(135deg,#fafbff,#fff);
+    border-bottom: 1px solid #f0f2f7;
+}
+.ce-exercise-num {
+    width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--ce-purple), var(--ce-blue));
+    color: #fff; display: flex; align-items: center; justify-content: center;
+    font-size: .7rem; font-weight: 800;
+}
+.ce-exercise-meta { flex: 1; min-width: 0; }
+.ce-exercise-pregunta {
+    font-size: .88rem; font-weight: 700; color: var(--ce-text);
+    margin: 0 0 .22rem; line-height: 1.45;
+}
+.ce-exercise-pts {
+    font-size: .73rem; color: var(--ce-muted); display: flex; align-items: center; gap: .3rem; flex-wrap: wrap;
+}
+.ce-exercise-type-chip {
+    display: inline-flex; align-items: center; gap: .25rem;
+    background: #f0eeff; color: var(--ce-purple);
+    border-radius: 99px; padding: .12rem .5rem;
+    font-size: .68rem; font-weight: 700;
+}
+.ce-exercise-badge {
+    font-size: .7rem; font-weight: 700; letter-spacing: .04em;
+    padding: .22rem .6rem; border-radius: 99px; white-space: nowrap; flex-shrink: 0;
+}
+.ce-exercise-badge.pending { background: #fff8e0; color: #d97706; }
+.ce-exercise-badge.solved  { background: #e0fbf4; color: #059669; }
+.ce-exercise-badge.wrong   { background: #fde8e8; color: #e74a3b; }
+
+/* Wrong state card */
+.ce-exercise-card.wrong { border-color: #f5a0a0; }
+.ce-exercise-card.wrong .ce-exercise-header { background: linear-gradient(135deg,#fff8f8,#fff); }
+
+/* Incorrect feedback banner */
+.ce-feedback-wrong {
+    display: flex; align-items: flex-start; gap: .6rem;
+    background: #fff1f0; border: 1px solid #fca5a5;
+    border-radius: .55rem; padding: .65rem .85rem;
+    margin-bottom: .75rem; font-size: .84rem;
+}
+.ce-feedback-wrong i { color: #e74a3b; font-size: 1rem; margin-top: .1rem; flex-shrink: 0; }
+.ce-feedback-wrong strong { display: block; color: #c0392b; font-size: .82rem; margin-bottom: .1rem; }
+.ce-feedback-wrong em { color: #555; font-style: normal; font-weight: 600; }
+
+/* Pre-selected wrong option */
+.ce-option.was-wrong {
+    border-color: #e74a3b !important;
+    background: linear-gradient(135deg,#fff8f8,#fff5f5) !important;
+}
+.ce-option.was-wrong .ce-option-letter { background: #e74a3b !important; color: #fff !important; }
+.ce-option.was-wrong .ce-option-dot {
+    border-color: #e74a3b !important; background: #e74a3b !important;
+    box-shadow: inset 0 0 0 3px #fff !important;
+}
+
+/* ── Option cards (multiple choice) ── */
+.ce-exercise-body { padding: .85rem 1rem 1rem; }
+
+.ce-options-list { display: flex; flex-direction: column; gap: .4rem; }
+
+.ce-option {
+    display: flex; align-items: center; gap: .65rem;
+    padding: .65rem .9rem; border: 1.5px solid #e9ecef;
+    border-radius: .6rem; cursor: pointer;
+    transition: border-color .18s, background .18s, transform .12s;
+    font-size: .87rem; font-weight: 500; color: var(--ce-text);
+    user-select: none;
+}
+.ce-option input[type="radio"] { display: none; }
+.ce-option:hover { border-color: #c4b0f5; background: #faf7ff; transform: translateX(3px); }
+.ce-option.selected { border-color: var(--ce-purple); background: linear-gradient(135deg,#faf5ff,#f3ecff); }
+
+.ce-option-letter {
+    width: 24px; height: 24px; border-radius: .35rem; flex-shrink: 0;
+    background: #f0f0f7; color: var(--ce-muted);
+    display: flex; align-items: center; justify-content: center;
+    font-size: .71rem; font-weight: 800;
+    transition: background .18s, color .18s;
+}
+.ce-option.selected .ce-option-letter { background: var(--ce-purple); color: #fff; }
+
+.ce-option-dot {
+    width: 17px; height: 17px; border-radius: 50%; flex-shrink: 0;
+    border: 2px solid #d0d0e0; background: #fff;
+    transition: border-color .18s, background .18s, box-shadow .18s;
+    display: flex; align-items: center; justify-content: center;
+}
+.ce-option:hover .ce-option-dot { border-color: var(--ce-purple); }
+.ce-option.selected .ce-option-dot {
+    border-color: var(--ce-purple); background: var(--ce-purple);
+    box-shadow: inset 0 0 0 3px #fff;
+}
+
+/* ── Free-text textarea ── */
+.ce-textarea {
+    width: 100%; border: 1.5px solid #e9ecef; border-radius: .6rem;
+    padding: .75rem 1rem; font-size: .87rem; resize: vertical; outline: none;
+    transition: border-color .2s, box-shadow .2s; font-family: inherit;
+    background: #fafbff; color: var(--ce-text);
+}
+.ce-textarea:focus { border-color: var(--ce-purple); box-shadow: 0 0 0 3px rgba(131,56,236,.11); background: #fff; }
+
+/* ── Audio pronunciación ── */
+.ce-audio-pron {
+    background: linear-gradient(135deg,#f0eeff,#e8f4ff);
+    border: 1px solid rgba(131,56,236,.18);
+    border-radius: .65rem;
+    padding: .6rem .85rem .55rem;
+    margin-bottom: .8rem;
+}
+.ce-audio-pron-label {
+    font-size: .7rem; font-weight: 800; letter-spacing: .06em;
+    text-transform: uppercase; color: var(--ce-purple);
+    display: flex; align-items: center; gap: .35rem;
+    margin-bottom: .45rem;
+}
+.ce-audio-pron-player {
+    display: flex; align-items: center; gap: .6rem;
+}
+.ce-audio-play-btn {
+    width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+    background: var(--ce-purple); color: #fff;
+    border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .8rem;
+    transition: transform .15s, background .15s, box-shadow .15s;
+}
+.ce-audio-play-btn:hover { transform: scale(1.1); box-shadow: 0 3px 12px rgba(131,56,236,.35); }
+.ce-audio-play-btn.playing {
+    background: linear-gradient(135deg,var(--ce-purple),var(--ce-blue));
+    animation: ce-pulse-ring .9s ease infinite;
+}
+@@keyframes ce-pulse-ring {
+    0%   { box-shadow: 0 0 0 0   rgba(131,56,236,.5); }
+    70%  { box-shadow: 0 0 0 8px rgba(131,56,236,0);  }
+    100% { box-shadow: 0 0 0 0   rgba(131,56,236,0);  }
+}
+.ce-audio-track { flex: 1; min-width: 0; }
+.ce-audio-bar-wrap {
+    height: 5px; background: rgba(131,56,236,.15);
+    border-radius: 99px; overflow: hidden;
+    cursor: pointer; margin-bottom: .2rem;
+}
+.ce-audio-bar-fill {
+    height: 100%; width: 0;
+    background: linear-gradient(90deg,var(--ce-purple),var(--ce-blue));
+    border-radius: 99px; transition: width .1s linear;
+    pointer-events: none;
+}
+.ce-audio-time {
+    display: flex; justify-content: space-between;
+    font-size: .67rem; font-weight: 600; color: #999;
+}
+
+/* ── Submit button ── */
+.ce-btn-complete {
+    display: inline-flex; align-items: center; gap: .5rem;
+    background: linear-gradient(135deg, var(--ce-teal), #00b894);
+    color: #fff; border: none; border-radius: .65rem;
+    padding: .7rem 1.5rem; font-weight: 700; font-size: .9rem;
+    cursor: pointer; transition: opacity .2s, transform .15s;
+}
+.ce-btn-complete:hover { opacity: .88; transform: scale(1.02); }
+.ce-btn-submit {
+    display: inline-flex; align-items: center; gap: .5rem;
+    background: linear-gradient(135deg, var(--ce-purple), var(--ce-blue));
+    color: #fff; border: none; border-radius: .65rem;
+    padding: .62rem 1.35rem; font-weight: 700; font-size: .87rem;
+    cursor: pointer; margin-top: .8rem;
+    transition: opacity .2s, transform .15s, box-shadow .2s;
+}
+.ce-btn-submit:hover { opacity: .9; transform: scale(1.03); box-shadow: 0 4px 16px rgba(131,56,236,.3); }
+.ce-btn-submit:active { transform: scale(.97); }
+.ce-btn-submit.retry {
+    background: linear-gradient(135deg, #e74a3b, #c0392b);
+}
+
+/* ── Solved row ── */
+.ce-solved-row {
+    display: flex; align-items: center; gap: .6rem;
+    padding: .85rem 1rem;
+    color: var(--ce-teal); font-weight: 700; font-size: .9rem;
+}
+.ce-solved-row i { font-size: 1.2rem; }
+
 @media (max-width: 576px) {
     .ce-sticky-header { flex-wrap: wrap; }
     .ce-stats-row { flex-direction: column; }
@@ -199,30 +415,44 @@
         <div class="ce-stat-icon teal"><i class="fas fa-check-circle"></i></div>
         <div>
             <div class="ce-stat-val">{{ $completadasCount }}</div>
-            <div class="ce-stat-label">Completadas</div>
+                <div class="ce-stat-label">Lecciones completadas</div>
+            </div>
+        </div>
+        <div class="ce-stat">
+            <div class="ce-stat-icon amber"><i class="fas fa-book-open"></i></div>
+            <div>
+                <div class="ce-stat-val">{{ $totalLecciones }}</div>
+                <div class="ce-stat-label">Lecciones totales</div>
+            </div>
+        </div>
+        <div class="ce-stat">
+            <div class="ce-stat-icon purple"><i class="fas fa-tasks"></i></div>
+            <div>
+                <div class="ce-stat-val">{{ $completadasECount }}</div>
+                <div class="ce-stat-label">Ejercicios resueltos</div>
+            </div>
+        </div>
+        <div class="ce-stat">
+            <div class="ce-stat-icon purple"><i class="fas fa-list"></i></div>
+            <div>
+                <div class="ce-stat-val">{{ $totalEjercicios }}</div>
+                <div class="ce-stat-label">Ejercicios totales</div>
+            </div>
         </div>
     </div>
-    <div class="ce-stat">
-        <div class="ce-stat-icon amber"><i class="fas fa-book-open"></i></div>
-        <div>
-            <div class="ce-stat-val">{{ $totalLecciones }}</div>
-            <div class="ce-stat-label">Lecciones totales</div>
-        </div>
-    </div>
-</div>
 
-{{-- Levels accordion --}}
-@forelse ($curso->niveles as $ni => $nivel)
-    <div class="ce-nivel" id="nivel-{{ $nivel->id }}">
-        <button class="ce-nivel-header" onclick="toggleNivel({{ $nivel->id }})">
-            <span class="ce-nivel-num">{{ $ni + 1 }}</span>
-            <span class="ce-nivel-title">{{ $nivel->nombre }}</span>
-            <span class="ce-nivel-meta">{{ $nivel->unidades->count() }} unidades</span>
-            <i class="fas fa-chevron-down ce-nivel-chevron" id="chev-nivel-{{ $nivel->id }}"></i>
-        </button>
+    @forelse ($curso->niveles as $nivel)
+        <div class="ce-nivel">
+            <button class="ce-nivel-header" onclick="toggleNivel({{ $nivel->id }})">
+                <span class="ce-nivel-num">{{ $loop->iteration }}</span>
+                <span class="ce-nivel-title">{{ $nivel->nombre }}</span>
+                <span class="ce-nivel-meta">{{ $nivel->unidades->count() }} unidades</span>
+                <i class="fas fa-chevron-down ce-nivel-chevron {{ $loop->first ? 'open' : '' }}"
+                   id="chev-nivel-{{ $nivel->id }}"></i>
+            </button>
 
-        <div class="ce-nivel-body {{ $ni === 0 ? 'open' : '' }}" id="body-nivel-{{ $nivel->id }}">
-            @foreach ($nivel->unidades as $unidad)
+            <div class="ce-nivel-body {{ $loop->first ? 'open' : '' }}" id="body-nivel-{{ $nivel->id }}">
+                @foreach ($nivel->unidades as $unidad)
                 @php
                     $totalU     = $unidad->lecciones->count();
                     $doneU      = $unidad->lecciones->filter(fn($l) => isset($completadas[$l->id]))->count();
@@ -233,13 +463,13 @@
                         <i class="fas fa-folder-open ce-unidad-icon"></i>
                         <span class="ce-unidad-name">{{ $unidad->nombre }}</span>
                         <span class="ce-unidad-count">{{ $doneU }}/{{ $totalU }}</span>
-                        <i class="fas fa-chevron-down ce-unidad-chevron {{ $ni === 0 ? 'open' : '' }}"
+                        <i class="fas fa-chevron-down ce-unidad-chevron {{ $loop->first ? 'open' : '' }}"
                            id="chev-unidad-{{ $unidad->id }}"></i>
                     </button>
                     <div class="ce-unidad-progress">
                         <div class="ce-unidad-progress-fill" data-pct="{{ $pctU }}"></div>
                     </div>
-                    <div class="ce-unidad-body {{ $ni === 0 ? 'open' : '' }}" id="body-unidad-{{ $unidad->id }}">
+                    <div class="ce-unidad-body {{ $loop->first ? 'open' : '' }}" id="body-unidad-{{ $unidad->id }}">
                         @foreach ($unidad->lecciones as $leccion)
                             @php $done = isset($completadas[$leccion->id]); @endphp
                             <a href="{{ route('ce.alumno.leccion', [$curso, $leccion]) }}" class="ce-lesson">
@@ -256,13 +486,190 @@
                             </a>
                         @endforeach
                         @if ($unidad->ejercicios->isNotEmpty())
-                            <div class="ce-lesson" style="cursor:default; background:#fffbf0;">
-                                <span class="ce-lesson-status" style="border-color:var(--ce-amber);color:var(--ce-amber)">
-                                    <i class="fas fa-tasks"></i>
-                                </span>
-                                <i class="fas fa-tasks ce-lesson-type-icon" style="color:var(--ce-amber)"></i>
-                                <span class="ce-lesson-name">{{ $unidad->ejercicios->count() }} ejercicio(s) de práctica</span>
+                            <div class="ce-content-section-label" style="margin-top:.5rem;">
+                                <i class="fas fa-dumbbell"></i> Ejercicios
+                                <span>{{ $unidad->ejercicios->count() }} en esta unidad</span>
                             </div>
+                            @php $ejLetters = ['A','B','C','D','E','F','G','H']; @endphp
+                            @foreach ($unidad->ejercicios as $ejercicio)
+                                @php
+                                    $doneEj   = isset($completadasEjercicios[$ejercicio->id]);
+                                    $errorEj  = session('error_ej_' . $ejercicio->id);
+                                    $lastResp = session('resp_ej_'  . $ejercicio->id);
+                                @endphp
+                                <div class="ce-exercise-card {{ $doneEj ? 'solved' : ($errorEj ? 'wrong' : '') }}"
+                                     id="exercise-{{ $ejercicio->id }}">
+
+                                    {{-- Header --}}
+                                    <div class="ce-exercise-header">
+                                        <div class="ce-exercise-num">{{ $loop->iteration }}</div>
+                                        <div class="ce-exercise-meta">
+                                            <p class="ce-exercise-pregunta">{{ $ejercicio->pregunta }}</p>
+                                            <span class="ce-exercise-pts">
+                                                <i class="fas fa-star" style="font-size:.6rem;color:var(--ce-amber);"></i>
+                                                {{ $ejercicio->puntaje_max }} pt{{ $ejercicio->puntaje_max != 1 ? 's' : '' }}
+                                                &nbsp;&middot;&nbsp;
+                                                <span class="ce-exercise-type-chip">
+                                                    @if ($ejercicio->tipo === 'multiple')
+                                                        <i class="fas fa-list-ul"></i> Opción múltiple
+                                                    @elseif ($ejercicio->tipo === 'completar')
+                                                        <i class="fas fa-pencil-alt"></i> Completar
+                                                    @else
+                                                        <i class="fas fa-random"></i> Emparejar
+                                                    @endif
+                                                </span>
+                                            </span>
+                                        </div>
+                                        <span class="ce-exercise-badge {{ $doneEj ? 'solved' : ($errorEj ? 'wrong' : 'pending') }}">
+                                            @if ($doneEj)
+                                                <i class="fas fa-check-circle"></i> Resuelto
+                                            @elseif ($errorEj)
+                                                <i class="fas fa-redo"></i> Reintentar
+                                            @else
+                                                Pendiente
+                                            @endif
+                                        </span>
+                                    </div>
+
+                                    {{-- Body --}}
+                                    @if ($doneEj)
+                                        <div class="ce-solved-row">
+                                            <i class="fas fa-check-circle"></i>
+                                            <div>
+                                                <span>¡Ejercicio completado — buen trabajo!</span>
+                                                <span style="display:block;font-size:.78rem;color:#059669;opacity:.85;margin-top:.15rem;">
+                                                    <i class="fas fa-lightbulb" style="font-size:.7rem;"></i>
+                                                    Respuesta: <strong>{{ $ejercicio->respuesta_correcta }}</strong>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        @if ($ejercicio->audio_url)
+                                            <div class="ce-audio-pron" style="margin-top:.75rem">
+                                                <div class="ce-audio-pron-label">
+                                                    <i class="fas fa-headphones"></i> Pronunciación de referencia
+                                                </div>
+                                                <div class="ce-audio-pron-player">
+                                                    <button type="button"
+                                                            class="ce-audio-play-btn"
+                                                            id="play-{{ $ejercicio->id }}"
+                                                            data-audio="audio-{{ $ejercicio->id }}"
+                                                            aria-label="Reproducir audio">
+                                                        <i class="fas fa-play" id="play-icon-{{ $ejercicio->id }}"></i>
+                                                    </button>
+                                                    <div class="ce-audio-track">
+                                                        <div class="ce-audio-bar-wrap"
+                                                             id="bar-wrap-{{ $ejercicio->id }}"
+                                                             data-audio="audio-{{ $ejercicio->id }}">
+                                                            <div class="ce-audio-bar-fill" id="bar-{{ $ejercicio->id }}"></div>
+                                                        </div>
+                                                        <div class="ce-audio-time">
+                                                            <span id="cur-{{ $ejercicio->id }}">0:00</span>
+                                                            <span id="tot-{{ $ejercicio->id }}">-:--</span>
+                                                        </div>
+                                                    </div>
+                                                    <audio id="audio-{{ $ejercicio->id }}"
+                                                           class="ce-exercise-audio"
+                                                           preload="auto">
+                                                        @php
+                                                            $audioMime = match(pathinfo($ejercicio->audio_url, PATHINFO_EXTENSION)) {
+                                                                'm4a', 'mp4' => 'audio/mp4',
+                                                                'ogg'        => 'audio/ogg',
+                                                                default      => 'audio/webm',
+                                                            };
+                                                        @endphp
+                                                        <source src="{{ $ejercicio->audio_url }}"
+                                                                type="{{ $audioMime }}">
+                                                    </audio>
+                                                </div>
+                                            </div>
+                                        @endif
+                                    @else
+                                        <div class="ce-exercise-body">
+                                            {{-- Feedback de respuesta incorrecta --}}
+                                            @if ($errorEj)
+                                                <div class="ce-feedback-wrong">
+                                                    <i class="fas fa-times-circle"></i>
+                                                    <div>
+                                                        <strong>Respuesta incorrecta — inténtalo de nuevo</strong>
+                                                        Tu respuesta: <em>{{ $lastResp }}</em>
+                                                    </div>
+                                                </div>
+                                            @endif
+
+                                            <form action="{{ route('ce.alumno.ejercicio.resolver', [$curso, $ejercicio]) }}" method="POST">
+                                                @csrf
+                                                {{-- Reproductor de pronunciación --}}
+                                                @if ($ejercicio->audio_url)
+                                                    <div class="ce-audio-pron">
+                                                        <div class="ce-audio-pron-label">
+                                                            <i class="fas fa-headphones"></i> Escucha la pronunciación
+                                                        </div>
+                                                        <div class="ce-audio-pron-player">
+                                                            <button type="button"
+                                                                    class="ce-audio-play-btn"
+                                                                    id="play-{{ $ejercicio->id }}"
+                                                                    data-audio="audio-{{ $ejercicio->id }}"
+                                                                    aria-label="Reproducir audio">
+                                                                <i class="fas fa-play" id="play-icon-{{ $ejercicio->id }}"></i>
+                                                            </button>
+                                                            <div class="ce-audio-track">
+                                                                <div class="ce-audio-bar-wrap"
+                                                                     id="bar-wrap-{{ $ejercicio->id }}"
+                                                                     data-audio="audio-{{ $ejercicio->id }}">
+                                                                    <div class="ce-audio-bar-fill" id="bar-{{ $ejercicio->id }}"></div>
+                                                                </div>
+                                                                <div class="ce-audio-time">
+                                                                    <span id="cur-{{ $ejercicio->id }}">0:00</span>
+                                                                    <span id="tot-{{ $ejercicio->id }}">-:--</span>
+                                                                </div>
+                                                            </div>
+                                                            <audio id="audio-{{ $ejercicio->id }}"
+                                                                   class="ce-exercise-audio"
+                                                                   preload="auto">
+                                                                @php
+                                                                    $audioMime = match(pathinfo($ejercicio->audio_url, PATHINFO_EXTENSION)) {
+                                                                        'm4a', 'mp4' => 'audio/mp4',
+                                                                        'ogg'        => 'audio/ogg',
+                                                                        default      => 'audio/webm',
+                                                                    };
+                                                                @endphp
+                                                                <source src="{{ $ejercicio->audio_url }}"
+                                                                        type="{{ $audioMime }}">
+                                                            </audio>
+                                                        </div>
+                                                    </div>
+                                                @endif
+
+                                                @if (! empty($ejercicio->opciones) && is_array($ejercicio->opciones))
+                                                    <div class="ce-options-list">
+                                                        @foreach ($ejercicio->opciones as $opcion)
+                                                            @php $wasWrong = $errorEj && $lastResp === $opcion; @endphp
+                                                            <label class="ce-option {{ $wasWrong ? 'was-wrong' : '' }}">
+                                                                <input type="radio" name="respuesta" value="{{ $opcion }}"
+                                                                       {{ $wasWrong ? 'checked' : '' }} required>
+                                                                <span class="ce-option-letter">{{ $ejLetters[$loop->index] ?? chr(65+$loop->index) }}</span>
+                                                                <span class="ce-option-dot"></span>
+                                                                {{ $opcion }}
+                                                            </label>
+                                                        @endforeach
+                                                    </div>
+                                                @else
+                                                    <textarea name="respuesta" class="ce-textarea" rows="3"
+                                                              placeholder="Escribe tu respuesta aquí..."
+                                                              required>{{ $lastResp }}</textarea>
+                                                @endif
+                                                <button type="submit" class="ce-btn-submit {{ $errorEj ? 'retry' : '' }}">
+                                                    @if ($errorEj)
+                                                        <i class="fas fa-redo"></i> Volver a intentar
+                                                    @else
+                                                        <i class="fas fa-paper-plane"></i> Enviar respuesta
+                                                    @endif
+                                                </button>
+                                            </form>
+                                        </div>
+                                    @endif
+                                </div>
+                            @endforeach
                         @endif
                     </div>
                 </div>
@@ -279,7 +686,6 @@
 
 @push('scripts')
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script>
 /* ── Accordion toggles ── */
 function toggleNivel(id) {
@@ -287,23 +693,51 @@ function toggleNivel(id) {
     const chev = document.getElementById('chev-nivel-' + id);
     body.classList.toggle('open');
     chev.classList.toggle('open');
+    if (body.classList.contains('open')) animateExercisesIn(body);
 }
 function toggleUnidad(id) {
     const body = document.getElementById('body-unidad-' + id);
     const chev = document.getElementById('chev-unidad-' + id);
     body.classList.toggle('open');
     chev.classList.toggle('open');
+    if (body.classList.contains('open')) {
+        animateExercisesIn(body);
+        // Forzar carga de metadatos de audios que estaban suspendidos (display:none)
+        body.querySelectorAll('.ce-exercise-audio').forEach(a => {
+            if (a.readyState === 0) a.load();
+        });
+    }
+}
+
+/* Animate exercise cards into view when their container opens */
+function animateExercisesIn(container) {
+    if (typeof gsap === 'undefined') return;
+    const cards = container.querySelectorAll('.ce-exercise-card');
+    if (!cards.length) return;
+    gsap.fromTo(cards,
+        { opacity: 0, y: 18, scale: .97 },
+        { opacity: 1, y: 0, scale: 1, duration: .42, stagger: .08, ease: 'back.out(1.4)' }
+    );
 }
 
 /* ── GSAP ── */
 (function () {
     if (typeof gsap === 'undefined') return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // ── Detectar si venimos de un submit de ejercicio ──────────
+    const hash      = window.location.hash;
+    const anchorEl  = (hash.startsWith('#exercise-')) ? document.querySelector(hash) : null;
+
+    // Abrir los acordeones que contienen el ejercicio objetivo
+    if (anchorEl) abrirPadres(anchorEl);
+
+    if (reducedMotion) {
         document.querySelectorAll('.ce-stat,.ce-nivel').forEach(el => el.style.opacity = 1);
         animateBars();
+        if (anchorEl) irAlEjercicio(anchorEl, false);
         return;
     }
-    gsap.registerPlugin(ScrollTrigger);
 
     // Global progress bar
     setTimeout(() => {
@@ -313,27 +747,35 @@ function toggleUnidad(id) {
 
     // Stats row
     gsap.set('.ce-stat', { opacity: 0, y: 20 });
-    gsap.to('.ce-stat', {
-        opacity: 1, y: 0,
-        duration: .55, stagger: .1, ease: 'power2.out',
-    });
+    gsap.to('.ce-stat', { opacity: 1, y: 0, duration: .55, stagger: .1, ease: 'power2.out' });
 
-    // Nivel cards stagger on scroll
-    gsap.set('.ce-nivel', { opacity: 0, y: 30 });
-    gsap.utils.toArray('.ce-nivel').forEach((el, i) => {
-        gsap.to(el, {
-            opacity: 1, y: 0,
-            duration: .55, ease: 'power2.out',
-            delay: i * .08,
-            scrollTrigger: { trigger: el, start: 'top 88%' }
-        });
-    });
+    // Nivel cards
+    if (anchorEl) {
+        // Cuando hay anchor: mostrar todos los niveles inmediatamente sin stagger
+        // (el usuario ya sabe dónde está, no necesita la animación de entrada)
+        gsap.set('.ce-nivel', { opacity: 1, y: 0 });
+        irAlEjercicio(anchorEl, true);
+    } else {
+        // Sin anchor: IntersectionObserver para animar al hacer scroll
+        const nivelEls = gsap.utils.toArray('.ce-nivel');
+        gsap.set(nivelEls, { opacity: 0, y: 30 });
+        const io = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting) return;
+                const idx = parseInt(entry.target.dataset.nivelIdx || 0);
+                gsap.to(entry.target, { opacity: 1, y: 0, duration: .52, ease: 'power2.out', delay: idx * .05 });
+                io.unobserve(entry.target);
+            });
+        }, { threshold: 0.04 });
+        nivelEls.forEach((el, i) => { el.dataset.nivelIdx = i; io.observe(el); });
+    }
 
-    // Unit progress bars
-    ScrollTrigger.create({
-        trigger: '.ce-nivel',
-        start: 'top 90%',
-        onEnter: animateBars,
+    // Exercise cards ya visibles al cargar (unidades abiertas)
+    document.querySelectorAll('.ce-unidad-body.open .ce-exercise-card').forEach((card, i) => {
+        gsap.fromTo(card,
+            { opacity: 0, y: 16, scale: .97 },
+            { opacity: 1, y: 0, scale: 1, duration: .45, delay: .3 + i * .07, ease: 'back.out(1.3)' }
+        );
     });
 
     function animateBars() {
@@ -342,6 +784,136 @@ function toggleUnidad(id) {
         });
     }
     animateBars();
+
+    // Option card press micro-animation
+    document.querySelectorAll('.ce-option').forEach(opt => {
+        const radio = opt.querySelector('input[type="radio"]');
+        if (radio) {
+            radio.addEventListener('change', () => {
+                const list = opt.closest('.ce-options-list');
+                list.querySelectorAll('.ce-option').forEach(s => s.classList.remove('selected'));
+                opt.classList.add('selected');
+                gsap.fromTo(opt, { scale: .97 }, { scale: 1, duration: .25, ease: 'back.out(2)' });
+            });
+        }
+    });
+
+    // Submit button press animation
+    document.querySelectorAll('.ce-btn-submit').forEach(btn => {
+        btn.addEventListener('click', function () {
+            gsap.to(this, { scale: .93, duration: .1, yoyo: true, repeat: 1, ease: 'power1.inOut' });
+        });
+    });
+
+    // ── Reproductores de audio de pronunciación ──────────────
+    function fmtTime(s) {
+        if (!s || isNaN(s) || !isFinite(s)) return '-:--';
+        return Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+    }
+
+    function stopAllAudio(exceptId) {
+        document.querySelectorAll('.ce-exercise-audio').forEach(a => {
+            if (a.id === exceptId) return;
+            a.pause();
+            const id   = a.id.replace('audio-', '');
+            const icon = document.getElementById('play-icon-' + id);
+            const btn  = document.getElementById('play-' + id);
+            if (icon) icon.className = 'fas fa-play';
+            if (btn)  btn.classList.remove('playing');
+        });
+    }
+
+    document.querySelectorAll('.ce-audio-play-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const audioId = this.dataset.audio;
+            const audio   = document.getElementById(audioId);
+            const id      = audioId.replace('audio-', '');
+            const icon    = document.getElementById('play-icon-' + id);
+            if (!audio) return;
+
+            if (audio.paused) {
+                stopAllAudio(audioId);
+                audio.play().catch(() => {});
+                if (icon) icon.className = 'fas fa-pause';
+                this.classList.add('playing');
+            } else {
+                audio.pause();
+                if (icon) icon.className = 'fas fa-play';
+                this.classList.remove('playing');
+            }
+        });
+    });
+
+    document.querySelectorAll('.ce-exercise-audio').forEach(audio => {
+        const id      = audio.id.replace('audio-', '');
+        const bar     = document.getElementById('bar-'      + id);
+        const cur     = document.getElementById('cur-'      + id);
+        const tot     = document.getElementById('tot-'      + id);
+        const btn     = document.getElementById('play-'     + id);
+        const barWrap = document.getElementById('bar-wrap-' + id);
+
+        function syncDur() {
+            if (tot && isFinite(audio.duration) && audio.duration > 0)
+                tot.textContent = fmtTime(audio.duration);
+        }
+        syncDur();
+        audio.addEventListener('loadedmetadata', syncDur);
+        audio.addEventListener('durationchange', syncDur);
+
+        audio.addEventListener('timeupdate', () => {
+            if (!audio.duration || !isFinite(audio.duration)) return;
+            if (bar) bar.style.width = (audio.currentTime / audio.duration * 100) + '%';
+            if (cur) cur.textContent = fmtTime(audio.currentTime);
+        });
+        audio.addEventListener('ended', () => {
+            const icon = document.getElementById('play-icon-' + id);
+            if (icon) icon.className = 'fas fa-play';
+            if (btn)  btn.classList.remove('playing');
+            if (bar)  bar.style.width = '0%';
+            audio.currentTime = 0;
+        });
+
+        if (barWrap) {
+            barWrap.addEventListener('click', function (e) {
+                if (!audio.duration || !isFinite(audio.duration)) return;
+                const rect = this.getBoundingClientRect();
+                audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
+            });
+        }
+    });
+
+    // ── Helpers ────────────────────────────────────────────────
+
+    /* Abre el nivel y la unidad que contienen el ejercicio */
+    function abrirPadres(el) {
+        [
+            { bodyPrefix: 'body-unidad-', chevPrefix: 'chev-unidad-', cls: '.ce-unidad-body' },
+            { bodyPrefix: 'body-nivel-',  chevPrefix: 'chev-nivel-',  cls: '.ce-nivel-body'  },
+        ].forEach(({ bodyPrefix, chevPrefix, cls }) => {
+            const body = el.closest(cls);
+            if (!body) return;
+            if (!body.classList.contains('open')) {
+                body.classList.add('open');
+                const id   = body.id.replace(bodyPrefix, '');
+                const chev = document.getElementById(chevPrefix + id);
+                if (chev) chev.classList.add('open');
+            }
+        });
+    }
+
+    /* Scroll suave + highlight de pulso al ejercicio */
+    function irAlEjercicio(el, withGsap) {
+        // Doble rAF: esperar a que el DOM pinte las unidades abiertas antes de medir posición
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            if (!withGsap) return;
+            // Pulso de highlight en el borde de la tarjeta
+            gsap.fromTo(el,
+                { boxShadow: '0 0 0 4px rgba(131,56,236,.7)' },
+                { boxShadow: '0 0 0 0px rgba(131,56,236,0)', duration: 1.8, ease: 'power2.out', delay: .5 }
+            );
+        }));
+    }
 }());
 </script>
 @endpush

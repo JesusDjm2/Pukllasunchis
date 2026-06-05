@@ -42,7 +42,7 @@
         }
 
         /* Animación de entrada */
-        @keyframes fadeIn {
+        @@keyframes fadeIn {
             0% {
                 opacity: 0;
                 transform: translateY(20px);

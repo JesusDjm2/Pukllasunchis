@@ -13,7 +13,7 @@ class CeEjercicio extends Model
 
     protected $fillable = [
         'ce_unidad_id', 'tipo', 'pregunta',
-        'opciones', 'respuesta_correcta', 'puntaje_max', 'orden',
+        'opciones', 'respuesta_correcta', 'audio_url', 'puntaje_max', 'orden',
     ];
 
     protected $casts = ['opciones' => 'array'];

@@ -1,4 +1,5 @@
-@extends('layouts.admin')
+﻿@php $layout = auth()->user()?->hasRole('super-admin') ? 'layouts.superadmin' : 'layouts.admin'; @endphp
+@extends($layout)
 @section('contenido')
     <!-- En la sección <head> de layouts/admin.blade.php o donde cargas tus CSS -->
 

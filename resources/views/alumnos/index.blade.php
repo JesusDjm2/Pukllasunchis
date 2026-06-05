@@ -1,4 +1,5 @@
-﻿@extends('layouts.admin')
+@php $layout = auth()->user()?->hasRole('super-admin') ? 'layouts.superadmin' : 'layouts.admin'; @endphp
+@extends($layout)
 @section('contenido')
     <style>
         .alumno-avatar-thumb {
@@ -148,7 +149,6 @@
                         </div>
                         <p class="small text-muted mb-2 mb-md-3">Programa y ciclo se aplican en el servidor; la tabla
                             sigue agrupada por ciclo.</p>
-                        {{-- Selector de período de matrícula --}}
                         <div class="mb-3">
                             <span class="small font-weight-bold text-secondary mr-2 d-block d-sm-inline">
                                 <i class="fas fa-calendar-alt mr-1"></i>Periodo de matrícula
@@ -172,9 +172,7 @@
                                 <a href="{{ route('adminAlumnos', $qBase) }}"
                                     class="btn btn-sm {{ !request()->filled('programa_id') ? 'btn-primary' : 'btn-outline-primary' }}">Todos</a>
                                 @foreach ($programasFiltro as $prog)
-                                    @php
-                                        $qProg = array_merge($qBase, ['programa_id' => $prog->id]);
-                                    @endphp
+                                    @php $qProg = array_merge($qBase, ['programa_id' => $prog->id]); @endphp
                                     <a href="{{ route('adminAlumnos', $qProg) }}"
                                         class="btn btn-sm {{ (int) request('programa_id') === (int) $prog->id ? 'btn-primary' : 'btn-outline-primary' }}">{{ \Illuminate\Support\Str::limit($prog->nombre, 42) }}</a>
                                 @endforeach
@@ -184,18 +182,12 @@
                             <div class="mb-0">
                                 <span class="small font-weight-bold text-secondary mr-2 d-block d-sm-inline">Ciclo</span>
                                 <div class="btn-group flex-wrap mt-1" role="group" aria-label="Filtrar por ciclo">
-                                    @php
-                                        $qSinCiclo = array_merge($qBase, ['programa_id' => request('programa_id')]);
-                                    @endphp
+                                    @php $qSinCiclo = array_merge($qBase, ['programa_id' => request('programa_id')]); @endphp
                                     <a href="{{ route('adminAlumnos', $qSinCiclo) }}"
-                                        class="btn btn-sm {{ !request()->filled('ciclo_id') ? 'btn-info' : 'btn-outline-info' }}">Todos
-                                        los ciclos</a>
+                                        class="btn btn-sm {{ !request()->filled('ciclo_id') ? 'btn-info' : 'btn-outline-info' }}">Todos los ciclos</a>
                                     @foreach ($ciclosFiltro as $cic)
                                         @php
-                                            $qCic = array_merge($qBase, [
-                                                'programa_id' => request('programa_id'),
-                                                'ciclo_id' => $cic->id,
-                                            ]);
+                                            $qCic = array_merge($qBase, ['programa_id' => request('programa_id'), 'ciclo_id' => $cic->id]);
                                             $nCiclo = optional($totalesPorCicloId->get($cic->id))->total;
                                         @endphp
                                         <a href="{{ route('adminAlumnos', $qCic) }}"
@@ -222,8 +214,13 @@
                                     placeholder="Buscar por nombre, apellido o DNI..." id="searchInput"
                                     value="{{ request('search') }}" autocomplete="off">
                                 <div class="input-group-append">
-                                    <button class="btn btn-sm btn-outline-secondary" type="button"
-                                        id="searchButton">Buscar</button>
+                                    <button class="btn btn-sm btn-outline-secondary" type="button" id="searchButton">
+                                        <i class="fas fa-search fa-xs mr-1"></i> Buscar
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" type="button" id="clearButton"
+                                        style="{{ request('search') ? '' : 'display:none;' }}">
+                                        <i class="fas fa-times"></i>
+                                    </button>
                                 </div>
                             </div>
                             <p class="small text-muted mb-0">La búsqueda recorre <strong>todos</strong> los alumnos FID
@@ -265,31 +262,26 @@
                         </div>
                         <div class="modal-body">
                             <style>
-                                /* Scroll estable (modal-dialog-scrollable falla con algunos layouts / BS4) */
                                 #modalExportarAlumnosExcel .export-ciclos-scroll {
                                     max-height: min(58vh, 440px);
                                     overflow-y: auto;
                                     overflow-x: hidden;
                                     -webkit-overflow-scrolling: touch;
                                 }
-
                                 #modalExportarAlumnosExcel .export-ciclo-fila {
                                     cursor: pointer;
                                     transition: background-color .12s ease;
                                 }
-
                                 #modalExportarAlumnosExcel .export-ciclo-fila:hover {
                                     background-color: #e9ecef !important;
                                 }
                             </style>
                             @if ($errors->has('ciclo_ids') || $errors->has('ciclo_ids.*'))
-                                <div class="alert alert-danger">
-                                    {{ $errors->first('ciclo_ids') ?: $errors->first('ciclo_ids.*') }}
-                                </div>
+                                <div class="alert alert-danger">{{ $errors->first('ciclo_ids') ?: $errors->first('ciclo_ids.*') }}</div>
                             @endif
                             <p class="small text-muted mb-2">
                                 Marca los <strong>ciclos</strong> que incluirán filas en el archivo. Se respeta el filtro
-                                de búsqueda y “con usuario” si los aplicaste arriba; no se usan los botones de
+                                de búsqueda y "con usuario" si los aplicaste arriba; no se usan los botones de
                                 programa/ciclo de la tabla para acotar el Excel (solo lo que elijas aquí).
                             </p>
                             @if (!empty($busquedaActiva))
@@ -299,18 +291,14 @@
                             @endif
                             <div class="d-flex flex-wrap align-items-center mb-3 border-bottom pb-2">
                                 <span class="small font-weight-bold text-secondary mr-2">Vista previa:</span>
-                                <span class="badge badge-primary mr-2"><span id="exportPreviewCiclos">0</span>
-                                    ciclos</span>
-                                <span class="badge badge-secondary">~<span id="exportPreviewCount">0</span> alumnos
-                                    FID en esos ciclos</span>
+                                <span class="badge badge-primary mr-2"><span id="exportPreviewCiclos">0</span> ciclos</span>
+                                <span class="badge badge-secondary">~<span id="exportPreviewCount">0</span> alumnos FID en esos ciclos</span>
                             </div>
                             <div class="btn-group btn-group-sm mb-3" role="group">
-                                <button type="button" class="btn btn-outline-secondary" id="btnExportSelTodos">Todos los
-                                    ciclos</button>
+                                <button type="button" class="btn btn-outline-secondary" id="btnExportSelTodos">Todos los ciclos</button>
                                 <button type="button" class="btn btn-outline-secondary" id="btnExportSelNinguno">Ninguno</button>
                                 @if (request()->filled('programa_id'))
-                                    <button type="button" class="btn btn-outline-primary" id="btnExportSelProgramaActual">Solo
-                                        programa filtrado</button>
+                                    <button type="button" class="btn btn-outline-primary" id="btnExportSelProgramaActual">Solo programa filtrado</button>
                                 @endif
                             </div>
                             @if ($ciclosParaExportacion->isEmpty())
@@ -328,31 +316,22 @@
                                             <div class="row mx-n1">
                                                 @foreach ($grupoCiclos as $cicExport)
                                                     @php
-                                                        $nCicExport = optional(
-                                                            $totalesPorCicloId->get($cicExport->id),
-                                                        )->total;
-                                                        $checked =
-                                                            (int) request('ciclo_id') === (int) $cicExport->id ||
-                                                            ((int) request('programa_id') ===
-                                                                (int) $cicExport->programa_id &&
-                                                                !request()->filled('ciclo_id'));
+                                                        $nCicExport = optional($totalesPorCicloId->get($cicExport->id))->total;
+                                                        $checked = (int) request('ciclo_id') === (int) $cicExport->id ||
+                                                            ((int) request('programa_id') === (int) $cicExport->programa_id && !request()->filled('ciclo_id'));
                                                     @endphp
                                                     <div class="col-md-6 px-1 mb-1">
-                                                        <div
-                                                            class="export-ciclo-fila border rounded bg-white h-100 px-2 py-1">
+                                                        <div class="export-ciclo-fila border rounded bg-white h-100 px-2 py-1">
                                                             <div class="custom-control custom-checkbox my-0">
-                                                                <input type="checkbox"
-                                                                    class="custom-control-input ciclo-export-check"
+                                                                <input type="checkbox" class="custom-control-input ciclo-export-check"
                                                                     name="ciclo_ids[]" value="{{ $cicExport->id }}"
                                                                     id="ciclo_export_{{ $cicExport->id }}"
                                                                     data-total="{{ (int) ($nCicExport ?? 0) }}"
                                                                     data-programa-id="{{ (int) $cicExport->programa_id }}"
                                                                     {{ $checked ? 'checked' : '' }}>
-                                                                <label class="custom-control-label small mb-0"
-                                                                    for="ciclo_export_{{ $cicExport->id }}">
+                                                                <label class="custom-control-label small mb-0" for="ciclo_export_{{ $cicExport->id }}">
                                                                     {{ $cicExport->nombre }}
-                                                                    <span
-                                                                        class="badge badge-light text-dark ml-1">{{ (int) ($nCicExport ?? 0) }}</span>
+                                                                    <span class="badge badge-light text-dark ml-1">{{ (int) ($nCicExport ?? 0) }}</span>
                                                                 </label>
                                                             </div>
                                                         </div>
@@ -366,8 +345,7 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Cancelar</button>
-                            <button type="submit" class="btn btn-sm btn-success"
-                                {{ $ciclosParaExportacion->isEmpty() ? 'disabled' : '' }}>
+                            <button type="submit" class="btn btn-sm btn-success" {{ $ciclosParaExportacion->isEmpty() ? 'disabled' : '' }}>
                                 <i class="fas fa-download mr-1"></i>Descargar Excel
                             </button>
                         </div>
@@ -380,8 +358,7 @@
     <script>
         $(document).ready(function() {
             function refreshExportPreview() {
-                var ciclos = 0;
-                var total = 0;
+                var ciclos = 0, total = 0;
                 $('.ciclo-export-check:checked').each(function() {
                     ciclos++;
                     total += parseInt($(this).attr('data-total'), 10) || 0;
@@ -391,28 +368,16 @@
             }
             $(document).on('change', '.ciclo-export-check', refreshExportPreview);
             $(document).on('click', '.export-ciclo-fila', function(e) {
-                if ($(e.target).is('input[type="checkbox"]')) {
-                    return;
-                }
-                if ($(e.target).closest('label').length) {
-                    return;
-                }
+                if ($(e.target).is('input[type="checkbox"]')) return;
+                if ($(e.target).closest('label').length) return;
                 var $cb = $(this).find('.ciclo-export-check');
                 $cb.prop('checked', !$cb.prop('checked')).trigger('change');
             });
-            $('#btnExportSelTodos').on('click', function() {
-                $('.ciclo-export-check').prop('checked', true);
-                refreshExportPreview();
-            });
-            $('#btnExportSelNinguno').on('click', function() {
-                $('.ciclo-export-check').prop('checked', false);
-                refreshExportPreview();
-            });
+            $('#btnExportSelTodos').on('click', function() { $('.ciclo-export-check').prop('checked', true); refreshExportPreview(); });
+            $('#btnExportSelNinguno').on('click', function() { $('.ciclo-export-check').prop('checked', false); refreshExportPreview(); });
             $('#btnExportSelProgramaActual').on('click', function() {
                 var pid = {{ (int) request('programa_id', 0) }};
-                $('.ciclo-export-check').each(function() {
-                    $(this).prop('checked', parseInt($(this).attr('data-programa-id'), 10) === pid);
-                });
+                $('.ciclo-export-check').each(function() { $(this).prop('checked', parseInt($(this).attr('data-programa-id'), 10) === pid); });
                 refreshExportPreview();
             });
             $('#modalExportarAlumnosExcel').on('shown.bs.modal', refreshExportPreview);
@@ -429,36 +394,20 @@
             function relacionarUsuario(alumnoId) {
                 $.ajax({
                     type: 'POST',
-                    url: '{{ route('relacionarUsuario', ['alumno' => '__ALUMNO_ID__']) }}'.replace(
-                        '__ALUMNO_ID__', alumnoId),
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    success: function(response) {
-                        alert('Relación con usuario establecida correctamente.');
-                        asignarRolAlumno(alumnoId);
-                        location.reload();
-                    },
-                    error: function(error) {
-                        alert('Error al establecer la relación con el usuario.');
-                    }
+                    url: '{{ route('relacionarUsuario', ['alumno' => '__ALUMNO_ID__']) }}'.replace('__ALUMNO_ID__', alumnoId),
+                    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                    success: function(response) { alert('Relación con usuario establecida correctamente.'); asignarRolAlumno(alumnoId); location.reload(); },
+                    error: function(error) { alert('Error al establecer la relación con el usuario.'); }
                 });
             }
 
             function asignarRolAlumno(alumnoId) {
                 $.ajax({
                     type: 'POST',
-                    url: '{{ route('asignarRolAlumno', ['alumno' => '__ALUMNO_ID__']) }}'.replace(
-                        '__ALUMNO_ID__', alumnoId),
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    success: function(response) {
-                        console.log('Rol asignado correctamente.');
-                    },
-                    error: function(error) {
-                        console.error('Error al asignar el rol.');
-                    }
+                    url: '{{ route('asignarRolAlumno', ['alumno' => '__ALUMNO_ID__']) }}'.replace('__ALUMNO_ID__', alumnoId),
+                    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                    success: function(response) { console.log('Rol asignado correctamente.'); },
+                    error: function(error) { console.error('Error al asignar el rol.'); }
                 });
             }
 
@@ -476,47 +425,72 @@
                 $('#alumnoPhotoModalLabel').text('');
             });
 
-            $(document).on('click', '#alumnoPhotoModalClose', function() {
-                $('#alumnoPhotoModal').modal('hide');
-            });
+            $(document).on('click', '#alumnoPhotoModalClose', function() { $('#alumnoPhotoModal').modal('hide'); });
         });
     </script>
 
+    {{-- Buscador client-side — FID --}}
     <script>
-    (function () {
-        var input     = document.getElementById('searchInput');
-        var container = document.getElementById('fid-tabla-responsive');
-        var aviso     = document.getElementById('busquedaActivaFid');
+    window.filtrarAlumnosFid = function filtrar(term) {
+        var input      = document.getElementById('searchInput');
+        var button     = document.getElementById('searchButton');
+        var clearBtn   = document.getElementById('clearButton');
+        var container  = document.getElementById('fid-tabla-responsive');
+        var aviso      = document.getElementById('busquedaActivaFid');
         if (!input || !container) return;
 
-        // Si la página cargó filtrada desde el servidor y el usuario limpia el campo,
-        // navegar a la URL limpia para ver todos los alumnos
-        var urlSearch = new URLSearchParams(window.location.search).get('search') || '';
-
-        function filtrar(term) {
-            term = (term || '').toLowerCase().trim();
-            if (!term && urlSearch) {
-                window.location.href = '{{ route("adminAlumnos") }}';
-                return;
+        term = (term || '').toLowerCase().trim();
+        var rows = container.querySelectorAll('tbody tr');
+        var grupoActual = null, grupoVisible = false;
+        rows.forEach(function (row) {
+            if (row.classList.contains('table-active')) {
+                if (grupoActual) grupoActual.style.display = grupoVisible ? '' : 'none';
+                grupoActual = row; grupoVisible = false;
+            } else {
+                var v = !term || row.textContent.toLowerCase().includes(term);
+                row.style.display = v ? '' : 'none';
+                if (v) grupoVisible = true;
             }
-            var rows = container.querySelectorAll('tbody tr');
-            var grupoActual = null, grupoVisible = false;
-            rows.forEach(function (row) {
-                if (row.classList.contains('table-active')) {
-                    if (grupoActual) grupoActual.style.display = grupoVisible ? '' : 'none';
-                    grupoActual = row; grupoVisible = false;
-                } else {
-                    var v = !term || row.textContent.toLowerCase().includes(term);
-                    row.style.display = v ? '' : 'none';
-                    if (v) grupoVisible = true;
-                }
+        });
+        if (grupoActual) grupoActual.style.display = grupoVisible ? '' : 'none';
+        if (aviso) aviso.style.display = term ? '' : 'none';
+        if (clearBtn) clearBtn.style.display = term ? '' : 'none';
+    };
+
+    (function () {
+        var input      = document.getElementById('searchInput');
+        var button     = document.getElementById('searchButton');
+        var clearBtn   = document.getElementById('clearButton');
+        var container  = document.getElementById('fid-tabla-responsive');
+        var aviso      = document.getElementById('busquedaActivaFid');
+        if (!input || !container) return;
+
+        if (input.value) window.filtrarAlumnosFid(input.value);
+
+        input.addEventListener('input', function () { window.filtrarAlumnosFid(this.value); });
+
+        if (button) {
+            button.addEventListener('click', function (e) {
+                e.preventDefault();
+                window.filtrarAlumnosFid(input.value);
             });
-            if (grupoActual) grupoActual.style.display = grupoVisible ? '' : 'none';
-            if (aviso) aviso.style.display = term ? '' : 'none';
         }
 
-        if (input.value) filtrar(input.value);
-        input.addEventListener('input', function () { filtrar(this.value); });
+        input.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                window.filtrarAlumnosFid(input.value);
+            }
+        });
+
+        if (clearBtn) {
+            clearBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                input.value = '';
+                window.filtrarAlumnosFid('');
+                input.focus();
+            });
+        }
     }());
     </script>
 

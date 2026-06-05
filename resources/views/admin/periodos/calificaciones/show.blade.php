@@ -1,4 +1,5 @@
-@extends('layouts.admin')
+﻿@php $layout = auth()->user()?->hasRole('super-admin') ? 'layouts.superadmin' : 'layouts.admin'; @endphp
+@extends($layout)
 @section('contenido')
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
         crossorigin="anonymous">

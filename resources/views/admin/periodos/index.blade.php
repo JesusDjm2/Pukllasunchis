@@ -1,11 +1,12 @@
-@extends('layouts.admin')
+﻿@php $layout = auth()->user()?->hasRole('super-admin') ? 'layouts.superadmin' : 'layouts.admin'; @endphp
+@extends($layout)
 @section('contenido')
     <style>
         .logo-rotando {
             animation: giro 8s linear infinite;
         }
 
-        @keyframes giro {
+        @@keyframes giro {
             from {
                 transform: rotate(0deg);
             }

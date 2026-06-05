@@ -1,4 +1,5 @@
-@extends('layouts.admin')
+﻿@php $layout = auth()->user()?->hasRole('super-admin') ? 'layouts.superadmin' : 'layouts.admin'; @endphp
+@extends($layout)
 @section('contenido')
     <div class="container-fluid">
         <h4 class="font-weight-bold text-primary">Editar Competencia</h4>

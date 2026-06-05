@@ -1,4 +1,5 @@
-@extends('layouts.admin')
+﻿@php $layout = auth()->user()?->hasRole('super-admin') ? 'layouts.superadmin' : 'layouts.admin'; @endphp
+@extends($layout)
 @section('contenido')
     <div class="container bg-white p-4">
         <h4 class="text-primary font-weight-bold mb-4">Crear Nuevo Proceso de admisión PPD</h4>

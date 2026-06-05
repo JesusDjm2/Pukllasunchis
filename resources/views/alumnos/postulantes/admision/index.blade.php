@@ -1,4 +1,5 @@
-@extends('layouts.admin')
+﻿@php $layout = auth()->user()?->hasRole('super-admin') ? 'layouts.superadmin' : 'layouts.admin'; @endphp
+@extends($layout)
 @section('contenido')
     <div class="container-fluid bg-white pt-2">
         {{--  ENCABEZADO + BOTONES PARA CAMBIAR TABLA --}}
@@ -15,7 +16,7 @@
                     animation: giro 4s linear infinite;
                 }
 
-                @keyframes giro {
+                @@keyframes giro {
                     from {
                         transform: rotate(0deg);
                     }

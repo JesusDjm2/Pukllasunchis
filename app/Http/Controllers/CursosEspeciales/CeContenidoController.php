@@ -9,6 +9,8 @@ use App\Models\CursosEspeciales\CeNivel;
 use App\Models\CursosEspeciales\CeUnidad;
 use App\Models\CursosEspeciales\CursoEspecial;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class CeContenidoController extends Controller
 {
@@ -196,6 +198,7 @@ class CeContenidoController extends Controller
             'pregunta'           => 'required|string',
             'opciones_raw'       => 'nullable|string',
             'respuesta_correcta' => 'required|string',
+            'audio_url'          => 'nullable|url|max:500',
             'puntaje_max'        => 'nullable|integer|min:1',
             'orden'              => 'nullable|integer|min:0',
         ]);
@@ -221,6 +224,7 @@ class CeContenidoController extends Controller
             'pregunta'           => 'required|string',
             'opciones_raw'       => 'nullable|string',
             'respuesta_correcta' => 'required|string',
+            'audio_url'          => 'nullable|url|max:500',
             'puntaje_max'        => 'nullable|integer|min:1',
             'orden'              => 'nullable|integer|min:0',
         ]);
@@ -235,6 +239,27 @@ class CeContenidoController extends Controller
         $this->autorizarDocente($curso);
         $ejercicio->delete();
         return redirect()->route($this->resolveRp() . '.show', $curso)->with('success', 'Ejercicio eliminado.');
+    }
+
+    public function uploadAudioEjercicio(Request $request)
+    {
+        $request->validate([
+            'audio' => 'required|file|max:10240',
+        ]);
+
+        $file = $request->file('audio');
+        $mime = $file->getMimeType() ?? '';
+        $ext  = match(true) {
+            str_contains($mime, 'mp4')  => 'm4a',
+            str_contains($mime, 'ogg')  => 'ogg',
+            default                     => 'weba',
+        };
+
+        $path = $file->storeAs('ce-audios', Str::random(40) . '.' . $ext, 'public');
+
+        return response()->json([
+            'url' => Storage::disk('public')->url($path),
+        ]);
     }
 
     private function parsearOpciones(?string $raw): ?array

@@ -84,7 +84,7 @@
     <script src="{{ asset('admin/vendor/chart.js/Chart.min.js') }}"></script>
     <script src="{{ asset('admin/js/demo/chart-area-demo.js') }}"></script>
     <script src="{{ asset('admin/js/demo/chart-pie-demo.js') }}"></script>
-    <script src="{{ asset('admin/js/djm.js') }}"></script>
+    <script src="{{ asset('admin/js/djm.js') }}?v={{ filemtime(public_path('admin/js/djm.js')) }}"></script>
     @unless(app()->environment('production'))
         @include('partials.pukllabot-widget')
     @endunless

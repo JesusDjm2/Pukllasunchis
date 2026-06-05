@@ -62,15 +62,10 @@
                         </a>
                         <div id="sGestion" class="collapse" data-parent="#accordionSidebar">
                             <div class="bg-white py-2 collapse-inner rounded">
-                                <h6 class="collapse-header">Programas y estructura:</h6>
+                                <h6 class="collapse-header">Estructura del plan:</h6>
                                 <a class="collapse-item" href="{{ route('programa.index') }}">Programas</a>
                                 <a class="collapse-item" href="{{ route('ciclo.index') }}">Ciclos</a>
                                 <a class="collapse-item" href="{{ route('curso.index') }}">Cursos</a>
-                                <a class="collapse-item" href="{{ route('competencias.index') }}">Competencias</a>
-                                <a class="collapse-item" href="{{ route('capacidades.index') }}">Capacidades</a>
-                                <a class="collapse-item" href="{{ route('estandares.index') }}">Estándares</a>
-                                <a class="collapse-item" href="{{ route('enfoques.index') }}">Enfoques</a>
-                                <a class="collapse-item" href="{{ route('proyectos.index') }}">Proyectos integradores</a>
                                 <a class="collapse-item" href="{{ route('periodoactual.index') }}">Periodos</a>
                             </div>
                         </div>
@@ -374,7 +369,7 @@
     <script src="{{ asset('admin/vendor/chart.js/Chart.min.js') }}"></script>
     <script src="{{ asset('admin/js/demo/chart-area-demo.js') }}"></script>
     <script src="{{ asset('admin/js/demo/chart-pie-demo.js') }}"></script>
-    <script src="{{ asset('admin/js/djm.js') }}"></script>
+    <script src="{{ asset('admin/js/djm.js') }}?v={{ filemtime(public_path('admin/js/djm.js')) }}"></script>
     {{-- PORCENTAJE --}}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

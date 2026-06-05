@@ -240,6 +240,9 @@ body.sidebar-toggled .sidebar hr.sidebar-logo-divider {
 
 .topbar {
     height: 4.375rem;
+    position: sticky;
+    top: 0;
+    z-index: 1030; /* por debajo de modales (1040+) pero sobre el contenido */
 }
 
 #sidebarToggleTop {
@@ -378,7 +381,17 @@ body.dim-mode  .sa-home-btn:focus {
         min-width: 0;
     }
 
-    /* --- sidebar bg-gradient-superadmin (admin.blade.php) --- */
+    /* --- sidebar bg-gradient-primary (admin.blade.php — rol admin) --- */
+    .sidebar.bg-gradient-primary {
+        width: 16rem !important;
+        flex-shrink: 0 !important;
+        transition: width .3s ease !important;
+    }
+    .sidebar.bg-gradient-primary .nav-item .nav-link {
+        width: 16rem !important;
+    }
+
+    /* --- sidebar bg-gradient-superadmin (admin.blade.php — rol super-admin) --- */
     .sidebar.bg-gradient-superadmin {
         width: 18rem !important;
         flex-shrink: 0 !important;
@@ -406,6 +419,13 @@ body.dim-mode  .sa-home-btn:focus {
        Solución: agregar la clase .toggled → tres clases = especificidad (0,3,0)
        → supera nuestra regla (0,2,0) incluso con !important.
        ──────────────────────────────────────────────────────────────────────── */
+    .sidebar.bg-gradient-primary.toggled {
+        width: 6.5rem !important;
+        overflow: visible !important;
+    }
+    .sidebar.bg-gradient-primary.toggled .nav-item .nav-link {
+        width: 6.5rem !important;
+    }
     .sidebar.bg-gradient-superadmin.toggled,
     .sidebar.sidebar-sa.toggled {
         width: 6.5rem !important;         /* icon-only igual que SB Admin 2 */
@@ -414,6 +434,192 @@ body.dim-mode  .sa-home-btn:focus {
     .sidebar.bg-gradient-superadmin.toggled .nav-item .nav-link,
     .sidebar.sidebar-sa.toggled .nav-item .nav-link {
         width: 6.5rem !important;
+    }
+
+    /* ── Desktop: sticky + scroll vertical para menús largos ──────────────
+       overflow-y:auto da al sidebar su propio scroll independiente de la
+       página; width:100% anula los 18rem !important cuando aparece el
+       scrollbar clásico de Windows (~17px). ── */
+    #accordionSidebar:not(.toggled) {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+    }
+
+    #accordionSidebar:not(.toggled) .nav-item .nav-link {
+        width: 100% !important;
+    }
+
+    /* Garantiza overflow:visible para .bg-gradient-primary y .bg-gradient-info
+       que no tienen su propia regla de toggled */
+    #accordionSidebar.toggled {
+        overflow: visible !important;
+    }
+}
+
+/* ── z-index GLOBAL (todos los breakpoints) ─────────────────────────────────
+   RAÍZ del bug "submenú detrás del contenido":
+   En un flex-container (#wrapper) los flex-items sin z-index explícito
+   apilan según orden DOM — #content-wrapper (último) pinta ENCIMA del sidebar.
+   En móvil los .collapse tienen position:absolute;z-index:1 pero quedan
+   dentro del stacking context del sidebar; si el sidebar no tiene z-index
+   su propio stacking context NO existe → el submenú pierde contra el contenido.
+   Solución: z-index fuera de cualquier media-query para que aplique siempre. ── */
+#accordionSidebar {
+    z-index: 100;
+}
+
+/* ── Scrollbar delgado (desktop y tablets) ── */
+#accordionSidebar::-webkit-scrollbar       { width: 4px; }
+#accordionSidebar::-webkit-scrollbar-track { background: transparent; }
+#accordionSidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,.2); border-radius: 2px; }
+
+/* ── DRAWER MÓVIL (< 768px) ──────────────────────────────────────────────────
+   Patrón: el sidebar es un cajón deslizante oculto por defecto.
+   Se reutiliza el .toggled que SB Admin 2 añade al pulsar el hamburguesa,
+   INVIRTIENDO su significado en móvil:
+     sin .toggled → transform:translateX(-100%)  drawer oculto (off-screen)
+     con .toggled → transform:translateX(0)      drawer visible + backdrop
+   Así no se necesita JS extra: el comportamiento de SB Admin 2 ya funciona. ── */
+@media (max-width: 767.98px) {
+
+    /* ── Drawer: estado base (oculto) ── */
+    #accordionSidebar {
+        position: fixed !important;
+        top: 0;
+        left: 0;
+        height: 100% !important;
+        width: 17rem !important;         /* ancho del drawer */
+        transform: translateX(-100%);
+        transition: transform .28s cubic-bezier(.4, 0, .2, 1),
+                    box-shadow  .28s ease;
+        overflow-y: auto;
+        overflow-x: hidden;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255,255,255,.15) transparent;
+        box-shadow: none;
+        z-index: 1050 !important;        /* sobre topbar (1030) y dropdowns */
+    }
+    #accordionSidebar::-webkit-scrollbar       { width: 3px; }
+    #accordionSidebar::-webkit-scrollbar-track { background: transparent; }
+    #accordionSidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,.2); }
+
+    /* ── Drawer: estado abierto (.toggled en móvil = mostrar) ── */
+    #accordionSidebar.toggled {
+        transform: translateX(0) !important;
+        width: 17rem !important;         /* anula width:0 de SB Admin 2 */
+        overflow-y: auto !important;     /* anula overflow:hidden de SB Admin 2 */
+        box-shadow: 6px 0 40px rgba(0,0,0,.55);
+    }
+
+    /* ── Backdrop: aparece con body.sidebar-toggled ── */
+    body.sidebar-toggled::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,.52);
+        backdrop-filter: blur(2px);
+        -webkit-backdrop-filter: blur(2px);
+        z-index: 1045;                   /* entre content (< 1045) y drawer (1050) */
+        animation: fadeInBackdrop .25s ease forwards;
+    }
+    @keyframes fadeInBackdrop {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+    }
+
+    /* ── Content: ocupa el 100% siempre (el drawer es overlay, no empuja) ── */
+    #content-wrapper {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+
+    /* ── Elementos del drawer: visibles aunque sidebar tenga .toggled ──
+       SB Admin 2 aplica display:none a headings/dividers con .sidebar-toggled
+       (regla diseñada para el modo icon-only desktop, incorrecta en el drawer) ── */
+    body.sidebar-toggled #accordionSidebar .sidebar-heading,
+    body.sidebar-toggled #accordionSidebar hr.sidebar-logo-divider,
+    body.sidebar-toggled #accordionSidebar .sa-crown-badge {
+        display: block !important;
+        opacity: 1 !important;
+    }
+    body.sidebar-toggled #accordionSidebar .sidebar-logo-img {
+        max-height: 64px !important;
+        max-width: 120px !important;
+        transform: none !important;
+        opacity: 1 !important;
+        filter: none !important;
+    }
+
+    /* ── Nav-links: fila con icono + texto, touch-target 48px ── */
+    #accordionSidebar .nav-item .nav-link {
+        display: flex !important;
+        align-items: center;
+        width: 100% !important;
+        padding: .8rem 1.1rem !important;
+        min-height: 48px;
+        text-align: left !important;
+        justify-content: flex-start !important;
+    }
+    #accordionSidebar .nav-item .nav-link i.fa-fw {
+        width: 1.25rem;
+        margin-right: .7rem;
+        flex-shrink: 0;
+        text-align: center;
+    }
+    /* Texto siempre visible dentro del drawer */
+    #accordionSidebar .nav-item .nav-link span {
+        display: inline !important;
+        font-size: .87rem;
+    }
+    /* Chevron de colapso visible y a la derecha */
+    #accordionSidebar .nav-item .nav-link[data-toggle="collapse"]::after {
+        display: inline-block !important;
+        margin-left: auto;
+        float: none !important;
+        opacity: .65;
+    }
+
+    /* ── Submenús inline (no flyout) ── */
+    #accordionSidebar .nav-item .collapse,
+    #accordionSidebar .nav-item .collapsing {
+        position: relative !important;
+        left: 0 !important;
+        top: 0 !important;
+        z-index: auto !important;
+        width: 100% !important;
+    }
+    #accordionSidebar .nav-item .collapse .collapse-inner,
+    #accordionSidebar .nav-item .collapsing .collapse-inner {
+        border-radius: .4rem;
+        box-shadow: none;
+        border: none;
+        margin: 0 .75rem .4rem 2.6rem;
+        padding: .2rem 0;
+        min-width: 0;
+    }
+    #accordionSidebar .nav-item .collapse .collapse-inner .collapse-item {
+        padding: .6rem .9rem;
+        font-size: .83rem;
+        min-height: 40px;
+        display: flex;
+        align-items: center;
+        border-radius: .35rem;
+    }
+    #accordionSidebar .nav-item .collapse .collapse-inner .collapse-header {
+        padding: .35rem .9rem .2rem;
+        font-size: .65rem;
+    }
+
+    /* ── Headings de sección: alineados a la izquierda en el drawer ── */
+    #accordionSidebar .sidebar-heading {
+        padding: .65rem 1.1rem .3rem;
+        font-size: .65rem;
+        text-align: left;
+        letter-spacing: .08em;
     }
 }
 

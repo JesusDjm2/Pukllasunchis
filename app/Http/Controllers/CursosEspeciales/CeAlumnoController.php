@@ -49,23 +49,32 @@ class CeAlumnoController extends Controller
 
         $curso->load('niveles.unidades.lecciones', 'niveles.unidades.ejercicios');
 
-        $userId       = Auth::id();
-        $leccionesIds = $curso->niveles->flatMap(fn ($n) => $n->unidades->flatMap(fn ($u) => $u->lecciones))->pluck('id');
+        $userId        = Auth::id();
+        $leccionesIds  = $curso->niveles->flatMap(fn ($n) => $n->unidades->flatMap(fn ($u) => $u->lecciones))->pluck('id');
         $ejerciciosIds = $curso->niveles->flatMap(fn ($n) => $n->unidades->flatMap(fn ($u) => $u->ejercicios))->pluck('id');
 
-        $completadas   = CeProgresoAlumno::where('user_id', $userId)
+        $completadas = CeProgresoAlumno::where('user_id', $userId)
             ->whereIn('ce_leccion_id', $leccionesIds)
             ->where('completado', true)
             ->pluck('ce_leccion_id')
             ->flip();
 
+        $completadasEjercicios = CeProgresoAlumno::where('user_id', $userId)
+            ->whereIn('ce_ejercicio_id', $ejerciciosIds)
+            ->where('completado', true)
+            ->pluck('ce_ejercicio_id')
+            ->flip();
+
         $porcentaje = $this->calcularPorcentaje($userId, $curso);
 
-        $totalLecciones  = $leccionesIds->count();
-        $completadasCount = $completadas->count();
+        $totalLecciones       = $leccionesIds->count();
+        $totalEjercicios      = $ejerciciosIds->count();
+        $completadasCount     = $completadas->count();
+        $completadasECount    = $completadasEjercicios->count();
 
         return view('cursos-especiales.alumno.show', compact(
-            'curso', 'completadas', 'porcentaje', 'totalLecciones', 'completadasCount'
+            'curso', 'completadas', 'completadasEjercicios', 'porcentaje',
+            'totalLecciones', 'completadasCount', 'totalEjercicios', 'completadasECount'
         ));
     }
 

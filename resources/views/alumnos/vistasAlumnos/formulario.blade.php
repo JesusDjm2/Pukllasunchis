@@ -449,7 +449,7 @@
             }
 
             /* Animación para resaltar campos con error */
-            @keyframes shake {
+            @@keyframes shake {
 
                 0%,
                 100% {

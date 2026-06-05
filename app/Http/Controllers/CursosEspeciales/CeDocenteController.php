@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\CursosEspeciales;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\CursosEspeciales\CeCursoEstadisticasTrait;
 use App\Models\CursosEspeciales\CursoEspecial;
 use App\Models\Docente;
 use Illuminate\Http\Request;
@@ -10,6 +11,8 @@ use Illuminate\Support\Facades\Storage;
 
 class CeDocenteController extends Controller
 {
+    use CeCursoEstadisticasTrait;
+
     private function docenteAutenticado(): Docente
     {
         $docente = auth()->user()?->docente;
@@ -26,7 +29,21 @@ class CeDocenteController extends Controller
     public function index()
     {
         $docente = $this->docenteAutenticado();
-        $cursos = $docente->cursosEspeciales()->with('niveles')->orderBy('orden')->orderBy('nombre')->get();
+        $cursos = $docente->cursosEspeciales()
+            ->with([
+                'niveles.unidades.lecciones',
+                'niveles.unidades.ejercicios',
+                'inscripciones.user.programa',
+                'inscripciones.user.ciclo',
+            ])
+            ->withCount('inscripciones')
+            ->orderBy('orden')
+            ->orderBy('nombre')
+            ->get();
+
+        foreach ($cursos as $curso) {
+            $curso->promedio_avance = $this->calcularPromedioAvance($curso);
+        }
 
         return view('cursos-especiales.docente.index', compact('cursos', 'docente'));
     }
@@ -36,12 +53,19 @@ class CeDocenteController extends Controller
         $docente = $this->docenteAutenticado();
         $this->autorizarCurso($curso, $docente);
 
-        $curso->load('niveles.unidades.lecciones', 'niveles.unidades.ejercicios');
+        $curso->load([
+            'niveles.unidades.lecciones',
+            'niveles.unidades.ejercicios',
+            'inscripciones.user.programa',
+            'inscripciones.user.ciclo',
+        ]);
+
+        $estadisticas = $this->generarEstadisticasPorEstudiante($curso);
 
         $rp = 'ce.docente';
         $layout = 'layouts.docente';
 
-        return view('cursos-especiales.admin.show', compact('curso', 'rp', 'layout', 'docente'));
+        return view('cursos-especiales.admin.show', array_merge(['curso' => $curso, 'rp' => $rp, 'layout' => $layout, 'docente' => $docente], $estadisticas));
     }
 
     public function edit(CursoEspecial $curso)

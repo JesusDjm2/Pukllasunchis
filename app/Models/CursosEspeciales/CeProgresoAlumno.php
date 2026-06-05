@@ -44,15 +44,24 @@ class CeProgresoAlumno extends Model
         );
     }
 
-    public static function registrarEjercicio(int $userId, int $ejercicioId, int $puntaje): void
+    public static function registrarEjercicio(int $userId, int $ejercicioId, int $puntaje, bool $correcto): void
     {
         $progreso = static::firstOrNew(
             ['user_id' => $userId, 'ce_ejercicio_id' => $ejercicioId]
         );
-        $progreso->completado  = true;
-        $progreso->puntaje     = $puntaje;
-        $progreso->intentos    = ($progreso->intentos ?? 0) + 1;
-        $progreso->updated_at  = now();
+
+        // Solo marcar como completado si la respuesta es correcta.
+        // Si ya estaba completado, no retrodecer (edge-case: re-intento tras recarga).
+        if ($correcto) {
+            $progreso->completado = true;
+            $progreso->puntaje    = $puntaje;
+        } elseif (! $progreso->exists) {
+            $progreso->completado = false;
+            $progreso->puntaje    = 0;
+        }
+
+        $progreso->intentos   = ($progreso->intentos ?? 0) + 1;
+        $progreso->updated_at = now();
         $progreso->save();
     }
 }

@@ -1,4 +1,5 @@
-@extends('layouts.admin')
+﻿@php $layout = auth()->user()?->hasRole('super-admin') ? 'layouts.superadmin' : 'layouts.admin'; @endphp
+@extends($layout)
 @section('contenido')
     <div class="container-fluid px-4 py-3">
         <div class="d-sm-flex align-items-center justify-content-between mb-4 pb-3 border-bottom">

@@ -196,7 +196,7 @@
     <script src="{{ asset('admin/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('admin/vendor/jquery-easing/jquery.easing.min.js') }}"></script>
     <script src="{{ asset('admin/js/sb-admin-2.min.js') }}"></script>
-    <script src="{{ asset('admin/js/djm.js') }}"></script>
+    <script src="{{ asset('admin/js/djm.js') }}?v={{ filemtime(public_path('admin/js/djm.js')) }}"></script>
     @stack('scripts')
 </body>
 

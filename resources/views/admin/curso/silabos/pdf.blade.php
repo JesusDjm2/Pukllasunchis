@@ -78,7 +78,7 @@
         }
 
         /* Animación personalizada */
-        @keyframes entradaBoton {
+        @@keyframes entradaBoton {
             0% {
                 opacity: 0;
                 transform: translate(100%, -50%) scale(0.6) rotate(10deg);

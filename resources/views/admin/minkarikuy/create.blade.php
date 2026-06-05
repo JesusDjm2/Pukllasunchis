@@ -1,4 +1,5 @@
-@extends('layouts.admin')
+﻿@php $layout = auth()->user()?->hasRole('super-admin') ? 'layouts.superadmin' : 'layouts.admin'; @endphp
+@extends($layout)
 @section('titulo', 'Nuevo Mink\'arikuy')
 @section('contenido')
 <div class="container-fluid">

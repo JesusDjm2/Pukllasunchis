@@ -1,4 +1,5 @@
-@extends('layouts.admin')
+@php $layout = auth()->user()?->hasRole('super-admin') ? 'layouts.superadmin' : 'layouts.admin'; @endphp
+@extends($layout)
 @section('contenido')
     @php
         $qBase = array_filter(
@@ -122,7 +123,13 @@
                             placeholder="Buscar por nombre, apellido o DNI..." id="searchInput"
                             value="{{ request('search') }}" autocomplete="off">
                         <div class="input-group-append">
-                            <button class="btn btn-sm btn-outline-secondary" type="button" id="searchButton">Buscar</button>
+                            <button class="btn btn-sm btn-outline-secondary" type="button" id="searchButton">
+                                <i class="fas fa-search fa-xs mr-1"></i> Buscar
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" type="button" id="clearButton"
+                                style="{{ request('search') ? '' : 'display:none;' }}">
+                                <i class="fas fa-times"></i>
+                            </button>
                         </div>
                     </div>
                     <p class="small text-muted mb-0">La búsqueda recorre <strong>todos</strong> los alumnos PPD
@@ -462,38 +469,66 @@
             refreshPpdPreview();
         });
 
-        (function () {
-            var input     = document.getElementById('searchInput');
-            var container = document.getElementById('ppd-tabla-responsive');
-            var aviso     = document.getElementById('busquedaActivaPpd');
+        {{-- Buscador client-side PPD --}}
+        window.filtrarAlumnosPpd = function filtrar(term) {
+            var input      = document.getElementById('searchInput');
+            var button     = document.getElementById('searchButton');
+            var clearBtn   = document.getElementById('clearButton');
+            var container  = document.getElementById('ppd-tabla-responsive');
+            var aviso      = document.getElementById('busquedaActivaPpd');
             if (!input || !container) return;
 
-            var urlSearch = new URLSearchParams(window.location.search).get('search') || '';
-
-            function filtrar(term) {
-                term = (term || '').toLowerCase().trim();
-                if (!term && urlSearch) {
-                    window.location.href = '{{ route("alumnosppd") }}';
-                    return;
+            term = (term || '').toLowerCase().trim();
+            var rows = container.querySelectorAll('tbody tr');
+            var grupoActual = null, grupoVisible = false;
+            rows.forEach(function (row) {
+                if (row.classList.contains('table-active')) {
+                    if (grupoActual) grupoActual.style.display = grupoVisible ? '' : 'none';
+                    grupoActual = row; grupoVisible = false;
+                } else {
+                    var v = !term || row.textContent.toLowerCase().includes(term);
+                    row.style.display = v ? '' : 'none';
+                    if (v) grupoVisible = true;
                 }
-                var rows = container.querySelectorAll('tbody tr');
-                var grupoActual = null, grupoVisible = false;
-                rows.forEach(function (row) {
-                    if (row.classList.contains('table-active')) {
-                        if (grupoActual) grupoActual.style.display = grupoVisible ? '' : 'none';
-                        grupoActual = row; grupoVisible = false;
-                    } else {
-                        var v = !term || row.textContent.toLowerCase().includes(term);
-                        row.style.display = v ? '' : 'none';
-                        if (v) grupoVisible = true;
-                    }
+            });
+            if (grupoActual) grupoActual.style.display = grupoVisible ? '' : 'none';
+            if (aviso) aviso.style.display = term ? '' : 'none';
+            if (clearBtn) clearBtn.style.display = term ? '' : 'none';
+        };
+
+        (function () {
+            var input      = document.getElementById('searchInput');
+            var button     = document.getElementById('searchButton');
+            var clearBtn   = document.getElementById('clearButton');
+            var container  = document.getElementById('ppd-tabla-responsive');
+            var aviso      = document.getElementById('busquedaActivaPpd');
+            if (!input || !container) return;
+
+            if (input.value) window.filtrarAlumnosPpd(input.value);
+            input.addEventListener('input', function () { window.filtrarAlumnosPpd(this.value); });
+
+            if (button) {
+                button.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    window.filtrarAlumnosPpd(input.value);
                 });
-                if (grupoActual) grupoActual.style.display = grupoVisible ? '' : 'none';
-                if (aviso) aviso.style.display = term ? '' : 'none';
             }
 
-            if (input.value) filtrar(input.value);
-            input.addEventListener('input', function () { filtrar(this.value); });
+            input.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    window.filtrarAlumnosPpd(input.value);
+                }
+            });
+
+            if (clearBtn) {
+                clearBtn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    input.value = '';
+                    window.filtrarAlumnosPpd('');
+                    input.focus();
+                });
+            }
         }());
     </script>
 @endsection

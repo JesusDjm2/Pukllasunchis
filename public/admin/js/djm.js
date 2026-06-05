@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', function () {
     var searchInput = document.getElementById('searchInput');
     var searchButton = document.getElementById('searchButton');
@@ -9,6 +8,16 @@ document.addEventListener('DOMContentLoaded', function () {
     var debounceTimer;
 
     function performSearch() {
+        // Si existe una función global de filtro client-side, usarla sin recargar
+        if (typeof window.filtrarAlumnosFid === 'function') {
+            window.filtrarAlumnosFid(searchInput.value);
+            return;
+        }
+        if (typeof window.filtrarAlumnosPpd === 'function') {
+            window.filtrarAlumnosPpd(searchInput.value);
+            return;
+        }
+        // Fallback: enviar formulario (recarga de página para vistas sin filtro client-side)
         searchForm.submit();
     }
 
@@ -76,4 +85,35 @@ $(document).ready(function () {
         $(this).toggleClass('down');
     });
 });
+
+/* ── Drawer móvil: cerrar al tocar el backdrop ──────────────────────────────
+   SB Admin 2 ya gestiona abrir/cerrar con el hamburguesa (#sidebarToggleTop).
+   Este listener cierra el drawer cuando el usuario toca fuera del sidebar
+   (es decir, toca el ::before backdrop que cubre el content-wrapper). ── */
+(function () {
+    function isMobile() { return window.innerWidth < 768; }
+
+    document.addEventListener('click', function (e) {
+        if (!isMobile()) return;
+        if (!document.body.classList.contains('sidebar-toggled')) return;
+
+        var sidebar  = document.getElementById('accordionSidebar');
+        var hamburger = document.getElementById('sidebarToggleTop');
+        if (!sidebar) return;
+
+        /* Si el clic fue dentro del sidebar o en el hamburguesa, no cerrar */
+        if (sidebar.contains(e.target) || (hamburger && hamburger.contains(e.target))) return;
+
+        /* Simular clic en el hamburguesa para que SB Admin 2 limpie sus clases */
+        if (hamburger) hamburger.click();
+    });
+
+    /* Cerrar con tecla Escape */
+    document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape' || !isMobile()) return;
+        if (!document.body.classList.contains('sidebar-toggled')) return;
+        var hamburger = document.getElementById('sidebarToggleTop');
+        if (hamburger) hamburger.click();
+    });
+}());
 

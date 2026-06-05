@@ -274,7 +274,7 @@ body.sidebar-toggled .sidebar.sidebar-sa .sidebar-logo-img {
 body.sidebar-toggled .sidebar.sidebar-sa .sidebar-heading,
 body.sidebar-toggled .sidebar.sidebar-sa hr.sidebar-logo-divider,
 body.sidebar-toggled .sidebar.sidebar-sa .sa-crown-badge {
-    display: none;
+    display: none !important;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

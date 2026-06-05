@@ -160,6 +160,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/{curso}/niveles/{nivel}/unidades/{unidad}/ejercicios/{ejercicio}/edit', [CeContenidoController::class, 'ejerciciosEdit'])->name('ejercicios.edit');
             Route::put('/{curso}/niveles/{nivel}/unidades/{unidad}/ejercicios/{ejercicio}', [CeContenidoController::class, 'ejerciciosUpdate'])->name('ejercicios.update');
             Route::delete('/{curso}/niveles/{nivel}/unidades/{unidad}/ejercicios/{ejercicio}', [CeContenidoController::class, 'ejerciciosDestroy'])->name('ejercicios.destroy');
+            Route::post('/upload-audio-ejercicio', [CeContenidoController::class, 'uploadAudioEjercicio'])->name('ejercicios.upload-audio');
         });
 
     // ── Docentes (compartido con admin) ───────────────────────
@@ -404,6 +405,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/{curso}/niveles/{nivel}/unidades/{unidad}/ejercicios/{ejercicio}/edit', [CeContenidoController::class, 'ejerciciosEdit'])->name('ejercicios.edit');
             Route::put('/{curso}/niveles/{nivel}/unidades/{unidad}/ejercicios/{ejercicio}', [CeContenidoController::class, 'ejerciciosUpdate'])->name('ejercicios.update');
             Route::delete('/{curso}/niveles/{nivel}/unidades/{unidad}/ejercicios/{ejercicio}', [CeContenidoController::class, 'ejerciciosDestroy'])->name('ejercicios.destroy');
+            Route::post('/upload-audio-ejercicio', [CeContenidoController::class, 'uploadAudioEjercicio'])->name('ejercicios.upload-audio');
         });
 
 }); // fin auth

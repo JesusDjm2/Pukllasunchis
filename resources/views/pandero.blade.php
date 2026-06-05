@@ -67,7 +67,7 @@
             display: none;
         }
 
-        @keyframes spin {
+        @@keyframes spin {
             0% {
                 transform: rotate(0deg);
             }
@@ -77,7 +77,7 @@
             }
         }
 
-        @keyframes zoomInfinite {
+        @@keyframes zoomInfinite {
             0% {
                 transform: scale(1);
             }

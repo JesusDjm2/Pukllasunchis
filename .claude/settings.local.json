@@ -24,7 +24,23 @@
       "Bash(xargs sed -i \"s/@extends\\('layouts.admin'\\)/@extends\\('layouts.superadmin'\\)/g\")",
       "WebFetch(domain:www.youtube.com)",
       "Bash(composer dump-autoload *)",
-      "Bash(Get-ChildItem -Path \"c:\\\\xampp\\\\htdocs\\\\Puklla2026\\\\app\\\\Http\\\\Controllers\" -Filter \"*ocente*\" -Recurse)"
+      "Bash(Get-ChildItem -Path \"c:\\\\xampp\\\\htdocs\\\\Puklla2026\\\\app\\\\Http\\\\Controllers\" -Filter \"*ocente*\" -Recurse)",
+      "Bash(Get-ChildItem -Path \"c:\\\\xampp\\\\htdocs\\\\Puklla2026\\\\resources\\\\views\" -Directory)",
+      "Bash(Get-ChildItem -Path \"C:\\\\xampp\\\\htdocs\\\\Puklla2026\\\\resources\\\\views\\\\layouts\" -ErrorAction SilentlyContinue)",
+      "Bash(grep -v \"^$\")",
+      "Bash(node -e ' *)",
+      "Bash(Get-ChildItem -Path \"c:\\\\xampp\\\\htdocs\\\\Puklla2026\" -Recurse -Include \"*CeLeccion*\", \"*CeContenido*\")",
+      "Bash(Select-Object -First 20)",
+      "Bash(powershell -Command ' *)",
+      "Bash(php -l routes/admin.php)",
+      "Bash(git stash *)",
+      "Bash(dir storage *)",
+      "Bash(dir storage\\\\ce-audios)",
+      "Bash(cd \"c:\\\\xampp\\\\htdocs\\\\Puklla2026\" && grep -i \"webm\\\\|audio/ogg\\\\|audio/mp\" \"c:/xampp/apache/conf/mime.types\" 2>/dev/null | head -10 || grep -i \"webm\\\\|audio\" \"c:/xampp/apache/conf/mime.types\" 2>/dev/null | head -10)",
+      "Read(//c/xampp/apache/conf/**)",
+      "Bash(Get-ChildItem \"c:\\\\xampp\\\\htdocs\\\\Puklla2026\\\\public\\\\storage\\\\ce-audios\" -ErrorAction SilentlyContinue)",
+      "Bash(Select-Object Name, Length)",
+      "Bash(Get-ChildItem \"c:\\\\xampp\\\\htdocs\\\\Puklla2026\\\\storage\\\\app\\\\public\\\\ce-audios\" -ErrorAction SilentlyContinue)"
     ]
   }
 }
