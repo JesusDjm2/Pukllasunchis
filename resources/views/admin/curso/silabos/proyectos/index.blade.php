@@ -4,7 +4,12 @@
 @section('contenido')
     <div class="container-fluid bg-white">
         <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3 pb-2">
-            <h3 class="mb-0 font-weight-bold text-primary">Lista de Proyectos Integradores:</h3>
+            <div>
+                <h4 class="mb-0 font-weight-bold" style="color:#1e293b;">
+                    <i class="fas fa-project-diagram mr-2" style="color:#4e73df;"></i>Proyectos Integradores
+                </h4>
+                <small class="text-muted">Proyectos vinculados a los sílabos de los cursos</small>
+            </div>
             <a href="{{ route('proyectos.create') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
                 Nuevo Proyecto
             </a>

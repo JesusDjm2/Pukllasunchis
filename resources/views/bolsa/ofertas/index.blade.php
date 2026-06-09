@@ -11,7 +11,12 @@
 @section('contenido')
     <div class="container-fluid bg-white pt-3 bolsa-admin-ofertas">
         <div class="d-sm-flex align-items-center justify-content-between mb-3 flex-wrap">
-            <h4 class="text-primary font-weight-bold mb-2 mb-sm-0">Registros públicos (ofertas / convocatorias)</h4>
+            <div class="mb-2 mb-sm-0">
+                <h4 class="mb-0 font-weight-bold" style="color:#1e293b;">
+                    <i class="fas fa-briefcase mr-2" style="color:#64748b;"></i>Bolsa de Trabajo &mdash; Ofertas
+                </h4>
+                <small class="text-muted">Ofertas y convocatorias publicadas en la bolsa de trabajo</small>
+            </div>
             <div>
                 <a href="{{ route('bolsa') }}" class="btn btn-sm btn-info mr-1 mb-1" target="_blank"
                     rel="noopener noreferrer">Página bolsa de trabajo</a>

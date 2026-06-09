@@ -3,7 +3,12 @@
 @section('contenido')
     <div class="container-fluid bg-white">
         <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3">
-            <h4 class="mb-0 text-primary font-weight-bold">Listado de Periodos PPD</h4>
+            <div>
+                <h4 class="mb-0 font-weight-bold" style="color:#1e293b;">
+                    <i class="fas fa-calendar-alt mr-2" style="color:#f59e0b;"></i>Periodos PPD
+                </h4>
+                <small class="text-muted">Períodos académicos del programa de Profesionalización Docente</small>
+            </div>
             <a href="{{ route('periodos.admin.ppd.create') }}" class="btn btn-sm btn-primary shadow-sm">
                 Nuevo Periodo
             </a>

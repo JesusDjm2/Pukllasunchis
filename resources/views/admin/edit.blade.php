@@ -3,7 +3,12 @@
     <div class="container-fluid">
         <div class="d-sm-flex align-items-center justify-content-between mb-4"
             style="border-bottom: 1px dashed #4848fc78; padding-bottom:1em">
-            <h4 class="font-weight-bold text-primary">Editar: <span>{{ $admin->apellidos }}, {{ $admin->name }}</span></h4>
+            <div>
+                <h4 class="mb-0 font-weight-bold" style="color:#1e293b;">
+                    <i class="fas fa-user-edit mr-2" style="color:#4e73df;"></i>Editar: <span style="color:#4e73df;">{{ $admin->apellidos }}, {{ $admin->name }}</span>
+                </h4>
+                <small class="text-muted">Actualiza los datos de acceso, rol y perfil del usuario</small>
+            </div>
             <a href="{{ route('admin') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
                 Volver
             </a>

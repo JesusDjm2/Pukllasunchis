@@ -5,7 +5,12 @@
     <div class="container-fluid bg-white">
         <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3 pb-2"
             style="border-bottom: 1px dashed #80808078">
-            <h2 class="mb-0 font-weight-bold text-primary">Sílabos:</h2>
+            <div>
+                <h4 class="mb-0 font-weight-bold" style="color:#1e293b;">
+                    <i class="fas fa-file-alt mr-2" style="color:#4e73df;"></i>Sílabos
+                </h4>
+                <small class="text-muted">Gestión de sílabos académicos por curso y ciclo</small>
+            </div>
             <a href="{{ route('silabos.create') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
                 Crear nuevo Sílabo <i class="fa fa-plus fa-sm"></i>
             </a>

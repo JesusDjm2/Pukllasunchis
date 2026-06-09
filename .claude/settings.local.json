@@ -40,7 +40,8 @@
       "Read(//c/xampp/apache/conf/**)",
       "Bash(Get-ChildItem \"c:\\\\xampp\\\\htdocs\\\\Puklla2026\\\\public\\\\storage\\\\ce-audios\" -ErrorAction SilentlyContinue)",
       "Bash(Select-Object Name, Length)",
-      "Bash(Get-ChildItem \"c:\\\\xampp\\\\htdocs\\\\Puklla2026\\\\storage\\\\app\\\\public\\\\ce-audios\" -ErrorAction SilentlyContinue)"
+      "Bash(Get-ChildItem \"c:\\\\xampp\\\\htdocs\\\\Puklla2026\\\\storage\\\\app\\\\public\\\\ce-audios\" -ErrorAction SilentlyContinue)",
+      "PowerShell(head -100)"
     ]
   }
 }

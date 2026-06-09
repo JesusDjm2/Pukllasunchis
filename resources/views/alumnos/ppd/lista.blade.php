@@ -15,9 +15,12 @@
     <div class="container-fluid bg-white">
         <div class="d-sm-flex align-items-center justify-content-between flex-wrap mb-4 pt-3 pb-3"
             style="border-bottom: 1px dashed #80808078">
-            <h3 class="mb-2 mb-sm-0 text-primary">
-                <small>Alumnos Profesionalización Docente (PPD):</small> {{ $totalRecords }}
-            </h3>
+            <div class="mb-2 mb-sm-0">
+                <h4 class="mb-0 font-weight-bold" style="color:#1e293b;">
+                    <i class="fas fa-user-graduate mr-2" style="color:#f59e0b;"></i>Alumnos PPD
+                </h4>
+                <small class="text-muted">Profesionalización Docente &nbsp;&middot;&nbsp; {{ $totalRecords }} registros</small>
+            </div>
             <div class="d-flex flex-wrap align-items-center">
                 @role('admin')
                     <button type="button"

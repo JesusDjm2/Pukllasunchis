@@ -4,7 +4,12 @@
 @section('contenido')
 <div class="container-fluid bg-white">
     <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3">
-        <h4 class="text-primary font-weight-bold">Editar Estándar</h4>
+        <div>
+            <h4 class="mb-0 font-weight-bold" style="color:#1e293b;">
+                <i class="fas fa-edit mr-2" style="color:#4e73df;"></i>Editar Estándar
+            </h4>
+            <small class="text-muted">Modifica la descripción del estándar seleccionado</small>
+        </div>
         <a href="{{ route('estandares.index') }}" class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm float-right">Volver</a>
     </div>
 

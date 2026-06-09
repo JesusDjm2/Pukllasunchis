@@ -4,7 +4,10 @@
 @section('contenido')
 <div class="container-fluid bg-white">
     <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3">
-        <h4 class="h4 mb-0 text-gray-800"><i class="fas fa-qrcode mr-2"></i>Mink'arikuy</h4>
+        <div>
+            <h4 class="mb-0 font-weight-bold" style="color:#1e293b;"><i class="fas fa-qrcode mr-2" style="color:#4e73df;"></i>Mink'arikuy</h4>
+            <small class="text-muted">Registros de asistencia y participación mediante código QR</small>
+        </div>
         <a href="{{ route('admin.minkarikuy.create') }}"
             class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
             <i class="fas fa-plus fa-sm mr-1"></i> Nuevo registro

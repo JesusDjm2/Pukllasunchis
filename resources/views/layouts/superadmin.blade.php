@@ -307,7 +307,7 @@
                 <div class="copyright text-center my-auto">
                     <span>
                         Copyright &copy; {{ date('Y') }}
-                        &nbsp;|&nbsp;<i class="fas fa-crown fa-xs text-warning"></i> Panel Super Admin
+                        &nbsp;|&nbsp; Panel Super Admin
                         &nbsp;|&nbsp;Hecho por
                         <a class="text-primary" href="https://www.facebook.com/DjmWebMaster"
                            target="_blank" rel="noopener noreferrer">DJM2</a>

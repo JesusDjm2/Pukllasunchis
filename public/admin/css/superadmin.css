@@ -358,3 +358,20 @@ body.dim-mode .sidebar.sidebar-sa .collapse-header { color: #94a3b8 !important; 
         width: 6.5rem !important;
     }
 }
+
+/* ── Tab superadmin-specific ── */
+.adm-tab-sa.active { background: linear-gradient(90deg,#7c3aed,#06b6d4); color: #fff; border-color: #7c3aed; }
+
+/* ── Search focus superadmin (purple) ── */
+.sidebar-sa ~ .d-flex .adm-search-wrap input:focus,
+body:has(.sidebar-sa) .adm-search-wrap input:focus {
+    border-color: #7c3aed !important;
+    box-shadow: 0 0 0 .2rem rgba(124,58,237,.2) !important;
+}
+
+/* ── SA crown badge (dashboard) ── */
+.sa-badge {
+    display: inline-flex; align-items: center; gap: .25rem; padding: .1rem .55rem;
+    border-radius: 1rem; font-size: .68rem; font-weight: 700;
+    background: linear-gradient(90deg, #7c3aed, #06b6d4); color: #fff;
+}

@@ -3,7 +3,12 @@
 @section('contenido')
     <div class="container-fluid bg-white">
         <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3">
-            <h3 class="mb-0 text-primary font-weight-bold">Crear nuevo Curso:</h3>
+            <div>
+                <h4 class="mb-0 font-weight-bold" style="color:#1e293b;">
+                    <i class="fas fa-plus-circle mr-2" style="color:#4e73df;"></i>Crear nuevo Curso
+                </h4>
+                <small class="text-muted">Registra un nuevo curso y asígnalo a un programa y ciclo</small>
+            </div>
             <a href="{{ route('curso.index') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
                 Volver
             </a>

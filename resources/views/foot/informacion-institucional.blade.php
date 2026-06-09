@@ -57,7 +57,7 @@
                                     <img height="100%" src="{{ asset('img/min/proyecto-curricular.png') }}"
                                         alt="Ficha de Inscrición Pukllasunchis">
                                 </div>
-                                <p class="text-center">Proyecto Curricular Isntitucional</p>
+                                <p class="text-center">Proyecto Curricular Institucional</p>
                                 <p class="text-center"><i class="fa fa-arrow-circle-right fa-lg"></i></p>
                             </a>
                         </div>
@@ -89,7 +89,7 @@
 
                     <div class="col-lg-4 mb-4">
                         <div class="card text-center pt-4">
-                            <a href="{{ asset('pdf/Relacion-de-Becarios-EESP-Pukllasunchis.pdf') }}" target="_blank">
+                            <a href="{{ asset('pdf/Relacion-de-Becarios-EESP-Pukllasunchis-2026.pdf') }}" target="_blank">
                                 <div style="height: 100px">
                                     <img height="100%" src="{{ asset('img/min/lista-becas.png') }}"
                                         alt="Ficha de Inscrición Pukllasunchis">
@@ -113,19 +113,19 @@
                     </div>
                     <div class="col-lg-4 mb-4">
                         <div class="card text-center pt-4">
-                            <a href="" target="_blank">
+                            <a href="{{ asset('pdf/ESTUDIANTES-MATRICULADOS-EESP-PUKLLASUNCHIS.pdf') }}" target="_blank">
                                 <div style="height: 100px">
                                     <img height="100%" src="{{ asset('img/min/relacion-ingresantes.png') }}"
                                         alt="Ficha de Inscrición Pukllasunchis">
                                 </div>
-                                <p class="text-center">Relación de Ingresantes 2025-I</p>
+                                <p class="text-center">Relación de Matriculados</p>
                                 <p class="text-center"><i class="fa fa-arrow-circle-right fa-lg"></i></p>
                             </a>
                         </div>
                     </div>
                     <div class="col-lg-4 mb-4">
                         <div class="card text-center pt-4">
-                            <a href="" target="_blank">
+                            <a href="{{ asset('pdf/ESTUDIANTES-MATRICULADOS-EESP-PUKLLASUNCHIS.pdf') }}" target="_blank">
                                 <div style="height: 100px">
                                     <img height="100%" src="{{ asset('img/min/Egresados-Pukllas.png') }}"
                                         alt="Ficha de Inscrición Pukllasunchis">

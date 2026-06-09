@@ -4,7 +4,12 @@
 @section('contenido')
     <div class="container-fluid bg-white">
         <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3">
-            <h4 class="text-primary font-weight-bold">Lista de Estándares</h4>
+            <div>
+                <h4 class="mb-0 font-weight-bold" style="color:#1e293b;">
+                    <i class="fas fa-clipboard-list mr-2" style="color:#4e73df;"></i>Lista de Estándares
+                </h4>
+                <small class="text-muted">Estándares de calidad vinculados a los ciclos académicos</small>
+            </div>
             <a href="{{ route('estandares.create') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm float-right">Crear Nuevo Estándar</a>
         </div>
         

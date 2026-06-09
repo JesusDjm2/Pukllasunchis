@@ -5,9 +5,13 @@
     <div class="container-fluid bg-white pt-2">
         <!-- Título -->
         <div class="d-sm-flex align-items-center justify-content-between mb-4">
-            <h1 class="h3 mb-0 text-primary">
-                Periodos registrados <small> ({{ $periodos->count() }})</small>
-            </h1>
+            <div>
+                <h4 class="mb-0 font-weight-bold" style="color:#1e293b;">
+                    <i class="fas fa-star mr-2" style="color:#4e73df;"></i>Períodos de Calificaciones
+                    <span class="text-muted" style="font-size:.85rem;">({{ $periodos->count() }})</span>
+                </h4>
+                <small class="text-muted">Períodos de evaluación académica registrados en el sistema</small>
+            </div>
             <a href="{{ route('periodos.create') }}" class="btn btn-sm btn-primary shadow-sm">
                 Nuevo Periodo <i class="fa fa-plus fa-sm"></i>
             </a>

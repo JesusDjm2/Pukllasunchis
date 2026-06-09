@@ -7,10 +7,12 @@
 <div class="container-fluid">
     <div class="d-sm-flex align-items-center justify-content-between mb-4"
          style="border-bottom:1px dashed #4848fc78;padding-bottom:1em">
-        <h4 class="font-weight-bold text-primary mb-0">
-            <i class="fas fa-chalkboard-teacher mr-2"></i>
-            Asignar ciclos al Tutor
-        </h4>
+        <div>
+            <h4 class="mb-0 font-weight-bold" style="color:#1e293b;">
+                <i class="fas fa-chalkboard-teacher mr-2" style="color:#10b981;"></i>Asignar ciclos al Tutor
+            </h4>
+            <small class="text-muted">Vincula los ciclos académicos que el tutor tiene a cargo</small>
+        </div>
         <a href="{{ route('admin') }}" class="btn btn-sm btn-outline-secondary">
             <i class="fas fa-arrow-left mr-1"></i> Volver
         </a>

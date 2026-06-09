@@ -279,9 +279,11 @@
                         </a>
                     @else
                         @hasanyrole('admin|adminB|tutor')
-                            <a href="{{ route('index') }}" class="font-weight-bold d-none d-sm-inline ml-1"
-                                style="font-size:.9rem; color:#1f6feb; text-decoration:none;">
-                                Ir a la página principal
+                            {{-- Admin: botón con identidad visual azul --}}
+                            <a href="{{ route('index') }}" class="adm-home-btn d-none d-md-inline-flex ml-2"
+                                title="Volver a la página principal">
+                                <i class="fas fa-home fa-sm"></i>
+                                <span>Página principal</span>
                             </a>
                         @endhasanyrole
                     @endrole
@@ -354,11 +356,13 @@
         <i class="fas fa-angle-up"></i>
     </a>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             var pl = document.getElementById('preloader');
             if (!pl) return;
             pl.classList.add('pl-out');
-            setTimeout(function () { pl.style.display = 'none'; }, 90);
+            setTimeout(function() {
+                pl.style.display = 'none';
+            }, 90);
         });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

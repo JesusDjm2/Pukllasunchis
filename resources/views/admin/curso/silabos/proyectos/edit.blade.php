@@ -9,7 +9,12 @@
     </style>
     <div class="container-fluid bg-white">
         <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3 pb-2">
-            <h3 class="mb-0 font-weight-bold text-primary">Editar Proyecto</h3>
+            <div>
+                <h4 class="mb-0 font-weight-bold" style="color:#1e293b;">
+                    <i class="fas fa-edit mr-2" style="color:#4e73df;"></i>Editar Proyecto
+                </h4>
+                <small class="text-muted">Modifica los datos del proyecto integrador seleccionado</small>
+            </div>
             <a href="{{ route('proyectos.index') }}" class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm">
                 Volver
             </a>

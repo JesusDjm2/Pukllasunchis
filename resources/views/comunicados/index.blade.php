@@ -4,7 +4,12 @@
 @section('contenido')
     <div class="container-fluid bg-white pt-3">
         <div class="d-sm-flex align-items-center justify-content-between mb-3 flex-wrap">
-            <h4 class="text-primary font-weight-bold mb-2 mb-sm-0">Registros de comunicados</h4>
+            <div class="mb-2 mb-sm-0">
+                <h4 class="mb-0 font-weight-bold" style="color:#1e293b;">
+                    <i class="fas fa-bullhorn mr-2" style="color:#4e73df;"></i>Comunicados
+                </h4>
+                <small class="text-muted">{{ $comunicados->count() }} registros &mdash; novedades y avisos institucionales</small>
+            </div>
             <div class="d-flex align-items-center flex-wrap">
                 <span class="badge badge-primary mr-2 mb-1">
                     Total comunicados: {{ $comunicados->count() }}

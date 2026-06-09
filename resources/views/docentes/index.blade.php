@@ -72,8 +72,12 @@
     </style>
     <div class="container-fluid bg-white">
         <div class="d-sm-flex align-items-center justify-content-between mb-2 pt-3 pb-1">
-            <h4 class="font-weight-bold text-primary">Lista de Docentes: <small>{{ $docentes->count() }} docentes
-                    registrados</small></h4>
+            <div>
+                <h4 class="mb-0 font-weight-bold" style="color:#1e293b;">
+                    <i class="fas fa-chalkboard-teacher mr-2" style="color:#06b6d4;"></i>Lista de Docentes
+                </h4>
+                <small class="text-muted">{{ $docentes->count() }} docentes registrados &mdash; gestión de carga horaria e incidencias</small>
+            </div>
             <div class="d-flex gap-2" style="gap:8px">
                 <a href="{{ route('admin.incidencias.todas') }}"
                     class="d-none d-sm-inline-block btn btn-sm btn-warning shadow-sm">

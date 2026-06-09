@@ -5,7 +5,12 @@
     <div class="container-fluid bg-white">
         <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3 pb-2"
             style="border-bottom: 1px dashed #80808078">
-            <h2 class="mb-0 font-weight-bold text-primary">Enfoques:</h2>
+            <div>
+                <h4 class="mb-0 font-weight-bold" style="color:#1e293b;">
+                    <i class="fas fa-compass mr-2" style="color:#4e73df;"></i>Enfoques Transversales
+                </h4>
+                <small class="text-muted">Enfoques transversales disponibles para vincular a los cursos</small>
+            </div>
             <a href="{{ route('enfoques.create') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
                 Crear nuevo Enfoque <i class="fa fa-plus fa-sm"></i>
             </a>

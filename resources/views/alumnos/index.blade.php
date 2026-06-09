@@ -89,13 +89,15 @@
     <div class="container-fluid bg-white">
         <div class="d-sm-flex align-items-center justify-content-between flex-wrap mb-4 pt-3 pb-3"
             style="border-bottom: 1px dashed #80808078">
-            <h3 class="mb-2 mb-sm-0 text-primary">
-                <small>Alumnos Formación Inicial Docente (FID){{ $soloBecas ? ' — Solo Becas' : '' }}:</small>
-                {{ $totalRecords }}
-                @if($soloBecas)
-                    <span class="badge badge-success ml-1" style="font-size:.65rem; vertical-align:middle;">Becas</span>
-                @endif
-            </h3>
+            <div class="mb-2 mb-sm-0">
+                <h4 class="mb-0 font-weight-bold" style="color:#1e293b;">
+                    <i class="fas fa-graduation-cap mr-2" style="color:#4e73df;"></i>Alumnos FID{{ $soloBecas ? ' &mdash; Solo Becas' : '' }}
+                    @if($soloBecas)
+                        <span class="badge badge-success ml-1" style="font-size:.65rem; vertical-align:middle;">Becas</span>
+                    @endif
+                </h4>
+                <small class="text-muted">Formación Inicial Docente &nbsp;&middot;&nbsp; {{ $totalRecords }} registros</small>
+            </div>
             <div class="d-flex flex-wrap align-items-center">
                 @role('admin')
                     @php

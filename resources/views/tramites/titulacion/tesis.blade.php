@@ -215,7 +215,11 @@
                             </li>
                             <li>Este pago tiene el tiempo de duración de una semana.</li>
                             <li>Como resultado de este trámite, recibirás en tu correo institucional el Reporte de
-                                originalidad (Turnitin), en un plazo no mayor a 10 días hábiles.</li>
+                                originalidad (Turnitin), en un plazo no mayor a 10 días hábiles. Con el pago que usted
+                                realiza puede hacer 1 revisión de originalidad en un plazo no mayor a 30 días.</li>
+                                <small style="color: #000; font-style: italic;">Nota: el porcentaje máximo para aprobar el
+                                reporte de originalidad debe ser 20%, de lo contrario, debe corregir el documento y
+                                solicitar nuevamente la revisión. </small>
                         </ul>
                     </li>
                     <li>Solicitar la revisión de la Tesis (Dictaminantes):
@@ -309,7 +313,7 @@
                             <li>Si es que el Tesis no tiene ninguna observación, recibirás en tu correo institucional el URL
                                 de
                                 registro del Tesis en el repositorio institucional</li>
-							<li>
+                            <li>
                                 <span class="text-info">
                                     👉 Este trámite tiene un lapso de duración de 30 días hábiles.
                                 </span>
@@ -331,11 +335,11 @@
                                 <small class="text-info">(Concepto: Emisión título de Licenciado /
                                     Codigo: 35 / Costo: s/400.00)</small>
                             </li>
-							<li>
-							<span class="text-info">
+                            <li>
+                                <span class="text-info">
                                     👉 Este trámite tiene un lapso de duración de 15 días hábiles.
                                 </span>
-							</li>
+                            </li>
                         </ul>
                     </li>
                     <li>Solicitar registro e inscripción de Diploma de Licenciado previo pago de s/200.00 en las oficinas de
@@ -479,7 +483,7 @@
         </div>
     </div>
     <!-- Pop-up Modal -->
-   
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous">
     </script>

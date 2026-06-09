@@ -4,7 +4,10 @@
 @section('contenido')
 <div class="container-fluid">
     <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3">
-        <h4 class="h4 mb-0 text-gray-800"><i class="fas fa-qrcode mr-2"></i>Editar Mink'arikuy</h4>
+        <div>
+            <h4 class="mb-0 font-weight-bold" style="color:#1e293b;"><i class="fas fa-qrcode mr-2" style="color:#4e73df;"></i>Editar Mink'arikuy</h4>
+            <small class="text-muted">Modifica los datos del registro de asistencia seleccionado</small>
+        </div>
         <a href="{{ route('admin.minkarikuy.index') }}" class="btn btn-sm btn-secondary shadow-sm">
             <i class="fas fa-arrow-left fa-sm mr-1"></i> Volver
         </a>

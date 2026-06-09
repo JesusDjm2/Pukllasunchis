@@ -3,8 +3,12 @@
 @section('contenido')
     <div class="container-fluid bg-white">
         <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3">
-            <h5 class="mb-0 text-primary font-weight-bold">Editar Curso: <span
-                    class="text-primary font-weight-bold">{{ $curso->nombre }}</span></h5>
+            <div>
+                <h4 class="mb-0 font-weight-bold" style="color:#1e293b;">
+                    <i class="fas fa-edit mr-2" style="color:#4e73df;"></i>Editar Curso: <span style="color:#4e73df;">{{ $curso->nombre }}</span>
+                </h4>
+                <small class="text-muted">Modifica el nombre, descripción y configuración del curso</small>
+            </div>
             <a href="{{ route('curso.index') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
                 Volver
             </a>
