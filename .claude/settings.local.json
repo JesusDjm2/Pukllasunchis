@@ -41,7 +41,19 @@
       "Bash(Get-ChildItem \"c:\\\\xampp\\\\htdocs\\\\Puklla2026\\\\public\\\\storage\\\\ce-audios\" -ErrorAction SilentlyContinue)",
       "Bash(Select-Object Name, Length)",
       "Bash(Get-ChildItem \"c:\\\\xampp\\\\htdocs\\\\Puklla2026\\\\storage\\\\app\\\\public\\\\ce-audios\" -ErrorAction SilentlyContinue)",
-      "PowerShell(head -100)"
+      "PowerShell(head -100)",
+      "Bash(dir \"c:\\\\xampp\\\\htdocs\\\\Puklla2026\\\\resources\\\\views\")",
+      "Bash(dir \"c:\\\\xampp\\\\htdocs\\\\Puklla2026\\\\storage\\\\app\\\\public\" /b)",
+      "Bash(dir \"c:\\\\xampp\\\\htdocs\\\\Puklla2026\\\\public\" /b)",
+      "Bash(curl -I \"http://localhost/storage/ce-audios/Vj527O4WBTbHbIJjXFnVTzEWAt1gOksd3o0C7Srg.ogg\")",
+      "Bash(curl -sI \"http://localhost/Puklla2026/public/storage/ce-audios/Vj527O4WBTbHbIJjXFnVTzEWAt1gOksd3o0C7Srg.ogg\")",
+      "Bash(curl -sI \"http://localhost/css/style.css\")",
+      "Bash(curl -sI \"http://localhost/Puklla2026/public/css/style.css\")",
+      "Bash(curl -sI \"http://localhost/Puklla2026/css/style.css\")",
+      "Bash(curl -sI \"http://localhost/Puklla2026/storage/ce-audios/Vj527O4WBTbHbIJjXFnVTzEWAt1gOksd3o0C7Srg.ogg\")",
+      "Bash(composer require *)",
+      "Bash(git diff *)",
+      "Bash(git ls-files *)"
     ]
   }
 }

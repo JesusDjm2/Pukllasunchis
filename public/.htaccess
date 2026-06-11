@@ -1,3 +1,12 @@
+# MIME types para audio grabado desde el navegador
+<IfModule mod_mime.c>
+    AddType audio/webm  .webm .weba
+    AddType audio/mp4   .m4a .aac
+    AddType audio/ogg   .ogg
+    AddType audio/mpeg  .mp3
+    AddType audio/wav   .wav
+</IfModule>
+
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes

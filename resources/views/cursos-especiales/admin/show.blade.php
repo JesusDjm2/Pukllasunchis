@@ -266,6 +266,17 @@
             color: #e74a3b;
         }
 
+        .cea-item-icon.mixto {
+            background: #f0eeff;
+            color: #8338ec;
+        }
+
+        /* Dark theme overrides */
+        .sidebar-dark .cea-item-icon.texto  { background: rgba(78,115,223,.18); color: #7aa2f7; }
+        .sidebar-dark .cea-item-icon.audio  { background: rgba(6,214,160,.15);  color: #06d6a0; }
+        .sidebar-dark .cea-item-icon.video  { background: rgba(231,74,59,.15);  color: #ff8080; }
+        .sidebar-dark .cea-item-icon.mixto  { background: rgba(131,56,236,.15); color: #b48ef5; }
+
         .cea-item-icon.ejercicio {
             background: #fff3cd;
             color: #f6c23e;
@@ -505,10 +516,11 @@
                     <table class="table table-sm cea-inscritos-table mb-0">
                         <thead>
                             <tr>
-                                <th style="width:33%">Estudiante</th>
-                                <th style="width:11%">DNI</th>
+                                <th style="width:30%">Estudiante</th>
+                                <th style="width:10%">DNI</th>
                                 <th>Ciclo</th>
-                                <th style="width:30%">Avance</th>
+                                <th style="width:12%">Inscripción</th>
+                                <th style="width:28%">Avance</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -521,7 +533,7 @@
                             @endphp
                             {{-- Fila de grupo (colapsable) --}}
                             <tr class="cea-group-row" data-group="{{ $gId }}" onclick="toggleGrupo('{{ $gId }}', this)">
-                                <td colspan="3" style="padding:.55rem .75rem;">
+                                <td colspan="4" style="padding:.55rem .75rem;">
                                     <div style="display:flex;align-items:center;gap:.55rem;">
                                         <i class="fas fa-chevron-down cea-group-chev" id="chev-{{ $gId }}"
                                            style="font-size:.65rem;color:#8338ec;transition:transform .25s;"></i>
@@ -552,6 +564,11 @@
                                     </td>
                                     <td style="padding:.45rem .75rem;">
                                         <span style="font-size:.78rem;color:#666;">{{ $alumno['ciclo'] }}</span>
+                                    </td>
+                                    <td style="padding:.45rem .75rem;">
+                                        <span style="font-size:.75rem;color:#888;white-space:nowrap;">
+                                            {{ $alumno['inscrito_at'] ? $alumno['inscrito_at']->format('d/m/Y') : '—' }}
+                                        </span>
                                     </td>
                                     <td style="padding:.45rem .75rem;">
                                         <div style="display:flex;align-items:center;gap:.5rem;">
@@ -653,15 +670,23 @@
                                     <i class="fas fa-book-open"></i> Lecciones ({{ $unidad->lecciones->count() }})
                                 </div>
                                 @foreach ($unidad->lecciones as $leccion)
+                                    @php
+                                        $td = $leccion->tipo_display;
+                                        $tdIcon = match($td) {
+                                            'audio'  => 'headphones',
+                                            'video'  => 'play-circle',
+                                            'mixto'  => 'layer-group',
+                                            default  => 'file-alt',
+                                        };
+                                    @endphp
                                     <div class="cea-item">
-                                        <span class="cea-item-icon {{ $leccion->tipo }}">
-                                            <i
-                                                class="fas fa-{{ $leccion->tipo === 'video' ? 'play-circle' : ($leccion->tipo === 'audio' ? 'headphones' : 'file-alt') }}"></i>
+                                        <span class="cea-item-icon {{ $td }}">
+                                            <i class="fas fa-{{ $tdIcon }}"></i>
                                         </span>
                                         <div class="cea-item-name">
                                             {{ $leccion->nombre }}
                                             <small>
-                                                {{ ucfirst($leccion->tipo) }}
+                                                {{ ucfirst($td) }}
                                                 @if ($leccion->duracion_min)
                                                     · {{ $leccion->duracion_min }} min
                                                 @endif
@@ -710,10 +735,12 @@
                                         </div>
                                         @if ($ejercicio->audio_url)
                                             @php
-                                                $aMime = match(pathinfo($ejercicio->audio_url, PATHINFO_EXTENSION)) {
-                                                    'm4a', 'mp4' => 'audio/mp4',
-                                                    'ogg'        => 'audio/ogg',
-                                                    default      => 'audio/webm',
+                                                $aMime = match(strtolower(pathinfo($ejercicio->audio_url, PATHINFO_EXTENSION))) {
+                                                    'm4a', 'mp4', 'aac' => 'audio/mp4',
+                                                    'ogg'               => 'audio/ogg',
+                                                    'mp3'               => 'audio/mpeg',
+                                                    'wav'               => 'audio/wav',
+                                                    default             => 'audio/webm',
                                                 };
                                             @endphp
                                             <button type="button"
@@ -727,7 +754,7 @@
                                                    class="cea-admin-audio"
                                                    preload="none"
                                                    style="display:none">
-                                                <source src="{{ $ejercicio->audio_url }}" type="{{ $aMime }}">
+                                                <source src="{{ $ejercicio->audio_src }}" type="{{ $aMime }}">
                                             </audio>
                                         @endif
                                         <div class="cea-item-acts">
@@ -902,9 +929,14 @@
                         if (oi) oi.className = 'fas fa-play';
                         if (ob) ob.classList.remove('playing');
                     });
-                    audio.play().catch(() => {});
-                    if (icon) icon.className = 'fas fa-pause';
-                    btn.classList.add('playing');
+                    audio.play()
+                        .then(() => {
+                            if (icon) icon.className = 'fas fa-pause';
+                            btn.classList.add('playing');
+                        })
+                        .catch(err => {
+                            console.error('Audio error:', audio.currentSrc, err);
+                        });
                 } else {
                     audio.pause();
                     if (icon) icon.className = 'fas fa-play';

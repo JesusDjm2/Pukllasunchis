@@ -31,6 +31,15 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'google_drive' => [
+        'credentials'  => env('GOOGLE_DRIVE_CREDENTIALS', 'storage/app/google-drive-credentials.json'),
+        'impersonate'  => env('GOOGLE_DRIVE_IMPERSONATE'),
+        'folders' => [
+            'ejercicios' => env('GOOGLE_DRIVE_EJERCICIOS_FOLDER_ID'),
+            'lecciones'  => env('GOOGLE_DRIVE_LECCIONES_FOLDER_ID'),
+        ],
+    ],
+
     'apiperu' => [
         'url' => env('APIPERU_URL', 'https://apiperu.dev/api'),
         'token' => env('APIPERU_TOKEN'),

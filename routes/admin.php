@@ -153,6 +153,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/{curso}/niveles/{nivel}/unidades/{unidad}/lecciones/{leccion}/edit', [CeContenidoController::class, 'leccionesEdit'])->name('lecciones.edit');
             Route::put('/{curso}/niveles/{nivel}/unidades/{unidad}/lecciones/{leccion}', [CeContenidoController::class, 'leccionesUpdate'])->name('lecciones.update');
             Route::delete('/{curso}/niveles/{nivel}/unidades/{unidad}/lecciones/{leccion}', [CeContenidoController::class, 'leccionesDestroy'])->name('lecciones.destroy');
+            Route::post('/upload-audio-leccion', [CeContenidoController::class, 'uploadAudioLeccion'])->name('lecciones.upload-audio');
 
             // Ejercicios
             Route::get('/{curso}/niveles/{nivel}/unidades/{unidad}/ejercicios/create', [CeContenidoController::class, 'ejerciciosCreate'])->name('ejercicios.create');
@@ -398,6 +399,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/{curso}/niveles/{nivel}/unidades/{unidad}/lecciones/{leccion}/edit', [CeContenidoController::class, 'leccionesEdit'])->name('lecciones.edit');
             Route::put('/{curso}/niveles/{nivel}/unidades/{unidad}/lecciones/{leccion}', [CeContenidoController::class, 'leccionesUpdate'])->name('lecciones.update');
             Route::delete('/{curso}/niveles/{nivel}/unidades/{unidad}/lecciones/{leccion}', [CeContenidoController::class, 'leccionesDestroy'])->name('lecciones.destroy');
+            Route::post('/upload-audio-leccion', [CeContenidoController::class, 'uploadAudioLeccion'])->name('lecciones.upload-audio');
 
             // Ejercicios
             Route::get('/{curso}/niveles/{nivel}/unidades/{unidad}/ejercicios/create', [CeContenidoController::class, 'ejerciciosCreate'])->name('ejercicios.create');

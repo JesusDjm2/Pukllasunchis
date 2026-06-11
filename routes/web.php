@@ -2,6 +2,7 @@
 
 /* use App\Http\Controllers\Auth\RegisterController; */
 use App\Http\Controllers\AlumnoController;
+use App\Http\Controllers\CursosEspeciales\CeAudioStreamController;
 use App\Http\Controllers\EnlacesController;
 use App\Http\Controllers\PpdController;
 use Illuminate\Support\Facades\Auth;
@@ -102,6 +103,11 @@ Route::get('/logout', function () {
 Route::get('/test-419', function () {
     throw new HttpException(419, 'Página expirada');
 });
+
+// Proxy de audio para Google Drive (requiere sesión activa)
+Route::get('/ce/audio/{fileId}', [CeAudioStreamController::class, 'stream'])
+    ->middleware('auth')
+    ->name('ce.audio.stream');
 
 // Formulario público de incidencias (sin login)
 Route::get('/incidencias', [App\Http\Controllers\IncidenciaController::class, 'publicCreate'])->name('incidencias.public.create');

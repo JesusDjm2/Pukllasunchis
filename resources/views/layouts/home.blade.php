@@ -24,41 +24,21 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
         integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <!-- Script para cargar archivos CSS de forma asíncrona -->
+    <!-- owl.carousel.min.css cargado diferido (único que no estaba en head) -->
     <script>
-        function loadAsyncCSS(url) {
-            var cssLink = document.createElement('link');
-            cssLink.rel = 'stylesheet';
-            cssLink.href = url;
-            cssLink.media = 'print'; // Inicialmente carga de manera asíncrona, pero solo para medios impresos
-            cssLink.onload = function() {
-                this.media = 'all'; // Cambia el atributo media después de que se haya cargado el CSS
-            };
-
-            // Agrega la etiqueta link al head
-            document.head.appendChild(cssLink);
-        }
-
-        // Llama a la función para cargar archivos CSS después de que la página se haya cargado
         document.addEventListener('DOMContentLoaded', function() {
-            loadAsyncCSS('{{ asset('css/bootstrap.min.css') }}');
-            loadAsyncCSS('{{ asset('css/owl.carousel.min.css') }}');
-            loadAsyncCSS('{{ asset('css/magnific-popup.css') }}');
-            loadAsyncCSS('{{ asset('css/themify-icons.css') }}');
-            loadAsyncCSS('{{ asset('css/nice-select.css') }}');
-            loadAsyncCSS('{{ asset('css/flaticon.css') }}');
-            loadAsyncCSS('{{ asset('css/gijgo.css') }}');
-            loadAsyncCSS('{{ asset('css/animate.css') }}');
-            loadAsyncCSS('{{ asset('css/slicknav.css') }}');
-            loadAsyncCSS('{{ asset('css/style.css') }}');
-            loadAsyncCSS('{{ asset('css/estilos.css') }}');
-            loadAsyncCSS('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css');
-            // Agrega más llamadas según sea necesario para cargar otros archivos CSS
+            var link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.media = 'print';
+            link.onload = function() { this.media = 'all'; };
+            link.href = '{{ asset('css/owl.carousel.min.css') }}';
+            document.head.appendChild(link);
         });
     </script>
 </head>
 
 <body>
+    @include('partials.public-preloader')
     <button id="scrollToTopBtn"><i class="fa fa-arrow-up"></i></button>
     <a class="wasa fa-brands fa-whatsapp"
         href="https://wa.me/51984529158/?text=Buen%20día,%20me%20gustaría%20más%20información%20por%20favor."
@@ -191,7 +171,7 @@
                             <div class="main-menu  d-none d-lg-block">
                                 <nav>
                                     <ul id="navigation">
-                                        <li><a class="active" href="{{ route('nosotros') }}">Nosotros</a></li>
+                                        <li><a href="{{ route('nosotros') }}">Nosotros</a></li>
                                         <li><a style="cursor: pointer">Programas<i class="ti-angle-down"></i></a>
                                             <ul class="submenu">
                                                 <li><a href="{{ route('inicial') }}">Educación Inicial</a></li>
@@ -826,6 +806,51 @@
     <script src="{{ asset('js/gijgo.min.js') }}"></script>
     <script src="{{ asset('js/main.js') }}"></script>
     @include('partials.pukllabot-widget')
+    <script>
+        /* Indicador de página activa en el menú principal */
+        document.addEventListener('DOMContentLoaded', function () {
+            var current = window.location.pathname;
+            document.querySelectorAll('#navigation > li').forEach(function (li) {
+                var mainLink = li.querySelector(':scope > a[href]');
+                if (!mainLink) return;
+                var tryActivate = function (href) {
+                    if (!href || href === '#') return false;
+                    try {
+                        var p = new URL(href, window.location.origin).pathname;
+                        return current === p || current.startsWith(p + '/');
+                    } catch (e) { return false; }
+                };
+                if (tryActivate(mainLink.getAttribute('href'))) {
+                    mainLink.classList.add('active');
+                    return;
+                }
+                li.querySelectorAll('.submenu a[href]').forEach(function (sub) {
+                    if (tryActivate(sub.getAttribute('href'))) {
+                        mainLink.classList.add('active');
+                        sub.classList.add('active');
+                    }
+                });
+            });
+        });
+    </script>
+    <script src="{{ asset('js/gsap-animations.js') }}"></script>
+    <script>
+        (function () {
+            var pl = document.getElementById('pl-public');
+            if (!pl) return;
+            function hidePl() {
+                if (pl.classList.contains('plp-out')) return;
+                pl.classList.add('plp-out');
+                setTimeout(function () { pl.style.display = 'none'; }, 520);
+            }
+            // Ocultar cuando todo esté cargado (mínimo 800 ms de visibilidad)
+            window.addEventListener('load', function () {
+                setTimeout(hidePl, 800);
+            });
+            // Tope de seguridad: máximo 4 segundos
+            setTimeout(hidePl, 4000);
+        })();
+    </script>
     <!--contact js-->
     {{-- <script src="{{ asset('js/contact.js') }}"></script>
     <script src="{{ asset('js/jquery.ajaxchimp.min.js') }}"></script>

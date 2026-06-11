@@ -90,23 +90,7 @@
     </div>
     <div class="welcome_docmed_area">
         <div class="container">
-            <div class="row">
-                {{-- <div class="col-xl-7 col-lg-7">
-                    <div class="welcome_docmed_info">
-                        <h2>¿Quienes somos?</h2>
-                        <h3>EESP PUKLLASUNCHIS</h3>
-                        <p class="text-justify">
-                            La EESP Pukllasunchis es una institución que asume un serio compromiso con la educación del Perú
-                            y es sensible a las diferencias culturales, principalmente de la región y el país. Es un
-                            proyecto alternativo que busca revisar los paradigmas tradicionales para reconstruir una
-                            educación que sea inclusiva e intercultural. Desde esa perspectiva atendemos a una población
-                            diversa entre la que se incluye a estudiantes de beca 18 procedentes de distintas comunidades
-                            andinas.
-                        </p>
-                        <a href="{{ route('nosotros') }}" class="boxed-btn3-white-2">Leer más</a>
-                        <a href="{{ route('ordinario') }}" class="boxed-btn3-white-2">Postular</a>
-                    </div>
-                </div> --}}
+            <div class="row">               
                 <div class="col-xl-7 col-lg-7">
                     <div class="welcome_docmed_info">
                         <h2>¿Quiénes somos?</h2>
@@ -141,7 +125,7 @@
                     </div>
                 </div>
 
-                <div class="col-xl-5 col-lg-5 mt-4" style="width: 100%; height: 380px; background: #d59d52; padding:0.2em">
+                <div class="col-xl-5 col-lg-5 mt-4">
                     <iframe width="100%" height="100%" src="https://www.youtube.com/embed/74k-QFuO2oo"
                         title="EESP Pukllasunchis" frameborder="0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"

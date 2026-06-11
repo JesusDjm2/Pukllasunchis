@@ -60,7 +60,7 @@
             </div>
             <div class="row text-center pt-5">
                 <div class="col-lg-4">
-                    <div class="card p-3">
+                    <div class="card p-3 nosotros-card">
                         <h3>Misión</h3>
                         <div class="linea-medio"></div>
                         <p class="text-justify">
@@ -73,7 +73,7 @@
                     </div>
                 </div>
                 <div class="col-lg-4">
-                    <div class="card p-3">
+                    <div class="card p-3 nosotros-card">
                         <h3>Visión</h3>
                         <div class="linea-medio"></div>
                         <p class="text-justify">
@@ -87,7 +87,7 @@
                     </div>
                 </div>
                 <div class="col-lg-4">
-                    <div class="card p-3">
+                    <div class="card p-3 nosotros-card">
                         <h3>Propósito</h3>
                         <div class="linea-medio"></div>
                         <p class="text-justify">

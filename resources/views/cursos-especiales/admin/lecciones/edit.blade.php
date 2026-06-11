@@ -4,7 +4,6 @@
 
 @push('styles')
 <style>
-.cea-form-page { max-width: 860px; padding-bottom: 2rem; }
 .cea-form-header { padding: 1.5rem 0 1.25rem; border-bottom: 2px solid #f0f0f0; margin-bottom: 1.75rem; }
 .cea-form-header h1 { font-size: 1.3rem; font-weight: 800; color: #2d3561; margin: 0 0 .25rem; }
 .cea-breadcrumb { font-size: .78rem; color: #aaa; display: flex; align-items: center; gap: .35rem; flex-wrap: wrap; }
@@ -30,7 +29,7 @@
 @endpush
 
 @section('contenido')
-<div class="container-fluid cea-form-page">
+<div class="container-fluid">
     <div class="cea-form-header">
         <div class="cea-breadcrumb mb-2">
             <a href="{{ route($rp . '.index') }}">Cursos</a>

@@ -13,8 +13,34 @@ class CeLeccion extends Model
 
     protected $fillable = [
         'ce_unidad_id', 'nombre', 'tipo',
-        'contenido_texto', 'archivo_url', 'duracion_min', 'orden',
+        'contenido_texto', 'archivo_url', 'video_url', 'duracion_min', 'orden',
     ];
+
+    /** URL resuelta del audio (Drive, local o externa). */
+    public function getArchivoSrcAttribute(): ?string
+    {
+        if (!$this->archivo_url) return null;
+        if (str_starts_with($this->archivo_url, 'gdrive:')) {
+            return '/ce/audio/' . substr($this->archivo_url, 7);
+        }
+        if (str_starts_with($this->archivo_url, 'http')) {
+            return $this->archivo_url;
+        }
+        return '/storage/' . $this->archivo_url;
+    }
+
+    /** Tipo inferido del contenido presente (texto | audio | video | mixto). */
+    public function getTipoDisplayAttribute(): string
+    {
+        $t = $this->tipo;
+        if ($t) return $t;
+        $has = array_filter([
+            $this->contenido_texto ? 'texto' : null,
+            $this->archivo_url    ? 'audio' : null,
+            $this->video_url      ? 'video' : null,
+        ]);
+        return count($has) > 1 ? 'mixto' : (reset($has) ?: 'texto');
+    }
 
     public function unidad()
     {
