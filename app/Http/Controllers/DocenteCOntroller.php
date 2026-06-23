@@ -304,12 +304,12 @@ class DocenteCOntroller extends Controller
 
         // Obtener alumnos que:
         // 1. Tienen rol 'alumnoB' o 'inhabilitado'
-        // 2. Están en el curso específico
+        // 2. Pertenecen al mismo programa que el curso (PPD agrupa por programa, no por ciclo)
         // 3. NO tienen el campo 'guardado' = true (es decir, aún no han guardado sus calificaciones)
         $query = User::whereHas('roles', function ($q) {
             $q->whereIn('name', ['alumnoB', 'inhabilitado']);
         })
-            ->where('ciclo_id', $curso->ciclo_id)
+            ->where('programa_id', $programaId)
             ->with(['roles', 'alumnoB'])
             ->orderBy('apellidos');
 

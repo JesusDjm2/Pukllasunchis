@@ -118,9 +118,12 @@
                                     <tbody>
                                         @foreach ($alumnos as $alumno)
                                             @php
-                                                /* $alumno es User model */
-                                                $fotoUrl   = $alumno->foto
-                                                    ? asset('img/estudiantes/'.$alumno->foto)
+                                                /* $alumno es User model.
+                                                   Los alumnos PPD guardan la ruta completa (img/admin/ppd/archivo.jpg)
+                                                   al convertirse desde postulante; los FID y los editados manualmente
+                                                   guardan solo el nombre de archivo dentro de img/estudiantes/. */
+                                                $fotoUrl = $alumno->foto
+                                                    ? asset(str_contains($alumno->foto, '/') ? $alumno->foto : 'img/estudiantes/'.$alumno->foto)
                                                     : null;
                                                 $numAlumno = optional($alumno->alumnoB)->numero ?? null;
                                                 $fullName  = trim($alumno->apellidos.', '.$alumno->name);

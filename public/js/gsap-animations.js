@@ -138,6 +138,14 @@
         }
 
         /* -------------------------------------------------------
+           6b. Calendario de Admisión FID — filas de la tabla en cascada
+        ------------------------------------------------------- */
+        var fidCalendario = document.querySelector('.fid-calendario_area');
+        if (fidCalendario) {
+            staggerUp('.fid-calendario-table tbody tr', fidCalendario, 0.1);
+        }
+
+        /* -------------------------------------------------------
            7. Section titles (.section_title) across all views
         ------------------------------------------------------- */
         gsap.utils.toArray('.section_title').forEach(function (el) {

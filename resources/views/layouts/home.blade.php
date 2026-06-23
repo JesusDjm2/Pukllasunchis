@@ -805,7 +805,9 @@
     <script src="{{ asset('js/plugins.js') }}"></script>
     <script src="{{ asset('js/gijgo.min.js') }}"></script>
     <script src="{{ asset('js/main.js') }}"></script>
-    @include('partials.pukllabot-widget')
+    @unless(app()->environment('production'))
+        @include('partials.pukllabot-widget')
+    @endunless
     <script>
         /* Indicador de página activa en el menú principal */
         document.addEventListener('DOMContentLoaded', function () {

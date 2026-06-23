@@ -202,7 +202,7 @@
                             <li>Hacer el pago correspondiente por derecho de revisión de originalidad (Turnitin)
                                 <strong>como pago ordinario</strong> en las
                                 oficinas de Caja Cusco. <small class="text-info">(Concepto: REVISION TURNITIN DE TESIS /
-                                    Codigo: 37 / Costo: s/30.00)</small>
+                                    Codigo: 37 / Costo: s/25.00)</small>
                             </li>
                             <li>Llenar <a
                                     href="https://docs.google.com/forms/d/e/1FAIpQLSc1Bam9QlzjkT66NYeKMxS-xyoU4MchYtYiGCMmtvKVbHiCjg/viewform"
@@ -483,7 +483,6 @@
         </div>
     </div>
     <!-- Pop-up Modal -->
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous">
     </script>

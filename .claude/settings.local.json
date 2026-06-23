@@ -53,7 +53,27 @@
       "Bash(curl -sI \"http://localhost/Puklla2026/storage/ce-audios/Vj527O4WBTbHbIJjXFnVTzEWAt1gOksd3o0C7Srg.ogg\")",
       "Bash(composer require *)",
       "Bash(git diff *)",
-      "Bash(git ls-files *)"
+      "Bash(git ls-files *)",
+      "Skill(run)",
+      "Skill(run:*)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost/Puklla2026/public/login)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://puklla2026.test/login)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost/login)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost/Puklla2026/login)",
+      "Bash(node -e \"console.log\\(require.resolve\\('playwright'\\)\\)\")",
+      "Read(//tmp/**)",
+      "Bash(node \"C:/Users/Jaime/AppData/Local/Temp/pw-inspect-login.js\")",
+      "Read(//c//**)",
+      "Bash(mkdir -p /tmp/pw-check)",
+      "Bash(npm init *)",
+      "Bash(npm install *)",
+      "Bash(cp \"C:/Users/Jaime/AppData/Local/Temp/pw-inspect-login.js\" /tmp/pw-check/inspect.js)",
+      "Bash(node inspect.js)",
+      "Bash(grep -n \"ScrollTrigger\\\\|gsap\\\\.\\\\|function\\\\|//\" \"c:/xampp/htdocs/Puklla2026/public/js/gsap-animations.js\")",
+      "Bash(node \"C:/Users/Jaime/AppData/Local/Temp/pw-inspect-fid.js\")",
+      "Bash(cp \"C:/Users/Jaime/AppData/Local/Temp/pw-inspect-fid.js\" /tmp/pw-check/fid.js)",
+      "Bash(node fid.js)",
+      "Bash(NODE_PATH=/tmp/pwcheck/node_modules node -e ' *)"
     ]
   }
 }

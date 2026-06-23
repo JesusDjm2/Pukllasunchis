@@ -90,7 +90,7 @@
     </div>
     <div class="welcome_docmed_area">
         <div class="container">
-            <div class="row">               
+            <div class="row">
                 <div class="col-xl-7 col-lg-7">
                     <div class="welcome_docmed_info">
                         <h2>¿Quiénes somos?</h2>
@@ -175,6 +175,449 @@
             </div>
         </div>
     </div>
+
+    <section class="fid-calendario_area">
+        <div class="container">
+            <div class="row">
+                <div class="col-xl-12">
+                    <div class="section_title text-center mb-55">
+                        <span class="fid-calendario-eyebrow">
+                            <i class="fa-solid fa-calendar-check" aria-hidden="true"></i>
+                            Formación Inicial Docente
+                        </span>
+                        <h3>Calendario de Admisión y Matrícula</h3>
+                        <p class="text-center">Horarios, fechas de admisión, matrícula e inicio de clases para nuestros
+                            programas de FID.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="fid-calendario-tablewrap">
+                <table class="fid-calendario-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Programa de Estudios</th>
+                            <th scope="col">Horario</th>
+                            <th scope="col">Admisión</th>
+                            <th scope="col">Matrícula ordinaria</th>
+                            <th scope="col">Matrícula extemporánea</th>
+                            <th scope="col">Inicio de clases</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td data-label="Programa de Estudios">
+                                <a href="{{ route('inicial') }}" class="fid-calendario-link">
+                                    Educación Inicial
+                                    <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                                </a>
+                            </td>
+                            <td data-label="Horario">Lunes a Viernes
+                                <span class="fid-calendario-hora">4:00 p.m. – 9:00 p.m.</span>
+                            </td>
+                            <td data-label="Admisión">Primera semana de marzo</td>
+                            <td data-label="Matrícula ordinaria">Segunda semana de marzo</td>
+                            <td data-label="Matrícula extemporánea">Tercera semana de marzo</td>
+                            <td data-label="Inicio de clases">Última semana de marzo</td>
+                        </tr>
+                        <tr>
+                            <td data-label="Programa de Estudios">
+                                <a href="{{ route('primariaEIB') }}" class="fid-calendario-link">
+                                    Educación Primaria Intercultural Bilingüe
+                                    <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                                </a>
+                            </td>
+                            <td data-label="Horario">Lunes a Viernes
+                                <span class="fid-calendario-hora">4:00 p.m. – 9:00 p.m.</span>
+                            </td>
+                            <td data-label="Admisión">Primera semana de marzo</td>
+                            <td data-label="Matrícula ordinaria">Segunda semana de marzo</td>
+                            <td data-label="Matrícula extemporánea">Tercera semana de marzo</td>
+                            <td data-label="Inicio de clases">Última semana de marzo</td>
+                        </tr>
+                        <tr class="fid-calendario-row--closed">
+                            <td data-label="Programa de Estudios">
+                                <a href="{{ route('primaria') }}" class="fid-calendario-link fid-calendario-link--muted">
+                                    Educación Primaria
+                                    <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                                </a>
+                            </td>
+                            <td data-label="Estado" colspan="5">
+                                <span class="fid-calendario-badge">
+                                    <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                                    No se aperturan metas para este programa
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="container">
+
+                {{-- Botón infografía proceso de matrícula --}}
+                <div class="fid-proceso-matricula-btn text-center mt-4">
+                    <button type="button" class="pd-btn-infografia" data-toggle="modal"
+                        data-target="#modalProcesoMatricula">
+                        <span class="fid-btn-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                                <line x1="3" y1="9" x2="21" y2="9" />
+                                <line x1="9" y1="21" x2="9" y2="9" />
+                            </svg>
+                        </span>
+                        <span class="fid-btn-text">Ver proceso de matrícula</span>
+                        <span class="fid-btn-arrow">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="9 18 15 12 9 6" />
+                            </svg>
+                        </span>
+                    </button>
+                </div>
+
+                {{-- Modal infografía proceso de matrícula --}}
+                <div class="modal fade" id="modalProcesoMatricula" tabindex="-1" role="dialog"
+                    aria-labelledby="modalProcesoMatriculaLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title text-white" id="modalProcesoMatriculaLabel">
+                                    Proceso de Matrícula
+                                </h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar" style="border: none; color:#fff; background: transparent;">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body text-center p-0">
+                                <img src="{{ asset('img/Proceso-de-matricula-EESP-Pukllasunchis.png') }}"
+                                    alt="Proceso de Matrícula EESP Pukllasunchis" class="img-fluid w-100"
+                                    style="display:block; border-radius:0 0 .5rem .5rem;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <style>
+        .fid-calendario_area {
+            padding: 4rem 0 4.5rem;
+            background: linear-gradient(180deg, #ffffff 0%, #faf8f5 100%);
+        }
+
+        .fid-calendario-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
+            font-size: .8rem;
+            font-weight: 600;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            color: #314e98;
+            background: rgba(49, 84, 152, .08);
+            border: 1px solid rgba(49, 84, 152, .22);
+            padding: .35rem .85rem;
+            border-radius: 999px;
+            margin-bottom: 1rem;
+        }
+
+        .fid-calendario-tablewrap {
+            border-radius: 16px;
+            overflow: hidden auto;
+            background: #fff;
+            box-shadow: 0 18px 50px rgba(40, 35, 25, .12), 0 2px 8px rgba(40, 35, 25, .06);
+            border: 1px solid rgba(0, 0, 0, .05);
+        }
+
+        .fid-calendario-table {
+            width: 100%;
+            min-width: 760px;
+            border-collapse: collapse;
+        }
+
+        .fid-calendario-table thead th {
+            background: linear-gradient(90deg, #314e98 0%, #3d63bd 100%);
+            color: #fff;
+            text-align: left;
+            padding: 1rem 1.1rem;
+            font-size: .76rem;
+            font-weight: 700;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .fid-calendario-table tbody tr {
+            border-bottom: 1px solid rgba(0, 0, 0, .06);
+            transition: background .2s ease;
+        }
+
+        .fid-calendario-table tbody tr:last-child {
+            border-bottom: 0;
+        }
+
+        .fid-calendario-table tbody tr:nth-child(even) {
+            background: rgba(49, 84, 152, .025);
+        }
+
+        .fid-calendario-table tbody tr:hover {
+            background: rgba(205, 146, 68, .08);
+        }
+
+        .fid-calendario-table td {
+            padding: 1rem 1.1rem;
+            font-size: .92rem;
+            color: #333;
+            vertical-align: middle;
+        }
+
+        .fid-calendario-link {
+            display: inline-flex;
+            align-items: center;
+            gap: .55rem;
+            color: #fff !important;
+            background: linear-gradient(135deg, #cd9244, #b87a2a);
+            font-weight: 600;
+            font-size: .88rem;
+            line-height: 1.3;
+            text-decoration: none !important;
+            padding: .5rem 1rem;
+            border-radius: 999px;
+            box-shadow: 0 4px 12px rgba(205, 146, 68, .32);
+            transition: transform .22s ease, box-shadow .22s ease, background .22s ease;
+        }
+
+        .fid-calendario-link i {
+            font-size: .76rem;
+            transition: transform .22s ease;
+        }
+
+        .fid-calendario-link:hover,
+        .fid-calendario-link:focus-visible {
+            background: linear-gradient(135deg, #314e98, #25407d);
+            box-shadow: 0 6px 18px rgba(49, 84, 152, .35);
+            transform: translateX(3px);
+        }
+
+        .fid-calendario-link:hover i {
+            transform: translateX(3px);
+        }
+
+        .fid-calendario-link--muted {
+            background: rgba(49, 84, 152, .08);
+            color: #314e98 !important;
+            box-shadow: none;
+            border: 1px solid rgba(49, 84, 152, .25);
+        }
+
+        .fid-calendario-link--muted:hover {
+            background: linear-gradient(135deg, #314e98, #25407d);
+            color: #fff !important;
+            box-shadow: 0 6px 18px rgba(49, 84, 152, .3);
+        }
+
+        .fid-calendario-hora {
+            display: block;
+            color: #6a5a4a;
+            font-size: .8rem;
+            margin-top: .15rem;
+        }
+
+        .fid-calendario-row--closed {
+            background: rgba(0, 0, 0, .025);
+        }
+
+        .fid-calendario-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
+            background: rgba(178, 40, 40, .08);
+            color: #a83232;
+            border: 1px solid rgba(178, 40, 40, .25);
+            padding: .4rem .85rem;
+            border-radius: 999px;
+            font-size: .82rem;
+            font-weight: 600;
+        }
+
+        /* ── Responsive: tabla → tarjetas apiladas en móvil ── */
+        @media (max-width: 767.98px) {
+            .fid-calendario-tablewrap {
+                overflow: visible;
+                background: transparent;
+                box-shadow: none;
+                border: 0;
+            }
+
+            .fid-calendario-table {
+                min-width: 0;
+            }
+
+            .fid-calendario-table thead {
+                display: none;
+            }
+
+            .fid-calendario-table,
+            .fid-calendario-table tbody,
+            .fid-calendario-table tr,
+            .fid-calendario-table td {
+                display: block;
+                width: 100%;
+            }
+
+            .fid-calendario-table tbody tr {
+                margin-bottom: 1rem;
+                border: 1px solid rgba(0, 0, 0, .06);
+                border-radius: 14px;
+                overflow: hidden;
+                box-shadow: 0 8px 22px rgba(40, 35, 25, .08);
+                background: #fff;
+            }
+
+            .fid-calendario-table td {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: .75rem;
+                text-align: right;
+                padding: .65rem .9rem;
+                border-bottom: 1px solid rgba(0, 0, 0, .05);
+            }
+
+            .fid-calendario-table td:last-child {
+                border-bottom: 0;
+            }
+
+            .fid-calendario-table td::before {
+                content: attr(data-label);
+                flex-shrink: 0;
+                text-align: left;
+                font-size: .72rem;
+                font-weight: 700;
+                color: #314e98;
+                text-transform: uppercase;
+                letter-spacing: .03em;
+            }
+
+            .fid-calendario-table td:first-child {
+                justify-content: flex-start;
+                background: linear-gradient(135deg, rgba(49, 84, 152, .07), rgba(205, 146, 68, .05));
+                font-size: 1rem;
+            }
+
+            .fid-calendario-table td:first-child::before {
+                content: none;
+            }
+
+            .fid-calendario-table td[colspan] {
+                justify-content: center;
+                text-align: center;
+            }
+
+            .fid-calendario-table td[colspan]::before {
+                content: none;
+            }
+        }
+
+        /* ── Botón infografía proceso de matrícula ── */
+        .fid-proceso-matricula-btn {
+            margin-top: 1.8rem !important;
+        }
+
+        .pd-btn-infografia {
+            display: inline-flex;
+            align-items: center;
+            gap: .7rem;
+            background: #fff;
+            border: 1.5px solid rgba(49, 84, 152, .25);
+            color: #314e98;
+            font-size: .92rem;
+            font-weight: 600;
+            padding: .7rem 1.6rem .7rem 1.4rem;
+            border-radius: 999px;
+            cursor: pointer;
+            transition: all .25s ease;
+            box-shadow: 0 4px 14px rgba(49, 84, 152, .08);
+            font-family: inherit;
+            line-height: 1.4;
+        }
+
+        .pd-btn-infografia:hover,
+        .pd-btn-infografia:focus-visible {
+            background: linear-gradient(135deg, #314e98, #25407d);
+            color: #fff;
+            border-color: transparent;
+            box-shadow: 0 6px 22px rgba(49, 84, 152, .3);
+            transform: translateY(-2px);
+        }
+
+        .pd-btn-infografia:active {
+            transform: translateY(0);
+        }
+
+        .fid-btn-icon {
+            display: inline-flex;
+            align-items: center;
+            opacity: .75;
+            transition: opacity .2s;
+        }
+
+        .pd-btn-infografia:hover .fid-btn-icon {
+            opacity: 1;
+        }
+
+        .fid-btn-arrow {
+            display: inline-flex;
+            align-items: center;
+            transition: transform .25s ease;
+        }
+
+        .pd-btn-infografia:hover .fid-btn-arrow {
+            transform: translateX(4px);
+        }
+
+        /* ── Modal infografía ── */
+        #modalProcesoMatricula .modal-content {
+            border: none;
+            border-radius: .75rem;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(13, 33, 55, .25);
+        }
+
+        #modalProcesoMatricula .modal-header {
+            background: linear-gradient(135deg, #314e98, #25407d);
+            color: #fff;
+            border: none;
+            padding: .9rem 1.4rem;
+        }
+
+        #modalProcesoMatricula .modal-title {
+            font-weight: 700;
+            font-size: 1.05rem;
+            letter-spacing: .01em;
+        }
+
+        #modalProcesoMatricula .modal-header .close {
+            color: #fff;
+            opacity: .75;
+            text-shadow: none;
+            font-size: 1.5rem;
+            transition: opacity .2s;
+        }
+
+        #modalProcesoMatricula .modal-header .close:hover {
+            opacity: 1;
+        }
+
+        #modalProcesoMatricula .modal-body {
+            background: #f8f9fc;
+            padding: 0;
+        }
+    </style>
+
 
     <div class="our_department_area">
         <div class="container">

@@ -103,7 +103,7 @@
     <section class="mision">
         <div class="row pt-5 pb-5">
             <div class="col-lg-12">
-                <h3>¿Qué significa ser ESCUELA DE EDUCACIÓN SUPERIOR PEDAGÓGICA?</h3>
+                <h3 class="text-white">¿Qué significa ser ESCUELA DE EDUCACIÓN SUPERIOR PEDAGÓGICA?</h3>
                 <p><i>Artículo 6. Escuelas de Educación Superior Pedagógica (EESP) - LEY N.º 30512
                     </i></p>
                 <p>
@@ -141,7 +141,7 @@
                     <h2 class="text-center typing">Organigrama de la EESP Pukllasunchis</h2>
                 </div>
                 <div class="col-lg-8">
-                    <img src="{{ asset('img/Pages/Organigrama-Pukllsunchis-2025.png') }}" alt="" width="100%">
+                    <img src="{{ asset('img/Pages/ORganigrama-EESP-Pukllasunchis.png') }}" alt="" width="100%">
                 </div>
             </div>
         </div>
@@ -163,17 +163,15 @@
                         <li>
                             <h4>Jefatura</h4>
                             <ul>
-                                <li>Unidad Académica: Cecilia Eguiluz D.</li>
+                                <li>Cecilia Eguiluz D.</li>
                             </ul>
                         </li>
                         <li>
-                            <h4>Coordinación</h4>
+                            <h4>Coordinacones</h4>
                             <ul>
-                                <li>Unidad de Formación Continua: Karen Guzmán</li>
-                                <li>Unidad de Práctica Pre Profesional: Cecilia Mar S.</li>
-                                <li>Unidad de Investigación y práctica Pre Profesional: Carlos Andrés</li>
-                                <li>Unidad de Calidad: María Graciela Guevara Valdivia</li>
-                                <li>Unidad de Bienestar y Empleabilidad: Carlos Andrés Guevara Z.</li>
+                                <li>Unidad de Formación Inicial y Continua: Cinthya Marmanillo Valer</li>
+                                <li>Unidad de Investigación y práctica Pre Profesional: Carlos Andrés Guevara Z.</li>
+                                <li>Unidad de Bienestar y Empleabilidad: María Graciela</li>
                             </ul>
                         </li>
                     </ul>
