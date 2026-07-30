@@ -29,7 +29,6 @@
                         <li><a href="{{ route('bienestar') }}"><i class="fa fa-caret-right fa-sm"></i> Artículos</a></li>
                         <li><a href="{{ route('proyectos') }}"><i class="fa fa-caret-right fa-sm"></i> Proyectos Académicos</a>
                         </li>
-                        <li><a href="{{ route('preProfesional') }}"><i class="fa fa-caret-right fa-sm"></i> Innovaciones</a></li>
                         <li><a href=""><i class="fa fa-caret-right fa-sm"></i> Bolsa de Trabajo</a></li>
                     </ul>
                 </div>

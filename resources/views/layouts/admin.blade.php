@@ -106,6 +106,11 @@
                             </div>
                         </div>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('admin.reclamos.todas') }}">
+                            <i class="fas fa-fw fa-book"></i><span>Libro de Reclamaciones</span>
+                        </a>
+                    </li>
                 @endrole
 
                 {{-- ══════════ SECCIÓN BOLSA/COMUNICADOS (admin y/o adminB) ══════════ --}}

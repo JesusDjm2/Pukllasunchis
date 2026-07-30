@@ -34,16 +34,35 @@
     </style>
 
     <div class="container-fluid bg-white pt-3">
-        <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        @php $periodoId = $periodoActual->id ?? request()->route('id'); @endphp
+        <div class="d-sm-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
             <h4 class="mb-3 text-primary font-weight-bold">Registros de Calificaciones - {{ $nombre }}</h4>
-            <a href="{{ route('periodos.export', $periodoActual->id ?? request()->route('id')) }}"
-                class="btn btn-success btn-sm shadow-sm">
-                <i class="fa fa-file-excel"></i> Exportar Excel
-            </a>
-            <a href="{{ url()->previous() }}" class="btn btn-sm btn-danger shadow-sm"><i class="fa fa-arrow-left fa-sm"></i>
-                Volver</a>
-
-            
+            <div class="d-flex align-items-center flex-wrap gap-2">
+                @if ($periodoActual->actual)
+                    <a href="{{ route('periodos.export', $periodoId) }}" class="btn btn-success btn-sm shadow-sm">
+                        <i class="fa fa-file-excel"></i> Exportar Excel
+                    </a>
+                    <a href="{{ route('periodos.export', ['id' => $periodoId, 'solo_becas' => 1]) }}"
+                        class="btn btn-warning btn-sm shadow-sm">
+                        <i class="fa fa-graduation-cap"></i> Exportar Solo Becas
+                    </a>
+                    <form action="{{ route('periodos.export', $periodoId) }}" method="GET"
+                        class="d-flex align-items-center gap-1">
+                        <select name="ciclo_id" class="form-select form-select-sm" style="width: auto;">
+                            <option value="">-- Exportar por ciclo --</option>
+                            @foreach ($ciclos as $ciclo)
+                                <option value="{{ $ciclo->id }}">{{ $ciclo->nombre }}</option>
+                            @endforeach
+                        </select>
+                        <button type="submit" class="btn btn-info btn-sm shadow-sm">
+                            <i class="fa fa-file-excel"></i> Exportar
+                        </button>
+                    </form>
+                @endif
+                <a href="{{ url()->previous() }}" class="btn btn-sm btn-danger shadow-sm">
+                    <i class="fa fa-arrow-left fa-sm"></i> Volver
+                </a>
+            </div>
         </div>
         <div class="row mb-3">
             <div class="col-md-12 mb-2">

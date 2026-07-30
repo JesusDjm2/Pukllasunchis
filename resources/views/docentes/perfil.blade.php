@@ -4,16 +4,20 @@
 
 @section('contenido')
     <div class="container-fluid docente-ui-page docente-perfil-page">
-        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-md-between mb-3 pt-3">
-            <div class="mb-2 mb-md-0">
-                <p class="text-uppercase text-muted small mb-1 font-weight-bold" style="letter-spacing: .04em;">Perfil
-                </p>
-                <h1 class="h4 font-weight-bold text-gray-800 mb-0">Datos del docente</h1>
-            </div>
-            <div class="d-flex">
-                <a href="{{ route('docente.edit', $docente->id) }}" class="btn btn-primary btn-sm shadow-sm btn-block">
-                    <i class="fa fa-edit fa-sm mr-1"></i> Editar perfil
-                </a>
+        <div class="card docente-ui-card docente-ui-hero mb-3 mb-md-4">
+            <div class="card-body p-3 p-md-4">
+                <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-md-between">
+                    <div class="mb-2 mb-md-0">
+                        <p class="docente-ui-kicker mb-1">Perfil</p>
+                        <h1 class="docente-ui-title mb-0">Datos del docente</h1>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <a href="{{ route('docente.edit', $docente->id) }}"
+                            class="btn btn-primary btn-sm shadow-sm btn-block d-md-inline-block">
+                            <i class="fa fa-edit fa-sm mr-1"></i> Editar perfil
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
 

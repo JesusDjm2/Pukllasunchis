@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(BolsaTrabajoOfertaSeeder::class);
         $this->call(QuechuaCursoSeeder::class);
+        $this->call(IaDocentesCursoSeeder::class);
 
         // \App\Models\User::factory(10)->create();
     }

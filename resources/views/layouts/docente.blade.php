@@ -109,27 +109,42 @@
             border-radius: 2px;
         }
 
-        /* ── Topbar: botón horario responsive ── */
-        @media (max-width: 767.98px) {
-            /* El botón de hamburguesa y el user-nav se quedan en la fila 1 */
-            #sidebarToggleTop {
-                order: 1;
-                flex-shrink: 0;
-            }
+        /* ── Topbar: horario siempre en la misma línea que tema/perfil ──
+           El topbar nunca envuelve a una segunda fila: hamburguesa, botón de
+           horario, cambio de tema y perfil conviven en una sola línea en
+           cualquier ancho. El botón de horario se encoge y trunca su propio
+           texto (en vez de forzar su propia fila, que antes desbordaba el
+           topbar y quedaba superpuesto sobre el contenido). ── */
+        .topbar {
+            flex-wrap: nowrap !important;
+        }
 
-            .topbar .navbar-nav.ml-auto {
-                order: 2;
-            }
+        #sidebarToggleTop {
+            flex-shrink: 0;
+        }
 
-            /* El bloque de horario baja a su propia línea (fila 2) */
-            .docente-topbar-horario {
-                order: 3 !important;
-                flex: 0 0 100% !important;
-                max-width: 100%;
-                margin-top: 0.35rem;
-                padding-bottom: 0.35rem;
-                border-top: 1px solid #e3e6f0;
-                padding-top: 0.35rem;
+        .docente-topbar-horario {
+            min-width: 0;
+            flex: 1 1 auto;
+            overflow: hidden;
+        }
+
+        .docente-topbar-horario .btn,
+        .docente-topbar-horario > span {
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .topbar .navbar-nav.ml-auto {
+            flex-shrink: 0;
+        }
+
+        @media (max-width: 575.98px) {
+            .docente-topbar-horario .btn {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.72rem;
             }
         }
 
@@ -176,6 +191,14 @@
         .docente-ui-card .card-header {
             background: #fff;
             border-bottom: 1px solid #e3e6f0;
+        }
+
+        /* Tarjeta "hero" — mismo lenguaje visual (.docente-ui-card) más un
+           acento sutil a la izquierda. Usada en el encabezado de TODAS las
+           vistas del docente (vía ui-header.blade.php) para que compartan
+           un único diseño. */
+        .docente-ui-hero {
+            border-left: 3px solid #4e73df;
         }
 
         .docente-ui-legenda {
@@ -286,6 +309,7 @@
         }
     </style>
     @stack('styles')
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
 </head>
 
@@ -445,51 +469,20 @@
         <div id="content-wrapper" class="d-flex flex-column">
             <div id="content">
                 <nav
-                    class="navbar navbar-expand navbar-light bg-white topbar mb-3 mb-md-4 static-top shadow flex-wrap align-items-center py-2">
+                    class="navbar navbar-expand navbar-light bg-white topbar mb-3 mb-md-4 static-top shadow align-items-center py-2">
                     <button id="sidebarToggleTop" type="button" class="btn btn-link d-md-none rounded-circle mr-2"
                         aria-label="Abrir menú">
                         <i class="fa fa-bars"></i>
                     </button>
 
-                    <div
-                        class="navbar-nav flex-row flex-wrap flex-grow-1 align-items-center mr-2 docente-topbar-horario">
+                    <div class="navbar-nav flex-row align-items-center mr-2 docente-topbar-horario">
                         @if (isset($periodoActual) && $periodoActual && $periodoActual->horario)
-                            <button type="button" class="btn btn-info btn-sm my-1 my-md-0" data-toggle="modal"
+                            <button type="button" class="btn btn-info btn-sm" data-toggle="modal"
                                 data-target="#modalHorario">
                                 <i class="far fa-calendar-alt mr-1"></i>
-                                <span class="d-none d-sm-inline">Ver horario</span><span
-                                    class="d-sm-none">Horario</span>
+                                <span class="docente-topbar-horario-label">Horario FID</span>
                                 <span class="d-none d-md-inline"> — {{ $periodoActual->nombre }}</span>
                             </button>
-
-                            <div class="modal fade" id="modalHorario" tabindex="-1" role="dialog"
-                                aria-labelledby="modalHorarioLabel" aria-hidden="true">
-                                <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
-                                    <div class="modal-content">
-                                        <div class="modal-header py-2">
-                                            <h5 class="modal-title" id="modalHorarioLabel">Horario
-                                                {{ $periodoActual->nombre }}</h5>
-                                            <button type="button" class="close" data-dismiss="modal"
-                                                aria-label="Cerrar">
-                                                <span aria-hidden="true">&times;</span>
-                                            </button>
-                                        </div>
-                                        <div class="modal-body text-center bg-light">
-                                            <img src="{{ asset($periodoActual->horario) }}"
-                                                alt="Horario {{ $periodoActual->nombre }}"
-                                                class="img-fluid rounded shadow" loading="lazy">
-                                        </div>
-                                        <div class="modal-footer justify-content-center flex-wrap">
-                                            <button type="button" class="btn btn-secondary btn-sm mb-1 mb-sm-0"
-                                                data-dismiss="modal">Cerrar</button>
-                                            <a href="{{ asset($periodoActual->horario) }}" target="_blank"
-                                                rel="noopener noreferrer" class="btn btn-primary btn-sm">
-                                                Ver en nueva pestaña
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
                         @elseif(isset($periodoActual) && $periodoActual)
                             <span class="small text-muted my-1"><i class="far fa-calendar-times mr-1"></i>Sin horario
                                 cargado para {{ $periodoActual->nombre }}</span>
@@ -532,6 +525,37 @@
                         </li>
                     </ul>
                 </nav>
+
+                @if (isset($periodoActual) && $periodoActual && $periodoActual->horario)
+                    <div class="modal fade" id="modalHorario" tabindex="-1" role="dialog"
+                        aria-labelledby="modalHorarioLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header py-2">
+                                    <h5 class="modal-title" id="modalHorarioLabel">Horario
+                                        {{ $periodoActual->nombre }}</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body text-center bg-light">
+                                    <img src="{{ asset($periodoActual->horario) }}"
+                                        alt="Horario {{ $periodoActual->nombre }}" class="img-fluid rounded shadow"
+                                        loading="lazy">
+                                </div>
+                                <div class="modal-footer justify-content-center flex-wrap">
+                                    <button type="button" class="btn btn-secondary btn-sm mb-1 mb-sm-0"
+                                        data-dismiss="modal">Cerrar</button>
+                                    <a href="{{ asset($periodoActual->horario) }}" target="_blank"
+                                        rel="noopener noreferrer" class="btn btn-primary btn-sm">
+                                        Ver en nueva pestaña
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
                 @yield('contenido')
             </div>
             <footer class="sticky-footer bg-white border-top">
@@ -576,6 +600,7 @@
     <script src="{{ asset('admin/js/demo/chart-area-demo.js') }}"></script>
     <script src="{{ asset('admin/js/demo/chart-pie-demo.js') }}"></script>
     <script src="{{ asset('admin/js/djm.js') }}?v={{ filemtime(public_path('admin/js/djm.js')) }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @stack('scripts')
     <script>
     (function () {

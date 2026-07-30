@@ -78,7 +78,31 @@
                 </h4>
                 <small class="text-muted">{{ $docentes->count() }} docentes registrados &mdash; gestión de carga horaria e incidencias</small>
             </div>
-            <div class="d-flex gap-2" style="gap:8px">
+            <div class="d-flex flex-wrap align-items-center gap-2" style="gap:8px">
+                <a href="{{ route('admin.becas.calificaciones.export') }}"
+                    class="d-none d-sm-inline-block btn btn-sm btn-warning shadow-sm"
+                    title="Calificaciones en vivo (Parcial 1, Parcial 2, Desempeño) de alumnos becarios">
+                    <i class="fa fa-graduation-cap fa-sm mr-1"></i> Exportar Calificaciones Becas
+                </a>
+                @if ($periodoActual)
+                    <a href="{{ route('periodos.export', $periodoActual->id) }}"
+                        class="d-none d-sm-inline-block btn btn-sm btn-success shadow-sm"
+                        title="Solo disponible una vez archivado el periodo (botón 'Crear' en Periodos)">
+                        <i class="fa fa-file-excel fa-sm mr-1"></i> Exportar Excel ({{ $periodoActual->nombre }})
+                    </a>
+                    <form action="{{ route('periodos.export', $periodoActual->id) }}" method="GET"
+                        class="d-none d-sm-flex align-items-center gap-1">
+                        <select name="ciclo_id" class="form-select form-select-sm" style="width: auto;">
+                            <option value="">-- Exportar por ciclo --</option>
+                            @foreach ($ciclos as $ciclo)
+                                <option value="{{ $ciclo->id }}">{{ $ciclo->nombre }}</option>
+                            @endforeach
+                        </select>
+                        <button type="submit" class="btn btn-info btn-sm shadow-sm">
+                            <i class="fa fa-file-excel fa-sm"></i> Exportar
+                        </button>
+                    </form>
+                @endif
                 <a href="{{ route('admin.incidencias.todas') }}"
                     class="d-none d-sm-inline-block btn btn-sm btn-warning shadow-sm">
                     <i class="fa fa-exclamation-triangle fa-sm mr-1"></i> Ver todas las incidencias →

@@ -291,7 +291,7 @@
                                 </button>
                             </div>
                             <div class="modal-body text-center p-0">
-                                <img src="{{ asset('img/Proceso-de-matricula-EESP-Pukllasunchis.png') }}"
+                                <img src="{{ asset('img/Proceso-de-matricula-EESP-Pukllasunchis-2.png') }}"
                                     alt="Proceso de Matrícula EESP Pukllasunchis" class="img-fluid w-100"
                                     style="display:block; border-radius:0 0 .5rem .5rem;">
                             </div>
@@ -1260,139 +1260,19 @@
             padding-top: 16px;
             padding-bottom: 16px;
         }
-
-        #bolsaRegistroOverlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            z-index: 10060;
-            background: rgba(0, 0, 0, 0.75);
-            align-items: flex-start;
-            justify-content: center;
-            padding: 2rem 1rem;
-            overflow-y: auto;
-            box-sizing: border-box;
-        }
-
-        #bolsaRegistroOverlay.is-open {
-            display: flex;
-        }
-
-        .bolsa-registro-modal-panel {
-            position: relative;
-            width: 100%;
-            max-width: 720px;
-            margin: auto;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
-            padding: 1.5rem 1.5rem 2rem;
-        }
-
-        #bolsaRegistroModalClose {
-            position: absolute;
-            top: 0.5rem;
-            right: 0.75rem;
-            font-size: 2rem;
-            line-height: 1;
-            color: #333;
-            background: transparent;
-            border: 0;
-            cursor: pointer;
-            padding: 0.25rem 0.5rem;
-            z-index: 2;
-        }
-
-        #bolsaRegistroModalClose:hover {
-            color: #000;
-        }
     </style>
 
-    <div id="bolsaRegistroOverlay" role="dialog" aria-modal="true" aria-labelledby="bolsaRegistroTitulo"
-        onclick="if (event.target === this) bolsaRegistroModalClose();">
-        <div class="bolsa-registro-modal-panel" onclick="event.stopPropagation();">
-            <button type="button" id="bolsaRegistroModalClose" onclick="bolsaRegistroModalClose();"
-                aria-label="Cerrar">&times;</button>
-            <h4 id="bolsaRegistroTitulo" class="mb-3 pr-4">Nuevo registro — Bolsa de trabajo</h4>
-            @if ($errors->any() && old('form_context') === 'bolsa_oferta')
-                <div class="alert alert-danger">
-                    <ul class="mb-0 pl-3">
-                        @foreach ($errors->all() as $err)
-                            <li>{{ $err }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-            @include('partials.bolsa-oferta-registro-form', [
-                'prefix' => 'modal_bolsa',
-                'redirectTo' => 'bolsa',
-            ])
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/tinymce@6/tinymce.min.js"></script>
     <script>
-        var bolsaTinyMceInited = false;
-
-        function bolsaRegistroModalOpen() {
-            var overlay = document.getElementById('bolsaRegistroOverlay');
-            if (!overlay) return;
-            overlay.classList.add('is-open');
-            document.body.style.overflow = 'hidden';
-            if (!bolsaTinyMceInited && typeof tinymce !== 'undefined') {
-                tinymce.init({
-                    selector: '#modal_bolsa_detalles',
-                    height: 280,
-                    menubar: false,
-                    plugins: 'lists link',
-                    toolbar: 'undo redo | blocks | bold italic underline | bullist numlist | link | removeformat',
-                    language: 'es',
-                    branding: false
-                });
-                bolsaTinyMceInited = true;
-            }
-        }
-
-        function bolsaRegistroModalClose() {
-            var overlay = document.getElementById('bolsaRegistroOverlay');
-            if (!overlay) return;
-            overlay.classList.remove('is-open');
-            document.body.style.overflow = '';
-        }
-
         document.addEventListener('DOMContentLoaded', function() {
-            var formBolsa = document.getElementById('modal_bolsa_form');
-            if (formBolsa) {
-                formBolsa.addEventListener('submit', function() {
-                    if (typeof tinymce === 'undefined') {
-                        return;
-                    }
-                    var ed = tinymce.get('modal_bolsa_detalles');
-                    if (ed) {
-                        ed.save();
-                    } else {
-                        tinymce.triggerSave();
-                    }
-                });
-            }
             var openers = document.querySelectorAll('#btnAbrirFormBolsa, #btnAbrirFormBolsaCard');
             openers.forEach(function(btn) {
                 btn.addEventListener('click', function() {
-                    bolsaRegistroModalOpen();
+                    bolsaGlobalRegistroModalOpen();
                 });
             });
             if (window.location.hash === '#bolsa-registro') {
-                bolsaRegistroModalOpen();
+                bolsaGlobalRegistroModalOpen();
             }
-            @if ($errors->any() && old('form_context') === 'bolsa_oferta')
-                bolsaRegistroModalOpen();
-            @endif
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    var o = document.getElementById('bolsaRegistroOverlay');
-                    if (o && o.classList.contains('is-open')) bolsaRegistroModalClose();
-                }
-            });
         });
     </script>
     <section class="fondoLogo">

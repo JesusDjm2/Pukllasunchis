@@ -16,6 +16,8 @@ class BolsaTrabajoListado
      */
     public static function datos(Request $request): array
     {
+        // La vista pública muestra todos los registros; "vigente" (fecha_publicacion + DIAS_VIGENCIA)
+        // queda solo como dato informativo (ver bolsa-ofertas-catalogo.blade.php), no filtra la lista.
         $ofertasQuery = BolsaTrabajoOferta::query();
         if ($request->filled('anio')) {
             $ofertasQuery->where('anio', (int) $request->anio);
@@ -25,8 +27,7 @@ class BolsaTrabajoListado
         }
 
         $ofertas = $ofertasQuery
-            ->orderByDesc('fecha_inicio')
-            ->orderByDesc('fecha_fin')
+            ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->limit(20)
             ->get();

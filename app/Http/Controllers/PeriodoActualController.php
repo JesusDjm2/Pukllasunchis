@@ -282,11 +282,23 @@ class PeriodoActualController extends Controller
         ]);
     }
 
-    public function exportExcel($id)
+    public function exportExcel($id, Request $request)
     {
         $periodoActual = PeriodoActual::findOrFail($id);
-        [$ciclos, $filas] = $this->getDataForRegistros($id);
-        $nombreArchivo = 'Calificaciones_'.$periodoActual->nombre.'.csv';
+        $soloBecas = $request->boolean('solo_becas');
+        $cicloId = $request->get('ciclo_id');
+
+        [$ciclos, $filas] = $this->getDataForRegistros($id, $soloBecas, $cicloId);
+
+        $nombreArchivo = 'Calificaciones_'.$periodoActual->nombre;
+        if ($soloBecas) {
+            $nombreArchivo .= '_Becas';
+        }
+        if ($cicloId) {
+            $cicloNombre = $ciclos->firstWhere('id', $cicloId)->nombre ?? $cicloId;
+            $nombreArchivo .= '_Ciclo-'.$cicloNombre;
+        }
+        $nombreArchivo .= '.csv';
 
         return Excel::download(
             new RegistrosExport($ciclos, $filas),
@@ -294,21 +306,34 @@ class PeriodoActualController extends Controller
         );
     }
 
-    private function getDataForRegistros(int $id): array
+    private function getDataForRegistros(int $id, bool $soloBecas = false, $cicloId = null): array
     {
-        $periodos = Periodo::with([
+        $periodosQuery = Periodo::with([
             'alumno.programa',
             'alumno.user',
             'alumno.cursos.ciclo',
             'curso.ciclo',
         ])
-            ->where('periodo_actual_id', $id)
-            ->get()
-            ->groupBy('alumno_id');
+            ->where('periodo_actual_id', $id);
 
-        $ciclos = Periodo::where('periodo_actual_id', $id)
-            ->with('curso.ciclo')
-            ->get()
+        if ($soloBecas) {
+            $periodosQuery->whereHas('alumno.user', fn ($q) => $q->where('beca', 1));
+        }
+        if ($cicloId) {
+            $periodosQuery->whereHas('curso', fn ($q) => $q->where('ciclo_id', $cicloId));
+        }
+
+        $periodos = $periodosQuery->get()->groupBy('alumno_id');
+
+        $ciclosQuery = Periodo::where('periodo_actual_id', $id)->with('curso.ciclo');
+        if ($soloBecas) {
+            $ciclosQuery->whereHas('alumno.user', fn ($q) => $q->where('beca', 1));
+        }
+        if ($cicloId) {
+            $ciclosQuery->whereHas('curso', fn ($q) => $q->where('ciclo_id', $cicloId));
+        }
+
+        $ciclos = $ciclosQuery->get()
             ->pluck('curso.ciclo')
             ->filter()
             ->unique('id')

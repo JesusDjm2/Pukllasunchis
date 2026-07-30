@@ -5,7 +5,8 @@
             style="border-bottom: 1px dashed #4848fc78; padding-bottom:1em">
             <div>
                 <h4 class="mb-0 font-weight-bold" style="color:#1e293b;">
-                    <i class="fas fa-user-edit mr-2" style="color:#4e73df;"></i>Editar: <span style="color:#4e73df;">{{ $admin->apellidos }}, {{ $admin->name }}</span>
+                    <i class="fas fa-user-edit mr-2" style="color:#4e73df;"></i>Editar: <span
+                        style="color:#4e73df;">{{ $admin->apellidos }}, {{ $admin->name }}</span>
                 </h4>
                 <small class="text-muted">Actualiza los datos de acceso, rol y perfil del usuario</small>
             </div>
@@ -13,7 +14,7 @@
                 Volver
             </a>
         </div>
-        
+
         {{-- MOSTRAR ERRORES GENERALES DEL FORMULARIO --}}
         @if ($errors->any())
             <div class="alert alert-danger">
@@ -111,7 +112,7 @@
                                 }
                             }
                         </script>
-                        
+
                         <div class="col-lg-4 mb-3">
                             <label for="name" class="form-label">Nombre:</label>
                             <input type="text" class="form-control form-control-sm @error('name') is-invalid @enderror"
@@ -120,7 +121,7 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-                        
+
                         <div class="col-lg-4 mb-3">
                             <label for="apellidos" class="form-label">Apellidos:</label>
                             <input type="text"
@@ -130,7 +131,7 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-                        
+
                         <div class="col-lg-2 mb-3">
                             <label for="dni" class="form-label">DNI:</label>
                             <input type="text" class="form-control form-control-sm @error('dni') is-invalid @enderror"
@@ -139,7 +140,7 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-                        
+
                         <div class="col-lg-3 mb-3">
                             <label for="email" class="form-label">Correo electrónico:</label>
                             <input type="email" class="form-control form-control-sm @error('email') is-invalid @enderror"
@@ -148,19 +149,21 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-                        
+
                         <div class="col-lg-3 mb-3">
                             <label for="password">Nueva Contraseña (opcional):</label>
-                            <input type="password" name="password" id="password" class="form-control form-control-sm @error('password') is-invalid @enderror">
+                            <input type="password" name="password" id="password"
+                                class="form-control form-control-sm @error('password') is-invalid @enderror">
                             @error('password')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-                        
+
                         <div class="col-lg-4 mb-3">
                             <label for="password_confirmation">Confirmar Contraseña (opcional):</label>
                             <input type="password" name="password_confirmation" id="password_confirmation"
-                                class="form-control form-control-sm @error('password') is-invalid @enderror" placeholder="Confirmar contraseña">
+                                class="form-control form-control-sm @error('password') is-invalid @enderror"
+                                placeholder="Confirmar contraseña">
                             @error('password')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -169,29 +172,30 @@
                         <div class="col-lg-6 mb-3">
                             <label class="form-label">Roles asignados:</label>
                             @php $selectedRoles = old('roles', $currentRoles); @endphp
-                            @foreach([
-                                'admin'       => 'Administrador',
-                                'docente'     => 'Docente',
-                                'tutor'       => 'Tutor',
-                                'alumno'      => 'Alumno FID',
-                                'alumnoB'     => 'Alumno PPD',
-                                'adminB'      => 'Administrador Bolsa',
-                                'inhabilitado'=> 'Inhabilitado',
-                            ] as $val => $label)
+                            @foreach ([
+            'admin' => 'Administrador',
+            'docente' => 'Docente',
+            'tutor' => 'Tutor',
+            'alumno' => 'Alumno FID',
+            'alumnoB' => 'Alumno PPD',
+            'adminB' => 'Administrador Bolsa',
+            'inhabilitado' => 'Inhabilitado',
+        ] as $val => $label)
                                 <div class="form-check">
-                                    <input class="form-check-input role-checkbox" type="checkbox"
-                                        name="roles[]" value="{{ $val }}" id="role_{{ $val }}"
+                                    <input class="form-check-input role-checkbox" type="checkbox" name="roles[]"
+                                        value="{{ $val }}" id="role_{{ $val }}"
                                         {{ in_array($val, $selectedRoles) ? 'checked' : '' }}>
-                                    <label class="form-check-label" for="role_{{ $val }}">{{ $label }}</label>
+                                    <label class="form-check-label"
+                                        for="role_{{ $val }}">{{ $label }}</label>
                                 </div>
                             @endforeach
                             @hasrole('super-admin')
                                 <div class="form-check mt-1">
-                                    <input class="form-check-input role-checkbox" type="checkbox"
-                                        name="roles[]" value="super-admin" id="role_superadmin"
+                                    <input class="form-check-input role-checkbox" type="checkbox" name="roles[]"
+                                        value="super-admin" id="role_superadmin"
                                         {{ in_array('super-admin', $selectedRoles) ? 'checked' : '' }}>
                                     <label class="form-check-label font-weight-bold" for="role_superadmin"
-                                           style="color:#7c3aed;">
+                                        style="color:#7c3aed;">
                                         <i class="fas fa-crown fa-xs mr-1"></i>Super Admin
                                     </label>
                                 </div>
@@ -200,28 +204,35 @@
                                 <div class="text-danger small mt-1">{{ $message }}</div>
                             @enderror
                         </div>
-                        
+
                         <div class="col-lg-6">
                             <div id="motivo-inhabilitado-container" style="display: none;">
                                 <label for="perfil_inhabilitado">Motivo de inhabilitación</label>
                                 <select name="perfil" id="perfil_inhabilitado"
                                     class="form-control form-control-sm @error('perfil') is-invalid @enderror">
-                                    <option value="Deuda" {{ old('perfil', $admin->perfil) == 'Deuda' ? 'selected' : '' }}>Deuda</option>
-                                    <option value="Sin matrícula" {{ old('perfil', $admin->perfil) == 'Sin matrícula' ? 'selected' : '' }}>Sin Matrícula</option>
-                                    <option value="Licencia" {{ old('perfil', $admin->perfil) == 'Licencia' ? 'selected' : '' }}>Licencia</option>
-                                    <option value="Reserva" {{ old('perfil', $admin->perfil) == 'Reserva' ? 'selected' : '' }}>Reserva</option>
+                                    <option value="Deuda"
+                                        {{ old('perfil', $admin->perfil) == 'Deuda' ? 'selected' : '' }}>Deuda</option>
+                                    <option value="Sin matrícula"
+                                        {{ old('perfil', $admin->perfil) == 'Sin matrícula' ? 'selected' : '' }}>Sin
+                                        Matrícula</option>
+                                    <option value="Licencia"
+                                        {{ old('perfil', $admin->perfil) == 'Licencia' ? 'selected' : '' }}>Licencia
+                                    </option>
+                                    <option value="Reserva"
+                                        {{ old('perfil', $admin->perfil) == 'Reserva' ? 'selected' : '' }}>Reserva</option>
                                 </select>
                                 @error('perfil')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
-                        
+
                         <div class="col-lg-12" id="admin-fields" style="display: none;">
                             <div class="row">
                                 <div class="col-lg-3 mb-3">
                                     <label for="programa_id" class="form-label">Seleccionar Programa:</label>
-                                    <select id="programa_id" name="programa_id" class="form-control form-control-sm @error('programa_id') is-invalid @enderror">
+                                    <select id="programa_id" name="programa_id"
+                                        class="form-control form-control-sm @error('programa_id') is-invalid @enderror">
                                         <option value="">Seleccionar Programa</option>
                                         @foreach ($programas as $programa)
                                             <option value="{{ $programa->id }}"
@@ -237,7 +248,8 @@
 
                                 <div class="col-lg-3 mb-3">
                                     <label for="ciclo_id" class="form-label">Seleccionar Ciclo:</label>
-                                    <select id="ciclo_id" name="ciclo_id" class="form-control form-control-sm @error('ciclo_id') is-invalid @enderror">
+                                    <select id="ciclo_id" name="ciclo_id"
+                                        class="form-control form-control-sm @error('ciclo_id') is-invalid @enderror">
                                         <option value="">Seleccionar Ciclo</option>
                                         @foreach ($ciclos as $ciclo)
                                             <option value="{{ $ciclo->id }}"
@@ -250,16 +262,26 @@
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
-                                
+
                                 <div class="col-lg-3 mb-2">
                                     <label for="condicion">Condición:</label>
                                     <select class="form-control form-control-sm @error('condicion') is-invalid @enderror"
                                         id="condicion" name="condicion">
-                                        <option value="" {{ old('condicion', $admin->condicion) == '' ? 'selected' : '' }}>Seleccionar Condición</option>
-                                        <option value="Regular" {{ old('condicion', $admin->condicion) == 'Regular' ? 'selected' : '' }}>Regular</option>
-                                        <option value="Beca Continua" {{ old('condicion', $admin->condicion) == 'Beca Continua' ? 'selected' : '' }}>Beca Continua</option>
-                                        <option value="Beca 18" {{ old('condicion', $admin->condicion) == 'Beca 18' ? 'selected' : '' }}>Beca 18</option>
-                                        <option value="Beca Puklla" {{ old('condicion', $admin->condicion) == 'Beca Puklla' ? 'selected' : '' }}>Beca Puklla</option>
+                                        <option value=""
+                                            {{ old('condicion', $admin->condicion) == '' ? 'selected' : '' }}>Seleccionar
+                                            Condición</option>
+                                        <option value="Regular"
+                                            {{ old('condicion', $admin->condicion) == 'Regular' ? 'selected' : '' }}>
+                                            Regular</option>
+                                        <option value="Beca Continua"
+                                            {{ old('condicion', $admin->condicion) == 'Beca Continua' ? 'selected' : '' }}>
+                                            Beca Continua</option>
+                                        <option value="Beca 18"
+                                            {{ old('condicion', $admin->condicion) == 'Beca 18' ? 'selected' : '' }}>Beca
+                                            18</option>
+                                        <option value="Beca Puklla"
+                                            {{ old('condicion', $admin->condicion) == 'Beca Puklla' ? 'selected' : '' }}>
+                                            Beca Puklla</option>
                                     </select>
                                     @error('condicion')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -267,14 +289,25 @@
                                 </div>
 
                                 <div class="col-lg-3 mb-2">
-                                    <label for="perfil_bolsa">Perfil: <small>Este campo se usa para bolsa de trabajo</small></label>
+                                    <label for="perfil_bolsa">Perfil: <small>Este campo se usa para bolsa de
+                                            trabajo</small></label>
                                     <select class="form-control form-control-sm @error('perfil') is-invalid @enderror"
                                         id="perfil_bolsa" name="perfil">
-                                        <option value="" {{ old('perfil', $admin->perfil) == '' ? 'selected' : '' }}>Seleccionar Perfil</option>
-                                        <option value="Estudiante" {{ old('perfil', $admin->perfil) == 'Estudiante' ? 'selected' : '' }}>Estudiante</option>
-                                        <option value="Bachiller" {{ old('perfil', $admin->perfil) == 'Bachiller' ? 'selected' : '' }}>Bachiller</option>
-                                        <option value="Titulado" {{ old('perfil', $admin->perfil) == 'Titulado' ? 'selected' : '' }}>Titulado</option>
-                                        <option value="Egresado" {{ old('perfil', $admin->perfil) == 'Egresado' ? 'selected' : '' }}>Egresado</option>
+                                        <option value=""
+                                            {{ old('perfil', $admin->perfil) == '' ? 'selected' : '' }}>Seleccionar Perfil
+                                        </option>
+                                        <option value="Estudiante"
+                                            {{ old('perfil', $admin->perfil) == 'Estudiante' ? 'selected' : '' }}>
+                                            Estudiante</option>
+                                        <option value="Bachiller"
+                                            {{ old('perfil', $admin->perfil) == 'Bachiller' ? 'selected' : '' }}>Bachiller
+                                        </option>
+                                        <option value="Titulado"
+                                            {{ old('perfil', $admin->perfil) == 'Titulado' ? 'selected' : '' }}>Titulado
+                                        </option>
+                                        <option value="Egresado"
+                                            {{ old('perfil', $admin->perfil) == 'Egresado' ? 'selected' : '' }}>Egresado
+                                        </option>
                                     </select>
                                     @error('perfil')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -283,9 +316,12 @@
 
                                 <div class="col-lg-3 mb-4">
                                     <label for="beca" class="form-label">Beca:</label>
-                                    <select id="beca" name="beca" class="form-control form-control-sm @error('beca') is-invalid @enderror">
-                                        <option value="1" {{ old('beca', $admin->beca) == 1 ? 'selected' : '' }}>Sí</option>
-                                        <option value="0" {{ old('beca', $admin->beca) == 0 ? 'selected' : '' }}>No</option>
+                                    <select id="beca" name="beca"
+                                        class="form-control form-control-sm @error('beca') is-invalid @enderror">
+                                        <option value="1" {{ old('beca', $admin->beca) == 1 ? 'selected' : '' }}>Sí
+                                        </option>
+                                        <option value="0" {{ old('beca', $admin->beca) == 0 ? 'selected' : '' }}>No
+                                        </option>
                                     </select>
                                     @error('beca')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -293,14 +329,19 @@
                                 </div>
 
                                 <div class="col-lg-3 mb-3">
-                                    <label for="tiene_cursos_pendientes" class="form-label">¿Tiene cursos pendientes?</label>
+                                    <label for="tiene_cursos_pendientes" class="form-label">¿Tiene cursos
+                                        pendientes?</label>
                                     <select id="tiene_cursos_pendientes" name="tiene_cursos_pendientes"
                                         class="form-control form-control-sm">
-                                        <option value="1" {{ old('tiene_cursos_pendientes', isset($admin->pendiente) ? 1 : 0) == 1 ? 'selected' : '' }}>Sí</option>
-                                        <option value="0" {{ old('tiene_cursos_pendientes', isset($admin->pendiente) ? 1 : 0) == 0 ? 'selected' : '' }}>No</option>
+                                        <option value="1"
+                                            {{ old('tiene_cursos_pendientes', isset($admin->pendiente) ? 1 : 0) == 1 ? 'selected' : '' }}>
+                                            Sí</option>
+                                        <option value="0"
+                                            {{ old('tiene_cursos_pendientes', isset($admin->pendiente) ? 1 : 0) == 0 ? 'selected' : '' }}>
+                                            No</option>
                                     </select>
                                 </div>
-                                
+
                                 <div class="col-lg-12 mb-4" id="cursos-pendientes"
                                     style="{{ old('tiene_cursos_pendientes', isset($admin->pendiente) ? 1 : 0) == 1 ? '' : 'display: none;' }}">
                                     <label for="pendiente" class="form-label">Cursos Pendientes:</label>
@@ -317,37 +358,36 @@
 
                         {{-- Teléfono y WhatsApp (docente y/o tutor) --}}
                         @if ($admin->hasAnyRole(['docente', 'tutor']))
-                        <div class="col-lg-12 mb-3">
-                            <hr>
-                            <h6 class="font-weight-bold text-primary">
-                                <i class="fas fa-phone mr-1"></i> Contacto y notificaciones
-                            </h6>
-                            <div class="row">
-                                <div class="col-lg-4 mb-3">
-                                    <label for="telefono">Teléfono</label>
-                                    <input type="text" id="telefono" name="telefono"
-                                        class="form-control form-control-sm"
-                                        value="{{ old('telefono', $admin->telefono) }}"
-                                        placeholder="984529158">
-                                    <small class="text-muted">Número de contacto del docente/tutor.</small>
+                            <div class="col-lg-12 mb-3">
+                                <hr>
+                                <h6 class="font-weight-bold text-primary">
+                                    <i class="fas fa-phone mr-1"></i> Contacto y notificaciones
+                                </h6>
+                                <div class="row">
+                                    <div class="col-lg-4 mb-3">
+                                        <label for="telefono">Teléfono</label>
+                                        <input type="text" id="telefono" name="telefono"
+                                            class="form-control form-control-sm"
+                                            value="{{ old('telefono', $admin->telefono) }}" placeholder="984529158">
+                                        <small class="text-muted">Número de contacto del docente/tutor.</small>
+                                    </div>
+                                    @if ($admin->hasRole('tutor'))
+                                        <div class="col-lg-4 mb-3">
+                                            <label for="whatsapp_key">Clave CallMeBot (WhatsApp)</label>
+                                            <input type="text" id="whatsapp_key" name="whatsapp_key"
+                                                class="form-control form-control-sm"
+                                                value="{{ old('whatsapp_key', $admin->whatsapp_key) }}"
+                                                placeholder="123456">
+                                            <small class="text-muted">
+                                                El tutor activa su clave enviando
+                                                <strong>I allow callmebot to send me messages</strong>
+                                                al <strong>+34 644 52 74 61</strong> por WhatsApp.
+                                                Recibirá su API key en respuesta.
+                                            </small>
+                                        </div>
+                                    @endif
                                 </div>
-                                @if ($admin->hasRole('tutor'))
-                                <div class="col-lg-4 mb-3">
-                                    <label for="whatsapp_key">Clave CallMeBot (WhatsApp)</label>
-                                    <input type="text" id="whatsapp_key" name="whatsapp_key"
-                                        class="form-control form-control-sm"
-                                        value="{{ old('whatsapp_key', $admin->whatsapp_key) }}"
-                                        placeholder="123456">
-                                    <small class="text-muted">
-                                        El tutor activa su clave enviando
-                                        <strong>I allow callmebot to send me messages</strong>
-                                        al <strong>+34 644 52 74 61</strong> por WhatsApp.
-                                        Recibirá su API key en respuesta.
-                                    </small>
-                                </div>
-                                @endif
                             </div>
-                        </div>
                         @endif
 
                         <div class="col-lg-12">
@@ -364,7 +404,8 @@
             var cursosPendientesContainer = document.getElementById('cursos-pendientes');
 
             tieneCursosPendientes.addEventListener('change', function() {
-                cursosPendientesContainer.style.display = tieneCursosPendientes.value == 1 ? 'block' : 'none';
+                cursosPendientesContainer.style.display = tieneCursosPendientes.value == 1 ? 'block' :
+                    'none';
             });
         });
     </script>
@@ -408,11 +449,11 @@
         document.addEventListener('DOMContentLoaded', function() {
             var programaSelector = document.getElementById('programa_id');
             var cicloSelector = document.getElementById('ciclo_id');
-            
+
             programaSelector.addEventListener('change', function() {
                 var programaId = programaSelector.value;
                 cicloSelector.innerHTML = '<option value="">Seleccionar Ciclo</option>';
-                
+
                 if (programaId) {
                     fetch('/obtener-ciclos/' + programaId)
                         .then(response => response.json())

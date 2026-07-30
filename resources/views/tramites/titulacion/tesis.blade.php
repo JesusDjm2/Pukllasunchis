@@ -190,9 +190,6 @@
                     </div>
                 </div><br>
 
-
-
-
                 <h3>Requisitos para la obtención del Título de Licenciado: </h3>
                 <p>Una vez terminada la Tesis, para la obtención del Título de Licenciado se siguen estos pasos:
                 </p>
@@ -209,15 +206,22 @@
                                     target="_blank" class="text-primary"> FORMULARIO DE REVISIÓN DE ORIGINALIDAD.</a></li>
                             <li>Adjuntar:
                                 <ul>
-                                    <li>Versión final de la Tesis en formato WORD</li>
+                                    <li>Versión final de la Tesis en formato WORD <br>
+                                        &nbsp;&nbsp;
+                                        NOTA: Si tu tesis es continuidad de un TI con el que obtuviste el grado de
+                                        bachiller, para la revisión preliminar de originalidad <strong>deberás excluir únicamente la
+                                        sección "Base Teórica".</strong> La versión oficial de la tesis deberá presentarse íntegra
+                                        en las etapas posteriores, conforme al artículo 94 del Reglamento de Investigación.
+                                        </li>
                                     <li>Comprobante de pago por derecho de revisión de originalidad</li>
+                                    <li>Este pago tiene el tiempo de duración de una semana.</li>
                                 </ul>
                             </li>
-                            <li>Este pago tiene el tiempo de duración de una semana.</li>
+                            
                             <li>Como resultado de este trámite, recibirás en tu correo institucional el Reporte de
                                 originalidad (Turnitin), en un plazo no mayor a 10 días hábiles. Con el pago que usted
-                                realiza puede hacer 1 revisión de originalidad en un plazo no mayor a 30 días.</li>
-                                <small style="color: #000; font-style: italic;">Nota: el porcentaje máximo para aprobar el
+                                realiza puede hacer 1 revisión de originalidad en un plazo no mayor a 5 días hábiles.</li>
+                            <small style="color: #000; font-style: italic;">Nota: el porcentaje máximo para aprobar el
                                 reporte de originalidad debe ser 20%, de lo contrario, debe corregir el documento y
                                 solicitar nuevamente la revisión. </small>
                         </ul>
@@ -253,8 +257,8 @@
                             <li>Adjuntar:
                                 <ul>
                                     <li>Informe de Tesis apta en formato WORD</li>
-                                    <li>Reporte de originalidad Turnitin (con máximo 20% de similitud en Turnitin)</li>
-                                    <li>Versión final de la Tesis en formato WORD</li>
+                                    <li>Reporte de originalidad Turnitin (con m�ximo 20% de similitud en Turnitin)</li>
+                                    <li>Versi�n final de la Tesis en formato WORD </li>
                                     <li>Diapositivas para sustentación de Tesis en formato PPT</li>
                                     <li>Constancia de inscripción en SUNEDU del diploma de Bachiller en formato PDF
                                     </li>
@@ -324,12 +328,10 @@
                             class="text-danger font-weight-bold">Caja
                             Cusco:</span>
                         <ul>
-                            <li>Este trámite solo se realiza de manera virtual. Enviar su FUT debidamente llenado al correo
-                                institucional: <a href="mailto:eespp@pukllasunchis.org"
-                                    class="text-primary">eespp@pukllasunchis.org</a>
+                            <li>Este trámite solo se realiza de manera virtual. formulario de<a
+                                    href="https://forms.gle/oVAax2L4GiaPGTWp9" class="text-primary"> SOLICITUD DE EMISIÓN
+                                    DE DIPLOMA</a>
                                 <br>Adjuntar al FUT la boleta de pago correspondiente.
-                                En el asunto del correo debe consignar:
-                                <strong>“Emisión de diploma de Bachiller”</strong>.
                                 Una vez ingresada la solicitud, se le informará oportunamente la fecha en la que deberá
                                 acudir de forma presencial para la firma del acta correspondiente.<br>
                                 <small class="text-info">(Concepto: Emisión título de Licenciado /
@@ -340,6 +342,7 @@
                                     👉 Este trámite tiene un lapso de duración de 15 días hábiles.
                                 </span>
                             </li>
+                            <li><a href="https://forms.gle/oVAax2L4GiaPGTWp9">Llenar el formulario para </a></li>
                         </ul>
                     </li>
                     <li>Solicitar registro e inscripción de Diploma de Licenciado previo pago de s/200.00 en las oficinas de

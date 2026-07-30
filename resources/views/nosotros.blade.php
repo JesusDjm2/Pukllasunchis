@@ -134,7 +134,7 @@
             </div>
         </div>
     </section>
-    <section class="fondoLogo">
+    <section class="fondoLogo scroolOk" id="organigrama">
         <div class="container pt-5 pb-5">
             <div class="row align-items-center">
                 <div class="col-lg-4">

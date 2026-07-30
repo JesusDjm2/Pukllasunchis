@@ -11,6 +11,7 @@ use App\Models\ppd;
 use App\Models\Programa;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class PpdController extends Controller
 {
@@ -430,6 +431,7 @@ class PpdController extends Controller
             'alumnos.*.observaciones' => 'nullable|string|max:1000',
         ]);
 
+        try {
         $curso = Curso::findOrFail($request->curso_id);
         $docente = Docente::findOrFail($request->docente_id);
         $primerNombre = explode(' ', trim($docente->nombre))[0];
@@ -530,6 +532,15 @@ class PpdController extends Controller
             'competenciasSeleccionadas' => $competenciasSeleccionadas,
             'alumnos' => $alumnos,
         ]);
+        } catch (\Throwable $e) {
+            Log::error('Error al guardar calificaciones PPD', [
+                'curso_id' => $request->input('curso_id'),
+                'docente_id' => $request->input('docente_id'),
+                'message' => $e->getMessage(),
+            ]);
+
+            return back()->withInput()->with('error', 'No se pudieron guardar las notas por un problema técnico. Tus datos no se perdieron: corrige e inténtalo de nuevo, o contacta a soporte si el problema continúa.');
+        }
     }
 
     public function edit($id)

@@ -91,9 +91,9 @@ class CeDocenteController extends Controller
 
         if ($request->hasFile('imagen')) {
             if ($curso->imagen) {
-                Storage::disk('public')->delete($curso->imagen);
+                Storage::disk('uploads')->delete($curso->imagen);
             }
-            $data['imagen'] = $request->file('imagen')->store('cursos-especiales', 'public');
+            $data['imagen'] = $request->file('imagen')->store('cursos-especiales', 'uploads');
         }
 
         $data['activo'] = $request->boolean('activo');

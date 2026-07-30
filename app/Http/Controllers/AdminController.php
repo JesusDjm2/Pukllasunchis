@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exports\AlumnosFidExport;
 use App\Exports\AlumnosPpdExport;
+use App\Exports\BecasCalificacionesExport;
 use App\Models\Alumno;
 use App\Models\Ciclo;
 use App\Models\Curso;
@@ -11,6 +12,9 @@ use App\Models\Departamento;
 use App\Models\Docente;
 use App\Models\Matricula;
 use App\Models\PeriodoActual;
+use App\Models\PeriodoDos;
+use App\Models\PeriodoTres;
+use App\Models\PeriodoUno;
 use App\Models\ppd;
 use App\Models\Programa;
 use App\Models\User;
@@ -31,7 +35,7 @@ class AdminController extends Controller
     public function index()
     {
         $alumno = auth()->user()?->alumno;
-        $admins = User::all();
+        $admins = User::with(['tutorCiclos', 'docente.cursos'])->get();
         $totalAlumnos = User::whereHas('roles', function ($query) {
             $query->where('name', 'alumno');
         })->count();
@@ -217,6 +221,64 @@ class AdminController extends Controller
         $nombreArchivo = $prefijo.'_'.now()->format('Y-m-d_His').'.xlsx';
 
         return Excel::download(new AlumnosFidExport($alumnos), $nombreArchivo);
+    }
+
+    /**
+     * Calificaciones (Parcial 1, Parcial 2, Desempeño) de alumnos becarios.
+     * Lee directo de periodo_uno/periodo_dos/periodo_tres (datos en vivo del ciclo
+     * en curso), no de la tabla `periodos` que solo se llena al archivar un periodo cerrado.
+     */
+    public function exportBecasCalificaciones()
+    {
+        if (! auth()->check() || ! auth()->user()->hasAnyRole(['admin', 'super-admin'])) {
+            abort(403);
+        }
+
+        $alumnoIds = Alumno::whereHas('user', fn ($q) => $q->where('beca', 1))->pluck('id');
+
+        $parcial1 = PeriodoUno::whereIn('alumno_id', $alumnoIds)->get()->groupBy('alumno_id');
+        $parcial2 = PeriodoDos::whereIn('alumno_id', $alumnoIds)->get()->groupBy('alumno_id');
+        $desempeno = PeriodoTres::whereIn('alumno_id', $alumnoIds)->get()->groupBy('alumno_id');
+
+        $cursoIds = $parcial1->flatten()->pluck('curso_id')
+            ->merge($parcial2->flatten()->pluck('curso_id'))
+            ->merge($desempeno->flatten()->pluck('curso_id'))
+            ->unique();
+
+        $cursos = Curso::with('ciclo')->whereIn('id', $cursoIds)->get()->keyBy('id');
+        $alumnos = Alumno::with(['user', 'programa'])->whereIn('id', $alumnoIds)->get()->keyBy('id');
+
+        $filas = collect();
+
+        foreach ($alumnoIds as $alumnoId) {
+            $p1ByCurso = ($parcial1->get($alumnoId) ?? collect())->keyBy('curso_id');
+            $p2ByCurso = ($parcial2->get($alumnoId) ?? collect())->keyBy('curso_id');
+            $p3ByCurso = ($desempeno->get($alumnoId) ?? collect())->keyBy('curso_id');
+
+            $alumnoCursoIds = $p1ByCurso->keys()
+                ->merge($p2ByCurso->keys())
+                ->merge($p3ByCurso->keys())
+                ->unique();
+
+            foreach ($alumnoCursoIds as $cursoId) {
+                $curso = $cursos->get($cursoId);
+                if (! $curso) {
+                    continue;
+                }
+
+                $filas->push([
+                    'alumno' => $alumnos->get($alumnoId),
+                    'curso' => $curso,
+                    'parcial1' => $p1ByCurso->get($cursoId),
+                    'parcial2' => $p2ByCurso->get($cursoId),
+                    'desempeno' => $p3ByCurso->get($cursoId),
+                ]);
+            }
+        }
+
+        $nombreArchivo = 'Calificaciones_Becas_'.now()->format('Y-m-d_His').'.csv';
+
+        return Excel::download(new BecasCalificacionesExport($filas), $nombreArchivo);
     }
 
     public function alumnoCarnet(Alumno $alumno)

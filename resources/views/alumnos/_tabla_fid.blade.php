@@ -76,6 +76,7 @@
                             <li>{{ $alumno->programa->nombre }} - {{ $alumno->ciclo->nombre }}</li>
                             <li>{{ $alumno->email }}</li>
                             <li>Teléfono: {{ $alumno->numero }}</li>
+                            <li>Referencia: {{ $alumno->numero_referencia }}</li>
                             <li>Fecha de nacimiento:
                                 @php $fechaNacFmt = $alumno->fechaNacimientoResueltaFormateada(); @endphp
                                 @if ($fechaNacFmt !== '')

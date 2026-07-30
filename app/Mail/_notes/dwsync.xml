@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <dwsync>
-<file name="NotificacionRegistro.php" server="ftp.eesppukllasunchis.edu.pe" local="134241985176889707" remote="134245840200000000" Dst="0" />
-<file name="ConfirmacionInscripcionMail.php" server="ftp.eesppukllasunchis.edu.pe" local="134241985221998531" remote="134242227600000000" Dst="0" />
-<file name="ConfirmacionInscripcionPpdMail.php" server="ftp.eesppukllasunchis.edu.pe" local="134241985232429594" remote="134242227600000000" Dst="0" />
-<file name="IncidenciaMail.php" server="ftp.eesppukllasunchis.edu.pe" local="134241985199872034" remote="134242227600000000" Dst="0" />
+<file name="NotificacionRegistro.php" server="ftp.eesppukllasunchis.edu.pe" local="134241985176889707" remote="134288147400000000" Dst="0" />
+<file name="ConfirmacionInscripcionMail.php" server="ftp.eesppukllasunchis.edu.pe" local="134241985221998531" remote="134288147400000000" Dst="0" />
+<file name="ConfirmacionInscripcionPpdMail.php" server="ftp.eesppukllasunchis.edu.pe" local="134241985232429594" remote="134288147400000000" Dst="0" />
+<file name="IncidenciaMail.php" server="ftp.eesppukllasunchis.edu.pe" local="134241985199872034" remote="134288147400000000" Dst="0" />
+<file name="ReclamoMail.php" server="ftp.eesppukllasunchis.edu.pe" local="134287950290611522" remote="134288139000000000" Dst="0" />
 </dwsync>

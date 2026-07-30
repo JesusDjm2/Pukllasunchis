@@ -229,7 +229,12 @@ body.sidebar-toggled .sidebar hr.sidebar-logo-divider {
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .topbar {
-    height: 4.375rem;
+    /* min-height (no height): el topbar es sticky, así que si su contenido
+       necesita más de 70px (p.ej. el bloque de horario envuelve a 2 líneas
+       en responsive) debe poder crecer. Con height fija ese contenido se
+       desbordaba y quedaba superpuesto sobre la página, porque el topbar
+       sticky siempre pinta por encima (z-index 1030). */
+    min-height: 4.375rem;
     position: sticky;
     top: 0;
     z-index: 1030; /* por debajo de modales (1040+) pero sobre el contenido */

@@ -304,12 +304,15 @@ class AlumnoController extends Controller
             'periodo.periodoActual',
         ])->find($id);
 
+        // Traduce códigos cortos usados en registros antiguos; los registros nuevos ya
+        // guardan la oración completa (ver alumnos/datos-personales.blade.php) y no coinciden
+        // con ninguna de estas claves, por lo que se muestran tal cual llegan de la BD.
         $procedencia = [
-            'vivo_en_comunidad' => 'Yo aún vivo en la comunidad',
-            'padres_viven_en_comunidad' => 'Mis padres aún viven en la comunidad',
-            'abuelos_viven_en_comunidad' => 'Mis abuelos aún viven en la comunidad',
-            'no_vivimos_en_comunidad' => 'Ya no vivimos en la comunidad',
-            'familia_de_zona_urbana' => 'Procedemos de una zona urbana',
+            'vivo_en_comunidad' => 'Sí, yo aún vivo en la comunidad',
+            'padres_viven_en_comunidad' => 'Sí, mis padres aún viven en la comunidad',
+            'abuelos_viven_en_comunidad' => 'Sí, mis abuelos aún viven en la comunidad',
+            'no_vivimos_en_comunidad' => 'Sí, pero ya no vivimos en la comunidad',
+            'familia_de_zona_urbana' => 'No, mi familia procede de una zona urbana',
             'otra' => 'Otra',
         ];
         $consideras = [

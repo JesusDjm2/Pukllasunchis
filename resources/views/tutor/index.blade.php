@@ -3,27 +3,30 @@
 @section('titulo', 'Panel de Tutor')
 
 @section('contenido')
-<div class="container-fluid">
-    <div class="d-sm-flex align-items-center justify-content-between mb-4"
-         style="border-bottom: 1px dashed #4848fc78; padding-bottom:1em">
-        <h3 class="font-weight-bold text-primary">Panel de Tutor</h3>
+<div class="container-fluid docente-ui-page">
+    <div class="card docente-ui-card docente-ui-hero mb-3 mb-md-4">
+        <div class="card-body p-3 p-md-4">
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-md-between">
+                <div class="mb-2 mb-md-0">
+                    <p class="docente-ui-kicker mb-1">Panel de Tutor</p>
+                    <h1 class="docente-ui-title mb-0">
+                        ¡Bienvenido, {{ auth()->user()->name }} {{ auth()->user()->apellidos }}!
+                    </h1>
+                    <p class="docente-ui-subtitle mb-0 mt-2">Estás ingresando como <strong>Tutor</strong>.</p>
+                </div>
+                @role('docente')
+                    @if(auth()->user()->docente)
+                        <div class="flex-shrink-0">
+                            <a href="{{ route('vistaDocente', ['docente' => auth()->user()->docente->id]) }}"
+                               class="btn btn-outline-secondary btn-sm btn-block d-md-inline-block">
+                                <i class="fas fa-arrow-left mr-1"></i> Ir a mi panel de Docente
+                            </a>
+                        </div>
+                    @endif
+                @endrole
+            </div>
+        </div>
     </div>
-
-    <div class="mb-4">
-        <h5 class="font-weight-bold text-gray-800">
-            ¡Bienvenido, {{ auth()->user()->name }} {{ auth()->user()->apellidos }}!
-        </h5>
-        <p class="text-muted mb-0">Estás ingresando como <strong>Tutor</strong>.</p>
-    </div>
-
-    @role('docente')
-        @if(auth()->user()->docente)
-            <a href="{{ route('vistaDocente', ['docente' => auth()->user()->docente->id]) }}"
-               class="btn btn-outline-primary mb-4">
-                <i class="fas fa-arrow-left mr-1"></i> Ir a mi panel de Docente
-            </a>
-        @endif
-    @endrole
 
     {{-- Ciclos asignados --}}
     @if ($ciclos->isEmpty())

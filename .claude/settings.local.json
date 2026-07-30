@@ -73,7 +73,20 @@
       "Bash(node \"C:/Users/Jaime/AppData/Local/Temp/pw-inspect-fid.js\")",
       "Bash(cp \"C:/Users/Jaime/AppData/Local/Temp/pw-inspect-fid.js\" /tmp/pw-check/fid.js)",
       "Bash(node fid.js)",
-      "Bash(NODE_PATH=/tmp/pwcheck/node_modules node -e ' *)"
+      "Bash(NODE_PATH=/tmp/pwcheck/node_modules node -e ' *)",
+      "Bash(php -l \"resources/views/admin/periodos/calificaciones/show.blade.php\")",
+      "Bash(curl -s \"http://localhost/Puklla2026/login\" -o /tmp_curl_login.html -w \"HTTP_STATUS:%{http_code}\\\\n\")",
+      "Bash(grep -n \"btn-login\\\\|btn-close\\\\|loginSubmit\\\\|gsap\" /tmp_curl_login.html)",
+      "Bash(curl -s \"http://localhost/Puklla2026/public/login\" -o /tmp_curl_login2.html -w \"HTTP_STATUS:%{http_code}\\\\n\")",
+      "Bash(ls -la /tmp_curl_login2.html)",
+      "Bash(curl -s http://localhost/Puklla2026/public/login -o /c/Users/Jaime/AppData/Local/Temp/claude/c--xampp-htdocs-Puklla2026/1fd92155-a669-4cdc-ae2f-8cb14b6aae2f/scratchpad/login.html -w 'HTTP_STATUS:%{http_code}\\\\n')",
+      "Bash(curl -s http://localhost/Puklla2026/public/login -o /c/Users/Jaime/AppData/Local/Temp/claude/c--xampp-htdocs-Puklla2026/1fd92155-a669-4cdc-ae2f-8cb14b6aae2f/scratchpad/login2.html -w 'HTTP_STATUS:%{http_code}\\\\n')",
+      "Bash(grep -A5 'protected $fillable' app/Models/PeriodoUno.php app/Models/PeriodoDos.php app/Models/PeriodoTres.php)",
+      "Bash(awk 'NR==1,NR==1{} {print NR\": \"$0}' routes/admin.php)",
+      "Bash(php -l app/Exports/BecasCalificacionesExport.php)",
+      "Bash(php -l resources/views/layouts/alumno.blade.php)",
+      "Bash(php -l resources/views/cursos-especiales/admin/show.blade.php)",
+      "Bash(node -e \"const css=require\\('fs'\\).readFileSync\\('public/admin/css/darkmode.css','utf8'\\);const o=\\(css.match\\(/\\\\{/g\\)||[]\\).length,c=\\(css.match\\(/\\\\}/g\\)||[]\\).length;console.log\\('open:',o,'close:',c\\);\")"
     ]
   }
 }

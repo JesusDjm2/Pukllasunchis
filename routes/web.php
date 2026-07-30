@@ -113,3 +113,9 @@ Route::get('/ce/audio/{fileId}', [CeAudioStreamController::class, 'stream'])
 Route::get('/incidencias', [App\Http\Controllers\IncidenciaController::class, 'publicCreate'])->name('incidencias.public.create');
 Route::post('/incidencias', [App\Http\Controllers\IncidenciaController::class, 'publicStore'])->name('incidencias.public.store');
 
+// Formulario público del Libro de Reclamaciones (sin login)
+Route::get('/libro-de-reclamaciones', [App\Http\Controllers\ReclamoController::class, 'publicCreate'])->name('reclamos.public.create');
+Route::post('/libro-de-reclamaciones', [App\Http\Controllers\ReclamoController::class, 'publicStore'])
+    ->middleware('throttle:3,60')
+    ->name('reclamos.public.store');
+

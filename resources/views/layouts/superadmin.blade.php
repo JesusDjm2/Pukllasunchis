@@ -152,6 +152,13 @@
             </div>
         </li>
 
+        <li class="nav-item">
+            <a class="nav-link {{ request()->routeIs('admin.reclamos.*') ? '' : 'collapsed' }}"
+               href="{{ route('admin.reclamos.todas') }}">
+                <i class="fas fa-fw fa-book"></i><span>Libro de Reclamaciones</span>
+            </a>
+        </li>
+
         <hr class="sidebar-divider d-none d-md-block">
 
         {{-- ══ SECCIÓN: BOLSA Y COMUNICADOS ══ --}}
@@ -263,7 +270,6 @@
                                     Hola {{ trim($saNombre . ' ' . $saApellido) }}!
                                 </span>
                             @endif
-                            <i class="fas fa-crown fa-xs text-warning ml-1" title="Super Admin"></i>
                         </a>
 
                         <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"

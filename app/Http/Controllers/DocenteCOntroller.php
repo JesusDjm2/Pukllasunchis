@@ -21,7 +21,10 @@ class DocenteCOntroller extends Controller
         $totalDocentes = $docentes->count();
         $totalIncidencias = $docentes->sum(fn($d) => $d->incidencias->count());
 
-        return view('docentes.index', compact('docentes', 'totalDocentes', 'totalIncidencias'));
+        $periodoActual = PeriodoActual::actual();
+        $ciclos = Ciclo::all()->sortBy(fn ($c) => $c->ordenCiclo() ?? 999);
+
+        return view('docentes.index', compact('docentes', 'totalDocentes', 'totalIncidencias', 'periodoActual', 'ciclos'));
     }
 
     public function vistaDocente($docenteId)
@@ -467,8 +470,52 @@ class DocenteCOntroller extends Controller
     public function repositorio($docente)
     {
         $docente = Docente::findOrFail($docente);
-        $cursos = Curso::all();
+        $periodoActual = PeriodoActual::actual();
+        $nombrePeriodoActual = $periodoActual->nombre ?? null;
 
-        return view('docentes.silabos', compact('docente', 'cursos'));
+        $cursos = Curso::with(['silabos' => fn ($q) => $q->orderByDesc('periodo')])
+            ->orderBy('nombre')
+            ->get();
+
+        // Un curso puede tener un sílabo estructurado por cada periodo académico.
+        // Se genera una fila por (curso, periodo) para no ocultar periodos recientes
+        // detrás de uno antiguo, como pasaba al usar la relación relacionsilabo() (hasOne sin orden).
+        $filas = collect();
+        foreach ($cursos as $curso) {
+            $silabosCurso = $curso->silabos;
+
+            if ($silabosCurso->isEmpty()) {
+                if ($curso->silabo) {
+                    $filas->push((object) [
+                        'curso' => $curso,
+                        'periodo' => 'Sílabo sin periodo',
+                        'silabo' => null,
+                        'mostrarPdfLegacy' => true,
+                    ]);
+                }
+
+                continue;
+            }
+
+            foreach ($silabosCurso->values() as $index => $silabo) {
+                $filas->push((object) [
+                    'curso' => $curso,
+                    'periodo' => $silabo->periodo,
+                    'silabo' => $silabo,
+                    // El PDF legacy (campo cursos.silabo) no tiene periodo propio;
+                    // se muestra junto al sílabo estructurado más reciente del curso.
+                    'mostrarPdfLegacy' => $index === 0 && (bool) $curso->silabo,
+                ]);
+            }
+        }
+
+        $conPeriodo = $filas->where('periodo', '!=', 'Sílabo sin periodo')
+            ->groupBy('periodo')
+            ->sortKeysDesc();
+        $sinPeriodo = $filas->where('periodo', 'Sílabo sin periodo')->groupBy('periodo');
+
+        $cursosAgrupados = $conPeriodo->merge($sinPeriodo);
+
+        return view('docentes.silabos', compact('docente', 'cursosAgrupados', 'periodoActual', 'nombrePeriodoActual'));
     }
 }

@@ -14,11 +14,19 @@
         rel="stylesheet">
     <link href="{{ asset('admin/css/sb-admin-2.min.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('admin/css/estilos.css') }}">
+    <link rel="stylesheet" href="{{ asset('admin/css/darkmode.css') }}">
     <link rel="stylesheet" href="{{ asset('css/alumno-area.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     @stack('styles')
 </head>
 
 <body id="page-top" class="alumno-app">
+{{-- Aplicar tema guardado antes del render para evitar flash --}}
+<script>
+    var _pt = localStorage.getItem('puklla-theme');
+    if (_pt === 'dark') document.body.classList.add('dark-mode');
+    else if (_pt === 'dim') document.body.classList.add('dim-mode');
+</script>
     <div id="wrapper">
         <ul class="navbar-nav bg-gradient-info sidebar sidebar-dark accordion" id="accordionSidebar">
             <a class="sidebar-brand d-flex align-items-center justify-content-center mb-3" href="{{ route('index') }}">
@@ -60,16 +68,18 @@
                     <span>Bolsa de trabajo</span>
                 </a>
             </li>
-            <hr class="sidebar-divider d-none d-md-block">
-            <div class="sidebar-heading">
-                Formación Asincrónica
-            </div>
-            <li class="nav-item {{ request()->routeIs('ce.alumno.*') ? 'active' : '' }}">
-                <a class="nav-link collapsed" href="{{ route('ce.alumno.index') }}">
-                    <i class="fas fa-fw fa-graduation-cap"></i>
-                    <span>Cursos Asincrónicos</span>
-                </a>
-            </li>
+            @if(app()->environment('local'))
+                <hr class="sidebar-divider d-none d-md-block">
+                <div class="sidebar-heading">
+                    Formación Asincrónica
+                </div>
+                <li class="nav-item {{ request()->routeIs('ce.alumno.*') ? 'active' : '' }}">
+                    <a class="nav-link collapsed" href="{{ route('ce.alumno.index') }}">
+                        <i class="fas fa-fw fa-graduation-cap"></i>
+                        <span>Cursos Asincrónicos</span>
+                    </a>
+                </li>
+            @endif
             <hr class="sidebar-divider d-none d-md-block">
             <li class="nav-item {{ request()->routeIs('alumno.formatos') ? 'active' : '' }}">
                 <a class="nav-link collapsed" href="{{ route('alumno.formatos') }}">
@@ -138,7 +148,14 @@
                     @else
                         <span class="small text-muted ml-md-3 mb-0">Sin horario asignado para este periodo.</span>
                     @endif
-                    <ul class="navbar-nav ml-auto">
+                    <ul class="navbar-nav ml-auto align-items-center">
+                        <li class="nav-item d-flex align-items-center">
+                            <button id="darkModeToggle" type="button"
+                                    title="Cambiar a modo tenue"
+                                    aria-label="Cambiar tema claro/tenue/oscuro">
+                                <i class="fas fa-moon" id="darkModeIcon"></i>
+                            </button>
+                        </li>
                         <div class="topbar-divider d-none d-sm-block"></div>
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle d-flex align-items-center py-2" href="#" id="userDropdown"
@@ -197,7 +214,45 @@
     <script src="{{ asset('admin/vendor/jquery-easing/jquery.easing.min.js') }}"></script>
     <script src="{{ asset('admin/js/sb-admin-2.min.js') }}"></script>
     <script src="{{ asset('admin/js/djm.js') }}?v={{ filemtime(public_path('admin/js/djm.js')) }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @stack('scripts')
+
+{{-- Dark Mode Cycle: light → tenue → oscuro --}}
+<script>
+(function () {
+    var THEME_KEY = 'puklla-theme';
+    var body   = document.body;
+    var toggle = document.getElementById('darkModeToggle');
+    var icon   = document.getElementById('darkModeIcon');
+    var CYCLE  = ['light', 'dim', 'dark'];
+    var ICONS  = { light: 'fas fa-moon', dim: 'fas fa-adjust', dark: 'fas fa-sun' };
+    var TITLES = { light: 'Modo tenue', dim: 'Modo oscuro', dark: 'Modo claro' };
+
+    function getTheme() {
+        if (body.classList.contains('dark-mode')) return 'dark';
+        if (body.classList.contains('dim-mode'))  return 'dim';
+        return 'light';
+    }
+
+    function applyTheme(theme) {
+        body.classList.remove('dark-mode', 'dim-mode');
+        if (theme === 'dark') body.classList.add('dark-mode');
+        if (theme === 'dim')  body.classList.add('dim-mode');
+        localStorage.setItem(THEME_KEY, theme);
+        if (icon)   icon.className = ICONS[theme];
+        if (toggle) toggle.setAttribute('title', TITLES[theme]);
+    }
+
+    applyTheme(getTheme());
+
+    if (toggle) {
+        toggle.addEventListener('click', function () {
+            var next = CYCLE[(CYCLE.indexOf(getTheme()) + 1) % CYCLE.length];
+            applyTheme(next);
+        });
+    }
+})();
+</script>
 </body>
 
 </html>

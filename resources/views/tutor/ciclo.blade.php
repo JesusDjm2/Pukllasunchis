@@ -281,7 +281,7 @@
                                                             ['k' => 'Acceso lectura', 'v' => $alumno->acceso_lectura ?? '—'],
                                                             ['k' => 'Visitas museos', 'v' => $alumno->visitas_museos ?? '—'],
                                                             ['k' => 'Actividades internet', 'v' => $alumno->actividades_internet ?? '—'],
-                                                            ['k' => 'Habilidades', 'v' => $formateaLista(str_replace('-', ',', (string) $alumno->habilidades))],
+                                                            ['k' => 'Habilidades', 'v' => $formateaLista(is_array($alumno->habilidades) ? $alumno->habilidades : str_replace('-', ',', (string) $alumno->habilidades))],
                                                             ['k' => 'Tiempo libre', 'v' => $siNo($alumno->tiempo_libre)],
                                                         ],
                                                     ],

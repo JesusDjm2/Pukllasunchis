@@ -14,6 +14,7 @@ use App\Models\PeriodoTres;
 use App\Models\PeriodoUno;
 use App\Models\ppd;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 
 class CalificacionController extends Controller
@@ -56,39 +57,49 @@ class CalificacionController extends Controller
             'competencias' => 'required|array|min:1|max:3',
         ]);
 
-        $cursoId = $request->input('curso_id');
-        $curso = Curso::findOrFail($cursoId);
+        try {
+            $cursoId = $request->input('curso_id');
+            $curso = Curso::findOrFail($cursoId);
 
-        $docenteId = $request->input('docente_id');
-        $docente = Docente::findOrFail($docenteId);
+            $docenteId = $request->input('docente_id');
+            $docente = Docente::findOrFail($docenteId);
 
-        $competenciasSeleccionadas = Competencia::whereIn('id', $request->input('competencias'))->get();
+            $competenciasSeleccionadas = Competencia::whereIn('id', $request->input('competencias'))->get();
 
-        $alumnos = $curso->ciclo->alumnos()->orderBy('apellidos')->get();
+            $alumnos = $curso->ciclo->alumnos()->orderBy('apellidos')->get();
 
-        $calificacion = Calificacion::updateOrCreate(
-            [
-                'alumno_id' => $request->input('alumno_id'),
-                'curso_id' => $cursoId,
-            ],
-            [
-                'valoracion_1' => $request->input('valoracion_1'),
-                'valoracion_2' => $request->input('valoracion_2'),
-                'valoracion_3' => $request->input('valoracion_3'),
-                'valoracion_curso' => $request->input('valoracion_curso'),
-                'calificacion_curso' => $request->input('calificacion_curso'),
-                'calificacion_sistema' => $request->input('calificacion_sistema'),
-            ]
-        );
-        /* $mostrarBotonDesempeno = false;
-        $porcentaje = $curso->porcentajePeriodo(2, ['calificacion_curso']);
-        $mostrarBotonDesempeno = $porcentaje >= 50; */
+            $calificacion = Calificacion::updateOrCreate(
+                [
+                    'alumno_id' => $request->input('alumno_id'),
+                    'curso_id' => $cursoId,
+                ],
+                [
+                    'valoracion_1' => $request->input('valoracion_1'),
+                    'valoracion_2' => $request->input('valoracion_2'),
+                    'valoracion_3' => $request->input('valoracion_3'),
+                    'valoracion_curso' => $request->input('valoracion_curso'),
+                    'calificacion_curso' => $request->input('calificacion_curso'),
+                    'calificacion_sistema' => $request->input('calificacion_sistema'),
+                ]
+            );
+            /* $mostrarBotonDesempeno = false;
+            $porcentaje = $curso->porcentajePeriodo(2, ['calificacion_curso']);
+            $mostrarBotonDesempeno = $porcentaje >= 50; */
 
-        if ($calificacion->wasRecentlyCreated) {
-            session()->flash('success', 'Calificación guardada exitosamente.');
+            if ($calificacion->wasRecentlyCreated) {
+                session()->flash('success', 'Calificación guardada exitosamente.');
+            }
+
+            return view('docentes.calificaciones.alumnos', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos'));
+        } catch (\Throwable $e) {
+            Log::error('Error al guardar calificación', [
+                'curso_id' => $request->input('curso_id'),
+                'docente_id' => $request->input('docente_id'),
+                'message' => $e->getMessage(),
+            ]);
+
+            return back()->withInput()->with('error', 'No se pudo guardar la calificación por un problema técnico. Tus datos no se perdieron: corrige e inténtalo de nuevo, o contacta a soporte si el problema continúa.');
         }
-
-        return view('docentes.calificaciones.alumnos', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos'));
     }
 
     public function borrarCalificaciones(Request $request)
@@ -139,6 +150,7 @@ class CalificacionController extends Controller
             'alumnos.*.observaciones' => 'nullable|string|max:1000',
         ]);
 
+        try {
         $docenteId = $request->input('docente_id');
         $docente = Docente::findOrFail($docenteId);
         $cursoId = $request->input('curso_id');
@@ -217,6 +229,15 @@ class CalificacionController extends Controller
         $mostrarBotonDesempeno = $porcentaje >= 50;
 
         return view('docentes.calificaciones.alumnos', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos', 'mostrarBotonDesempeno'));
+        } catch (\Throwable $e) {
+            Log::error('Error al guardar calificaciones de Parcial 2', [
+                'curso_id' => $request->input('curso_id'),
+                'docente_id' => $request->input('docente_id'),
+                'message' => $e->getMessage(),
+            ]);
+
+            return back()->withInput()->with('error', 'No se pudieron guardar las notas de Parcial 2 por un problema técnico. Tus datos no se perdieron: corrige e inténtalo de nuevo, o contacta a soporte si el problema continúa.');
+        }
     }
 
     public function guardarPeriodoTres(Request $request)
@@ -234,6 +255,7 @@ class CalificacionController extends Controller
             'alumnos.*.competencias' => 'required|array|min:1|max:3',
         ]);
 
+        try {
         $docenteId = $request->input('docente_id');
         $docente = Docente::findOrFail($docenteId);
         $cursoId = $request->input('curso_id');
@@ -322,6 +344,151 @@ class CalificacionController extends Controller
         }
 
         return view('docentes.calificaciones.alumnos', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos', 'mostrarBotonDesempeno'));
+        } catch (\Throwable $e) {
+            Log::error('Error al guardar calificaciones de Desempeño', [
+                'curso_id' => $request->input('curso_id'),
+                'docente_id' => $request->input('docente_id'),
+                'message' => $e->getMessage(),
+            ]);
+
+            return back()->withInput()->with('error', 'No se pudieron guardar las notas de Desempeño por un problema técnico. Tus datos no se perdieron: corrige e inténtalo de nuevo, o contacta a soporte si el problema continúa.');
+        }
+    }
+
+    public function guardarPeriodo2yDesempenoEnBloque(Request $request)
+    {
+        $request->validate([
+            'curso_id' => 'required|exists:cursos,id',
+            'docente_id' => 'required|exists:docentes,id',
+            'alumnos' => 'required|array',
+            'alumnos.*.competencias' => 'required|array|min:1|max:3',
+            'alumnos.*.periodo2.valoracion_curso' => 'nullable|string',
+            'alumnos.*.periodo2.calificacion_curso' => 'nullable|string',
+            'alumnos.*.periodo2.calificacion_sistema' => 'nullable|string',
+            'alumnos.*.periodo2.valoracion_1' => 'nullable|string',
+            'alumnos.*.periodo2.valoracion_2' => 'nullable|string',
+            'alumnos.*.periodo2.valoracion_3' => 'nullable|string',
+            'alumnos.*.periodo2.observaciones' => 'nullable|string|max:1000',
+            'alumnos.*.periodo3.valoracion_curso' => 'nullable|string',
+            'alumnos.*.periodo3.calificacion_curso' => 'nullable|string',
+            'alumnos.*.periodo3.calificacion_sistema' => 'nullable|string',
+            'alumnos.*.periodo3.valoracion_1' => 'nullable|string',
+            'alumnos.*.periodo3.valoracion_2' => 'nullable|string',
+            'alumnos.*.periodo3.valoracion_3' => 'nullable|string',
+        ]);
+
+        try {
+            $docenteId = $request->input('docente_id');
+            $docente = Docente::findOrFail($docenteId);
+            $cursoId = $request->input('curso_id');
+            $curso = Curso::findOrFail($cursoId);
+
+            // El Desempeño (Periodo 3) solo se guarda si Parcial 2 sigue cumpliendo el
+            // porcentaje mínimo de desbloqueo; evita que llegue una nota de Periodo 3
+            // aunque el campo estuviera deshabilitado en el navegador.
+            $desempenoHabilitado = $curso->porcentajePeriodo(2, ['calificacion_curso']) >= 50;
+
+            foreach ($request->input('alumnos') as $data) {
+                if (! empty($data['periodo2'])) {
+                    PeriodoDos::updateOrCreate(
+                        [
+                            'alumno_id' => $data['alumno_id'],
+                            'curso_id' => $cursoId,
+                        ],
+                        [
+                            'valoracion_1' => $data['periodo2']['valoracion_1'] ?? null,
+                            'valoracion_2' => $data['periodo2']['valoracion_2'] ?? null,
+                            'valoracion_3' => $data['periodo2']['valoracion_3'] ?? null,
+                            'valoracion_curso' => $data['periodo2']['valoracion_curso'] ?? null,
+                            'calificacion_curso' => $data['periodo2']['calificacion_curso'] ?? null,
+                            'calificacion_sistema' => $data['periodo2']['calificacion_sistema'] ?? null,
+                            'observaciones' => $data['periodo2']['observaciones'] ?? null,
+                        ]
+                    );
+                }
+
+                if ($desempenoHabilitado && ! empty($data['periodo3'])) {
+                    PeriodoTres::updateOrCreate(
+                        [
+                            'alumno_id' => $data['alumno_id'],
+                            'curso_id' => $cursoId,
+                        ],
+                        [
+                            'valoracion_1' => $data['periodo3']['valoracion_1'] ?? null,
+                            'valoracion_2' => $data['periodo3']['valoracion_2'] ?? null,
+                            'valoracion_3' => $data['periodo3']['valoracion_3'] ?? null,
+                            'valoracion_curso' => $data['periodo3']['valoracion_curso'] ?? null,
+                            'calificacion_curso' => $data['periodo3']['calificacion_curso'] ?? null,
+                            'calificacion_sistema' => $data['periodo3']['calificacion_sistema'] ?? null,
+                        ]
+                    );
+                }
+            }
+
+            session()->flash('success', 'Calificaciones de Parcial 2 y Desempeño guardadas exitosamente');
+
+            $competenciasIds = [];
+            foreach ($request->input('alumnos') as $data) {
+                if (isset($data['competencias'])) {
+                    $competenciasIds = array_merge($competenciasIds, $data['competencias']);
+                }
+            }
+            $competenciasIds = array_unique($competenciasIds);
+            $competenciasSeleccionadas = Competencia::whereIn('id', $competenciasIds)->get();
+
+            $alumnosRelacionados = $curso->alumnos()
+                ->whereHas('user', function ($q) {
+                    $q->whereDoesntHave('roles', fn ($r) => $r->where('name', 'inhabilitado'))
+                        ->orWhere(function ($q2) {
+                            $q2->whereHas('roles', fn ($r) => $r->where('name', 'inhabilitado'))
+                                ->where('perfil', '!=', 'Sin matrícula');
+                        });
+                })
+                ->orderBy('apellidos')
+                ->get();
+
+            $alumnosCiclo = $curso->ciclo->alumnos()
+                ->whereHas('user', function ($query) {
+                    $query->where(function ($q) {
+                        $q->whereDoesntHave('roles', function ($roleQuery) {
+                            $roleQuery->where('name', 'inhabilitado');
+                        })
+                            ->orWhere(function ($subQuery) {
+                                $subQuery->whereHas('roles', function ($roleQuery) {
+                                    $roleQuery->where('name', 'inhabilitado');
+                                })->where('perfil', '!=', 'Sin matrícula');
+                            });
+                    });
+                })
+                ->orderBy('apellidos')
+                ->get();
+
+            $alumnos = $alumnosRelacionados
+                ->merge($alumnosCiclo)
+                ->unique('id')
+                ->values();
+
+            $alumnos = $alumnos->filter(function ($alumno) use ($cursoId) {
+                $cursoRelacionIds = $alumno->cursos()->pluck('curso_id');
+                if ($cursoRelacionIds->isNotEmpty() && ! $cursoRelacionIds->contains($cursoId)) {
+                    return false;
+                }
+
+                return true;
+            })->values();
+
+            $mostrarBotonDesempeno = $desempenoHabilitado;
+
+            return view('docentes.calificaciones.alumnos', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos', 'mostrarBotonDesempeno'));
+        } catch (\Throwable $e) {
+            Log::error('Error al guardar calificaciones de Parcial 2 y Desempeño', [
+                'curso_id' => $request->input('curso_id'),
+                'docente_id' => $request->input('docente_id'),
+                'message' => $e->getMessage(),
+            ]);
+
+            return back()->withInput()->with('error', 'No se pudieron guardar las notas de Parcial 2 y Desempeño por un problema técnico. Tus datos no se perdieron: corrige e inténtalo de nuevo, o contacta a soporte si el problema continúa.');
+        }
     }
 
     public function publicarPeriodoUno(Request $request)
@@ -388,6 +555,7 @@ class CalificacionController extends Controller
             'alumnos.*.observaciones' => 'nullable|string|max:1000',
         ]);
 
+        try {
         $docenteId = $request->input('docente_id');
         $docente = Docente::findOrFail($docenteId);
         $cursoId = $request->input('curso_id');
@@ -465,6 +633,15 @@ class CalificacionController extends Controller
         $mostrarBotonDesempeno = $porcentaje >= 50;
 
         return view('docentes.calificaciones.alumnos', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos', 'mostrarBotonDesempeno'));
+        } catch (\Throwable $e) {
+            Log::error('Error al guardar calificaciones de Parcial 1', [
+                'curso_id' => $request->input('curso_id'),
+                'docente_id' => $request->input('docente_id'),
+                'message' => $e->getMessage(),
+            ]);
+
+            return back()->withInput()->with('error', 'No se pudieron guardar las notas de Parcial 1 por un problema técnico. Tus datos no se perdieron: corrige e inténtalo de nuevo, o contacta a soporte si el problema continúa.');
+        }
     }
 
     public function eliminarPeriodoUno()

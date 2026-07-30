@@ -200,7 +200,10 @@
                                         <ul class="mb-0 pl-3">
                                             <li>DNI: {{ $alumno->dni }}</li>
                                             <li>{{ $alumno->email }}</li>
-                                            @if ($alumno->telefono)
+                                            @if ($alumno->alumnoB)
+                                                <li>Número: {{ $alumno->alumnoB->numero ?? '—' }}</li>
+                                                <li>Referencia: {{ $alumno->alumnoB->numero_referencia ?? '—' }}</li>
+                                            @elseif ($alumno->telefono)
                                                 <li>Tel: {{ $alumno->telefono }}</li>
                                             @endif
                                         </ul>
@@ -220,8 +223,6 @@
                                     <td>
                                         @if ($alumno->alumnoB)
                                             <span class="badge badge-success">✅ Completa</span>
-                                            <br>
-                                            <small class="text-muted">N°: {{ $alumno->alumnoB->numero ?? '—' }}</small>
                                         @else
                                             <span class="badge badge-secondary">❌ Sin matrícula</span>
                                         @endif

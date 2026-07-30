@@ -354,9 +354,8 @@
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>Nombre</th>
-                            <th>Correo</th>
-                            <th>DNI</th>
+                            <th>Docente</th>
+                            <th>Cursos asignados</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -369,9 +368,22 @@
                                     <td class="text-muted small">{{ $dc }}</td>
                                     <td>
                                         <div class="adm-uname">{{ $admin->name }} {{ $admin->apellidos }}</div>
+                                        <ul class="mb-0 small text-muted pl-3">
+                                            <li>{{ $admin->email }}</li>
+                                            <li>DNI: {{ $admin->dni }}</li>
+                                        </ul>
                                     </td>
-                                    <td><span class="small text-muted">{{ $admin->email }}</span></td>
-                                    <td><span class="small">{{ $admin->dni }}</span></td>
+                                    <td>
+                                        @if (optional($admin->docente)->cursos && $admin->docente->cursos->isNotEmpty())
+                                            <ul class="mb-0 small pl-3">
+                                                @foreach ($admin->docente->cursos as $curso)
+                                                    <li>{{ $curso->nombre }}</li>
+                                                @endforeach
+                                            </ul>
+                                        @else
+                                            <span class="small text-muted font-italic">Sin cursos asignados</span>
+                                        @endif
+                                    </td>
                                     <td style="white-space:nowrap;">
                                         <a href="{{ route('adminEdit', ['id' => $admin->id]) }}"
                                             class="adm-btn adm-btn-edit"><i class="fa fa-edit"></i></a>
@@ -393,9 +405,8 @@
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>Nombre</th>
-                            <th>Correo</th>
-                            <th>DNI</th>
+                            <th>Tutor</th>
+                            <th>Ciclos asignados</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -407,10 +418,25 @@
                                 <tr>
                                     <td class="text-muted small">{{ $tc }}</td>
                                     <td>
-                                        <div class="adm-uname">{{ $admin->apellidos }}, {{ $admin->name }}</div>
+                                        <div class="adm-uname">{{ $admin->name }} {{ $admin->apellidos }}</div>
+                                        <ul class="mb-0 small text-muted pl-3">
+                                            <li>{{ $admin->email }}</li>
+                                            <li>DNI: {{ $admin->dni }}</li>
+                                        </ul>
                                     </td>
-                                    <td><span class="small text-muted">{{ $admin->email }}</span></td>
-                                    <td><span class="small">{{ $admin->dni }}</span></td>
+                                    <td>
+                                        @if ($admin->tutorCiclos->isEmpty())
+                                            <span class="small text-muted font-italic">Sin ciclos asignados</span>
+                                        @else
+                                            <ul class="mb-0 small pl-3">
+                                                @foreach ($admin->tutorCiclos as $cicloAsignado)
+                                                    <li>
+                                                        {{ optional($cicloAsignado->programa)->nombre ? $cicloAsignado->programa->nombre . ' — ' : '' }}Ciclo {{ $cicloAsignado->nombre }}
+                                                    </li>
+                                                @endforeach
+                                            </ul>
+                                        @endif
+                                    </td>
                                     <td style="white-space:nowrap;">
                                         <a href="{{ route('adminEdit', ['id' => $admin->id]) }}"
                                             class="adm-btn adm-btn-edit"><i class="fa fa-pen"></i></a>

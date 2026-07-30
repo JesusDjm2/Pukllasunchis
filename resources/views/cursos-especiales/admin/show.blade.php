@@ -271,12 +271,6 @@
             color: #8338ec;
         }
 
-        /* Dark theme overrides */
-        .sidebar-dark .cea-item-icon.texto  { background: rgba(78,115,223,.18); color: #7aa2f7; }
-        .sidebar-dark .cea-item-icon.audio  { background: rgba(6,214,160,.15);  color: #06d6a0; }
-        .sidebar-dark .cea-item-icon.video  { background: rgba(231,74,59,.15);  color: #ff8080; }
-        .sidebar-dark .cea-item-icon.mixto  { background: rgba(131,56,236,.15); color: #b48ef5; }
-
         .cea-item-icon.ejercicio {
             background: #fff3cd;
             color: #f6c23e;
@@ -484,10 +478,30 @@
     </div>
 
     @if (session('success'))
-        <div class="alert alert-success alert-dismissible fade show mb-3">
-            <i class="fas fa-check-circle mr-2"></i>{{ session('success') }}
-            <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
-        </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Listo!',
+                    text: @json(session('success')),
+                    confirmButtonColor: '#28a745',
+                    timer: 4000,
+                    timerProgressBar: true
+                });
+            });
+        </script>
+    @endif
+    @if (session('error'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: @json(session('error')),
+                    confirmButtonColor: '#dc3545'
+                });
+            });
+        </script>
     @endif
 
     @if (! empty($alumnos) && $alumnos->isNotEmpty())
@@ -609,8 +623,9 @@
                         title="Editar Nivel">
                         <i class="fas fa-pen"></i>
                     </a>
-                    <form action="{{ route($rp . '.niveles.destroy', [$curso, $nivel]) }}" method="POST" class="d-inline"
-                        onsubmit="return confirm('¿Eliminar el nivel «{{ $nivel->nombre }}» y todo su contenido?')">
+                    <form action="{{ route($rp . '.niveles.destroy', [$curso, $nivel]) }}" method="POST"
+                        class="d-inline js-confirm-delete"
+                        data-mensaje="¿Eliminar el nivel «{{ $nivel->nombre }}» y todo su contenido?">
                         @csrf @method('DELETE')
                         <button class="cea-ico-btn delete" title="Eliminar Nivel">
                             <i class="fas fa-trash"></i>
@@ -656,7 +671,8 @@
                                     <i class="fas fa-pen"></i>
                                 </a>
                                 <form action="{{ route($rp . '.unidades.destroy', [$curso, $nivel, $unidad]) }}"
-                                    method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar esta unidad?')">
+                                    method="POST" class="d-inline js-confirm-delete"
+                                    data-mensaje="¿Eliminar esta unidad?">
                                     @csrf @method('DELETE')
                                     <button class="cea-ico-btn delete"><i class="fas fa-trash"></i></button>
                                 </form>
@@ -699,8 +715,8 @@
                                             </a>
                                             <form
                                                 action="{{ route($rp . '.lecciones.destroy', [$curso, $nivel, $unidad, $leccion]) }}"
-                                                method="POST" class="d-inline"
-                                                onsubmit="return confirm('¿Eliminar esta lección?')">
+                                                method="POST" class="d-inline js-confirm-delete"
+                                                data-mensaje="¿Eliminar esta lección?">
                                                 @csrf @method('DELETE')
                                                 <button class="cea-item-act delete"><i class="fas fa-trash"></i></button>
                                             </form>
@@ -764,8 +780,8 @@
                                             </a>
                                             <form
                                                 action="{{ route($rp . '.ejercicios.destroy', [$curso, $nivel, $unidad, $ejercicio]) }}"
-                                                method="POST" class="d-inline"
-                                                onsubmit="return confirm('¿Eliminar este ejercicio?')">
+                                                method="POST" class="d-inline js-confirm-delete"
+                                                data-mensaje="¿Eliminar este ejercicio?">
                                                 @csrf @method('DELETE')
                                                 <button class="cea-item-act delete"><i class="fas fa-trash"></i></button>
                                             </form>
@@ -803,6 +819,28 @@
 
 @push('scripts')
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script>
+        document.addEventListener('submit', function(e) {
+            const form = e.target.closest('form.js-confirm-delete');
+            if (!form || form.dataset.confirmado === '1') return;
+            e.preventDefault();
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: form.dataset.mensaje,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.dataset.confirmado = '1';
+                    form.submit();
+                }
+            });
+        });
+    </script>
     <script>
         /* ── Inscritos accordion ── */
         function toggleInscritos() {
