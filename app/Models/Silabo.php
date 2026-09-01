@@ -14,6 +14,7 @@ class Silabo extends Model
         'nombre',
         'sumilla',
         'periodo',
+        'periodo_actual_id',
         'proyecto_integrador',
         'producto_proyecto_integrador',
         'descripcion_proyecto_integrador',
@@ -48,6 +49,10 @@ class Silabo extends Model
     public function curso()
     {
         return $this->belongsTo(Curso::class);
+    }
+    public function periodoActual()
+    {
+        return $this->belongsTo(PeriodoActual::class, 'periodo_actual_id');
     }
     public function enfoques()
     {

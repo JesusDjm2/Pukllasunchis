@@ -159,7 +159,7 @@
         <div class="adm-search-wrap mt-2 mt-md-0" style="min-width:220px; flex:1; max-width:300px;">
             <i class="fas fa-search adm-search-icon fa-sm"></i>
             <input type="text" id="search-box" class="form-control form-control-sm"
-                   placeholder="Buscar usuarios...">
+                   placeholder="Buscar por nombre, DNI o correo...">
         </div>
     </div>
 
@@ -274,7 +274,10 @@
                     @if ($admin->hasRole('admin'))
                     <tr>
                         <td class="text-muted small">{{ $key + 1 }}</td>
-                        <td><div class="adm-uname">{{ $admin->name }} {{ $admin->apellidos }}</div></td>
+                        <td>
+                            <div class="adm-uname">{{ $admin->name }} {{ $admin->apellidos }}</div>
+                            <div class="adm-umeta text-muted">DNI {{ $admin->dni }}</div>
+                        </td>
                         <td><span class="small text-muted">{{ $admin->email }}</span></td>
                         <td style="white-space:nowrap;">
                             <a href="{{ route('adminEdit', ['id' => $admin->id]) }}" class="adm-btn adm-btn-edit"><i class="fa fa-pen"></i></a>
@@ -308,6 +311,7 @@
                                         {{ $admin->name }} {{ $admin->apellidos }}
                                         <span class="sa-badge ml-1"><i class="fas fa-crown fa-xs"></i> SA</span>
                                     </div>
+                                    <div class="adm-umeta text-muted">DNI {{ $admin->dni }}</div>
                                 </div>
                             </div>
                         </td>
@@ -333,7 +337,10 @@
                 @foreach ($admins as $admin)
                     @if ($admin->hasRole('adminB'))
                     <tr>
-                        <td><div class="adm-uname">{{ $admin->name }} {{ $admin->apellidos }}</div></td>
+                        <td>
+                            <div class="adm-uname">{{ $admin->name }} {{ $admin->apellidos }}</div>
+                            <div class="adm-umeta text-muted">DNI {{ $admin->dni }}</div>
+                        </td>
                         <td><span class="small text-muted">{{ $admin->email }}</span></td>
                         <td>
                             <a href="{{ route('adminEdit', ['id' => $admin->id]) }}" class="adm-btn adm-btn-edit"><i class="fa fa-pen"></i></a>
@@ -464,7 +471,12 @@
                                     <div class="adm-umeta">
                                         {{ optional($admin->programa)->nombre ?? 'N/A' }}
                                         &nbsp;·&nbsp; Ciclo {{ optional($admin->ciclo)->nombre ?? 'N/A' }}
+                                        &nbsp;·&nbsp; DNI {{ $admin->dni }}
                                         <span class="chip chip-red ml-1">{{ $admin->perfil ?? 'Inhabilitado' }}</span>
+                                    </div>
+                                    <div class="adm-umeta text-muted">ID {{ $admin->id }}
+                                        &nbsp;·&nbsp; N° {{ $admin->alumno?->numero ?? '—' }}
+                                        &nbsp;·&nbsp; Ref {{ $admin->alumno?->numero_referencia ?? '—' }}
                                     </div>
                                 </div>
                             </div>

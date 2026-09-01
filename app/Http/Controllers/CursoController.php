@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Ciclo;
 use App\Models\Competencia;
 use App\Models\Curso;
+use App\Models\Docente;
 use App\Models\PeriodoActual;
 use App\Models\Programa;
 use App\Models\SilaboPdf;
@@ -138,17 +139,6 @@ class CursoController extends Controller
 
     public function destroySilabo(Curso $curso)
     {
-        /* if ($curso->silabo) {
-            $path = public_path("docentes/silabo/{$curso->silabo}");
-            if (file_exists($path)) {
-                unlink($path);
-            }
-
-            $curso->silabo = null;
-            $curso->save();
-        }
-
-        return redirect()->back()->with('success', 'Sílabo eliminado exitosamente.'); */
         $silaboPdf = SilaboPdf::where('curso_id', $curso->id)->first();
 
         if ($silaboPdf) {
@@ -161,6 +151,20 @@ class CursoController extends Controller
 
             return redirect()->back()->with('success', 'Sílabo en PDF eliminado exitosamente.');
         }
+
+        if ($curso->silabo) {
+            $path = public_path("docentes/silabo/{$curso->silabo}");
+            if (file_exists($path)) {
+                unlink($path);
+            }
+
+            $curso->silabo = null;
+            $curso->save();
+
+            return redirect()->back()->with('success', 'Sílabo eliminado exitosamente.');
+        }
+
+        return redirect()->back()->with('error', 'No se encontró ningún sílabo para eliminar.');
     }
 
     public function store(Request $request)
@@ -324,6 +328,21 @@ class CursoController extends Controller
 
         $alumno = null;
         return view('admin.curso.show', compact('curso', 'alumnos', 'cantidadAlumnos', 'docentes', 'alumno'));
+    }
+
+    public function asignarDocentesForm(Curso $curso)
+    {
+        $docentes = Docente::orderBy('nombre')->get();
+        $asignados = $curso->docentes->pluck('id')->toArray();
+
+        return view('admin.curso.docentes', compact('curso', 'docentes', 'asignados'));
+    }
+
+    public function asignarDocentesUpdate(Request $request, Curso $curso)
+    {
+        $curso->docentes()->sync($request->input('docentes', []));
+
+        return redirect()->route('curso.index')->with('success', 'Docentes actualizados para el curso.');
     }
 
     public function destroy(Curso $curso)

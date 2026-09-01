@@ -279,23 +279,33 @@
                                             @endif
                                         </td>
                                         <td class="text-center">
-                                            <form action="{{ route('periodoactual.toggleFormulario', $p) }}" method="POST"
-                                                class="d-inline form-toggle-formulario" data-nombre="{{ $p->nombre }}"
-                                                data-habilitado="{{ $p->formulario_habilitado ? '1' : '0' }}">
-                                                @csrf
-                                                @if ($p->formulario_habilitado)
+                                            @if ($p->formulario_habilitado)
+                                                <form action="{{ route('periodoactual.toggleFormulario', $p) }}" method="POST"
+                                                    class="d-inline form-toggle-formulario" data-nombre="{{ $p->nombre }}"
+                                                    data-habilitado="1">
+                                                    @csrf
                                                     <button type="button" class="pg-btn pg-toggle-on btn-toggle-formulario"
                                                         title="Habilitado — clic para deshabilitar">
                                                         <i class="fas fa-lock-open fa-xs"></i> Habilitado
                                                     </button>
-                                                @else
+                                                </form>
+                                            @elseif ($p->actual)
+                                                <form action="{{ route('periodoactual.toggleFormulario', $p) }}" method="POST"
+                                                    class="d-inline form-toggle-formulario" data-nombre="{{ $p->nombre }}"
+                                                    data-habilitado="0">
+                                                    @csrf
                                                     <button type="button"
                                                         class="pg-btn pg-toggle-off btn-toggle-formulario"
                                                         title="Deshabilitado — clic para habilitar">
                                                         <i class="fas fa-lock fa-xs"></i> Deshabilitado
                                                     </button>
-                                                @endif
-                                            </form>
+                                                </form>
+                                            @else
+                                                <button type="button" class="pg-btn pg-toggle-off" disabled
+                                                    title="Solo el periodo actual puede habilitar el formulario de matrícula">
+                                                    <i class="fas fa-lock fa-xs"></i> Deshabilitado
+                                                </button>
+                                            @endif
                                         </td>
                                         <td>
                                             <div class="d-flex justify-content-center flex-wrap" style="gap:.3rem;">
@@ -397,6 +407,7 @@
                                     <th>Inicio</th>
                                     <th>Fin</th>
                                     <th class="text-center">Estado</th>
+                                    <th class="text-center">Form. Matrícula</th>
                                     <th class="text-center">Acciones</th>
                                 </tr>
                             </thead>
@@ -439,6 +450,35 @@
                                                 <span class="badge badge-success">Activo</span>
                                             @else
                                                 <span class="badge badge-secondary">Inactivo</span>
+                                            @endif
+                                        </td>
+                                        <td class="text-center">
+                                            @if ($p->formulario_habilitado)
+                                                <form action="{{ route('periodos.admin.ppd.toggleFormulario', $p) }}" method="POST"
+                                                    class="d-inline form-toggle-formulario" data-nombre="{{ $p->nombre }}"
+                                                    data-habilitado="1">
+                                                    @csrf
+                                                    <button type="button" class="pg-btn pg-toggle-on btn-toggle-formulario"
+                                                        title="Habilitado — clic para deshabilitar">
+                                                        <i class="fas fa-lock-open fa-xs"></i> Habilitado
+                                                    </button>
+                                                </form>
+                                            @elseif ($p->actual)
+                                                <form action="{{ route('periodos.admin.ppd.toggleFormulario', $p) }}" method="POST"
+                                                    class="d-inline form-toggle-formulario" data-nombre="{{ $p->nombre }}"
+                                                    data-habilitado="0">
+                                                    @csrf
+                                                    <button type="button"
+                                                        class="pg-btn pg-toggle-off btn-toggle-formulario"
+                                                        title="Deshabilitado — clic para habilitar">
+                                                        <i class="fas fa-lock fa-xs"></i> Deshabilitado
+                                                    </button>
+                                                </form>
+                                            @else
+                                                <button type="button" class="pg-btn pg-toggle-off" disabled
+                                                    title="Solo el periodo actual puede habilitar el formulario de matrícula">
+                                                    <i class="fas fa-lock fa-xs"></i> Deshabilitado
+                                                </button>
                                             @endif
                                         </td>
                                         <td>
@@ -489,7 +529,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="7" class="text-center"
+                                        <td colspan="8" class="text-center"
                                             style="padding:3rem 1rem; color:var(--pg-muted);">
                                             <i class="fas fa-clock fa-2x mb-2" style="opacity:.3; display:block;"></i>
                                             No hay períodos PPD registrados
@@ -562,7 +602,8 @@
                             'Los alumnos <strong>ya no podrán</strong> matricularse en:<br><strong>' +
                             nombre + '</strong>' :
                             'Los alumnos <strong>podrán matricularse</strong> en:<br><strong>' +
-                            nombre + '</strong>',
+                            nombre + '</strong>' +
+                            '<br><small class="text-muted">Solo un periodo puede tener el formulario habilitado a la vez — si hay otro habilitado, se deshabilitará automáticamente.</small>',
                         icon: habilitado ? 'warning' : 'question',
                         showCancelButton: true,
                         confirmButtonColor: habilitado ? '#6c757d' : '#28a745',

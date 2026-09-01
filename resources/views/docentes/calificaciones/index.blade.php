@@ -162,42 +162,27 @@
                                                 </div>
                                             </td>
                                             <td class="align-middle">
-                                                <form
-                                                    action="{{ route('competencias.calificar', ['docente' => $docente->id, 'curso' => $curso->id]) }}"
-                                                    method="POST">
-                                                    @csrf
-                                                    <input type="hidden" name="docente_id" value="{{ $docente->id }}">
-                                                    <input type="hidden" name="curso_id" value="{{ $curso->id }}">
-                                                    <ul class="small mb-2 pl-3">
-                                                        @foreach ($curso->competencias as $competencia)
-                                                            <li>{{ $competencia->nombre }}</li>
-                                                            <input type="hidden" name="competencias[]"
-                                                                value="{{ $competencia->id }}">
-                                                        @endforeach
-                                                    </ul>
-                                                    @if ($curso->competencias->count() <= 3 && $mostrarBoton)
-                                                        <button type="submit" class="btn btn-primary btn-sm"
-                                                            data-loading-text="Abriendo…"
-                                                            id="calificar-btn-{{ $curso->id }}">Calificar</button>
-                                                    @endif
-                                                </form>
+                                                <ul class="small mb-2 pl-3">
+                                                    @foreach ($curso->competencias as $competencia)
+                                                        <li>{{ $competencia->nombre }}</li>
+                                                    @endforeach
+                                                </ul>
+                                                @if ($curso->competencias->count() <= 3 && $mostrarBoton)
+                                                    <a href="{{ route('competencias.calificar', ['docente' => $docente->id, 'curso' => $curso->id, 'competencias' => $curso->competencias->pluck('id')->all()]) }}"
+                                                        class="btn btn-primary btn-sm"
+                                                        id="calificar-btn-{{ $curso->id }}">Calificar</a>
+                                                @endif
                                             </td>
                                             <td class="align-middle">
                                                 @if ($curso->competenciasSeleccionadas->isNotEmpty() && $mostrarBoton)
-                                                    <form
-                                                        action="{{ route('competencias.calificar', ['docente' => $docente->id, 'curso' => $curso->id]) }}"
-                                                        method="POST" id="form-calificar-{{ $curso->id }}">
-                                                        @csrf
-                                                        <ul class="small mb-2 pl-3">
-                                                            @foreach ($curso->competenciasSeleccionadas as $competencia)
-                                                                <li>{{ $competencia->nombre }}</li>
-                                                                <input type="hidden" name="competencias[]"
-                                                                    value="{{ $competencia->id }}">
-                                                            @endforeach
-                                                        </ul>
-                                                        <button type="submit" class="btn btn-primary btn-sm"
-                                                            data-loading-text="Abriendo…">Calificar</button>
-                                                    </form>
+                                                    <ul class="small mb-2 pl-3">
+                                                        @foreach ($curso->competenciasSeleccionadas as $competencia)
+                                                            <li>{{ $competencia->nombre }}</li>
+                                                        @endforeach
+                                                    </ul>
+                                                    <a href="{{ route('competencias.calificar', ['docente' => $docente->id, 'curso' => $curso->id, 'competencias' => $curso->competenciasSeleccionadas->pluck('id')->all()]) }}"
+                                                        class="btn btn-primary btn-sm"
+                                                        id="form-calificar-{{ $curso->id }}">Calificar</a>
                                                 @endif
                                             </td>
                                         </tr>
@@ -266,24 +251,11 @@
                                                     </ul>
                                                 </td>
                                                 <td class="align-middle text-center" style="min-width: 8rem;">
-                                                    <form
-                                                        action="{{ route('competencias.calificar.ppd', ['docente' => $docente->id, 'curso' => $curso->id]) }}"
-                                                        method="POST">
-                                                        @csrf
-                                                        <input type="hidden" name="docente_id" value="{{ $docente->id }}">
-                                                        <input type="hidden" name="curso_id" value="{{ $curso->id }}">
-                                                        <ul class="d-none">
-                                                            @foreach ($curso->competencias as $competencia)
-                                                                <input type="hidden" name="competencias[]"
-                                                                    value="{{ $competencia->id }}">
-                                                            @endforeach
-                                                        </ul>
-                                                        @if ($curso->competencias->count() <= 3)
-                                                            <button type="submit" class="btn btn-primary btn-sm"
-                                                                data-loading-text="Abriendo…"
-                                                                id="calificar-btn-ppd-{{ $curso->id }}">Calificar</button>
-                                                        @endif
-                                                    </form>
+                                                    @if ($curso->competencias->count() <= 3)
+                                                        <a href="{{ route('competencias.calificar.ppd', ['docente' => $docente->id, 'curso' => $curso->id, 'competencias' => $curso->competencias->pluck('id')->all()]) }}"
+                                                            class="btn btn-primary btn-sm"
+                                                            id="calificar-btn-ppd-{{ $curso->id }}">Calificar</a>
+                                                    @endif
                                                 </td>
                                             </tr>
                                         @endforeach

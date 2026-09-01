@@ -1,4 +1,9 @@
-@extends('layouts.docente')
+@php
+    $layout = auth()->user()?->hasRole('docente')
+        ? 'layouts.docente'
+        : (auth()->user()?->hasRole('super-admin') ? 'layouts.superadmin' : 'layouts.admin');
+@endphp
+@extends($layout)
 
 @section('titulo', 'Crear sílabo')
 
@@ -64,7 +69,7 @@
             'kicker' => 'Sílabos',
             'title' => 'Crear sílabo',
             'subtitle' => 'Complete el formulario del sílabo para el curso asignado.',
-            'backUrl' => route('vistaDocente', $docente->id),
+            'backUrl' => optional($docente)->id ? route('vistaDocente', $docente->id) : route('silabos.index'),
             'backLabel' => 'Mis cursos',
         ])
 
@@ -104,6 +109,7 @@
                 <!-- Información del Programa, Ciclo y Curso alineada a la derecha -->
                 <div class="col-lg-9 d-flex justify-content-end flex-column align-items-end"
                     style="color: #c78d40 !important;">
+                    <div class="font-weight-bold text-uppercase" style="font-size:.75rem; letter-spacing:.12em;">SÍLABO</div>
                     <h5 class="font-weight-bold mb-1">{{ $curso->ciclo->programa->nombre }} - Ciclo:
                         {{ $curso->ciclo->nombre }}</h5>
                     <h4 class="font-weight-bold">{{ $curso->nombre }}</h4>

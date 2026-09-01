@@ -59,7 +59,7 @@ class PeriodoActual extends Model
                     ->exists();
                 if ($exists) {
                     static::where('id', '!=', $model->id)
-                        ->update(['actual' => false]);
+                        ->update(['actual' => false, 'formulario_habilitado' => false]);
                     $model->wasReplacing = true;
                 }
             }

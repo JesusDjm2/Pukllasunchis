@@ -3,6 +3,7 @@
     $kicker = $kicker ?? 'Área docente';
     $backLabel = $backLabel ?? 'Volver';
     $competencias = $competencias ?? null;
+    $rightExtra = $rightExtra ?? null;
 @endphp
 <style>
     .docente-ui-competencias-label {
@@ -61,6 +62,38 @@
     body.dim-mode .docente-ui-competencias-label .docente-ui-competencias-hint {
         color: #6b7280;
     }
+
+    .docente-cal-legenda-mini {
+        display: inline-block;
+        text-align: left;
+        font-size: 0.72rem;
+        line-height: 1.55;
+    }
+
+    .docente-cal-legenda-titulo {
+        font-size: 0.65rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        font-weight: 700;
+        color: #858796;
+        margin-bottom: 0.15rem;
+    }
+
+    .docente-cal-legenda-item {
+        display: block;
+        font-weight: 600;
+    }
+
+    .docente-cal-legenda-item strong {
+        display: inline-block;
+        min-width: 2.6rem;
+    }
+
+    @media (max-width: 767.98px) {
+        .docente-cal-legenda-mini {
+            text-align: left;
+        }
+    }
 </style>
 <div class="card docente-ui-card docente-ui-hero mb-3 mb-md-4 docente-ui-toolbar-card">
     <div class="card-body p-3 p-md-4">
@@ -92,11 +125,16 @@
                     </div>
                 @endif
             </div>
-            @if (!empty($backUrl))
-                <div class="flex-shrink-0">
-                    <a href="{{ $backUrl }}" class="btn btn-outline-secondary btn-sm btn-block d-md-inline-block">
-                        <i class="fas fa-arrow-left mr-1"></i> {{ $backLabel }}
-                    </a>
+            @if (!empty($backUrl) || !empty($rightExtra))
+                <div class="flex-shrink-0 text-md-right">
+                    @if (!empty($backUrl))
+                        <a href="{{ $backUrl }}" class="btn btn-outline-secondary btn-sm btn-block d-md-inline-block">
+                            <i class="fas fa-arrow-left mr-1"></i> {{ $backLabel }}
+                        </a>
+                    @endif
+                    @if (!empty($rightExtra))
+                        <div class="mt-2">{!! $rightExtra !!}</div>
+                    @endif
                 </div>
             @endif
         </div>

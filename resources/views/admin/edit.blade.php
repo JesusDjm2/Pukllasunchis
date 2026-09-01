@@ -218,8 +218,8 @@
                                     <option value="Licencia"
                                         {{ old('perfil', $admin->perfil) == 'Licencia' ? 'selected' : '' }}>Licencia
                                     </option>
-                                    <option value="Reserva"
-                                        {{ old('perfil', $admin->perfil) == 'Reserva' ? 'selected' : '' }}>Reserva</option>
+                                    <option value="Retirado"
+                                        {{ old('perfil', $admin->perfil) == 'Retirado' ? 'selected' : '' }}>Retirado</option>
                                 </select>
                                 @error('perfil')
                                     <div class="invalid-feedback">{{ $message }}</div>

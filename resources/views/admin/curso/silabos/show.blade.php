@@ -85,7 +85,8 @@
                             class="img-fluid" style="max-width: 200px;">
                     </td>
                     <td style="width: 70%; vertical-align: middle; text-align: right">
-                        <h5 class="font-weight-bold mb-1">
+                        <div class="docente-ui-kicker mb-1" style="color:#c78d40;">SÍLABO</div>
+                        <h5 class="font-weight-bold mb-1 mt-0">
                             {{ $curso->ciclo->programa->nombre }} - Ciclo: {{ $curso->ciclo->nombre }}
                         </h5>
                         <h4 class="font-weight-bold cursoHead" id="cursoHead">
@@ -417,8 +418,4 @@
         </div>
     </div>
     </div>
-    <a href="{{ url()->previous() }}" class="btn btn-outline-secondary btn-sm shadow-sm boton-volver"
-        style="position: fixed; top: 120px; right: 20px; z-index: 1000;">
-        <i class="fas fa-arrow-left mr-1"></i> Volver
-    </a>
 @endsection

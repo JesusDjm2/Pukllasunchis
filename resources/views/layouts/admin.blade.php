@@ -111,6 +111,11 @@
                             <i class="fas fa-fw fa-book"></i><span>Libro de Reclamaciones</span>
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('admin.seguimiento') }}">
+                            <i class="fas fa-fw fa-hands-helping"></i><span>Seguimiento</span>
+                        </a>
+                    </li>
                 @endrole
 
                 {{-- ══════════ SECCIÓN BOLSA/COMUNICADOS (admin y/o adminB) ══════════ --}}
@@ -301,6 +306,7 @@
                                 <i class="fas fa-moon" id="darkModeIcon"></i>
                             </button>
                         </li>
+                        @include('docentes.partials.notificaciones-dropdown')
                         <div class="topbar-divider d-none d-sm-block"></div>
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle d-flex align-items-center" href="#"
@@ -426,6 +432,7 @@
             }
         })();
     </script>
+    @stack('scripts')
 </body>
 
 </html>

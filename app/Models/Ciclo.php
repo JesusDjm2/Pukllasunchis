@@ -46,6 +46,16 @@ class Ciclo extends Model
         return $this->hasMany(Incidencia::class);
     }
 
+    public function tutorias()
+    {
+        return $this->hasMany(Tutoria::class);
+    }
+
+    public function sugerencias()
+    {
+        return $this->hasMany(Sugerencia::class);
+    }
+
     public function estandares()
     {
         return $this->belongsToMany(Estandares::class, 'ciclo_competencia_estandar')
@@ -99,7 +109,13 @@ class Ciclo extends Model
             'IX' => 9,
             'X' => 10,
         ];
-        return $map[strtoupper(trim($this->nombre))] ?? 999; // default grande por si no calza
+        return $map[$this->numeroRomano] ?? 999; // default grande por si no calza
+    }
+
+    // Algunos ciclos (p. ej. de PPD) ya guardan el nombre como "Ciclo I", otros solo "I"
+    public function getNumeroRomanoAttribute()
+    {
+        return preg_replace('/^CICLO\s+/', '', strtoupper(trim($this->nombre)));
     }
 
 }

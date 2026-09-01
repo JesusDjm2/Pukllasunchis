@@ -161,7 +161,7 @@
                 <div class="adm-search-wrap mt-2 mt-md-0" style="min-width:220px; flex:1; max-width:300px;">
                     <i class="fas fa-search adm-search-icon fa-sm"></i>
                     <input type="text" id="search-box" class="form-control form-control-sm"
-                        placeholder="Buscar usuarios...">
+                        placeholder="Buscar por nombre, DNI o correo...">
                 </div>
             </div>
 
@@ -300,6 +300,7 @@
                                     <td class="text-muted small">{{ $key + 1 }}</td>
                                     <td>
                                         <div class="adm-uname">{{ $admin->name }} {{ $admin->apellidos }}</div>
+                                        <div class="adm-umeta text-muted">DNI {{ $admin->dni }}</div>
                                     </td>
                                     <td><span class="small text-muted">{{ $admin->email }}</span></td>
                                     <td style="white-space:nowrap;">
@@ -331,6 +332,7 @@
                                 <tr>
                                     <td>
                                         <div class="adm-uname">{{ $admin->name }} {{ $admin->apellidos }}</div>
+                                        <div class="adm-umeta text-muted">DNI {{ $admin->dni }}</div>
                                     </td>
                                     <td><span class="small text-muted">{{ $admin->email }}</span></td>
                                     <td>
@@ -487,8 +489,13 @@
                                                 <div class="adm-umeta">
                                                     {{ optional($admin->programa)->nombre ?? 'N/A' }}
                                                     &nbsp;·&nbsp; Ciclo {{ optional($admin->ciclo)->nombre ?? 'N/A' }}
+                                                    &nbsp;·&nbsp; DNI {{ $admin->dni }}
                                                     <span
                                                         class="chip chip-red ml-1">{{ $admin->perfil ?? 'Inhabilitado' }}</span>
+                                                </div>
+                                                <div class="adm-umeta text-muted">ID {{ $admin->id }}
+                                                    &nbsp;·&nbsp; N° {{ $admin->alumno?->numero ?? '—' }}
+                                                    &nbsp;·&nbsp; Ref {{ $admin->alumno?->numero_referencia ?? '—' }}
                                                 </div>
                                             </div>
                                         </div>

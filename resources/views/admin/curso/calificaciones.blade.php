@@ -63,49 +63,115 @@
             font-weight: 500;
             margin-bottom: 0;
         }
+
+        /* ── Cabecera del curso: datos + competencias integradas ── */
+        .curso-cal-header {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: .5rem;
+            padding: 1rem 1.25rem;
+        }
+        .curso-cal-competencias-label {
+            display: block;
+            font-size: .7rem;
+            letter-spacing: .03em;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: #858796;
+            margin-bottom: .4rem;
+        }
+        .curso-cal-competencias-label .hint {
+            text-transform: none;
+            font-weight: 500;
+            letter-spacing: normal;
+            color: #a7abba;
+        }
+        .curso-cal-competencias {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .45rem;
+        }
+        .curso-cal-competencias a {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            padding: .35rem .75rem;
+            border-radius: 999px;
+            background: #eef1fb;
+            border: 1px solid rgba(78, 115, 223, .25);
+            color: #2e3f8f !important;
+            font-size: .8rem;
+            font-weight: 600;
+            text-decoration: none !important;
+            cursor: pointer;
+            transition: transform .15s ease, background-color .15s ease, box-shadow .15s ease;
+        }
+        .curso-cal-competencias a:hover,
+        .curso-cal-competencias a:focus {
+            background: #dde3fa;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(78, 115, 223, .28);
+            outline: none;
+        }
+        .curso-cal-competencias a i {
+            color: #6f80c9;
+            font-size: .85em;
+        }
     </style>
     
-    <div class="container-fluid bg-light"> 
-        <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3"
-            style="border-bottom: 1px dashed #80808078">
-            <h4 style="font-size: 20px" class="font-weight-bold text-primary">{{ $curso->nombre }}<br> 
-                <small class="text-secondary">({{ $curso->ciclo->programa->nombre }} - {{ $curso->ciclo->nombre }}) <br>
-                    <span class="text-primary">Docente: {{ $docente->nombre }} </span></small>
-            </h4>            
-            <div class="d-flex align-items-center" style="gap:8px;">
-                @php $esPPDHeader = str_contains($curso->ciclo->programa->nombre ?? '', 'PPD'); @endphp
-                <form action="{{ $esPPDHeader
-                        ? route('calificaciones.exportar.ppd', [$docente->id, $curso->id])
-                        : route('calificaciones.exportar', [$docente->id, $curso->id]) }}"
-                    method="GET">
-                    @foreach ($competenciasSeleccionadas as $comp)
-                        <input type="hidden" name="competencias[]" value="{{ $comp->id }}">
-                    @endforeach
-                    <button type="submit" class="btn btn-sm btn-success shadow-sm">
-                        <i class="fa fa-file-excel fa-sm mr-1"></i> Exportar Excel
-                    </button>
-                </form>
-                <a href="{{ url()->previous() }}" class="btn btn-sm btn-secondary shadow-sm">
-                    <i class="fa fa-arrow-left fa-sm mr-1"></i> Volver
-                </a>
+    <div class="container-fluid bg-light">
+        <div class="curso-cal-header mb-4">
+            <div class="d-flex flex-column flex-lg-row align-items-lg-start justify-content-lg-between" style="gap: 1rem;">
+                <div class="flex-grow-1 min-w-0">
+                    <h4 style="font-size: 20px" class="font-weight-bold text-primary mb-1">{{ $curso->nombre }}</h4>
+                    <div class="text-secondary small mb-0">
+                        {{ $curso->ciclo->programa->nombre }} &mdash; {{ $curso->ciclo->nombre }}
+                        <span class="mx-1">·</span>
+                        <span class="text-primary">Docente: {{ $docente->nombre }}</span>
+                    </div>
+
+                    @if ($competenciasSeleccionadas->isNotEmpty())
+                        <div class="mt-3">
+                            <span class="curso-cal-competencias-label">
+                                Competencias a calificar
+                                <span class="hint">&mdash; toca una para ver el detalle</span>
+                            </span>
+                            <div class="curso-cal-competencias">
+                                @foreach ($competenciasSeleccionadas as $competencia)
+                                    <a href="javascript:void(0)"
+                                        data-id="{{ $competencia->id }}" data-nombre="{{ $competencia->nombre }}"
+                                        data-descripcion="{{ addslashes($competencia->descripcion) }}"
+                                        data-capacidades="{!! addslashes($competencia->capacidades) !!}"
+                                        onclick="openModal(this)" title="Toca para ver la descripción completa">
+                                        {{ $competencia->nombre }}
+                                        <i class="fas fa-question-circle"></i>
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+                </div>
+
+                <div class="d-flex align-items-center flex-shrink-0" style="gap:8px;">
+                    @php $esPPDHeader = str_contains($curso->ciclo->programa->nombre ?? '', 'PPD'); @endphp
+                    <form action="{{ $esPPDHeader
+                            ? route('calificaciones.exportar.ppd', [$docente->id, $curso->id])
+                            : route('calificaciones.exportar', [$docente->id, $curso->id]) }}"
+                        method="GET">
+                        @foreach ($competenciasSeleccionadas as $comp)
+                            <input type="hidden" name="competencias[]" value="{{ $comp->id }}">
+                        @endforeach
+                        <button type="submit" class="btn btn-sm btn-success shadow-sm">
+                            <i class="fa fa-file-excel fa-sm mr-1"></i> Exportar Excel
+                        </button>
+                    </form>
+                    <a href="{{ url()->previous() }}" class="btn btn-sm btn-secondary shadow-sm">
+                        <i class="fa fa-arrow-left fa-sm mr-1"></i> Volver
+                    </a>
+                </div>
             </div>
         </div>
-        
-        <!-- Modal de competencias (se mantiene porque es solo información) -->
-        <div class="col-lg-12 text-center mb-2">
-            @foreach ($competenciasSeleccionadas as $competencia)
-                <a class="text-center align-middle" style="font-size: 16px; cursor: pointer;"
-                    data-id="{{ $competencia->id }}" data-nombre="{{ $competencia->nombre }}"
-                    data-descripcion="{{ addslashes($competencia->descripcion) }}"
-                    data-capacidades="{!! addslashes($competencia->capacidades) !!}" onclick="openModal(this)">
-                    {{ $competencia->nombre }}
-                </a>
-                @if (!$loop->last)
-                    |
-                @endif
-            @endforeach
-        </div>
-        
+
         <div class="row bg-white">
             <div class="col-12">
                 @if (Session::has('success'))
@@ -208,9 +274,11 @@
                                         <td class="align-middle text-center">{{ $index + 1 }}</td>
                                         <td class="align-middle text-left">
                                             <div>{{ $alumno->apellidos }}, {{ $alumno->name }}</div>
-                                            <div class="mt-1">
+                                            <div class="mt-1 text-center">
                                                 @if ($alumno->es_inhabilitado)
-                                                    <span class="badge badge-danger">Inhabilitado</span>
+                                                    <span class="badge badge-danger">
+                                                        Inhabilitado{{ $alumno->perfil ? ': '.$alumno->perfil : '' }}
+                                                    </span>
                                                 @endif
                                                 @unless ($alumno->tiene_ppd)
                                                     <span class="badge badge-warning text-dark">Sin matrícula</span>
@@ -337,12 +405,22 @@
                                                     </td>
                                                     <td rowspan="3" class="align-middle text-center font-weight-bold"
                                                         style="border-left: #165874 1px solid; border-bottom: #165874 1px solid">
-                                                        {{ $alumno->apellidos }}, {{ $alumno->nombres }}
-                                                        @if ($alumno->ciclo_id !== $curso->ciclo_id)
-                                                            <span class="badge badge-info">Ciclo {{ $alumno->ciclo->nombre }}</span>
-                                                        @endif
+                                                        <div>
+                                                            {{ $alumno->apellidos }}, {{ $alumno->nombres }}
+                                                            @if ($alumno->ciclo_id !== $curso->ciclo_id)
+                                                                <span class="badge badge-info">Ciclo {{ $alumno->ciclo->nombre }}</span>
+                                                            @endif
+                                                        </div>
                                                         @if($alumno->es_inhabilitado)
-                                                            <span class="badge badge-danger">Inhabilitado</span>
+                                                            <div class="mt-1">
+                                                                <span class="badge badge-danger">
+                                                                    Inhabilitado{{ $alumno->user?->perfil ? ': '.$alumno->user->perfil : '' }}
+                                                                </span>
+                                                            </div>
+                                                        @elseif($alumno->no_matriculado)
+                                                            <div class="mt-1">
+                                                                <span class="badge badge-warning">No matriculado</span>
+                                                            </div>
                                                         @endif
                                                     </td>
                                                 @endif

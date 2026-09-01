@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <dwsync>
-<file name="NotificacionRegistro.php" server="ftp.eesppukllasunchis.edu.pe" local="134241985176889707" remote="134288147400000000" Dst="0" />
+<file name="NotificacionRegistro.php" server="ftp.eesppukllasunchis.edu.pe" local="134312083053341044" remote="134312302200000000" Dst="0" />
 <file name="ConfirmacionInscripcionMail.php" server="ftp.eesppukllasunchis.edu.pe" local="134241985221998531" remote="134288147400000000" Dst="0" />
 <file name="ConfirmacionInscripcionPpdMail.php" server="ftp.eesppukllasunchis.edu.pe" local="134241985232429594" remote="134288147400000000" Dst="0" />
 <file name="IncidenciaMail.php" server="ftp.eesppukllasunchis.edu.pe" local="134241985199872034" remote="134288147400000000" Dst="0" />
 <file name="ReclamoMail.php" server="ftp.eesppukllasunchis.edu.pe" local="134287950290611522" remote="134288139000000000" Dst="0" />
+<file name="SugerenciaMail.php" server="ftp.eesppukllasunchis.edu.pe" local="134317174130899862" remote="134317502400000000" Dst="0" />
+<file name="TutoriaMail.php" server="ftp.eesppukllasunchis.edu.pe" local="134317174043272480" remote="134317502400000000" Dst="0" />
 </dwsync>

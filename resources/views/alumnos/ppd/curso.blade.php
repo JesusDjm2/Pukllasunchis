@@ -1,17 +1,20 @@
 @extends('layouts.profesionalizacion')
 @section('contenido')
     <div class="container-fluid bg-white">
-        <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3 pb-2"
-            style="border-bottom: 1px dashed #80808078">
-            <h5 class="mb-0 text-uppercase font-weight-bold">Detalles del curso</h5>
-            <a href="javascript:history.go(-1)" class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm">
-                Volver
+        <div class="ppd-page-header">
+            <div>
+                <span class="ppd-eyebrow"><i class="fa fa-book-open mr-1"></i>Curso</span>
+                <h5 class="ppd-page-title text-uppercase">Detalles del curso</h5>
+            </div>
+            <a href="javascript:history.go(-1)" class="btn btn-sm btn-ppd-volver">
+                <i class="fa fa-arrow-left"></i> Volver
             </a>
         </div>
         <div class="row pb-4">
             <div class="col-lg-12">
+              <div class="table-responsive">
                 <table class="table table-hover">
-                    <tr style="background: #80808030">
+                    <tr class="bg-light">
                         <td class="font-weight-bold">Nombre del curso:</td>
                         <td>{{ $curso->nombre }}</td>
                     </tr>
@@ -42,7 +45,25 @@
                     <tr>
                         <td class="font-weight-bold">Sílabo:</td>
                         <td>
-                            @if ($curso->silabo)
+                            @php
+                                $periodoActualSilaboV = \App\Models\PeriodoActual::where('actual', true)->first();
+                                $silaboEstructuradoV = $curso->silabos->firstWhere('periodo_actual_id', $periodoActualSilaboV->id ?? null)
+                                    ?? $curso->silabos->firstWhere('periodo', $periodoActualSilaboV->nombre ?? null);
+                                $silaboPdfV = $curso->silabosPdf->where('periodo_actual_id', $periodoActualSilaboV->id ?? null)->first();
+                            @endphp
+                            @if ($silaboEstructuradoV)
+                                <a class="btn btn-success btn-sm d-inline-block"
+                                    href="{{ route('silabo.pdf', $silaboEstructuradoV->id) }}" target="_blank"
+                                    title="Ver Sílabo">
+                                    Ver sílabo <i class="fa fa-eye fa-sm"></i>
+                                </a>
+                            @elseif ($silaboPdfV)
+                                <a class="btn btn-success btn-sm d-inline-block"
+                                    href="{{ asset('docentes/silabo/' . $silaboPdfV->pdf) }}" target="_blank"
+                                    title="Ver Sílabo">
+                                    Ver sílabo <i class="fa fa-eye fa-sm"></i>
+                                </a>
+                            @elseif ($curso->silabo)
                                 <a class="btn btn-success btn-sm d-inline-block"
                                     href="{{ asset('docentes/silabo/' . $curso->silabo) }}" target="_blank"
                                     title="Ver Sílabo">
@@ -105,6 +126,7 @@
                         </td>
                     </tr>
                 </table>
+              </div>
             </div>
         </div>
     </div>

@@ -45,6 +45,12 @@ return [
         'token' => env('APIPERU_TOKEN'),
     ],
 
+    'google_analytics' => [
+        // ID de medición de Google Analytics 4 (formato G-XXXXXXXXXX).
+        // Configura GOOGLE_ANALYTICS_ID en .env para activar el tracking del sitio público.
+        'id' => env('GOOGLE_ANALYTICS_ID'),
+    ],
+
     'notificaciones' => [
         // Destinatarios internos para avisos de matrícula y registro.
         // Configura NOTIF_EMAIL_ADMIN y NOTIF_EMAIL_COBRANZAS en .env

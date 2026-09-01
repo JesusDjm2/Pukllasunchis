@@ -289,6 +289,10 @@
                                                 title="Editar">
                                                 <i class="fas fa-pen fa-xs"></i>
                                             </a>
+                                            <a href="{{ route('curso.docentes.form', $curso->id) }}" class="pg-btn pg-btn-cycle"
+                                                title="Asignar docentes">
+                                                <i class="fas fa-chalkboard-teacher fa-xs"></i>
+                                            </a>
                                             <form action="{{ route('curso.destroy', $curso->id) }}" method="POST"
                                                 class="d-inline" onsubmit="return confirm('¿Eliminar este curso?')">
                                                 @csrf @method('DELETE')
@@ -361,6 +365,9 @@
                                                     class="fas fa-eye fa-xs"></i></a>
                                             <a href="{{ route('curso.edit', $curso->id) }}" class="pg-btn pg-btn-edit"><i
                                                     class="fas fa-pen fa-xs"></i></a>
+                                            <a href="{{ route('curso.docentes.form', $curso->id) }}" class="pg-btn pg-btn-cycle"
+                                                title="Asignar docentes"><i
+                                                    class="fas fa-chalkboard-teacher fa-xs"></i></a>
                                             <form action="{{ route('curso.destroy', $curso->id) }}" method="POST"
                                                 class="d-inline" onsubmit="return confirm('¿Eliminar este curso?')">
                                                 @csrf @method('DELETE')
@@ -432,6 +439,9 @@
                                                     class="fas fa-eye fa-xs"></i></a>
                                             <a href="{{ route('curso.edit', $curso->id) }}" class="pg-btn pg-btn-edit"><i
                                                     class="fas fa-pen fa-xs"></i></a>
+                                            <a href="{{ route('curso.docentes.form', $curso->id) }}" class="pg-btn pg-btn-cycle"
+                                                title="Asignar docentes"><i
+                                                    class="fas fa-chalkboard-teacher fa-xs"></i></a>
                                             <form action="{{ route('curso.destroy', $curso->id) }}" method="POST"
                                                 class="d-inline" onsubmit="return confirm('¿Eliminar este curso?')">
                                                 @csrf @method('DELETE')
@@ -503,6 +513,9 @@
                                                     class="fas fa-eye fa-xs"></i></a>
                                             <a href="{{ route('curso.edit', $curso->id) }}" class="pg-btn pg-btn-edit"><i
                                                     class="fas fa-pen fa-xs"></i></a>
+                                            <a href="{{ route('curso.docentes.form', $curso->id) }}" class="pg-btn pg-btn-cycle"
+                                                title="Asignar docentes"><i
+                                                    class="fas fa-chalkboard-teacher fa-xs"></i></a>
                                             <form action="{{ route('curso.destroy', $curso->id) }}" method="POST"
                                                 class="d-inline" onsubmit="return confirm('¿Eliminar este curso?')">
                                                 @csrf @method('DELETE')
@@ -574,6 +587,9 @@
                                                     class="fas fa-eye fa-xs"></i></a>
                                             <a href="{{ route('curso.edit', $curso->id) }}" class="pg-btn pg-btn-edit"><i
                                                     class="fas fa-pen fa-xs"></i></a>
+                                            <a href="{{ route('curso.docentes.form', $curso->id) }}" class="pg-btn pg-btn-cycle"
+                                                title="Asignar docentes"><i
+                                                    class="fas fa-chalkboard-teacher fa-xs"></i></a>
                                             <form action="{{ route('curso.destroy', $curso->id) }}" method="POST"
                                                 class="d-inline" onsubmit="return confirm('¿Eliminar este curso?')">
                                                 @csrf @method('DELETE')

@@ -3,7 +3,7 @@
 @section('contenido')
     @php
         $qBase = array_filter(
-            ['search' => request('search'), 'search_page' => request('search_page')],
+            ['search' => request('search'), 'search_page' => request('search_page'), 'estado_matricula' => request('estado_matricula')],
             fn($v) => $v !== null && $v !== '',
         );
         $exportHidden = array_filter(
@@ -49,6 +49,14 @@
                         </a>
                     </div>
                 @endif
+                @if (Session::has('error'))
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{ Session::get('error') }}
+                        <a type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </a>
+                    </div>
+                @endif
             </div>
 
             {{-- Filtros académicos --}}
@@ -60,7 +68,7 @@
                                 <i class="fas fa-filter mr-1"></i>
                                 Filtros académicos
                             </h6>
-                            @if (request()->filled('programa_id') || request()->filled('ciclo_id') || request()->filled('search'))
+                            @if (request()->filled('programa_id') || request()->filled('ciclo_id') || request()->filled('search') || request()->filled('estado_matricula'))
                                 <a href="{{ route('alumnosppd') }}" class="btn btn-sm btn-outline-secondary">
                                     Limpiar filtros
                                 </a>
@@ -68,22 +76,91 @@
                         </div>
                         <p class="small text-muted mb-2 mb-md-3">Programa y ciclo se aplican en el servidor; la tabla
                             sigue agrupada por ciclo.</p>
-                        <div class="mb-2">
-                            <span class="small font-weight-bold text-secondary mr-2 d-block d-sm-inline">Programa</span>
-                            <div class="btn-group flex-wrap mt-1" role="group" aria-label="Filtrar por programa">
-                                <a href="{{ route('alumnosppd', $qBase) }}"
-                                    class="btn btn-sm {{ !request()->filled('programa_id') ? 'btn-primary' : 'btn-outline-primary' }}">
-                                    Todos
-                                </a>
-                                @foreach ($programasFiltro as $prog)
-                                    @php $qProg = array_merge($qBase, ['programa_id' => $prog->id]); @endphp
-                                    <a href="{{ route('alumnosppd', $qProg) }}"
-                                        class="btn btn-sm {{ (int) request('programa_id') === (int) $prog->id ? 'btn-primary' : 'btn-outline-primary' }}">
-                                        {{ \Illuminate\Support\Str::limit($prog->nombre, 42) }}
+                        <div class="mb-3">
+                            <span class="small font-weight-bold text-secondary mr-2 d-block d-sm-inline">
+                                <i class="fas fa-calendar-alt mr-1"></i>Periodo de matrícula
+                            </span>
+                            <div class="btn-group flex-wrap mt-1" role="group">
+                                @foreach ($todosLosPeriodosPpd as $periodo)
+                                    @php $qPer = array_merge($qBase, ['periodo_id' => $periodo->id]); @endphp
+                                    <a href="{{ route('alumnosppd', $qPer) }}"
+                                        class="btn btn-sm {{ (int) $periodoFiltroId === (int) $periodo->id ? 'btn-dark' : 'btn-outline-dark' }}">
+                                        {{ $periodo->nombre }}
+                                        @if ($periodo->actual)
+                                            <span class="badge badge-success ml-1">Actual</span>
+                                        @endif
                                     </a>
                                 @endforeach
                             </div>
                         </div>
+                        <div class="d-flex flex-wrap justify-content-between align-items-start filtros-programa-matricula">
+                            <div class="mb-2 mr-3 flex-grow-1" style="min-width:220px;">
+                                <span class="small font-weight-bold text-secondary mr-2 d-block d-sm-inline">Programa</span>
+                                <div class="btn-group flex-wrap mt-1" role="group" aria-label="Filtrar por programa">
+                                    <a href="{{ route('alumnosppd', $qBase) }}"
+                                        class="btn btn-sm {{ !request()->filled('programa_id') ? 'btn-primary' : 'btn-outline-primary' }}">
+                                        Todos
+                                    </a>
+                                    @foreach ($programasFiltro as $prog)
+                                        @php $qProg = array_merge($qBase, ['programa_id' => $prog->id]); @endphp
+                                        <a href="{{ route('alumnosppd', $qProg) }}"
+                                            class="btn btn-sm {{ (int) request('programa_id') === (int) $prog->id ? 'btn-primary' : 'btn-outline-primary' }}">
+                                            {{ \Illuminate\Support\Str::limit($prog->nombre, 42) }}
+                                        </a>
+                                    @endforeach
+                                </div>
+                            </div>
+                            @if ($periodoFiltroId)
+                                <div class="mb-2 text-lg-right">
+                                    <span class="small font-weight-bold text-secondary mr-2 d-block d-sm-inline">
+                                        <i class="fas fa-user-check mr-1"></i>Estado de matrícula
+                                    </span>
+                                    @php
+                                        $qEstadoTodos = array_merge($qBase, ['periodo_id' => $periodoFiltroId]);
+                                        unset($qEstadoTodos['estado_matricula']);
+                                        $qEstadoMatriculados = array_merge($qBase, ['periodo_id' => $periodoFiltroId, 'estado_matricula' => 'matriculados']);
+                                        $qEstadoNoMatriculados = array_merge($qBase, ['periodo_id' => $periodoFiltroId, 'estado_matricula' => 'no_matriculados']);
+                                    @endphp
+                                    <div class="btn-group flex-wrap mt-1" role="group">
+                                        <a href="{{ route('alumnosppd', $qEstadoTodos) }}"
+                                            class="btn btn-sm {{ !$estadoMatricula ? 'btn-secondary' : 'btn-outline-secondary' }}">
+                                            Todos
+                                            @if ($totalListadoBase !== null)
+                                                <span class="badge badge-light text-dark ml-1">{{ $totalListadoBase }}</span>
+                                            @endif
+                                        </a>
+                                        <a href="{{ route('alumnosppd', $qEstadoMatriculados) }}"
+                                            class="btn btn-sm {{ $estadoMatricula === 'matriculados' ? 'btn-success' : 'btn-outline-success' }}">
+                                            Matriculados
+                                            @if ($totalMatriculadosBase !== null)
+                                                <span class="badge badge-light text-dark ml-1">{{ $totalMatriculadosBase }}</span>
+                                            @endif
+                                        </a>
+                                        <a href="{{ route('alumnosppd', $qEstadoNoMatriculados) }}"
+                                            class="btn btn-sm {{ $estadoMatricula === 'no_matriculados' ? 'btn-warning' : 'btn-outline-warning' }}">
+                                            Faltan matricularse
+                                            @if ($totalListadoBase !== null && $totalMatriculadosBase !== null)
+                                                <span class="badge badge-light text-dark ml-1">{{ $totalListadoBase - $totalMatriculadosBase }}</span>
+                                            @endif
+                                        </a>
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+                        @if ($periodoFiltroId && $totalListadoBase)
+                            @php $pctMatriculados = $totalListadoBase > 0 ? round(($totalMatriculadosBase / $totalListadoBase) * 100) : 0; @endphp
+                            <div class="mb-3">
+                                <div class="progress" style="height: 6px;">
+                                    <div class="progress-bar bg-success" role="progressbar"
+                                        style="width: {{ $pctMatriculados }}%"
+                                        aria-valuenow="{{ $pctMatriculados }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <small class="text-muted d-block mt-1">
+                                    {{ $totalMatriculadosBase }} de {{ $totalListadoBase }} matriculados ({{ $pctMatriculados }}%)
+                                    para {{ $periodoActualPpd && (int) $periodoActualPpd->id === (int) $periodoFiltroId ? 'el periodo actual' : 'el periodo seleccionado' }}.
+                                </small>
+                            </div>
+                        @endif
                         @if ($ciclosFiltro->isNotEmpty())
                             <div class="mb-0">
                                 <span class="small font-weight-bold text-secondary mr-2 d-block d-sm-inline">Ciclo</span>
@@ -153,7 +230,8 @@
                                 <th scope="col">N°</th>
                                 <th scope="col">Nombre</th>
                                 <th scope="col">Detalles académicos</th>
-                                <th scope="col">Matrícula</th>
+                                <th scope="col">Ficha Técnica</th>
+                                <th scope="col">Voucher</th>
                                 <th scope="col">Acciones</th>
                             </tr>
                         </thead>
@@ -179,7 +257,7 @@
                                         $nTotalCiclo = optional($totalesPorCicloId->get($alumno->ciclo_id))->total;
                                     @endphp
                                     <tr class="table-active">
-                                        <td colspan="5" class="py-2">
+                                        <td colspan="6" class="py-2">
                                             <strong>{{ $grupo }}</strong>
                                             <span class="badge badge-secondary ml-2">
                                                 {{ $nGrupo }} {{ $nGrupo === 1 ? 'alumno' : 'alumnos' }}
@@ -197,6 +275,17 @@
                                     <td class="text-muted font-weight-bold">{{ $n }}</td>
                                     <td>
                                         <strong>{{ $alumno->apellidos }}, {{ $alumno->name }}</strong>
+                                        @if (($periodoFiltroId ?? null) && $alumno->alumnoB)
+                                            @if ($alumno->alumnoB->matriculas->isNotEmpty())
+                                                <span class="badge badge-success ml-1 align-middle" title="Matriculado en el período filtrado">
+                                                    <i class="fas fa-check-circle fa-xs"></i> Matriculado
+                                                </span>
+                                            @else
+                                                <span class="badge badge-secondary ml-1 align-middle" title="Aún no completa su matrícula en el período filtrado">
+                                                    <i class="fas fa-exclamation-circle fa-xs"></i> No matriculado
+                                                </span>
+                                            @endif
+                                        @endif
                                         <ul class="mb-0 pl-3">
                                             <li>DNI: {{ $alumno->dni }}</li>
                                             <li>{{ $alumno->email }}</li>
@@ -222,9 +311,49 @@
                                     </td>
                                     <td>
                                         @if ($alumno->alumnoB)
-                                            <span class="badge badge-success">✅ Completa</span>
+                                            <span class="badge badge-success" title="El alumno tiene su ficha técnica (perfil PPD) registrada">✅ Completa</span>
                                         @else
-                                            <span class="badge badge-secondary">❌ Sin matrícula</span>
+                                            <span class="badge badge-secondary" title="Falta registrar la ficha técnica (perfil PPD) del alumno">❌ Sin ficha</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @php $matriculaVoucherPpd = $alumno->alumnoB?->matriculas->first(); @endphp
+                                        @if ($matriculaVoucherPpd)
+                                            <div class="small font-weight-bold mb-1">{{ $matriculaVoucherPpd->comprobante ?? '—' }}</div>
+                                            @if ($matriculaVoucherPpd->voucher_imagen)
+                                                <a href="{{ asset('vouchers/ppd/'.$matriculaVoucherPpd->voucher_imagen) }}" target="_blank"
+                                                    class="small d-block mb-1">
+                                                    <i class="fa fa-receipt fa-xs mr-1"></i>Ver voucher
+                                                </a>
+                                            @endif
+                                            <form action="{{ route('matriculasppd.verificarVoucher', $matriculaVoucherPpd->id) }}"
+                                                method="POST" class="d-inline js-toggle-verificado">
+                                                @csrf
+                                                <label class="mb-1 small" style="cursor:pointer;">
+                                                    <input type="checkbox" class="js-verificado-checkbox"
+                                                        {{ $matriculaVoucherPpd->voucher_verificado ? 'checked' : '' }}>
+                                                    Verificado
+                                                </label>
+                                            </form>
+                                            <form action="{{ route('matriculasppd.enviarFicha', $matriculaVoucherPpd->id) }}"
+                                                method="POST" class="d-inline js-enviar-ficha"
+                                                data-nombre="{{ $alumno->apellidos }}, {{ $alumno->name }}"
+                                                data-reenvio="{{ $matriculaVoucherPpd->ficha_enviada_at ? '1' : '0' }}">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm {{ $matriculaVoucherPpd->ficha_enviada_at ? 'btn-outline-primary' : 'btn-primary' }} d-block"
+                                                    {{ $matriculaVoucherPpd->voucher_verificado ? '' : 'disabled' }}
+                                                    data-title-enabled="Enviar notificación de matrícula completada al alumno"
+                                                    data-title-disabled="Marca el voucher como verificado primero"
+                                                    title="{{ $matriculaVoucherPpd->voucher_verificado ? 'Enviar notificación de matrícula completada al alumno' : 'Marca el voucher como verificado primero' }}">
+                                                    <i class="fa {{ $matriculaVoucherPpd->ficha_enviada_at ? 'fa-redo' : 'fa-paper-plane' }} fa-xs"></i>
+                                                    {{ $matriculaVoucherPpd->ficha_enviada_at ? 'Reenviar correo' : 'Confirmar matrícula' }}
+                                                </button>
+                                            </form>
+                                            @if ($matriculaVoucherPpd->ficha_enviada_at)
+                                                <span class="text-muted small d-block" title="Última vez enviado">
+                                                    <i class="fa fa-check-double fa-xs"></i> Enviada el {{ $matriculaVoucherPpd->ficha_enviada_at->format('d/m/Y H:i') }}
+                                                </span>
+                                            @endif
                                         @endif
                                     </td>
                                     <td>
@@ -243,6 +372,21 @@
                                                 <i class="fa fa-edit fa-sm"></i>
                                             </a>
                                         @endif
+                                        @role('super-admin')
+                                            @php $matriculaPpdActual = $alumno->alumnoB?->matriculas->first(); @endphp
+                                            @if ($matriculaPpdActual)
+                                                <form action="{{ route('matriculasppd.quitar', $matriculaPpdActual->id) }}"
+                                                      method="POST" class="d-inline js-quitar-matricula-ppd"
+                                                      data-nombre="{{ $alumno->apellidos }}, {{ $alumno->name }}">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-sm btn-warning"
+                                                        title="Quitar matrícula del período actual (solo super-admin)">
+                                                        <i class="fa fa-user-times fa-sm"></i>
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        @endrole
                                         <button type="button" class="btn btn-sm btn-danger"
                                             onclick="confirmarEliminar('{{ route('adminDestroy', ['id' => $alumno->id]) }}', '{{ addslashes($alumno->apellidos . ', ' . $alumno->name) }}')"
                                             title="Eliminar">
@@ -253,7 +397,7 @@
                                 @php $n++; @endphp
                             @empty
                                 <tr>
-                                    <td colspan="5" class="text-center text-muted py-4">No se encontraron alumnos PPD.</td>
+                                    <td colspan="6" class="text-center text-muted py-4">No se encontraron alumnos PPD.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -426,6 +570,128 @@
             document.getElementById('deleteNombrePpd').textContent = nombre;
             $('#confirmDeletePpdModal').modal('show');
         }
+
+        document.querySelectorAll('.js-quitar-matricula-ppd').forEach(function (form) {
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                var nombre = form.dataset.nombre;
+                Swal.fire({
+                    title: '¿Quitar matrícula?',
+                    html: 'Se eliminará la matrícula del período actual de <strong>' + nombre + '</strong>.<br>Esta acción no elimina al alumno del sistema.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#e67e22',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Sí, quitar',
+                    cancelButtonText: 'Cancelar',
+                }).then(function (result) {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+        });
+
+        document.querySelectorAll('.js-toggle-verificado').forEach(function (form) {
+            var checkbox = form.querySelector('.js-verificado-checkbox');
+            var tokenInput = form.querySelector('input[name="_token"]');
+            if (!checkbox || !tokenInput) return;
+            checkbox.addEventListener('change', function () {
+                var estadoAnterior = !checkbox.checked;
+                checkbox.disabled = true;
+                fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': tokenInput.value,
+                        'Accept': 'application/json',
+                    },
+                }).then(function (response) {
+                    if (!response.ok) throw new Error('request failed');
+                    return response.json();
+                }).then(function (data) {
+                    checkbox.checked = data.voucher_verificado;
+                    var fichaForm = form.parentElement.querySelector('.js-enviar-ficha');
+                    if (fichaForm) {
+                        var btn = fichaForm.querySelector('button[type="submit"]');
+                        if (btn) {
+                            btn.disabled = !data.voucher_verificado;
+                            btn.title = data.voucher_verificado ? btn.dataset.titleEnabled : btn.dataset.titleDisabled;
+                        }
+                    }
+                }).catch(function () {
+                    checkbox.checked = estadoAnterior;
+                    if (window.Swal) {
+                        Swal.fire('Error', 'No se pudo actualizar la verificación del voucher.', 'error');
+                    } else {
+                        alert('No se pudo actualizar la verificación del voucher.');
+                    }
+                }).finally(function () {
+                    checkbox.disabled = false;
+                });
+            });
+        });
+
+        document.querySelectorAll('.js-enviar-ficha').forEach(function (form) {
+            var tokenInput = form.querySelector('input[name="_token"]');
+            form.addEventListener('submit', function (e) {
+                var btn = form.querySelector('button[type="submit"]');
+                if (btn && btn.disabled) return;
+                e.preventDefault();
+                var nombre = form.dataset.nombre;
+                var esReenvio = form.dataset.reenvio === '1';
+                Swal.fire({
+                    title: esReenvio ? '¿Reenviar correo?' : '¿Confirmar matrícula?',
+                    html: (esReenvio
+                        ? 'Se volverá a enviar el correo de matrícula completada a <strong>' + nombre + '</strong>.'
+                        : 'Se enviará el correo de matrícula completada a <strong>' + nombre + '</strong>.'),
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#4e73df',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Sí, enviar',
+                    cancelButtonText: 'Cancelar',
+                }).then(function (result) {
+                    if (!result.isConfirmed) return;
+
+                    if (btn) btn.disabled = true;
+                    fetch(form.action, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': tokenInput.value,
+                            'Accept': 'application/json',
+                        },
+                    }).then(function (response) {
+                        return response.json().then(function (data) {
+                            if (!response.ok || !data.success) throw new Error(data.message || 'No se pudo enviar el correo.');
+                            return data;
+                        });
+                    }).then(function (data) {
+                        form.dataset.reenvio = '1';
+                        if (btn) {
+                            btn.classList.remove('btn-primary');
+                            btn.classList.add('btn-outline-primary');
+                            btn.innerHTML = '<i class="fa fa-redo fa-xs"></i> Reenviar correo';
+                            btn.title = btn.dataset.titleEnabled;
+                        }
+
+                        var estadoSpan = form.parentElement.querySelector('.js-ficha-enviada-estado');
+                        if (!estadoSpan) {
+                            estadoSpan = document.createElement('span');
+                            estadoSpan.className = 'text-muted small d-block js-ficha-enviada-estado';
+                            estadoSpan.title = 'Última vez enviado';
+                            form.insertAdjacentElement('afterend', estadoSpan);
+                        }
+                        estadoSpan.innerHTML = '<i class="fa fa-check-double fa-xs"></i> Enviada el ' + data.ficha_enviada_at;
+
+                        Swal.fire('Enviado', data.message, 'success');
+                    }).catch(function (err) {
+                        Swal.fire('Error', err.message || 'Ocurrió un error al enviar el correo.', 'error');
+                    }).finally(function () {
+                        if (btn) btn.disabled = false;
+                    });
+                });
+            });
+        });
 
         $(document).ready(function () {
             function refreshPpdPreview() {

@@ -2,7 +2,6 @@
 @extends($layout)
 @section('contenido')
     <div class="container-fluid alu-page">
-
         <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap" style="gap:.75rem;">
             <h2 class="h4 mb-0 text-gray-800">Ficha del alumno</h2>
             <a href="javascript:history.go(-1)" class="alu-btn-back">

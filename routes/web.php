@@ -5,6 +5,7 @@ use App\Http\Controllers\AlumnoController;
 use App\Http\Controllers\CursosEspeciales\CeAudioStreamController;
 use App\Http\Controllers\EnlacesController;
 use App\Http\Controllers\PpdController;
+use App\Http\Controllers\SitemapController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -12,6 +13,8 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 Route::get('/', function () {
     return view('welcome');
 })->name('index');
+
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 
 Route::get('nosotros', [EnlacesController::class, 'nosotros'])->name('nosotros');
 //Programas
@@ -89,6 +92,10 @@ Route::get('Tour-360', [EnlacesController::class, 'tour'])->name('tour');
     $exitCode = Artisan::call('config:clear');
     $exitCode = Artisan::call('view:clear');
 
+    if (function_exists('opcache_reset')) {
+        opcache_reset();
+    }
+
     return 'DONE';
 }); */
 
@@ -118,4 +125,23 @@ Route::get('/libro-de-reclamaciones', [App\Http\Controllers\ReclamoController::c
 Route::post('/libro-de-reclamaciones', [App\Http\Controllers\ReclamoController::class, 'publicStore'])
     ->middleware('throttle:3,60')
     ->name('reclamos.public.store');
+
+// Formulario público de solicitud de tutoría individual — acceso vía QR.
+// Requiere identificarse como alumno (login inline, sin salir de la vista).
+Route::get('/solicitud-tutoria', [App\Http\Controllers\TutoriaController::class, 'publicCreate'])->name('tutorias.public.create');
+Route::post('/solicitud-tutoria', [App\Http\Controllers\TutoriaController::class, 'publicStore'])
+    ->middleware('throttle:5,60')
+    ->name('tutorias.public.store');
+
+// Formulario público del buzón de sugerencias — acceso vía QR.
+// Anónima: sin login. No anónima: requiere login inline (identifica al alumno).
+Route::get('/buzon-sugerencias', [App\Http\Controllers\SugerenciaController::class, 'publicCreate'])->name('sugerencias.public.create');
+Route::post('/buzon-sugerencias', [App\Http\Controllers\SugerenciaController::class, 'publicStore'])
+    ->middleware('throttle:5,60')
+    ->name('sugerencias.public.store');
+
+// Login inline (AJAX) para los formularios públicos de arriba — no navega fuera de la vista.
+Route::post('/alumno-login-inline', [App\Http\Controllers\AlumnoAuthController::class, 'loginInline'])
+    ->middleware('throttle:10,1')
+    ->name('alumno.login.inline');
 

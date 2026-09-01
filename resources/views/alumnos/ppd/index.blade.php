@@ -1,17 +1,24 @@
 @extends('layouts.profesionalizacion')
 @section('contenido')
     <div class="container-fluid pt-2">
-        <!-- Header mejorado con sombra sutil -->
-        <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3 pb-2"
-            style="border-bottom: 2px solid #007bff20;">
-            <h3 class="mb-2 text-primary font-weight-bold">
-                <i class="fa fa-file-text mr-2"></i>Ficha Técnica
-            </h3>
-
-            <form id="notificar-form" action="{{ route('mostrar-contenido') }}" method="POST" style="display: none;">
-                @csrf
-                <input type="hidden" name="alumno_id" value="{{ optional(auth()->user()->alumnoB)->id }}">
-            </form>
+        <div class="ppd-page-header">
+            <div>
+                <span class="ppd-eyebrow"><i class="fa fa-graduation-cap mr-1"></i>Profesionalización Docente</span>
+                <h3 class="ppd-page-title"><i class="fa fa-file-text mr-2"></i>Ficha Técnica</h3>
+            </div>
+            <div class="ppd-page-actions">
+                @if ($alumno && $formularioHabilitado && $periodoActualPpd)
+                    @if ($matriculaActual)
+                        <span class="badge badge-success px-3 py-2" style="font-size:13px;border-radius:6px;">
+                            <i class="fa fa-check-circle mr-1"></i>Matriculado · {{ $periodoActualPpd->nombre }}
+                        </span>
+                    @else
+                        <a href="{{ route('ppd.edit', $alumno->id) }}" class="btn btn-sm btn-warning shadow-sm">
+                            <i class="fa fa-graduation-cap mr-1"></i> Completar matrícula
+                        </a>
+                    @endif
+                @endif
+            </div>
         </div>
 
         <!-- Alertas con mejor presentación -->
@@ -29,6 +36,29 @@
             </div>
         </div>
 
+        @if ($alumno && $formularioHabilitado && $periodoActualPpd && ! $matriculaActual)
+            <div class="alert alert-warning d-flex align-items-center shadow-sm mb-4 py-2 border-0">
+                <i class="fa fa-exclamation-circle fa-lg mr-3 flex-shrink-0"></i>
+                <span>El período <strong>{{ $periodoActualPpd->nombre }}</strong> está abierto.
+                    Actualiza tus datos generales para completar tu matrícula usando el botón del encabezado.
+                    No es necesario volver a llenar toda la ficha técnica.</span>
+            </div>
+        @endif
+
+        @if (session('mostrar_popup_matricula'))
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Formulario enviado!',
+                        html: 'Tu formulario fue llenado con éxito.<br>El área de cobranzas verificará tu pago para poder enviarte tu ficha de matrícula.',
+                        confirmButtonColor: '#4e73df',
+                        confirmButtonText: 'Entendido',
+                    });
+                });
+            </script>
+        @endif
+
         <div class="row" id="contenido-alumno">
             @if (auth()->user()->alumnoB)
                 <div class="col-lg-12">
@@ -39,7 +69,7 @@
                                 <table class="table table-hover mb-0">
                                     <tbody>
                                         <!-- Encabezado de sección con gradiente -->
-                                        <tr class="bg-gradient-primary text-white">
+                                        <tr class="ppd-section-band">
                                             <td colspan="4" class="font-weight-bold py-3">
                                                 <i class="fa fa-graduation-cap mr-2"></i>Información del Programa
                                             </td>
@@ -122,7 +152,27 @@
                                                                         </div>
 
                                                                         <div class="d-flex align-items-center ml-md-3">
-                                                                            @if ($curso->silabo)
+                                                                            @php
+                                                                                $periodoActualSilaboV = \App\Models\PeriodoActual::where('actual', true)->first();
+                                                                                $silaboEstructuradoV = $curso->silabos->firstWhere('periodo_actual_id', $periodoActualSilaboV->id ?? null)
+                                                                                    ?? $curso->silabos->firstWhere('periodo', $periodoActualSilaboV->nombre ?? null);
+                                                                                $silaboPdfV = $curso->silabosPdf->where('periodo_actual_id', $periodoActualSilaboV->id ?? null)->first();
+                                                                            @endphp
+                                                                            @if ($silaboEstructuradoV)
+                                                                                <a class="btn btn-outline-success btn-sm rounded-pill px-3 d-inline-flex align-items-center"
+                                                                                    href="{{ route('silabo.pdf', $silaboEstructuradoV->id) }}"
+                                                                                    target="_blank" title="Ver Sílabo">
+                                                                                    <i class="fa fa-file-pdf-o mr-2"></i>
+                                                                                    Sílabo
+                                                                                </a>
+                                                                            @elseif ($silaboPdfV)
+                                                                                <a class="btn btn-outline-success btn-sm rounded-pill px-3 d-inline-flex align-items-center"
+                                                                                    href="{{ asset('docentes/silabo/' . $silaboPdfV->pdf) }}"
+                                                                                    target="_blank" title="Ver Sílabo">
+                                                                                    <i class="fa fa-file-pdf-o mr-2"></i>
+                                                                                    Sílabo
+                                                                                </a>
+                                                                            @elseif ($curso->silabo)
                                                                                 <a class="btn btn-outline-success btn-sm rounded-pill px-3 d-inline-flex align-items-center"
                                                                                     href="{{ asset('docentes/silabo/' . $curso->silabo) }}"
                                                                                     target="_blank" title="Ver Sílabo">
@@ -193,7 +243,27 @@
                                                                     </div>
 
                                                                     <div class="d-flex align-items-center ml-md-3">
-                                                                        @if ($curso->silabo)
+                                                                        @php
+                                                                            $periodoActualSilaboV = \App\Models\PeriodoActual::where('actual', true)->first();
+                                                                            $silaboEstructuradoV = $curso->silabos->firstWhere('periodo_actual_id', $periodoActualSilaboV->id ?? null)
+                                                                                ?? $curso->silabos->firstWhere('periodo', $periodoActualSilaboV->nombre ?? null);
+                                                                            $silaboPdfV = $curso->silabosPdf->where('periodo_actual_id', $periodoActualSilaboV->id ?? null)->first();
+                                                                        @endphp
+                                                                        @if ($silaboEstructuradoV)
+                                                                            <a class="btn btn-outline-success btn-sm rounded-pill px-3 d-inline-flex align-items-center"
+                                                                                href="{{ route('silabo.pdf', $silaboEstructuradoV->id) }}"
+                                                                                target="_blank" title="Ver Sílabo">
+                                                                                <i class="fa fa-file-pdf-o mr-2"></i>
+                                                                                Sílabo
+                                                                            </a>
+                                                                        @elseif ($silaboPdfV)
+                                                                            <a class="btn btn-outline-success btn-sm rounded-pill px-3 d-inline-flex align-items-center"
+                                                                                href="{{ asset('docentes/silabo/' . $silaboPdfV->pdf) }}"
+                                                                                target="_blank" title="Ver Sílabo">
+                                                                                <i class="fa fa-file-pdf-o mr-2"></i>
+                                                                                Sílabo
+                                                                            </a>
+                                                                        @elseif ($curso->silabo)
                                                                             <a class="btn btn-outline-success btn-sm rounded-pill px-3 d-inline-flex align-items-center"
                                                                                 href="{{ asset('docentes/silabo/' . $curso->silabo) }}"
                                                                                 target="_blank" title="Ver Sílabo">
@@ -242,7 +312,7 @@
                                             </tr>
                                         @endif
                                         
-                                        <tr class="bg-gradient-primary text-white">
+                                        <tr class="ppd-section-band">
                                             <td colspan="4" class="font-weight-bold py-3">
                                                 <i class="fa fa-user mr-2"></i>Datos Personales
                                             </td>
@@ -292,24 +362,16 @@
         }
 
         .curso-item:hover {
-            background-color: #f0f7ff !important;
+            background-color: var(--ppd-accent-soft) !important;
             transform: translateX(5px);
         }
 
         .hover-primary:hover {
-            color: #007bff !important;
+            color: var(--ppd-accent) !important;
         }
 
         .border-width-4 {
             border-width: 4px !important;
-        }
-
-        .bg-gradient-primary {
-            background: linear-gradient(45deg, #007bff, #0056b3);
-        }
-
-        .bg-gradient-info {
-            background: linear-gradient(45deg, #17a2b8, #117a8b);
         }
 
         .bg-warning.bg-gradient {
@@ -329,24 +391,9 @@
             font-weight: 500;
         }
 
-        .shadow-sm {
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08) !important;
-        }
-
         .rounded-pill {
             border-radius: 50px !important;
         }
     </style>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const boton = document.getElementById('mostrar-contenido');
-            if (boton) {
-                boton.addEventListener('click', function() {
-                    this.style.display = 'none';
-                    document.getElementById('notificar-form').submit();
-                });
-            }
-        });
-    </script>
 @endsection

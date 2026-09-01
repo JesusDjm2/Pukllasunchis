@@ -79,7 +79,7 @@
                         <td style="padding: 4px; border-left: 2px solid #c78d40; font-weight: bold; width: 50%;">
                             Periodo Académico
                         </td>
-                        <td style="padding: 4px;">2025-I</td>
+                        <td style="padding: 4px;">{{ $periodoActual->nombre ?? '—' }}</td>
                     </tr>
                     <tr>
                         <td style="padding: 4px; border-left: 2px solid #c78d40; font-weight: bold;">

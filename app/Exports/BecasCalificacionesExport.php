@@ -3,11 +3,31 @@
 namespace App\Exports;
 
 use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithCustomCsvSettings;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
+use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Events\AfterSheet;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 
-class BecasCalificacionesExport implements FromCollection, WithCustomCsvSettings, WithHeadings
+class BecasCalificacionesExport implements FromCollection, WithHeadings, WithColumnWidths, WithEvents
 {
+    // Misma paleta que el resto de reportes de calificaciones.
+    private const COLOR_ENCABEZADO_FONDO = '2E5C8A';
+
+    private const COLOR_BORDE = 'D9E2EC';
+
+    private const COLOR_ZEBRA = 'F4F7FB';
+
+    private const COLORES_VALORACION = [
+        'destacado' => '103B86',
+        'logrado' => '0B954E',
+        'en proceso' => 'C1AC0F',
+        'inicio' => 'DC3545',
+        'previo al inicio' => 'DC3545',
+    ];
+
     protected $filas;
 
     public function __construct($filas)
@@ -75,13 +95,74 @@ class BecasCalificacionesExport implements FromCollection, WithCustomCsvSettings
         ];
     }
 
-    public function getCsvSettings(): array
+    public function columnWidths(): array
     {
         return [
-            'delimiter' => ';',
-            'enclosure' => '"',
-            'line_ending' => "\n",
-            'use_bom' => true,
+            'A' => 30, // Alumno
+            'B' => 12, // DNI
+            'C' => 22, // Programa
+            'D' => 26, // Curso
+            'E' => 10, // Ciclo
+            'F' => 14, 'G' => 20, 'H' => 20, // Parcial 1
+            'I' => 14, 'J' => 20, 'K' => 20, // Parcial 2
+            'L' => 14, 'M' => 20, 'N' => 20, // Desempeño
         ];
     }
+
+    public function registerEvents(): array
+    {
+        return [
+            AfterSheet::class => function (AfterSheet $event) {
+                $sheet = $event->sheet->getDelegate();
+                $ultimaColumna = 'N';
+                $ultimaFila = $sheet->getHighestRow();
+
+                $sheet->getRowDimension(1)->setRowHeight(28);
+                $sheet->getStyle("A1:{$ultimaColumna}1")->applyFromArray([
+                    'font' => ['bold' => true, 'size' => 10, 'color' => ['rgb' => 'FFFFFF']],
+                    'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => self::COLOR_ENCABEZADO_FONDO]],
+                    'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER, 'wrapText' => true],
+                ]);
+                $sheet->freezePane('A2');
+
+                if ($ultimaFila < 2) {
+                    return;
+                }
+
+                $sheet->getStyle("A2:{$ultimaColumna}{$ultimaFila}")->applyFromArray([
+                    'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => self::COLOR_BORDE]]],
+                    'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
+                    'font' => ['size' => 10],
+                ]);
+                $sheet->getStyle("B2:B{$ultimaFila}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle("E2:{$ultimaColumna}{$ultimaFila}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+                for ($fila = 2; $fila <= $ultimaFila; $fila++) {
+                    if ($fila % 2 === 1) {
+                        $sheet->getStyle("A{$fila}:{$ultimaColumna}{$fila}")->applyFromArray([
+                            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => self::COLOR_ZEBRA]],
+                        ]);
+                    }
+
+                    // Columnas de "Calificación Curso" (G, K) y "Valoración" con texto: resaltar según su significado.
+                    foreach (['F', 'G', 'I', 'J', 'L', 'M'] as $colLetra) {
+                        $valor = strtolower(trim((string) $sheet->getCell("{$colLetra}{$fila}")->getValue()));
+
+                        if (isset(self::COLORES_VALORACION[$valor])) {
+                            $sheet->getStyle("{$colLetra}{$fila}")->applyFromArray([
+                                'font' => ['bold' => true, 'color' => ['rgb' => self::COLORES_VALORACION[$valor]]],
+                            ]);
+                        } elseif ($valor === 'n/a') {
+                            $sheet->getStyle("{$colLetra}{$fila}")->getFont()->setItalic(true)->getColor()->setRGB('9CA3AF');
+                        }
+                    }
+                }
+
+                $sheet->getStyle("A1:{$ultimaColumna}{$ultimaFila}")->applyFromArray([
+                    'borders' => ['outline' => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['rgb' => self::COLOR_ENCABEZADO_FONDO]]],
+                ]);
+            },
+        ];
+    }
+
 }

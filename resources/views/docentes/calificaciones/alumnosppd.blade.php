@@ -96,26 +96,12 @@
             'kicker' => 'Calificaciones PPD',
             'title' => $curso->nombre,
             'subtitle' => ($curso->ciclo->programa->nombre ?? '') . ' — ' . ($curso->ciclo->nombre ?? ''),
-            'backUrl' => route('calificar', $docente->id),
+            'backUrl' => route('vistaDocente', $docente->id),
             'backLabel' => 'Volver a cursos',
             'competencias' => $competenciasSeleccionadas,
+            'rightExtra' => view('docentes.partials.calificacion-legenda')->render(),
         ])
 
-        <div class="card docente-ui-card mb-3">
-            <div class="card-body py-3">
-                <p class="docente-ui-legenda text-center mb-0">
-                    <span class="legenda-item text-danger">Previo al inicio: 1–5</span>
-                    <span class="d-none d-sm-inline"> | </span>
-                    <span class="legenda-item d-block d-sm-inline text-danger">Inicio: 6–10</span>
-                    <span class="d-none d-sm-inline"> | </span>
-                    <span class="legenda-item d-block d-sm-inline" style="color:#c1ac0f">En proceso: 11–13</span>
-                    <span class="d-none d-sm-inline"> | </span>
-                    <span class="legenda-item d-block d-sm-inline" style="color:#0b954e">Logrado: 14–16</span>
-                    <span class="d-none d-sm-inline"> | </span>
-                    <span class="legenda-item d-block d-sm-inline" style="color:#103b86">Destacado: 17–20</span>
-                </p>
-            </div>
-        </div>
         <div class="row">
             <div class="col-12">
                 @if (Session::has('success'))

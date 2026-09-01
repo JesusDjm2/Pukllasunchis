@@ -1,16 +1,18 @@
 @extends('layouts.profesionalizacion')
 @section('contenido')
     <div class="container mt-4">
-        <div class="row">
-            <div class="col-12 d-flex align-items-center justify-content-between mb-4 pt-3 pb-3"
-                style="border-bottom: 1px dashed #80808078">
-                <h4 class="mb-2 text-primary font-weight-bold">Datos del docente:</h4>
-                <a href="javascript:history.back()" class="btn btn-sm btn-danger">Volver</a>
+        <div class="ppd-page-header">
+            <div>
+                <span class="ppd-eyebrow"><i class="fa fa-chalkboard-teacher mr-1"></i>Docente</span>
+                <h4 class="ppd-page-title">Datos del docente</h4>
             </div>
+            <a href="javascript:history.back()" class="btn btn-sm btn-ppd-volver">
+                <i class="fa fa-arrow-left"></i> Volver
+            </a>
         </div>
         <div class="row">
             <div class="col-md-9">
-                <div class="card">
+                <div class="card shadow-sm border-0">
                     <div class="card-body">
                         <dl class="row">
                             <dt class="col-sm-4">Nombre:</dt>
@@ -46,7 +48,7 @@
             </div>
             <!-- Imagen del Docente -->
             <div class="col-md-3">
-                <div class="card mb-3">
+                <div class="card mb-3 shadow-sm border-0">
                     <img src="{{ $docente->imagen ? asset('storage/' . $docente->imagen) : 'https://via.placeholder.com/300' }}"
                         class="card-img-top" width="100%">
                 </div>

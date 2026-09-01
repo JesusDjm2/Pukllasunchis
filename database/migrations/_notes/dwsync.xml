@@ -56,4 +56,7 @@
 <file name="2026_04_21_200000_update_incidencias_add_nombre_docente.php" server="ftp.eesppukllasunchis.edu.pe" local="134212686331045678" remote="134212933800000000" Dst="0" />
 <file name="2026_04_28_161000_create_comunicados_table.php" server="ftp.eesppukllasunchis.edu.pe" local="134218833489653207" remote="134219046000000000" Dst="0" />
 <file name="2026_07_17_000000_create_reclamos_table.php" server="ftp.eesppukllasunchis.edu.pe" local="134287815623664291" remote="134288139000000000" Dst="0" />
+<file name="2026_08_10_120042_create_sessions_table.php" server="ftp.eesppukllasunchis.edu.pe" local="134308548427296115" remote="134308764000000000" Dst="0" />
+<file name="2026_08_10_120100_create_bitacora_sesiones_table.php" server="ftp.eesppukllasunchis.edu.pe" local="134308549001217142" remote="134308764000000000" Dst="0" />
+<file name="2026_08_10_120101_create_bitacora_intentos_fallidos_table.php" server="ftp.eesppukllasunchis.edu.pe" local="134308549065908537" remote="134308764000000000" Dst="0" />
 </dwsync>

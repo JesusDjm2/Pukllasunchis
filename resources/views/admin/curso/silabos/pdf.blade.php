@@ -109,6 +109,7 @@
                     </td>
 
                     <td style="width: 70%; vertical-align: middle; text-align: right; border: none;">
+                        <div style="font-weight: bold; text-transform: uppercase; font-size: 11px; letter-spacing: 2px; color: #c78d40;">SÍLABO</div>
                         <h5 style="margin-bottom: 5px; line-height: 1.2;">
                             {{ $curso->ciclo->programa->nombre }} - Ciclo: {{ $curso->ciclo->nombre }}
                         </h5>

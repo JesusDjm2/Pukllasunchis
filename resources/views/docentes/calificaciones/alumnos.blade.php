@@ -175,26 +175,12 @@
             'kicker' => 'Calificaciones FID',
             'title' => $curso->nombre,
             'subtitle' => ($curso->ciclo->programa->nombre ?? '') . ' — ' . ($curso->ciclo->nombre ?? ''),
-            'backUrl' => route('calificar', $docente->id),
+            'backUrl' => route('vistaDocente', $docente->id),
             'backLabel' => 'Volver a cursos',
             'competencias' => $competenciasSeleccionadas,
+            'rightExtra' => view('docentes.partials.calificacion-legenda')->render(),
         ])
 
-        <div class="card docente-ui-card mb-3">
-            <div class="card-body py-3">
-                <p class="docente-ui-legenda text-center mb-0">
-                    <span class="legenda-item" style="color:#103b86">Destacado: 17–20</span>
-                    <span class="d-none d-sm-inline"> | </span>
-                    <span class="legenda-item d-block d-sm-inline" style="color:#0b954e">Logrado: 14–16</span>
-                    <span class="d-none d-sm-inline"> | </span>
-                    <span class="legenda-item d-block d-sm-inline" style="color:#c1ac0f">En proceso: 11–13</span>
-                    <span class="d-none d-sm-inline"> | </span>
-                    <span class="legenda-item d-block d-sm-inline text-danger">Inicio: 6–10</span>
-                    <span class="d-none d-sm-inline"> | </span>
-                    <span class="legenda-item d-block d-sm-inline text-danger">Previo al inicio: 1–5</span>
-                </p>
-            </div>
-        </div>
         <div class="row bg-white">
             <div class="col-12">
                 @if (Session::has('success'))
@@ -273,7 +259,8 @@
                             <tbody>
                                 @foreach ($alumnos as $index => $alumno)
                                     @php
-                                        $esInhabilitado = $alumno->user && $alumno->user->hasRole('inhabilitado');
+                                        $esInhabilitado = $alumno->es_inhabilitado ?? false;
+                                        $noMatriculado = $alumno->no_matriculado ?? false;
                                         $fotoAlumnoUrl =
                                             $alumno->user && $alumno->user->foto
                                                 ? asset('img/estudiantes/' . $alumno->user->foto)
@@ -287,7 +274,7 @@
                                         value="{{ $docente->id }}">
                                     <input type="hidden" name="alumnos[{{ $alumno->id }}][curso_id]"
                                         value="{{ $curso->id }}">
-                                    <tr style="{{ $esInhabilitado ? 'background-color: #f8d7da;' : '' }}">
+                                    <tr style="{{ $esInhabilitado ? 'background-color: #f8d7da;' : ($noMatriculado ? 'background-color: #fff3cd;' : '') }}">
                                         <td
                                             style="vertical-align: middle; border-bottom: 1px solid #39779b; border-left: 1px solid #39779b; font-weight: bold">
                                             {{ $index + 1 }}
@@ -314,6 +301,8 @@
                                                         @endif
                                                         @if ($esInhabilitado)
                                                             <span class="badge badge-danger">{{ $alumno->user->perfil }}</span>
+                                                        @elseif ($noMatriculado)
+                                                            <span class="badge badge-warning">No matriculado</span>
                                                         @endif
                                                     </div>
                                                 </div>
@@ -347,7 +336,7 @@
                                                 <select class="form-control form-control-sm select-competencia"
                                                     style="font-size: 0.95em"
                                                     name="alumnos[{{ $alumno->id }}][valoracion_{{ $index + 1 }}]"
-                                                    {{ $esInhabilitado ? 'disabled' : '' }}>
+                                                    {{ ($esInhabilitado || $noMatriculado) ? 'disabled' : '' }}>
                                                     <option value="0" selected>Seleccionar</option>
                                                     @foreach ($valoracionTexto as $valor => $texto)
                                                         <option value="{{ $valor }}"
@@ -391,7 +380,7 @@
                                         <td style="width: 400px;vertical-align: middle; border-bottom: 1px solid #39779b;">
                                             <textarea name="alumnos[{{ $alumno->id }}][observaciones]" class="form-control form-control-sm text-start"
                                                 rows="2" style="resize: vertical; width: 100%;" placeholder="Observaciones (Opcional)"
-                                                {{ $esInhabilitado ? 'disabled' : '' }}>{{ old("alumnos.{$alumno->id}.observaciones", $calificacion?->observaciones) }}</textarea>
+                                                {{ ($esInhabilitado || $noMatriculado) ? 'disabled' : '' }}>{{ old("alumnos.{$alumno->id}.observaciones", $calificacion?->observaciones) }}</textarea>
 
                                         </td>
                                     </tr>
@@ -443,7 +432,8 @@
                             <tbody>
                                 @foreach ($alumnos as $index => $alumno)
                                     @php
-                                        $esInhabilitado = $alumno->user && $alumno->user->hasRole('inhabilitado');
+                                        $esInhabilitado = $alumno->es_inhabilitado ?? false;
+                                        $noMatriculado = $alumno->no_matriculado ?? false;
                                         $fotoAlumnoUrl =
                                             $alumno->user && $alumno->user->foto
                                                 ? asset('img/estudiantes/' . $alumno->user->foto)
@@ -474,7 +464,7 @@
                                     @endforeach
 
                                     {{-- Fila de referencia: Parcial 1 (solo lectura) --}}
-                                    <tr style="{{ $esInhabilitado ? 'background-color: #f8d7da;' : '' }}">
+                                    <tr style="{{ $esInhabilitado ? 'background-color: #f8d7da;' : ($noMatriculado ? 'background-color: #fff3cd;' : '') }}">
                                         <td rowspan="3"
                                             style="vertical-align: middle; border-bottom: 1px solid #39779b; border-left: 1px solid #39779b; font-weight: bold">
                                             {{ $index + 1 }}</td>
@@ -501,6 +491,8 @@
                                                         @endif
                                                         @if ($esInhabilitado)
                                                             <span class="badge badge-danger">{{ $alumno->user->perfil }}</span>
+                                                        @elseif ($noMatriculado)
+                                                            <span class="badge badge-warning">No matriculado</span>
                                                         @endif
                                                     </div>
                                                 </div>
@@ -549,7 +541,7 @@
                                     </tr>
 
                                     {{-- Fila editable: Parcial 2 (guarda en periodo_dos, namespace periodo2) --}}
-                                    <tr style="{{ $esInhabilitado ? 'background-color: #f8d7da;' : '' }}">
+                                    <tr style="{{ $esInhabilitado ? 'background-color: #f8d7da;' : ($noMatriculado ? 'background-color: #fff3cd;' : '') }}">
                                         <td style="vertical-align: middle; border-bottom: 1px solid #39779b;">
                                             <p class="mt-1 text-info mb-0 font-weight-bold">Parcial 2:</p>
                                         </td>
@@ -563,7 +555,7 @@
                                             <td style="vertical-align: middle; border-bottom: 1px solid #39779b;">
                                                 <select class="form-control form-control-sm select-competencia"
                                                     name="alumnos[{{ $alumno->id }}][periodo2][valoracion_{{ $compIndex + 1 }}]"
-                                                    {{ $esInhabilitado ? 'disabled' : '' }}>
+                                                    {{ ($esInhabilitado || $noMatriculado) ? 'disabled' : '' }}>
                                                     <option value="0" selected>Seleccionar</option>
                                                     @foreach ($valoracionTextoMap as $valor => $texto)
                                                         <option value="{{ $valor }}"
@@ -603,70 +595,63 @@
                                         <td style="width: 400px;vertical-align: middle; border-bottom: 1px solid #39779b;">
                                             <textarea name="alumnos[{{ $alumno->id }}][periodo2][observaciones]" class="form-control form-control-sm text-start"
                                                 rows="2" style="resize: vertical; width: 100%;" placeholder="Observaciones (Opcional)"
-                                                {{ $esInhabilitado ? 'disabled' : '' }}>{{ old("alumnos.{$alumno->id}.periodo2.observaciones", $periodo2Alumno?->observaciones) }}</textarea>
+                                                {{ ($esInhabilitado || $noMatriculado) ? 'disabled' : '' }}>{{ old("alumnos.{$alumno->id}.periodo2.observaciones", $periodo2Alumno?->observaciones) }}</textarea>
                                         </td>
                                     </tr>
 
-                                    {{-- Fila editable: Desempeño / Periodo 3 (guarda en periodo_tres, namespace periodo3).
-                                         Se bloquea hasta que Parcial 2 llegue al 50% (mismo umbral que antes desbloqueaba la pestaña). --}}
-                                    <tr style="{{ $esInhabilitado ? 'background-color: #f8d7da;' : '' }}">
+                                    {{-- Fila editable: Desempeño / Periodo 3 (guarda en periodo_tres, namespace periodo3). --}}
+                                    <tr style="{{ $esInhabilitado ? 'background-color: #f8d7da;' : ($noMatriculado ? 'background-color: #fff3cd;' : '') }}">
                                         <td style="border-bottom: 1px solid #39779b">
                                             <p class="mt-1 text-secondary mb-0 font-weight-bold">Desempeño:</p>
                                         </td>
-                                        @if ($mostrarBotonDesempeno)
-                                            @foreach ($competenciasSeleccionadas as $compIndex => $competencia)
-                                                @php
-                                                    $valoracionActualP3 = old(
-                                                        "alumnos.{$alumno->id}.periodo3.valoracion_" . ($compIndex + 1),
-                                                        $periodo3Alumno?->{'valoracion_' . ($compIndex + 1)} ?? null,
-                                                    );
-                                                @endphp
-                                                <td style="border-bottom: 1px solid #39779b">
-                                                    <select class="form-control form-control-sm select-competencia"
-                                                        name="alumnos[{{ $alumno->id }}][periodo3][valoracion_{{ $compIndex + 1 }}]"
-                                                        {{ $esInhabilitado ? 'disabled' : '' }}>
-                                                        <option value="0" selected>Seleccionar</option>
-                                                        @foreach ($valoracionTextoMap as $valor => $texto)
-                                                            <option value="{{ $valor }}"
-                                                                {{ (string) $valoracionActualP3 === (string) $valor ? 'selected' : '' }}>
-                                                                {{ $texto }}
-                                                            </option>
-                                                        @endforeach
-                                                    </select>
-                                                    <input type="text"
-                                                        class="form-control form-control-sm input-competencia"
-                                                        name="alumnos[{{ $alumno->id }}][periodo3][nota_{{ $competencia->id }}]"
-                                                        value="{{ $periodo3Alumno?->nota ?? '' }}" readonly
-                                                        style="display: none">
-                                                </td>
-                                            @endforeach
+                                        @foreach ($competenciasSeleccionadas as $compIndex => $competencia)
+                                            @php
+                                                $valoracionActualP3 = old(
+                                                    "alumnos.{$alumno->id}.periodo3.valoracion_" . ($compIndex + 1),
+                                                    $periodo3Alumno?->{'valoracion_' . ($compIndex + 1)} ?? null,
+                                                );
+                                            @endphp
                                             <td style="border-bottom: 1px solid #39779b">
+                                                <select class="form-control form-control-sm select-competencia"
+                                                    name="alumnos[{{ $alumno->id }}][periodo3][valoracion_{{ $compIndex + 1 }}]"
+                                                    {{ ($esInhabilitado || $noMatriculado) ? 'disabled' : '' }}>
+                                                    <option value="0" selected>Seleccionar</option>
+                                                    @foreach ($valoracionTextoMap as $valor => $texto)
+                                                        <option value="{{ $valor }}"
+                                                            {{ (string) $valoracionActualP3 === (string) $valor ? 'selected' : '' }}>
+                                                            {{ $texto }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
                                                 <input type="text"
-                                                    class="form-control form-control-sm valoracion-curso text-center"
-                                                    name="alumnos[{{ $alumno->id }}][periodo3][valoracion_curso]"
-                                                    value="{{ old("alumnos.{$alumno->id}.periodo3.valoracion_curso", $periodo3Alumno?->valoracion_curso) }}"
-                                                    readonly>
+                                                    class="form-control form-control-sm input-competencia"
+                                                    name="alumnos[{{ $alumno->id }}][periodo3][nota_{{ $competencia->id }}]"
+                                                    value="{{ $periodo3Alumno?->nota ?? '' }}" readonly
+                                                    style="display: none">
                                             </td>
-                                            <td style="border-bottom: 1px solid #39779b">
-                                                <input type="text"
-                                                    class="form-control form-control-sm calificacion-curso text-center"
-                                                    name="alumnos[{{ $alumno->id }}][periodo3][calificacion_curso]"
-                                                    value="{{ old("alumnos.{$alumno->id}.periodo3.calificacion_curso", $periodo3Alumno?->calificacion_curso) }}"
-                                                    readonly>
-                                            </td>
-                                            <td style="border-bottom: 1px solid #39779b">
-                                                <input type="text"
-                                                    class="form-control form-control-sm calificacion-sistema text-center"
-                                                    name="alumnos[{{ $alumno->id }}][periodo3][calificacion_sistema]"
-                                                    value="{{ old("alumnos.{$alumno->id}.periodo3.calificacion_sistema", $periodo3Alumno?->calificacion_sistema) }}"
-                                                    readonly>
-                                            </td>
-                                            <td style="border-bottom: 1px solid #39779b"></td>
-                                        @else
-                                            <td colspan="{{ count($competenciasSeleccionadas) + 4 }}" class="text-center text-muted" style="border-bottom: 1px solid #39779b">
-                                                <i class="fas fa-lock mr-1"></i> Se habilita al completar el 50% de Parcial 2
-                                            </td>
-                                        @endif
+                                        @endforeach
+                                        <td style="border-bottom: 1px solid #39779b">
+                                            <input type="text"
+                                                class="form-control form-control-sm valoracion-curso text-center"
+                                                name="alumnos[{{ $alumno->id }}][periodo3][valoracion_curso]"
+                                                value="{{ old("alumnos.{$alumno->id}.periodo3.valoracion_curso", $periodo3Alumno?->valoracion_curso) }}"
+                                                readonly>
+                                        </td>
+                                        <td style="border-bottom: 1px solid #39779b">
+                                            <input type="text"
+                                                class="form-control form-control-sm calificacion-curso text-center"
+                                                name="alumnos[{{ $alumno->id }}][periodo3][calificacion_curso]"
+                                                value="{{ old("alumnos.{$alumno->id}.periodo3.calificacion_curso", $periodo3Alumno?->calificacion_curso) }}"
+                                                readonly>
+                                        </td>
+                                        <td style="border-bottom: 1px solid #39779b">
+                                            <input type="text"
+                                                class="form-control form-control-sm calificacion-sistema text-center"
+                                                name="alumnos[{{ $alumno->id }}][periodo3][calificacion_sistema]"
+                                                value="{{ old("alumnos.{$alumno->id}.periodo3.calificacion_sistema", $periodo3Alumno?->calificacion_sistema) }}"
+                                                readonly>
+                                        </td>
+                                        <td style="border-bottom: 1px solid #39779b"></td>
                                     </tr>
                                 @endforeach
                             </tbody>

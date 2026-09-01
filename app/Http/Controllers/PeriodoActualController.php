@@ -38,7 +38,7 @@ class PeriodoActualController extends Controller
         ]);
 
         if ($request->has('actual') && $request->actual) {
-            PeriodoActual::where('actual', true)->update(['actual' => false]);
+            PeriodoActual::where('actual', true)->update(['actual' => false, 'formulario_habilitado' => false]);
         }
 
         $rutaImagen = null;
@@ -81,7 +81,7 @@ class PeriodoActualController extends Controller
         ]);
 
         if ($request->has('actual') && $request->actual) {
-            PeriodoActual::where('id', '!=', $periodoactual->id)->update(['actual' => false]);
+            PeriodoActual::where('id', '!=', $periodoactual->id)->update(['actual' => false, 'formulario_habilitado' => false]);
         }
         $rutaHorario = $periodoactual->horario;
         if ($request->hasFile('horario')) {
@@ -119,9 +119,20 @@ class PeriodoActualController extends Controller
 
     public function toggleFormulario(PeriodoActual $periodoactual)
     {
-        $periodoactual->update([
-            'formulario_habilitado' => ! $periodoactual->formulario_habilitado,
-        ]);
+        $nuevoEstado = ! $periodoactual->formulario_habilitado;
+
+        if ($nuevoEstado && ! $periodoactual->actual) {
+            return redirect()->route('periodoactual.index')
+                ->with('error', "Solo el periodo actual puede tener el formulario habilitado. \"{$periodoactual->nombre}\" no es el periodo actual.");
+        }
+
+        if ($nuevoEstado) {
+            PeriodoActual::where('id', '!=', $periodoactual->id)
+                ->where('formulario_habilitado', true)
+                ->update(['formulario_habilitado' => false]);
+        }
+
+        $periodoactual->update(['formulario_habilitado' => $nuevoEstado]);
 
         $estado = $periodoactual->formulario_habilitado ? 'habilitado' : 'deshabilitado';
 
@@ -282,13 +293,49 @@ class PeriodoActualController extends Controller
         ]);
     }
 
+    public function updateRegistro(Request $request, Periodo $registro)
+    {
+        if (! auth()->check() || ! auth()->user()->hasRole('super-admin')) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'valoracion_curso'     => ['nullable', 'string', 'max:255'],
+            'calificacion_curso'   => ['nullable', 'string', 'max:255'],
+            'calificacion_sistema' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $registro->update([
+            'valoracion_curso'     => $validated['valoracion_curso'] ?? null,
+            'calificacion_curso'   => $validated['calificacion_curso'] ?? null,
+            'calificacion_sistema' => $validated['calificacion_sistema'] ?? null,
+        ]);
+
+        return response()->json([
+            'ok'                   => true,
+            'valoracion_curso'     => $registro->valoracion_curso,
+            'calificacion_curso'   => $registro->calificacion_curso,
+            'calificacion_sistema' => $registro->calificacion_sistema,
+        ]);
+    }
+
     public function exportExcel($id, Request $request)
     {
         $periodoActual = PeriodoActual::findOrFail($id);
         $soloBecas = $request->boolean('solo_becas');
         $cicloId = $request->get('ciclo_id');
 
-        [$ciclos, $filas] = $this->getDataForRegistros($id, $soloBecas, $cicloId);
+        // El periodo activo aún no tiene datos "archivados" (eso requiere el botón
+        // "Crear" en Periodos, que se corre recién al cerrar el periodo). Mientras
+        // está activo, exportamos directo desde las notas de Desempeño (Periodo 3,
+        // la calificación final de cada curso) para los cursos actualmente
+        // asignados a un docente. Los periodos ya cerrados siguen usando el
+        // archivo histórico normal.
+        if ($periodoActual->actual) {
+            [$ciclos, $filas] = $this->getDataForRegistrosEnVivo($soloBecas, $cicloId);
+        } else {
+            [$ciclos, $filas] = $this->getDataForRegistros($id, $soloBecas, $cicloId);
+        }
 
         $nombreArchivo = 'Calificaciones_'.$periodoActual->nombre;
         if ($soloBecas) {
@@ -381,6 +428,46 @@ class PeriodoActualController extends Controller
                 'periodos' => $grupoPeriodos,
             ]);
         }
+
+        return [$ciclos, $filas];
+    }
+
+    /**
+     * Igual que getDataForRegistros(), pero para el periodo activo: no depende
+     * del archivo histórico (tabla "periodos", que solo se llena manualmente
+     * al cerrar un periodo). Lee directo la nota de Desempeño (Periodo 3 =
+     * calificación final de cada curso) de los cursos con docente asignado
+     * actualmente, que es la mejor aproximación disponible a "cursos de este
+     * periodo" ya que el esquema no vincula curso ↔ periodo directamente.
+     */
+    private function getDataForRegistrosEnVivo(bool $soloBecas = false, $cicloId = null): array
+    {
+        $cursoIdsActuales = DB::table('curso_docente')->distinct()->pluck('curso_id');
+
+        $desempenoQuery = PeriodoTres::with(['alumno.programa', 'alumno.user', 'curso.ciclo'])
+            ->whereIn('curso_id', $cursoIdsActuales);
+
+        if ($soloBecas) {
+            $desempenoQuery->whereHas('alumno.user', fn ($q) => $q->where('beca', 1));
+        }
+        if ($cicloId) {
+            $desempenoQuery->whereHas('curso', fn ($q) => $q->where('ciclo_id', $cicloId));
+        }
+
+        $registros = $desempenoQuery->get()->filter(fn ($r) => $r->alumno && $r->curso);
+
+        $ciclos = $registros->pluck('curso.ciclo')
+            ->filter()
+            ->unique('id')
+            ->sortBy(fn ($c) => $c->ordenCiclo() ?? 999);
+
+        $filas = $registros->groupBy('alumno_id')->map(function ($grupoRegistros) {
+            return [
+                'alumno' => $grupoRegistros->first()->alumno,
+                'cursos' => $grupoRegistros->pluck('curso')->unique('id')->values(),
+                'periodos' => $grupoRegistros,
+            ];
+        })->values();
 
         return [$ciclos, $filas];
     }

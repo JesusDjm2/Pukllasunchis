@@ -12,7 +12,6 @@
         var page = document.querySelector('.docente-ui-page');
         if (!page) return;
 
-        entrada(page);
         animarAlertas(page);
         agitarInvalidos(page);
         protegerEnvios(page);
@@ -37,44 +36,33 @@
         });
     });
 
-    /* ── Entrada escalonada del encabezado y las tarjetas ── */
-    function entrada(page) {
-        var header = page.querySelector('.docente-ui-toolbar');
-        var cards = page.querySelectorAll('.docente-ui-card, .docente-cal-toolbar, .docente-cal-savebar');
-
-        if (!hasGsap) {
-            if (header) header.classList.add('is-visible');
-            cards.forEach(function (c) { c.classList.add('is-visible'); });
-            return;
-        }
-
-        var tl = gsap.timeline({ defaults: { ease: 'power2.out' } });
-        if (header) {
-            tl.from(header, { opacity: 0, y: -12, duration: 0.45 });
-        }
-        if (cards.length) {
-            tl.from(cards, { opacity: 0, y: 14, duration: 0.4, stagger: 0.07 }, '-=0.2');
-        }
-    }
-
-    /* ── Alertas (éxito / error) entrando con vida ── */
+    /* ── Alertas (éxito / error) entrando con vida ──
+       clearProps + un timeout de seguridad garantizan que el mensaje nunca
+       quede invisible si la animación no llega a correr o a terminar. ── */
     function animarAlertas(page) {
         var alertas = page.querySelectorAll('.alert');
         if (!alertas.length) return;
 
-        if (!hasGsap) {
-            alertas.forEach(function (a) { a.classList.add('is-visible'); });
-            return;
+        if (hasGsap) {
+            try {
+                gsap.from(alertas, {
+                    opacity: 0,
+                    y: -10,
+                    scale: 0.98,
+                    duration: 0.4,
+                    stagger: 0.08,
+                    ease: 'back.out(1.6)',
+                    clearProps: 'opacity,transform',
+                });
+            } catch (e) {}
         }
 
-        gsap.from(alertas, {
-            opacity: 0,
-            y: -10,
-            scale: 0.98,
-            duration: 0.4,
-            stagger: 0.08,
-            ease: 'back.out(1.6)',
-        });
+        setTimeout(function () {
+            alertas.forEach(function (a) {
+                a.style.opacity = '';
+                a.style.transform = '';
+            });
+        }, 1500);
     }
 
     /* ── Shake sutil en campos marcados como inválidos + scroll al primero ── */

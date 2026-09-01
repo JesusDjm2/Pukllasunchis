@@ -39,6 +39,7 @@
                             class="img-fluid" style="max-width: 200px;">
                     </td>
                     <td style="width: 70%; vertical-align: middle; text-align: right">
+                        <div class="font-weight-bold text-uppercase" style="font-size:.75rem; letter-spacing:.12em; color:#c78d40;">SÍLABO</div>
                         <h5 class="font-weight-bold mb-1">
                             {{ $curso->ciclo->programa->nombre }} - Ciclo: {{ $curso->ciclo->nombre }}
                         </h5>

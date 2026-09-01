@@ -9,6 +9,7 @@ use App\Models\Docente;
 use App\Models\PeriodoActual;
 use App\Models\ppd;
 use App\Models\Programa;
+use App\Models\Silabo;
 use App\Models\User;
 use Hash;
 use Illuminate\Http\Request;
@@ -20,11 +21,24 @@ class DocenteCOntroller extends Controller
         $docentes = Docente::with(['user.roles', 'user.tutorCiclos.incidencias', 'user.tutorCiclos.programa', 'incidencias'])->get();
         $totalDocentes = $docentes->count();
         $totalIncidencias = $docentes->sum(fn($d) => $d->incidencias->count());
+        $totalSilabos = Silabo::count();
 
         $periodoActual = PeriodoActual::actual();
         $ciclos = Ciclo::all()->sortBy(fn ($c) => $c->ordenCiclo() ?? 999);
 
-        return view('docentes.index', compact('docentes', 'totalDocentes', 'totalIncidencias', 'periodoActual', 'ciclos'));
+        $conteosZonaRiesgo = [
+            'parcial1' => \DB::table('periodouno')->count(),
+            'parcial2' => \DB::table('periodo_dos')->count(),
+            'desempeno' => \DB::table('periodo_tres')->count(),
+            'asignacionesFid' => \DB::table('curso_docente')
+                ->whereIn('curso_id', Curso::whereHas('ciclo.programa', fn ($q) => $q->where('nombre', 'NOT LIKE', '%PPD%'))->pluck('id'))
+                ->count(),
+            'asignacionesPpd' => \DB::table('curso_docente')
+                ->whereIn('curso_id', Curso::whereHas('ciclo.programa', fn ($q) => $q->where('nombre', 'LIKE', '%PPD%'))->pluck('id'))
+                ->count(),
+        ];
+
+        return view('docentes.index', compact('docentes', 'totalDocentes', 'totalIncidencias', 'totalSilabos', 'periodoActual', 'ciclos', 'conteosZonaRiesgo'));
     }
 
     public function vistaDocente($docenteId)
@@ -181,7 +195,10 @@ class DocenteCOntroller extends Controller
             ->whereHas('user', fn ($q) => $q->whereDoesntHave('roles', fn ($r) => $r->where('name', 'alumnoB'))
                 ->where(function ($q) {
                     $q->whereHas('roles', fn ($r) => $r->where('name', 'alumno'))
-                      ->orWhereHas('roles', fn ($r) => $r->where('name', 'inhabilitado'));
+                      ->orWhere(function ($q2) {
+                          $q2->whereHas('roles', fn ($r) => $r->where('name', 'inhabilitado'))
+                              ->where('perfil', '!=', 'Retirado');
+                      });
                 }));
 
         if ($periodoActual) {
@@ -236,36 +253,57 @@ class DocenteCOntroller extends Controller
     {
         $curso = Curso::findOrFail($cursoId);
         $docente = Docente::findOrFail($docenteId);
-        $competenciasSeleccionadas = Competencia::whereIn('id', $request->input('competencias'))->get();
+
+        $competenciasIds = $request->input('competencias');
+        if (empty($competenciasIds)) {
+            $competenciasIds = $curso->competencias->count() <= 3
+                ? $curso->competencias->pluck('id')
+                : $curso->competenciasSeleccionadas->pluck('id');
+        }
+        $competenciasSeleccionadas = Competencia::whereIn('id', $competenciasIds)->get();
 
         $periodoActual = \App\Models\PeriodoActual::where('actual', true)->first();
 
-        $filtroFid = function ($q) use ($periodoActual) {
+        // Solo alumnos activos (no inhabilitados) entran por pertenecer al ciclo del curso.
+        // Un inhabilitado solo aparece si tiene asignación explícita a ESTE curso (vía "Asignar cursos") —
+        // así, quitarle todos los cursos a un inhabilitado lo saca de las listas de calificar.
+        $filtroFidActivo = function ($q) {
             $q->whereDoesntHave('roles', fn ($r) => $r->where('name', 'alumnoB'))
-              ->where(function ($q) {
-                  $q->whereHas('roles', fn ($r) => $r->where('name', 'alumno'))
-                    ->orWhereHas('roles', fn ($r) => $r->where('name', 'inhabilitado'));
-              });
+              ->whereHas('roles', fn ($r) => $r->where('name', 'alumno'));
         };
 
-        $filtroMatricula = function ($q) use ($periodoActual) {
-            if ($periodoActual) {
-                $q->where(function ($inner) use ($periodoActual) {
-                    $inner->whereHas('matriculas', fn ($m) => $m->where('periodo_actual_id', $periodoActual->id))
-                          ->orWhereHas('user', fn ($u) => $u->whereHas('roles', fn ($r) => $r->where('name', 'inhabilitado')));
-                });
-            }
+        $filtroFidInhabilitado = function ($q) {
+            $q->whereDoesntHave('roles', fn ($r) => $r->where('name', 'alumnoB'))
+              ->whereHas('roles', fn ($r) => $r->where('name', 'inhabilitado'))
+              ->where('perfil', '!=', 'Retirado');
         };
 
-        $alumnosRelacionados = $curso->alumnos()
-            ->whereHas('user', $filtroFid)
-            ->tap($filtroMatricula)
-            ->orderBy('apellidos')
+        // Asignación directa de alumnos activos: sin cambios, incluye filas heredadas sin período
+        // (hay ~300 asignaciones de "cursos adicionales" que predatan la columna periodo_actual_id).
+        $alumnosRelacionadosActivos = $curso->alumnos()
+            ->with('user.roles')
+            ->whereHas('user', $filtroFidActivo)
             ->get();
 
+        // Asignación directa de inhabilitados: solo cuenta si es del período actual. Las filas de otros
+        // períodos o sin período (datos heredados) no deben mantenerlo visible indefinidamente.
+        $alumnosRelacionadosInhabilitados = collect();
+        if ($periodoActual) {
+            $alumnosRelacionadosInhabilitados = $curso->alumnos()
+                ->with('user.roles')
+                ->whereHas('user', $filtroFidInhabilitado)
+                ->wherePivot('periodo_actual_id', $periodoActual->id)
+                ->get();
+        }
+
+        $alumnosRelacionados = $alumnosRelacionadosActivos
+            ->merge($alumnosRelacionadosInhabilitados)
+            ->sortBy('apellidos')
+            ->values();
+
         $alumnosCiclo = $curso->ciclo->alumnos()
-            ->whereHas('user', $filtroFid)
-            ->tap($filtroMatricula)
+            ->with('user.roles')
+            ->whereHas('user', $filtroFidActivo)
             ->orderBy('apellidos')
             ->get();
 
@@ -275,58 +313,66 @@ class DocenteCOntroller extends Controller
             ->sortBy('apellidos')
             ->values();
 
-        $mostrarBotonDesempeno = false;
+        $alumnos->each(function ($alumno) use ($periodoActual) {
+            $alumno->es_inhabilitado = $alumno->user && $alumno->user->hasRole('inhabilitado');
+            $alumno->no_matriculado = $periodoActual && ! $alumno->es_inhabilitado && ! $alumno->matriculaEnPeriodo($periodoActual->id);
+        });
 
-        foreach ($alumnos as $alumno) {
-            $periodoDos = $alumno->periododos()->where('curso_id', $cursoId)->first();
-
-            if ($periodoDos) {
-                foreach ($competenciasSeleccionadas as $index => $competencia) {
-                    $campoValoracion = 'valoracion_'.($index + 1);
-                    if ($periodoDos->$campoValoracion > 0) {
-                        $mostrarBotonDesempeno = true;
-                        break 2;
-                    }
-                }
-            }
-        }
+        $mostrarBotonDesempeno = true;
 
         if (auth()->user()->hasRole('admin')) {
-            return view('admin.curso.calificaciones', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos', 'mostrarBotonDesempeno', 'alumnosRelacionados'));
+            return view('admin.curso.calificaciones', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos', 'mostrarBotonDesempeno', 'alumnosRelacionados', 'periodoActual'));
         }
 
-        return view('docentes.calificaciones.alumnos', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos', 'mostrarBotonDesempeno', 'alumnosRelacionados'));
+        return view('docentes.calificaciones.alumnos', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos', 'mostrarBotonDesempeno', 'alumnosRelacionados', 'periodoActual'));
     }
 
     public function calificarCursoPPD(Request $request, $docenteId, $cursoId)
     {
         $curso = Curso::with('ciclo.programa', 'competencias', 'calificacionesppd')->findOrFail($cursoId);
         $docente = Docente::findOrFail($docenteId);
-        $competenciasSeleccionadas = Competencia::whereIn('id', $request->input('competencias'))->get();
-        $programaId = $curso->ciclo->programa->id;
+
+        $competenciasIds = $request->input('competencias');
+        if (empty($competenciasIds)) {
+            $competenciasIds = $curso->competencias->count() <= 3
+                ? $curso->competencias->pluck('id')
+                : $curso->competenciasSeleccionadas->pluck('id');
+        }
+        $competenciasSeleccionadas = Competencia::whereIn('id', $competenciasIds)->get();
+
+        // Alumnos que YA tienen TODOS los campos de Proceso/Final llenos para ESTE curso (no el
+        // flag global ppd.guardado, ni el valor derivado calificacion_curso: la pantalla recalcula
+        // ese campo cada 200ms para toda fila visible, incluso las que el docente nunca tocó, y
+        // puede dejar una nota parcial que oculta de esta lista a alumnos que en realidad no
+        // fueron calificados).
+        $userIdsCalificados = $curso->alumnosPpdCalificadosCompletos();
 
         // Obtener alumnos que:
         // 1. Tienen rol 'alumnoB' o 'inhabilitado'
-        // 2. Pertenecen al mismo programa que el curso (PPD agrupa por programa, no por ciclo)
-        // 3. NO tienen el campo 'guardado' = true (es decir, aún no han guardado sus calificaciones)
-        $query = User::whereHas('roles', function ($q) {
-            $q->whereIn('name', ['alumnoB', 'inhabilitado']);
+        // 2. Pertenecen al MISMO CICLO que el curso (Ciclo I / Ciclo II). El programa acumula un
+        //    ciclo "Egresados <año>" por cada promoción graduada; esos alumnos ya no cursan nada y
+        //    no deben mezclarse con la cohorte que sí está cursando este curso ahora.
+        // 3. NO tienen calificacion_curso guardada para este curso
+        $query = User::where(function ($q) {
+            $q->whereHas('roles', fn ($r) => $r->where('name', 'alumnoB'))
+              ->orWhere(function ($q2) {
+                  $q2->whereHas('roles', fn ($r) => $r->where('name', 'inhabilitado'))
+                      ->where('perfil', '!=', 'Retirado');
+              });
         })
-            ->where('programa_id', $programaId)
+            ->where('ciclo_id', $curso->ciclo_id)
             ->with(['roles', 'alumnoB'])
             ->orderBy('apellidos');
 
-        // El docente solo ve quienes aún no tienen calificaciones guardadas;
+        // El docente solo ve quienes aún no tienen calificaciones guardadas para este curso;
         // el admin ve todos para tener visibilidad completa.
         if (!auth()->user()->hasRole('admin')) {
-            $query->whereDoesntHave('alumnoB', function ($q) {
-                $q->where('guardado', true);
-            });
+            $query->whereNotIn('id', $userIdsCalificados);
         }
 
         $alumnos = $query->get();
 
-        $alumnos = $alumnos->map(function ($alumno) {
+        $alumnos = $alumnos->map(function ($alumno) use ($userIdsCalificados) {
             $alumno->es_inhabilitado = $alumno->roles->contains('name', 'inhabilitado');
 
             // Si no hay alumnoB vinculado por user_id, intentar encontrar su registro PPD por email
@@ -345,8 +391,8 @@ class DocenteCOntroller extends Controller
 
             $alumno->tiene_ppd = $alumno->alumnoB !== null;
 
-            // Verificar si ya tiene calificaciones guardadas
-            $alumno->tiene_calificacion_guardada = $alumno->alumnoB && $alumno->alumnoB->guardado == true;
+            // Verificar si ya tiene calificacion_curso guardada para ESTE curso
+            $alumno->tiene_calificacion_guardada = $userIdsCalificados->contains($alumno->id);
 
             return $alumno;
         });
@@ -392,13 +438,31 @@ class DocenteCOntroller extends Controller
         return view('docentes.calificaciones.alumnosppd', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos'));
     } */
 
-    public function alumnos($id)
+    public function alumnosPanel($id)
     {
         $docente = Docente::with(['cursos.ciclo.programa'])->findOrFail($id);
         $cursos = $docente->cursos;
+
+        $mostrarFid = $cursos->contains(function ($curso) {
+            return !str_contains(strtoupper(optional(optional($curso)->ciclo?->programa)->nombre ?? ''), 'PPD');
+        });
+        $mostrarPpd = $cursos->contains(function ($curso) {
+            return str_contains(strtoupper(optional(optional($curso)->ciclo?->programa)->nombre ?? ''), 'PPD');
+        });
+
+        $alumnosPorCursoFid = $mostrarFid ? $this->alumnosFidPorCurso($docente) : [];
+        $alumnosPorCursoPpd = $mostrarPpd ? $this->alumnosPpdPorCurso($docente) : [];
+
+        return view('docentes.alumnos.panel', compact(
+            'docente', 'mostrarFid', 'mostrarPpd', 'alumnosPorCursoFid', 'alumnosPorCursoPpd'
+        ));
+    }
+
+    private function alumnosFidPorCurso(Docente $docente): array
+    {
+        $cursos = $docente->cursos;
         $periodoActual = \App\Models\PeriodoActual::where('actual', true)->first();
         $alumnosPorCurso = [];
-        $curso = null;
 
         foreach ($cursos as $curso) {
             if (! $curso->ciclo || ! in_array($curso->ciclo->programa_id, [1, 2, 3, 4])) {
@@ -409,7 +473,10 @@ class DocenteCOntroller extends Controller
                 ->whereDoesntHave('roles', fn ($r) => $r->where('name', 'alumnoB'))
                 ->where(function ($q) {
                     $q->whereHas('roles', fn ($r) => $r->where('name', 'alumno'))
-                      ->orWhereHas('roles', fn ($r) => $r->where('name', 'inhabilitado'));
+                      ->orWhere(function ($q2) {
+                          $q2->whereHas('roles', fn ($r) => $r->where('name', 'inhabilitado'))
+                              ->where('perfil', '!=', 'Retirado');
+                      });
                 });
 
             $aplicarPeriodo = function ($builder) use ($periodoActual) {
@@ -440,31 +507,44 @@ class DocenteCOntroller extends Controller
                 ->sortBy('apellidos')
                 ->values();
 
+            $alumnosUnificados->each(function ($alumno) {
+                $alumno->es_inhabilitado = $alumno->user && $alumno->user->hasRole('inhabilitado');
+            });
+
             $alumnosPorCurso[$curso->id] = $alumnosUnificados;
         }
 
-        return view('docentes.alumnos.index', compact('docente', 'alumnosPorCurso', 'curso'));
+        return $alumnosPorCurso;
     }
 
-    public function alumnosppd($id)
+    private function alumnosPpdPorCurso(Docente $docente): array
     {
-        $docente = Docente::with(['cursos.ciclo.programa'])->findOrFail($id);
         $cursos = $docente->cursos;
         $alumnosPorCurso = [];
+
         foreach ($cursos as $curso) {
-            $alumnos = User::with(['ciclo.programa', 'alumnoB'])
-                ->whereHas('roles', function ($query) {
-                    $query->where('name', 'alumnoB');
+            $alumnos = User::with(['ciclo.programa', 'alumnoB', 'roles'])
+                ->where(function ($q) {
+                    $q->whereHas('roles', fn ($r) => $r->where('name', 'alumnoB'))
+                      ->orWhere(function ($q2) {
+                          $q2->whereHas('roles', fn ($r) => $r->where('name', 'inhabilitado'))
+                              ->where('perfil', '!=', 'Retirado');
+                      });
                 })
                 ->whereHas('ciclo.cursos', function ($query) use ($curso) {
                     $query->where('cursos.id', $curso->id);
                 })
                 ->orderBy('apellidos')
                 ->get();
+
+            $alumnos->each(function ($alumno) {
+                $alumno->es_inhabilitado = $alumno->roles->contains('name', 'inhabilitado');
+            });
+
             $alumnosPorCurso[$curso->id] = $alumnos;
         }
 
-        return view('docentes.alumnos.alumnos-ppd', compact('docente', 'alumnosPorCurso'));
+        return $alumnosPorCurso;
     }
 
     public function repositorio($docente)

@@ -1,4 +1,9 @@
-@extends('layouts.docente')
+@php
+    $layout = auth()->user()?->hasRole('docente')
+        ? 'layouts.docente'
+        : (auth()->user()?->hasRole('super-admin') ? 'layouts.superadmin' : 'layouts.admin');
+@endphp
+@extends($layout)
 
 @section('titulo', 'Editar sílabo')
 
@@ -77,7 +82,7 @@
             'kicker' => 'Sílabos',
             'title' => 'Actualizar sílabo',
             'subtitle' => 'Modifique las secciones y guarde los cambios.',
-            'backUrl' => url()->previous() !== url()->current() ? url()->previous() : route('vistaDocente', $docente->id),
+            'backUrl' => url()->previous() !== url()->current() ? url()->previous() : (optional($docente)->id ? route('vistaDocente', $docente->id) : route('silabos.index')),
             'backLabel' => 'Volver',
         ])
 
@@ -105,6 +110,7 @@
                 <!-- Información del Programa, Ciclo y Curso alineada a la derecha -->
                 <div class="col-lg-9 d-flex justify-content-end flex-column align-items-end"
                     style="color: #c78d40 !important;">
+                    <div class="font-weight-bold text-uppercase" style="font-size:.75rem; letter-spacing:.12em;">SÍLABO</div>
                     <h5 class="font-weight-bold mb-1">{{ $curso->ciclo->programa->nombre }} - Ciclo:
                         {{ $curso->ciclo->nombre }}</h5>
                     <h4 class="font-weight-bold">{{ $curso->nombre }}</h4>
@@ -215,7 +221,7 @@
             @csrf
             @method('PUT')
             <input type="hidden" name="curso_id" value="{{ $curso->id }}">
-            <input type="hidden" name="docente_id" value="{{ $docente->id }}">
+            <input type="hidden" name="docente_id" value="{{ optional($docente)->id }}">
             <input type="hidden" id="hidden_periodo" name="periodo" value="">           
 
             <script>

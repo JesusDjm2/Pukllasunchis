@@ -350,36 +350,6 @@
                     <li>Comprobante de pago por Certificado de Estudios Superiores.</li>					
                 </ul>
                 <p> Como resultado de este trámite obtendrás los Certificados de Estudios Superiores.</p>
-                <h3 class="mt-4">Emisión de Diploma de Bachiller:</h3>
-                <p>
-                    Este trámite se realiza para la compra del formato del Diploma de Bachiller y el rotulado del mismo.
-                    Tiene un costo de S/400 soles. Se deben entregar los siguientes documentos:
-                </p>
-                <ul class="listasCuerpo">
-                    <li>FUT debidamente llenado. Puedes solicitarlo en la oficina de secretaría o descargarlo de la página
-                        web.</li>
-                    <li>Tener expediente de Graduación completo.</li>
-                    <li>Comprobante de pago por Emisión de Diploma de Bachiller.</li>
-                </ul>
-                <p>
-                    Como resultado de este trámite obtendrás el Diploma de Bachiller.
-                </p>
-                <h3 class="mt-4">Emisión de Título de Licenciado:</h3>
-                <p>
-                    Este trámite se realiza para la compra del formato del Título de Licenciado y el rotulado del mismo.
-                    Tiene un costo de S/400 soles. Se deben entregar los siguientes documentos:
-                </p>
-                <ul class="listasCuerpo">
-                    <li>FUT debidamente llenado. Puedes solicitarlo en la oficina de secretaría o descargarlo de la página
-                        web.</li>
-                    <li>Copia legalizada del Grado de Bachiller.</li>
-                    <!----<li>Copia de Acta de aprobación de sustentación.</li>-->
-                    <li>Un ejemplar empastado por grupo y/o tema de investigación de la versión final de la Tesis.</li>
-                    <li>Comprobante de pago por Emisión de Título de Licenciado.</li>
-                </ul>
-                <p>
-                    Como resultado de este trámite obtendrás el Título de Licenciado.
-                </p>
 
                 <h3 class="mt-4">Pagos para la realización de los Trámites Presenciales </h3>
                 <p>SOLO SE PUEDEN PAGAR EN VENTANILLAS de cualquier agencia a nivel nacional.</p>

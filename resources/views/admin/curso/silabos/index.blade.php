@@ -27,23 +27,54 @@
                     </div>
                 @endif
             </div>
+            <div class="col-12 mb-3">
+                <span class="small font-weight-bold text-secondary mr-2 d-block d-sm-inline">
+                    <i class="fas fa-calendar-alt mr-1"></i>Periodo
+                </span>
+                <div class="btn-group flex-wrap mt-1" role="group">
+                    <a href="{{ route('silabos.index') }}"
+                        class="btn btn-sm {{ !$periodoFiltroId ? 'btn-dark' : 'btn-outline-dark' }}">
+                        Todos
+                    </a>
+                    @foreach ($todosLosPeriodos as $periodo)
+                        <a href="{{ route('silabos.index', ['periodo_id' => $periodo->id]) }}"
+                            class="btn btn-sm {{ (int) $periodoFiltroId === (int) $periodo->id ? 'btn-dark' : 'btn-outline-dark' }}">
+                            {{ $periodo->nombre }}
+                            @if ($periodo->actual)
+                                <span class="badge badge-success ml-1">Actual</span>
+                            @endif
+                        </a>
+                    @endforeach
+                </div>
+            </div>
             <div class="col-lg-12" id="tablaSilabos">
                 <div class="table-responsive table-bordered">
                     <table class="table table-hover" style="font-size: 14px">
                         <thead class="thead-dark">
                             <tr>
-                                <th>Curso</th>
-                                <th>Nombre</th>
-                                <th>Contenido</th>
+                                <th>Sílabo</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($silabos as $silabo)
                                 <tr>
-                                    <td><strong>{{ $silabo->curso->nombre }}</strong></td>
-                                    <td>{{ $silabo->nombre }}</td>
-                                    <td>{{ Str::limit($silabo->contenido, 50) }}</td>
+                                    <td>
+                                        <div class="font-weight-bold" style="font-size:.95rem;">{{ $silabo->curso->nombre }}</div>
+                                        <ul class="pl-3 mb-1 small text-muted">
+                                            <li><strong>Periodo:</strong> {{ optional($silabo->periodoActual)->nombre ?? $silabo->periodo }}</li>
+                                            <li><strong>Programa:</strong> {{ optional($silabo->curso->ciclo)->programa->nombre ?? '—' }}</li>
+                                            <li><strong>Ciclo:</strong> {{ optional($silabo->curso->ciclo)->nombre ?? '—' }}</li>
+                                        </ul>
+                                        <div class="small">
+                                            <strong>Docente:</strong>
+                                            @if ($silabo->curso->docentes->isNotEmpty())
+                                                {{ $silabo->curso->docentes->pluck('nombre')->join(', ') }}
+                                            @else
+                                                <span class="text-muted font-italic">Sin docente asignado</span>
+                                            @endif
+                                        </div>
+                                    </td>
                                     <td>
                                         <a href="{{ route('silabos.show', ['silabo' => $silabo->id]) }}"
                                             class="btn btn-sm btn-info" title="Ver Sílabo">

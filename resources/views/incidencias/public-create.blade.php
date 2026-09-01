@@ -1,29 +1,47 @@
-@extends('layouts.app')
+@extends('layouts.formulario-publico')
 
 @section('titulo', 'Reporte de Incidencias — Pukllasunchis')
 
+@push('styles')
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <style>
+        #incPublicForm .form-group { margin-bottom: .75rem; }
+        #incPublicForm label.small { margin-bottom: .2rem; font-size: .78rem; }
+        #incPublicForm .form-control,
+        #incPublicForm select.form-control {
+            padding: .3rem .6rem;
+            font-size: .85rem;
+            height: calc(1.5em + .6rem + 2px);
+        }
+        #incPublicForm textarea.form-control { height: auto; padding: .5rem .6rem; }
+        #incPublicForm .custom-file-label,
+        #incPublicForm .custom-file-label::after {
+            padding: .3rem .6rem;
+            font-size: .85rem;
+            height: calc(1.5em + .6rem + 2px);
+        }
+    </style>
+@endpush
+
 @section('content')
-    <main class="d-flex justify-content-center align-items-start py-5 fondoLogin2" style="min-height:100vh;">
+    <main class="d-flex justify-content-center align-items-start py-4 py-md-5 px-2 fondoLogin2" style="min-height:100vh;">
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-12 col-md-12 col-xl-10">
+
+                    <div class="text-center mb-3">
+                        <img src="{{ asset('img/logo-iesp-pukllasunchis.png') }}" alt="Pukllasunchis" style="max-width:150px;">
+                    </div>
 
                     <div class="card border-0 shadow-lg" style="border-radius:1rem;overflow:hidden;">
                         {{-- Franja superior de color --}}
                         <div style="height:6px;background:linear-gradient(90deg,#4e73df 0%,#1cc88a 100%);"></div>
 
-                        <div class="card-body p-4 p-md-5">
+                        <div class="card-body p-3 p-md-4">
 
                             {{-- Alertas --}}
-                            @if (session('success'))
-                                <div class="alert alert-success alert-dismissible fade show shadow-sm mb-4" role="alert">
-                                    <i class="fas fa-check-circle mr-2"></i>{{ session('success') }}
-                                    <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
-                                </div>
-                            @endif
-
                             @if ($errors->any())
-                                <div class="alert alert-danger alert-dismissible fade show shadow-sm mb-4" role="alert">
+                                <div class="alert alert-danger alert-dismissible fade show shadow-sm mb-3" role="alert">
                                     <i class="fas fa-exclamation-circle mr-2"></i>
                                     <strong>Por favor corrige los siguientes errores:</strong>
                                     <ul class="mb-0 mt-2 pl-3">
@@ -35,7 +53,7 @@
                                 </div>
                             @endif
 
-                            <p class="text-muted mb-4" style="font-size:.875rem;">
+                            <p class="text-muted mb-3" style="font-size:.82rem;">
                                 Complete el formulario para reportar una incidencia sobre un estudiante.
                                 Los campos marcados con <span class="text-danger font-weight-bold">*</span> son
                                 obligatorios.
@@ -46,9 +64,9 @@
                                 @csrf
 
                                 {{-- ── Datos del docente ── --}}
-                                <div class="mb-4">
+                                <div class="mb-3">
                                     <div class="text-uppercase font-weight-bold text-muted mb-2"
-                                        style="font-size:.68rem;letter-spacing:.1em;border-bottom:2px solid #eaecf4;padding-bottom:.35rem;">
+                                        style="font-size:.66rem;letter-spacing:.1em;border-bottom:2px solid #eaecf4;padding-bottom:.3rem;">
                                         <i class="fas fa-chalkboard-teacher mr-1"></i> Datos del docente
                                     </div>
                                     <div class="form-group">
@@ -66,21 +84,21 @@
                                 </div>
 
                                 {{-- ── Selección del alumno ── --}}
-                                <div class="mb-4">
-                                    <div class="text-uppercase font-weight-bold text-muted mb-3"
-                                        style="font-size:.68rem;letter-spacing:.1em;border-bottom:2px solid #eaecf4;padding-bottom:.35rem;">
+                                <div class="mb-3">
+                                    <div class="text-uppercase font-weight-bold text-muted mb-2"
+                                        style="font-size:.66rem;letter-spacing:.1em;border-bottom:2px solid #eaecf4;padding-bottom:.3rem;">
                                         <i class="fas fa-user-graduate mr-1"></i> Estudiante involucrado
                                     </div>
 
                                     <div class="row">
-                                        <div class="col-6">
+                                        <div class="col-md-4">
                                             <div class="form-group">
                                                 <label class="font-weight-bold small">
                                                     Programa <span class="text-danger">*</span>
                                                 </label>
                                                 <select name="programa_id" id="selPrograma"
                                                     class="form-control @error('programa_id') is-invalid @enderror">
-                                                    <option value="">— Seleccione un programa —</option>
+                                                    <option value="">— Seleccione —</option>
                                                     @foreach ($programas as $p)
                                                         <option value="{{ $p->id }}"
                                                             {{ old('programa_id') == $p->id ? 'selected' : '' }}>
@@ -92,18 +110,30 @@
                                                     <div class="invalid-feedback">{{ $message }}</div>
                                                 @enderror
                                             </div>
-
                                         </div>
-                                        <div class="col-6">
+                                        <div class="col-md-4">
                                             <div class="form-group">
                                                 <label class="font-weight-bold small">
                                                     Ciclo <span class="text-danger">*</span>
                                                 </label>
                                                 <select name="ciclo_id" id="selCiclo"
                                                     class="form-control @error('ciclo_id') is-invalid @enderror" disabled>
-                                                    <option value="">— Seleccione primero un programa —</option>
+                                                    <option value="">— Primero el programa —</option>
                                                 </select>
                                                 @error('ciclo_id')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label class="font-weight-bold small">
+                                                    Fecha <span class="text-danger">*</span>
+                                                </label>
+                                                <input type="date" name="fecha"
+                                                    class="form-control @error('fecha') is-invalid @enderror"
+                                                    value="{{ old('fecha', now()->format('Y-m-d')) }}">
+                                                @error('fecha')
                                                     <div class="invalid-feedback">{{ $message }}</div>
                                                 @enderror
                                             </div>
@@ -125,29 +155,17 @@
                                 </div>
 
                                 {{-- ── Detalle de la incidencia ── --}}
-                                <div class="mb-4">
-                                    <div class="text-uppercase font-weight-bold text-muted mb-3"
-                                        style="font-size:.68rem;letter-spacing:.1em;border-bottom:2px solid #eaecf4;padding-bottom:.35rem;">
+                                <div class="mb-3">
+                                    <div class="text-uppercase font-weight-bold text-muted mb-2"
+                                        style="font-size:.66rem;letter-spacing:.1em;border-bottom:2px solid #eaecf4;padding-bottom:.3rem;">
                                         <i class="fas fa-clipboard-list mr-1"></i> Detalle de la incidencia
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label class="font-weight-bold small">
-                                            Fecha <span class="text-danger">*</span>
-                                        </label>
-                                        <input type="date" name="fecha"
-                                            class="form-control @error('fecha') is-invalid @enderror"
-                                            value="{{ old('fecha', now()->format('Y-m-d')) }}">
-                                        @error('fecha')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
                                     </div>
 
                                     <div class="form-group">
                                         <label class="font-weight-bold small">
                                             Descripción de la incidencia <span class="text-danger">*</span>
                                         </label>
-                                        <textarea name="reporte" id="reporte" rows="6" class="form-control @error('reporte') is-invalid @enderror"
+                                        <textarea name="reporte" id="reporte" rows="4" class="form-control @error('reporte') is-invalid @enderror"
                                             placeholder="Describa con detalle la situación observada: qué ocurrió, cuándo, dónde y cualquier otra información relevante…">{{ old('reporte') }}</textarea>
                                         @error('reporte')
                                             <div class="invalid-feedback">{{ $message }}</div>
@@ -182,7 +200,7 @@
                                 </div>
 
                                 {{-- Botón enviar --}}
-                                <div class="text-center mt-4">
+                                <div class="text-center mt-3">
                                     <button type="submit" class="btn btn-primary btn-lg px-5"
                                         style="border-radius:2rem;font-weight:600;">
                                         <i class="fas fa-paper-plane mr-2"></i> Enviar reporte
@@ -193,7 +211,7 @@
                     </div>
 
                     <p class="text-center text-white-50 mt-3" style="font-size:.78rem;">
-                        © {{ date('Y') }} Instituto de Educación Superior Pedagógico Pukllasunchis
+                        © {{ date('Y') }} Escuela de Educación Superior Pedagógica Pukllasunchis
                     </p>
                 </div>
             </div>
@@ -202,7 +220,27 @@
 @endsection
 
 @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        @if (session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: '¡Reporte enviado!',
+                text: '{{ session('success') }}',
+                confirmButtonColor: '#4e73df',
+                confirmButtonText: 'Ir al inicio',
+                showDenyButton: true,
+                denyButtonColor: '#1cc88a',
+                denyButtonText: 'Ir al Intranet',
+            }).then(function(result) {
+                if (result.isConfirmed) {
+                    window.location.href = '{{ route('index') }}';
+                } else if (result.isDenied) {
+                    window.location.href = '{{ route('login') }}';
+                }
+            });
+        @endif
+
         (function() {
             var urlCiclos = '{{ route('api.ciclos', ':p') }}';
             var urlAlumnos = '{{ route('api.alumnos', ':c') }}';

@@ -86,4 +86,25 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Ciclo::class, 'tutor_ciclos')->withTimestamps();
     }
+
+    /**
+     * Correo a usar para notificaciones: un tutor a menudo tiene el correo
+     * "real" cargado en su ficha de Docente y no en su cuenta de usuario.
+     */
+    public function correoNotificacion(): ?string
+    {
+        return $this->docente?->email ?: $this->email;
+    }
+
+    /**
+     * Primer nombre + primer apellido, para mostrar en espacios reducidos
+     * (p. ej. el póster de QR) sin el nombre completo ni segundos nombres/apellidos.
+     */
+    public function nombreCorto(): string
+    {
+        $primerNombre = trim(explode(' ', trim((string) $this->name))[0] ?? '');
+        $primerApellido = trim(explode(' ', trim((string) $this->apellidos))[0] ?? '');
+
+        return trim($primerNombre.' '.$primerApellido);
+    }
 }

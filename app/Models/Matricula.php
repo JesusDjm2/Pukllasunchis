@@ -15,10 +15,16 @@ class Matricula extends Model
         'fecha_completado',
         'estado',
         'comprobante',
+        'voucher_verificado',
+        'voucher_verificado_at',
+        'ficha_enviada_at',
     ];
 
     protected $casts = [
         'fecha_completado' => 'datetime',
+        'voucher_verificado' => 'boolean',
+        'voucher_verificado_at' => 'datetime',
+        'ficha_enviada_at' => 'datetime',
     ];
 
     public function alumno()

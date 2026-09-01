@@ -9,6 +9,7 @@ use App\Models\Calificacion;
 use App\Models\Competencia;
 use App\Models\Curso;
 use App\Models\Docente;
+use App\Models\PeriodoActual;
 use App\Models\PeriodoDos;
 use App\Models\PeriodoTres;
 use App\Models\PeriodoUno;
@@ -24,7 +25,6 @@ class CalificacionController extends Controller
         $curso = Curso::findOrFail($cursoId);
         $competencias = $curso->competencias;
         $competenciasSeleccionadas = $curso->competenciasSeleccionadas()->pluck('competencias.id')->toArray();
-
         return view('admin.curso.asignar', compact('curso', 'competencias', 'competenciasSeleccionadas'));
     }
 
@@ -190,7 +190,7 @@ class CalificacionController extends Controller
                 $q->whereDoesntHave('roles', fn ($r) => $r->where('name', 'inhabilitado'))
                     ->orWhere(function ($q2) {
                         $q2->whereHas('roles', fn ($r) => $r->where('name', 'inhabilitado'))
-                            ->where('perfil', '!=', 'Sin matrícula');
+                            ->whereNotIn('perfil', ['Sin matrícula', 'Retirado']);
                     });
             })
             ->orderBy('apellidos')
@@ -205,7 +205,7 @@ class CalificacionController extends Controller
                         ->orWhere(function ($subQuery) {
                             $subQuery->whereHas('roles', function ($roleQuery) {
                                 $roleQuery->where('name', 'inhabilitado');
-                            })->where('perfil', '!=', 'Sin matrícula');
+                            })->whereNotIn('perfil', ['Sin matrícula', 'Retirado']);
                         });
                 });
             })
@@ -292,7 +292,7 @@ class CalificacionController extends Controller
                 $q->whereDoesntHave('roles', fn ($r) => $r->where('name', 'inhabilitado'))
                     ->orWhere(function ($q2) {
                         $q2->whereHas('roles', fn ($r) => $r->where('name', 'inhabilitado'))
-                            ->where('perfil', '!=', 'Sin matrícula');
+                            ->whereNotIn('perfil', ['Sin matrícula', 'Retirado']);
                     });
             })
             ->orderBy('apellidos')
@@ -307,7 +307,7 @@ class CalificacionController extends Controller
                         ->orWhere(function ($subQuery) {
                             $subQuery->whereHas('roles', function ($roleQuery) {
                                 $roleQuery->where('name', 'inhabilitado');
-                            })->where('perfil', '!=', 'Sin matrícula');
+                            })->whereNotIn('perfil', ['Sin matrícula', 'Retirado']);
                         });
                 });
             })
@@ -383,11 +383,6 @@ class CalificacionController extends Controller
             $cursoId = $request->input('curso_id');
             $curso = Curso::findOrFail($cursoId);
 
-            // El Desempeño (Periodo 3) solo se guarda si Parcial 2 sigue cumpliendo el
-            // porcentaje mínimo de desbloqueo; evita que llegue una nota de Periodo 3
-            // aunque el campo estuviera deshabilitado en el navegador.
-            $desempenoHabilitado = $curso->porcentajePeriodo(2, ['calificacion_curso']) >= 50;
-
             foreach ($request->input('alumnos') as $data) {
                 if (! empty($data['periodo2'])) {
                     PeriodoDos::updateOrCreate(
@@ -407,7 +402,7 @@ class CalificacionController extends Controller
                     );
                 }
 
-                if ($desempenoHabilitado && ! empty($data['periodo3'])) {
+                if (! empty($data['periodo3'])) {
                     PeriodoTres::updateOrCreate(
                         [
                             'alumno_id' => $data['alumno_id'],
@@ -425,8 +420,6 @@ class CalificacionController extends Controller
                 }
             }
 
-            session()->flash('success', 'Calificaciones de Parcial 2 y Desempeño guardadas exitosamente');
-
             $competenciasIds = [];
             foreach ($request->input('alumnos') as $data) {
                 if (isset($data['competencias'])) {
@@ -434,52 +427,10 @@ class CalificacionController extends Controller
                 }
             }
             $competenciasIds = array_unique($competenciasIds);
-            $competenciasSeleccionadas = Competencia::whereIn('id', $competenciasIds)->get();
 
-            $alumnosRelacionados = $curso->alumnos()
-                ->whereHas('user', function ($q) {
-                    $q->whereDoesntHave('roles', fn ($r) => $r->where('name', 'inhabilitado'))
-                        ->orWhere(function ($q2) {
-                            $q2->whereHas('roles', fn ($r) => $r->where('name', 'inhabilitado'))
-                                ->where('perfil', '!=', 'Sin matrícula');
-                        });
-                })
-                ->orderBy('apellidos')
-                ->get();
-
-            $alumnosCiclo = $curso->ciclo->alumnos()
-                ->whereHas('user', function ($query) {
-                    $query->where(function ($q) {
-                        $q->whereDoesntHave('roles', function ($roleQuery) {
-                            $roleQuery->where('name', 'inhabilitado');
-                        })
-                            ->orWhere(function ($subQuery) {
-                                $subQuery->whereHas('roles', function ($roleQuery) {
-                                    $roleQuery->where('name', 'inhabilitado');
-                                })->where('perfil', '!=', 'Sin matrícula');
-                            });
-                    });
-                })
-                ->orderBy('apellidos')
-                ->get();
-
-            $alumnos = $alumnosRelacionados
-                ->merge($alumnosCiclo)
-                ->unique('id')
-                ->values();
-
-            $alumnos = $alumnos->filter(function ($alumno) use ($cursoId) {
-                $cursoRelacionIds = $alumno->cursos()->pluck('curso_id');
-                if ($cursoRelacionIds->isNotEmpty() && ! $cursoRelacionIds->contains($cursoId)) {
-                    return false;
-                }
-
-                return true;
-            })->values();
-
-            $mostrarBotonDesempeno = $desempenoHabilitado;
-
-            return view('docentes.calificaciones.alumnos', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos', 'mostrarBotonDesempeno'));
+            return redirect()
+                ->route('competencias.calificar', ['docente' => $docenteId, 'curso' => $cursoId, 'competencias' => $competenciasIds])
+                ->with('success', 'Calificaciones de Parcial 2 y Desempeño guardadas exitosamente');
         } catch (\Throwable $e) {
             Log::error('Error al guardar calificaciones de Parcial 2 y Desempeño', [
                 'curso_id' => $request->input('curso_id'),
@@ -578,61 +529,17 @@ class CalificacionController extends Controller
                 ]
             );
         }
-        session()->flash('success', 'Calificaciones de Parcial 1 guardado correctamente!');
         $competenciasIds = [];
         foreach ($request->input('alumnos') as $data) {
             if (isset($data['competencias'])) {
                 $competenciasIds = array_merge($competenciasIds, $data['competencias']);
             }
         }
-
         $competenciasIds = array_unique($competenciasIds);
-        $competenciasSeleccionadas = Competencia::whereIn('id', $competenciasIds)->get();
-        $alumnosRelacionados = $curso->alumnos()
-            ->whereHas('user', function ($q) {
-                $q->whereDoesntHave('roles', fn ($r) => $r->where('name', 'inhabilitado'))
-                    ->orWhere(function ($q2) {
-                        $q2->whereHas('roles', fn ($r) => $r->where('name', 'inhabilitado'))
-                            ->where('perfil', '!=', 'Sin matrícula');
-                    });
-            })
-            ->orderBy('apellidos')
-            ->get();
 
-        $alumnosCiclo = $curso->ciclo->alumnos()
-            ->whereHas('user', function ($query) {
-                $query->where(function ($q) {
-                    $q->whereDoesntHave('roles', function ($roleQuery) {
-                        $roleQuery->where('name', 'inhabilitado');
-                    })
-                        ->orWhere(function ($subQuery) {
-                            $subQuery->whereHas('roles', function ($roleQuery) {
-                                $roleQuery->where('name', 'inhabilitado');
-                            })->where('perfil', '!=', 'Sin matrícula');
-                        });
-                });
-            })
-            ->orderBy('apellidos')
-            ->get();
-
-        $alumnos = $alumnosRelacionados
-            ->merge($alumnosCiclo)
-            ->unique('id')
-            ->values();
-
-        $alumnos = $alumnos->filter(function ($alumno) use ($cursoId) {
-            $cursoRelacionIds = $alumno->cursos()->pluck('curso_id');
-            if ($cursoRelacionIds->isNotEmpty() && ! $cursoRelacionIds->contains($cursoId)) {
-                return false;
-            }
-
-            return true;
-        })->values();
-        $mostrarBotonDesempeno = false;
-        $porcentaje = $curso->porcentajePeriodo(2, ['calificacion_curso']);
-        $mostrarBotonDesempeno = $porcentaje >= 50;
-
-        return view('docentes.calificaciones.alumnos', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos', 'mostrarBotonDesempeno'));
+        return redirect()
+            ->route('competencias.calificar', ['docente' => $docenteId, 'curso' => $cursoId, 'competencias' => $competenciasIds])
+            ->with('success', 'Calificaciones de Parcial 1 guardado correctamente!');
         } catch (\Throwable $e) {
             Log::error('Error al guardar calificaciones de Parcial 1', [
                 'curso_id' => $request->input('curso_id'),
@@ -823,6 +730,89 @@ class CalificacionController extends Controller
         );
     }
 
+    /**
+     * Exporta las calificaciones de TODOS los cursos FID del periodo actual
+     * activo: un archivo .xlsx por curso (mismo formato/contenido que
+     * exportarCSV(), el botón "Exportar Excel" de la vista de calificaciones
+     * de un curso), empaquetados en un único .zip para descargar de una vez.
+     */
+    public function exportarPeriodoActualFID()
+    {
+        $cursoIdsActuales = \DB::table('curso_docente')->distinct()->pluck('curso_id');
+
+        $cursos = Curso::with(['ciclo.programa', 'competencias', 'competenciasSeleccionadas'])
+            ->whereIn('id', $cursoIdsActuales)
+            ->get()
+            ->reject(fn ($curso) => str_contains($curso->ciclo->programa->nombre ?? '', 'PPD'))
+            ->reject(fn ($curso) => str_contains(strtolower($curso->cc ?? ''), 'extracurricular'))
+            ->sortBy([
+                fn ($a, $b) => ($a->ciclo->ordenCiclo() ?? 999) <=> ($b->ciclo->ordenCiclo() ?? 999),
+                fn ($a, $b) => $a->nombre <=> $b->nombre,
+            ]);
+
+        $archivosPorNombre = [];
+
+        foreach ($cursos as $curso) {
+            $docenteId = \DB::table('curso_docente')->where('curso_id', $curso->id)->value('docente_id');
+            $docente = $docenteId ? Docente::find($docenteId) : null;
+
+            if (! $docente) {
+                continue;
+            }
+
+            $competencias = $curso->competencias->count() <= 3
+                ? $curso->competencias
+                : $curso->competenciasSeleccionadas;
+
+            if ($competencias->isEmpty()) {
+                continue;
+            }
+
+            $alumnosCiclo = $curso->ciclo->alumnos()
+                ->orderBy('apellidos')
+                ->get();
+
+            $alumnosRelacionados = $curso->alumnos()
+                ->orderBy('apellidos')
+                ->get();
+
+            $alumnos = $alumnosCiclo->merge($alumnosRelacionados)->unique('id')->values();
+
+            if ($alumnos->isEmpty()) {
+                continue;
+            }
+
+            $sanear = fn ($texto) => preg_replace('/[\/\\\\]/', '-', $texto ?? '');
+            $nombreCurso = $sanear($curso->nombre);
+            $nombrePrograma = $sanear($curso->ciclo->programa->nombre ?? 'Sin programa');
+            $nombreCiclo = $sanear($curso->ciclo->nombre ?? '-');
+            $nombreDocente = $sanear($docente->nombre);
+            $nombreArchivo = "{$nombreCurso} - {$nombrePrograma} - Ciclo {$nombreCiclo} - {$nombreDocente} ({$curso->id}).xlsx";
+
+            $archivosPorNombre[$nombreArchivo] = Excel::raw(
+                new CalificacionesExport($docenteId, $curso->id, $competencias),
+                \Maatwebsite\Excel\Excel::XLSX
+            );
+        }
+
+        if (empty($archivosPorNombre)) {
+            return back()->with('error', 'No hay cursos con calificaciones para exportar en el periodo actual.');
+        }
+
+        $periodoActual = PeriodoActual::where('actual', true)->first();
+        $nombreZip = 'Calificaciones_FID_'.($periodoActual->nombre ?? 'PeriodoActual').'.zip';
+        $rutaZip = storage_path('app/'.uniqid('export_periodo_actual_').'.zip');
+
+        $zip = new \ZipArchive();
+        $zip->open($rutaZip, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
+        foreach ($archivosPorNombre as $nombreArchivo => $contenido) {
+            $zip->addFromString($nombreArchivo, $contenido);
+        }
+        $zip->close();
+
+        return response()->download($rutaZip, $nombreZip)->deleteFileAfterSend(true);
+    }
+
     /* public function eliminarTodosCursosGlobal()
     {
         \DB::table('curso_docente')->truncate();
@@ -841,5 +831,20 @@ class CalificacionController extends Controller
             ->delete();
 
         return redirect()->back()->with('success', 'Se eliminaron todos los cursos de todos los docentes (excluyendo cursos de programas PPD).');
+    }
+
+    public function eliminarTodosCursosGlobalPPD()
+    {
+        // Obtener los IDs de cursos que SÍ son de programas PPD
+        $cursosPPD = Curso::whereHas('ciclo.programa', function ($query) {
+            $query->where('nombre', 'LIKE', '%PPD%');
+        })->pluck('id');
+
+        // Eliminar solo las asignaciones de cursos PPD
+        \DB::table('curso_docente')
+            ->whereIn('curso_id', $cursosPPD)
+            ->delete();
+
+        return redirect()->back()->with('success', 'Se eliminaron todas las asignaciones de cursos PPD a todos los docentes.');
     }
 }

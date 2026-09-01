@@ -106,19 +106,129 @@ class Curso extends Model
         return $ciclo->merge($rel)->unique()->values();
     }
 
+    /**
+     * El universo de un curso PPD es el mismo ciclo del curso (Ciclo I o Ciclo II), no todo el
+     * programa: el programa acumula un ciclo "Egresados <año>" por cada promoción que se gradúa,
+     * y esos alumnos ya no cursan nada — contarlos mezclaría notas de cohortes distintas que
+     * comparten el mismo curso_id (uno graduado, con notas viejas; otro cursando, sin notas aún).
+     *
+     * El avance se mide por CASILLA llena (Participación, Actividad, Autoevaluación, Evaluación x
+     * competencia), no por alumno 100% completo: un docente suele ir llenando por partes (p.ej.
+     * primero todo Producto Final y después Producto de Proceso), y contar solo alumnos totalmente
+     * terminados dejaba el indicador en 0% aunque ya hubiera bastante trabajo real guardado.
+     */
     public function porcentajePPD(): float
     {
-        $ppdIdsEnCiclo = \App\Models\ppd::where('ciclo_id', $this->ciclo_id)->pluck('id');
-        $total = $ppdIdsEnCiclo->count();
+        if (! $this->ciclo_id) {
+            return 0.0;
+        }
+
+        $idsUniverso = \App\Models\User::where('ciclo_id', $this->ciclo_id)
+            ->where(function ($q) {
+                $q->whereHas('roles', fn ($r) => $r->where('name', 'alumnoB'))
+                  ->orWhere(function ($q2) {
+                      $q2->whereHas('roles', fn ($r) => $r->where('name', 'inhabilitado'))
+                          ->where('perfil', '!=', 'Retirado');
+                  });
+            })
+            ->pluck('id');
+
+        $total = $idsUniverso->count();
         if ($total === 0) {
             return 0.0;
         }
-        $calificados = $this->calificacionesppd()
-            ->whereNotNull('calificacion_curso')
-            ->whereIn('ppd_id', $ppdIdsEnCiclo)
-            ->count(DB::raw('DISTINCT ppd_id'));
 
-        return round(($calificados / $total) * 100, 2);
+        $numCompetencias = $this->numeroCompetenciasPpd();
+        $camposClave = $this->camposManualesPpd($numCompetencias);
+        $totalCasillas = $total * count($camposClave);
+
+        $campos = array_merge(['ppd_id', 'user_id'], $camposClave);
+        $ppdIds = $this->calificacionesppd()->pluck('ppd_id')->filter()->unique();
+        $ppdUserMap = \App\Models\ppd::whereIn('id', $ppdIds)->pluck('user_id', 'id');
+
+        $casillasLlenas = $this->calificacionesppd()
+            ->get($campos)
+            ->sum(function ($fila) use ($camposClave, $idsUniverso, $ppdUserMap) {
+                $uid = $fila->user_id ?? ($ppdUserMap[$fila->ppd_id] ?? null);
+                if (! $uid || ! $idsUniverso->contains($uid)) {
+                    return 0;
+                }
+
+                $llenas = 0;
+                foreach ($camposClave as $campo) {
+                    if ($fila->{$campo} !== null) {
+                        $llenas++;
+                    }
+                }
+
+                return $llenas;
+            });
+
+        return round(($casillasLlenas / $totalCasillas) * 100, 2);
+    }
+
+    /**
+     * IDs de usuario (alumnos) con TODOS los campos manuales de Proceso y Final llenos para este
+     * curso PPD — la señal real de "ya calificado". No usa calificacion_curso: ese campo lo
+     * recalcula el JS de la pantalla de calificar cada 200ms para TODAS las filas visibles,
+     * incluidas las que el docente nunca tocó, así que puede quedar con una nota derivada (p.ej.
+     * "1.10") aunque casi todos los campos reales sigan vacíos.
+     */
+    public function alumnosPpdCalificadosCompletos(): \Illuminate\Support\Collection
+    {
+        $camposClave = $this->camposManualesPpd($this->numeroCompetenciasPpd());
+        $campos = array_merge(['ppd_id', 'user_id'], $camposClave);
+
+        $ppdIds = $this->calificacionesppd()->pluck('ppd_id')->filter()->unique();
+        $ppdUserMap = \App\Models\ppd::whereIn('id', $ppdIds)->pluck('user_id', 'id');
+
+        return $this->calificacionesppd()
+            ->get($campos)
+            ->filter(function ($fila) use ($camposClave) {
+                foreach ($camposClave as $campo) {
+                    if ($fila->{$campo} === null) {
+                        return false;
+                    }
+                }
+
+                return true;
+            })
+            ->map(fn ($fila) => $fila->user_id ?? ($ppdUserMap[$fila->ppd_id] ?? null))
+            ->filter()
+            ->unique()
+            ->values();
+    }
+
+    /**
+     * Cuántas competencias (1 a 3) se califican realmente en este curso PPD — mismo criterio que
+     * PpdController/DocenteCOntroller al armar la pantalla de calificar.
+     */
+    private function numeroCompetenciasPpd(): int
+    {
+        $totalCompetencias = $this->competencias()->count();
+        $n = ($totalCompetencias > 0 && $totalCompetencias <= 3)
+            ? $totalCompetencias
+            : $this->competenciasSeleccionadas()->count();
+
+        return $n > 0 ? min(3, $n) : 3;
+    }
+
+    /**
+     * Nombres de las columnas que el docente llena a mano en calificacionesppds — Participación y
+     * Actividad (Proceso), Autoevaluación y Evaluación (Final) — por cada competencia evaluada.
+     * No incluye los "Promedio" (pp_c{n}_4, pf_c{n}_3): esos los calcula solo el JS de la pantalla.
+     */
+    private function camposManualesPpd(int $numCompetencias): array
+    {
+        $campos = [];
+        for ($i = 1; $i <= $numCompetencias; $i++) {
+            $campos[] = "pp_c{$i}_1";
+            $campos[] = "pp_c{$i}_2";
+            $campos[] = "pf_c{$i}_1";
+            $campos[] = "pf_c{$i}_2";
+        }
+
+        return $campos;
     }
 
     public function porcentajePeriodo(int $periodo, array $camposClave = ['calificacion_curso']): float

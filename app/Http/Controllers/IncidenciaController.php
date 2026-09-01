@@ -7,6 +7,8 @@ use App\Models\Alumno;
 use App\Models\Ciclo;
 use App\Models\Incidencia;
 use App\Models\Programa;
+use App\Models\User;
+use App\Notifications\IncidenciaCreada;
 use App\Services\WhatsappService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -15,16 +17,6 @@ use Illuminate\Support\Str;
 
 class IncidenciaController extends Controller
 {
-    public function adminAll()
-    {
-        $incidencias = Incidencia::with(['alumno', 'ciclo.programa', 'docente'])
-            ->orderByDesc('fecha')
-            ->orderByDesc('created_at')
-            ->paginate(30);
-
-        return view('admin.docentes.incidencias-todas', compact('incidencias'));
-    }
-
     public function adminIndex(\App\Models\Docente $docente)
     {
         $incidencias = Incidencia::with(['alumno', 'ciclo.programa', 'docente'])
@@ -97,7 +89,7 @@ class IncidenciaController extends Controller
 
     public function publicCreate()
     {
-        $programas = Programa::orderBy('nombre')->get();
+        $programas = Programa::where('nombre', 'not like', '%PPD%')->orderBy('nombre')->get();
         return view('incidencias.public-create', compact('programas'));
     }
 
@@ -135,6 +127,27 @@ class IncidenciaController extends Controller
     {
         $ciclo = Ciclo::with('tutores')->find($incidencia->ciclo_id);
 
+        // Copia al correo de administración: se envía siempre, independiente de
+        // si el ciclo tiene o no tutor(es) asignados.
+        if ($adminEmail = env('NOTIF_EMAIL_ADMIN')) {
+            try {
+                Mail::to($adminEmail)->send(new IncidenciaMail($incidencia));
+            } catch (\Throwable $e) {
+                Log::warning('Notificación de incidencia a admin: '.$e->getMessage());
+            }
+        }
+
+        // Alerta en el sistema (campanita) para todo admin/super-admin: siempre,
+        // de todos los tutores/ciclos — el correo ya se cubrió arriba, aquí solo
+        // se genera la notificación in-app (via() la deja sin canal de mail).
+        foreach (User::role(['admin', 'super-admin'])->get() as $adminUser) {
+            try {
+                $adminUser->notify(new IncidenciaCreada($incidencia));
+            } catch (\Throwable $e) {
+                Log::warning("Notificación de incidencia a admin {$adminUser->id}: ".$e->getMessage());
+            }
+        }
+
         if (!$ciclo || $ciclo->tutores->isEmpty()) {
             return;
         }
@@ -147,6 +160,7 @@ class IncidenciaController extends Controller
 
         $textoWA = "📋 *Nueva incidencia - EESP Pukllasunchis*\n"
             ."👤 Alumno: {$nombreAl}\n"
+            ."📞 Contacto: ".($alumno?->numero ?? '—')."\n"
             ."📚 Ciclo: {$ciclo->nombre}\n"
             ."📅 Fecha: {$incidencia->fecha->format('d/m/Y')}\n"
             ."✍️ Reportado por: {$reporter}\n"
@@ -154,13 +168,11 @@ class IncidenciaController extends Controller
             .(mb_strlen($incidencia->reporte) > 200 ? '...' : '');
 
         foreach ($ciclo->tutores as $tutor) {
-            // Email
-            if ($tutor->email) {
-                try {
-                    Mail::to($tutor->email)->send(new IncidenciaMail($incidencia));
-                } catch (\Throwable $e) {
-                    Log::warning("Email incidencia a tutor {$tutor->id}: ".$e->getMessage());
-                }
+            // Email + notificación in-app (unificadas vía Notification)
+            try {
+                $tutor->notify(new IncidenciaCreada($incidencia));
+            } catch (\Throwable $e) {
+                Log::warning("Notificación incidencia a tutor {$tutor->id}: ".$e->getMessage());
             }
 
             // WhatsApp (CallMeBot)
@@ -175,10 +187,15 @@ class IncidenciaController extends Controller
     public function ciclosPorPrograma($programaId)
     {
         $ciclos = Ciclo::where('programa_id', $programaId)
+            ->with('tutores')
             ->orderBy('nombre')
-            ->get(['id', 'nombre']);
+            ->get(['id', 'nombre', 'programa_id']);
 
-        return response()->json($ciclos);
+        return response()->json($ciclos->map(fn ($ciclo) => [
+            'id' => $ciclo->id,
+            'nombre' => $ciclo->nombre,
+            'tutores' => $ciclo->tutores->map->nombreCorto()->filter()->implode(', '),
+        ]));
     }
 
     // AJAX: alumnos por ciclo
@@ -192,5 +209,29 @@ class IncidenciaController extends Controller
             'id'     => $a->id,
             'nombre' => $a->apellidos.', '.$a->nombres,
         ]));
+    }
+
+    // ── Marcar estado (panel de admin) ────────────────────────────────────
+
+    public function marcarEstado(Request $request, Incidencia $incidencia)
+    {
+        $data = $request->validate([
+            'notas_atencion' => 'nullable|string',
+        ]);
+
+        $incidencia->estado = $incidencia->estado === 'atendida' ? 'pendiente' : 'atendida';
+        $incidencia->atendido_por = $incidencia->estado === 'atendida' ? auth()->id() : null;
+        $incidencia->atendido_at = $incidencia->estado === 'atendida' ? now() : null;
+        $incidencia->notas_atencion = $data['notas_atencion'] ?? $incidencia->notas_atencion;
+        $incidencia->save();
+
+        return back()->with('success', 'Incidencia actualizada.');
+    }
+
+    public function destroy(Incidencia $incidencia)
+    {
+        $incidencia->delete();
+
+        return back()->with('success', 'Incidencia eliminada correctamente.');
     }
 }

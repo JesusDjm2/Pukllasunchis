@@ -69,6 +69,163 @@
             background-color: #34d058;
             color: #1a1a1a;
         }
+
+        /* ── Progreso por periodo (Parcial 1 / Parcial 2 / Desempeño) ── */
+        .curso-progreso-fila {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            width: 100%;
+            max-width: 560px;
+        }
+        .curso-progreso-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            min-width: 155px;
+            padding-right: 20px;
+            border-right: 1px solid rgba(0, 0, 0, .08);
+        }
+        .curso-progreso-item:last-child {
+            border-right: none;
+            padding-right: 0;
+        }
+        .curso-progreso-label {
+            font-size: 11px;
+            font-weight: 700;
+            width: 62px;
+            flex-shrink: 0;
+            text-transform: uppercase;
+            letter-spacing: .02em;
+        }
+        .curso-progreso-pct {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 999px;
+            flex-shrink: 0;
+            min-width: 44px;
+            text-align: center;
+        }
+        .curso-progreso-pct-primary { background: rgba(13, 110, 253, .12); color: #0d6efd; }
+        .curso-progreso-pct-success { background: rgba(25, 135, 84, .12); color: #198754; }
+        .curso-progreso-pct-info    { background: rgba(13, 202, 240, .18); color: #0a97b0; }
+        .dark-mode .curso-progreso-item,
+        .dim-mode  .curso-progreso-item {
+            border-right-color: rgba(255, 255, 255, .12);
+        }
+
+        /* ── "Exportar por ciclo": select + botón unificados ── */
+        .export-ciclo-group {
+            border: 1px solid #ced4da;
+            border-radius: .25rem;
+            overflow: hidden;
+        }
+        .export-ciclo-group .input-group-text {
+            background: #f8f9fc;
+            border: none;
+            border-right: 1px solid #ced4da;
+            color: #6c757d;
+        }
+        .export-ciclo-group select.form-select {
+            border: none;
+            box-shadow: none;
+            min-width: 150px;
+        }
+        .export-ciclo-group select.form-select:focus {
+            box-shadow: none;
+        }
+        .export-ciclo-group .btn {
+            border: none;
+            border-radius: 0;
+        }
+
+        /* ── Lista de cursos por docente: sin viñetas, con sangría prolija en vez de espacio de punto perdido ── */
+        .lista-cursos-docente,
+        .lista-cursos-docente ul {
+            list-style: none;
+            margin: 0;
+            padding-left: 0;
+        }
+        .lista-cursos-docente ul {
+            padding-left: 14px;
+            margin-top: 4px;
+        }
+
+        /* ── Zona de riesgo: cierre de periodo ── */
+        .danger-zone-panel {
+            border: 1px solid #f3c6c6;
+            border-radius: .5rem;
+            background: #fffafa;
+            overflow: hidden;
+        }
+        .dark-mode .danger-zone-panel,
+        .dim-mode  .danger-zone-panel {
+            border-color: rgba(220, 53, 69, .35);
+            background: rgba(220, 53, 69, .06);
+        }
+        .danger-zone-panel-header {
+            display: flex;
+            align-items: flex-start;
+            gap: .6rem;
+            padding: .7rem 1rem;
+            background: #fdecec;
+            border-bottom: 1px solid #f3c6c6;
+            font-size: .8rem;
+            color: #6c757d;
+        }
+        .dark-mode .danger-zone-panel-header,
+        .dim-mode  .danger-zone-panel-header {
+            background: rgba(220, 53, 69, .12);
+            border-bottom-color: rgba(220, 53, 69, .3);
+        }
+        .danger-zone-panel-header i {
+            color: #dc3545;
+            margin-top: .15rem;
+            flex-shrink: 0;
+        }
+        .danger-zone-panel-header strong {
+            display: block;
+            color: #842029;
+            font-size: .92rem;
+        }
+        .dark-mode .danger-zone-panel-header strong,
+        .dim-mode  .danger-zone-panel-header strong {
+            color: #f5b5bb;
+        }
+        .danger-zone-panel-header a {
+            font-weight: 600;
+        }
+        .danger-zone-panel-body {
+            padding: .85rem 1rem;
+        }
+        .danger-zone-actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: .5rem;
+        }
+        .danger-zone-actions .btn:disabled {
+            opacity: .45;
+            cursor: not-allowed;
+        }
+        .danger-zone-sep {
+            width: 1px;
+            align-self: stretch;
+            background: #e9ecef;
+            margin: 0 .25rem;
+        }
+        .dark-mode .danger-zone-sep,
+        .dim-mode  .danger-zone-sep {
+            background: rgba(255, 255, 255, .12);
+        }
+        @media (max-width: 575.98px) {
+            .danger-zone-sep {
+                display: none;
+            }
+        }
     </style>
     <div class="container-fluid bg-white">
         <div class="d-sm-flex align-items-center justify-content-between mb-2 pt-3 pb-1">
@@ -78,45 +235,65 @@
                 </h4>
                 <small class="text-muted">{{ $docentes->count() }} docentes registrados &mdash; gestión de carga horaria e incidencias</small>
             </div>
-            <div class="d-flex flex-wrap align-items-center gap-2" style="gap:8px">
-                <a href="{{ route('admin.becas.calificaciones.export') }}"
-                    class="d-none d-sm-inline-block btn btn-sm btn-warning shadow-sm"
-                    title="Calificaciones en vivo (Parcial 1, Parcial 2, Desempeño) de alumnos becarios">
-                    <i class="fa fa-graduation-cap fa-sm mr-1"></i> Exportar Calificaciones Becas
+            <div class="d-flex flex-wrap align-items-center" style="gap:8px">
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-secondary shadow-sm dropdown-toggle" type="button"
+                        id="exportarDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fa fa-file-export fa-sm mr-1"></i> Exportar
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-right shadow" aria-labelledby="exportarDropdown"
+                        style="min-width: 300px;">
+                        <h6 class="dropdown-header">Calificaciones</h6>
+                        <a class="dropdown-item" href="{{ route('admin.becas.calificaciones.export') }}">
+                            <i class="fa fa-graduation-cap fa-sm mr-2 text-warning"></i> Calificaciones de becarios
+                            <small class="d-block text-muted pl-4">Parcial 1, Parcial 2 y Desempeño en vivo</small>
+                        </a>
+                        @if ($periodoActual)
+                            <a class="dropdown-item" href="{{ route('calificaciones.exportar.periodoActualFID') }}">
+                                <i class="fa fa-file-archive fa-sm mr-2 text-success"></i> Todos los cursos FID
+                                ({{ $periodoActual->nombre }})
+                                <small class="d-block text-muted pl-4">.zip con un Excel por curso, formato "Ver
+                                    calificaciones"</small>
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <h6 class="dropdown-header">Un solo ciclo</h6>
+                            <form action="{{ route('periodos.export', $periodoActual->id) }}" method="GET"
+                                class="px-3 py-1" onclick="event.stopPropagation()">
+                                <div class="input-group input-group-sm">
+                                    <select name="ciclo_id" class="form-control form-control-sm"
+                                        aria-label="Elegir ciclo a exportar">
+                                        <option value="">Elegir ciclo…</option>
+                                        @foreach ($ciclos as $ciclo)
+                                            <option value="{{ $ciclo->id }}">{{ $ciclo->nombre }}</option>
+                                        @endforeach
+                                    </select>
+                                    <div class="input-group-append">
+                                        <button type="submit" class="btn btn-outline-secondary"
+                                            title="Exportar Excel del ciclo seleccionado">
+                                            <i class="fa fa-file-excel fa-sm"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        @endif
+                    </div>
+                </div>
+
+                <a href="{{ route('silabos.index') }}" class="btn btn-sm btn-outline-primary shadow-sm"
+                    title="Ver todos los sílabos registrados">
+                    <i class="fa fa-file-alt fa-sm mr-1"></i> Sílabos
+                    <span class="badge badge-primary ml-1">{{ $totalSilabos }}</span>
                 </a>
-                @if ($periodoActual)
-                    <a href="{{ route('periodos.export', $periodoActual->id) }}"
-                        class="d-none d-sm-inline-block btn btn-sm btn-success shadow-sm"
-                        title="Solo disponible una vez archivado el periodo (botón 'Crear' en Periodos)">
-                        <i class="fa fa-file-excel fa-sm mr-1"></i> Exportar Excel ({{ $periodoActual->nombre }})
-                    </a>
-                    <form action="{{ route('periodos.export', $periodoActual->id) }}" method="GET"
-                        class="d-none d-sm-flex align-items-center gap-1">
-                        <select name="ciclo_id" class="form-select form-select-sm" style="width: auto;">
-                            <option value="">-- Exportar por ciclo --</option>
-                            @foreach ($ciclos as $ciclo)
-                                <option value="{{ $ciclo->id }}">{{ $ciclo->nombre }}</option>
-                            @endforeach
-                        </select>
-                        <button type="submit" class="btn btn-info btn-sm shadow-sm">
-                            <i class="fa fa-file-excel fa-sm"></i> Exportar
-                        </button>
-                    </form>
-                @endif
-                <a href="{{ route('admin.incidencias.todas') }}"
-                    class="d-none d-sm-inline-block btn btn-sm btn-warning shadow-sm">
-                    <i class="fa fa-exclamation-triangle fa-sm mr-1"></i> Ver todas las incidencias →
-                    {{ $totalIncidencias }}
+                <a href="{{ route('admin.seguimiento') }}" class="btn btn-sm btn-outline-warning shadow-sm"
+                    title="Ver incidencias, tutorías y sugerencias">
+                    <i class="fa fa-exclamation-triangle fa-sm mr-1"></i> Incidencias
+                    <span class="badge badge-warning ml-1">{{ $totalIncidencias }}</span>
                 </a>
-                <a href="{{ route('registerAdmin') }}"
-                    class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
-                    <i class="fa fa-plus fa-sm mr-1"></i> Crear nuevo Docente
+                <a href="{{ route('registerAdmin') }}" class="btn btn-sm btn-primary shadow-sm"
+                    title="Registrar un nuevo docente">
+                    <i class="fa fa-plus fa-sm mr-1"></i> Nuevo Docente
                 </a>
             </div>
-            {{-- <a href="{{ route('calificaciones.eliminarTodas') }}" class="btn btn-sm btn-info"
-                onclick="return confirm('¿Estás seguro de que deseas eliminar todas las calificaciones?')">
-                <i class="fa fa-trash"></i> Eliminar calificaciones
-            </a> --}}
         </div>
         <div class="row bg-white">
             <div class="col-12">
@@ -139,89 +316,74 @@
             </div>
 
             <div class="col-12 mb-4">
-                <div class="row g-3">
-                    <!-- Periodo 1 -->
-                    <div class="col-md-3">
-                        <div class="card shadow-sm h-100 text-center">
-                            <div class="card-body">
-                                <h6 class="text-primary fw-bold">
-                                    <i class="fa fa-calendar"></i> Periodo 1
-                                </h6>
-                                <button type="button" class="btn btn-outline-danger btn-sm mt-2 btn-eliminar"
-                                    data-form="formPeriodo1" data-mensaje="Se eliminarán TODOS los datos del Periodo 1">
-                                    <i class="fa fa-trash"></i> Eliminar
-                                </button>
-                                <form id="formPeriodo1" action="{{ route('periodouno.eliminar') }}" method="POST">
-                                    @csrf
-                                    @method('DELETE')
-                                </form>
-                            </div>
+                <div class="danger-zone-panel">                    
+                    <div class="danger-zone-panel-body">
+                        <div class="danger-zone-actions">
+                            <button type="button" class="btn btn-outline-danger btn-sm btn-eliminar"
+                                title="Elimina las notas de Parcial 1 de TODOS los cursos y alumnos"
+                                data-form="formPeriodo1"
+                                data-mensaje="Esto eliminará de forma permanente las {{ number_format($conteosZonaRiesgo['parcial1']) }} notas de Parcial 1 de TODOS los cursos y alumnos."
+                                {{ $conteosZonaRiesgo['parcial1'] === 0 ? 'disabled' : '' }}>
+                                <i class="fa fa-trash fa-xs mr-1"></i> Eliminar registro de Periodo 1
+                            </button>
+                            <form id="formPeriodo1" action="{{ route('periodouno.eliminar') }}" method="POST">
+                                @csrf
+                                @method('DELETE')
+                            </form>
+
+                            <button type="button" class="btn btn-outline-danger btn-sm btn-eliminar"
+                                title="Elimina las notas de Parcial 2 de TODOS los cursos y alumnos"
+                                data-form="formPeriodo2"
+                                data-mensaje="Esto eliminará de forma permanente las {{ number_format($conteosZonaRiesgo['parcial2']) }} notas de Parcial 2 de TODOS los cursos y alumnos."
+                                {{ $conteosZonaRiesgo['parcial2'] === 0 ? 'disabled' : '' }}>
+                                <i class="fa fa-trash fa-xs mr-1"></i> Eliminar registro de Periodo 2
+                            </button>
+                            <form id="formPeriodo2" action="{{ route('periododos.eliminar') }}" method="POST">
+                                @csrf
+                                @method('DELETE')
+                            </form>
+
+                            <button type="button" class="btn btn-outline-danger btn-sm btn-eliminar"
+                                title="Elimina las notas finales de Desempeño de TODOS los cursos y alumnos"
+                                data-form="formPeriodo3"
+                                data-mensaje="Esto eliminará de forma permanente las {{ number_format($conteosZonaRiesgo['desempeno']) }} notas de Desempeño Final de TODOS los cursos y alumnos."
+                                {{ $conteosZonaRiesgo['desempeno'] === 0 ? 'disabled' : '' }}>
+                                <i class="fa fa-trash fa-xs mr-1"></i> Eliminar registro de Desempeño
+                            </button>
+                            <form id="formPeriodo3" action="{{ route('periodotres.eliminar') }}" method="POST">
+                                @csrf
+                                @method('DELETE')
+                            </form>
+
+                            <span class="danger-zone-sep"></span>
+
+                            <button type="button" class="btn btn-outline-danger btn-sm btn-eliminar"
+                                title="Quita a TODOS los docentes sus cursos FID asignados (no afecta PPD)"
+                                data-form="formQuitarAsignacionesFID"
+                                data-mensaje="Esto quitará la asignación de las {{ number_format($conteosZonaRiesgo['asignacionesFid']) }} asignaciones de cursos FID a TODOS los docentes. Los cursos PPD no se ven afectados."
+                                {{ $conteosZonaRiesgo['asignacionesFid'] === 0 ? 'disabled' : '' }}>
+                                <i class="fa fa-unlink fa-xs mr-1"></i> Quitar asignaciones FID
+                            </button>
+                            <form id="formQuitarAsignacionesFID"
+                                action="{{ route('docente.cursos.eliminarTodosGlobal') }}" method="POST">
+                                @csrf
+                                @method('DELETE')
+                            </form>
+
+                            <button type="button" class="btn btn-outline-danger btn-sm btn-eliminar"
+                                title="Quita a TODOS los docentes sus cursos PPD asignados (no afecta FID)"
+                                data-form="formQuitarAsignacionesPPD"
+                                data-mensaje="Esto quitará la asignación de las {{ number_format($conteosZonaRiesgo['asignacionesPpd']) }} asignaciones de cursos PPD a TODOS los docentes. Los cursos FID no se ven afectados."
+                                {{ $conteosZonaRiesgo['asignacionesPpd'] === 0 ? 'disabled' : '' }}>
+                                <i class="fa fa-unlink fa-xs mr-1"></i> Quitar asignaciones PPD
+                            </button>
+                            <form id="formQuitarAsignacionesPPD"
+                                action="{{ route('docente.cursos.eliminarTodosGlobalPPD') }}" method="POST">
+                                @csrf
+                                @method('DELETE')
+                            </form>
                         </div>
                     </div>
-
-                    <!-- Periodo 2 -->
-                    <div class="col-md-3">
-                        <div class="card shadow-sm h-100 text-center">
-                            <div class="card-body">
-                                <h6 class="text-info fw-bold">
-                                    <i class="fa fa-calendar"></i> Periodo 2
-                                </h6>
-                                <button type="button" class="btn btn-outline-danger btn-sm mt-2 btn-eliminar"
-                                    data-form="formPeriodo2" data-mensaje="Se eliminarán TODOS los datos del Periodo 2">
-                                    <i class="fa fa-trash"></i> Eliminar
-                                </button>
-                                <form id="formPeriodo2" action="{{ route('periododos.eliminar') }}" method="POST">
-                                    @csrf
-                                    @method('DELETE')
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Periodo 3 -->
-                    <div class="col-md-3">
-                        <div class="card shadow-sm h-100 text-center">
-                            <div class="card-body">
-                                <h6 class="text-success fw-bold">
-                                    <i class="fa fa-chart-line"></i> Desempeño Final
-                                </h6>
-                                <button type="button" class="btn btn-outline-danger btn-sm mt-2 btn-eliminar"
-                                    data-form="formPeriodo3" data-mensaje="Se eliminará el desempeño final">
-                                    <i class="fa fa-trash"></i> Eliminar
-                                </button>
-                                <form id="formPeriodo3" action="{{ route('periodotres.eliminar') }}" method="POST">
-                                    @csrf
-                                    @method('DELETE')
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Acción Global -->
-                    <div class="col-md-3">
-                        <div class="card border-danger shadow h-100 text-center">
-                            <div class="card-body">
-                                <h6 class="text-secondary fw-bold">
-                                    <i class="fa fa-link"></i> Asignaciones FID
-                                </h6>
-                                <button type="button" class="btn btn-outline-danger btn-sm mt-2" data-form="formGlobal"
-                                    data-mensaje="⚠️ Esto eliminará TODOS los cursos asignados de FID a TODOS los docentes">
-                                    <i class="fa fa-unlink"></i> Quitar designación a docentes PPD
-                                </button>
-                                <button type="button" class="btn btn-outline-danger btn-sm mt-2 btn-eliminar"
-                                    data-form=""
-                                    data-mensaje="⚠️ Esto eliminará TODOS los cursos asignados a TODOS los docentes">
-                                    <i class="fa fa-unlink"></i> Quitar designación a docentes FID
-                                </button>
-                                <form id="formGlobal" action="{{ route('docente.cursos.eliminarTodosGlobal') }}"
-                                    method="POST">
-                                    @csrf
-                                    @method('DELETE')
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-
                 </div>
             </div>
             <script>
@@ -235,14 +397,26 @@
                             let mensaje = this.dataset.mensaje;
 
                             Swal.fire({
-                                title: '¿Estás seguro?',
-                                text: mensaje,
+                                title: 'Esta acción no se puede deshacer',
+                                html: mensaje +
+                                    '<br><br>Escribe <strong>ELIMINAR</strong> para confirmar:',
                                 icon: 'warning',
+                                input: 'text',
+                                inputPlaceholder: 'ELIMINAR',
+                                inputAttributes: {
+                                    autocapitalize: 'off',
+                                    autocorrect: 'off'
+                                },
                                 showCancelButton: true,
                                 confirmButtonColor: '#dc3545',
                                 cancelButtonColor: '#6c757d',
-                                confirmButtonText: 'Sí, eliminar',
-                                cancelButtonText: 'Cancelar'
+                                confirmButtonText: 'Sí, eliminar definitivamente',
+                                cancelButtonText: 'Cancelar',
+                                inputValidator: (value) => {
+                                    if (value !== 'ELIMINAR') {
+                                        return 'Debes escribir ELIMINAR (en mayúsculas) para confirmar';
+                                    }
+                                }
                             }).then((result) => {
 
                                 if (result.isConfirmed) {
@@ -257,7 +431,6 @@
 
                 });
             </script>
-
 
             {{-- <div class="col-lg-12">
                 <table class="table table-bordered">
@@ -408,7 +581,7 @@
                                     </td>
                                     <td>
                                         @if ($docente->cursos->count() > 0)
-                                            <ul>
+                                            <ul class="lista-cursos-docente">
                                                 @php
                                                     $cursosOrdenados = $docente->cursos->sortBy('nombre');
                                                 @endphp
@@ -419,14 +592,23 @@
                                                             'PPD',
                                                         );
                                                         $claseCurso = $esPPD ? 'curso-ppd-item' : 'curso-fid-item';
-                                                        $rutaCompetencias = $esPPD
+
+                                                        $competenciasParaUrl = $curso->competenciasSeleccionadas->isNotEmpty()
+                                                            ? $curso->competenciasSeleccionadas->pluck('id')->all()
+                                                            : ($curso->competencias->count() <= 3
+                                                                ? $curso->competencias->pluck('id')->all()
+                                                                : []);
+
+                                                        $urlVerCalificaciones = $esPPD
                                                             ? route('competencias.calificar.ppd', [
                                                                 'docente' => $docente->id,
                                                                 'curso' => $curso->id,
+                                                                'competencias' => $competenciasParaUrl,
                                                             ])
                                                             : route('competencias.calificar', [
                                                                 'docente' => $docente->id,
                                                                 'curso' => $curso->id,
+                                                                'competencias' => $competenciasParaUrl,
                                                             ]);
                                                     @endphp
                                                     <li class="mb-2 {{ $claseCurso }}">
@@ -450,16 +632,11 @@
                                                                                 : asset(
                                                                                     'docentes/silabo/' . $curso->silabo,
                                                                                 );
-                                                                            $tipoSílabo = $curso->relacionsilabo
-                                                                                ? 'Creado desde sistema'
-                                                                                : 'Archivo subido en PDF';
                                                                         @endphp
                                                                         <a href="{{ $sílaboURL }}" class="mb-2"
                                                                             style="font-size: 13px" target="_blank">
                                                                             Ver Sílabo <i class="fa fa-pdf"></i>
                                                                         </a>
-                                                                        <small
-                                                                            class="text-muted">({{ $tipoSílabo }})</small>
                                                                     @else
                                                                         <span style="font-size: 13px">No hay sílabo
                                                                             disponible.</span>
@@ -493,49 +670,19 @@
                                                             </ul>
                                                         @endif
                                                         <ul>
-                                                            <form action="{{ $rutaCompetencias }}" method="POST">
-                                                                @csrf
-                                                                <input type="hidden" name="docente_id"
-                                                                    value="{{ $docente->id }}">
-                                                                <input type="hidden" name="curso_id"
-                                                                    value="{{ $curso->id }}">
-
-                                                                @if ($curso->competenciasSeleccionadas->isNotEmpty())
-                                                                    <ul style="display:none">
-                                                                        @foreach ($curso->competenciasSeleccionadas as $competencia)
-                                                                            <li>{{ $competencia->nombre }}</li>
-                                                                            <input type="hidden" name="competencias[]"
-                                                                                value="{{ $competencia->id }}">
-                                                                        @endforeach
-                                                                    </ul>
-                                                                @elseif ($curso->competencias->count() <= 3)
-                                                                    <ul style="display:none">
-                                                                        @foreach ($curso->competencias as $competencia)
-                                                                            <li>{{ $competencia->nombre }}</li>
-                                                                            <input type="hidden" name="competencias[]"
-                                                                                value="{{ $competencia->id }}">
-                                                                        @endforeach
-                                                                    </ul>
-                                                                @endif
                                                                 <li>
-                                                                    <button type="submit" class="text-primary"
+                                                                    <a href="{{ $urlVerCalificaciones }}" class="text-primary"
                                                                         id="{{ $curso->id }}"
-                                                                        style="background: none; border: none; font-size:14px; margin-left: -6px; ">
+                                                                        style="font-size:14px; text-decoration: underline; cursor: pointer;">
                                                                         Ver calificaciones
-                                                                    </button>
+                                                                    </a>
                                                                     @if (!$esPPD)
                                                                         <ul>
                                                                             <li>
-                                                                                <div class="d-flex align-items-center flex-wrap"
-                                                                                    style="gap: 12px; width: 100%; max-width: 500px;">
-                                                                                    <!-- Parcial 1 -->
-                                                                                    <div class="d-flex align-items-center"
-                                                                                        style="gap: 6px; flex: 1;">
-                                                                                        <span class="fw-bold text-primary"
-                                                                                            style="font-size: 12px; width: 70px;">Parcial
-                                                                                            1:</span>
-                                                                                        <div class="progress flex-fill"
-                                                                                            style="height: 8px;">
+                                                                                <div class="curso-progreso-fila">
+                                                                                    <div class="curso-progreso-item">
+                                                                                        <span class="curso-progreso-label text-primary">Parcial 1</span>
+                                                                                        <div class="progress flex-fill" style="height: 8px;">
                                                                                             <div class="progress-bar bg-primary"
                                                                                                 role="progressbar"
                                                                                                 style="width: {{ $curso->porcentajePeriodo(1) }}%;"
@@ -544,20 +691,14 @@
                                                                                                 aria-valuemax="100">
                                                                                             </div>
                                                                                         </div>
-                                                                                        <small
-                                                                                            style="width: 40px; text-align: right;">
-                                                                                            {{ number_format($curso->porcentajePeriodo(1), 2) }}%
-                                                                                        </small>
+                                                                                        <span class="curso-progreso-pct curso-progreso-pct-primary">
+                                                                                            {{ number_format($curso->porcentajePeriodo(1), 0) }}%
+                                                                                        </span>
                                                                                     </div>
 
-                                                                                    <!-- Parcial 2 -->
-                                                                                    <div class="d-flex align-items-center"
-                                                                                        style="gap: 6px; flex: 1;">
-                                                                                        <span class="fw-bold text-success"
-                                                                                            style="font-size: 12px; width: 70px;">Parcial
-                                                                                            2:</span>
-                                                                                        <div class="progress flex-fill"
-                                                                                            style="height: 8px;">
+                                                                                    <div class="curso-progreso-item">
+                                                                                        <span class="curso-progreso-label text-success">Parcial 2</span>
+                                                                                        <div class="progress flex-fill" style="height: 8px;">
                                                                                             <div class="progress-bar bg-success"
                                                                                                 role="progressbar"
                                                                                                 style="width: {{ $curso->porcentajePeriodo(2) }}%;"
@@ -566,19 +707,14 @@
                                                                                                 aria-valuemax="100">
                                                                                             </div>
                                                                                         </div>
-                                                                                        <small
-                                                                                            style="width: 40px; text-align: right;">
-                                                                                            {{ number_format($curso->porcentajePeriodo(2), 2) }}%
-                                                                                        </small>
+                                                                                        <span class="curso-progreso-pct curso-progreso-pct-success">
+                                                                                            {{ number_format($curso->porcentajePeriodo(2), 0) }}%
+                                                                                        </span>
                                                                                     </div>
 
-                                                                                    <!-- Desempeño -->
-                                                                                    <div class="d-flex align-items-center"
-                                                                                        style="gap: 6px; flex: 1;">
-                                                                                        <span class="fw-bold text-info"
-                                                                                            style="font-size: 12px; width: 70px;">Desempeño:</span>
-                                                                                        <div class="progress flex-fill"
-                                                                                            style="height: 8px;">
+                                                                                    <div class="curso-progreso-item">
+                                                                                        <span class="curso-progreso-label text-info">Desempeño</span>
+                                                                                        <div class="progress flex-fill" style="height: 8px;">
                                                                                             <div class="progress-bar bg-info"
                                                                                                 role="progressbar"
                                                                                                 style="width: {{ $curso->porcentajePeriodo(3) }}%;"
@@ -587,10 +723,9 @@
                                                                                                 aria-valuemax="100">
                                                                                             </div>
                                                                                         </div>
-                                                                                        <small
-                                                                                            style="width: 40px; text-align: right;">
-                                                                                            {{ number_format($curso->porcentajePeriodo(3), 2) }}%
-                                                                                        </small>
+                                                                                        <span class="curso-progreso-pct curso-progreso-pct-info">
+                                                                                            {{ number_format($curso->porcentajePeriodo(3), 0) }}%
+                                                                                        </span>
                                                                                     </div>
                                                                                 </div>
                                                                             </li>
@@ -619,7 +754,6 @@
                                                                         </ul>
                                                                     @endif
                                                                 </li>
-                                                            </form>
                                                         </ul>
                                                         <ul>
                                                             <li>

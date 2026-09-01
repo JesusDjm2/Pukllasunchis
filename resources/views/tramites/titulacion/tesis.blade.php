@@ -209,15 +209,17 @@
                                     <li>Versión final de la Tesis en formato WORD <br>
                                         &nbsp;&nbsp;
                                         NOTA: Si tu tesis es continuidad de un TI con el que obtuviste el grado de
-                                        bachiller, para la revisión preliminar de originalidad <strong>deberás excluir únicamente la
-                                        sección "Base Teórica".</strong> La versión oficial de la tesis deberá presentarse íntegra
+                                        bachiller, para la revisión preliminar de originalidad <strong>deberás excluir
+                                            únicamente la
+                                            sección "Base Teórica".</strong> La versión oficial de la tesis deberá
+                                        presentarse íntegra
                                         en las etapas posteriores, conforme al artículo 94 del Reglamento de Investigación.
-                                        </li>
+                                    </li>
                                     <li>Comprobante de pago por derecho de revisión de originalidad</li>
                                     <li>Este pago tiene el tiempo de duración de una semana.</li>
                                 </ul>
                             </li>
-                            
+
                             <li>Como resultado de este trámite, recibirás en tu correo institucional el Reporte de
                                 originalidad (Turnitin), en un plazo no mayor a 10 días hábiles. Con el pago que usted
                                 realiza puede hacer 1 revisión de originalidad en un plazo no mayor a 5 días hábiles.</li>
@@ -265,7 +267,6 @@
                                     <li>Comprobante de pago por derecho de sustentación de Tesis</li>
                                 </ul>
                             </li>
-
                         </ul>
                     </li>
                     <li> Solicitar Resolución Directoral (RD) de aprobación de sustentación
@@ -325,24 +326,20 @@
                         </ul>
                     </li>
                     <li>Solicitar emisión de diploma de Licenciado previo pago de s/400.00 en las oficinas de <span
-                            class="text-danger font-weight-bold">Caja
-                            Cusco:</span>
+                            class="text-danger font-weight-bold">Caja Cusco:</span>
                         <ul>
-                            <li>Este trámite solo se realiza de manera virtual. formulario de<a
-                                    href="https://forms.gle/oVAax2L4GiaPGTWp9" class="text-primary"> SOLICITUD DE EMISIÓN
-                                    DE DIPLOMA</a>
-                                <br>Adjuntar al FUT la boleta de pago correspondiente.
-                                Una vez ingresada la solicitud, se le informará oportunamente la fecha en la que deberá
-                                acudir de forma presencial para la firma del acta correspondiente.<br>
-                                <small class="text-info">(Concepto: Emisión título de Licenciado /
-                                    Codigo: 35 / Costo: s/400.00)</small>
-                            </li>
-                            <li>
-                                <span class="text-info">
-                                    👉 Este trámite tiene un lapso de duración de 15 días hábiles.
-                                </span>
-                            </li>
-                            <li><a href="https://forms.gle/oVAax2L4GiaPGTWp9">Llenar el formulario para </a></li>
+                            <li>Este trámite solo se realiza de manera virtual. </li>
+                            <li> <a href="https://forms.gle/oVAax2L4GiaPGTWp9" class="text-primary">FORMULARIO DE
+                                SOLICITUD DE EMISIÓN DE DIPLOMA</a></li>
+                            <li>Adjuntar la boleta de pago correspondiente.</li>
+                            <span class="text-dark" style="font-weight: 400">Una vez ingresada la solicitud, se le informará oportunamente la fecha en la que deberá
+                                acudir de forma presencial para la firma del acta correspondiente.</span>
+                                <small class="text-info" style="font-weight: 400">(Concepto: Emisión título de Licenciado /
+                                Codigo: 35 / Costo: s/400.00)</small>
+                            <br>
+                            <span class="text-info" style="font-weight: 400">
+                                👉 Este trámite tiene un lapso de duración de 15 días hábiles.
+                            </span>
                         </ul>
                     </li>
                     <li>Solicitar registro e inscripción de Diploma de Licenciado previo pago de s/200.00 en las oficinas de
