@@ -102,8 +102,10 @@ class PeriodoActualController extends Controller
         $periodoactual->update([
             'nombre' => $request->nombre,
             'horario' => $rutaHorario,
-            'fecha_inicio' => $request->fecha_inicio,
-            'fecha_cierre' => $request->fecha_cierre,
+            // Si el campo llega vacío, se conserva la fecha ya guardada en vez de
+            // borrarla: dejar el input en blanco no debe equivaler a "quitar la fecha".
+            'fecha_inicio' => $request->filled('fecha_inicio') ? $request->fecha_inicio : $periodoactual->fecha_inicio,
+            'fecha_cierre' => $request->filled('fecha_cierre') ? $request->fecha_cierre : $periodoactual->fecha_cierre,
             'actual' => $request->has('actual') ? 1 : 0,
         ]);
 
@@ -248,7 +250,7 @@ class PeriodoActualController extends Controller
         $periodos = Periodo::with([
             'alumno.programa',
             'alumno.user',
-            'curso.ciclo',
+            'curso.ciclo.programa',
         ])
             ->where('periodo_actual_id', $id)
             ->get();
@@ -274,23 +276,88 @@ class PeriodoActualController extends Controller
                     'alumno' => $alumno,
                     'cursos' => $cursosMostrados,
                     'periodos' => $periodosAlumno->keyBy('curso_id'),
+                    // El ciclo de referencia de la fila es el del primer curso: en la
+                    // práctica todos los cursos de un alumno en un mismo periodo
+                    // pertenecen a su mismo ciclo, así que basta para clasificar.
+                    'ciclo' => $cursosMostrados->first()->ciclo,
                 ]);
             }
         }
 
-        // Ciclos únicos de los cursos mostrados
-        $ciclos = $filas->flatMap(fn ($fila) => $fila['cursos'])
-            ->pluck('ciclo')
+        // Ciclos únicos de los cursos mostrados (se usa además en el selector de exportación)
+        $ciclos = $filas->pluck('ciclo')
             ->filter()
             ->unique('id')
             ->sortBy(fn ($c) => $c->ordenCiclo() ?? 999);
 
+        // Clasificar por Programa → Ciclo para la vista agrupada, con estadísticas
+        // rápidas por grupo (mismo umbral de aprobación que usa la tabla: >11).
+        $grupos = $filas
+            ->groupBy(fn ($fila) => optional(optional($fila['ciclo'])->programa)->nombre ?? 'Sin programa asignado')
+            ->sortKeys()
+            ->map(function ($filasPrograma) {
+                $ciclosDelPrograma = $filasPrograma
+                    ->groupBy(fn ($fila) => optional($fila['ciclo'])->nombre ?? 'Sin ciclo asignado')
+                    ->sortBy(fn ($filasCiclo) => optional($filasCiclo->first()['ciclo'])->ordenCiclo() ?? 999)
+                    ->map(function ($filasCiclo) {
+                        $filasOrdenadas = $filasCiclo->sortBy(fn ($f) => $f['alumno']->apellidos ?? '')->values();
+
+                        return [
+                            'filas' => $filasOrdenadas,
+                            'stats' => $this->statsDeGrupo($filasOrdenadas),
+                        ];
+                    });
+
+                $statsPrograma = $this->statsDeGrupo($filasPrograma);
+
+                return [
+                    'ciclos' => $ciclosDelPrograma,
+                    'stats' => $statsPrograma,
+                ];
+            });
+
+        $statsGenerales = $this->statsDeGrupo($filas);
+
         return view('admin.periodos.calificaciones.show', [
             'periodoActual' => $periodoActual,
             'nombre' => $periodoActual->nombre,
-            'filas' => $filas,
+            'grupos' => $grupos,
             'ciclos' => $ciclos,
+            'statsGenerales' => $statsGenerales,
         ]);
+    }
+
+    /**
+     * Cuenta alumnos/cursos/aprobados/desaprobados de un conjunto de filas
+     * (mismo umbral >11 que usa la tabla y el export de Excel).
+     */
+    private function statsDeGrupo($filas): array
+    {
+        $alumnos = $filas->pluck('alumno.id')->unique()->count();
+        $aprobados = 0;
+        $desaprobados = 0;
+        $sinDatos = 0;
+
+        foreach ($filas as $fila) {
+            foreach ($fila['cursos'] as $curso) {
+                $periodo = $fila['periodos']->get($curso->id);
+                $calSistema = $periodo->calificacion_sistema ?? null;
+
+                if ($calSistema !== null && $calSistema !== '' && is_numeric($calSistema)) {
+                    ((float) $calSistema) > 11 ? $aprobados++ : $desaprobados++;
+                } else {
+                    $sinDatos++;
+                }
+            }
+        }
+
+        return [
+            'alumnos' => $alumnos,
+            'cursos' => $aprobados + $desaprobados + $sinDatos,
+            'aprobados' => $aprobados,
+            'desaprobados' => $desaprobados,
+            'sinDatos' => $sinDatos,
+        ];
     }
 
     public function updateRegistro(Request $request, Periodo $registro)
@@ -337,6 +404,7 @@ class PeriodoActualController extends Controller
             [$ciclos, $filas] = $this->getDataForRegistros($id, $soloBecas, $cicloId);
         }
 
+        $cicloNombre = null;
         $nombreArchivo = 'Calificaciones_'.$periodoActual->nombre;
         if ($soloBecas) {
             $nombreArchivo .= '_Becas';
@@ -345,10 +413,10 @@ class PeriodoActualController extends Controller
             $cicloNombre = $ciclos->firstWhere('id', $cicloId)->nombre ?? $cicloId;
             $nombreArchivo .= '_Ciclo-'.$cicloNombre;
         }
-        $nombreArchivo .= '.csv';
+        $nombreArchivo .= '.xlsx';
 
         return Excel::download(
-            new RegistrosExport($ciclos, $filas),
+            new RegistrosExport($filas, $periodoActual->nombre, $cicloNombre, $soloBecas),
             $nombreArchivo
         );
     }

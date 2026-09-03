@@ -349,10 +349,14 @@ class DocenteCOntroller extends Controller
 
         // Obtener alumnos que:
         // 1. Tienen rol 'alumnoB' o 'inhabilitado'
-        // 2. Pertenecen al MISMO CICLO que el curso (Ciclo I / Ciclo II). El programa acumula un
-        //    ciclo "Egresados <año>" por cada promoción graduada; esos alumnos ya no cursan nada y
-        //    no deben mezclarse con la cohorte que sí está cursando este curso ahora.
-        // 3. NO tienen calificacion_curso guardada para este curso
+        // 2. Pertenecen al MISMO PROGRAMA que el curso. En PPD un alumno cursa Ciclo I y
+        //    Ciclo II en paralelo dentro del mismo año (no es secuencial como en FID), así
+        //    que a qué Ciclo esté asignado no debe limitar en qué cursos puede calificarse.
+        // 3. No están marcados como "Egresado": cada promoción que termina el programa
+        //    conserva su Ciclo II real (para no perder el vínculo con sus cursos y
+        //    calificaciones), pero no forma parte de la cohorte que está cursando ahora
+        //    y no debe aparecer mezclada en la pantalla de calificar del periodo actual.
+        // 4. NO tienen calificacion_curso guardada para este curso
         $query = User::where(function ($q) {
             $q->whereHas('roles', fn ($r) => $r->where('name', 'alumnoB'))
               ->orWhere(function ($q2) {
@@ -360,7 +364,10 @@ class DocenteCOntroller extends Controller
                       ->where('perfil', '!=', 'Retirado');
               });
         })
-            ->where('ciclo_id', $curso->ciclo_id)
+            ->where('programa_id', $curso->ciclo?->programa_id)
+            ->where(function ($q) {
+                $q->whereNull('condicion')->orWhere('condicion', '!=', 'Egresado');
+            })
             ->with(['roles', 'alumnoB'])
             ->orderBy('apellidos');
 
@@ -531,8 +538,13 @@ class DocenteCOntroller extends Controller
                               ->where('perfil', '!=', 'Retirado');
                       });
                 })
-                ->whereHas('ciclo.cursos', function ($query) use ($curso) {
-                    $query->where('cursos.id', $curso->id);
+                // Mismo PROGRAMA que el curso, no mismo Ciclo exacto: en PPD un alumno cursa
+                // Ciclo I y Ciclo II en paralelo dentro del mismo año.
+                ->where('programa_id', $curso->ciclo?->programa_id)
+                // Excluir egresados: conservan su Ciclo II real pero no son parte de la
+                // cohorte del periodo actual (ver nota en alumnosPpdPorCurso/calificarCursoPPD).
+                ->where(function ($q) {
+                    $q->whereNull('condicion')->orWhere('condicion', '!=', 'Egresado');
                 })
                 ->orderBy('apellidos')
                 ->get();

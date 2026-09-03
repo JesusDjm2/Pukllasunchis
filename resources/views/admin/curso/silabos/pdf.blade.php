@@ -212,12 +212,12 @@
                         <tr>
                             <td style="font-weight: 600; padding: 2px; border: none;">1.11 <span
                                     style="margin-left:0.4em">Fecha de inicio</span></td>
-                            <td style="padding: 2px; border: none;">: {{ \Carbon\Carbon::parse($periodoActual->fecha_inicio)->translatedFormat('d \d\e F \d\e\l Y') }}</td>
+                            <td style="padding: 2px; border: none;">: {{ $periodoActual->fecha_inicio ? \Carbon\Carbon::parse($periodoActual->fecha_inicio)->translatedFormat('d \d\e F \d\e\l Y') : '—' }}</td>
                         </tr>
                         <tr>
                             <td style="font-weight: 600; padding: 2px; border: none;">1.12 <span
                                     style="margin-left:0.4em">Fecha de término</span></td>
-                            <td style="padding: 2px; border: none;">: {{ \Carbon\Carbon::parse($periodoActual->fecha_cierre)->translatedFormat('d \d\e F \d\e\l Y') }}</td>
+                            <td style="padding: 2px; border: none;">: {{ $periodoActual->fecha_cierre ? \Carbon\Carbon::parse($periodoActual->fecha_cierre)->translatedFormat('d \d\e F \d\e\l Y') : '—' }}</td>
                         </tr>
 
                     </tbody>

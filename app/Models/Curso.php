@@ -123,13 +123,28 @@ class Curso extends Model
             return 0.0;
         }
 
-        $idsUniverso = \App\Models\User::where('ciclo_id', $this->ciclo_id)
+        // El universo son los alumnos del mismo PROGRAMA, no del mismo Ciclo exacto: en PPD
+        // un alumno cursa Ciclo I y Ciclo II en paralelo dentro del mismo año (a diferencia de
+        // FID, donde el ciclo es secuencial), así que el "a qué Ciclo está asignado" no debe
+        // limitar en qué cursos puede ser calificado.
+        $programaId = $this->ciclo?->programa_id;
+        if (! $programaId) {
+            return 0.0;
+        }
+
+        $idsUniverso = \App\Models\User::where('programa_id', $programaId)
             ->where(function ($q) {
                 $q->whereHas('roles', fn ($r) => $r->where('name', 'alumnoB'))
                   ->orWhere(function ($q2) {
                       $q2->whereHas('roles', fn ($r) => $r->where('name', 'inhabilitado'))
                           ->where('perfil', '!=', 'Retirado');
                   });
+            })
+            // Los egresados conservan su Ciclo II real (para no perder el vínculo con sus
+            // cursos/calificaciones), pero no forman parte del periodo actual: no deben
+            // contarse en el porcentaje de la cohorte que está cursando ahora.
+            ->where(function ($q) {
+                $q->whereNull('condicion')->orWhere('condicion', '!=', 'Egresado');
             })
             ->pluck('id');
 

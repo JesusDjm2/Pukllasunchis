@@ -211,14 +211,6 @@
                 value="{{ old('fecha1', $silabo->fecha1 ?? $periodoActual->fecha_inicio) }}">
             <input type="hidden" id="hidden_fecha2" name="fecha2"
                 value="{{ old('fecha2', $silabo->fecha2 ?? $periodoActual->fecha_cierre) }}">
-            <input type="hidden" id="hidden_periodo" name="periodo" value="">
-            <script>
-                // Antes de enviar el form, copiamos el valor del span al hidden
-                document.getElementById('silaboForm').addEventListener('submit', function() {
-                    let periodo = document.getElementById('periodo').textContent.trim();
-                    document.getElementById('hidden_periodo').value = periodo;
-                });
-            </script>
 
             <div class="col-lg-12 mb-3">
                 <h4 style="font-weight: 600; color: #c78d40;" class="mt-5">II. Sumilla:</h4>

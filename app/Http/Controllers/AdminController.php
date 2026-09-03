@@ -879,7 +879,11 @@ class AdminController extends Controller
                     }
                     $sub->where(function ($q) use ($term) {
                         $q->where('name', 'like', '%'.$term.'%')
-                            ->orWhere('apellidos', 'like', '%'.$term.'%');
+                            ->orWhere('apellidos', 'like', '%'.$term.'%')
+                            ->orWhereHas('alumnoB', function ($qb) use ($term) {
+                                $qb->where('numero', 'like', '%'.$term.'%')
+                                    ->orWhere('numero_referencia', 'like', '%'.$term.'%');
+                            });
                     })->orWhere('dni', 'like', '%'.$term.'%');
                 }
             });

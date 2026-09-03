@@ -110,7 +110,6 @@ class SilaboController extends Controller
         $request->validate([
             'curso_id' => 'required|exists:cursos,id',
             'sumilla' => 'nullable|string',
-            'periodo' => 'nullable|string',
             'fecha1' => 'nullable|date',
             'fecha2' => 'nullable|date',
 
@@ -148,8 +147,11 @@ class SilaboController extends Controller
         $silabo = Silabo::create([
             'curso_id' => $curso->id,
             'sumilla' => $request->sumilla,
-            'periodo' => $request->periodo,
-            'periodo_actual_id' => $periodoActual->id ?? null,
+            // El nombre del periodo se toma del periodo activo resuelto en el servidor,
+            // nunca del formulario: evita que quede desincronizado de periodo_actual_id
+            // si el campo oculto que lo replicaba en el cliente no llega a poblarse.
+            'periodo' => $periodoActual->nombre,
+            'periodo_actual_id' => $periodoActual->id,
             'fecha1' => $request->fecha1,
             'fecha2' => $request->fecha2,
             'nombre' => $curso->nombre,
@@ -233,8 +235,10 @@ class SilaboController extends Controller
     public function show(Silabo $silabo)
     {
         $curso = $silabo->curso;
-        $periodoActual = PeriodoActual::where('actual', true)->first();
-        /* $periodoActual=$curso->periodoActual()->first(); */
+        // El periodo a mostrar es el del propio sílabo, no el que esté activo "hoy":
+        // un sílabo de un periodo ya cerrado debe seguir mostrando su nombre y fechas
+        // originales, no las del periodo académico actual.
+        $periodoActual = $silabo->periodoActual;
         $docentes = $curso->docentes;
         $competencias = $curso->competenciasSeleccionadas()->with([
             'capacidad',
@@ -314,7 +318,6 @@ class SilaboController extends Controller
         $request->validate([
             'curso_id' => 'required|exists:cursos,id',
             'sumilla' => 'nullable|string',
-            'periodo' => 'nullable|string',
             'fecha1' => 'nullable|date',
             'fecha2' => 'nullable|date',
 
@@ -347,10 +350,11 @@ class SilaboController extends Controller
             'referencias' => 'nullable|string',
         ]);
 
-        // Actualizar datos del sílabo
+        // Editar el contenido de un sílabo no debe poder cambiar a qué periodo
+        // académico pertenece: "periodo" y "periodo_actual_id" quedan fijos desde
+        // que se creó (o se reutilizó vía duplicarParaPeriodoActual).
         $silabo->update([
             'sumilla' => $request->sumilla,
-            'periodo' => $request->periodo,
             'fecha1' => $request->fecha1,
             'fecha2' => $request->fecha2,
             'proyecto_integrador' => $request->proyecto_integrador,
@@ -511,7 +515,9 @@ class SilaboController extends Controller
     public function exportarPDF(Silabo $silabo)
     {
         $curso = $silabo->curso;
-        $periodoActual = PeriodoActual::where('actual', true)->first();
+        // Mismo criterio que show(): el PDF debe reflejar el periodo del sílabo,
+        // no el periodo activo del día en que se genera el PDF.
+        $periodoActual = $silabo->periodoActual;
         $docentes = $curso->docentes;
         $competencias = $curso->competenciasSeleccionadas()->with([
             'capacidad',

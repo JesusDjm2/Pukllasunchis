@@ -265,6 +265,10 @@
                                         <div class="adm-uname">{{ $admin->apellidos }}, {{ $admin->name }}</div>
                                         <div class="adm-umeta"><i class="fas fa-envelope fa-xs mr-1"></i>{{ $admin->email }}
                                         </div>
+                                        <div class="adm-umeta text-muted">
+                                            N° {{ optional($admin->alumnoB)->numero ?? '—' }}
+                                            &nbsp;·&nbsp; Ref {{ optional($admin->alumnoB)->numero_referencia ?? '—' }}
+                                        </div>
                                     </td>
                                     <td><span class="small">{{ optional($admin->programa)->nombre ?? 'N/A' }}</span></td>
                                     <td><span class="small">{{ optional($admin->ciclo)->nombre ?? 'N/A' }}</span></td>
@@ -494,8 +498,8 @@
                                                         class="chip chip-red ml-1">{{ $admin->perfil ?? 'Inhabilitado' }}</span>
                                                 </div>
                                                 <div class="adm-umeta text-muted">ID {{ $admin->id }}
-                                                    &nbsp;·&nbsp; N° {{ $admin->alumno?->numero ?? '—' }}
-                                                    &nbsp;·&nbsp; Ref {{ $admin->alumno?->numero_referencia ?? '—' }}
+                                                    &nbsp;·&nbsp; N° {{ optional($admin->alumno ?? $admin->alumnoB)->numero ?? '—' }}
+                                                    &nbsp;·&nbsp; Ref {{ optional($admin->alumno ?? $admin->alumnoB)->numero_referencia ?? '—' }}
                                                 </div>
                                             </div>
                                         </div>

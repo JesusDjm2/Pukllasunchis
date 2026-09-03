@@ -35,14 +35,14 @@
                     <div class="form-group">
                         <label for="fecha_inicio">Fecha de Inicio</label>
                         <input type="date" name="fecha_inicio" class="form-control form-control-sm"
-                            value="{{ old('fecha_inicio', $periodoactual->fecha_inicio) }}">
+                            value="{{ old('fecha_inicio', $periodoactual->fecha_inicio ? \Carbon\Carbon::parse($periodoactual->fecha_inicio)->format('Y-m-d') : '') }}">
                     </div>
                 </div>
                 <div class="col-lg-6 mt-3">
                     <div class="form-group">
                         <label for="fecha_cierre">Fecha de Cierre</label>
                         <input type="date" name="fecha_cierre" class="form-control form-control-sm"
-                            value="{{ old('fecha_cierre', $periodoactual->fecha_cierre) }}">
+                            value="{{ old('fecha_cierre', $periodoactual->fecha_cierre ? \Carbon\Carbon::parse($periodoactual->fecha_cierre)->format('Y-m-d') : '') }}">
                     </div>
                 </div>
             </div>

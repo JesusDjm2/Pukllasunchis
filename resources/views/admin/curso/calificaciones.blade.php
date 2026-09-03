@@ -117,6 +117,27 @@
             color: #6f80c9;
             font-size: .85em;
         }
+
+        .docente-cal-progress {
+            height: 7px;
+            border-radius: 999px;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.06);
+        }
+
+        .docente-cal-progress .progress-bar {
+            transition: width 0.9s cubic-bezier(.22, 1, .36, 1);
+        }
+
+        .docente-cal-progress-ppd .progress-bar {
+            background: linear-gradient(90deg, #e5973a, #f5b45f);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .docente-cal-progress .progress-bar {
+                transition: none;
+            }
+        }
     </style>
     
     <div class="container-fluid bg-light">
@@ -129,6 +150,19 @@
                         <span class="mx-1">·</span>
                         <span class="text-primary">Docente: {{ $docente->nombre }}</span>
                     </div>
+
+                    @if (str_contains($curso->ciclo->programa->nombre ?? '', 'PPD'))
+                        @php $pctPPD = $curso->porcentajePPD(); @endphp
+                        <div class="mt-2" style="max-width:420px;">
+                            <div class="d-flex align-items-center" style="gap:6px;">
+                                <span style="font-size:12px;width:78px;font-weight:600;color:#d97706;">Calificado:</span>
+                                <div class="progress flex-fill docente-cal-progress docente-cal-progress-ppd">
+                                    <div class="progress-bar" role="progressbar" style="width:{{ $pctPPD }}%;"></div>
+                                </div>
+                                <small style="width:50px;text-align:right;font-size:12px;color:#d97706;font-weight:600;">{{ number_format($pctPPD, 2) }}%</small>
+                            </div>
+                        </div>
+                    @endif
 
                     @if ($competenciasSeleccionadas->isNotEmpty())
                         <div class="mt-3">

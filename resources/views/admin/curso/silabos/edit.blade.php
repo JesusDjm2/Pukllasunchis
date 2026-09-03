@@ -222,15 +222,6 @@
             @method('PUT')
             <input type="hidden" name="curso_id" value="{{ $curso->id }}">
             <input type="hidden" name="docente_id" value="{{ optional($docente)->id }}">
-            <input type="hidden" id="hidden_periodo" name="periodo" value="">           
-
-            <script>
-                // Antes de enviar el form, copiamos el valor del span al hidden
-                document.getElementById('silaboForm').addEventListener('submit', function() {
-                    let periodo = document.getElementById('periodo').textContent.trim();
-                    document.getElementById('hidden_periodo').value = periodo;
-                });
-            </script>
 
             <div class="col-lg-12 mb-3">
                 <h4 style="font-weight: 600; color: #c78d40;" class="mt-5">II. Sumilla:</h4>

@@ -286,15 +286,23 @@
                                                 </span>
                                             @endif
                                         @endif
+                                        <div class="mt-1">
+                                            @if ($alumno->alumnoB)
+                                                <span class="font-weight-bold" title="Número del alumno">
+                                                    <i class="fas fa-phone fa-xs text-success mr-1"></i>{{ $alumno->alumnoB->numero ?? '—' }}
+                                                </span>
+                                                <span class="font-weight-bold ml-2" title="Número de referencia">
+                                                    <i class="fas fa-phone fa-xs text-info mr-1"></i>{{ $alumno->alumnoB->numero_referencia ?? '—' }}
+                                                </span>
+                                            @elseif ($alumno->telefono)
+                                                <span class="font-weight-bold" title="Teléfono">
+                                                    <i class="fas fa-phone fa-xs text-success mr-1"></i>{{ $alumno->telefono }}
+                                                </span>
+                                            @endif
+                                        </div>
                                         <ul class="mb-0 pl-3">
                                             <li>DNI: {{ $alumno->dni }}</li>
                                             <li>{{ $alumno->email }}</li>
-                                            @if ($alumno->alumnoB)
-                                                <li>Número: {{ $alumno->alumnoB->numero ?? '—' }}</li>
-                                                <li>Referencia: {{ $alumno->alumnoB->numero_referencia ?? '—' }}</li>
-                                            @elseif ($alumno->telefono)
-                                                <li>Tel: {{ $alumno->telefono }}</li>
-                                            @endif
                                         </ul>
                                     </td>
                                     <td>

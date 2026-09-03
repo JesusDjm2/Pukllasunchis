@@ -282,6 +282,12 @@
                                         <option value="Beca Puklla"
                                             {{ old('condicion', $admin->condicion) == 'Beca Puklla' ? 'selected' : '' }}>
                                             Beca Puklla</option>
+                                        <option value="Reincorporación"
+                                            {{ old('condicion', $admin->condicion) == 'Reincorporación' ? 'selected' : '' }}>
+                                            Reincorporación</option>
+                                        <option value="Egresado"
+                                            {{ old('condicion', $admin->condicion) == 'Egresado' ? 'selected' : '' }}>
+                                            Egresado</option>
                                     </select>
                                     @error('condicion')
                                         <div class="invalid-feedback">{{ $message }}</div>

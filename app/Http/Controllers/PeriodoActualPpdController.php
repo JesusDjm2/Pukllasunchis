@@ -310,8 +310,10 @@ class PeriodoActualPpdController extends Controller
         $periodo->update([
             'nombre' => $request->nombre,
             'calendario' => $rutaArchivo,
-            'fecha_inicio' => $request->fecha_inicio,
-            'fecha_cierre' => $request->fecha_cierre,
+            // Si el campo llega vacío, se conserva la fecha ya guardada en vez de
+            // borrarla: dejar el input en blanco no debe equivaler a "quitar la fecha".
+            'fecha_inicio' => $request->filled('fecha_inicio') ? $request->fecha_inicio : $periodo->fecha_inicio,
+            'fecha_cierre' => $request->filled('fecha_cierre') ? $request->fecha_cierre : $periodo->fecha_cierre,
             'actual' => $request->actual == 1 ? 1 : 0,
         ]);
 

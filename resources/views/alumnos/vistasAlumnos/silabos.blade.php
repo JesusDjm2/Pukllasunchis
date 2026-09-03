@@ -96,7 +96,7 @@
                         <tr>
                             <td style="font-weight: 600; padding: 2px;">1.5 <span style="margin-left:1em">Semestre
                                     Académico</span></td>
-                            <td style="padding: 1px;">: {{ $silabo->periodo }}</td>
+                            <td style="padding: 1px;">: {{ optional($silabo->periodoActual)->nombre ?? $silabo->periodo }}</td>
                         </tr>
                         <tr>
                             <td style="font-weight: 600; padding: 2px;">1.6 <span style="margin-left:1em">Créditos</span>
@@ -136,13 +136,13 @@
                         <tr>
                             <td style="font-weight: 600; padding: 2px;">1.11 <span style="margin-left:0.4em">Fecha de
                                     inicio</span></td>
-                            <td style="padding: 2px;">: {{ \Carbon\Carbon::parse($periodoActual->fecha_inicio)->translatedFormat('d \d\e F \d\e\l Y') }}
+                            <td style="padding: 2px;">: {{ $periodoActual->fecha_inicio ? \Carbon\Carbon::parse($periodoActual->fecha_inicio)->translatedFormat('d \d\e F \d\e\l Y') : '—' }}
  </td>
                         </tr>
                         <tr>
                             <td style="font-weight: 600; padding: 2px;">1.12 <span style="margin-left:0.4em">Fecha de
                                     término</span></td>
-                            <td style="padding: 2px;">: {{ \Carbon\Carbon::parse($periodoActual->fecha_cierre)->translatedFormat('d \d\e F \d\e\l Y') }}
+                            <td style="padding: 2px;">: {{ $periodoActual->fecha_cierre ? \Carbon\Carbon::parse($periodoActual->fecha_cierre)->translatedFormat('d \d\e F \d\e\l Y') : '—' }}
  </td>
                         </tr>
 
