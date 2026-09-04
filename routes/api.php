@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminFidController;
 use App\Http\Controllers\Api\AlumnoController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\MatriculaController;
 use App\Http\Controllers\Api\PeriodoActualController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -25,5 +26,7 @@ Route::prefix('v1')->group(function () {
         Route::put('/alumno/perfil', [AlumnoController::class, 'actualizarPerfil']);
 
         Route::get('/periodo-actual', [PeriodoActualController::class, 'show']);
+
+        Route::get('/matriculas', [MatriculaController::class, 'index']);
     });
 });

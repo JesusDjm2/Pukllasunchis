@@ -44,7 +44,7 @@ migración de una plataforma a otra.
       factories nuevas (`Alumno`, `Programa`, `Ciclo`) que no existían y hacen
       falta para el resto de tests de Fase 1.
 - [x] Periodo actual: `GET /api/v1/periodo-actual`.
-- [ ] Matrícula: `GET /api/v1/matriculas`.
+- [x] Matrícula: `GET /api/v1/matriculas`.
 - [ ] Cursos y calificaciones: `GET /api/v1/cursos`, `GET /api/v1/calificaciones`.
 - [ ] Cursos especiales: catálogo, unidades, lecciones, ejercicios, progreso.
 - [ ] Comunicados: `GET /api/v1/comunicados`.
