@@ -919,7 +919,10 @@
 
                 editors.forEach(id => {
                     if (document.getElementById(id)) {
-                        CKEDITOR.replace(id);
+                        // Sin img[src]: evita que pegar/arrastrar una imagen incruste un
+                        // base64 gigante en el textarea y el POST supere post_max_size
+                        // (eso vacía $_POST completo, incluido el token CSRF -> error 419).
+                        CKEDITOR.replace(id, { disallowedContent: 'img' });
                     }
                 });
 
@@ -934,6 +937,12 @@
                         CKEDITOR.instances.descripcion_proyecto.setData(descripcion);
                     }
                 });
+
+                // Este formulario es largo: mantener la sesión activa mientras se llena
+                // para que el token CSRF no expire antes de guardar (error 419).
+                setInterval(function() {
+                    fetch('{{ route('ping.sesion') }}', { credentials: 'same-origin' }).catch(function() {});
+                }, 4 * 60 * 1000);
             });
         </script>
     @endsection

@@ -34,7 +34,21 @@ class AdminController extends Controller
 {
     public function login()
     {
+        if (auth()->check()) {
+            return $this->redirectToDashboard(auth()->user());
+        }
+
         return view('admin.login');
+    }
+
+    /**
+     * Destino de RouteServiceProvider::HOME ('/home'): a dónde manda el
+     * middleware "guest" a un usuario ya autenticado (p. ej. si intenta
+     * enviar el formulario de /login con una sesión ya iniciada).
+     */
+    public function homeRedirect()
+    {
+        return $this->redirectToDashboard(auth()->user());
     }
 
     public function index()
@@ -1068,6 +1082,13 @@ class AdminController extends Controller
                       $q2->whereHas('roles', fn ($r) => $r->where('name', 'inhabilitado'))
                           ->where('perfil', '!=', 'Retirado');
                   });
+            })
+            // Cada promoción que termina el programa conserva su Ciclo X real (para no
+            // perder el vínculo con sus cursos/calificaciones), pero no es parte del
+            // periodo actual: no debe contarse en la Matrícula ni en los selectores/
+            // conteos por Ciclo (mismo criterio que ya se aplica en PPD).
+            ->where(function ($q) {
+                $q->whereNull('condicion')->orWhere('condicion', '!=', 'Egresado');
             });
     }
 }

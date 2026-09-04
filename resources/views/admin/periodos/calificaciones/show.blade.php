@@ -294,7 +294,6 @@
             $periodoId = $periodoActual->id ?? request()->route('id');
             $esSuperAdmin = auth()->user()?->hasRole('super-admin');
         @endphp
-
         <div class="d-sm-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
             <h4 class="mb-3 text-primary font-weight-bold">Registros de Calificaciones - {{ $nombre }}</h4>
             <div class="d-flex align-items-center flex-wrap gap-2">
@@ -322,7 +321,6 @@
                 </a>
             </div>
         </div>
-
         {{-- ── Resumen general del período ── --}}
         <div class="reg-stats-bar mb-3" id="regStatsBar">
             <div class="reg-stat-card">
@@ -346,7 +344,6 @@
                 <span class="lbl">Sin datos</span>
             </div>
         </div>
-
         {{-- ── Búsqueda + navegación rápida + expandir/colapsar ── --}}
         <div class="row mb-2 align-items-center">
             <div class="col-md-6 mb-2">
@@ -369,11 +366,9 @@
                 </span>
             @endforeach
         </div>
-
         <div id="regSinResultados" class="alert alert-secondary text-center">
             <i class="fa fa-magnifying-glass mr-1"></i> No se encontraron registros para tu búsqueda.
         </div>
-
         {{-- ── Clasificación por Programa → Ciclo ── --}}
         <div id="regGrupos">
             @forelse ($grupos as $programaNombre => $grupoPrograma)

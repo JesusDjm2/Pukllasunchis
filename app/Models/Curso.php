@@ -99,19 +99,20 @@ class Curso extends Model
         $rel = $this->alumnos()
             ->whereHas('user.roles', fn ($q) => $q->where('name', '!=', 'inhabilitado'))
             ->pluck('alumnos.id');
+        // La rama por ciclo trae a TODOS los del ciclo del curso, incluso a quien nunca se
+        // matriculó en este curso puntual — por eso hay que excluir a los "Egresado": cada
+        // promoción que termina conserva su Ciclo X real (para no perder el vínculo con sus
+        // cursos/calificaciones), pero mezclarla aquí contaría cohortes distintas que comparten
+        // el mismo curso_id (una graduada, con notas viejas; otra cursando, sin notas aún).
         $ciclo = $this->ciclo->alumnos()
             ->whereHas('user.roles', fn ($q) => $q->where('name', '!=', 'inhabilitado'))
+            ->whereHas('user', fn ($q) => $q->whereNull('condicion')->orWhere('condicion', '!=', 'Egresado'))
             ->pluck('alumnos.id');
 
         return $ciclo->merge($rel)->unique()->values();
     }
 
     /**
-     * El universo de un curso PPD es el mismo ciclo del curso (Ciclo I o Ciclo II), no todo el
-     * programa: el programa acumula un ciclo "Egresados <año>" por cada promoción que se gradúa,
-     * y esos alumnos ya no cursan nada — contarlos mezclaría notas de cohortes distintas que
-     * comparten el mismo curso_id (uno graduado, con notas viejas; otro cursando, sin notas aún).
-     *
      * El avance se mide por CASILLA llena (Participación, Actividad, Autoevaluación, Evaluación x
      * competencia), no por alumno 100% completo: un docente suele ir llenando por partes (p.ej.
      * primero todo Producto Final y después Producto de Proceso), y contar solo alumnos totalmente

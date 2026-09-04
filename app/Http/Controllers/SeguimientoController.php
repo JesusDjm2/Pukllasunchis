@@ -15,7 +15,7 @@ class SeguimientoController extends Controller
      */
     public function index()
     {
-        $incidencias = Incidencia::with(['alumno.ciclo.programa', 'ciclo.programa', 'docente', 'atendidoPor'])
+        $incidencias = Incidencia::with(['alumno.ciclo.programa', 'ciclo.programa', 'ciclo.tutores', 'docente', 'atendidoPor'])
             ->orderByDesc('fecha')
             ->orderByDesc('created_at')
             ->paginate(20, ['*'], 'incidencias_page');

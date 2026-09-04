@@ -10,15 +10,6 @@
             border-color: rgba(0, 0, 0, .12);
         }
 
-        .cc-badge {
-            display: inline-block;
-            padding: .22rem .6rem;
-            border-radius: .35rem;
-            font-size: .68rem;
-            font-weight: 700;
-            line-height: 1.4;
-        }
-
         .pg-move-card {
             background: var(--pg-card);
             border: 1px solid var(--pg-border);
@@ -44,20 +35,6 @@
                 'formacion general' => '#4e73df',
                 default => '#EFEFEF',
             };
-        }
-        function isDarkHex($hex)
-        {
-            $hex = ltrim($hex, '#');
-            if (strlen($hex) === 3) {
-                $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
-            }
-            if (strlen($hex) < 6) {
-                return false;
-            }
-            $r = hexdec(substr($hex, 0, 2));
-            $g = hexdec(substr($hex, 2, 2));
-            $b = hexdec(substr($hex, 4, 2));
-            return 0.2126 * $r + 0.7152 * $g + 0.0722 * $b < 140;
         }
         $totalAlumnos = $alumnos->count() + (isset($alumnosB) ? $alumnosB->count() : 0);
     @endphp
@@ -286,7 +263,9 @@
                         @foreach ($cursosOrdenados as $curso)
                             @php
                                 $badgeBg = badgeColorForCC($curso->cc);
-                                $badgeTextColor = isDarkHex($badgeBg) ? '#FFFFFF' : '#000000';
+                            @endphp
+                            @php
+                                $puedeEditarEsteCurso = auth()->user()?->hasRole('super-admin') || strtolower(trim($curso->cc ?? '')) !== 'extracurricular';
                             @endphp
                             <div class="col-lg-4 col-md-6 mb-3 d-flex">
                                 <div class="pg-card pg-card-curso w-100 d-flex flex-column">
@@ -297,10 +276,16 @@
                                                 <a href="{{ route('curso.show', $curso->id) }}"
                                                     style="color:var(--pg-text);text-decoration:none;">{{ $curso->nombre }}</a>
                                             </div>
-                                            <span class="cc-badge mb-2 d-inline-block"
-                                                style="background:{{ $badgeBg }};color:{{ $badgeTextColor }};">
-                                                {{ $curso->cc }}
-                                            </span>
+                                            <div class="d-flex flex-wrap align-items-center"
+                                                style="gap:.6rem;font-size:.74rem;color:var(--pg-muted);margin-top:.3rem;">
+                                                <span><i class="fas fa-shapes fa-xs mr-1"></i>{{ $curso->cc }}</span>
+                                                @if ($curso->horas)
+                                                    <span><i class="fas fa-clock fa-xs mr-1"></i>{{ $curso->horas }} h</span>
+                                                @endif
+                                                @if ($curso->creditos)
+                                                    <span><i class="fas fa-star fa-xs mr-1"></i>{{ $curso->creditos }} cr.</span>
+                                                @endif
+                                            </div>
                                             @if ($curso->docentes->isNotEmpty())
                                                 <div style="font-size:.76rem;color:var(--pg-muted);margin-top:.35rem;">
                                                     @foreach ($curso->docentes as $docente)
@@ -309,9 +294,21 @@
                                                 </div>
                                             @endif
                                         </div>
-                                        <div class="mt-2">
-                                            <a href="{{ route('curso.show', $curso->id) }}" class="pg-btn pg-btn-view">
-                                                <i class="fas fa-eye fa-xs"></i> Ver Curso
+                                        <div class="mt-2 d-flex flex-wrap" style="gap:.4rem;">
+                                            <a href="{{ route('curso.show', $curso->id) }}" class="pg-btn pg-btn-view flex-fill justify-content-center">
+                                                <i class="fas fa-eye fa-xs"></i> Ver
+                                            </a>
+                                            @if ($puedeEditarEsteCurso)
+                                                <a href="{{ route('curso.edit', $curso->id) }}" class="pg-btn pg-btn-edit flex-fill justify-content-center">
+                                                    <i class="fas fa-pen fa-xs"></i> Editar
+                                                </a>
+                                            @endif
+                                            <a href="{{ route('curso.docentes.form', $curso->id) }}" class="pg-btn pg-btn-cycle flex-fill justify-content-center">
+                                                @if ($curso->docentes->isNotEmpty())
+                                                    <i class="fas fa-user-edit fa-xs"></i> Editar profe
+                                                @else
+                                                    <i class="fas fa-user-plus fa-xs"></i> Asignar profe
+                                                @endif
                                             </a>
                                         </div>
                                     </div>

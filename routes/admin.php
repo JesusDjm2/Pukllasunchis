@@ -44,7 +44,21 @@ Auth::routes();
 
 Route::get('login', [AdminController::class, 'login'])->name('login');
 
+// RouteServiceProvider::HOME = '/home': a dónde redirige el middleware
+// "guest" a un usuario ya autenticado (p. ej. POST /login con sesión activa).
+// Sin esta ruta esa redirección terminaba en un 404 real.
+Route::get('/home', [AdminController::class, 'homeRedirect'])
+    ->middleware('auth')
+    ->name('home.guest-redirect');
+
 Route::get('/inhabilitado', fn () => view('admin.inhabilitado'))->name('inhabilitado');
+
+// GET simple para mantener viva la sesión (y el token CSRF) mientras se llena
+// un formulario largo, como el de Sílabos. Un GET no necesita token CSRF y
+// StartSession ya renueva la actividad de la sesión al procesarlo.
+Route::get('/ping-sesion', fn () => response()->json(['ok' => true]))
+    ->middleware('auth')
+    ->name('ping.sesion');
 
 // AJAX helpers para formulario público de incidencias
 // Nota: Se mantienen públicos porque el formulario /incidencias (web.php) los necesita.
@@ -199,7 +213,6 @@ Route::middleware('auth')->group(function () {
     // ── Seguimiento consolidado: Incidencias · Tutorías · Sugerencias ──
     Route::get('admin/seguimiento', [App\Http\Controllers\SeguimientoController::class, 'index'])->name('admin.seguimiento');
     Route::get('admin/seguimiento/qr', [App\Http\Controllers\SeguimientoController::class, 'qrCiclos'])->name('admin.seguimiento.qr');
-    Route::post('admin/incidencias/{incidencia}/estado', [App\Http\Controllers\IncidenciaController::class, 'marcarEstado'])->name('admin.incidencias.estado');
     Route::post('admin/tutorias/{tutoria}/estado', [App\Http\Controllers\TutoriaController::class, 'marcarEstado'])->name('admin.tutorias.estado');
     Route::post('admin/sugerencias/{sugerencia}/estado', [App\Http\Controllers\SugerenciaController::class, 'marcarEstado'])->name('admin.sugerencias.estado');
 

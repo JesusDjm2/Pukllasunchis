@@ -211,23 +211,6 @@ class IncidenciaController extends Controller
         ]));
     }
 
-    // ── Marcar estado (panel de admin) ────────────────────────────────────
-
-    public function marcarEstado(Request $request, Incidencia $incidencia)
-    {
-        $data = $request->validate([
-            'notas_atencion' => 'nullable|string',
-        ]);
-
-        $incidencia->estado = $incidencia->estado === 'atendida' ? 'pendiente' : 'atendida';
-        $incidencia->atendido_por = $incidencia->estado === 'atendida' ? auth()->id() : null;
-        $incidencia->atendido_at = $incidencia->estado === 'atendida' ? now() : null;
-        $incidencia->notas_atencion = $data['notas_atencion'] ?? $incidencia->notas_atencion;
-        $incidencia->save();
-
-        return back()->with('success', 'Incidencia actualizada.');
-    }
-
     public function destroy(Incidencia $incidencia)
     {
         $incidencia->delete();

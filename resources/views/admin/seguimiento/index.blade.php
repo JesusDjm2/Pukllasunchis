@@ -58,8 +58,62 @@
         background: #eef1fc; color: #4e73df; font-size: .7rem; font-weight: 700;
     }
 
-    .seg-texto-largo { max-width: 280px; white-space: pre-wrap; color: #3a3b45; line-height: 1.4; }
+    .seg-texto-largo { max-width: 280px; color: #3a3b45; line-height: 1.4; }
+    .seg-reporte-texto { display: block; white-space: pre-wrap; }
     .seg-contacto { font-size: .76rem; color: #5a5c69; }
+
+    .seg-tutores { display: flex; flex-direction: column; align-items: flex-start; gap: .3rem; }
+    .seg-tutor-chip {
+        display: inline-flex; align-items: center; gap: .35rem;
+        padding: .25rem .6rem .25rem .3rem; border-radius: 20px;
+        background: #f4f6f9; font-size: .72rem; font-weight: 600; color: #3a3b45;
+    }
+    .seg-tutor-avatar {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 20px; height: 20px; min-width: 20px; border-radius: 50%;
+        background: #4e73df; color: #fff; font-weight: 700; font-size: .58rem;
+    }
+    .seg-sin-tutor { color: #b7b9c8; font-style: italic; font-size: .74rem; }
+
+    .seg-img-icon-btn {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 26px; height: 26px; margin-top: .4rem; border-radius: 50%;
+        background: #eef1fc; color: #4e73df; border: none; cursor: pointer;
+        font-size: .75rem; padding: 0;
+    }
+    .seg-img-icon-btn:hover { background: #4e73df; color: #fff; }
+
+    .seg-photo-modal-overlay {
+        display: none;
+        position: fixed;
+        z-index: 1060;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.82);
+        align-items: center;
+        justify-content: center;
+    }
+
+    .seg-photo-modal-overlay.is-open { display: flex; }
+
+    .seg-photo-modal-inner { position: relative; max-width: min(92vw, 720px); padding: 1rem; }
+
+    .seg-photo-modal-inner img {
+        max-width: 100%; height: auto; border-radius: 0.35rem;
+        border: 4px solid #fff; box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.35);
+    }
+
+    .seg-photo-modal-close {
+        position: absolute; top: 0.25rem; right: 0.25rem; cursor: pointer;
+        font-size: 1.75rem; line-height: 1; color: #fff; font-weight: 700;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        padding: 0.25rem 0.5rem; border: none; background: transparent;
+    }
+
+    .seg-photo-modal-close:hover { color: #f8f9fc; }
     .seg-contacto div + div { margin-top: .15rem; }
 
     .seg-actions { display: flex; gap: .4rem; justify-content: center; flex-wrap: wrap; }
@@ -143,8 +197,8 @@
                                     <th>Reportado por</th>
                                     <th>Alumno</th>
                                     <th>Ciclo / Programa</th>
+                                    <th>Tutor(es) del Ciclo</th>
                                     <th>Reporte</th>
-                                    <th class="text-center">Estado</th>
                                     <th class="text-center">Acción</th>
                                 </tr>
                             </thead>
@@ -167,12 +221,7 @@
                                             @if ($inc->alumno)
                                                 <div class="seg-persona">
                                                     <span class="seg-avatar">{{ mb_strtoupper(mb_substr($inc->alumno->nombres, 0, 1).mb_substr($inc->alumno->apellidos, 0, 1)) }}</span>
-                                                    <div>
-                                                        <div>{{ $inc->alumno->apellidos }}, {{ $inc->alumno->nombres }}</div>
-                                                        @if ($inc->alumno->ciclo)
-                                                            <div class="small text-muted">{{ optional($inc->alumno->ciclo->programa)->nombre ?? '—' }} · Ciclo {{ $inc->alumno->ciclo->nombre }}</div>
-                                                        @endif
-                                                    </div>
+                                                    <div>{{ $inc->alumno->apellidos }}, {{ $inc->alumno->nombres }}</div>
                                                 </div>
                                             @else
                                                 <span class="text-muted">—</span>
@@ -186,25 +235,33 @@
                                                 <span class="text-muted">—</span>
                                             @endif
                                         </td>
-                                        <td class="seg-texto-largo">{{ $inc->reporte }}</td>
-                                        <td class="text-center text-nowrap">
-                                            @if ($inc->estado === 'atendida')
-                                                <span class="seg-pill seg-pill-ok"><span class="seg-pill-dot"></span>Atendida</span>
-                                                @if ($inc->atendido_at)
-                                                    <div class="small text-muted mt-1">{{ $inc->atendido_at->format('d/m/Y') }}</div>
-                                                @endif
+                                        <td>
+                                            @if ($inc->ciclo && $inc->ciclo->tutores->isNotEmpty())
+                                                <div class="seg-tutores">
+                                                    @foreach ($inc->ciclo->tutores as $tutor)
+                                                        @php $nombreCorto = $tutor->nombreCorto(); @endphp
+                                                        <span class="seg-tutor-chip">
+                                                            <span class="seg-tutor-avatar">{{ mb_strtoupper(mb_substr($nombreCorto, 0, 1)) }}</span>
+                                                            {{ $nombreCorto }}
+                                                        </span>
+                                                    @endforeach
+                                                </div>
+                                            @elseif ($inc->ciclo)
+                                                <span class="seg-sin-tutor">Sin tutor asignado</span>
                                             @else
-                                                <span class="seg-pill seg-pill-pendiente"><span class="seg-pill-dot"></span>Pendiente</span>
+                                                <span class="text-muted">—</span>
+                                            @endif
+                                        </td>
+                                        <td class="seg-texto-largo"><span class="seg-reporte-texto">{{ $inc->reporte }}</span>@if ($inc->imagen)
+                                                <button type="button" class="seg-img-icon-btn"
+                                                        onclick="segOpenPhotoModal('{{ asset('img/incidencias/'.$inc->imagen) }}', 'Imagen adjunta')"
+                                                        title="Ver imagen adjunta">
+                                                    <i class="fas fa-image"></i>
+                                                </button>
                                             @endif
                                         </td>
                                         <td class="text-center">
                                             <div class="seg-actions">
-                                                <form action="{{ route('admin.incidencias.estado', $inc->id) }}" method="POST">
-                                                    @csrf
-                                                    <button type="submit" class="btn btn-sm seg-btn-estado {{ $inc->estado === 'atendida' ? 'btn-outline-secondary' : 'btn-success' }}">
-                                                        {{ $inc->estado === 'atendida' ? 'Marcar pendiente' : 'Marcar atendida' }}
-                                                    </button>
-                                                </form>
                                                 @if (auth()->user()->hasAnyRole(['admin', 'super-admin']))
                                                     <form action="{{ route('admin.incidencias.destroy', $inc->id) }}" method="POST" class="seg-form-eliminar">
                                                         @csrf
@@ -475,6 +532,18 @@
         </div>
     </div>
 </div>
+
+{{-- Modal foto (incidencias) --}}
+<div id="segPhotoModal" class="seg-photo-modal-overlay" role="dialog" aria-modal="true"
+     onclick="segClosePhotoModal()">
+    <div class="seg-photo-modal-inner" onclick="event.stopPropagation();">
+        <button type="button" class="seg-photo-modal-close" onclick="segClosePhotoModal()"
+                aria-label="Cerrar">&times;</button>
+        <img id="segPhotoModalImg" src="" alt="" oncontextmenu="return false;">
+        <p id="segPhotoModalName" class="text-white text-center mt-2 mb-0 font-weight-bold"
+           style="font-size:.9rem;text-shadow:0 1px 3px rgba(0,0,0,.6);"></p>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -507,5 +576,17 @@
             });
         });
     });
+
+    function segOpenPhotoModal(src, name) {
+        var el = document.getElementById('segPhotoModal');
+        document.getElementById('segPhotoModalImg').src = src;
+        document.getElementById('segPhotoModalName').textContent = name || '';
+        if (el) el.classList.add('is-open');
+    }
+    function segClosePhotoModal() {
+        var el = document.getElementById('segPhotoModal');
+        if (el) el.classList.remove('is-open');
+    }
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') segClosePhotoModal(); });
 </script>
 @endpush
