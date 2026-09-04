@@ -18,7 +18,7 @@ migración de una plataforma a otra.
 - Respuestas vía `JsonResource`: `{"data": ...}` / errores `{"message": ..., "errors": {...}}`.
 - Autorización: rol del usuario (Spatie `HasRoles`) + scope por `user_id`.
 - Tests: PHPUnit en `tests/Feature/Api/`.
-- Flutter (Fase 2): Riverpod + go_router + dio + flutter_secure_storage, proyecto en `mobile/`.
+- Flutter (Fase 2): Riverpod + go_router + dio + flutter_secure_storage, proyecto **FlutterPuklla** en `FlutterPuklla/`.
 
 ## Fase 1 — API REST local (Laravel)
 
@@ -54,14 +54,17 @@ migración de una plataforma a otra.
 
 ## Fase 2 — App Flutter (tras cierre y confirmación de Fase 1)
 
-- [ ] `flutter create mobile` + estructura por features.
+Nombre del proyecto: **FlutterPuklla** (carpeta `FlutterPuklla/`, hermana del
+repo Laravel, no `mobile/`).
+
+- [ ] `flutter create FlutterPuklla` + estructura por features.
 - [ ] Auth (login, token seguro, redirect).
 - [ ] Home/dashboard.
 - [ ] Cursos especiales (lista → unidades → lecciones → ejercicios → progreso).
 - [ ] Calificaciones y matrícula (solo lectura).
 - [ ] Comunicados.
 - [ ] Config de entorno (`--dart-define=API_BASE_URL`).
-- [ ] README en `mobile/`.
+- [ ] README en `FlutterPuklla/`.
 
 ## Roles existentes (referencia)
 
