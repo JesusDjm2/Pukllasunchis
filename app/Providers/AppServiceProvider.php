@@ -33,25 +33,24 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Paginator::useBootstrap();
-        $periodoActual = PeriodoActual::actual();
 
-        View::composer('layouts.docente', function ($view) use ($periodoActual) {
+        View::composer('layouts.docente', function ($view) {
             if (auth()->check()) {
                 $docente = Docente::where('user_id', auth()->id())->first();
                 $view->with([
 
                     'docente' => $docente,
-                    'periodoActual' => $periodoActual,
+                    'periodoActual' => PeriodoActual::actual(),
                 ]);
             }
         });
-        
-        View::composer('layouts.alumno', function ($view) use ($periodoActual) {
+
+        View::composer('layouts.alumno', function ($view) {
             if (auth()->check()) {
                 $alumno = Alumno::where('user_id', auth()->id())->first();
                 $view->with([
                     'alumno' => $alumno,
-                    'periodoActual' => $periodoActual,
+                    'periodoActual' => PeriodoActual::actual(),
                 ]);
             }
         });
@@ -60,9 +59,9 @@ class AppServiceProvider extends ServiceProvider
             $alumno = auth()->user()->alumnoB;
             $view->with('alumno', $alumno);
         });
-        
-        View::composer('layouts.admin', function ($view) use ($periodoActual) {
-            $view->with('periodoActual', $periodoActual);
+
+        View::composer('layouts.admin', function ($view) {
+            $view->with('periodoActual', PeriodoActual::actual());
         });
         
         View::composer('layouts.admin', function ($view) {

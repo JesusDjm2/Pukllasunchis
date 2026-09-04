@@ -17,8 +17,10 @@ return new class extends Migration {
             $table->string('dni');
             $table->string('apellidos');
             $table->string('nombres');
-            //Gènero nuevo!
-            $table->string('genero')->nullable();
+            // TEXT (no varchar): con ~90 columnas varchar(255) en utf8mb4 la tabla
+            // supera el límite de tamaño de fila de InnoDB (65535 bytes); esta
+            // columna ya está como TEXT en las BDs existentes por esa razón.
+            $table->text('genero')->nullable();
             $table->string('numero');
             $table->string('numero_referencia');
             $table->string('fecha_nacimiento');
@@ -120,7 +122,7 @@ return new class extends Migration {
             $table->unsignedBigInteger('ciclo_id');
             $table->foreign('ciclo_id')->references('id')->on('ciclos')->onDelete('cascade');
             $table->timestamps();
-        }); 
+        });
     }
     public function down(): void
     {

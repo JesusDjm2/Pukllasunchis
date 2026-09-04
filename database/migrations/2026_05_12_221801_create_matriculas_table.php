@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('periodo_actual_id')->constrained('periodo_actual')->onDelete('cascade');
             $table->timestamp('fecha_completado')->nullable();
             $table->string('estado')->default('matriculado');
-            $table->string('comprobante')->nullable()->after('estado');
+            $table->string('comprobante')->nullable();
             $table->timestamps();
 
             $table->unique(['alumno_id', 'periodo_actual_id']);

@@ -62,7 +62,7 @@ return new class extends Migration
 
             $table->boolean('convertido')->default(false);
             
-            $table->foreignId('admin_fids_id')->constrained('admin_fids')->onDelete('cascade')->after('id');
+            $table->foreignId('admin_fids_id')->constrained('admin_fids')->onDelete('cascade');
             $table->timestamps();
         });
     }
