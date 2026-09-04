@@ -43,7 +43,7 @@ migración de una plataforma a otra.
       requiere multipart y queda pendiente si se necesita). Se agregaron
       factories nuevas (`Alumno`, `Programa`, `Ciclo`) que no existían y hacen
       falta para el resto de tests de Fase 1.
-- [ ] Periodo actual: `GET /api/v1/periodo-actual`.
+- [x] Periodo actual: `GET /api/v1/periodo-actual`.
 - [ ] Matrícula: `GET /api/v1/matriculas`.
 - [ ] Cursos y calificaciones: `GET /api/v1/cursos`, `GET /api/v1/calificaciones`.
 - [ ] Cursos especiales: catálogo, unidades, lecciones, ejercicios, progreso.
