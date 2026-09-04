@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminFidController;
 use App\Http\Controllers\Api\AlumnoController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\BolsaTrabajoOfertaController;
 use App\Http\Controllers\Api\CursoController;
 use App\Http\Controllers\Api\ComunicadoController;
 use App\Http\Controllers\Api\CursoEspecialController;
@@ -21,6 +22,9 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::prefix('v1')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
+
+    // Pública, igual que informacion/bolsa-de-trabajo en la web.
+    Route::get('/bolsa-trabajo', [BolsaTrabajoOfertaController::class, 'index']);
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);

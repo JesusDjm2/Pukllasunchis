@@ -63,7 +63,12 @@ migración de una plataforma a otra.
       en la web) — no existe hoy vista de incidencias para alumnos, no se
       inventó una. `Docente` no tenía factory e `Incidencia` no tenía
       `HasFactory`, ambos agregados.
-- [ ] Bolsa de trabajo: `GET /api/v1/bolsa-trabajo`.
+- [x] Bolsa de trabajo: `GET /api/v1/bolsa-trabajo` (pública, sin auth — igual
+      que `informacion/bolsa-de-trabajo` en la web). Filtros opcionales `anio`
+      y `mes`, mismos que `BolsaTrabajoListado::datos()`. Nota: el nombre
+      "vigentes" del plan original no aplica — la web tampoco filtra por
+      `fecha_fin`, solo muestra las 20 más recientes; se replicó el
+      comportamiento real en vez de inventar un filtro nuevo.
 - [ ] Documentar `_notes/api-v1-endpoints.md`.
 
 ## Fase 2 — App Flutter (tras cierre y confirmación de Fase 1)
