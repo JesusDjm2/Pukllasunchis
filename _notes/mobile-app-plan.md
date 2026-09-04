@@ -3,6 +3,13 @@
 Rama de trabajo: `feature/mobile-api`. Todo el trabajo es local; no se toca
 producción ni el FTP en esta tarea.
 
+**Importante — no es un reemplazo:** la web actual (`web.php`, `admin.php`,
+vistas Blade) NO se toca ni se apaga. Este trabajo es puramente aditivo: rutas
+nuevas bajo `/api/v1` con controladores en `app/Http/Controllers/Api/` (namespace
+separado), sobre la MISMA base de datos. Web y la futura app Flutter coexisten y
+comparten/sincronizan datos en vivo a través de esa BD compartida — no hay
+migración de una plataforma a otra.
+
 ## Decisiones técnicas
 
 - Auth API: Laravel Sanctum, tokens personales (Bearer), no cookies SPA.
@@ -31,7 +38,11 @@ producción ni el FTP en esta tarea.
       coincidía; `UserFactory` no seteaba `apellidos`/`dni`/`genero`
       (NOT NULL sin default). BD de pruebas dedicada: `puklla_testing`
       (`.env.testing`, gitignored).
-- [ ] Perfil alumno: `GET/PUT /api/v1/alumno/perfil`.
+- [x] Perfil alumno: `GET/PUT /api/v1/alumno/perfil`. Reutiliza las reglas de
+      validación de `AlumnoController::actualizarDatos` (sin `foto`, que
+      requiere multipart y queda pendiente si se necesita). Se agregaron
+      factories nuevas (`Alumno`, `Programa`, `Ciclo`) que no existían y hacen
+      falta para el resto de tests de Fase 1.
 - [ ] Periodo actual: `GET /api/v1/periodo-actual`.
 - [ ] Matrícula: `GET /api/v1/matriculas`.
 - [ ] Cursos y calificaciones: `GET /api/v1/cursos`, `GET /api/v1/calificaciones`.
