@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminFidController;
 use App\Http\Controllers\Api\AlumnoController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CursoController;
+use App\Http\Controllers\Api\ComunicadoController;
 use App\Http\Controllers\Api\CursoEspecialController;
 use App\Http\Controllers\Api\MatriculaController;
 use App\Http\Controllers\Api\PeriodoActualController;
@@ -40,5 +41,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/cursos-especiales/{curso}/progreso', [CursoEspecialController::class, 'progreso']);
         Route::post('/lecciones/{leccion}/completar', [CursoEspecialController::class, 'completarLeccion']);
         Route::post('/ejercicios/{ejercicio}/responder', [CursoEspecialController::class, 'responderEjercicio']);
+
+        Route::get('/comunicados', [ComunicadoController::class, 'index']);
     });
 });

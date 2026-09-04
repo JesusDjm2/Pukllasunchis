@@ -56,7 +56,8 @@ migración de una plataforma a otra.
       `POST /api/v1/lecciones/{id}/completar`,
       `POST /api/v1/ejercicios/{id}/responder`. `CursoEspecial` no tenía
       `HasFactory` (único modelo del módulo sin ella).
-- [ ] Comunicados: `GET /api/v1/comunicados`.
+- [x] Comunicados: `GET /api/v1/comunicados` (paginado, requiere auth como en
+      la web).
 - [ ] Incidencias: `GET /api/v1/incidencias`.
 - [ ] Bolsa de trabajo: `GET /api/v1/bolsa-trabajo`.
 - [ ] Documentar `_notes/api-v1-endpoints.md`.
