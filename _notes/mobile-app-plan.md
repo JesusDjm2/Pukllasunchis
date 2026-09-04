@@ -58,7 +58,11 @@ migración de una plataforma a otra.
       `HasFactory` (único modelo del módulo sin ella).
 - [x] Comunicados: `GET /api/v1/comunicados` (paginado, requiere auth como en
       la web).
-- [ ] Incidencias: `GET /api/v1/incidencias`.
+- [x] Incidencias: `GET /api/v1/incidencias`. Confirmado con el usuario: solo
+      docente (sus propios reportes, igual que `IncidenciaController::index`
+      en la web) — no existe hoy vista de incidencias para alumnos, no se
+      inventó una. `Docente` no tenía factory e `Incidencia` no tenía
+      `HasFactory`, ambos agregados.
 - [ ] Bolsa de trabajo: `GET /api/v1/bolsa-trabajo`.
 - [ ] Documentar `_notes/api-v1-endpoints.md`.
 

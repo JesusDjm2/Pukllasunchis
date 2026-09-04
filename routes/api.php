@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CursoController;
 use App\Http\Controllers\Api\ComunicadoController;
 use App\Http\Controllers\Api\CursoEspecialController;
+use App\Http\Controllers\Api\IncidenciaController;
 use App\Http\Controllers\Api\MatriculaController;
 use App\Http\Controllers\Api\PeriodoActualController;
 use Illuminate\Http\Request;
@@ -43,5 +44,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/ejercicios/{ejercicio}/responder', [CursoEspecialController::class, 'responderEjercicio']);
 
         Route::get('/comunicados', [ComunicadoController::class, 'index']);
+
+        Route::get('/incidencias', [IncidenciaController::class, 'index']);
     });
 });

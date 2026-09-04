@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Incidencia extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'docente_id', 'nombre_docente', 'alumno_id', 'programa_id', 'ciclo_id',
         'fecha', 'reporte', 'imagen',
