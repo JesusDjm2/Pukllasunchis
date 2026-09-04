@@ -49,7 +49,13 @@ migración de una plataforma a otra.
       Bug preexistente encontrado: `alumno_cursos.periodo_actual_id` existe en
       las BDs reales (agregada a mano) pero nunca fue migración — sin ella
       `Alumno::cursosDelPeriodo()` fallaba en una BD nueva. Migración agregada.
-- [ ] Cursos especiales: catálogo, unidades, lecciones, ejercicios, progreso.
+- [x] Cursos especiales: `GET /api/v1/cursos-especiales` (catálogo + inscrito +
+      porcentaje), `POST .../{curso}/inscribir`, `GET .../{curso}` (árbol
+      completo niveles→unidades→lecciones/ejercicios con progreso marcado —
+      `respuesta_correcta` NUNCA se expone), `GET .../{curso}/progreso`,
+      `POST /api/v1/lecciones/{id}/completar`,
+      `POST /api/v1/ejercicios/{id}/responder`. `CursoEspecial` no tenía
+      `HasFactory` (único modelo del módulo sin ella).
 - [ ] Comunicados: `GET /api/v1/comunicados`.
 - [ ] Incidencias: `GET /api/v1/incidencias`.
 - [ ] Bolsa de trabajo: `GET /api/v1/bolsa-trabajo`.
