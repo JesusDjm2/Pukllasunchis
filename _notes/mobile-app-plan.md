@@ -45,7 +45,10 @@ migración de una plataforma a otra.
       falta para el resto de tests de Fase 1.
 - [x] Periodo actual: `GET /api/v1/periodo-actual`.
 - [x] Matrícula: `GET /api/v1/matriculas`.
-- [ ] Cursos y calificaciones: `GET /api/v1/cursos`, `GET /api/v1/calificaciones`.
+- [x] Cursos y calificaciones: `GET /api/v1/cursos`, `GET /api/v1/calificaciones`.
+      Bug preexistente encontrado: `alumno_cursos.periodo_actual_id` existe en
+      las BDs reales (agregada a mano) pero nunca fue migración — sin ella
+      `Alumno::cursosDelPeriodo()` fallaba en una BD nueva. Migración agregada.
 - [ ] Cursos especiales: catálogo, unidades, lecciones, ejercicios, progreso.
 - [ ] Comunicados: `GET /api/v1/comunicados`.
 - [ ] Incidencias: `GET /api/v1/incidencias`.

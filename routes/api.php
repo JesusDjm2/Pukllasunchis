@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminFidController;
 use App\Http\Controllers\Api\AlumnoController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CursoController;
 use App\Http\Controllers\Api\MatriculaController;
 use App\Http\Controllers\Api\PeriodoActualController;
 use Illuminate\Http\Request;
@@ -28,5 +29,8 @@ Route::prefix('v1')->group(function () {
         Route::get('/periodo-actual', [PeriodoActualController::class, 'show']);
 
         Route::get('/matriculas', [MatriculaController::class, 'index']);
+
+        Route::get('/cursos', [CursoController::class, 'index']);
+        Route::get('/calificaciones', [CursoController::class, 'calificaciones']);
     });
 });
