@@ -10,6 +10,10 @@ la web: ambas coexisten sobre la misma base de datos.
 - Rutas: `go_router`
 - HTTP: `dio`
 - Token seguro: `flutter_secure_storage`
+- Abrir archivos externos (imágenes/PDF de comunicados): `url_launcher` —
+  añadido en la tarea "Comunicados", no estaba en la lista original de
+  decisiones técnicas; es el paquete oficial y mínimo del equipo de Flutter
+  para esto, no hay alternativa sin dependencia dentro del stack decidido.
 
 ## Estado del scaffolding
 

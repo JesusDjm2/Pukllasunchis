@@ -158,9 +158,32 @@ repo Laravel, no `mobile/`).
       dato) y "Matrícula" (historial con periodo, estado como chip, fecha).
       Ruta `/calificaciones`, enlazada desde `HomeScreen`. Sigue sin poder
       compilarse/probarse (antivirus/EDR).
-- [ ] Comunicados.
-- [ ] Config de entorno (`--dart-define=API_BASE_URL`).
-- [ ] README en `FlutterPuklla/`.
+- [x] Comunicados. `ComunicadoResource` confirmado en el controlador real:
+      `archivo_url` ya es una URL absoluta (`asset()` de Laravel, no relativa
+      a `API_BASE_URL`), `archivo_tipo` es un enum `imagen`/`pdf`, y la
+      paginación es la estándar de Laravel (`?page=`, `meta.current_page` /
+      `last_page` / `total`). `ComunicadosScreen`: lista paginada (botones
+      Anterior/Siguiente en vez de scroll infinito, para no complicar de más
+      una lista de solo lectura), con miniatura inline si es imagen
+      (`Image.network`) y botón "Ver documento"/"Ver imagen completa" que
+      abre `archivo_url` externamente. Para eso se agregó **`url_launcher`**
+      al `pubspec.yaml` — única desviación de las decisiones técnicas
+      originales (Riverpod/go_router/dio/flutter_secure_storage), necesaria
+      porque no había forma de abrir un archivo externo sin ella; documentado
+      en el README. Ruta `/comunicados`, enlazada desde `HomeScreen`. Sigue
+      sin poder compilarse/probarse (antivirus/EDR).
+
+- [x] Config de entorno (`--dart-define=API_BASE_URL`). Hecho en la tarea 1
+      (`lib/core/env/env.dart`), quedó sin marcar por descuido.
+- [x] README en `FlutterPuklla/`. También hecho en la tarea 1, actualizado en
+      cada tarea siguiente (stack, estado del scaffolding, `url_launcher`).
+
+**FASE 2: 7/7 tareas del checklist completas.** Pendiente transversal a
+todas: verificar de verdad con `flutter create .` + `flutter pub get` +
+`flutter analyze`/`flutter test` una vez resuelto el bloqueo de antivirus/EDR
+(360 Total Security — Safe Payment/Network Protection ya resuelto, Active
+Defense/Trusted Programs sobre `cmd.exe`→`powershell.exe` sigue bloqueando a
+la fecha de este commit).
 
 ## Roles existentes (referencia)
 

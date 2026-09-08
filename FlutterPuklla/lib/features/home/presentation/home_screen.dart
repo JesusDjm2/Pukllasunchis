@@ -78,6 +78,15 @@ class _AlumnoDashboard extends ConsumerWidget {
               onTap: () => context.push('/calificaciones'),
             ),
           ),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.campaign_outlined),
+              title: const Text('Comunicados'),
+              subtitle: const Text('Avisos y publicaciones del instituto'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.push('/comunicados'),
+            ),
+          ),
           const SizedBox(height: 24),
           Text('Mis cursos', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
