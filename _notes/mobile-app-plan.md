@@ -144,7 +144,20 @@ repo Laravel, no `mobile/`).
       `HomeScreen` (si no, la pantalla quedaba inalcanzable). Sigue sin poder
       compilarse/probarse en un dispositivo real (mismo bloqueo de
       antivirus/EDR).
-- [ ] Calificaciones y matrícula (solo lectura).
+- [x] Calificaciones y matrícula (solo lectura). Otro caso de schema drift
+      encontrado al modelar: el modelo `Calificacion` **no tiene migración**
+      (igual que `alumno_cursos.periodo_actual_id` y el rol `super-admin` en
+      Fase 1) — se confirmó con `DESCRIBE` contra la BD real `puklla` que la
+      tabla se llama `calificacions` (pluralización en inglés de Eloquent
+      sobre una palabra en español, nunca renombrada) y que
+      `valoracion_1/2/3`, `valoracion_curso`, `calificacion_curso`,
+      `calificacion_sistema` son `varchar(255)` nullable, no numéricos —
+      confirmado antes de tipar el modelo Dart, no asumido.
+      `CalificacionesScreen`: dos tabs, "Calificaciones" (una tarjeta por
+      curso con solo las filas de valoración/calificación que vienen con
+      dato) y "Matrícula" (historial con periodo, estado como chip, fecha).
+      Ruta `/calificaciones`, enlazada desde `HomeScreen`. Sigue sin poder
+      compilarse/probarse (antivirus/EDR).
 - [ ] Comunicados.
 - [ ] Config de entorno (`--dart-define=API_BASE_URL`).
 - [ ] README en `FlutterPuklla/`.

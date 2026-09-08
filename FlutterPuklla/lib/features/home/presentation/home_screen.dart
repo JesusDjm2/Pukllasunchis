@@ -69,6 +69,15 @@ class _AlumnoDashboard extends ConsumerWidget {
               onTap: () => context.push('/cursos-especiales'),
             ),
           ),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.grade_outlined),
+              title: const Text('Calificaciones y matrícula'),
+              subtitle: const Text('Notas por curso e historial de matrícula'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.push('/calificaciones'),
+            ),
+          ),
           const SizedBox(height: 24),
           Text('Mis cursos', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),

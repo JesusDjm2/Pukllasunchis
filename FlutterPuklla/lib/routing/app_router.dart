@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../features/auth/application/auth_controller.dart';
 import '../features/auth/application/auth_state.dart';
 import '../features/auth/presentation/login_screen.dart';
+import '../features/calificaciones/presentation/calificaciones_screen.dart';
 import '../features/cursos_especiales/presentation/curso_especial_detalle_screen.dart';
 import '../features/cursos_especiales/presentation/cursos_especiales_screen.dart';
 import '../features/home/presentation/home_screen.dart';
@@ -49,6 +50,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           final cursoId = int.parse(state.pathParameters['id']!);
           return CursoEspecialDetalleScreen(cursoId: cursoId);
         },
+      ),
+      GoRoute(
+        path: '/calificaciones',
+        builder: (context, state) => const CalificacionesScreen(),
       ),
     ],
   );
