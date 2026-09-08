@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../features/auth/application/auth_controller.dart';
 import '../features/auth/application/auth_state.dart';
 import '../features/auth/presentation/login_screen.dart';
+import '../features/cursos_especiales/presentation/curso_especial_detalle_screen.dart';
+import '../features/cursos_especiales/presentation/cursos_especiales_screen.dart';
 import '../features/home/presentation/home_screen.dart';
 
 /// Reconstruir el GoRouter completo cuando cambia el estado de auth es
@@ -36,6 +38,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/home',
         builder: (context, state) => const HomeScreen(),
+      ),
+      GoRoute(
+        path: '/cursos-especiales',
+        builder: (context, state) => const CursosEspecialesScreen(),
+      ),
+      GoRoute(
+        path: '/cursos-especiales/:id',
+        builder: (context, state) {
+          final cursoId = int.parse(state.pathParameters['id']!);
+          return CursoEspecialDetalleScreen(cursoId: cursoId);
+        },
       ),
     ],
   );

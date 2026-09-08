@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../auth/application/auth_controller.dart';
@@ -58,6 +59,16 @@ class _AlumnoDashboard extends ConsumerWidget {
         padding: const EdgeInsets.all(16),
         children: [
           const _PeriodoActualCard(),
+          const SizedBox(height: 24),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.school_outlined),
+              title: const Text('Cursos especiales'),
+              subtitle: const Text('Lecciones y ejercicios a tu ritmo'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.push('/cursos-especiales'),
+            ),
+          ),
           const SizedBox(height: 24),
           Text('Mis cursos', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),

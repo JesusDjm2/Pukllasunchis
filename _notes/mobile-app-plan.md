@@ -125,7 +125,25 @@ repo Laravel, no `mobile/`).
       periodo; si no (p.ej. docente), mensaje de que la vista aún es solo
       para alumnos — sin llamar a endpoints que igual 404earían. Sigue
       pendiente compilar/probar de verdad (mismo bloqueo de antivirus/EDR).
-- [ ] Cursos especiales (lista → unidades → lecciones → ejercicios → progreso).
+- [x] Cursos especiales (lista → unidades → lecciones → ejercicios → progreso).
+      Modelos fieles al contrato real (revisado en `CursoEspecialController` +
+      `CursoEspecialResource`, no asumido): `opciones` de ejercicio es
+      `List<String>?` (cast `array` en Eloquent, `null` si es respuesta
+      libre); las lecciones del árbol **no** traen `contenido_texto`/
+      `archivo_url` — la API de Fase 1 solo expone id/nombre/tipo/duración/
+      completada, así que la pantalla de lección es solo un check "marcar
+      completada", sin visor de contenido (no se inventó nada extra).
+      `CursosEspecialesScreen` (catálogo, con botón "Inscribirme" si no está
+      inscrito) → `CursoEspecialDetalleScreen` (árbol expandible
+      niveles→unidades→lecciones/ejercicios + barra de progreso; responder un
+      ejercicio abre un bottom sheet con opción múltiple o texto libre según
+      `opciones`). Acciones (inscribir/completar lección/responder ejercicio)
+      viven en `CursosEspecialesController`, que invalida los providers de
+      lectura afectados tras cada mutación. Se agregaron rutas
+      `/cursos-especiales` y `/cursos-especiales/:id` y un enlace desde
+      `HomeScreen` (si no, la pantalla quedaba inalcanzable). Sigue sin poder
+      compilarse/probarse en un dispositivo real (mismo bloqueo de
+      antivirus/EDR).
 - [ ] Calificaciones y matrícula (solo lectura).
 - [ ] Comunicados.
 - [ ] Config de entorno (`--dart-define=API_BASE_URL`).
