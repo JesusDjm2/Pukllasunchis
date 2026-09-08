@@ -53,8 +53,12 @@ tiene `Alumno`.
 ## Cursos y calificaciones
 
 ### `GET /cursos`
-Auth. Cursos del alumno en el periodo activo (`Alumno::cursosDelPeriodo()`).
-Lista vacía si no hay periodo activo. 404 si no tiene `Alumno`.
+Auth. Misma lógica que `AlumnoController@index` en la web (no solo
+`cursosDelPeriodo()` — ese era un bug de Fase 1, corregido): fuente primaria
+son las asignaciones explícitas en `alumno_cursos` para el periodo activo; si
+no hay ninguna, se muestran todos los cursos del ciclo propio del alumno.
+Lista vacía si no hay periodo activo y el alumno tampoco tiene ciclo. 404 si
+no tiene `Alumno`.
 
 ### `GET /calificaciones`
 Auth. Todas las calificaciones del alumno, con el nombre del curso. 404 si no

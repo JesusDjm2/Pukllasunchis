@@ -20,11 +20,19 @@ class CursoController extends Controller
 
         $periodoActual = PeriodoActual::actual();
 
-        $cursos = $periodoActual
-            ? $alumno->cursosDelPeriodo($periodoActual->id)->orderBy('nombre')->get()
+        // Misma lógica que AlumnoController@index (web): fuente primaria son
+        // las asignaciones explícitas en alumno_cursos para el período
+        // actual; si no hay ninguna, se muestran todos los cursos del ciclo
+        // propio del alumno.
+        $cursosAsignados = $periodoActual
+            ? $alumno->cursosDelPeriodo($periodoActual->id)->with('ciclo')->get()
             : collect();
 
-        return response()->json(['data' => CursoResource::collection($cursos)]);
+        $cursos = $cursosAsignados->isNotEmpty()
+            ? $cursosAsignados
+            : ($alumno->ciclo ? $alumno->ciclo->cursos : collect());
+
+        return response()->json(['data' => CursoResource::collection($cursos->sortBy('nombre')->values())]);
     }
 
     public function calificaciones(Request $request)

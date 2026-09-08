@@ -4,6 +4,7 @@ namespace Tests\Feature\Api;
 
 use App\Models\Alumno;
 use App\Models\Calificacion;
+use App\Models\Ciclo;
 use App\Models\Curso;
 use App\Models\PeriodoActual;
 use App\Models\User;
@@ -39,6 +40,26 @@ class CursoTest extends TestCase
         $response->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0.nombre', 'Matemática');
+    }
+
+    public function test_alumno_without_explicit_assignment_falls_back_to_ciclo_cursos(): void
+    {
+        // Misma lógica que AlumnoController@index (web): la mayoría de
+        // alumnos no tiene filas en alumno_cursos para el período actual —
+        // ven los cursos de su ciclo directamente.
+        $user = User::factory()->create();
+        $ciclo = Ciclo::factory()->create();
+        $alumno = Alumno::factory()->create(['user_id' => $user->id, 'ciclo_id' => $ciclo->id]);
+        PeriodoActual::factory()->actual()->create();
+        Curso::factory()->create(['nombre' => 'Álgebra', 'ciclo_id' => $ciclo->id]);
+        Curso::factory()->create(['nombre' => 'Historia', 'ciclo_id' => $ciclo->id]);
+
+        $token = $user->createToken('test')->plainTextToken;
+
+        $response = $this->withHeader('Authorization', "Bearer {$token}")
+            ->getJson('/api/v1/cursos');
+
+        $response->assertOk()->assertJsonCount(2, 'data');
     }
 
     public function test_returns_empty_list_when_no_active_period(): void
