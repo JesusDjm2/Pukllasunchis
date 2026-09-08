@@ -96,7 +96,23 @@ repo Laravel, no `mobile/`).
       (genera `android/`/`ios/` sin tocar `lib/` ni `pubspec.yaml`) y
       `flutter pub get` — recién ahí se puede correr `flutter analyze` /
       `flutter test` para verificar de verdad este scaffolding.
-- [ ] Auth (login, token seguro, redirect).
+- [x] Auth (login, token seguro, redirect). `features/auth/`: `data/auth_user.dart`
+      (modelo de `GET /me`), `data/auth_repository.dart` (login/me/logout
+      contra `/api/v1`, guarda/borra el token en `TokenStorage`),
+      `application/auth_controller.dart` (`StateNotifier<AuthState>`: estados
+      `unknown` (restaurando sesión) → `authenticated`/`unauthenticated`;
+      al crearse intenta `GET /me` con el token guardado y si falla lo
+      descarta), `presentation/login_screen.dart` (formulario real con
+      validación y manejo de `ApiException`). `routing/app_router.dart` ahora
+      hace `redirect` según `AuthStatus` (no autenticado → `/login`,
+      autenticado en `/login` → `/home`). `HomeScreen` muestra el nombre del
+      usuario y tiene botón de logout, para poder probar el ciclo completo
+      login → home → logout → login. Errores de dio se normalizan a
+      `ApiException` vía `core/network/api_exception.dart` +
+      `throwApiException()`. **Sin verificar en un emulador/dispositivo
+      real todavía** — sigue pendiente `flutter create .` + `flutter pub get`
+      (bloqueados por el mismo antivirus/EDR, ver tarea anterior) para poder
+      compilar y probar contra `POST /api/v1/login` real.
 - [ ] Home/dashboard.
 - [ ] Cursos especiales (lista → unidades → lecciones → ejercicios → progreso).
 - [ ] Calificaciones y matrícula (solo lectura).

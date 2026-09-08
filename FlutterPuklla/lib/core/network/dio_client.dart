@@ -26,7 +26,7 @@ final dioProvider = Provider<Dio>((ref) {
         }
         handler.next(options);
       },
-      onError: (error, handler) => handler.next(_mapError(error)),
+      onError: (error, handler) => handler.reject(_mapError(error)),
     ),
   );
 
