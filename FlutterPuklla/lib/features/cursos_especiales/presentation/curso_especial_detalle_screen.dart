@@ -219,13 +219,16 @@ class _ResponderEjercicioSheetState extends ConsumerState<_ResponderEjercicioShe
           Text(widget.ejercicio.pregunta, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 16),
           if (opciones != null)
-            for (final opcion in opciones)
-              RadioListTile<String>(
-                title: Text(opcion),
-                value: opcion,
-                groupValue: _opcionSeleccionada,
-                onChanged: (value) => setState(() => _opcionSeleccionada = value),
-              )
+            RadioGroup<String>(
+              groupValue: _opcionSeleccionada,
+              onChanged: (value) => setState(() => _opcionSeleccionada = value),
+              child: Column(
+                children: [
+                  for (final opcion in opciones)
+                    RadioListTile<String>(title: Text(opcion), value: opcion),
+                ],
+              ),
+            )
           else
             TextField(
               controller: _respuestaController,
