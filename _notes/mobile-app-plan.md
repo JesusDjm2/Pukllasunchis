@@ -113,7 +113,18 @@ repo Laravel, no `mobile/`).
       real todavía** — sigue pendiente `flutter create .` + `flutter pub get`
       (bloqueados por el mismo antivirus/EDR, ver tarea anterior) para poder
       compilar y probar contra `POST /api/v1/login` real.
-- [ ] Home/dashboard.
+- [x] Home/dashboard. `features/home/data/`: `periodo_actual.dart` +
+      `periodo_actual_repository.dart` (`GET /periodo-actual`, 404 → `null`,
+      no es un error real) y `curso.dart` + `curso_repository.dart`
+      (`GET /cursos`; `horas`/`creditos` son `string` en la BD, no
+      numéricos — confirmado en la migración `create_cursos_table`, no
+      asumido). `application/home_providers.dart`: `periodoActualProvider` y
+      `cursosProvider` (`FutureProvider`, con pull-to-refresh vía
+      `ref.invalidate`). `HomeScreen` ahora es el dashboard real: si
+      `user.isAlumno` muestra tarjeta de periodo actual + lista de cursos del
+      periodo; si no (p.ej. docente), mensaje de que la vista aún es solo
+      para alumnos — sin llamar a endpoints que igual 404earían. Sigue
+      pendiente compilar/probar de verdad (mismo bloqueo de antivirus/EDR).
 - [ ] Cursos especiales (lista → unidades → lecciones → ejercicios → progreso).
 - [ ] Calificaciones y matrícula (solo lectura).
 - [ ] Comunicados.
