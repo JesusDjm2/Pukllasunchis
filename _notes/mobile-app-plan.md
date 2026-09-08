@@ -79,7 +79,23 @@ arrancar la Fase 2 (FlutterPuklla).
 Nombre del proyecto: **FlutterPuklla** (carpeta `FlutterPuklla/`, hermana del
 repo Laravel, no `mobile/`).
 
-- [ ] `flutter create FlutterPuklla` + estructura por features.
+- [x] `flutter create FlutterPuklla` + estructura por features. **Nota:** el
+      CLI de `flutter` está bloqueado en esta máquina — algo (antivirus/EDR)
+      impide que `cmd.exe` invoque `powershell.exe` (falla con "Acceso
+      denegado" incluso en un comando trivial), y `flutter.bat` necesita ese
+      paso en *cada* ejecución para resolver la versión del engine. Un
+      `git clone -b stable` del propio SDK de Flutter también se cortó
+      repetidamente con `SSL_read: decryption failed or bad record mac`,
+      consistente con la misma interferencia. El usuario está revisando su
+      antivirus en una sesión aparte con permisos de administrador. Mientras
+      tanto se creó la estructura a mano: `pubspec.yaml`, `analysis_options.yaml`,
+      `.gitignore`, `README.md`, y `lib/` organizado por feature (`core/`,
+      `routing/`, `features/{auth,home,cursos_especiales,calificaciones,comunicados}`
+      con subcarpetas `data/application/presentation`). Pendiente, una vez
+      resuelto el bloqueo: `flutter create . --project-name flutter_puklla`
+      (genera `android/`/`ios/` sin tocar `lib/` ni `pubspec.yaml`) y
+      `flutter pub get` — recién ahí se puede correr `flutter analyze` /
+      `flutter test` para verificar de verdad este scaffolding.
 - [ ] Auth (login, token seguro, redirect).
 - [ ] Home/dashboard.
 - [ ] Cursos especiales (lista → unidades → lecciones → ejercicios → progreso).
