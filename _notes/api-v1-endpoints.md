@@ -32,12 +32,19 @@ alumno_id, docente_id`.
 ## Alumno
 
 ### `GET /alumno/perfil`
-Auth. 404 si el usuario no tiene un `Alumno` asociado.
+Auth. Incluye `programa_nombre`/`ciclo_nombre` (además de los `_id`). 404 si
+el usuario no tiene un `Alumno` asociado.
 
 ### `PUT /alumno/perfil`
 Auth. Actualiza los campos autoeditables del alumno (mismas reglas que
 `AlumnoController::actualizarDatos` en la web, sin `foto` — pendiente si se
 necesita, requiere multipart). 422 en validación, 403 si no tiene `Alumno`.
+
+### `GET /alumno/ficha-pdf`
+Auth. Descarga la ficha técnica en PDF (misma plantilla Blade que
+`vistasAlumnosController::exportarFichaPDF` en la web), escaneada siempre al
+propio alumno autenticado — no acepta un `{alumno}` arbitrario como la ruta
+web. 404 si no tiene `Alumno`. Respuesta: binario `application/pdf`.
 
 ## Periodo actual
 
@@ -61,8 +68,15 @@ Lista vacía si no hay periodo activo y el alumno tampoco tiene ciclo. 404 si
 no tiene `Alumno`.
 
 ### `GET /calificaciones`
-Auth. Todas las calificaciones del alumno, con el nombre del curso. 404 si no
-tiene `Alumno`.
+Auth. **Fuente real: modelo `Periodo` (tabla `periodos`), no `Calificacion`
+(`calificacions` — existe pero está vacía en producción, ningún flujo real
+escribe ahí; ese era un bug de Fase 1, corregido)**. Misma lógica que
+`AlumnoController@calificaciones` en la web: agrupado por
+`periodoActual->nombre`. Respuesta: `{"data": {"2024-I": [...], "2024-II":
+[...]}}` — un objeto keyed por nombre de periodo (orden alfabético, igual
+que la web), cada valor es un array de `{id, curso_id, curso_nombre,
+valoracion_curso, calificacion_curso, calificacion_sistema}`. 404 si no tiene
+`Alumno`.
 
 ## Cursos especiales (asincrónicos)
 

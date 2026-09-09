@@ -57,7 +57,9 @@ class AlumnoResource extends JsonResource
             'tipo_seguro' => $this->tipo_seguro,
             'estudio_beca' => $this->estudio_beca,
             'programa_id' => $this->programa_id,
+            'programa_nombre' => $this->programa?->nombre,
             'ciclo_id' => $this->ciclo_id,
+            'ciclo_nombre' => $this->ciclo?->nombre,
         ];
     }
 }

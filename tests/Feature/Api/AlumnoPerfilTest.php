@@ -114,4 +114,27 @@ class AlumnoPerfilTest extends TestCase
 
         $response->assertStatus(422);
     }
+
+    public function test_alumno_can_download_own_ficha_pdf(): void
+    {
+        $user = $this->actingUser();
+        $token = $user->createToken('test')->plainTextToken;
+
+        $response = $this->withHeader('Authorization', "Bearer {$token}")
+            ->get('/api/v1/alumno/ficha-pdf');
+
+        $response->assertOk();
+        $this->assertSame('application/pdf', $response->headers->get('Content-Type'));
+    }
+
+    public function test_user_without_alumno_gets_404_on_ficha_pdf(): void
+    {
+        $user = User::factory()->create();
+        $token = $user->createToken('test')->plainTextToken;
+
+        $response = $this->withHeader('Authorization', "Bearer {$token}")
+            ->get('/api/v1/alumno/ficha-pdf');
+
+        $response->assertStatus(404);
+    }
 }

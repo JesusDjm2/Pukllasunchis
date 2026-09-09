@@ -18,7 +18,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 /* Route::get('/consulta-dni', [AdminFidController::class, 'consultar']); */
-/* Route::get('/consulta-dni', [AdminFidController::class, 'consultar']); */
 
 Route::prefix('v1')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
@@ -32,6 +31,7 @@ Route::prefix('v1')->group(function () {
 
         Route::get('/alumno/perfil', [AlumnoController::class, 'perfil']);
         Route::put('/alumno/perfil', [AlumnoController::class, 'actualizarPerfil']);
+        Route::get('/alumno/ficha-pdf', [AlumnoController::class, 'fichaPdf']);
 
         Route::get('/periodo-actual', [PeriodoActualController::class, 'show']);
 

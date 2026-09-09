@@ -43,8 +43,17 @@ class CursoController extends Controller
             return response()->json(['message' => 'No se encontró un perfil de alumno para este usuario.'], 404);
         }
 
-        $calificaciones = $alumno->calificaciones()->with('curso')->get();
+        // Misma fuente que AlumnoController@calificaciones (web): el modelo
+        // `Periodo` (tabla `periodos`), no `Calificacion` (`calificacions`,
+        // que está vacía en producción — nadie escribe ahí). `Periodo` sí
+        // trae `periodo_actual_id`, por eso permite agrupar por período.
+        $periodos = $alumno->periodo()->with(['curso', 'periodoActual'])->get();
 
-        return response()->json(['data' => CalificacionResource::collection($calificaciones)]);
+        $agrupado = $periodos
+            ->groupBy(fn ($p) => optional($p->periodoActual)->nombre ?? 'Sin periodo')
+            ->sortKeys()
+            ->map(fn ($grupo) => CalificacionResource::collection($grupo->values()));
+
+        return response()->json(['data' => $agrupado]);
     }
 }

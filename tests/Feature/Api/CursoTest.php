@@ -3,9 +3,9 @@
 namespace Tests\Feature\Api;
 
 use App\Models\Alumno;
-use App\Models\Calificacion;
 use App\Models\Ciclo;
 use App\Models\Curso;
+use App\Models\Periodo;
 use App\Models\PeriodoActual;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -74,19 +74,32 @@ class CursoTest extends TestCase
         $response->assertOk()->assertJsonCount(0, 'data');
     }
 
-    public function test_alumno_can_list_own_calificaciones(): void
+    public function test_alumno_can_list_own_calificaciones_grouped_by_periodo(): void
     {
+        // Fuente real: modelo Periodo (tabla `periodos`), no Calificacion
+        // (`calificacions` está vacía en producción — ver AlumnoController@calificaciones
+        // en la web, que agrupa por periodoActual->nombre).
         $user = User::factory()->create();
         $alumno = Alumno::factory()->create(['user_id' => $user->id]);
         $curso = Curso::factory()->create(['nombre' => 'Comunicación']);
-        Calificacion::factory()->create([
+        $periodo2024 = PeriodoActual::factory()->create(['nombre' => '2024-I']);
+        $periodo2025 = PeriodoActual::factory()->create(['nombre' => '2025-I']);
+
+        Periodo::factory()->create([
             'alumno_id' => $alumno->id,
             'curso_id' => $curso->id,
+            'periodo_actual_id' => $periodo2024->id,
+            'calificacion_curso' => '15',
+        ]);
+        Periodo::factory()->create([
+            'alumno_id' => $alumno->id,
+            'curso_id' => $curso->id,
+            'periodo_actual_id' => $periodo2025->id,
             'calificacion_curso' => '17',
         ]);
 
         $otroAlumno = Alumno::factory()->create();
-        Calificacion::factory()->create(['alumno_id' => $otroAlumno->id]);
+        Periodo::factory()->create(['alumno_id' => $otroAlumno->id]);
 
         $token = $user->createToken('test')->plainTextToken;
 
@@ -94,9 +107,10 @@ class CursoTest extends TestCase
             ->getJson('/api/v1/calificaciones');
 
         $response->assertOk()
-            ->assertJsonCount(1, 'data')
-            ->assertJsonPath('data.0.curso_nombre', 'Comunicación')
-            ->assertJsonPath('data.0.calificacion_curso', '17');
+            ->assertJsonCount(2, 'data')
+            ->assertJsonPath('data.2024-I.0.curso_nombre', 'Comunicación')
+            ->assertJsonPath('data.2024-I.0.calificacion_curso', '15')
+            ->assertJsonPath('data.2025-I.0.calificacion_curso', '17');
     }
 
     public function test_unauthenticated_user_cannot_list_cursos_or_calificaciones(): void
