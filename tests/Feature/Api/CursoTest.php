@@ -7,6 +7,8 @@ use App\Models\Ciclo;
 use App\Models\Curso;
 use App\Models\Periodo;
 use App\Models\PeriodoActual;
+use App\Models\PeriodoDos;
+use App\Models\PeriodoUno;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -107,10 +109,51 @@ class CursoTest extends TestCase
             ->getJson('/api/v1/calificaciones');
 
         $response->assertOk()
-            ->assertJsonCount(2, 'data')
-            ->assertJsonPath('data.2024-I.0.curso_nombre', 'Comunicación')
-            ->assertJsonPath('data.2024-I.0.calificacion_curso', '15')
-            ->assertJsonPath('data.2025-I.0.calificacion_curso', '17');
+            ->assertJsonCount(2, 'data.anteriores')
+            ->assertJsonPath('data.anteriores.2024-I.0.curso_nombre', 'Comunicación')
+            ->assertJsonPath('data.anteriores.2024-I.0.calificacion_curso', '15')
+            ->assertJsonPath('data.anteriores.2025-I.0.calificacion_curso', '17');
+    }
+
+    public function test_calificaciones_includes_periodo_actual_with_parciales(): void
+    {
+        // Sección "Período actual" de AlumnoController@calificaciones (web):
+        // mismos cursos que GET /cursos, con Parcial 1 (PeriodoUno), Parcial 2
+        // (PeriodoDos) y Promedio (PeriodoTres) — tres modelos separados de
+        // Periodo (el de "anteriores"). Sin nota registrada -> null (el
+        // cliente muestra "Sin datos aún").
+        $user = User::factory()->create();
+        $ciclo = Ciclo::factory()->create();
+        $alumno = Alumno::factory()->create(['user_id' => $user->id, 'ciclo_id' => $ciclo->id]);
+        $periodoActual = PeriodoActual::factory()->actual()->create(['nombre' => '2026-I']);
+        $cursoConNotas = Curso::factory()->create(['nombre' => 'Didáctica', 'ciclo_id' => $ciclo->id]);
+        $cursoSinNotas = Curso::factory()->create(['nombre' => 'Psicología', 'ciclo_id' => $ciclo->id]);
+
+        PeriodoUno::factory()->create([
+            'alumno_id' => $alumno->id,
+            'curso_id' => $cursoConNotas->id,
+            'calificacion_curso' => '16',
+        ]);
+        PeriodoDos::factory()->create([
+            'alumno_id' => $alumno->id,
+            'curso_id' => $cursoConNotas->id,
+            'calificacion_curso' => '18',
+        ]);
+
+        $token = $user->createToken('test')->plainTextToken;
+
+        $response = $this->withHeader('Authorization', "Bearer {$token}")
+            ->getJson('/api/v1/calificaciones');
+
+        $response->assertOk()
+            ->assertJsonPath('data.periodo_actual.periodo_nombre', '2026-I')
+            ->assertJsonCount(2, 'data.periodo_actual.cursos')
+            ->assertJsonPath('data.periodo_actual.cursos.0.curso_nombre', 'Didáctica')
+            ->assertJsonPath('data.periodo_actual.cursos.0.parcial_1.calificacion_curso', '16')
+            ->assertJsonPath('data.periodo_actual.cursos.0.parcial_2.calificacion_curso', '18')
+            ->assertJsonPath('data.periodo_actual.cursos.0.promedio', null)
+            ->assertJsonPath('data.periodo_actual.cursos.1.curso_nombre', 'Psicología')
+            ->assertJsonPath('data.periodo_actual.cursos.1.parcial_1', null);
     }
 
     public function test_unauthenticated_user_cannot_list_cursos_or_calificaciones(): void

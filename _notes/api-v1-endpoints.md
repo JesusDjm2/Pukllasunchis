@@ -68,15 +68,26 @@ Lista vacía si no hay periodo activo y el alumno tampoco tiene ciclo. 404 si
 no tiene `Alumno`.
 
 ### `GET /calificaciones`
-Auth. **Fuente real: modelo `Periodo` (tabla `periodos`), no `Calificacion`
-(`calificacions` — existe pero está vacía en producción, ningún flujo real
-escribe ahí; ese era un bug de Fase 1, corregido)**. Misma lógica que
-`AlumnoController@calificaciones` en la web: agrupado por
-`periodoActual->nombre`. Respuesta: `{"data": {"2024-I": [...], "2024-II":
-[...]}}` — un objeto keyed por nombre de periodo (orden alfabético, igual
-que la web), cada valor es un array de `{id, curso_id, curso_nombre,
-valoracion_curso, calificacion_curso, calificacion_sistema}`. 404 si no tiene
-`Alumno`.
+Auth. Misma lógica que `AlumnoController@calificaciones` en la web, con dos
+secciones:
+
+- `data.periodo_actual`: `{"periodo_nombre": "2026-I", "cursos": [...]}` —
+  los mismos cursos que `GET /cursos` (asignación explícita o fallback al
+  ciclo), cada uno con `{curso_id, curso_nombre, parcial_1, parcial_2,
+  promedio, observaciones}`. `parcial_1`/`parcial_2`/`promedio` son
+  `{valoracion_curso, calificacion_curso, calificacion_sistema}` o `null` si
+  no hay nota registrada (mostrar "Sin datos aún" en el cliente). Son **tres
+  modelos separados** (`PeriodoUno`/`PeriodoDos`/`PeriodoTres` — no
+  `Periodo`), y ninguno se filtra por período: se toma el primer registro
+  del alumno para ese curso, igual que la web (no es un bug nuevo, es el
+  comportamiento real).
+- `data.anteriores`: `{"2024-I": [...], "2024-II": [...]}`, agrupado por
+  `periodoActual->nombre` a partir del modelo `Periodo` (tabla `periodos`;
+  **no** `Calificacion`/`calificacions`, que está vacía en producción — ese
+  era un bug de Fase 1, corregido). Cada valor es un array de `{id, curso_id,
+  curso_nombre, valoracion_curso, calificacion_curso, calificacion_sistema}`.
+
+404 si no tiene `Alumno`.
 
 ## Cursos especiales (asincrónicos)
 
