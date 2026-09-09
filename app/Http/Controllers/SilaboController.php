@@ -234,6 +234,14 @@ class SilaboController extends Controller
 
     public function show(Silabo $silabo)
     {
+        // Un alumno no puede ver el sílabo antes de la 3ª semana del periodo, ni
+        // aunque conozca la URL directa — el link ya se oculta en el dashboard,
+        // esto es la misma regla aplicada del lado del servidor.
+        if (Auth::user()->hasAnyRole(['alumno', 'alumnoB']) && ! ($silabo->periodoActual?->silabosVisibles() ?? true)) {
+            return redirect()->back()->with('error', 'Este sílabo estará disponible a partir del '
+                .$silabo->periodoActual->fechaSilabosVisibles()->format('d/m/Y').'.');
+        }
+
         $curso = $silabo->curso;
         // El periodo a mostrar es el del propio sílabo, no el que esté activo "hoy":
         // un sílabo de un periodo ya cerrado debe seguir mostrando su nombre y fechas
@@ -452,6 +460,13 @@ class SilaboController extends Controller
         abort_unless($this->puedeGestionarSilabos(), 403);
 
         $silabo->delete();
+
+        // Un docente debe volver a su propio dashboard (con el curso ya listo para
+        // elegir de nuevo entre crear/subir/reusar), no a la lista general de admin.
+        if (auth()->user()->hasRole('docente')) {
+            return redirect()->route('vistaDocente', ['docente' => auth()->user()->docente->id])
+                ->with('success', 'Sílabo eliminado correctamente.');
+        }
 
         return redirect()->route('silabos.index')->with('success', 'Sílabo eliminado correctamente.');
     }

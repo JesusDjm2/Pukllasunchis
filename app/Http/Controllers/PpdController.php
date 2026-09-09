@@ -10,6 +10,7 @@ use App\Models\Curso;
 use App\Models\Departamento;
 use App\Models\Docente;
 use App\Models\MatriculaPpd;
+use App\Models\PeriodoActual;
 use App\Models\PeriodoActualPpd;
 use App\Models\ppd;
 use App\Models\Programa;
@@ -68,8 +69,12 @@ class PpdController extends Controller
             : null;
         $formularioHabilitado = $periodoActualPpd?->formulario_habilitado ?? false;
 
+        // Los sílabos (de FID y PPD) siempre se rigen por el periodo FID: es el
+        // único "periodo actual" que usa el sistema de sílabos.
+        $periodoActual = PeriodoActual::where('actual', true)->first();
+
         return view('alumnos.ppd.index', compact(
-            'alumno', 'cursos', 'periodoActualPpd', 'matriculaActual', 'formularioHabilitado'
+            'alumno', 'cursos', 'periodoActualPpd', 'matriculaActual', 'formularioHabilitado', 'periodoActual'
         ));
     }
 

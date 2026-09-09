@@ -65,7 +65,9 @@
                             {{-- Parcial 1 --}}
                             <div class="agr-row agr-p1">
                                 <span class="agr-lbl">Parcial 1</span>
-                                @if ($p1)
+                                @if ($periodoActual && !$periodoActual->parcial1Visible())
+                                    <span class="agr-empty">Disponible desde el {{ $periodoActual->calificaciones_parcial1_inicio->format('d/m/Y') }}</span>
+                                @elseif ($p1)
                                     <span class="agr-val">{{ $p1->valoracion_curso ?? '—' }}</span>
                                     <span class="agr-val">{{ $p1->calificacion_curso ?? '—' }}</span>
                                     <span class="agr-score">
@@ -80,7 +82,9 @@
                             {{-- Parcial 2 --}}
                             <div class="agr-row agr-p2">
                                 <span class="agr-lbl">Parcial 2</span>
-                                @if ($p2)
+                                @if ($periodoActual && !$periodoActual->parcial2DesempenoVisible())
+                                    <span class="agr-empty">Disponible desde el {{ $periodoActual->calificaciones_parcial2_inicio->format('d/m/Y') }}</span>
+                                @elseif ($p2)
                                     <span class="agr-val">{{ $p2->valoracion_curso ?? '—' }}</span>
                                     <span class="agr-val">{{ $p2->calificacion_curso ?? '—' }}</span>
                                     <span class="agr-score">
@@ -95,7 +99,9 @@
                             {{-- Promedio --}}
                             <div class="agr-row agr-prom">
                                 <span class="agr-lbl">Promedio</span>
-                                @if ($p3)
+                                @if ($periodoActual && !$periodoActual->parcial2DesempenoVisible())
+                                    <span class="agr-empty">Disponible desde el {{ $periodoActual->calificaciones_parcial2_inicio->format('d/m/Y') }}</span>
+                                @elseif ($p3)
                                     <span class="agr-val">{{ $p3->valoracion_curso ?? '—' }}</span>
                                     <span class="agr-val">{{ $p3->calificacion_curso ?? '—' }}</span>
                                     <span class="agr-score">

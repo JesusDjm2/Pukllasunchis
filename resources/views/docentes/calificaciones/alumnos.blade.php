@@ -222,6 +222,17 @@
                 </div>
             </div>
             <div id="tablaPeriodoUno" class="col-lg-12 table-responsive">
+                @if (!($parcial1Habilitado ?? true))
+                    <div class="alert alert-warning shadow-sm">
+                        <i class="fas fa-lock mr-1"></i>
+                        El registro de <strong>Parcial 1</strong> no está habilitado en este momento.
+                        @if ($periodoActual?->calificaciones_parcial1_inicio || $periodoActual?->calificaciones_parcial1_cierre)
+                            Estará disponible
+                            @if ($periodoActual->calificaciones_parcial1_inicio) del {{ $periodoActual->calificaciones_parcial1_inicio->format('d/m/Y') }} @endif
+                            @if ($periodoActual->calificaciones_parcial1_cierre) al {{ $periodoActual->calificaciones_parcial1_cierre->format('d/m/Y') }} @endif.
+                        @endif
+                    </div>
+                @else
                 <form action="{{ route('periodouno.storeBloque') }}" method="POST">
                     @csrf
                     <input type="hidden" name="curso_id" value="{{ $curso->id }}">
@@ -389,9 +400,21 @@
                         </table>
                     </div>
                 </form>
+                @endif
             </div>
 
             <div id="tablaCalificaciones" class="col-lg-12 table-responsive">
+                @if (!($parcial2Habilitado ?? true))
+                    <div class="alert alert-warning shadow-sm">
+                        <i class="fas fa-lock mr-1"></i>
+                        El registro de <strong>Parcial 2 / Desempeño</strong> no está habilitado en este momento.
+                        @if ($periodoActual?->calificaciones_parcial2_inicio || $periodoActual?->calificaciones_parcial2_cierre)
+                            Estará disponible
+                            @if ($periodoActual->calificaciones_parcial2_inicio) del {{ $periodoActual->calificaciones_parcial2_inicio->format('d/m/Y') }} @endif
+                            @if ($periodoActual->calificaciones_parcial2_cierre) al {{ $periodoActual->calificaciones_parcial2_cierre->format('d/m/Y') }} @endif.
+                        @endif
+                    </div>
+                @else
                 <form action="{{ route('guardarPeriodo2yDesempenoEnBloque') }}" method="POST">
                     @csrf
                     <input type="hidden" name="curso_id" value="{{ $curso->id }}">
@@ -658,6 +681,7 @@
                         </table>
                     </div>
                 </form>
+                @endif
             </div>
         </div>
     </div>

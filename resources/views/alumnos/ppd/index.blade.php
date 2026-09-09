@@ -45,6 +45,15 @@
             </div>
         @endif
 
+        @if (isset($periodoActual) && $periodoActual && !$periodoActual->silabosVisibles())
+            <div class="alert alert-info d-flex align-items-center shadow-sm mb-4 py-2 border-0">
+                <i class="fa fa-info-circle fa-lg mr-3 flex-shrink-0"></i>
+                <span>Los sílabos de <strong>{{ $periodoActual->nombre }}</strong> estarán disponibles a partir del
+                    <strong>{{ $periodoActual->fechaSilabosVisibles()->format('d/m/Y') }}</strong>. Los docentes
+                    están trabajando en ellos.</span>
+            </div>
+        @endif
+
         @if (session('mostrar_popup_matricula'))
             <script>
                 document.addEventListener('DOMContentLoaded', function () {
@@ -54,6 +63,31 @@
                         html: 'Tu formulario fue llenado con éxito.<br>El área de cobranzas verificará tu pago para poder enviarte tu ficha de matrícula.',
                         confirmButtonColor: '#4e73df',
                         confirmButtonText: 'Entendido',
+                    });
+                });
+            </script>
+        @endif
+
+        @if ($alumno && $formularioHabilitado && $periodoActualPpd && ! $matriculaActual)
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    if (sessionStorage.getItem('matriculaAlertVista')) return;
+
+                    Swal.fire({
+                        icon: 'warning',
+                        title: '¡Aún no te has matriculado!',
+                        html: 'El período <strong>{{ $periodoActualPpd->nombre }}</strong> ya está abierto. Completa tu matrícula lo antes posible.',
+                        showCancelButton: true,
+                        confirmButtonText: 'Completar matrícula ahora',
+                        cancelButtonText: 'Recordarme después',
+                        confirmButtonColor: '#4e73df',
+                        cancelButtonColor: '#858796',
+                        reverseButtons: true,
+                    }).then(function (resultado) {
+                        sessionStorage.setItem('matriculaAlertVista', '1');
+                        if (resultado.isConfirmed) {
+                            window.location.href = '{{ route('ppd.edit', $alumno->id) }}';
+                        }
                     });
                 });
             </script>
@@ -157,8 +191,11 @@
                                                                                 $silaboEstructuradoV = $curso->silabos->firstWhere('periodo_actual_id', $periodoActualSilaboV->id ?? null)
                                                                                     ?? $curso->silabos->firstWhere('periodo', $periodoActualSilaboV->nombre ?? null);
                                                                                 $silaboPdfV = $curso->silabosPdf->where('periodo_actual_id', $periodoActualSilaboV->id ?? null)->first();
+                                                                                $silabosVisiblesV = ! $periodoActualSilaboV || $periodoActualSilaboV->silabosVisibles();
                                                                             @endphp
-                                                                            @if ($silaboEstructuradoV)
+                                                                            @if (! $silabosVisiblesV && ($silaboEstructuradoV || $silaboPdfV || $curso->silabo))
+                                                                                <span class="text-muted small">Disponible pronto</span>
+                                                                            @elseif ($silaboEstructuradoV)
                                                                                 <a class="btn btn-outline-success btn-sm rounded-pill px-3 d-inline-flex align-items-center"
                                                                                     href="{{ route('silabo.pdf', $silaboEstructuradoV->id) }}"
                                                                                     target="_blank" title="Ver Sílabo">
@@ -248,8 +285,11 @@
                                                                             $silaboEstructuradoV = $curso->silabos->firstWhere('periodo_actual_id', $periodoActualSilaboV->id ?? null)
                                                                                 ?? $curso->silabos->firstWhere('periodo', $periodoActualSilaboV->nombre ?? null);
                                                                             $silaboPdfV = $curso->silabosPdf->where('periodo_actual_id', $periodoActualSilaboV->id ?? null)->first();
+                                                                            $silabosVisiblesV = ! $periodoActualSilaboV || $periodoActualSilaboV->silabosVisibles();
                                                                         @endphp
-                                                                        @if ($silaboEstructuradoV)
+                                                                        @if (! $silabosVisiblesV && ($silaboEstructuradoV || $silaboPdfV || $curso->silabo))
+                                                                            <span class="text-muted small">Disponible pronto</span>
+                                                                        @elseif ($silaboEstructuradoV)
                                                                             <a class="btn btn-outline-success btn-sm rounded-pill px-3 d-inline-flex align-items-center"
                                                                                 href="{{ route('silabo.pdf', $silaboEstructuradoV->id) }}"
                                                                                 target="_blank" title="Ver Sílabo">

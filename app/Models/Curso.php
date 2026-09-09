@@ -64,7 +64,11 @@ class Curso extends Model
 
     public function relacionsilabo()
     {
-        return $this->hasOne(Silabo::class, 'curso_id');
+        // Un curso puede acumular varios sílabos (uno por periodo, más los que queden
+        // de "reusar"), así que sin orden explícito hasOne() podía devolver uno viejo
+        // -y con eso, el link de Ver/Editar mostraba el "Semestre Académico" de otro
+        // periodo. Aquí siempre se toma el más reciente (el del periodo vigente).
+        return $this->hasOne(Silabo::class, 'curso_id')->latestOfMany('id');
     }
 
     public function silabos()

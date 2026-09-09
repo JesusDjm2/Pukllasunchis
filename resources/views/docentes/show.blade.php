@@ -14,6 +14,46 @@
     @endphp
 
     <style>
+        /* ── Alertas (SweetAlert2) con el mismo look de las tarjetas del dashboard:
+           mismo radio, misma sombra suave y azul institucional (#4e73df). ── */
+        .docente-swal-popup {
+            border-radius: 0.65rem;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.12);
+            font-family: inherit;
+        }
+
+        .docente-swal-popup .swal2-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #4b4f5c;
+        }
+
+        .docente-swal-popup .swal2-html-container {
+            font-size: 0.9rem;
+            color: #5a5c69;
+        }
+
+        .docente-swal-popup .swal2-confirm {
+            border-radius: 0.4rem !important;
+            font-weight: 600;
+        }
+
+        .docente-swal-popup .swal2-cancel {
+            border-radius: 0.4rem !important;
+            font-weight: 600;
+        }
+
+        .docente-swal-toast {
+            border-radius: 0.5rem;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.12);
+        }
+
+        .docente-swal-toast .swal2-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #4b4f5c;
+        }
+
         /* ── Hero / cabecera del dashboard docente ──
            El look de la tarjeta (fondo, sombra, acento izquierdo) viene de
            las clases globales .docente-ui-card .docente-ui-hero (definidas
@@ -603,27 +643,6 @@
             </div>
         </div>
 
-        <div class="row">
-            <div class="col-12">
-                @if (Session::has('success'))
-                    <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
-                        {{ Session::get('success') }}
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                @endif
-
-                @if ($errors->has('silabo'))
-                    <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
-                        <strong>Atención, {{ $primerNombre }}:</strong> {{ $errors->first('silabo') }}
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                @endif
-            </div>
-        </div>
 
         <div class="row pb-5">
             <div class="col-12" id="tablafid">
@@ -795,6 +814,23 @@
                                                             class="btn btn-primary btn-sm">
                                                             <i class="fas fa-plus mr-1"></i>Crear sílabo
                                                         </a>
+
+                                                        @if ($curso->silabos->isNotEmpty())
+                                                            <div class="docente-silabo-opcion-divisor"><span>o</span></div>
+                                                            <div class="docente-silabo-opcion-desc">
+                                                                <i class="fas fa-history mr-1"></i>Reusa el contenido de un sílabo tuyo de un periodo pasado para este mismo curso. Podrás ajustarlo antes de darlo por terminado.
+                                                            </div>
+                                                            <div class="d-flex flex-wrap align-items-center" style="gap:.4rem;">
+                                                                <select class="form-control form-control-sm docente-silabo-reuse-select" id="reuse-select-{{ $curso->id }}" style="width:auto; max-width:220px;">
+                                                                    @foreach ($curso->silabos->sortByDesc('id') as $sAnterior)
+                                                                        <option value="{{ $sAnterior->id }}">{{ optional($sAnterior->periodoActual)->nombre ?? $sAnterior->periodo }}</option>
+                                                                    @endforeach
+                                                                </select>
+                                                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="reusarSilabo({{ $curso->id }})">
+                                                                    <i class="fas fa-copy mr-1"></i> Reusar
+                                                                </button>
+                                                            </div>
+                                                        @endif
                                                     </div>
 
                                                     <div class="docente-silabo-opcion-divisor"><span>o</span></div>
@@ -820,30 +856,11 @@
                                                         </form>
                                                     </div>
 
-                                                    @if ($curso->silabos->isNotEmpty())
-                                                        <div class="docente-silabo-opcion-divisor"><span>o</span></div>
-
-                                                        <div class="docente-silabo-opcion">
-                                                            <div class="docente-silabo-opcion-titulo"><i class="fas fa-history mr-1"></i>Reusar un sílabo anterior</div>
-                                                            <div class="docente-silabo-opcion-desc">Copia el contenido de un sílabo tuyo de un periodo pasado para este mismo curso. Podrás ajustarlo antes de darlo por terminado.</div>
-                                                            <div class="d-flex flex-wrap align-items-center" style="gap:.4rem;">
-                                                                <select class="form-control form-control-sm docente-silabo-reuse-select" id="reuse-select-{{ $curso->id }}" style="width:auto; max-width:220px;">
-                                                                    @foreach ($curso->silabos->sortByDesc('id') as $sAnterior)
-                                                                        <option value="{{ $sAnterior->id }}">{{ optional($sAnterior->periodoActual)->nombre ?? $sAnterior->periodo }}</option>
-                                                                    @endforeach
-                                                                </select>
-                                                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="reusarSilabo({{ $curso->id }})">
-                                                                    <i class="fas fa-copy mr-1"></i> Reusar
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    @endif
-
                                                     {{-- ✅ Caso 2: Existe sílabo (tabla silabos) --}}
                                                 @elseif ($silaboValido)
                                                     <a href="{{ route('silabo.pdf', $curso->relacionsilabo->id) }}"
-                                                        class="btn btn-danger btn-sm mb-1">
-                                                        <i class="fas fa-file-pdf"></i> PDF
+                                                        class="btn btn-danger btn-sm mb-1" title="Descargar el sílabo en PDF">
+                                                        <i class="fas fa-download"></i> Descargar PDF
                                                     </a>
                                                     <a href="{{ route('silabos.show', $curso->relacionsilabo->id) }}"
                                                         class="btn btn-success btn-sm mb-1">
@@ -856,6 +873,12 @@
                                                     ]) }}"
                                                         class="btn btn-warning btn-sm mb-1">
                                                         <i class="fa fa-edit"></i> Editar
+                                                    </a>
+                                                    <a href="#" class="btn btn-danger btn-sm mb-1" data-toggle="modal"
+                                                        data-target="#confirmDeleteModal"
+                                                        data-href="{{ route('silabos.destroy', $curso->relacionsilabo->id) }}"
+                                                        title="Eliminar sílabo y volver a elegir cómo registrarlo">
+                                                        <i class="fa fa-trash fa-sm"></i>
                                                     </a>
 
                                                     {{-- ✅ Caso 3: Existe PDF (tabla silabo_pdf) --}}
@@ -977,9 +1000,9 @@
                                                     <button type="button" class="btn btn-outline-secondary btn-sm"
                                                         onclick="cancelarEdicionClassroom({{ $curso->id }})">Cancelar</button>
                                                 </div>
-                                                <button type="submit" class="btn btn-outline-danger btn-sm" disabled
-                                                    name="delete" value="true" title="Eliminar"
-                                                    onclick="return confirm('¿Estás seguro de eliminar estos campos?');">
+                                                <button type="button" class="btn btn-outline-danger btn-sm" disabled
+                                                    title="Eliminar"
+                                                    onclick="confirmarEliminarClassroom('classroom-form-{{ $curso->id }}')">
                                                     <i class="fas fa-trash fa-xs"></i>
                                                 </button>
                                             </div>
@@ -1136,6 +1159,23 @@
                                                             class="btn btn-primary btn-sm">
                                                             <i class="fas fa-plus mr-1"></i>Crear sílabo
                                                         </a>
+
+                                                        @if ($curso->silabos->isNotEmpty())
+                                                            <div class="docente-silabo-opcion-divisor"><span>o</span></div>
+                                                            <div class="docente-silabo-opcion-desc">
+                                                                <i class="fas fa-history mr-1"></i>Reusa el contenido de un sílabo tuyo de un periodo pasado para este mismo curso. Podrás ajustarlo antes de darlo por terminado.
+                                                            </div>
+                                                            <div class="d-flex flex-wrap align-items-center" style="gap:.4rem;">
+                                                                <select class="form-control form-control-sm docente-silabo-reuse-select" id="reuse-select-{{ $curso->id }}" style="width:auto; max-width:220px;">
+                                                                    @foreach ($curso->silabos->sortByDesc('id') as $sAnterior)
+                                                                        <option value="{{ $sAnterior->id }}">{{ optional($sAnterior->periodoActual)->nombre ?? $sAnterior->periodo }}</option>
+                                                                    @endforeach
+                                                                </select>
+                                                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="reusarSilabo({{ $curso->id }})">
+                                                                    <i class="fas fa-copy mr-1"></i> Reusar
+                                                                </button>
+                                                            </div>
+                                                        @endif
                                                     </div>
 
                                                     <div class="docente-silabo-opcion-divisor"><span>o</span></div>
@@ -1160,25 +1200,6 @@
                                                                 class="docente-curso-file-name"></div>
                                                         </form>
                                                     </div>
-
-                                                    @if ($curso->silabos->isNotEmpty())
-                                                        <div class="docente-silabo-opcion-divisor"><span>o</span></div>
-
-                                                        <div class="docente-silabo-opcion">
-                                                            <div class="docente-silabo-opcion-titulo"><i class="fas fa-history mr-1"></i>Reusar un sílabo anterior</div>
-                                                            <div class="docente-silabo-opcion-desc">Copia el contenido de un sílabo tuyo de un periodo pasado para este mismo curso. Podrás ajustarlo antes de darlo por terminado.</div>
-                                                            <div class="d-flex flex-wrap align-items-center" style="gap:.4rem;">
-                                                                <select class="form-control form-control-sm docente-silabo-reuse-select" id="reuse-select-{{ $curso->id }}" style="width:auto; max-width:220px;">
-                                                                    @foreach ($curso->silabos->sortByDesc('id') as $sAnterior)
-                                                                        <option value="{{ $sAnterior->id }}">{{ optional($sAnterior->periodoActual)->nombre ?? $sAnterior->periodo }}</option>
-                                                                    @endforeach
-                                                                </select>
-                                                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="reusarSilabo({{ $curso->id }})">
-                                                                    <i class="fas fa-copy mr-1"></i> Reusar
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    @endif
                                                 @elseif ($curso->relacionsilabo)
                                                     <a href="{{ route('silabos.show', $curso->relacionsilabo->id) }}"
                                                         class="btn btn-success btn-sm mb-1"><i
@@ -1187,6 +1208,12 @@
                                                     <a href="{{ route('silabos.edit', ['silabo' => $curso->relacionsilabo->id, 'curso_id' => $curso->id, 'docente_id' => $docente->id]) }}"
                                                         class="btn btn-warning btn-sm mb-1"><i
                                                             class="fa fa-edit"></i> Editar Sílabo</a>
+                                                    <a href="#" class="btn btn-danger btn-sm mb-1" data-toggle="modal"
+                                                        data-target="#confirmDeleteModal"
+                                                        data-href="{{ route('silabos.destroy', $curso->relacionsilabo->id) }}"
+                                                        title="Eliminar sílabo y volver a elegir cómo registrarlo">
+                                                        <i class="fa fa-trash fa-sm"></i>
+                                                    </a>
                                                 @elseif ($silaboPdf)
                                                     <form action="{{ route('cursos.uploadSilabo', ['curso' => $curso->id]) }}"
                                                         method="POST" enctype="multipart/form-data"
@@ -1352,9 +1379,9 @@
                                                     <button type="button" class="btn btn-outline-secondary btn-sm"
                                                         onclick="cancelarEdicionClassroom({{ $curso->id }})">Cancelar</button>
                                                 </div>
-                                                <button type="submit" class="btn btn-outline-danger btn-sm" disabled
-                                                    name="delete" value="true" title="Eliminar"
-                                                    onclick="return confirm('¿Estás seguro de eliminar estos campos?');">
+                                                <button type="button" class="btn btn-outline-danger btn-sm" disabled
+                                                    title="Eliminar"
+                                                    onclick="confirmarEliminarClassroom('classroom-form-{{ $curso->id }}')">
                                                     <i class="fas fa-trash fa-xs"></i>
                                                 </button>
                                             </div>
@@ -1371,7 +1398,7 @@
             <!-- Modal de Confirmación -->
             <div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog"
                 aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
-                <div class="modal-dialog" role="document">
+                <div class="modal-dialog modal-dialog-centered" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar Eliminación</h5>
@@ -1398,6 +1425,51 @@
 
 @push('scripts')
     <script>
+        // ── Alertas del dashboard (SweetAlert2, con el diseño de las tarjetas) ──
+        var docenteSwalToast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 4200,
+            timerProgressBar: true,
+            customClass: { popup: 'docente-swal-toast' },
+            didOpen: function (toast) {
+                toast.addEventListener('mouseenter', Swal.stopTimer);
+                toast.addEventListener('mouseleave', Swal.resumeTimer);
+            },
+        });
+
+        function docenteConfirmar(opciones) {
+            return Swal.fire({
+                title: opciones.title,
+                text: opciones.text,
+                icon: opciones.icon || 'warning',
+                showCancelButton: true,
+                confirmButtonText: opciones.confirmText || 'Sí, continuar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: opciones.confirmColor || '#4e73df',
+                cancelButtonColor: '#858796',
+                reverseButtons: true,
+                customClass: { popup: 'docente-swal-popup' },
+            });
+        }
+
+        @if (session('success'))
+            docenteSwalToast.fire({ icon: 'success', title: @json(session('success')) });
+        @endif
+        @if (session('error'))
+            docenteSwalToast.fire({ icon: 'error', title: @json(session('error')) });
+        @endif
+        @if ($errors->has('silabo'))
+            Swal.fire({
+                icon: 'error',
+                title: 'Atención, {{ $primerNombre }}',
+                text: @json($errors->first('silabo')),
+                confirmButtonColor: '#4e73df',
+                customClass: { popup: 'docente-swal-popup' },
+            });
+        @endif
+
         function updateFileName(input, elementId) {
             var fileNameDisplay = document.getElementById(elementId);
             if (!fileNameDisplay) {
@@ -1413,20 +1485,50 @@
         function reusarSilabo(cursoId) {
             var select = document.getElementById('reuse-select-' + cursoId);
             if (!select || !select.value) return;
-            if (!confirm('¿Reutilizar este sílabo como base para el periodo actual? Podrás ajustarlo después.')) return;
 
-            var form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '{{ url('/silabos') }}/' + select.value + '/reuse';
+            docenteConfirmar({
+                title: '¿Reusar este sílabo?',
+                text: 'Se copiará como base para el periodo actual. Podrás ajustarlo antes de darlo por terminado.',
+                icon: 'question',
+                confirmText: 'Sí, reusar',
+            }).then(function (resultado) {
+                if (!resultado.isConfirmed) return;
 
-            var csrf = document.createElement('input');
-            csrf.type = 'hidden';
-            csrf.name = '_token';
-            csrf.value = '{{ csrf_token() }}';
-            form.appendChild(csrf);
+                var form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '{{ url('/silabos') }}/' + select.value + '/reuse';
 
-            document.body.appendChild(form);
-            form.submit();
+                var csrf = document.createElement('input');
+                csrf.type = 'hidden';
+                csrf.name = '_token';
+                csrf.value = '{{ csrf_token() }}';
+                form.appendChild(csrf);
+
+                document.body.appendChild(form);
+                form.submit();
+            });
+        }
+
+        function confirmarEliminarClassroom(formId) {
+            docenteConfirmar({
+                title: '¿Eliminar estos campos?',
+                text: 'Se borrará el enlace de Classroom y el código de este curso.',
+                icon: 'warning',
+                confirmText: 'Sí, eliminar',
+                confirmColor: '#e74a3b',
+            }).then(function (resultado) {
+                if (!resultado.isConfirmed) return;
+
+                var form = document.getElementById(formId);
+                if (!form) return;
+
+                var campoDelete = document.createElement('input');
+                campoDelete.type = 'hidden';
+                campoDelete.name = 'delete';
+                campoDelete.value = 'true';
+                form.appendChild(campoDelete);
+                form.submit();
+            });
         }
 
         function habilitarEdicionClassroom(cursoId) {

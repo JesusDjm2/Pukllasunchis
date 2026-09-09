@@ -34,6 +34,10 @@ class PeriodoActualController extends Controller
             'horario' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:4096',
             'fecha_inicio' => 'nullable|date',
             'fecha_cierre' => 'nullable|date|after_or_equal:fecha_inicio',
+            'calificaciones_parcial1_inicio' => 'nullable|date',
+            'calificaciones_parcial1_cierre' => 'nullable|date|after_or_equal:calificaciones_parcial1_inicio',
+            'calificaciones_parcial2_inicio' => 'nullable|date',
+            'calificaciones_parcial2_cierre' => 'nullable|date|after_or_equal:calificaciones_parcial2_inicio',
             'actual' => 'nullable|boolean',
         ]);
 
@@ -59,6 +63,10 @@ class PeriodoActualController extends Controller
             'horario' => $rutaImagen,
             'fecha_inicio' => $request->fecha_inicio,
             'fecha_cierre' => $request->fecha_cierre,
+            'calificaciones_parcial1_inicio' => $request->calificaciones_parcial1_inicio,
+            'calificaciones_parcial1_cierre' => $request->calificaciones_parcial1_cierre,
+            'calificaciones_parcial2_inicio' => $request->calificaciones_parcial2_inicio,
+            'calificaciones_parcial2_cierre' => $request->calificaciones_parcial2_cierre,
             'actual' => $request->has('actual') ? 1 : 0,
         ]);
 
@@ -77,6 +85,10 @@ class PeriodoActualController extends Controller
             'horario' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:5096',
             'fecha_inicio' => 'nullable|date',
             'fecha_cierre' => 'nullable|date|after_or_equal:fecha_inicio',
+            'calificaciones_parcial1_inicio' => 'nullable|date',
+            'calificaciones_parcial1_cierre' => 'nullable|date|after_or_equal:calificaciones_parcial1_inicio',
+            'calificaciones_parcial2_inicio' => 'nullable|date',
+            'calificaciones_parcial2_cierre' => 'nullable|date|after_or_equal:calificaciones_parcial2_inicio',
             'actual' => 'nullable|boolean',
         ]);
 
@@ -106,6 +118,10 @@ class PeriodoActualController extends Controller
             // borrarla: dejar el input en blanco no debe equivaler a "quitar la fecha".
             'fecha_inicio' => $request->filled('fecha_inicio') ? $request->fecha_inicio : $periodoactual->fecha_inicio,
             'fecha_cierre' => $request->filled('fecha_cierre') ? $request->fecha_cierre : $periodoactual->fecha_cierre,
+            'calificaciones_parcial1_inicio' => $request->filled('calificaciones_parcial1_inicio') ? $request->calificaciones_parcial1_inicio : $periodoactual->calificaciones_parcial1_inicio,
+            'calificaciones_parcial1_cierre' => $request->filled('calificaciones_parcial1_cierre') ? $request->calificaciones_parcial1_cierre : $periodoactual->calificaciones_parcial1_cierre,
+            'calificaciones_parcial2_inicio' => $request->filled('calificaciones_parcial2_inicio') ? $request->calificaciones_parcial2_inicio : $periodoactual->calificaciones_parcial2_inicio,
+            'calificaciones_parcial2_cierre' => $request->filled('calificaciones_parcial2_cierre') ? $request->calificaciones_parcial2_cierre : $periodoactual->calificaciones_parcial2_cierre,
             'actual' => $request->has('actual') ? 1 : 0,
         ]);
 

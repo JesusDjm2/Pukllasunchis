@@ -320,11 +320,16 @@ class DocenteCOntroller extends Controller
 
         $mostrarBotonDesempeno = true;
 
+        // Ventanas de fecha para habilitar el registro de Parcial 1 y de Parcial
+        // 2/Desempeño; sin periodo actual configurado, se deja todo habilitado.
+        $parcial1Habilitado = ! $periodoActual || $periodoActual->parcial1Habilitado();
+        $parcial2Habilitado = ! $periodoActual || $periodoActual->parcial2DesempenoHabilitado();
+
         if (auth()->user()->hasRole('admin')) {
-            return view('admin.curso.calificaciones', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos', 'mostrarBotonDesempeno', 'alumnosRelacionados', 'periodoActual'));
+            return view('admin.curso.calificaciones', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos', 'mostrarBotonDesempeno', 'alumnosRelacionados', 'periodoActual', 'parcial1Habilitado', 'parcial2Habilitado'));
         }
 
-        return view('docentes.calificaciones.alumnos', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos', 'mostrarBotonDesempeno', 'alumnosRelacionados', 'periodoActual'));
+        return view('docentes.calificaciones.alumnos', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos', 'mostrarBotonDesempeno', 'alumnosRelacionados', 'periodoActual', 'parcial1Habilitado', 'parcial2Habilitado'));
     }
 
     public function calificarCursoPPD(Request $request, $docenteId, $cursoId)

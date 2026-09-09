@@ -357,6 +357,11 @@ class CalificacionController extends Controller
 
     public function guardarPeriodo2yDesempenoEnBloque(Request $request)
     {
+        $periodoActual = PeriodoActual::where('actual', true)->first();
+        if (! auth()->user()->hasAnyRole(['admin', 'super-admin']) && $periodoActual && ! $periodoActual->parcial2DesempenoHabilitado()) {
+            return back()->withInput()->with('error', 'El registro de Parcial 2 y Desempeño no está habilitado en este momento.');
+        }
+
         $request->validate([
             'curso_id' => 'required|exists:cursos,id',
             'docente_id' => 'required|exists:docentes,id',
@@ -492,6 +497,11 @@ class CalificacionController extends Controller
 
     public function storePeriodoEnBloque(Request $request)
     {
+        $periodoActual = PeriodoActual::where('actual', true)->first();
+        if (! auth()->user()->hasAnyRole(['admin', 'super-admin']) && $periodoActual && ! $periodoActual->parcial1Habilitado()) {
+            return back()->withInput()->with('error', 'El registro de Parcial 1 no está habilitado en este momento.');
+        }
+
         $request->validate([
             'curso_id' => 'required|exists:cursos,id',
             'docente_id' => 'required|exists:docentes,id',
