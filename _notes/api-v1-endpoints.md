@@ -132,5 +132,9 @@ vista de incidencias para alumnos en la web, no se agregó una). Paginado
 
 ### `GET /bolsa-trabajo`
 **Público, sin auth.** Query params opcionales `anio`, `mes`. Últimas 20
-ofertas (mismo comportamiento que `BolsaTrabajoListado::datos()` en la web —
-no filtra por vigencia/`fecha_fin`).
+ofertas ordenadas por `created_at` desc (mismo comportamiento que
+`BolsaTrabajoListado::datos()` en la web — no filtra por vigencia).
+`fecha_inicio`/`fecha_fin` ya no existen (columnas eliminadas después de
+Fase 1); cada oferta trae `fecha_publicacion`, `vigente` (calculado,
+`fecha_publicacion` + 20 días), `nombre_publicador`, `telefono_publicador`,
+`relacion_publicador`.

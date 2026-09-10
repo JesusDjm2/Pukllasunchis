@@ -14,8 +14,11 @@ class BolsaTrabajoOfertaResource extends JsonResource
             'nombre' => $this->nombre,
             'detalles' => $this->detalles,
             'imagen_url' => $this->imagen ? asset($this->imagen) : null,
-            'fecha_inicio' => $this->fecha_inicio,
-            'fecha_fin' => $this->fecha_fin,
+            'fecha_publicacion' => $this->fecha_publicacion,
+            'vigente' => $this->vigente,
+            'nombre_publicador' => $this->nombre_publicador,
+            'telefono_publicador' => $this->telefono_publicador,
+            'relacion_publicador' => $this->relacion_publicador,
         ];
     }
 }

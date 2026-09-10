@@ -20,9 +20,11 @@ class BolsaTrabajoOfertaController extends Controller
             $query->where('mes', (int) $request->mes);
         }
 
+        // Misma lógica que BolsaTrabajoListado::datos() (web) — fecha_inicio/
+        // fecha_fin ya no existen (columnas eliminadas en una migración
+        // posterior a Fase 1); el orden real es por created_at.
         $ofertas = $query
-            ->orderByDesc('fecha_inicio')
-            ->orderByDesc('fecha_fin')
+            ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->limit(20)
             ->get();

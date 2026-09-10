@@ -11,13 +11,18 @@ class BolsaTrabajoOfertaFactory extends Factory
 {
     public function definition(): array
     {
-        $inicio = fake()->date();
+        $fechaPublicacion = fake()->dateTimeBetween('-6 months', 'now');
 
         return [
             'nombre' => fake()->jobTitle(),
             'detalles' => fake()->paragraph(),
-            'fecha_inicio' => $inicio,
-            'fecha_fin' => fake()->dateTimeBetween($inicio, '+2 months')->format('Y-m-d'),
+            'fecha_publicacion' => $fechaPublicacion->format('Y-m-d'),
+            'nombre_publicador' => fake()->name(),
+            'telefono_publicador' => fake()->phoneNumber(),
+            'relacion_publicador' => fake()->randomElement(['Egresado', 'Docente', 'Externo']),
+            'numero_correo' => fake()->numerify('###'),
+            'anio' => (int) $fechaPublicacion->format('Y'),
+            'mes' => (int) $fechaPublicacion->format('n'),
         ];
     }
 }
