@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Ciclo;
 use App\Models\Competencia;
 use App\Models\Curso;
+use App\Models\Docente;
 use App\Models\PeriodoActual;
 use App\Models\Programa;
 use App\Models\SilaboPdf;
@@ -44,11 +45,17 @@ class CursoController extends Controller
         $priPPD = $primariaPPD->count();
 
         $competencias = Competencia::all();
+        // Solo ciclos con al menos un curso: un ciclo vacío (p. ej. "Egresados <año>")
+        // en este selector siempre daría 0 resultados si se elige.
+        $ciclosPorPrograma = Ciclo::with('programa')
+            ->whereHas('cursos')
+            ->orderBy('programa_id')->orderBy('id')->get()->groupBy('programa_id');
 
         return view('admin.curso.index', compact(
             'cursos', 'cant', 'inicial', 'cursosInicial',
             'EIB', 'cursosEib', 'competencias',
-            'inicialPPD', 'primariaPPD', 'iniPPD', 'priPPD'
+            'inicialPPD', 'primariaPPD', 'iniPPD', 'priPPD',
+            'ciclosPorPrograma'
         ));
     }
 
@@ -138,17 +145,6 @@ class CursoController extends Controller
 
     public function destroySilabo(Curso $curso)
     {
-        /* if ($curso->silabo) {
-            $path = public_path("docentes/silabo/{$curso->silabo}");
-            if (file_exists($path)) {
-                unlink($path);
-            }
-
-            $curso->silabo = null;
-            $curso->save();
-        }
-
-        return redirect()->back()->with('success', 'Sílabo eliminado exitosamente.'); */
         $silaboPdf = SilaboPdf::where('curso_id', $curso->id)->first();
 
         if ($silaboPdf) {
@@ -161,6 +157,20 @@ class CursoController extends Controller
 
             return redirect()->back()->with('success', 'Sílabo en PDF eliminado exitosamente.');
         }
+
+        if ($curso->silabo) {
+            $path = public_path("docentes/silabo/{$curso->silabo}");
+            if (file_exists($path)) {
+                unlink($path);
+            }
+
+            $curso->silabo = null;
+            $curso->save();
+
+            return redirect()->back()->with('success', 'Sílabo eliminado exitosamente.');
+        }
+
+        return redirect()->back()->with('error', 'No se encontró ningún sílabo para eliminar.');
     }
 
     public function store(Request $request)
@@ -176,10 +186,11 @@ class CursoController extends Controller
             'programa_id' => 'required|exists:programas,id',
             'ciclo_id' => 'required|exists:ciclos,id',
             'nombre' => 'required|string',
-            'sumilla' => 'required|string',
+            // Los cursos Extracurriculares no llevan sumilla, horas ni créditos.
+            'sumilla' => 'nullable|string|required_unless:cc,Extracurricular',
             'cc' => 'required|string',
-            'horas' => 'required|string',
-            'creditos' => 'required|string',
+            'horas' => 'nullable|string|required_unless:cc,Extracurricular',
+            'creditos' => 'nullable|string|required_unless:cc,Extracurricular',
         ]);
 
         $curso = Curso::create([
@@ -187,8 +198,8 @@ class CursoController extends Controller
             'ciclo_id' => $request->input('ciclo_id'),
             'nombre' => $request->input('nombre'),
             'cc' => $request->input('cc'),
-            'horas' => $request->input('horas'),
-            'creditos' => $request->input('creditos'),
+            'horas' => $request->input('horas') !== '' ? $request->input('horas') : null,
+            'creditos' => $request->input('creditos') !== '' ? $request->input('creditos') : null,
         ]);
 
         if ($request->has('competencias')) {
@@ -242,10 +253,11 @@ class CursoController extends Controller
             'programa_id' => 'required|exists:programas,id',
             'ciclo_id' => 'required|exists:ciclos,id',
             'nombre' => 'required|string',
-            'sumilla' => 'required|string',
+            // Los cursos Extracurriculares no llevan sumilla, horas ni créditos.
+            'sumilla' => 'nullable|string|required_unless:cc,Extracurricular',
             'cc' => 'required|string',
-            'horas' => 'required|string',
-            'creditos' => 'required|string',
+            'horas' => 'nullable|string|required_unless:cc,Extracurricular',
+            'creditos' => 'nullable|string|required_unless:cc,Extracurricular',
             'competencias' => 'array|exists:competencias,id', // Validar competencias
         ]);
 
@@ -257,8 +269,8 @@ class CursoController extends Controller
             'nombre' => $request->input('nombre'),
             'sumilla' => $request->input('sumilla'),
             'cc' => $request->input('cc'),
-            'horas' => $request->input('horas'),
-            'creditos' => $request->input('creditos'),
+            'horas' => $request->input('horas') !== '' ? $request->input('horas') : null,
+            'creditos' => $request->input('creditos') !== '' ? $request->input('creditos') : null,
         ]);
 
         // Sincronizar las competencias con el curso
@@ -324,6 +336,21 @@ class CursoController extends Controller
 
         $alumno = null;
         return view('admin.curso.show', compact('curso', 'alumnos', 'cantidadAlumnos', 'docentes', 'alumno'));
+    }
+
+    public function asignarDocentesForm(Curso $curso)
+    {
+        $docentes = Docente::orderBy('nombre')->get();
+        $asignados = $curso->docentes->pluck('id')->toArray();
+
+        return view('admin.curso.docentes', compact('curso', 'docentes', 'asignados'));
+    }
+
+    public function asignarDocentesUpdate(Request $request, Curso $curso)
+    {
+        $curso->docentes()->sync($request->input('docentes', []));
+
+        return redirect()->route('curso.index')->with('success', 'Docentes actualizados para el curso.');
     }
 
     public function destroy(Curso $curso)

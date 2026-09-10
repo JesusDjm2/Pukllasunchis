@@ -209,15 +209,16 @@
                                 <ul>
                                     <li>Versión final del TI en formato WORD</li>
                                     <li>Comprobante de pago por derecho de revisión de originalidad</li>
+                                    <li>Este pago tiene el tiempo de duración de una semana.</li>
                                 </ul>
                             </li>
-                            <li>Este pago tiene el tiempo de duración de una semana.</li>
+
                             <li>
                                 👉Como resultado de este trámite, recibirás en tu correo institucional el Reporte de
-                                    originalidad (Turnitin), en un plazo no mayor a 10 días hábiles.
-                                    Con el pago que usted realiza puede hacer 1 revisión de originalidad en un plazo no
-                                    mayor a 30 días.
-                                
+                                originalidad (Turnitin), en un plazo no mayor a 10 días hábiles.
+                                Con el pago que usted realiza puede hacer 1 revisión de originalidad en un plazo no
+                                mayor a 5 días hábiles.
+
                             </li>
                             <small style="color: #000; font-style: italic;">Nota: el porcentaje máximo para aprobar el
                                 reporte de originalidad debe ser 20%, de lo contrario, debe corregir el documento y
@@ -338,22 +339,20 @@
                     <li>Solicitar emisión de diploma de grado de bachiller previo pago de s/400.00 en las oficinas de <span
                             class="text-danger font-weight-bold">Caja Cusco:</span>
                         <ul>
-                            <li>Este trámite solo se realiza de manera virtual. Enviar su FUT debidamente llenado al correo
-                                institucional: <a href="mailto:eespp@pukllasunchis.org"
-                                    class="text-primary">eespp@pukllasunchis.org</a>
-                                <br>Adjuntar al FUT la boleta de pago correspondiente.
-                                En el asunto del correo debe consignar:
-                                <strong>“Emisión de diploma de Bachiller”</strong>.
-                                Una vez ingresada la solicitud, se le informará oportunamente la fecha en la que deberá
-                                acudir de forma presencial para la firma del acta correspondiente.<br><small
-                                    class="text-info">Monto:
+                            <li>Este trámite solo se realiza de manera virtual.</li>
+                            <li> Llena el <a href="https://forms.gle/oVAax2L4GiaPGTWp9" class="text-primary">FORMULARIO DE
+                                    SOLICITUD DE EMISIÓN DE DIPLOMA</a></li>
+                            <li>Adjuntar la boleta de pago correspondiente.</li>
+                            <span class="text-dark" style="font-weight: 400">Una vez ingresada la solicitud, se le informará oportunamente la fecha en la que deberá
+                                acudir de forma presencial para la firma del acta correspondiente.
+                                <small class="text-info">Monto:
                                     s/400.00 | Código: 22 | Concepto: Emisión Diploma de Bachiller</small>
-                            </li>
-                            <li>
-                                <span class="text-info">
-                                    👉 Este trámite tiene un lapso de duración de 15 días hábiles.
+                                <br>
                                 </span>
-                            </li>
+                            <span class="text-info" style="font-weight: 400">
+                                👉 Este trámite tiene un lapso de duración de 15 días hábiles.
+                            </span>
+
                         </ul>
                     </li>
                     <li>Solicitar registro e inscripción de grado de bachiller previo pago de s/200.00 en las oficinas de
@@ -506,7 +505,6 @@
             </div>
         </div>
     </div>
-    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous">
     </script>

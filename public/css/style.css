@@ -2454,11 +2454,20 @@ h3 {
   background-size: cover;
   background-repeat: no-repeat;
 }
+.biblioteca{
+  background-image: url(../img/fondos/fondo-biblioteca.jpg);
+  background-position: top center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
 .lineas{
   background-image: url(../img/fondos/Escuela-Pukllasunchis.webp);
 }
 .novedades{
-  background-image: url(../img/fondos/Calendario-pukllasunchis.webp);
+  background-image: url(../img/fondos/nuevo-fondo-login.jpg);
+  background-position: top center;
+  background-size: cover;
+  background-repeat: no-repeat;
 }
 
 .bradcam_area {

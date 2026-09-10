@@ -9,7 +9,7 @@ return [
     'debug' => (bool) env('APP_DEBUG', false),
     'url' => env('APP_URL', 'http://localhost'),
     'asset_url' => env('ASSET_URL'),
-    'timezone' => 'UTC',
+    'timezone' => 'America/Lima',
     'locale' => 'es',
     'fallback_locale' => 'es',
     'faker_locale' => 'en_US',

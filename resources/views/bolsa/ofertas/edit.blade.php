@@ -49,17 +49,52 @@
                 <textarea name="detalles" id="detalles" class="form-control" rows="12">{{ old('detalles', $oferta->detalles) }}</textarea>
             </div>
 
+            <div class="form-group">
+                <label for="fecha_publicacion">Fecha de publicación</label>
+                <input type="date" name="fecha_publicacion" id="fecha_publicacion"
+                    class="form-control form-control-sm" required
+                    value="{{ old('fecha_publicacion', optional($oferta->fecha_publicacion)->format('Y-m-d')) }}">
+                <small class="form-text text-muted">
+                    La oferta se muestra en la página pública hasta {{ \App\Models\BolsaTrabajoOferta::DIAS_VIGENCIA }}
+                    días después de esta fecha (hasta el
+                    {{ optional($oferta->fechaLimiteVigencia())->locale('es')->translatedFormat('d \\d\\e F \\d\\e\\l Y') }}).
+                    Estado actual:
+                    <span class="badge {{ $oferta->vigente ? 'badge-success' : 'badge-secondary' }}">
+                        {{ $oferta->vigente ? 'Vigente' : 'No vigente' }}
+                    </span>
+                </small>
+            </div>
+
+            <div class="form-group">
+                <label for="nombre_publicador">Nombre de quién publica</label>
+                <input type="text" name="nombre_publicador" id="nombre_publicador" class="form-control form-control-sm"
+                    required value="{{ old('nombre_publicador', $oferta->nombre_publicador) }}">
+            </div>
+
             <div class="form-row">
                 <div class="form-group col-md-6">
-                    <label for="fecha_inicio">Fecha inicio</label>
-                    <input type="date" name="fecha_inicio" id="fecha_inicio" class="form-control form-control-sm" required
-                        value="{{ old('fecha_inicio', $oferta->fecha_inicio?->format('Y-m-d')) }}">
+                    <label for="telefono_publicador">Teléfono</label>
+                    <input type="text" name="telefono_publicador" id="telefono_publicador"
+                        class="form-control form-control-sm"
+                        value="{{ old('telefono_publicador', $oferta->telefono_publicador) }}">
                 </div>
                 <div class="form-group col-md-6">
-                    <label for="fecha_fin">Fecha fin</label>
-                    <input type="date" name="fecha_fin" id="fecha_fin" class="form-control form-control-sm" required
-                        value="{{ old('fecha_fin', $oferta->fecha_fin?->format('Y-m-d')) }}">
+                    <label for="relacion_publicador">Relación con la institución</label>
+                    <select name="relacion_publicador" id="relacion_publicador" class="form-control form-control-sm">
+                        <option value="">Seleccionar...</option>
+                        @foreach (['Soy de la Asociación Pukllasunchis', 'Alumno de la EESPPP', 'Externo a la Asociación'] as $opcion)
+                            <option value="{{ $opcion }}"
+                                {{ old('relacion_publicador', $oferta->relacion_publicador) === $opcion ? 'selected' : '' }}>
+                                {{ $opcion }}</option>
+                        @endforeach
+                    </select>
                 </div>
+            </div>
+
+            <div class="form-group">
+                <label for="numero_correo">N° de correo/oficio</label>
+                <input type="text" name="numero_correo" id="numero_correo" class="form-control form-control-sm"
+                    value="{{ old('numero_correo', $oferta->numero_correo) }}">
             </div>
 
             <div class="form-group">

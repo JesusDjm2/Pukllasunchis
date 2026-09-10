@@ -1,5 +1,18 @@
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+/* Sticky header: left+right ya fijan el ancho; evitar que width:100%
+   desborde el viewport cuando hay scrollbar vertical */
+.header-area .main-header-area.sticky {
+  width: auto;
 }
 
 .header-area .main-header-area .main-menu ul li .submenu li a:hover {
@@ -31,6 +44,13 @@ h3 {
 .single_slider {
   position: relative;
   overflow: hidden;
+}
+
+/* El container del slider debe quedar por encima de los fondos animados (.slidePuklla*).
+   Sin esto, position:absolute de los fondos los pintaría encima del texto. */
+.slider_area .single_slider > .container {
+  position: relative;
+  z-index: 1;
 }
 
 .pegajoso {
@@ -535,20 +555,24 @@ h3 {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.65);
+  z-index: -1;
 }
 .mision h3 {
   color: #fff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
 }
 .mision ul li {
   color: #fff;
   left: 1.2em;
   list-style: disc;
   position: relative;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
 }
 .mision p {
   color: #fff;
   text-align: justify;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
 }
 
 .welcome_docmed_area .row .card {
@@ -896,6 +920,241 @@ h3 {
   font-weight: bold;
   font-size: 428.83px;
   font-family: "Arial";
+}
+
+/* -------------------------------------------------------
+   GSAP Animations support
+------------------------------------------------------- */
+
+/* Navbar shadow when user scrolls down */
+#sticky-header.nav-scrolled {
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.13);
+  transition: box-shadow 0.35s ease;
+}
+
+/* -------------------------------------------------------
+   Public Preloader
+------------------------------------------------------- */
+#pl-public {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(160deg, #0f1f42 0%, #1e3a6b 55%, #162d56 100%);
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.5s ease;
+}
+
+#pl-public::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 70% 60% at 50% 40%, rgba(205, 146, 68, 0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+#pl-public.plp-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.plp-inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.plp-logo {
+  width: 100px;
+  height: auto;
+  margin-bottom: 22px;
+  animation: plp-float 3.2s ease-in-out infinite;
+  filter: drop-shadow(0 6px 26px rgba(205, 146, 68, 0.5));
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.plp-name {
+  margin: 0 0 5px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  color: #cd9244;
+}
+
+.plp-tagline {
+  margin: 0 0 34px;
+  font-size: 9px;
+  letter-spacing: 2.8px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.35);
+  font-weight: 400;
+}
+
+.plp-dots {
+  display: flex;
+  gap: 10px;
+}
+
+.plp-dots span {
+  display: block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #cd9244;
+  animation: plp-bounce 1.5s ease-in-out infinite;
+}
+
+.plp-dots span:nth-child(2) { animation-delay: 0.2s; }
+.plp-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+.plp-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.07);
+  overflow: hidden;
+}
+
+.plp-bar::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, #b27835, #e3ac66, transparent);
+  animation: plp-sweep 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes plp-float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-9px); }
+}
+
+@keyframes plp-bounce {
+  0%, 80%, 100% { transform: translateY(0);    opacity: 0.35; }
+  40%           { transform: translateY(-10px); opacity: 1; }
+}
+
+@keyframes plp-sweep {
+  0%   { left: -60%; }
+  100% { left: 100%; }
+}
+
+/* -------------------------------------------------------
+   Global: override Bootstrap 5 text-decoration:underline
+   El template original no tenía este reset y Bootstrap 5
+   lo aplica a todos los <a> por defecto.
+------------------------------------------------------- */
+a,
+a:hover,
+a:focus,
+a:active {
+  text-decoration: none;
+}
+
+/* -------------------------------------------------------
+   Menú principal: indicador de página activa
+------------------------------------------------------- */
+
+/* Desactivar la barra blanca de hover (::before del template) */
+.header-area .main-header-area .main-menu ul li > a::before {
+  background: transparent !important;
+  opacity: 0 !important;
+}
+
+/* Ítem principal activo: color de marca */
+.header-area .main-header-area .main-menu ul li > a.active {
+  color: #cd9244 !important;
+  font-weight: 600;
+}
+
+/* Ítem de submenú activo: mismo color de marca */
+.header-area .main-header-area .main-menu ul li .submenu li a.active {
+  color: #cd9244 !important;
+  font-weight: 600;
+}
+
+/* -------------------------------------------------------
+   Header top bar: dropdown "Bolsa de Trabajo"
+   La regla ".short_contact_list ul li a{color:#fff}" del
+   template original también alcanza a los .dropdown-item
+   (son <a> dentro de un <li>), dejando texto blanco sobre
+   fondo blanco del panel. Se sobreescribe con una selector
+   más específico y se alinea el hover a la paleta de marca.
+------------------------------------------------------- */
+.header-top_area .short_contact_list li.dropdown {
+  position: relative;
+}
+
+.header-top_area .short_contact_list .dropdown-toggle {
+  cursor: pointer;
+}
+
+.header-top_area .short_contact_list .dropdown-toggle::after {
+  margin-left: 6px;
+  vertical-align: 2px;
+}
+
+.header-area .header-top_area .short_contact_list .dropdown-menu {
+  top: 100%;
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+  margin-top: 14px;
+  min-width: 240px;
+  max-width: 90vw;
+  padding: 6px 0;
+  border: none;
+  border-radius: 6px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+}
+
+.header-area .header-top_area .short_contact_list .dropdown-menu .dropdown-item {
+  color: #1f1f1f;
+  font-size: 13px;
+  font-weight: 400;
+  margin-left: 0;
+  padding: 10px 18px;
+  white-space: normal;
+  transition: 0.2s ease;
+}
+
+.header-area .header-top_area .short_contact_list .dropdown-menu .dropdown-item .fa-whatsapp {
+  color: #25d366;
+}
+
+.header-area .header-top_area .short_contact_list .dropdown-menu .dropdown-item:hover,
+.header-area .header-top_area .short_contact_list .dropdown-menu .dropdown-item:focus {
+  background: #fbf1e3;
+  color: #cd9244;
+}
+
+/* Responsive (celular/tablet chico): centrado respecto al ANCHO DE LA
+   PANTALLA, no respecto al botón (en PC el centrado es respecto al botón
+   y ya queda perfecto con la regla de arriba). position:fixed usa el
+   viewport como referencia sin importar dónde esté el botón; el "top"
+   se calcula en JS para que caiga justo debajo del botón que se abrió. */
+@media (max-width: 767px) {
+  .header-area .header-top_area .short_contact_list .dropdown-menu.show {
+    position: fixed;
+    top: var(--header-dropdown-top, 70px);
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    margin-top: 0;
+    min-width: 0;
+    width: 90vw;
+    max-width: 340px;
+  }
 }
 
 /*# sourceMappingURL=estilos.css.map */

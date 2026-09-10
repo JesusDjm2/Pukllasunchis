@@ -30,6 +30,7 @@ use App\Http\Controllers\PostulantesRegularController;
 use App\Http\Controllers\PpdController;
 use App\Http\Controllers\ProgramaController;
 use App\Http\Controllers\ProyectoController;
+use App\Http\Controllers\Seguridad\BitacoraAccesosController;
 use App\Http\Controllers\SilaboController;
 use App\Http\Controllers\vistasAlumnosController;
 use Illuminate\Support\Facades\Auth;
@@ -43,7 +44,21 @@ Auth::routes();
 
 Route::get('login', [AdminController::class, 'login'])->name('login');
 
+// RouteServiceProvider::HOME = '/home': a dónde redirige el middleware
+// "guest" a un usuario ya autenticado (p. ej. POST /login con sesión activa).
+// Sin esta ruta esa redirección terminaba en un 404 real.
+Route::get('/home', [AdminController::class, 'homeRedirect'])
+    ->middleware('auth')
+    ->name('home.guest-redirect');
+
 Route::get('/inhabilitado', fn () => view('admin.inhabilitado'))->name('inhabilitado');
+
+// GET simple para mantener viva la sesión (y el token CSRF) mientras se llena
+// un formulario largo, como el de Sílabos. Un GET no necesita token CSRF y
+// StartSession ya renueva la actividad de la sesión al procesarlo.
+Route::get('/ping-sesion', fn () => response()->json(['ok' => true]))
+    ->middleware('auth')
+    ->name('ping.sesion');
 
 // AJAX helpers para formulario público de incidencias
 // Nota: Se mantienen públicos porque el formulario /incidencias (web.php) los necesita.
@@ -95,7 +110,6 @@ Route::middleware('auth')->group(function () {
 
     Route::get('alumnos/actualizar-datos', [AlumnoController::class, 'editarDatos'])->name('alumnos.editarDatos');
     Route::post('alumnos/actualizar-datos', [AlumnoController::class, 'actualizarDatos'])->name('alumnos.actualizarDatos');
-    Route::post('/mostrar-contenido', [AlumnoController::class, 'mostrarContenido'])->name('mostrar-contenido');
     Route::get('ficha-matricula/{alumno}', [AlumnoController::class, 'ficha'])->name('ficha-matricula');
     Route::get('/alumnos/{alumno}/ficha-pdf', [vistasAlumnosController::class, 'exportarFichaPDF'])->name('alumno.ficha.pdf');
 
@@ -115,6 +129,16 @@ Route::middleware('auth')->group(function () {
     Route::prefix('tutor')->name('tutor.')->group(function () {
         Route::get('/dashboard', [App\Http\Controllers\TutorController::class, 'index'])->name('dashboard');
         Route::get('/ciclo/{ciclo}', [App\Http\Controllers\TutorController::class, 'ciclo'])->name('ciclo');
+        Route::get('/ciclo/{ciclo}/qr-tutoria', [App\Http\Controllers\TutorController::class, 'qrTutoria'])->name('qr.tutoria');
+        Route::get('/ciclo/{ciclo}/qr-sugerencia', [App\Http\Controllers\TutorController::class, 'qrSugerencia'])->name('qr.sugerencia');
+        Route::post('/tutorias/{tutoria}/estado', [App\Http\Controllers\TutoriaController::class, 'marcarEstado'])->name('tutorias.estado');
+        Route::post('/sugerencias/{sugerencia}/estado', [App\Http\Controllers\SugerenciaController::class, 'marcarEstado'])->name('sugerencias.estado');
+    });
+
+    // ── Notificaciones (in-app) ──────────────────────────────
+    Route::prefix('notificaciones')->name('notificaciones.')->group(function () {
+        Route::get('/{id}/ir', [App\Http\Controllers\NotificacionController::class, 'ir'])->name('ir');
+        Route::post('/marcar-todas-leidas', [App\Http\Controllers\NotificacionController::class, 'marcarTodasLeidas'])->name('marcarTodasLeidas');
     });
 
     Route::get('/admin/tutor/{user}/ciclos', [AdminController::class, 'tutorCiclosForm'])->name('admin.tutor.ciclos');
@@ -153,6 +177,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/{curso}/niveles/{nivel}/unidades/{unidad}/lecciones/{leccion}/edit', [CeContenidoController::class, 'leccionesEdit'])->name('lecciones.edit');
             Route::put('/{curso}/niveles/{nivel}/unidades/{unidad}/lecciones/{leccion}', [CeContenidoController::class, 'leccionesUpdate'])->name('lecciones.update');
             Route::delete('/{curso}/niveles/{nivel}/unidades/{unidad}/lecciones/{leccion}', [CeContenidoController::class, 'leccionesDestroy'])->name('lecciones.destroy');
+            Route::post('/upload-audio-leccion', [CeContenidoController::class, 'uploadAudioLeccion'])->name('lecciones.upload-audio');
 
             // Ejercicios
             Route::get('/{curso}/niveles/{nivel}/unidades/{unidad}/ejercicios/create', [CeContenidoController::class, 'ejerciciosCreate'])->name('ejercicios.create');
@@ -167,21 +192,37 @@ Route::middleware('auth')->group(function () {
     Route::resource('docente', DocenteCOntroller::class)->names('docente');
     Route::get('Dashboard-Docente/{docente}', [DocenteCOntroller::class, 'vistaDocente'])->name('vistaDocente');
     Route::get('asignar-cursos/{id}', [DocenteCOntroller::class, 'asignar'])->name('asignar');
-    Route::get('/Alumnos-fid/{docente}', [DocenteCOntroller::class, 'alumnos'])->name('vistaAlumnos');
+    Route::get('/docente/{docente}/alumnos', [DocenteCOntroller::class, 'alumnosPanel'])->name('docente.alumnos');
     Route::get('repositorio-de-silabos/{docente}', [DocenteCOntroller::class, 'repositorio'])->name('repositorio');
     Route::get('calificar/{id}', [DocenteCOntroller::class, 'calificar'])->name('calificar');
 
-    Route::get('/docente/{docente}/blog/', [DocenteController::class, 'showBlog'])->name('docente.blog.show');
-    Route::get('/Lista-de-alumnos/{curso}/{docente}', [DocenteController::class, 'showAlumnos'])->name('docentes.cursos.alumnos');
-    Route::delete('/docente/{docente}/curso/{curso}', [DocenteController::class, 'eliminarCurso'])->name('docente.curso.eliminar');
-    Route::post('docentes/{docente}/cursos/{curso}/calificar', [DocenteController::class, 'calificarCurso'])->name('competencias.calificar');
-    Route::post('docentes/{docente}/cursosPPD/{curso}/calificar', [DocenteController::class, 'calificarCursoPPD'])->name('competencias.calificar.ppd');
-    Route::post('/docentes/blog/{id}', [DocenteController::class, 'updateBlog'])->name('docentes.updateBlog');
-    Route::get('/alumnos-ppd/{docente}', [DocenteController::class, 'alumnosppd'])->name('alumnosppd2');
+    Route::get('/docente/{docente}/blog/', [DocenteCOntroller::class, 'showBlog'])->name('docente.blog.show');
+    Route::get('/Lista-de-alumnos/{curso}/{docente}', [DocenteCOntroller::class, 'showAlumnos'])->name('docentes.cursos.alumnos');
+    Route::delete('/docente/{docente}/curso/{curso}', [DocenteCOntroller::class, 'eliminarCurso'])->name('docente.curso.eliminar');
+    Route::match(['get', 'post'], 'docentes/{docente}/cursos/{curso}/calificar', [DocenteCOntroller::class, 'calificarCurso'])->name('competencias.calificar');
+    Route::match(['get', 'post'], 'docentes/{docente}/cursosPPD/{curso}/calificar', [DocenteCOntroller::class, 'calificarCursoPPD'])->name('competencias.calificar.ppd');
+    Route::post('/docentes/blog/{id}', [DocenteCOntroller::class, 'updateBlog'])->name('docentes.updateBlog');
 
     // ── Incidencias (docentes autenticados) ───────────────────
-    Route::get('admin/incidencias', [App\Http\Controllers\IncidenciaController::class, 'adminAll'])->name('admin.incidencias.todas');
     Route::get('admin/docente/{docente}/incidencias', [App\Http\Controllers\IncidenciaController::class, 'adminIndex'])->name('admin.docente.incidencias');
+
+    // ── Tutorías individuales y buzón de sugerencias (QR) ──────
+    Route::get('admin/tutorias/qr', [App\Http\Controllers\TutoriaController::class, 'qr'])->name('admin.tutorias.qr');
+    Route::get('admin/sugerencias/qr', [App\Http\Controllers\SugerenciaController::class, 'qr'])->name('admin.sugerencias.qr');
+
+    // ── Seguimiento consolidado: Incidencias · Tutorías · Sugerencias ──
+    Route::get('admin/seguimiento', [App\Http\Controllers\SeguimientoController::class, 'index'])->name('admin.seguimiento');
+    Route::get('admin/seguimiento/qr', [App\Http\Controllers\SeguimientoController::class, 'qrCiclos'])->name('admin.seguimiento.qr');
+    Route::post('admin/tutorias/{tutoria}/estado', [App\Http\Controllers\TutoriaController::class, 'marcarEstado'])->name('admin.tutorias.estado');
+    Route::post('admin/sugerencias/{sugerencia}/estado', [App\Http\Controllers\SugerenciaController::class, 'marcarEstado'])->name('admin.sugerencias.estado');
+
+    // Eliminar registros de seguimiento — solo administrador/super-administrador
+    Route::delete('admin/incidencias/{incidencia}', [App\Http\Controllers\IncidenciaController::class, 'destroy'])
+        ->name('admin.incidencias.destroy')->middleware('role:admin|super-admin');
+    Route::delete('admin/tutorias/{tutoria}', [App\Http\Controllers\TutoriaController::class, 'destroy'])
+        ->name('admin.tutorias.destroy')->middleware('role:admin|super-admin');
+    Route::delete('admin/sugerencias/{sugerencia}', [App\Http\Controllers\SugerenciaController::class, 'destroy'])
+        ->name('admin.sugerencias.destroy')->middleware('role:admin|super-admin');
 
     Route::prefix('docente/{docente}/incidencias')->name('docente.incidencias.')->group(function () {
         Route::get('/', [App\Http\Controllers\IncidenciaController::class, 'index'])->name('index');
@@ -198,13 +239,16 @@ Route::middleware('auth')->group(function () {
     Route::post('/periodotres/storeBloque', [CalificacionController::class, 'storePeriodoTres'])->name('storePeriodoTres');
     Route::delete('/eliminar-periodo-tres', [CalificacionController::class, 'eliminarPeriodoTres'])->name('periodotres.eliminar');
     Route::delete('/docentes/cursos/eliminar-todos-global', [CalificacionController::class, 'eliminarTodosCursosGlobal'])->name('docente.cursos.eliminarTodosGlobal');
+    Route::delete('/docentes/cursos-ppd/eliminar-todos-global', [CalificacionController::class, 'eliminarTodosCursosGlobalPPD'])->name('docente.cursos.eliminarTodosGlobalPPD');
     Route::post('/calificaciones/store', [CalificacionController::class, 'nuevaCalificacion'])->name('guardarCalificacion');
     Route::post('/guardar-calificaciones', [CalificacionController::class, 'guardarCalificacionesEnBloque'])->name('guardarCalificacionesEnBloque');
     Route::post('/guardar-periodo-tres', [CalificacionController::class, 'guardarPeriodoTres'])->name('guardarPeriodoTres');
+    Route::post('/guardar-periodo2-desempeno', [CalificacionController::class, 'guardarPeriodo2yDesempenoEnBloque'])->name('guardarPeriodo2yDesempenoEnBloque');
     Route::post('/borrarCalificaciones', [CalificacionController::class, 'borrarCalificaciones'])->name('borrarCalificaciones');
     Route::get('/calificaciones/eliminar-todas', [CalificacionController::class, 'borrarTodasLasCalificaciones'])->name('calificaciones.eliminarTodas');
     Route::get('/exportar-csv/{docenteId}/{cursoId}', [CalificacionController::class, 'exportarCSV'])->name('calificaciones.exportar');
     Route::get('/exportar-csvppd/{docenteId}/{cursoId}', [CalificacionController::class, 'exportarCSVppd'])->name('calificaciones.exportar.ppd');
+    Route::get('/exportar-periodo-actual-fid', [CalificacionController::class, 'exportarPeriodoActualFID'])->name('calificaciones.exportar.periodoActualFID');
 
     // ── Cursos, Sílabos, Competencias ─────────────────────────
     Route::prefix('cursos')->group(function () {
@@ -214,13 +258,15 @@ Route::middleware('auth')->group(function () {
     Route::post('/guardar-cursos/{id}', [AlumnoCursoController::class, 'guardarCursos'])->name('guardar.cursos');
     Route::post('/asignar-curso/{docenteId}', [DocenteCOntroller::class, 'asignarCurso'])->name('cursos.asignar');
     Route::post('cursos/{curso}/upload-silabo', [CursoController::class, 'uploadSilabo'])->name('cursos.uploadSilabo');
-    Route::get('cursos/{curso}/edit-silabo', [CursoController::class, 'editSilabo'])->name('cursos.editSilabo');
     Route::delete('cursos/{curso}/destroy-silabo', [CursoController::class, 'destroySilabo'])->name('cursos.destroySilabo');
     Route::post('/cursos/{curso}/classroomClaveCRUD', [CursoController::class, 'classroomClaveCRUD'])->name('cursos.classroomClaveCRUD');
     Route::get('/curso/{cursoId}/competencias', [CalificacionController::class, 'gestionarCompetencias'])->name('curso.gestionar.competencias');
     Route::post('/curso/{cursoId}/competencias/guardar', [CalificacionController::class, 'guardarCompetenciasSeleccionadas'])->name('curso.guardar.competencias');
+    Route::get('/curso/{curso}/docentes', [CursoController::class, 'asignarDocentesForm'])->name('curso.docentes.form');
+    Route::post('/curso/{curso}/docentes', [CursoController::class, 'asignarDocentesUpdate'])->name('curso.docentes.update');
 
     Route::resource('silabos', SilaboController::class)->names('silabos');
+    Route::post('/silabos/{silabo}/reuse', [SilaboController::class, 'reuse'])->name('silabos.reuse');
     Route::get('/silabo/{silabo}/pdf', [SilaboController::class, 'exportarPDF'])->name('silabo.pdf');
     Route::resource('competencias', CompetenciaController::class)->names('competencias');
     Route::resource('capacidades', CapacidadesController::class)->names('capacidades');
@@ -239,8 +285,10 @@ Route::middleware('auth')->group(function () {
     Route::post('Periodo-Actual/{periodoactual}/crear-calificaciones', [PeriodoActualController::class, 'crearCalificaciones'])->name('periodoactual.crearCalificaciones');
     Route::get('/periodo-actual/{id}/actualizar-notas', [PeriodoActualController::class, 'actualizarNotas'])->name('periodoactual.actualizarNotas');
     Route::get('Periodo-Actual/{periodoactual}/registros', [PeriodoActualController::class, 'showRegistros'])->name('periodoactual.showRegistros');
+    Route::patch('admin/periodo-registro/{registro}', [PeriodoActualController::class, 'updateRegistro'])->name('periodoactual.registro.update');
     Route::post('Periodo-Actual/{periodoactual}/toggle-formulario', [PeriodoActualController::class, 'toggleFormulario'])->name('periodoactual.toggleFormulario');
     Route::get('/admin/periodos/{id}/export', [PeriodoActualController::class, 'exportExcel'])->name('periodos.export');
+    Route::get('/admin/becas/calificaciones/export', [AdminController::class, 'exportBecasCalificaciones'])->name('admin.becas.calificaciones.export');
     Route::get('periodos-de-admision', [PeriodoActualController::class, 'periodos'])->name('periodos.admision');
     Route::put('/ciclo/update-alumnos', [CicloController::class, 'updateCicloAlumnos'])->name('ciclo.updateAlumnos');
 
@@ -290,7 +338,25 @@ Route::middleware('auth')->group(function () {
         Route::post('/admin/alumnos/exportar-excel', [AdminController::class, 'exportAlumnosExcel'])->name('admin.alumnos.export-excel');
         Route::get('/admin/alumnos/{alumno}/carnet', [AdminController::class, 'alumnoCarnet'])->name('admin.alumnos.carnet');
         Route::get('/admin/alumnos/demograficos', [AlumnoController::class, 'estadisticas'])->name('alumnos.demograficos');
-        Route::delete('/admin/matriculas/{matricula}/quitar', [AdminController::class, 'quitarMatricula'])->name('matriculas.quitar');
+        Route::delete('/admin/matriculas/{matricula}/quitar', [AdminController::class, 'quitarMatricula'])
+            ->name('matriculas.quitar')->middleware('role:super-admin');
+        Route::delete('/admin/matriculas-ppd/{matricula}/quitar', [AdminController::class, 'quitarMatriculaPpd'])
+            ->name('matriculasppd.quitar')->middleware('role:super-admin');
+
+        // Verificación de voucher + envío manual de ficha de matrícula (disponible para admin normal,
+        // ya que cobranzas no tiene un rol propio en el sistema).
+        Route::post('/admin/matriculas/{matricula}/verificar-voucher', [AdminController::class, 'verificarVoucherMatricula'])
+            ->name('matriculas.verificarVoucher');
+        Route::post('/admin/matriculas/{matricula}/enviar-ficha', [AdminController::class, 'enviarFichaMatricula'])
+            ->name('matriculas.enviarFicha');
+        Route::post('/admin/matriculas-ppd/{matricula}/verificar-voucher', [AdminController::class, 'verificarVoucherMatriculaPpd'])
+            ->name('matriculasppd.verificarVoucher');
+        Route::post('/admin/matriculas-ppd/{matricula}/enviar-ficha', [AdminController::class, 'enviarFichaMatriculaPpd'])
+            ->name('matriculasppd.enviarFicha');
+
+        // Libro de Reclamaciones
+        Route::get('admin/reclamos', [App\Http\Controllers\ReclamoController::class, 'adminAll'])->name('admin.reclamos.todas');
+        Route::get('admin/reclamos/{reclamo}', [App\Http\Controllers\ReclamoController::class, 'adminShow'])->name('admin.reclamos.show');
 
         Route::get('/admin/alumnosPPD', [AdminController::class, 'alumnosppd'])->name('alumnosppd');
         Route::post('/admin/alumnosPPD/exportar-excel', [AdminController::class, 'exportAlumnosPpdExcel'])->name('admin.alumnosppd.export-excel');
@@ -317,6 +383,7 @@ Route::middleware('auth')->group(function () {
         Route::post('admin/periodo-ppd-registro', [PeriodoActualPpdController::class, 'storeRegistro'])->name('periodos.admin.ppd.registro.store');
         Route::post('periodos-admision-ppd/{id}/crear-calificaciones', [PeriodoActualPpdController::class, 'crearCalificaciones'])->name('periodos.admin.ppd.crearCalificaciones');
         Route::post('periodos-admision-ppd/{id}/sincronizar-calificaciones', [PeriodoActualPpdController::class, 'sincronizarCalificaciones'])->name('periodos.admin.ppd.sincronizarCalificaciones');
+        Route::post('periodos-de-ppd/{periodos_de_ppd}/toggle-formulario', [PeriodoActualPpdController::class, 'toggleFormulario'])->name('periodos.admin.ppd.toggleFormulario');
 
         // Gestión FID
         Route::resource('admin-fids', AdminFidController::class);
@@ -398,6 +465,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/{curso}/niveles/{nivel}/unidades/{unidad}/lecciones/{leccion}/edit', [CeContenidoController::class, 'leccionesEdit'])->name('lecciones.edit');
             Route::put('/{curso}/niveles/{nivel}/unidades/{unidad}/lecciones/{leccion}', [CeContenidoController::class, 'leccionesUpdate'])->name('lecciones.update');
             Route::delete('/{curso}/niveles/{nivel}/unidades/{unidad}/lecciones/{leccion}', [CeContenidoController::class, 'leccionesDestroy'])->name('lecciones.destroy');
+            Route::post('/upload-audio-leccion', [CeContenidoController::class, 'uploadAudioLeccion'])->name('lecciones.upload-audio');
 
             // Ejercicios
             Route::get('/{curso}/niveles/{nivel}/unidades/{unidad}/ejercicios/create', [CeContenidoController::class, 'ejerciciosCreate'])->name('ejercicios.create');
@@ -406,6 +474,18 @@ Route::middleware('auth')->group(function () {
             Route::put('/{curso}/niveles/{nivel}/unidades/{unidad}/ejercicios/{ejercicio}', [CeContenidoController::class, 'ejerciciosUpdate'])->name('ejercicios.update');
             Route::delete('/{curso}/niveles/{nivel}/unidades/{unidad}/ejercicios/{ejercicio}', [CeContenidoController::class, 'ejerciciosDestroy'])->name('ejercicios.destroy');
             Route::post('/upload-audio-ejercicio', [CeContenidoController::class, 'uploadAudioEjercicio'])->name('ejercicios.upload-audio');
+        });
+
+    // ═══════════════════════════════════════════════════════════════
+    // 🔒 BITÁCORA DE ACCESOS — Gestión super-admin
+    // ═══════════════════════════════════════════════════════════════
+    Route::middleware('role:super-admin')
+        ->prefix('admin/bitacora-accesos')
+        ->name('bitacora.')
+        ->group(function () {
+            Route::get('/', [BitacoraAccesosController::class, 'index'])->name('index');
+            Route::get('/en-vivo', [BitacoraAccesosController::class, 'activos'])->name('activos');
+            Route::get('/fallidos', [BitacoraAccesosController::class, 'fallidos'])->name('fallidos');
         });
 
 }); // fin auth

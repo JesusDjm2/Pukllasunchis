@@ -25,14 +25,66 @@
             </select>
         </div>
         <div class="col-md-4 mb-2">
-            <button type="submit" class="btn btn-primary btn-sm shadow-sm"><i class="fas fa-filter mr-1"></i> Aplicar</button>
+            <button type="submit" class="btn btn-sm bolsa-filtro-btn-aplicar"><i
+                    class="fas fa-filter mr-1" aria-hidden="true"></i> Aplicar</button>
             @if (request()->hasAny(['anio', 'mes']))
-                <a href="{{ route($bolsaRouteName) }}" class="btn btn-outline-secondary btn-sm ml-1">Limpiar</a>
+                <a href="{{ route($bolsaRouteName) }}" class="btn btn-sm bolsa-filtro-btn-limpiar ml-2"><i
+                        class="fas fa-rotate-left mr-1" aria-hidden="true"></i> Limpiar</a>
             @endif
         </div>
     </form>
 
     <style>
+        .bolsa-ofertas-catalogo-wrap .alumno-bolsa-filters {
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+        }
+
+        .bolsa-ofertas-catalogo-wrap .bolsa-filtro-btn-aplicar {
+            background: #cd9244;
+            border: 1px solid #cd9244;
+            color: #fff;
+            font-weight: 600;
+            border-radius: 6px;
+            padding: 0.375rem 1.1rem;
+            transition: background 0.2s ease, border-color 0.2s ease;
+        }
+
+        .bolsa-ofertas-catalogo-wrap .bolsa-filtro-btn-aplicar:hover,
+        .bolsa-ofertas-catalogo-wrap .bolsa-filtro-btn-aplicar:focus {
+            background: #b9823b;
+            border-color: #b9823b;
+            color: #fff;
+        }
+
+        .bolsa-ofertas-catalogo-wrap .bolsa-filtro-btn-limpiar {
+            background: transparent;
+            border: 1px solid #cd9244;
+            color: #a2691f;
+            font-weight: 600;
+            border-radius: 6px;
+            padding: 0.375rem 1.1rem;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+
+        .bolsa-ofertas-catalogo-wrap .bolsa-filtro-btn-limpiar:hover,
+        .bolsa-ofertas-catalogo-wrap .bolsa-filtro-btn-limpiar:focus {
+            background: rgba(205, 146, 68, 0.12);
+            color: #a2691f;
+            text-decoration: none;
+        }
+
+        @media (max-width: 767.98px) {
+            .bolsa-ofertas-catalogo-wrap .bolsa-filtro-btn-aplicar,
+            .bolsa-ofertas-catalogo-wrap .bolsa-filtro-btn-limpiar {
+                width: 100%;
+                margin-left: 0 !important;
+                margin-top: 0.5rem;
+            }
+        }
+
         .bolsa-ofertas-catalogo-wrap .bolsa-oferta-img-wrap {
             position: relative;
             height: 280px;
@@ -72,10 +124,20 @@
             height: 280px;
             max-height: 40vh;
             min-height: 200px;
-            background: linear-gradient(145deg, #eef1f5 0%, #dee3ea 100%);
-            border: 1px dashed #ced4da;
+            background: linear-gradient(145deg, rgba(205, 146, 68, 0.14) 0%, rgba(205, 146, 68, 0.05) 100%);
             border-radius: 0.25rem 0 0 0.25rem;
-            color: #6c757d;
+        }
+
+        .bolsa-ofertas-catalogo-wrap .bolsa-oferta-sin-img-icon {
+            color: #cd9244;
+        }
+
+        .bolsa-ofertas-catalogo-wrap .bolsa-oferta-sin-img-title {
+            color: #a2691f;
+        }
+
+        .bolsa-ofertas-catalogo-wrap .bolsa-oferta-sin-img-sub {
+            color: #8a6a3f;
         }
 
         @media (max-width: 767.98px) {
@@ -160,6 +222,49 @@
             margin-bottom: 0;
         }
 
+        .bolsa-ofertas-catalogo-wrap .bolsa-oferta-publicador {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem 0.6rem;
+            margin-bottom: 1rem;
+        }
+
+        .bolsa-ofertas-catalogo-wrap .bolsa-oferta-publicador-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            max-width: 100%;
+            font-size: 0.8rem;
+            color: #55606b;
+            background: #f4f6f8;
+            border-radius: 20px;
+            padding: 0.28rem 0.7rem;
+            line-height: 1.3;
+        }
+
+        .bolsa-ofertas-catalogo-wrap .bolsa-oferta-publicador-chip span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .bolsa-ofertas-catalogo-wrap .bolsa-oferta-publicador-chip i {
+            flex-shrink: 0;
+            font-size: 0.75rem;
+            color: #b07d2e;
+        }
+
+        @media (max-width: 575.98px) {
+            .bolsa-ofertas-catalogo-wrap .bolsa-oferta-publicador-chip {
+                font-size: 0.75rem;
+                padding: 0.24rem 0.6rem;
+            }
+
+            .bolsa-ofertas-catalogo-wrap .bolsa-oferta-publicador-chip span {
+                max-width: 42vw;
+            }
+        }
+
         @media (prefers-reduced-motion: reduce) {
 
             .bolsa-ofertas-catalogo-wrap #bolsaLightboxOverlay,
@@ -188,11 +293,12 @@
                     @else
                         <div
                             class="bolsa-oferta-sin-img d-flex flex-column align-items-center justify-content-center px-3">
-                            <i class="fas fa-image fa-3x mb-2 opacity-50" aria-hidden="true"></i>
-                            <span class="small font-weight-bold text-uppercase" style="letter-spacing: .05em;">Sin
-                                imagen</span>
-                            <span class="small text-center mt-1" style="max-width: 12rem;">Este registro no incluye
-                                imagen.</span>
+                            <i class="fas fa-briefcase fa-2x mb-2 bolsa-oferta-sin-img-icon" aria-hidden="true"></i>
+                            <span class="small font-weight-bold text-uppercase bolsa-oferta-sin-img-title"
+                                style="letter-spacing: .05em;">Convocatoria</span>
+                            <span class="small text-center mt-1 bolsa-oferta-sin-img-sub" style="max-width: 14rem;">
+                                Lee todos los detalles de esta oferta a continuación.
+                            </span>
                         </div>
                     @endif
                 </div>
@@ -204,15 +310,21 @@
                                 {{ $mesesNombres[$oferta->mes] ?? $oferta->mes }} {{ $oferta->anio }}
                             </span>
                         </div>
-                        <p class="text-muted small mb-2 alumno-bolsa-vigencia">
-                            <strong>Vigencia:</strong>
-                            {{ $oferta->fecha_inicio?->translatedFormat('d M Y') }}
-                            —
-                            {{ $oferta->fecha_fin?->translatedFormat('d M Y') }}
+                        <p class="small text-muted mb-2 bolsa-oferta-fecha-publicacion">
+                            <i class="far fa-calendar-alt mr-1" aria-hidden="true"></i>
+                            Publicado el {{ $oferta->fecha_publicacion->locale('es')->translatedFormat('d \\d\\e F \\d\\e\\l Y') }}
+                            &middot; Vigente hasta el {{ $oferta->fechaLimiteVigencia()->locale('es')->translatedFormat('d \\d\\e F \\d\\e\\l Y') }}
                         </p>
                         <div class="contenido-rico-bolsa">
                             {!! $oferta->detalles !!}
                         </div>
+                        @if ($oferta->numero_correo)
+                            <div class="bolsa-oferta-publicador">
+                                <span class="bolsa-oferta-publicador-chip" title="N.° de contacto/correo">                                    
+                                    <span>Contacto: {{ $oferta->numero_correo }}</span>
+                                </span>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>

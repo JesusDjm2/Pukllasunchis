@@ -50,9 +50,10 @@ class vistasAlumnosController extends Controller
         return response()->json($cursos);
     }
     public function exportarFichaPDF(Alumno $alumno)
-    { 
-        $alumno->load(['ciclo.cursos', 'cursos', 'programa']); 
-        $pdf = Pdf::loadView('alumnos.vistasAlumnos.pdf', compact('alumno'));
+    {
+        $alumno->load(['ciclo.cursos', 'cursos', 'programa']);
+        $periodoActual = PeriodoActual::where('actual', true)->first();
+        $pdf = Pdf::loadView('alumnos.vistasAlumnos.pdf', compact('alumno', 'periodoActual'));
         return $pdf->download('ficha_' . Str::slug($alumno->apellidos . '_' . $alumno->nombres) . '.pdf');
     }
 }

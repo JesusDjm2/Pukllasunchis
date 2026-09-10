@@ -1,11 +1,14 @@
 @extends('layouts.profesionalizacion')
 @section('contenido')
     <div class="container-fluid">
-        <div class="d-sm-flex align-items-center justify-content-between mb-4">
-            <h4 class="mb-0 text-gray-800">Actualizar matrícula PPD: <strong> {{ $alumno->apellidos }}
-                    {{ $alumno->nombres }}</strong></h4>
-            <a href="javascript:history.go(-1)" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
-                Volver
+        <div class="ppd-page-header">
+            <div>
+                <span class="ppd-eyebrow"><i class="fa fa-graduation-cap mr-1"></i>Matrícula</span>
+                <h4 class="ppd-page-title">Actualizar matrícula PPD: <strong>{{ $alumno->apellidos }}
+                        {{ $alumno->nombres }}</strong></h4>
+            </div>
+            <a href="javascript:history.go(-1)" class="btn btn-sm btn-ppd-volver">
+                <i class="fa fa-arrow-left"></i> Volver
             </a>
         </div>
         <div class="row">
@@ -19,26 +22,31 @@
                         </ul>
                     </div>
                 @endif
-                @if (stripos($alumno->num_comprobante, 'beca') !== false)
-                    <div class="alert alert-info text-center" role="alert">
-                        <strong>Llenar los nuevos campos y de no tener ningun dato para actualizar, solo guardar el
-                            formulario. Seguidamente strong>NOTIFICAR</strong> que terminaste tu ficha de matrícula.
-                    </div></strong>
-                @else
-                    <div class="alert alert-info text-center" role="alert">
-                        Por favor <strong>completar los nuevos campos</strong> y actualizar datos de ser necesario.
-                        Seguidamente <strong>NOTIFICAR</strong> que terminaste tu ficha de matrícula.
+                <div class="alert alert-info text-center" role="alert">
+                    Por favor <strong>completa los datos</strong> y actualiza lo que sea necesario. Al guardar,
+                    tus cambios quedan registrados automáticamente.
+                </div>
+                @if ($formularioHabilitado && $periodoActualPpd)
+                    @php $yaMatriculado = $matriculaActual !== null; @endphp
+                    <div class="alert {{ $yaMatriculado ? 'alert-success' : 'alert-warning' }} text-center" role="alert">
+                        <strong><i class="fas fa-graduation-cap mr-1"></i> Matrícula — {{ $periodoActualPpd->nombre }}:</strong>
+                        @if ($yaMatriculado)
+                            Ya completaste tu matrícula para este periodo. La institución verificará tu información
+                            antes de confirmarte por correo.
+                        @else
+                            Al guardar este formulario quedarás matriculado/a en el periodo actual.
+                        @endif
                     </div>
                 @endif
             </div>
             <div class="col-lg-12 card pt-3 pb-3 border border-primary">
-                <form action="{{ route('ppd.update', $alumno) }}" method="POST">
+                <form action="{{ route('ppd.update', $alumno) }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
                     <div class="container-fluid mt-3">
                         <div class="row">
                             <div class="col-lg-4 mb-3">
-                                <label for="numero">Número:</label>
+                                <label for="numero">Celular:</label>
                                 <input type="text"
                                     class="form-control form-control-sm @error('numero') is-invalid @enderror"
                                     id="numero" name="numero" value="{{ old('numero', $alumno->numero) }}" required>
@@ -47,7 +55,7 @@
                                 @enderror
                             </div>
                             <div class="col-lg-4 mb-3">
-                                <label for="numero_referencia">Número de Referencia:</label>
+                                <label for="numero_referencia">Celular de emergencia:</label>
                                 <input type="text"
                                     class="form-control form-control-sm @error('numero_referencia') is-invalid @enderror"
                                     id="numero_referencia" name="numero_referencia"
@@ -343,32 +351,6 @@
         </div>
     </div>
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-    <script>
-        function toggleOtroSector() {
-            var select = document.getElementById("sector_laboral_select");
-            var inputOtro = document.getElementById("sector_laboral_otro");
-            var hiddenInput = document.getElementById("sector_laboral_hidden");
-
-            if (select.value === "Otro") {
-                inputOtro.style.display = "block";
-                inputOtro.required = true;
-                hiddenInput.value = inputOtro.value;
-            } else {
-                inputOtro.style.display = "none";
-                inputOtro.required = false;
-                inputOtro.value = "";
-                hiddenInput.value = select.value;
-            }
-        }
-
-        document.getElementById("sector_laboral_otro").addEventListener("input", function() {
-            document.getElementById("sector_laboral_hidden").value = this.value;
-        });
-
-        document.addEventListener("DOMContentLoaded", function() {
-            toggleOtroSector();
-        });
-    </script>
     <script>
         $(document).ready(function() {
             // Función para avanzar al siguiente tab

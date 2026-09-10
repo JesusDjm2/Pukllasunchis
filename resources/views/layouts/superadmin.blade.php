@@ -152,11 +152,24 @@
             </div>
         </li>
 
+        <li class="nav-item">
+            <a class="nav-link {{ request()->routeIs('admin.reclamos.*') ? '' : 'collapsed' }}"
+               href="{{ route('admin.reclamos.todas') }}">
+                <i class="fas fa-fw fa-book"></i><span>Libro de Reclamaciones</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" href="{{ route('admin.seguimiento') }}">
+                <i class="fas fa-fw fa-hands-helping"></i><span>Seguimiento</span>
+            </a>
+        </li>
+
         <hr class="sidebar-divider d-none d-md-block">
 
-        {{-- ══ SECCIÓN: BOLSA Y COMUNICADOS ══ --}}
+        {{-- ══ SECCIÓN: GESTIÓN INTERNA ══ --}}
         <div class="sidebar-heading">
-            <i class="fas fa-bullhorn fa-xs"></i> publicaciones internas
+            <i class="fas fa-building fa-xs"></i> Gestión Interna
         </div>
         <li class="nav-item">
             <a class="nav-link {{ request()->routeIs('bolsa-trabajo.*', 'admin.comunicados.*', 'admin.minkarikuy.*') ? '' : 'collapsed' }}"
@@ -178,6 +191,12 @@
                     </a>
                 </div>
             </div>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {{ request()->routeIs('bitacora.*') ? 'active' : '' }}"
+               href="{{ route('bitacora.index') }}">
+                <i class="fas fa-fw fa-user-clock"></i><span>Bitácora de Accesos</span>
+            </a>
         </li>
 
         <hr class="sidebar-divider d-none d-md-block">
@@ -201,7 +220,7 @@
         </div>
         <li class="nav-item">
             <a class="nav-link"
-               href="https://sites.google.com/pukllavirtual.edu.pe/bibliotecaeesppuklla/inicio"
+               href="https://pukllavirtual.eesppukllasunchis.edu.pe/"
                target="_blank" rel="noopener">
                 <i class="fas fa-fw fa-book-open"></i><span>Biblioteca</span>
             </a>
@@ -246,6 +265,7 @@
                             <i class="fas fa-moon" id="darkModeIcon"></i>
                         </button>
                     </li>
+                    @include('docentes.partials.notificaciones-dropdown')
                     <div class="topbar-divider d-none d-sm-block"></div>
 
                     {{-- Dropdown de usuario --}}
@@ -263,7 +283,6 @@
                                     Hola {{ trim($saNombre . ' ' . $saApellido) }}!
                                 </span>
                             @endif
-                            <i class="fas fa-crown fa-xs text-warning ml-1" title="Super Admin"></i>
                         </a>
 
                         <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"

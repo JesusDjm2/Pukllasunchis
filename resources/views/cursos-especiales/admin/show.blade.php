@@ -266,6 +266,11 @@
             color: #e74a3b;
         }
 
+        .cea-item-icon.mixto {
+            background: #f0eeff;
+            color: #8338ec;
+        }
+
         .cea-item-icon.ejercicio {
             background: #fff3cd;
             color: #f6c23e;
@@ -473,10 +478,30 @@
     </div>
 
     @if (session('success'))
-        <div class="alert alert-success alert-dismissible fade show mb-3">
-            <i class="fas fa-check-circle mr-2"></i>{{ session('success') }}
-            <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
-        </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Listo!',
+                    text: @json(session('success')),
+                    confirmButtonColor: '#28a745',
+                    timer: 4000,
+                    timerProgressBar: true
+                });
+            });
+        </script>
+    @endif
+    @if (session('error'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: @json(session('error')),
+                    confirmButtonColor: '#dc3545'
+                });
+            });
+        </script>
     @endif
 
     @if (! empty($alumnos) && $alumnos->isNotEmpty())
@@ -505,10 +530,11 @@
                     <table class="table table-sm cea-inscritos-table mb-0">
                         <thead>
                             <tr>
-                                <th style="width:33%">Estudiante</th>
-                                <th style="width:11%">DNI</th>
+                                <th style="width:30%">Estudiante</th>
+                                <th style="width:10%">DNI</th>
                                 <th>Ciclo</th>
-                                <th style="width:30%">Avance</th>
+                                <th style="width:12%">Inscripción</th>
+                                <th style="width:28%">Avance</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -521,7 +547,7 @@
                             @endphp
                             {{-- Fila de grupo (colapsable) --}}
                             <tr class="cea-group-row" data-group="{{ $gId }}" onclick="toggleGrupo('{{ $gId }}', this)">
-                                <td colspan="3" style="padding:.55rem .75rem;">
+                                <td colspan="4" style="padding:.55rem .75rem;">
                                     <div style="display:flex;align-items:center;gap:.55rem;">
                                         <i class="fas fa-chevron-down cea-group-chev" id="chev-{{ $gId }}"
                                            style="font-size:.65rem;color:#8338ec;transition:transform .25s;"></i>
@@ -552,6 +578,11 @@
                                     </td>
                                     <td style="padding:.45rem .75rem;">
                                         <span style="font-size:.78rem;color:#666;">{{ $alumno['ciclo'] }}</span>
+                                    </td>
+                                    <td style="padding:.45rem .75rem;">
+                                        <span style="font-size:.75rem;color:#888;white-space:nowrap;">
+                                            {{ $alumno['inscrito_at'] ? $alumno['inscrito_at']->format('d/m/Y') : '—' }}
+                                        </span>
                                     </td>
                                     <td style="padding:.45rem .75rem;">
                                         <div style="display:flex;align-items:center;gap:.5rem;">
@@ -592,8 +623,9 @@
                         title="Editar Nivel">
                         <i class="fas fa-pen"></i>
                     </a>
-                    <form action="{{ route($rp . '.niveles.destroy', [$curso, $nivel]) }}" method="POST" class="d-inline"
-                        onsubmit="return confirm('¿Eliminar el nivel «{{ $nivel->nombre }}» y todo su contenido?')">
+                    <form action="{{ route($rp . '.niveles.destroy', [$curso, $nivel]) }}" method="POST"
+                        class="d-inline js-confirm-delete"
+                        data-mensaje="¿Eliminar el nivel «{{ $nivel->nombre }}» y todo su contenido?">
                         @csrf @method('DELETE')
                         <button class="cea-ico-btn delete" title="Eliminar Nivel">
                             <i class="fas fa-trash"></i>
@@ -639,7 +671,8 @@
                                     <i class="fas fa-pen"></i>
                                 </a>
                                 <form action="{{ route($rp . '.unidades.destroy', [$curso, $nivel, $unidad]) }}"
-                                    method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar esta unidad?')">
+                                    method="POST" class="d-inline js-confirm-delete"
+                                    data-mensaje="¿Eliminar esta unidad?">
                                     @csrf @method('DELETE')
                                     <button class="cea-ico-btn delete"><i class="fas fa-trash"></i></button>
                                 </form>
@@ -653,15 +686,23 @@
                                     <i class="fas fa-book-open"></i> Lecciones ({{ $unidad->lecciones->count() }})
                                 </div>
                                 @foreach ($unidad->lecciones as $leccion)
+                                    @php
+                                        $td = $leccion->tipo_display;
+                                        $tdIcon = match($td) {
+                                            'audio'  => 'headphones',
+                                            'video'  => 'play-circle',
+                                            'mixto'  => 'layer-group',
+                                            default  => 'file-alt',
+                                        };
+                                    @endphp
                                     <div class="cea-item">
-                                        <span class="cea-item-icon {{ $leccion->tipo }}">
-                                            <i
-                                                class="fas fa-{{ $leccion->tipo === 'video' ? 'play-circle' : ($leccion->tipo === 'audio' ? 'headphones' : 'file-alt') }}"></i>
+                                        <span class="cea-item-icon {{ $td }}">
+                                            <i class="fas fa-{{ $tdIcon }}"></i>
                                         </span>
                                         <div class="cea-item-name">
                                             {{ $leccion->nombre }}
                                             <small>
-                                                {{ ucfirst($leccion->tipo) }}
+                                                {{ ucfirst($td) }}
                                                 @if ($leccion->duracion_min)
                                                     · {{ $leccion->duracion_min }} min
                                                 @endif
@@ -674,8 +715,8 @@
                                             </a>
                                             <form
                                                 action="{{ route($rp . '.lecciones.destroy', [$curso, $nivel, $unidad, $leccion]) }}"
-                                                method="POST" class="d-inline"
-                                                onsubmit="return confirm('¿Eliminar esta lección?')">
+                                                method="POST" class="d-inline js-confirm-delete"
+                                                data-mensaje="¿Eliminar esta lección?">
                                                 @csrf @method('DELETE')
                                                 <button class="cea-item-act delete"><i class="fas fa-trash"></i></button>
                                             </form>
@@ -710,10 +751,12 @@
                                         </div>
                                         @if ($ejercicio->audio_url)
                                             @php
-                                                $aMime = match(pathinfo($ejercicio->audio_url, PATHINFO_EXTENSION)) {
-                                                    'm4a', 'mp4' => 'audio/mp4',
-                                                    'ogg'        => 'audio/ogg',
-                                                    default      => 'audio/webm',
+                                                $aMime = match(strtolower(pathinfo($ejercicio->audio_url, PATHINFO_EXTENSION))) {
+                                                    'm4a', 'mp4', 'aac' => 'audio/mp4',
+                                                    'ogg'               => 'audio/ogg',
+                                                    'mp3'               => 'audio/mpeg',
+                                                    'wav'               => 'audio/wav',
+                                                    default             => 'audio/webm',
                                                 };
                                             @endphp
                                             <button type="button"
@@ -727,7 +770,7 @@
                                                    class="cea-admin-audio"
                                                    preload="none"
                                                    style="display:none">
-                                                <source src="{{ $ejercicio->audio_url }}" type="{{ $aMime }}">
+                                                <source src="{{ $ejercicio->audio_src }}" type="{{ $aMime }}">
                                             </audio>
                                         @endif
                                         <div class="cea-item-acts">
@@ -737,8 +780,8 @@
                                             </a>
                                             <form
                                                 action="{{ route($rp . '.ejercicios.destroy', [$curso, $nivel, $unidad, $ejercicio]) }}"
-                                                method="POST" class="d-inline"
-                                                onsubmit="return confirm('¿Eliminar este ejercicio?')">
+                                                method="POST" class="d-inline js-confirm-delete"
+                                                data-mensaje="¿Eliminar este ejercicio?">
                                                 @csrf @method('DELETE')
                                                 <button class="cea-item-act delete"><i class="fas fa-trash"></i></button>
                                             </form>
@@ -776,6 +819,28 @@
 
 @push('scripts')
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script>
+        document.addEventListener('submit', function(e) {
+            const form = e.target.closest('form.js-confirm-delete');
+            if (!form || form.dataset.confirmado === '1') return;
+            e.preventDefault();
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: form.dataset.mensaje,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.dataset.confirmado = '1';
+                    form.submit();
+                }
+            });
+        });
+    </script>
     <script>
         /* ── Inscritos accordion ── */
         function toggleInscritos() {
@@ -902,9 +967,14 @@
                         if (oi) oi.className = 'fas fa-play';
                         if (ob) ob.classList.remove('playing');
                     });
-                    audio.play().catch(() => {});
-                    if (icon) icon.className = 'fas fa-pause';
-                    btn.classList.add('playing');
+                    audio.play()
+                        .then(() => {
+                            if (icon) icon.className = 'fas fa-pause';
+                            btn.classList.add('playing');
+                        })
+                        .catch(err => {
+                            console.error('Audio error:', audio.currentSrc, err);
+                        });
                 } else {
                     audio.pause();
                     if (icon) icon.className = 'fas fa-play';

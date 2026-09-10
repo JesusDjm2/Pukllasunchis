@@ -202,10 +202,7 @@
                                                 Monto: s/ 50.00</small>
                                         </li>
                                         <li>Informe de Trabajo de Investigación Apto original.</li>
-                                        <li>Resolución Directoral de aprobación de Trabajo de Investigación original.
-                                            <small class="text-info">Codigo: 17 | Concepto: RD de Aprobación TI | Monto: s/
-                                                50.00</small>
-                                        </li>
+                                        
                                         <li>Comprobante de pago por Derecho de obtención de grado de Bachiller original.
                                             <small class="text-info">Codigo: 18 | Concepto: Armado de expediente de
                                                 Titulación | Monto: s/ 500.00</small>
@@ -328,13 +325,14 @@
                 <h3 class="mt-4">Constancia de Egresado:</h3>
                 <p>
                     Este trámite permite demostrar que el estudiante ha culminado satisfactoriamente todos los ciclos
-                    académicos. Tiene un costo de S/40 soles. Se deben entregar los siguientes documentos:
+                    académicos. Tiene un costo de S/50 soles. Se deben entregar los siguientes documentos:
                 </p>
                 <ul class="listasCuerpo">
                     <li>FUT debidamente llenado. Puedes solicitarlo en la oficina de secretaría o descargarlo de la página
                         web.</li>
                     <li>Dos fotos tamaño carné, en fondo blanco y con terno.</li>
                     <li>Comprobante de pago por Constancia de Egresado.</li>
+					<li>Constancia de egresado se obtiene presentando la Constancia de No Deudor</li>
                 </ul>
                 <p>
                     Como resultado de este trámite obtendrás una Constancia de Egresado.
@@ -349,39 +347,9 @@
                     <li>FUT debidamente llenado. Puedes solicitarlo en la oficina de secretaría o descargarlo de la página
                         web.</li>
                     <li>Seis fotos tamaño pasaporte, en fondo blanco y con terno.</li>
-                    <li>Comprobante de pago por Certificado de Estudios Superiores.</li>
+                    <li>Comprobante de pago por Certificado de Estudios Superiores.</li>					
                 </ul>
                 <p> Como resultado de este trámite obtendrás los Certificados de Estudios Superiores.</p>
-                <h3 class="mt-4">Emisión de Diploma de Bachiller:</h3>
-                <p>
-                    Este trámite se realiza para la compra del formato del Diploma de Bachiller y el rotulado del mismo.
-                    Tiene un costo de S/400 soles. Se deben entregar los siguientes documentos:
-                </p>
-                <ul class="listasCuerpo">
-                    <li>FUT debidamente llenado. Puedes solicitarlo en la oficina de secretaría o descargarlo de la página
-                        web.</li>
-                    <li>Tener expediente de Graduación completo.</li>
-                    <li>Comprobante de pago por Emisión de Diploma de Bachiller.</li>
-                </ul>
-                <p>
-                    Como resultado de este trámite obtendrás el Diploma de Bachiller.
-                </p>
-                <h3 class="mt-4">Emisión de Título de Licenciado:</h3>
-                <p>
-                    Este trámite se realiza para la compra del formato del Título de Licenciado y el rotulado del mismo.
-                    Tiene un costo de S/400 soles. Se deben entregar los siguientes documentos:
-                </p>
-                <ul class="listasCuerpo">
-                    <li>FUT debidamente llenado. Puedes solicitarlo en la oficina de secretaría o descargarlo de la página
-                        web.</li>
-                    <li>Copia legalizada del Grado de Bachiller.</li>
-                    <!----<li>Copia de Acta de aprobación de sustentación.</li>-->
-                    <li>Un ejemplar empastado por grupo y/o tema de investigación de la versión final de la Tesis.</li>
-                    <li>Comprobante de pago por Emisión de Título de Licenciado.</li>
-                </ul>
-                <p>
-                    Como resultado de este trámite obtendrás el Título de Licenciado.
-                </p>
 
                 <h3 class="mt-4">Pagos para la realización de los Trámites Presenciales </h3>
                 <p>SOLO SE PUEDEN PAGAR EN VENTANILLAS de cualquier agencia a nivel nacional.</p>

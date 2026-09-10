@@ -16,6 +16,91 @@
         rel="stylesheet">
     <link href="{{ asset('admin/css/sb-admin-2.min.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('admin/css/estilos.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <style>
+        :root {
+            --ppd-accent: #4e73df;
+            --ppd-accent-dark: #224abe;
+            --ppd-accent-soft: #eef1fc;
+            --ppd-ink: #2c2f36;
+        }
+
+        .ppd-page-header {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid rgba(78, 115, 223, .2);
+        }
+
+        .ppd-eyebrow {
+            display: block;
+            font-size: .72rem;
+            font-weight: 700;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: var(--ppd-accent);
+            margin-bottom: .25rem;
+        }
+
+        .ppd-page-title {
+            margin: 0;
+            font-weight: 800;
+            color: var(--ppd-ink);
+        }
+
+        .ppd-page-subtitle {
+            margin: .25rem 0 0;
+            color: #858796;
+            font-size: .875rem;
+        }
+
+        .ppd-page-actions {
+            display: flex;
+            gap: .5rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .ppd-section-band {
+            background: linear-gradient(120deg, var(--ppd-accent), var(--ppd-accent-dark)) !important;
+            color: #fff !important;
+        }
+
+        .btn-ppd-volver {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            border: 1px solid #d7dae0;
+            color: #5a5c69;
+            background: #fff;
+            font-weight: 600;
+            border-radius: .5rem;
+        }
+
+        .btn-ppd-volver:hover {
+            background: #f4f6f9;
+            color: var(--ppd-ink);
+        }
+
+        .card {
+            border-radius: .85rem;
+        }
+
+        @media (max-width: 575.98px) {
+            .ppd-page-header {
+                align-items: flex-start;
+            }
+
+            .ppd-page-title {
+                font-size: 1.15rem;
+            }
+        }
+    </style>
+    @stack('styles')
 </head>
 
 <body id="page-top">
@@ -156,6 +241,8 @@
     <script src="{{ asset('admin/js/demo/chart-area-demo.js') }}"></script>
     <script src="{{ asset('admin/js/demo/chart-pie-demo.js') }}"></script>
     <script src="{{ asset('admin/js/djm.js') }}?v={{ filemtime(public_path('admin/js/djm.js')) }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    @stack('scripts')
 
 </body>
 

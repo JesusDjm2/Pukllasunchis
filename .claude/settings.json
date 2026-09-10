@@ -26,7 +26,18 @@
       "PowerShell(Get-ChildItem \"$env:USERPROFILE\\\\.claude\" -ErrorAction SilentlyContinue | Select-Object Name, LastWriteTime)",
       "PowerShell(claude config list 2>&1)",
       "PowerShell(Get-ChildItem \"$env:USERPROFILE\\\\.claude\" -Recurse -ErrorAction SilentlyContinue | Select-Object Name, LastWriteTime, Length | Format-Table)",
-      "Read(//c/Users/Jaime/.claude/**)"
+      "Read(//c/Users/Jaime/.claude/**)",
+      "WebFetch(domain:sites.google.com)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost/Puklla2026/public/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost/Puklla2026/)",
+      "Bash(grep -n \"^use App\\\\\\\\\\\\\\\\Http\\\\\\\\\\\\\\\\Controllers\\\\\\\\\\\\\\\\Docente\" routes/admin.php)",
+      "Bash(php -l app/Http/Controllers/CalificacionController.php)",
+      "Bash(php -l app/Http/Controllers/PpdController.php)",
+      "Bash(node --check public/admin/js/calificar-animations.js)",
+      "Bash(powershell -Command \"Test-Path 'c:\\\\xampp\\\\htdocs\\\\Puklla2026\\\\public\\\\img\\\\incidencias'; Test-Path 'c:\\\\xampp\\\\htdocs\\\\Puklla2026\\\\public\\\\reclamos'\")",
+      "Bash(curl -s http://127.0.0.1:8123/libro-de-reclamaciones -o /tmp/reclamo_form.html)",
+      "PowerShell(Get-NetTCPConnection -LocalPort 8123 -ErrorAction SilentlyContinue)",
+      "Bash(grep -i \"Undefined variable\\\\|ErrorException\\\\|Whoops\\\\|Facade\\\\\\\\\\\\\\\\Ignition\" /tmp/reclamo_new.html)"
     ]
   }
 }

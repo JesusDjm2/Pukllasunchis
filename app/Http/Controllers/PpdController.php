@@ -2,15 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\NotificacionRegistro;
 use App\Models\Calificacionesppd;
 use App\Models\Ciclo;
 use App\Models\Competencia;
 use App\Models\Curso;
+use App\Models\Departamento;
 use App\Models\Docente;
+use App\Models\MatriculaPpd;
+use App\Models\PeriodoActual;
+use App\Models\PeriodoActualPpd;
 use App\Models\ppd;
 use App\Models\Programa;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class PpdController extends Controller
 {
@@ -55,7 +63,19 @@ class PpdController extends Controller
             $cursos = collect();
         }
 
-        return view('alumnos.ppd.index', compact('alumno', 'cursos'));
+        $periodoActualPpd = PeriodoActualPpd::where('actual', true)->first();
+        $matriculaActual = ($alumno && $periodoActualPpd)
+            ? $alumno->matriculaEnPeriodo($periodoActualPpd->id)
+            : null;
+        $formularioHabilitado = $periodoActualPpd?->formulario_habilitado ?? false;
+
+        // Los sílabos (de FID y PPD) siempre se rigen por el periodo FID: es el
+        // único "periodo actual" que usa el sistema de sílabos.
+        $periodoActual = PeriodoActual::where('actual', true)->first();
+
+        return view('alumnos.ppd.index', compact(
+            'alumno', 'cursos', 'periodoActualPpd', 'matriculaActual', 'formularioHabilitado', 'periodoActual'
+        ));
     }
 
     public function form()
@@ -95,19 +115,14 @@ class PpdController extends Controller
                         'calificacionesppd' => function ($q) use ($alumno) {
                             $q->where('ppd_id', $alumno->id);
                         },
-                    ]);
+                    ])->orderBy('nombre');
                 },
             ])
-            ->orderBy('nombre')
-            ->get();
-
-        // 👇 Aplanamos todos los cursos y los ordenamos por nombre
-        $cursos = $ciclosConCursos
-            ->flatMap->cursos
-            ->sortBy('nombre')
+            ->get()
+            ->sortBy(fn ($ciclo) => $ciclo->ordenCiclo())
             ->values();
 
-        return view('alumnos.ppd.calificaciones', compact('alumno', 'cursos'));
+        return view('alumnos.ppd.calificaciones', compact('alumno', 'ciclosConCursos'));
     }
 
     public function store(Request $request)
@@ -430,6 +445,7 @@ class PpdController extends Controller
             'alumnos.*.observaciones' => 'nullable|string|max:1000',
         ]);
 
+        try {
         $curso = Curso::findOrFail($request->curso_id);
         $docente = Docente::findOrFail($request->docente_id);
         $primerNombre = explode(' ', trim($docente->nombre))[0];
@@ -503,8 +519,12 @@ class PpdController extends Controller
         // 🔥 Recuperar alumnos con la misma lógica de calificarCursoPPD
         $competenciasSeleccionadas = Competencia::whereIn('id', $request->input('competencias'))->get();
 
-        $alumnos = User::whereHas('roles', function ($q) {
-            $q->whereIn('name', ['alumnoB', 'inhabilitado']);
+        $alumnos = User::where(function ($q) {
+            $q->whereHas('roles', fn ($r) => $r->where('name', 'alumnoB'))
+              ->orWhere(function ($q2) {
+                  $q2->whereHas('roles', fn ($r) => $r->where('name', 'inhabilitado'))
+                      ->where('perfil', '!=', 'Retirado');
+              });
         })
             ->whereHas('programa.ciclos.cursos', function ($query) use ($curso) {
                 $query->where('id', $curso->id);
@@ -530,17 +550,67 @@ class PpdController extends Controller
             'competenciasSeleccionadas' => $competenciasSeleccionadas,
             'alumnos' => $alumnos,
         ]);
+        } catch (\Throwable $e) {
+            Log::error('Error al guardar calificaciones PPD', [
+                'curso_id' => $request->input('curso_id'),
+                'docente_id' => $request->input('docente_id'),
+                'message' => $e->getMessage(),
+            ]);
+
+            return back()->withInput()->with('error', 'No se pudieron guardar las notas por un problema técnico. Tus datos no se perdieron: corrige e inténtalo de nuevo, o contacta a soporte si el problema continúa.');
+        }
     }
 
     public function edit($id)
     {
-        return view('alumnos.ppd.edit', compact('alumno', 'programas', 'ciclos', 'user', 'opcionesBienesVivienda', 'opcionesServicios', 'opcionesHabilidades', 'departamentosData'));
+        $alumno = ppd::findOrFail($id);
+
+        if (auth()->user()->hasRole('alumnoB') && auth()->user()->alumnoB?->id !== $alumno->id) {
+            abort(403);
+        }
+
+        $departamentos = Departamento::with('provincias.distritos')->get();
+        $departamentosData = [];
+        foreach ($departamentos as $dep) {
+            $departamentosData[$dep->nombre] = [
+                'provincia' => [],
+            ];
+
+            foreach ($dep->provincias as $prov) {
+                $departamentosData[$dep->nombre]['provincia'][$prov->nombre] =
+                    $prov->distritos->pluck('nombre')->toArray();
+            }
+        }
+
+        $provinciasData = [];
+        $distritosData = [];
+        if ($alumno->departamento && isset($departamentosData[$alumno->departamento])) {
+            $provinciasData = array_keys($departamentosData[$alumno->departamento]['provincia']);
+
+            if ($alumno->provincia && isset($departamentosData[$alumno->departamento]['provincia'][$alumno->provincia])) {
+                $distritosData = $departamentosData[$alumno->departamento]['provincia'][$alumno->provincia];
+            }
+        }
+
+        $periodoActualPpd = PeriodoActualPpd::where('actual', true)->first();
+        $matriculaActual = $periodoActualPpd ? $alumno->matriculaEnPeriodo($periodoActualPpd->id) : null;
+        $formularioHabilitado = $periodoActualPpd?->formulario_habilitado ?? false;
+
+        return view('alumnos.ppd.edit', compact(
+            'alumno', 'departamentosData', 'provinciasData', 'distritosData',
+            'periodoActualPpd', 'matriculaActual', 'formularioHabilitado'
+        ));
     }
 
     public function update(Request $request, ppd $profesionalización_docente)
     {
         $alumno = $profesionalización_docente;
-        $request->validate([
+
+        if (auth()->user()->hasRole('alumnoB') && auth()->user()->alumnoB?->id !== $alumno->id) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
             'genero' => 'required|string',
             'numero' => 'required|string|max:20',
             'numero_referencia' => 'required|string|max:20',
@@ -553,9 +623,53 @@ class PpdController extends Controller
             'distrito' => 'required|string|max:255',
             'direccion' => 'required|string|max:255',
         ]);
-        $alumno->update($request->all());
 
-        return redirect()->route('ppd.index')->with('success', 'Datos registrados correctamente.');
+        $periodoActualPpd = PeriodoActualPpd::where('actual', true)->first();
+        $matriculaActual = $periodoActualPpd
+            ? $alumno->matriculaEnPeriodo($periodoActualPpd->id)
+            : null;
+
+        $alumno->update($validated);
+
+        $mensajeExito = 'Datos registrados correctamente.';
+        $mostrarPopupMatricula = false;
+
+        if ($periodoActualPpd && $periodoActualPpd->formulario_habilitado) {
+            $yaEstabaMatriculado = $matriculaActual !== null;
+
+            $datosMatricula = ['fecha_completado' => now(), 'estado' => 'matriculado', 'comprobante' => $validated['num_comprobante']];
+
+            $matricula = MatriculaPpd::updateOrCreate(
+                ['ppd_id' => $alumno->id, 'periodo_actual_ppd_id' => $periodoActualPpd->id],
+                $datosMatricula
+            );
+
+            // El correo institucional (a cobranzas/admin) sí se sigue enviando automáticamente:
+            // es la señal para que verifiquen el voucher. El correo con la ficha AL ALUMNO ya no
+            // se envía aquí — solo cuando cobranzas lo marque como verificado y presione "Enviar
+            // ficha" desde el listado de Matriculados PPD.
+            if (! $yaEstabaMatriculado) {
+                try {
+                    Mail::to(config('services.notificaciones.emails'))
+                        ->send(new NotificacionRegistro($alumno, $periodoActualPpd));
+                } catch (\Exception $e) {
+                    Log::error('Error enviando email de matrícula PPD (update): '.$e->getMessage());
+                }
+            }
+
+            if ($matricula->ficha_enviada_at) {
+                $mensajeExito = "Ya estás matriculado para el periodo actual: {$periodoActualPpd->nombre}. Tu ficha de matrícula ya fue enviada a tu correo.";
+            } else {
+                $mensajeExito = $yaEstabaMatriculado
+                    ? "Ya estás matriculado para el periodo actual: {$periodoActualPpd->nombre}."
+                    : "¡Matrícula completada! Ya estás matriculado para el periodo actual: {$periodoActualPpd->nombre}. Se ha notificado a la institución.";
+                $mostrarPopupMatricula = true;
+            }
+        }
+
+        return redirect()->route('ppd.index')
+            ->with('success', $mensajeExito)
+            ->with('mostrar_popup_matricula', $mostrarPopupMatricula);
     }
 
     public function formatos()

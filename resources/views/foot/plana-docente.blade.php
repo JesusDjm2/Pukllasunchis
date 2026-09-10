@@ -174,14 +174,6 @@
             margin: 0 0 .9rem;
         }
 
-        .pd-descripcion {
-            font-size: .875rem;
-            color: #4b5563;
-            line-height: 1.7;
-            flex: 1;
-            margin-bottom: 1.3rem;
-        }
-
         /* Botón CV */
         .pd-btn-cv {
             display: flex;
@@ -233,53 +225,74 @@
             pointer-events: none;
         }
 
-        /* ── Modal CV ── */
-        #modalCV .modal-content {
-            border-radius: .85rem;
-            overflow: hidden;
-            border: none;
+        /* ── Categoría ── */
+        .pd-category-head {
+            position: relative;
+            padding-bottom: 1rem;
+            margin-top: 3.5rem !important;
+            margin-bottom: 2.2rem !important;
         }
 
-        #modalCV .modal-header {
-            background: linear-gradient(135deg, #0d2137, #1a4a6e);
-            color: #fff;
-            border: none;
-            padding: 1rem 1.5rem;
+        .pd-category-head::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, #c9873f, #e8b84b);
+            border-radius: 2rem;
         }
 
-        #modalCV .modal-title {
-            font-weight: 700;
-            font-size: 1rem;
+        .pd-category-title {
+            font-size: clamp(1.15rem, 2.2vw, 1.45rem);
+            font-weight: 800;
+            color: #0d2137;
+            letter-spacing: .02em;
+            margin-bottom: .3rem;
+            text-transform: uppercase;
         }
 
-        #modalCV .modal-header .close {
-            color: #e8b84b;
-            opacity: 1;
-            text-shadow: none;
-            font-size: 1.4rem;
+        .pd-category-note {
+            display: inline-block;
+            font-size: .72rem;
+            font-weight: 600;
+            color: #9ca3af;
+            background: #f3f4f6;
+            padding: .15rem .85rem;
+            border-radius: 2rem;
+            margin-top: .2rem;
         }
 
-        #modalCV .modal-body {
-            padding: 0;
-            background: #f1f5f9;
+        /* ── Info items dentro de card ── */
+        .pd-info-item {
+            margin-bottom: .6rem;
         }
 
-        #cv-iframe {
-            width: 100%;
-            height: 78vh;
-            border: none;
+        .pd-info-item strong {
             display: block;
+            font-size: .7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            color: #c9873f;
+            margin-bottom: .1rem;
         }
 
-        #cv-no-disponible {
-            display: none;
-            padding: 3rem;
-            text-align: center;
-            color: #6b7280;
+        .pd-info-item .pd-info-text {
+            font-size: .82rem;
+            color: #4b5563;
+            line-height: 1.6;
         }
 
-        #cv-no-disponible svg {
-            margin-bottom: 1rem;
+        .pd-info-item-last {
+            margin-bottom: 1.2rem;
+        }
+
+        /* Ajustar botón CV como enlace */
+        a.pd-btn-cv {
+            text-decoration: none !important;
         }
     </style>
 
@@ -301,7 +314,7 @@
         </div>
     </div>
 
-    {{-- Grid de docentes --}}
+    {{-- Grid de docentes por categorías --}}
     <section class="pd-section">
         <div class="container">
 
@@ -313,94 +326,101 @@
                     a los educadores del futuro.</p>
             </div>
 
-            {{-- Cards --}}
-            <div class="row justify-content-center pd-grid">
-                @forelse ($docentes as $i => $doc)
-                    @php
-                        $iniciales = collect(explode(' ', $doc['nombre']))
-                            ->map(fn($p) => strtoupper(substr($p, 0, 1)))
-                            ->take(2)
-                            ->implode('');
-                    @endphp
-                    <div class="col-xl-4 col-lg-4 col-md-6 mb-4 pd-card-col">
-                        <div class="pd-card">
-                            <div class="pd-body">
+            @foreach ($categorias as $catNombre => $docentes)
+                {{-- Título de categoría --}}
+                <div class="pd-category-head text-center mb-4 mt-5">
+                    <h3 class="pd-category-title">{{ $catNombre }}</h3>
+                    @if ($catNombre === 'DOCENTES DE EDUCACIÓN PRIMARIA')
+                        <span class="pd-category-note">(No se aperturó metas para FID)</span>
+                    @endif
+                </div>
 
-                                {{-- Fila superior: avatar + nombre/chips --}}
-                                <div class="pd-top-row">
-                                    <div class="pd-avatar">{{ $iniciales }}</div>
-                                    <div class="pd-title-col">
-                                        <h3 class="pd-nombre">{{ $doc['nombre'] }}</h3>
-                                        <div class="pd-chips">
-                                            <span class="pd-chip pd-chip-cargo">{{ $doc['cargo'] }}</span>
-                                            <span class="pd-chip pd-chip-esp">{{ $doc['especialidad'] }}</span>
+                {{-- Cards de la categoría --}}
+                <div class="row justify-content-center pd-grid">
+                    @forelse ($docentes as $doc)
+                        @php
+                            $nombreCompleto = $doc['nombre'];
+                            $iniciales = collect(explode(' ', $nombreCompleto))
+                                ->map(fn($p) => strtoupper(substr($p, 0, 1)))
+                                ->take(2)
+                                ->implode('');
+                        @endphp
+                        <div class="col-xl-4 col-lg-4 col-md-6 mb-4 pd-card-col">
+                            <div class="pd-card">
+                                <div class="pd-body">
+
+                                    {{-- Fila superior: avatar + nombre/chips --}}
+                                    <div class="pd-top-row">
+                                        <div class="pd-avatar">{{ $iniciales }}</div>
+                                        <div class="pd-title-col">
+                                            <h3 class="pd-nombre">{{ $nombreCompleto }}</h3>
+                                            <div class="pd-chips">
+                                                <span class="pd-chip pd-chip-cargo">{{ $doc['cargo'] }}</span>
+                                                <span class="pd-chip pd-chip-esp">{{ $doc['grado'] }}</span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                <hr class="pd-divider">
-                                <p class="pd-descripcion">{{ $doc['descripcion'] }}</p>
+                                    <hr class="pd-divider">
 
-                                @if (!empty($doc['cv']))
-                                    <button class="pd-btn-cv"
-                                        onclick="abrirCV('{{ asset($doc['cv']) }}', '{{ $doc['nombre'] }}')">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                            stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
-                                            stroke-linejoin="round">
-                                            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-                                            <polyline points="14 2 14 8 20 8" />
-                                            <line x1="16" y1="13" x2="8" y2="13" />
-                                            <line x1="16" y1="17" x2="8" y2="17" />
-                                        </svg>
-                                        Ver Curriculum Vitae
-                                    </button>
-                                @else
-                                    <button class="pd-btn-cv disabled-cv" disabled>
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                            stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
-                                            stroke-linejoin="round">
-                                            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-                                            <polyline points="14 2 14 8 20 8" />
-                                        </svg>
-                                        CV no disponible
-                                    </button>
-                                @endif
-                            </div>{{-- /.pd-body --}}
-                        </div>{{-- /.pd-card --}}
-                    </div>
-                @empty
-                    <div class="col-12 text-center py-5">
-                        <p class="text-muted">No hay docentes registrados.</p>
-                    </div>
-                @endforelse
-            </div>
+                                    {{-- Programas --}}
+                                    <div class="pd-info-item">
+                                        <strong>Programas:</strong>
+                                        <span class="pd-info-text">{{ $doc['programas'] }}</span>
+                                    </div>
+
+                                    {{-- Cursos que dicta --}}
+                                    <div class="pd-info-item">
+                                        <strong>Cursos que dicta:</strong>
+                                        <span class="pd-info-text">{!! $doc['cursos_dicta'] !!}</span>
+                                    </div>
+
+                                    {{-- Líneas de investigación / especialidad --}}
+                                    <div class="pd-info-item pd-info-item-last">
+                                        <strong>Especialidad / Investigación:</strong>
+                                        <span class="pd-info-text">{!! $doc['cursos_investigacion'] !!}</span>
+                                    </div>
+
+                                    {{-- Botón CV (Google Drive) --}}
+                                    @if (!empty($doc['cv']))
+                                        <a href="{{ $doc['cv'] }}" target="_blank" rel="noopener noreferrer"
+                                            class="pd-btn-cv">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                                stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                                stroke-linejoin="round">
+                                                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                                                <polyline points="14 2 14 8 20 8" />
+                                                <line x1="16" y1="13" x2="8" y2="13" />
+                                                <line x1="16" y1="17" x2="8" y2="17" />
+                                            </svg>
+                                            Ver Curriculum Vitae
+                                        </a>
+                                    @else
+                                        <button class="pd-btn-cv disabled-cv" disabled>
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                                stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                                stroke-linejoin="round">
+                                                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                                                <polyline points="14 2 14 8 20 8" />
+                                            </svg>
+                                            CV no disponible
+                                        </button>
+                                    @endif
+                                </div>{{-- /.pd-body --}}
+                            </div>{{-- /.pd-card --}}
+                        </div>
+                    @empty
+                        <div class="col-12 text-center py-4">
+                            <p class="text-muted">No hay docentes en esta categoría.</p>
+                        </div>
+                    @endforelse
+                </div>{{-- /.row --}}
+            @endforeach
+
         </div>
     </section>
 
-    {{-- Modal CV --}}
-    <div class="modal fade" id="modalCV" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title text-white" id="modalCVLabel">Curriculum Vitae</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <iframe id="cv-iframe" src="" title="CV Docente"></iframe>
-                    <div id="cv-no-disponible">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d1d5db"
-                            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-                            <polyline points="14 2 14 8 20 8" />
-                        </svg>
-                        <p>El CV de este docente aún no está disponible.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+
 
     <script>
         (function() {
@@ -422,7 +442,21 @@
                 },
             });
 
-            /* ── 2. Cards: timeline individual por card ── */
+            /* ── 2. Categorías: animación de títulos ── */
+            document.querySelectorAll('.pd-category-head').forEach(function(hd) {
+                gsap.from(hd, {
+                    y: 24,
+                    opacity: 0,
+                    duration: 0.55,
+                    ease: 'power3.out',
+                    scrollTrigger: {
+                        trigger: hd,
+                        start: 'top 86%',
+                    },
+                });
+            });
+
+            /* ── 3. Cards: timeline individual por card ── */
             document.querySelectorAll('.pd-card-col').forEach(function(col) {
                 var card = col.querySelector('.pd-card');
                 var avatar = col.querySelector('.pd-avatar');
@@ -448,7 +482,7 @@
                         ease: 'elastic.out(1, 0.55)',
                     }, '-=0.2');
 
-                /* ── 3. Hover GSAP ── */
+                /* ── 4. Hover GSAP ── */
                 card.addEventListener('mouseenter', function() {
                     gsap.to(card, { y: -6, duration: 0.2, ease: 'power2.out' });
                     gsap.to(avatar, { scale: 1.08, duration: 0.2, ease: 'power2.out' });
@@ -460,25 +494,6 @@
             });
 
         }());
-
-        /* ── Modal CV ── */
-        function abrirCV(url, nombre) {
-            document.getElementById('modalCVLabel').textContent = 'CV — ' + nombre;
-            if (url) {
-                document.getElementById('cv-iframe').src = url;
-                document.getElementById('cv-iframe').style.display = 'block';
-                document.getElementById('cv-no-disponible').style.display = 'none';
-            } else {
-                document.getElementById('cv-iframe').src = '';
-                document.getElementById('cv-iframe').style.display = 'none';
-                document.getElementById('cv-no-disponible').style.display = 'block';
-            }
-            $('#modalCV').modal('show');
-        }
-
-        document.getElementById('modalCV').addEventListener('hidden.bs.modal', function() {
-            document.getElementById('cv-iframe').src = '';
-        });
     </script>
     
 @endsection

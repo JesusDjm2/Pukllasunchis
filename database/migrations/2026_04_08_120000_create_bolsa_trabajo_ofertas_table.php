@@ -15,6 +15,7 @@ return new class extends Migration
             $table->string('imagen')->nullable();
             $table->date('fecha_inicio');
             $table->date('fecha_fin');
+            $table->string('numero_correo', 50)->nullable();
             $table->unsignedSmallInteger('anio');
             $table->unsignedTinyInteger('mes');
             $table->timestamps();

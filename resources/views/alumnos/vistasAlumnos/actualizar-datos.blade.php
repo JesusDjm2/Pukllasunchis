@@ -5,8 +5,8 @@
 @php
     $a = $alumno;
     $u = auth()->user();
-    $bienesActuales = $a->bienes_vivienda ? explode(',', $a->bienes_vivienda) : [];
-    $serviciosActuales = $a->otros_servicios ? explode(',', $a->otros_servicios) : [];
+    $bienesActuales = $a->bienes_vivienda ?? [];
+    $serviciosActuales = $a->otros_servicios ?? [];
     $esBecado = (bool) $u->beca;
 
     /* Clase para resaltar campos vacíos */
@@ -59,6 +59,19 @@
             </div>
         @endif
     </div>
+    @if (session('mostrar_popup_matricula'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Formulario enviado!',
+                    html: 'Tu formulario fue llenado con éxito.<br>El área de cobranzas verificará tu pago para poder enviarte tu ficha de matrícula.',
+                    confirmButtonColor: '#103B86',
+                    confirmButtonText: 'Entendido',
+                });
+            });
+        </script>
+    @endif
 
     <div class="col-12">
         <form action="{{ route('alumnos.actualizarDatos') }}" method="POST" enctype="multipart/form-data">

@@ -23,15 +23,22 @@ class CicloController extends Controller
                     ->whereDoesntHave('roles', fn ($r) => $r->where('name', 'alumnoB'))
                     ->where(fn ($q) => $q
                         ->whereHas('roles', fn ($r) => $r->where('name', 'alumno'))
-                        ->orWhereHas('roles', fn ($r) => $r->where('name', 'inhabilitado'))
+                        ->orWhere(fn ($q2) => $q2
+                            ->whereHas('roles', fn ($r) => $r->where('name', 'inhabilitado'))
+                            ->where('perfil', '!=', 'Retirado')
+                        )
                     )
                 )
                 ->orderBy('apellidos')
                 ->get();
 
-            $alumnosB = User::whereHas('roles', function ($query) {
-                $query->whereIn('name', ['alumnoB', 'inhabilitado']);
-            })
+            $alumnosB = User::where(fn ($q) => $q
+                ->whereHas('roles', fn ($r) => $r->where('name', 'alumnoB'))
+                ->orWhere(fn ($q2) => $q2
+                    ->whereHas('roles', fn ($r) => $r->where('name', 'inhabilitado'))
+                    ->where('perfil', '!=', 'Retirado')
+                )
+            )
                 ->where('ciclo_id', $ciclo->id)
                 ->whereHas('alumnoB')
                 ->orderBy('apellidos')
@@ -116,15 +123,22 @@ class CicloController extends Controller
                 ->whereDoesntHave('roles', fn ($r) => $r->where('name', 'alumnoB'))
                 ->where(fn ($q) => $q
                     ->whereHas('roles', fn ($r) => $r->where('name', 'alumno'))
-                    ->orWhereHas('roles', fn ($r) => $r->where('name', 'inhabilitado'))
+                    ->orWhere(fn ($q2) => $q2
+                        ->whereHas('roles', fn ($r) => $r->where('name', 'inhabilitado'))
+                        ->where('perfil', '!=', 'Retirado')
+                    )
                 )
             )
             ->orderBy('apellidos')
             ->get();
 
-        $alumnosB = User::whereHas('roles', function ($query) {
-            $query->whereIn('name', ['alumnoB', 'inhabilitado']);
-        })
+        $alumnosB = User::where(fn ($q) => $q
+            ->whereHas('roles', fn ($r) => $r->where('name', 'alumnoB'))
+            ->orWhere(fn ($q2) => $q2
+                ->whereHas('roles', fn ($r) => $r->where('name', 'inhabilitado'))
+                ->where('perfil', '!=', 'Retirado')
+            )
+        )
             ->where('ciclo_id', $ciclo->id)
             ->whereHas('alumnoB')
             ->orderBy('apellidos')

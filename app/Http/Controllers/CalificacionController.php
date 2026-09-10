@@ -9,11 +9,13 @@ use App\Models\Calificacion;
 use App\Models\Competencia;
 use App\Models\Curso;
 use App\Models\Docente;
+use App\Models\PeriodoActual;
 use App\Models\PeriodoDos;
 use App\Models\PeriodoTres;
 use App\Models\PeriodoUno;
 use App\Models\ppd;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 
 class CalificacionController extends Controller
@@ -23,7 +25,6 @@ class CalificacionController extends Controller
         $curso = Curso::findOrFail($cursoId);
         $competencias = $curso->competencias;
         $competenciasSeleccionadas = $curso->competenciasSeleccionadas()->pluck('competencias.id')->toArray();
-
         return view('admin.curso.asignar', compact('curso', 'competencias', 'competenciasSeleccionadas'));
     }
 
@@ -56,39 +57,49 @@ class CalificacionController extends Controller
             'competencias' => 'required|array|min:1|max:3',
         ]);
 
-        $cursoId = $request->input('curso_id');
-        $curso = Curso::findOrFail($cursoId);
+        try {
+            $cursoId = $request->input('curso_id');
+            $curso = Curso::findOrFail($cursoId);
 
-        $docenteId = $request->input('docente_id');
-        $docente = Docente::findOrFail($docenteId);
+            $docenteId = $request->input('docente_id');
+            $docente = Docente::findOrFail($docenteId);
 
-        $competenciasSeleccionadas = Competencia::whereIn('id', $request->input('competencias'))->get();
+            $competenciasSeleccionadas = Competencia::whereIn('id', $request->input('competencias'))->get();
 
-        $alumnos = $curso->ciclo->alumnos()->orderBy('apellidos')->get();
+            $alumnos = $curso->ciclo->alumnos()->orderBy('apellidos')->get();
 
-        $calificacion = Calificacion::updateOrCreate(
-            [
-                'alumno_id' => $request->input('alumno_id'),
-                'curso_id' => $cursoId,
-            ],
-            [
-                'valoracion_1' => $request->input('valoracion_1'),
-                'valoracion_2' => $request->input('valoracion_2'),
-                'valoracion_3' => $request->input('valoracion_3'),
-                'valoracion_curso' => $request->input('valoracion_curso'),
-                'calificacion_curso' => $request->input('calificacion_curso'),
-                'calificacion_sistema' => $request->input('calificacion_sistema'),
-            ]
-        );
-        /* $mostrarBotonDesempeno = false;
-        $porcentaje = $curso->porcentajePeriodo(2, ['calificacion_curso']);
-        $mostrarBotonDesempeno = $porcentaje >= 50; */
+            $calificacion = Calificacion::updateOrCreate(
+                [
+                    'alumno_id' => $request->input('alumno_id'),
+                    'curso_id' => $cursoId,
+                ],
+                [
+                    'valoracion_1' => $request->input('valoracion_1'),
+                    'valoracion_2' => $request->input('valoracion_2'),
+                    'valoracion_3' => $request->input('valoracion_3'),
+                    'valoracion_curso' => $request->input('valoracion_curso'),
+                    'calificacion_curso' => $request->input('calificacion_curso'),
+                    'calificacion_sistema' => $request->input('calificacion_sistema'),
+                ]
+            );
+            /* $mostrarBotonDesempeno = false;
+            $porcentaje = $curso->porcentajePeriodo(2, ['calificacion_curso']);
+            $mostrarBotonDesempeno = $porcentaje >= 50; */
 
-        if ($calificacion->wasRecentlyCreated) {
-            session()->flash('success', 'Calificación guardada exitosamente.');
+            if ($calificacion->wasRecentlyCreated) {
+                session()->flash('success', 'Calificación guardada exitosamente.');
+            }
+
+            return view('docentes.calificaciones.alumnos', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos'));
+        } catch (\Throwable $e) {
+            Log::error('Error al guardar calificación', [
+                'curso_id' => $request->input('curso_id'),
+                'docente_id' => $request->input('docente_id'),
+                'message' => $e->getMessage(),
+            ]);
+
+            return back()->withInput()->with('error', 'No se pudo guardar la calificación por un problema técnico. Tus datos no se perdieron: corrige e inténtalo de nuevo, o contacta a soporte si el problema continúa.');
         }
-
-        return view('docentes.calificaciones.alumnos', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos'));
     }
 
     public function borrarCalificaciones(Request $request)
@@ -139,6 +150,7 @@ class CalificacionController extends Controller
             'alumnos.*.observaciones' => 'nullable|string|max:1000',
         ]);
 
+        try {
         $docenteId = $request->input('docente_id');
         $docente = Docente::findOrFail($docenteId);
         $cursoId = $request->input('curso_id');
@@ -178,7 +190,7 @@ class CalificacionController extends Controller
                 $q->whereDoesntHave('roles', fn ($r) => $r->where('name', 'inhabilitado'))
                     ->orWhere(function ($q2) {
                         $q2->whereHas('roles', fn ($r) => $r->where('name', 'inhabilitado'))
-                            ->where('perfil', '!=', 'Sin matrícula');
+                            ->whereNotIn('perfil', ['Sin matrícula', 'Retirado']);
                     });
             })
             ->orderBy('apellidos')
@@ -193,7 +205,7 @@ class CalificacionController extends Controller
                         ->orWhere(function ($subQuery) {
                             $subQuery->whereHas('roles', function ($roleQuery) {
                                 $roleQuery->where('name', 'inhabilitado');
-                            })->where('perfil', '!=', 'Sin matrícula');
+                            })->whereNotIn('perfil', ['Sin matrícula', 'Retirado']);
                         });
                 });
             })
@@ -217,6 +229,15 @@ class CalificacionController extends Controller
         $mostrarBotonDesempeno = $porcentaje >= 50;
 
         return view('docentes.calificaciones.alumnos', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos', 'mostrarBotonDesempeno'));
+        } catch (\Throwable $e) {
+            Log::error('Error al guardar calificaciones de Parcial 2', [
+                'curso_id' => $request->input('curso_id'),
+                'docente_id' => $request->input('docente_id'),
+                'message' => $e->getMessage(),
+            ]);
+
+            return back()->withInput()->with('error', 'No se pudieron guardar las notas de Parcial 2 por un problema técnico. Tus datos no se perdieron: corrige e inténtalo de nuevo, o contacta a soporte si el problema continúa.');
+        }
     }
 
     public function guardarPeriodoTres(Request $request)
@@ -234,6 +255,7 @@ class CalificacionController extends Controller
             'alumnos.*.competencias' => 'required|array|min:1|max:3',
         ]);
 
+        try {
         $docenteId = $request->input('docente_id');
         $docente = Docente::findOrFail($docenteId);
         $cursoId = $request->input('curso_id');
@@ -270,7 +292,7 @@ class CalificacionController extends Controller
                 $q->whereDoesntHave('roles', fn ($r) => $r->where('name', 'inhabilitado'))
                     ->orWhere(function ($q2) {
                         $q2->whereHas('roles', fn ($r) => $r->where('name', 'inhabilitado'))
-                            ->where('perfil', '!=', 'Sin matrícula');
+                            ->whereNotIn('perfil', ['Sin matrícula', 'Retirado']);
                     });
             })
             ->orderBy('apellidos')
@@ -285,7 +307,7 @@ class CalificacionController extends Controller
                         ->orWhere(function ($subQuery) {
                             $subQuery->whereHas('roles', function ($roleQuery) {
                                 $roleQuery->where('name', 'inhabilitado');
-                            })->where('perfil', '!=', 'Sin matrícula');
+                            })->whereNotIn('perfil', ['Sin matrícula', 'Retirado']);
                         });
                 });
             })
@@ -322,6 +344,107 @@ class CalificacionController extends Controller
         }
 
         return view('docentes.calificaciones.alumnos', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos', 'mostrarBotonDesempeno'));
+        } catch (\Throwable $e) {
+            Log::error('Error al guardar calificaciones de Desempeño', [
+                'curso_id' => $request->input('curso_id'),
+                'docente_id' => $request->input('docente_id'),
+                'message' => $e->getMessage(),
+            ]);
+
+            return back()->withInput()->with('error', 'No se pudieron guardar las notas de Desempeño por un problema técnico. Tus datos no se perdieron: corrige e inténtalo de nuevo, o contacta a soporte si el problema continúa.');
+        }
+    }
+
+    public function guardarPeriodo2yDesempenoEnBloque(Request $request)
+    {
+        $periodoActual = PeriodoActual::where('actual', true)->first();
+        if (! auth()->user()->hasAnyRole(['admin', 'super-admin']) && $periodoActual && ! $periodoActual->parcial2DesempenoHabilitado()) {
+            return back()->withInput()->with('error', 'El registro de Parcial 2 y Desempeño no está habilitado en este momento.');
+        }
+
+        $request->validate([
+            'curso_id' => 'required|exists:cursos,id',
+            'docente_id' => 'required|exists:docentes,id',
+            'alumnos' => 'required|array',
+            'alumnos.*.competencias' => 'required|array|min:1|max:3',
+            'alumnos.*.periodo2.valoracion_curso' => 'nullable|string',
+            'alumnos.*.periodo2.calificacion_curso' => 'nullable|string',
+            'alumnos.*.periodo2.calificacion_sistema' => 'nullable|string',
+            'alumnos.*.periodo2.valoracion_1' => 'nullable|string',
+            'alumnos.*.periodo2.valoracion_2' => 'nullable|string',
+            'alumnos.*.periodo2.valoracion_3' => 'nullable|string',
+            'alumnos.*.periodo2.observaciones' => 'nullable|string|max:1000',
+            'alumnos.*.periodo3.valoracion_curso' => 'nullable|string',
+            'alumnos.*.periodo3.calificacion_curso' => 'nullable|string',
+            'alumnos.*.periodo3.calificacion_sistema' => 'nullable|string',
+            'alumnos.*.periodo3.valoracion_1' => 'nullable|string',
+            'alumnos.*.periodo3.valoracion_2' => 'nullable|string',
+            'alumnos.*.periodo3.valoracion_3' => 'nullable|string',
+        ]);
+
+        try {
+            $docenteId = $request->input('docente_id');
+            $docente = Docente::findOrFail($docenteId);
+            $cursoId = $request->input('curso_id');
+            $curso = Curso::findOrFail($cursoId);
+
+            foreach ($request->input('alumnos') as $data) {
+                if (! empty($data['periodo2'])) {
+                    PeriodoDos::updateOrCreate(
+                        [
+                            'alumno_id' => $data['alumno_id'],
+                            'curso_id' => $cursoId,
+                        ],
+                        [
+                            'valoracion_1' => $data['periodo2']['valoracion_1'] ?? null,
+                            'valoracion_2' => $data['periodo2']['valoracion_2'] ?? null,
+                            'valoracion_3' => $data['periodo2']['valoracion_3'] ?? null,
+                            'valoracion_curso' => $data['periodo2']['valoracion_curso'] ?? null,
+                            'calificacion_curso' => $data['periodo2']['calificacion_curso'] ?? null,
+                            'calificacion_sistema' => $data['periodo2']['calificacion_sistema'] ?? null,
+                            'observaciones' => $data['periodo2']['observaciones'] ?? null,
+                        ]
+                    );
+                }
+
+                if (! empty($data['periodo3'])) {
+                    PeriodoTres::updateOrCreate(
+                        [
+                            'alumno_id' => $data['alumno_id'],
+                            'curso_id' => $cursoId,
+                        ],
+                        [
+                            'valoracion_1' => $data['periodo3']['valoracion_1'] ?? null,
+                            'valoracion_2' => $data['periodo3']['valoracion_2'] ?? null,
+                            'valoracion_3' => $data['periodo3']['valoracion_3'] ?? null,
+                            'valoracion_curso' => $data['periodo3']['valoracion_curso'] ?? null,
+                            'calificacion_curso' => $data['periodo3']['calificacion_curso'] ?? null,
+                            'calificacion_sistema' => $data['periodo3']['calificacion_sistema'] ?? null,
+                        ]
+                    );
+                }
+            }
+
+            $competenciasIds = [];
+            foreach ($request->input('alumnos') as $data) {
+                if (isset($data['competencias'])) {
+                    $competenciasIds = array_merge($competenciasIds, $data['competencias']);
+                }
+            }
+            $competenciasIds = array_unique($competenciasIds);
+
+            return redirect()
+                ->route('competencias.calificar', ['docente' => $docenteId, 'curso' => $cursoId, 'competencias' => $competenciasIds])
+                ->with('success', 'Calificaciones de Parcial 2 y Desempeño guardadas exitosamente');
+        } catch (\Throwable $e) {
+            Log::error('Error al guardar calificaciones de Parcial 2 y Desempeño', [
+                'curso_id' => $request->input('curso_id'),
+                'docente_id' => $request->input('docente_id'),
+                'message' => $e->getMessage(),
+            ]);
+
+            return back()->withInput()->with('error', 'No se pudieron guardar las notas de Parcial 2 y Desempeño por un problema técnico. Tus datos no se perdieron: corrige e inténtalo de nuevo, o contacta a soporte si el problema continúa.');
+        }
     }
 
     public function publicarPeriodoUno(Request $request)
@@ -374,6 +497,11 @@ class CalificacionController extends Controller
 
     public function storePeriodoEnBloque(Request $request)
     {
+        $periodoActual = PeriodoActual::where('actual', true)->first();
+        if (! auth()->user()->hasAnyRole(['admin', 'super-admin']) && $periodoActual && ! $periodoActual->parcial1Habilitado()) {
+            return back()->withInput()->with('error', 'El registro de Parcial 1 no está habilitado en este momento.');
+        }
+
         $request->validate([
             'curso_id' => 'required|exists:cursos,id',
             'docente_id' => 'required|exists:docentes,id',
@@ -388,6 +516,7 @@ class CalificacionController extends Controller
             'alumnos.*.observaciones' => 'nullable|string|max:1000',
         ]);
 
+        try {
         $docenteId = $request->input('docente_id');
         $docente = Docente::findOrFail($docenteId);
         $cursoId = $request->input('curso_id');
@@ -410,61 +539,26 @@ class CalificacionController extends Controller
                 ]
             );
         }
-        session()->flash('success', 'Calificaciones de Parcial 1 guardado correctamente!');
         $competenciasIds = [];
         foreach ($request->input('alumnos') as $data) {
             if (isset($data['competencias'])) {
                 $competenciasIds = array_merge($competenciasIds, $data['competencias']);
             }
         }
-
         $competenciasIds = array_unique($competenciasIds);
-        $competenciasSeleccionadas = Competencia::whereIn('id', $competenciasIds)->get();
-        $alumnosRelacionados = $curso->alumnos()
-            ->whereHas('user', function ($q) {
-                $q->whereDoesntHave('roles', fn ($r) => $r->where('name', 'inhabilitado'))
-                    ->orWhere(function ($q2) {
-                        $q2->whereHas('roles', fn ($r) => $r->where('name', 'inhabilitado'))
-                            ->where('perfil', '!=', 'Sin matrícula');
-                    });
-            })
-            ->orderBy('apellidos')
-            ->get();
 
-        $alumnosCiclo = $curso->ciclo->alumnos()
-            ->whereHas('user', function ($query) {
-                $query->where(function ($q) {
-                    $q->whereDoesntHave('roles', function ($roleQuery) {
-                        $roleQuery->where('name', 'inhabilitado');
-                    })
-                        ->orWhere(function ($subQuery) {
-                            $subQuery->whereHas('roles', function ($roleQuery) {
-                                $roleQuery->where('name', 'inhabilitado');
-                            })->where('perfil', '!=', 'Sin matrícula');
-                        });
-                });
-            })
-            ->orderBy('apellidos')
-            ->get();
+        return redirect()
+            ->route('competencias.calificar', ['docente' => $docenteId, 'curso' => $cursoId, 'competencias' => $competenciasIds])
+            ->with('success', 'Calificaciones de Parcial 1 guardado correctamente!');
+        } catch (\Throwable $e) {
+            Log::error('Error al guardar calificaciones de Parcial 1', [
+                'curso_id' => $request->input('curso_id'),
+                'docente_id' => $request->input('docente_id'),
+                'message' => $e->getMessage(),
+            ]);
 
-        $alumnos = $alumnosRelacionados
-            ->merge($alumnosCiclo)
-            ->unique('id')
-            ->values();
-
-        $alumnos = $alumnos->filter(function ($alumno) use ($cursoId) {
-            $cursoRelacionIds = $alumno->cursos()->pluck('curso_id');
-            if ($cursoRelacionIds->isNotEmpty() && ! $cursoRelacionIds->contains($cursoId)) {
-                return false;
-            }
-
-            return true;
-        })->values();
-        $mostrarBotonDesempeno = false;
-        $porcentaje = $curso->porcentajePeriodo(2, ['calificacion_curso']);
-        $mostrarBotonDesempeno = $porcentaje >= 50;
-
-        return view('docentes.calificaciones.alumnos', compact('curso', 'docente', 'competenciasSeleccionadas', 'alumnos', 'mostrarBotonDesempeno'));
+            return back()->withInput()->with('error', 'No se pudieron guardar las notas de Parcial 1 por un problema técnico. Tus datos no se perdieron: corrige e inténtalo de nuevo, o contacta a soporte si el problema continúa.');
+        }
     }
 
     public function eliminarPeriodoUno()
@@ -646,6 +740,89 @@ class CalificacionController extends Controller
         );
     }
 
+    /**
+     * Exporta las calificaciones de TODOS los cursos FID del periodo actual
+     * activo: un archivo .xlsx por curso (mismo formato/contenido que
+     * exportarCSV(), el botón "Exportar Excel" de la vista de calificaciones
+     * de un curso), empaquetados en un único .zip para descargar de una vez.
+     */
+    public function exportarPeriodoActualFID()
+    {
+        $cursoIdsActuales = \DB::table('curso_docente')->distinct()->pluck('curso_id');
+
+        $cursos = Curso::with(['ciclo.programa', 'competencias', 'competenciasSeleccionadas'])
+            ->whereIn('id', $cursoIdsActuales)
+            ->get()
+            ->reject(fn ($curso) => str_contains($curso->ciclo->programa->nombre ?? '', 'PPD'))
+            ->reject(fn ($curso) => str_contains(strtolower($curso->cc ?? ''), 'extracurricular'))
+            ->sortBy([
+                fn ($a, $b) => ($a->ciclo->ordenCiclo() ?? 999) <=> ($b->ciclo->ordenCiclo() ?? 999),
+                fn ($a, $b) => $a->nombre <=> $b->nombre,
+            ]);
+
+        $archivosPorNombre = [];
+
+        foreach ($cursos as $curso) {
+            $docenteId = \DB::table('curso_docente')->where('curso_id', $curso->id)->value('docente_id');
+            $docente = $docenteId ? Docente::find($docenteId) : null;
+
+            if (! $docente) {
+                continue;
+            }
+
+            $competencias = $curso->competencias->count() <= 3
+                ? $curso->competencias
+                : $curso->competenciasSeleccionadas;
+
+            if ($competencias->isEmpty()) {
+                continue;
+            }
+
+            $alumnosCiclo = $curso->ciclo->alumnos()
+                ->orderBy('apellidos')
+                ->get();
+
+            $alumnosRelacionados = $curso->alumnos()
+                ->orderBy('apellidos')
+                ->get();
+
+            $alumnos = $alumnosCiclo->merge($alumnosRelacionados)->unique('id')->values();
+
+            if ($alumnos->isEmpty()) {
+                continue;
+            }
+
+            $sanear = fn ($texto) => preg_replace('/[\/\\\\]/', '-', $texto ?? '');
+            $nombreCurso = $sanear($curso->nombre);
+            $nombrePrograma = $sanear($curso->ciclo->programa->nombre ?? 'Sin programa');
+            $nombreCiclo = $sanear($curso->ciclo->nombre ?? '-');
+            $nombreDocente = $sanear($docente->nombre);
+            $nombreArchivo = "{$nombreCurso} - {$nombrePrograma} - Ciclo {$nombreCiclo} - {$nombreDocente} ({$curso->id}).xlsx";
+
+            $archivosPorNombre[$nombreArchivo] = Excel::raw(
+                new CalificacionesExport($docenteId, $curso->id, $competencias),
+                \Maatwebsite\Excel\Excel::XLSX
+            );
+        }
+
+        if (empty($archivosPorNombre)) {
+            return back()->with('error', 'No hay cursos con calificaciones para exportar en el periodo actual.');
+        }
+
+        $periodoActual = PeriodoActual::where('actual', true)->first();
+        $nombreZip = 'Calificaciones_FID_'.($periodoActual->nombre ?? 'PeriodoActual').'.zip';
+        $rutaZip = storage_path('app/'.uniqid('export_periodo_actual_').'.zip');
+
+        $zip = new \ZipArchive();
+        $zip->open($rutaZip, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
+        foreach ($archivosPorNombre as $nombreArchivo => $contenido) {
+            $zip->addFromString($nombreArchivo, $contenido);
+        }
+        $zip->close();
+
+        return response()->download($rutaZip, $nombreZip)->deleteFileAfterSend(true);
+    }
+
     /* public function eliminarTodosCursosGlobal()
     {
         \DB::table('curso_docente')->truncate();
@@ -664,5 +841,20 @@ class CalificacionController extends Controller
             ->delete();
 
         return redirect()->back()->with('success', 'Se eliminaron todos los cursos de todos los docentes (excluyendo cursos de programas PPD).');
+    }
+
+    public function eliminarTodosCursosGlobalPPD()
+    {
+        // Obtener los IDs de cursos que SÍ son de programas PPD
+        $cursosPPD = Curso::whereHas('ciclo.programa', function ($query) {
+            $query->where('nombre', 'LIKE', '%PPD%');
+        })->pluck('id');
+
+        // Eliminar solo las asignaciones de cursos PPD
+        \DB::table('curso_docente')
+            ->whereIn('curso_id', $cursosPPD)
+            ->delete();
+
+        return redirect()->back()->with('success', 'Se eliminaron todas las asignaciones de cursos PPD a todos los docentes.');
     }
 }

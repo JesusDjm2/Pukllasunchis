@@ -9,8 +9,7 @@ use App\Models\CursosEspeciales\CeNivel;
 use App\Models\CursosEspeciales\CeUnidad;
 use App\Models\CursosEspeciales\CursoEspecial;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
+use App\Services\GoogleDriveService;
 
 class CeContenidoController extends Controller
 {
@@ -142,9 +141,10 @@ class CeContenidoController extends Controller
         $this->autorizarDocente($curso);
         $unidad->lecciones()->create($request->validate([
             'nombre'          => 'required|string|max:255',
-            'tipo'            => 'required|in:texto,audio,video',
+            'tipo'            => 'nullable|in:texto,audio,video',
             'contenido_texto' => 'nullable|string',
             'archivo_url'     => 'nullable|string|max:500',
+            'video_url'       => 'nullable|string|max:1000',
             'duracion_min'    => 'nullable|integer|min:1',
             'orden'           => 'nullable|integer|min:0',
         ]));
@@ -164,9 +164,10 @@ class CeContenidoController extends Controller
         $this->autorizarDocente($curso);
         $leccion->update($request->validate([
             'nombre'          => 'required|string|max:255',
-            'tipo'            => 'required|in:texto,audio,video',
+            'tipo'            => 'nullable|in:texto,audio,video',
             'contenido_texto' => 'nullable|string',
             'archivo_url'     => 'nullable|string|max:500',
+            'video_url'       => 'nullable|string|max:1000',
             'duracion_min'    => 'nullable|integer|min:1',
             'orden'           => 'nullable|integer|min:0',
         ]));
@@ -198,7 +199,7 @@ class CeContenidoController extends Controller
             'pregunta'           => 'required|string',
             'opciones_raw'       => 'nullable|string',
             'respuesta_correcta' => 'required|string',
-            'audio_url'          => 'nullable|url|max:500',
+            'audio_url'          => 'nullable|string|max:500',
             'puntaje_max'        => 'nullable|integer|min:1',
             'orden'              => 'nullable|integer|min:0',
         ]);
@@ -224,7 +225,7 @@ class CeContenidoController extends Controller
             'pregunta'           => 'required|string',
             'opciones_raw'       => 'nullable|string',
             'respuesta_correcta' => 'required|string',
-            'audio_url'          => 'nullable|url|max:500',
+            'audio_url'          => 'nullable|string|max:500',
             'puntaje_max'        => 'nullable|integer|min:1',
             'orden'              => 'nullable|integer|min:0',
         ]);
@@ -241,24 +242,31 @@ class CeContenidoController extends Controller
         return redirect()->route($this->resolveRp() . '.show', $curso)->with('success', 'Ejercicio eliminado.');
     }
 
+    public function uploadAudioLeccion(Request $request)
+    {
+        return $this->subirAudioDrive($request, 'lecciones');
+    }
+
     public function uploadAudioEjercicio(Request $request)
     {
-        $request->validate([
-            'audio' => 'required|file|max:10240',
-        ]);
+        return $this->subirAudioDrive($request, 'ejercicios');
+    }
 
-        $file = $request->file('audio');
-        $mime = $file->getMimeType() ?? '';
-        $ext  = match(true) {
-            str_contains($mime, 'mp4')  => 'm4a',
-            str_contains($mime, 'ogg')  => 'ogg',
-            default                     => 'weba',
-        };
+    private function subirAudioDrive(Request $request, string $carpeta)
+    {
+        $request->validate(['audio' => 'required|file|max:20480']);
 
-        $path = $file->storeAs('ce-audios', Str::random(40) . '.' . $ext, 'public');
+        $file     = $request->file('audio');
+        $folderId = config("services.google_drive.folders.{$carpeta}");
+
+        /** @var \App\Services\GoogleDriveService $drive */
+        $drive  = app(GoogleDriveService::class);
+        $fileId = $drive->upload($folderId, $file);
 
         return response()->json([
-            'url' => Storage::disk('public')->url($path),
+            'path' => 'gdrive:' . $fileId,
+            'url'  => '/ce/audio/' . $fileId,
+            'mime' => $file->getMimeType() ?: 'audio/mpeg',
         ]);
     }
 

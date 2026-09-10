@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <dwsync>
-<file name="home.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="134248858155530439" remote="134249038200000000" Dst="0" />
-<file name="admin.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="134254145587754848" remote="134254327200000000" Dst="0" />
-<file name="app.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="134251676700909564" remote="134251859400000000" Dst="0" />
-<file name="alumno.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="134251676162850005" remote="134251859400000000" Dst="0" />
-<file name="bolsa.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="134251677021112006" remote="134251859400000000" Dst="0" />
-<file name="docente.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="134251677469198842" remote="134251859400000000" Dst="0" />
-<file name="postulante.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="134251678420555009" remote="134251859400000000" Dst="0" />
-<file name="profesionalizacion.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="134251678943214756" remote="134251859400000000" Dst="0" />
-<file name="tabla-docente.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="133881877215616641" remote="134185344000000000" Dst="0" />
-<file name="superadmin.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="134254082759552180" remote="134254327200000000" Dst="0" />
+<file name="home.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="134308713153810605" remote="134308902000000000" Dst="0" />
+<file name="admin.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="134318098304558803" remote="134318283600000000" Dst="0" />
+<file name="app.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="134317342600037320" remote="134318283600000000" Dst="0" />
+<file name="alumno.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="134287123929743241" remote="134287308600000000" Dst="0" />
+<file name="bolsa.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="134251677021112006" remote="134280344400000000" Dst="0" />
+<file name="docente.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="134318001719948634" remote="134318283600000000" Dst="0" />
+<file name="postulante.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="134251678420555009" remote="134280344400000000" Dst="0" />
+<file name="profesionalizacion.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="134311998130820535" remote="134312208000000000" Dst="0" />
+<file name="tabla-docente.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="133881877215616641" remote="134280344400000000" Dst="0" />
+<file name="superadmin.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="134309449859456050" remote="134309641200000000" Dst="0" />
+<file name="formulario-publico.blade.php" server="ftp.eesppukllasunchis.edu.pe" local="134317342658172722" remote="134318283600000000" Dst="0" />
 </dwsync>

@@ -91,7 +91,7 @@ class PeriodoActualPpdController extends Controller
         ]);
 
         if ($request->actual == 1) {
-            PeriodoActualPpd::where('actual', 1)->update(['actual' => 0]);
+            PeriodoActualPpd::where('actual', 1)->update(['actual' => 0, 'formulario_habilitado' => 0]);
         }
 
         $rutaArchivo = null;
@@ -281,7 +281,7 @@ class PeriodoActualPpdController extends Controller
         if ($request->actual == 1) {
             PeriodoActualPpd::where('actual', 1)
                 ->where('id', '!=', $id)
-                ->update(['actual' => 0]);
+                ->update(['actual' => 0, 'formulario_habilitado' => 0]);
         }
 
         // Manejo del archivo
@@ -310,8 +310,10 @@ class PeriodoActualPpdController extends Controller
         $periodo->update([
             'nombre' => $request->nombre,
             'calendario' => $rutaArchivo,
-            'fecha_inicio' => $request->fecha_inicio,
-            'fecha_cierre' => $request->fecha_cierre,
+            // Si el campo llega vacío, se conserva la fecha ya guardada en vez de
+            // borrarla: dejar el input en blanco no debe equivaler a "quitar la fecha".
+            'fecha_inicio' => $request->filled('fecha_inicio') ? $request->fecha_inicio : $periodo->fecha_inicio,
+            'fecha_cierre' => $request->filled('fecha_cierre') ? $request->fecha_cierre : $periodo->fecha_cierre,
             'actual' => $request->actual == 1 ? 1 : 0,
         ]);
 
@@ -607,6 +609,29 @@ class PeriodoActualPpdController extends Controller
         return redirect()->route('periodoactual.index')
             ->with('success', "Sincronización completada: {$total} registros procesados para el período {$periodo->nombre} y {$alumnosMarcados} alumnos marcados como guardados.");
     } */
+    public function toggleFormulario(PeriodoActualPpd $periodos_de_ppd)
+    {
+        $nuevoEstado = ! $periodos_de_ppd->formulario_habilitado;
+
+        if ($nuevoEstado && ! $periodos_de_ppd->actual) {
+            return redirect()->route('periodoactual.index')
+                ->with('error', "Solo el periodo actual puede tener el formulario habilitado. \"{$periodos_de_ppd->nombre}\" no es el periodo actual.");
+        }
+
+        if ($nuevoEstado) {
+            PeriodoActualPpd::where('id', '!=', $periodos_de_ppd->id)
+                ->where('formulario_habilitado', true)
+                ->update(['formulario_habilitado' => false]);
+        }
+
+        $periodos_de_ppd->update(['formulario_habilitado' => $nuevoEstado]);
+
+        $estado = $periodos_de_ppd->formulario_habilitado ? 'habilitado' : 'deshabilitado';
+
+        return redirect()->route('periodoactual.index')
+            ->with('success', "Formulario de matrícula PPD {$estado} para el período: {$periodos_de_ppd->nombre}.");
+    }
+
     public function destroy(PeriodoActualPpd $periodos_de_ppd)
     {
         $periodos_de_ppd->delete();

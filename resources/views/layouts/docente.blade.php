@@ -2,12 +2,6 @@
     $docente = $docente ?? auth()->user()?->docente;
     $cursosDocente = $docente?->cursos ?? collect();
     $cursosAsincronicos = $docente?->cursosEspeciales ?? collect();
-    $mostrarAlumnosFid = $cursosDocente->contains(function ($curso) {
-        return !str_contains(strtoupper(optional(optional($curso)->ciclo?->programa)->nombre ?? ''), 'PPD');
-    });
-    $mostrarAlumnosPpd = $cursosDocente->contains(function ($curso) {
-        return str_contains(strtoupper(optional(optional($curso)->ciclo?->programa)->nombre ?? ''), 'PPD');
-    });
 @endphp
 <!DOCTYPE html>
 <html lang="es">
@@ -45,6 +39,7 @@
            los flyout menus (.collapse position:absolute) del sidebar colapsado.
            Con :not(.toggled) solo aplicamos overflow cuando SB Admin 2 NO muestra flyouts. ── */
         @media (min-width: 768px) {
+
             /* z-index en flex item → stacking context, sidebar siempre sobre #content-wrapper */
             #accordionSidebar {
                 z-index: 100;
@@ -109,27 +104,42 @@
             border-radius: 2px;
         }
 
-        /* ── Topbar: botón horario responsive ── */
-        @media (max-width: 767.98px) {
-            /* El botón de hamburguesa y el user-nav se quedan en la fila 1 */
-            #sidebarToggleTop {
-                order: 1;
-                flex-shrink: 0;
-            }
+        /* ── Topbar: horario siempre en la misma línea que tema/perfil ──
+           El topbar nunca envuelve a una segunda fila: hamburguesa, botón de
+           horario, cambio de tema y perfil conviven en una sola línea en
+           cualquier ancho. El botón de horario se encoge y trunca su propio
+           texto (en vez de forzar su propia fila, que antes desbordaba el
+           topbar y quedaba superpuesto sobre el contenido). ── */
+        .topbar {
+            flex-wrap: nowrap !important;
+        }
 
-            .topbar .navbar-nav.ml-auto {
-                order: 2;
-            }
+        #sidebarToggleTop {
+            flex-shrink: 0;
+        }
 
-            /* El bloque de horario baja a su propia línea (fila 2) */
-            .docente-topbar-horario {
-                order: 3 !important;
-                flex: 0 0 100% !important;
-                max-width: 100%;
-                margin-top: 0.35rem;
-                padding-bottom: 0.35rem;
-                border-top: 1px solid #e3e6f0;
-                padding-top: 0.35rem;
+        .docente-topbar-horario {
+            min-width: 0;
+            flex: 1 1 auto;
+            overflow: hidden;
+        }
+
+        .docente-topbar-horario .btn,
+        .docente-topbar-horario>span {
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .topbar .navbar-nav.ml-auto {
+            flex-shrink: 0;
+        }
+
+        @media (max-width: 575.98px) {
+            .docente-topbar-horario .btn {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.72rem;
             }
         }
 
@@ -176,6 +186,14 @@
         .docente-ui-card .card-header {
             background: #fff;
             border-bottom: 1px solid #e3e6f0;
+        }
+
+        /* Tarjeta "hero" — mismo lenguaje visual (.docente-ui-card) más un
+           acento sutil a la izquierda. Usada en el encabezado de TODAS las
+           vistas del docente (vía ui-header.blade.php) para que compartan
+           un único diseño. */
+        .docente-ui-hero {
+            border-left: 3px solid #4e73df;
         }
 
         .docente-ui-legenda {
@@ -286,11 +304,15 @@
         }
     </style>
     @stack('styles')
-
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 </head>
 
 <body id="page-top" class="docente-panel">
-<script>if(localStorage.getItem('puklla-theme')==='dark'){document.body.classList.add('dark-mode');}</script>
+    <script>
+        if (localStorage.getItem('puklla-theme') === 'dark') {
+            document.body.classList.add('dark-mode');
+        }
+    </script>
     <div id="wrapper">
         <ul class="navbar-nav bg-gradient-dark sidebar sidebar-dark accordion" id="accordionSidebar">
             <a class="sidebar-brand d-flex align-items-center justify-content-center mb-3" href="{{ route('index') }}">
@@ -317,72 +339,21 @@
             </li>
 
             <li class="nav-item mt-2">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#alumnos"
-                    aria-expanded="false" aria-controls="alumnos">
+                <a class="nav-link" href="{{ route('docente.alumnos', ['docente' => $docente->id]) }}">
                     <i class="fas fa-user-graduate"></i>
                     <span>Alumnos</span>
                 </a>
-                <div id="alumnos" class="collapse" aria-labelledby="headingUtilities" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">                       
-                        @if ($mostrarAlumnosFid)
-                            <a class="collapse-item" href="{{ route('vistaAlumnos', ['docente' => $docente->id]) }}">
-                                Alumnos FID
-                            </a>
-                        @endif
-                        @if ($mostrarAlumnosPpd)
-                            <a class="collapse-item" href="{{ route('alumnosppd2', $docente->id) }}">
-                                Alumnos PPD
-                            </a>
-                        @endif
-                    </div>
-                </div>
             </li>
-            <li class="nav-item mt-2">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#sIncidencias"
-                    aria-expanded="false" aria-controls="sIncidencias">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <span>Incidencias</span>
-                </a>
-                <div id="sIncidencias" class="collapse" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item" href="{{ route('docente.incidencias.index', $docente->id) }}">
-                            <i class="fas fa-list fa-xs mr-1 text-muted"></i> Mis incidencias
-                        </a>
-                        <a class="collapse-item" href="{{ route('docente.incidencias.create', $docente->id) }}">
-                            <i class="fas fa-plus fa-xs mr-1 text-muted"></i> Nueva incidencia
-                        </a>
-                    </div>
-                </div>
-            </li>
-            {{-- <hr class="sidebar-divider d-none d-md-block"> --}}
-            <li class="nav-item mt-2">
-                <a class="nav-link" href="{{ route('calificar', ['id' => $docente->id]) }}">
-                    <i class="fas fa-pen"></i>
-                    <span>Calificar</span>
-                </a>
-            </li>
-            <hr class="sidebar-divider d-none d-md-block">
-            <li class="nav-item mt-2">
-                <a class="nav-link {{ request()->routeIs('ce.docente.*') ? 'active' : '' }}"
-                   href="{{ route('ce.docente.index') }}">
-                    <i class="fas fa-graduation-cap"></i>
-                    <span>Cursos Asincrónicos</span>
-                </a>
-            </li>
-            <hr class="sidebar-divider d-none d-md-block">
-            <li class="nav-item mt-2">
-                <a class="nav-link collapsed" href="{{ route('repositorio', $docente->id) }}">
-                    <i class="fas fa-file-pdf"></i>
-                    <span>Repositorio de Sílabos</span>
-                </a>
-            </li>
-            <li class="nav-item mt-2">
-                <a class="nav-link collapsed" target="_blank"
-                    href="https://sites.google.com/pukllavirtual.edu.pe/bibliotecaeesppuklla/inicio">
-                    <i class="fas fa-book-open"></i>
-                    <span>Biblioteca</span>
-                </a>
-            </li>
+            @if ($cursosAsincronicos->isNotEmpty())
+                <hr class="sidebar-divider d-none d-md-block">
+                <li class="nav-item mt-2">
+                    <a class="nav-link {{ request()->routeIs('ce.docente.*') ? 'active' : '' }}"
+                        href="{{ route('ce.docente.index') }}">
+                        <i class="fas fa-graduation-cap"></i>
+                        <span>Cursos Asincrónicos</span>
+                    </a>
+                </li>
+            @endif
 
             @role('adminB')
                 {{-- ── Bolsa de Trabajo ── --}}
@@ -413,21 +384,36 @@
 
             @role('tutor')
                 <hr class="sidebar-divider d-none d-md-block">
-                <div class="sidebar-heading text-white-50 px-3 py-1"
+                {{-- <div class="sidebar-heading text-white-50 px-3 py-1"
                     style="font-size:0.65rem;letter-spacing:.08em;text-transform:uppercase;">
                     Tutor
-                </div>
+                </div> --}}
                 <li class="nav-item">
                     <a class="nav-link" href="{{ route('tutor.dashboard') }}">
                         <i class="fas fa-chalkboard-teacher"></i>
-                        <span>Panel de Tutor</span>
+                        <span>Tutoría</span>
                     </a>
                 </li>
                 <hr class="sidebar-divider d-none d-md-block">
             @endrole
 
+            <li class="nav-item mt-2">
+                <a class="nav-link collapsed" href="{{ route('repositorio', $docente->id) }}">
+                    <i class="fas fa-file-pdf"></i>
+                    <span>Repositorio de Sílabos</span>
+                </a>
+            </li>
+            <li class="nav-item mt-2">
+                <a class="nav-link collapsed" target="_blank"
+                    href="https://sites.google.com/pukllavirtual.edu.pe/bibliotecaeesppuklla/inicio">
+                    <i class="fas fa-book-open"></i>
+                    <span>Biblioteca</span>
+                </a>
+            </li>
+
+            <hr class="sidebar-divider d-none d-md-block">
             <li class="nav-item mt-3">
-                <a class="nav-link" href="{{ route('index') }}">
+                <a class="nav-link" target="_blank" href="{{ route('index') }}">
                     <i class="fa fa-sm fa-home"></i> <span>Ir a la web</span>
                 </a>
             </li>
@@ -445,51 +431,20 @@
         <div id="content-wrapper" class="d-flex flex-column">
             <div id="content">
                 <nav
-                    class="navbar navbar-expand navbar-light bg-white topbar mb-3 mb-md-4 static-top shadow flex-wrap align-items-center py-2">
+                    class="navbar navbar-expand navbar-light bg-white topbar mb-3 mb-md-4 static-top shadow align-items-center py-2">
                     <button id="sidebarToggleTop" type="button" class="btn btn-link d-md-none rounded-circle mr-2"
                         aria-label="Abrir menú">
                         <i class="fa fa-bars"></i>
                     </button>
 
-                    <div
-                        class="navbar-nav flex-row flex-wrap flex-grow-1 align-items-center mr-2 docente-topbar-horario">
+                    <div class="navbar-nav flex-row align-items-center mr-2 docente-topbar-horario">
                         @if (isset($periodoActual) && $periodoActual && $periodoActual->horario)
-                            <button type="button" class="btn btn-info btn-sm my-1 my-md-0" data-toggle="modal"
+                            <button type="button" class="btn btn-info btn-sm" data-toggle="modal"
                                 data-target="#modalHorario">
                                 <i class="far fa-calendar-alt mr-1"></i>
-                                <span class="d-none d-sm-inline">Ver horario</span><span
-                                    class="d-sm-none">Horario</span>
+                                <span class="docente-topbar-horario-label">Horario FID</span>
                                 <span class="d-none d-md-inline"> — {{ $periodoActual->nombre }}</span>
                             </button>
-
-                            <div class="modal fade" id="modalHorario" tabindex="-1" role="dialog"
-                                aria-labelledby="modalHorarioLabel" aria-hidden="true">
-                                <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
-                                    <div class="modal-content">
-                                        <div class="modal-header py-2">
-                                            <h5 class="modal-title" id="modalHorarioLabel">Horario
-                                                {{ $periodoActual->nombre }}</h5>
-                                            <button type="button" class="close" data-dismiss="modal"
-                                                aria-label="Cerrar">
-                                                <span aria-hidden="true">&times;</span>
-                                            </button>
-                                        </div>
-                                        <div class="modal-body text-center bg-light">
-                                            <img src="{{ asset($periodoActual->horario) }}"
-                                                alt="Horario {{ $periodoActual->nombre }}"
-                                                class="img-fluid rounded shadow" loading="lazy">
-                                        </div>
-                                        <div class="modal-footer justify-content-center flex-wrap">
-                                            <button type="button" class="btn btn-secondary btn-sm mb-1 mb-sm-0"
-                                                data-dismiss="modal">Cerrar</button>
-                                            <a href="{{ asset($periodoActual->horario) }}" target="_blank"
-                                                rel="noopener noreferrer" class="btn btn-primary btn-sm">
-                                                Ver en nueva pestaña
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
                         @elseif(isset($periodoActual) && $periodoActual)
                             <span class="small text-muted my-1"><i class="far fa-calendar-times mr-1"></i>Sin horario
                                 cargado para {{ $periodoActual->nombre }}</span>
@@ -500,12 +455,12 @@
 
                     <ul class="navbar-nav ml-auto flex-row align-items-center">
                         <li class="nav-item d-flex align-items-center">
-                            <button id="darkModeToggle" type="button"
-                                title="Cambiar a modo oscuro"
+                            <button id="darkModeToggle" type="button" title="Cambiar a modo oscuro"
                                 aria-label="Cambiar tema claro/oscuro">
                                 <i class="fas fa-moon" id="darkModeIcon"></i>
                             </button>
                         </li>
+                        @include('docentes.partials.notificaciones-dropdown')
                         <div class="topbar-divider d-none d-sm-block"></div>
                         <li class="nav-item dropdown no-arrow mx-1">
                             <a class="nav-link dropdown-toggle text-truncate docente-user-name" href="#"
@@ -532,6 +487,35 @@
                         </li>
                     </ul>
                 </nav>
+                @if (isset($periodoActual) && $periodoActual && $periodoActual->horario)
+                    <div class="modal fade" id="modalHorario" tabindex="-1" role="dialog"
+                        aria-labelledby="modalHorarioLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header py-2">
+                                    <h5 class="modal-title" id="modalHorarioLabel">Horario
+                                        {{ $periodoActual->nombre }}</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body text-center bg-light">
+                                    <img src="{{ asset($periodoActual->horario) }}"
+                                        alt="Horario {{ $periodoActual->nombre }}" class="img-fluid rounded shadow"
+                                        loading="lazy">
+                                </div>
+                                <div class="modal-footer justify-content-center flex-wrap">
+                                    <button type="button" class="btn btn-secondary btn-sm mb-1 mb-sm-0"
+                                        data-dismiss="modal">Cerrar</button>
+                                    <a href="{{ asset($periodoActual->horario) }}" target="_blank"
+                                        rel="noopener noreferrer" class="btn btn-primary btn-sm">
+                                        Ver en nueva pestaña
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
                 @yield('contenido')
             </div>
             <footer class="sticky-footer bg-white border-top">
@@ -548,7 +532,6 @@
     <a class="scroll-to-top rounded" href="#page-top">
         <i class="fas fa-angle-up"></i>
     </a>
-
     <script>
         function openTextEditor() {
             document.getElementById("textEditorModalNew").style.display = "flex";
@@ -576,30 +559,32 @@
     <script src="{{ asset('admin/js/demo/chart-area-demo.js') }}"></script>
     <script src="{{ asset('admin/js/demo/chart-pie-demo.js') }}"></script>
     <script src="{{ asset('admin/js/djm.js') }}?v={{ filemtime(public_path('admin/js/djm.js')) }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @stack('scripts')
+    
     <script>
-    (function () {
-        var THEME_KEY = 'puklla-theme';
-        var body   = document.body;
-        var toggle = document.getElementById('darkModeToggle');
-        var icon   = document.getElementById('darkModeIcon');
+        (function() {
+            var THEME_KEY = 'puklla-theme';
+            var body = document.body;
+            var toggle = document.getElementById('darkModeToggle');
+            var icon = document.getElementById('darkModeIcon');
 
-        function syncUI() {
-            var dark = body.classList.contains('dark-mode');
-            if (icon)   icon.className = dark ? 'fas fa-sun' : 'fas fa-moon';
-            if (toggle) toggle.setAttribute('title', dark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
-        }
+            function syncUI() {
+                var dark = body.classList.contains('dark-mode');
+                if (icon) icon.className = dark ? 'fas fa-sun' : 'fas fa-moon';
+                if (toggle) toggle.setAttribute('title', dark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
+            }
 
-        syncUI();
+            syncUI();
 
-        if (toggle) {
-            toggle.addEventListener('click', function () {
-                var nowDark = body.classList.toggle('dark-mode');
-                localStorage.setItem(THEME_KEY, nowDark ? 'dark' : 'light');
-                syncUI();
-            });
-        }
-    })();
+            if (toggle) {
+                toggle.addEventListener('click', function() {
+                    var nowDark = body.classList.toggle('dark-mode');
+                    localStorage.setItem(THEME_KEY, nowDark ? 'dark' : 'light');
+                    syncUI();
+                });
+            }
+        })();
     </script>
 
 </body>

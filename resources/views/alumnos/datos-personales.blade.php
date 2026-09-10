@@ -133,7 +133,7 @@
     </div>
 
     <div class="col-lg-6 mb-2">
-        <label for="procedencia_familiar">¿Tu familia o tú proceden de alguna comunidad?:</label>
+        <label for="procedencia_familiar">¿Su familia procede de una comunidad?:</label>
         <select class="form-control form-control-sm @error('procedencia_familiar') is-invalid @enderror"
             id="procedencia_familiar" name="procedencia_familiar" required>
             <option value="" disabled {{ old('procedencia_familiar') ? '' : 'selected' }}>Selecciona una opción
@@ -267,7 +267,7 @@
     </div>
     <div class="row">
         <div class="col-lg-6 mb-2">
-            <label for="lengua_1">Lengua 1:</label>
+            <label for="lengua_1">Lengua materna:</label>
             <select class="form-control form-control-sm @error('lengua_1') is-invalid @enderror" id="lengua_1"
                 name="lengua_1" required>
                 <option value="" disabled>Selecciona una opción</option>
@@ -281,7 +281,7 @@
         </div>
 
         <div class="col-lg-6 mb-2">
-            <label for="lengua_2">Lengua 2:</label>
+            <label for="lengua_2">Lengua secundaria:</label>
             <select class="form-control form-control-sm @error('lengua_2') is-invalid @enderror" id="lengua_2"
                 name="lengua_2" required>
                 <option value="" disabled>Selecciona una opción</option>
@@ -343,7 +343,7 @@
                         const errorDiv = document.createElement('div');
                         errorDiv.id = 'lengua2-error';
                         errorDiv.className = 'invalid-feedback d-block';
-                        errorDiv.textContent = 'No hay opciones disponibles para Lengua 2';
+                        errorDiv.textContent = 'No hay opciones disponibles para Lengua secundaria';
                         lengua2.parentNode.appendChild(errorDiv);
                     }
                 } else {

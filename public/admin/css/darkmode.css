@@ -126,6 +126,10 @@ body.dark-mode .docente-ui-card .card-header {
     border-bottom-color: #30363d !important;
 }
 
+body.dark-mode .docente-ui-hero {
+    border-left-color: #6f8ff0;
+}
+
 /* ── Fondos utilitarios ── */
 body.dark-mode .bg-white {
     background-color: #161b22 !important;
@@ -517,6 +521,10 @@ body.dim-mode .docente-ui-card {
 body.dim-mode .docente-ui-card .card-header {
     background-color: #1e0f19 !important;
     border-bottom-color: #4a1f38 !important;
+}
+
+body.dim-mode .docente-ui-hero {
+    border-left-color: #e8a8c8;
 }
 
 /* ── Fondos utilitarios ── */
@@ -976,4 +984,662 @@ body.dark-mode .sidebar.bg-gradient-dark .sidebar-heading {
 body.dark-mode .sidebar.bg-gradient-dark hr.sidebar-divider,
 body.dark-mode .sidebar.bg-gradient-dark hr.sidebar-logo-divider {
     border-top-color: rgba(79, 172, 254, 0.1) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   CURSOS ASINCRÓNICOS (admin .cea- / alumno .ce- /lec- / docente .ced-)
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Variables compartidas ── */
+body.dark-mode {
+    --ce-text: #e6edf3; --ce-muted: #8b949e; --ce-card: #161b22; --ce-bg: #0d1117;
+    --lec-text: #e6edf3; --lec-muted: #8b949e; --lec-card: #161b22; --lec-bg: #0d1117;
+    --ced-dark: #e6edf3; --ced-muted: #8b949e;
+    --cl-dark: #e6edf3; --cl-muted: #8b949e;
+    --cl-card: #161b22; --cl-card-border: rgba(255,255,255,.08); --cl-card-bg: #1c2129;
+}
+body.dim-mode {
+    --ce-text: #fde8f0; --ce-muted: #d4a0bc; --ce-card: #1e0f19; --ce-bg: #130a10;
+    --lec-text: #fde8f0; --lec-muted: #d4a0bc; --lec-card: #1e0f19; --lec-bg: #130a10;
+    --ced-dark: #fde8f0; --ced-muted: #d4a0bc;
+    --cl-dark: #fde8f0; --cl-muted: #d4a0bc;
+    --cl-card: #1e0f19; --cl-card-border: rgba(255,255,255,.08); --cl-card-bg: #261426;
+}
+
+/* ── .cea- (admin / super admin) ───────────────────────────────────── */
+body.dark-mode .cea-header,
+body.dark-mode .cea-toolbar { background: #161b22; border-color: #30363d; }
+body.dark-mode .cea-title, body.dark-mode .cea-toolbar-title,
+body.dark-mode .cea-card-title, body.dark-mode .cea-unit-name,
+body.dark-mode .cea-item-name, body.dark-mode .cea-form-header h1 { color: #e6edf3; }
+body.dark-mode .cea-title small, body.dark-mode .cea-empty,
+body.dark-mode .cea-card-desc, body.dark-mode .cea-unit-desc,
+body.dark-mode .cea-content-section-label, body.dark-mode .cea-item-name small,
+body.dark-mode .cea-empty-unit { color: #8b949e; }
+body.dark-mode .cea-inscritos-table thead th { color: #8b949e; background: #1c2129; }
+body.dark-mode .cea-content-section-label::after { background: #30363d; }
+body.dark-mode .cea-card,
+body.dark-mode .cea-unit { background: #161b22; border-color: #30363d; }
+body.dark-mode .cea-card { box-shadow: 0 2px 16px rgba(0,0,0,.35); }
+body.dark-mode .cea-chips,
+body.dark-mode .cea-unit-hdr { border-color: #30363d; background: #161b22; }
+body.dark-mode .cea-card-actions { background: #1c2129; border-color: #30363d; }
+body.dark-mode .cea-nivel-body { background: #0d1117; }
+body.dark-mode .cea-item { background: #1c2129; border-color: #30363d; }
+body.dark-mode .cea-item:hover { background: #1c2333; }
+body.dark-mode .cea-item-icon.texto { background: rgba(78,115,223,.18); color: #7aa2f7; }
+body.dark-mode .cea-item-icon.audio { background: rgba(6,214,160,.15); color: #06d6a0; }
+body.dark-mode .cea-item-icon.video { background: rgba(231,74,59,.15); color: #ff8080; }
+body.dark-mode .cea-item-icon.mixto { background: rgba(131,56,236,.15); color: #b48ef5; }
+body.dark-mode .cea-item-icon.ejercicio { background: rgba(246,194,62,.15); color: #fbbf24; }
+body.dark-mode .cea-chip { background: rgba(78,115,223,.15); color: #7aa2f7; }
+body.dark-mode .cea-chip.green { background: rgba(28,200,138,.15); color: #34d399; }
+body.dark-mode .cea-chip.amber { background: rgba(246,194,62,.15); color: #fbbf24; }
+body.dark-mode .cea-act-btn.view { background: rgba(54,185,204,.15); color: #67d4e6; }
+body.dark-mode .cea-act-btn.edit,
+body.dark-mode .cea-item-act.edit { background: rgba(246,194,62,.15); color: #fbbf24; }
+body.dark-mode .cea-act-btn.delete,
+body.dark-mode .cea-item-act.delete { background: rgba(231,74,59,.15); color: #ff8080; }
+body.dark-mode .cea-bar-wrap, body.dark-mode .cea-unit-bar-wrap { background: #30363d; }
+body.dark-mode .cea-group-row { background: rgba(131,56,236,.12); }
+body.dark-mode .cea-group-row:hover { background: rgba(131,56,236,.2); }
+body.dark-mode .cea-group-row td { border-top-color: #161b22; }
+body.dark-mode .cea-student-row:hover { background: #1c2129; }
+body.dark-mode .cea-student-row td { border-top-color: #21262d; }
+body.dark-mode .cea-resp-chip { background: rgba(28,200,138,.12); color: #34d399; border-color: rgba(28,200,138,.3); }
+body.dark-mode .cea-inscritos-table td span { color: #c9d1d9 !important; }
+body.dark-mode #cea-file-name { color: #e6edf3 !important; }
+body.dark-mode .cea-opciones-container { border-color: #30363d; }
+body.dark-mode .cea-opcion-row { background: #161b22; border-color: #21262d; }
+body.dark-mode .cea-opcion-num { background: rgba(78,115,223,.18); color: #7aa2f7; }
+body.dark-mode .cea-opcion-input { color: #e6edf3; }
+body.dark-mode .cea-opcion-input::placeholder { color: #6e7681; }
+body.dark-mode .cea-add-opcion { background: rgba(78,115,223,.15); color: #7aa2f7; }
+body.dark-mode .cea-add-opcion:hover { background: rgba(78,115,223,.25); }
+body.dark-mode .cea-remove-opcion { color: #ff8080; }
+body.dark-mode .cea-file-zone { background: linear-gradient(135deg,#1c1530,#16131f); border-color: rgba(131,56,236,.35); }
+body.dark-mode .cea-file-zone:hover { border-color: #b48ef5; background: #1f1830; }
+body.dark-mode .cea-file-zone-icon { color: #b48ef5; }
+body.dark-mode .cea-file-zone-label { color: #e6edf3; }
+body.dark-mode .cea-file-zone-hint { color: #8b949e; }
+body.dark-mode .cea-rec-preview-box { background: #1f1830; border-color: rgba(131,56,236,.3); }
+body.dark-mode .cea-rec-retry-btn { background: #21262d; color: #c9d1d9; }
+body.dark-mode .cea-rec-retry-btn:hover { background: #30363d; }
+body.dark-mode .cea-rec-saved-box { background: #102219; border-color: rgba(28,200,138,.35); }
+body.dark-mode .cea-rec-saved-label { color: #34d399; }
+body.dark-mode .cea-mini-player { background: rgba(255,255,255,.06); }
+body.dark-mode .cea-mini-bar-wrap { background: rgba(255,255,255,.14); }
+body.dark-mode .cea-mini-time { color: #8b949e; }
+body.dark-mode .cea-form-header { border-color: #30363d; }
+body.dark-mode .cea-field-group,
+body.dark-mode .ced-field-group { background: #161b22; border-color: #30363d; }
+body.dark-mode .cea-img-drop,
+body.dark-mode .ced-img-drop { border-color: #30363d; color: #8b949e; }
+body.dark-mode .cea-img-drop:hover,
+body.dark-mode .ced-img-drop:hover { background: rgba(78,115,223,.1); }
+body.dark-mode .cea-toggle-label,
+body.dark-mode .ced-toggle-label { color: #e6edf3; }
+body.dark-mode .cea-slider,
+body.dark-mode .ced-slider { background: #30363d; }
+body.dark-mode .cea-cancel-btn,
+body.dark-mode .ced-cancel-btn { background: #21262d; color: #c9d1d9; }
+body.dark-mode .cea-cancel-btn:hover,
+body.dark-mode .ced-cancel-btn:hover { background: #30363d; color: #e6edf3; }
+
+/* ── .ce- (alumno: index / show / progreso) ────────────────────────── */
+body.dark-mode .ce-progress-bar-wrap,
+body.dark-mode .ce-global-bar-wrap,
+body.dark-mode .ce-unidad-progress,
+body.dark-mode .ce-unit-bar-wrap { background: #30363d; }
+body.dark-mode .ce-sticky-header { background: #161b22; border-color: #30363d; }
+body.dark-mode .ce-stat,
+body.dark-mode .ce-stat-card,
+body.dark-mode .ce-nivel,
+body.dark-mode .ce-level-block,
+body.dark-mode .ce-unidad,
+body.dark-mode .ce-exercise-card { background: #161b22; }
+body.dark-mode .ce-unidad,
+body.dark-mode .ce-exercise-card { border-color: #30363d; }
+body.dark-mode .ce-stat-icon.blue, body.dark-mode .ico-blue { background: rgba(58,134,255,.15); }
+body.dark-mode .ce-stat-icon.teal, body.dark-mode .ico-teal { background: rgba(6,214,160,.15); }
+body.dark-mode .ce-stat-icon.amber, body.dark-mode .ico-amber { background: rgba(255,183,3,.15); }
+body.dark-mode .ce-stat-icon.purple, body.dark-mode .ico-purple { background: rgba(131,56,236,.18); }
+body.dark-mode .ce-nivel-body { background: #0d1117; }
+body.dark-mode .ce-level-block-hdr { background: #1c2129; border-color: #30363d; }
+body.dark-mode .ce-unidad-body { border-color: #21262d; }
+body.dark-mode .ce-lesson { border-color: #21262d; }
+body.dark-mode .ce-lesson:hover { background: #1c2333; }
+body.dark-mode .ce-lesson-status,
+body.dark-mode .ce-dot { border-color: #30363d; color: #30363d; background: #161b22; }
+body.dark-mode .ce-exercise-card:hover { border-color: #4e3d8a; }
+body.dark-mode .ce-exercise-card.solved { background: linear-gradient(135deg,#102219,#161b22); }
+body.dark-mode .ce-exercise-header { background: linear-gradient(135deg,#161b22,#1c2129); border-color: #21262d; }
+body.dark-mode .ce-exercise-type-chip { background: rgba(131,56,236,.18); }
+body.dark-mode .ce-exercise-badge.pending { background: rgba(255,183,3,.15); color: #fbbf24; }
+body.dark-mode .ce-exercise-badge.solved { background: rgba(28,200,138,.15); color: #34d399; }
+body.dark-mode .ce-exercise-badge.wrong { background: rgba(231,74,59,.15); color: #ff8080; }
+body.dark-mode .ce-exercise-card.wrong .ce-exercise-header { background: linear-gradient(135deg,#22120f,#161b22); }
+body.dark-mode .ce-feedback-wrong { background: rgba(231,74,59,.12); border-color: rgba(231,74,59,.4); }
+body.dark-mode .ce-feedback-wrong strong { color: #ff8080; }
+body.dark-mode .ce-feedback-wrong em { color: #c9d1d9; }
+body.dark-mode .ce-option { border-color: #30363d; color: #e6edf3; }
+body.dark-mode .ce-option:hover { border-color: #6c4fb5; background: #1c2129; }
+body.dark-mode .ce-option.selected { background: linear-gradient(135deg,#1c1530,#241b3d); }
+body.dark-mode .ce-option-letter { background: #21262d; }
+body.dark-mode .ce-option-dot { border-color: #4a4a5e; background: #161b22; }
+body.dark-mode .ce-option-dot, body.dark-mode .ce-option.selected .ce-option-dot { box-shadow: inset 0 0 0 3px #161b22; }
+body.dark-mode .ce-textarea { border-color: #30363d; background: #0d1117; color: #e6edf3; }
+body.dark-mode .ce-textarea:focus { background: #161b22; }
+body.dark-mode .ce-audio-pron { background: linear-gradient(135deg,#1c1530,#16202e); border-color: rgba(131,56,236,.3); }
+body.dark-mode .ce-audio-bar-wrap { background: rgba(131,56,236,.25); }
+body.dark-mode .ce-audio-time, body.dark-mode .ce-stat-label,
+body.dark-mode .ce-stat-lbl, body.dark-mode .ce-unit-counts { color: #8b949e; }
+body.dark-mode .ce-sec-heading::after { background: #30363d; }
+
+/* ── .lec- (alumno: lección) ───────────────────────────────────────── */
+body.dark-mode .lec-strip { background: #30363d; }
+body.dark-mode .lec-tabs-wrap { background: rgba(13,17,23,.92); }
+body.dark-mode .lec-tab { background: #161b22; color: #8b949e; box-shadow: 0 1px 4px rgba(0,0,0,.3); }
+body.dark-mode .lec-tag.audio, body.dark-mode .lec-tab.audio.active, body.dark-mode .lec-tab.audio:hover,
+body.dark-mode .lec-block-hdr.audio .lec-block-hdr-icon { background: rgba(6,214,160,.15); color: #06d6a0; }
+body.dark-mode .lec-tag.video, body.dark-mode .lec-tab.video.active, body.dark-mode .lec-tab.video:hover,
+body.dark-mode .lec-block-hdr.video .lec-block-hdr-icon { background: rgba(231,74,59,.15); color: #ff8080; }
+body.dark-mode .lec-tag.texto, body.dark-mode .lec-tab.texto.active, body.dark-mode .lec-tab.texto:hover,
+body.dark-mode .lec-block-hdr.texto .lec-block-hdr-icon { background: rgba(58,134,255,.15); color: #7aa2f7; }
+body.dark-mode .lec-block-hdr.audio { background: linear-gradient(135deg,#0f1f17,#161b22); border-color: #1c3326; }
+body.dark-mode .lec-block-hdr.video { background: linear-gradient(135deg,#22120f,#161b22); border-color: #3a2018; }
+body.dark-mode .lec-block-hdr.texto { background: linear-gradient(135deg,#101a2c,#161b22); border-color: #1c2c4a; }
+body.dark-mode .lec-audio-shell { background: linear-gradient(135deg,#0f1f17,#101a2c); }
+body.dark-mode .lec-audio-player { background: #161b22; box-shadow: 0 2px 12px rgba(0,0,0,.3); }
+body.dark-mode .lec-progress-wrap { background: #30363d; }
+body.dark-mode .lec-audio-times { color: #6e7681; }
+body.dark-mode .lec-speed-btn { background: rgba(58,134,255,.15); color: #7aa2f7; }
+body.dark-mode .lec-speed-btn:hover { background: rgba(58,134,255,.25); }
+body.dark-mode .lec-text-body th { background: #1c2129; border-color: #30363d; color: #7aa2f7; }
+body.dark-mode .lec-text-body td { border-color: #21262d; }
+body.dark-mode .lec-text-body tr:nth-child(even) td { background: #161b22; }
+body.dark-mode .lec-text-body code { background: #21262d; color: #b48ef5; }
+body.dark-mode .lec-text-body blockquote { background: #161b22; color: #c9d1d9; border-color: #7aa2f7; }
+body.dark-mode .lec-nav-btn { background: #1c2129; border-color: #30363d; color: #e6edf3; }
+body.dark-mode .lec-nav-btn:hover { border-color: #7aa2f7; color: #7aa2f7; background: #1c2333; }
+
+/* ── .ced- (docente) ───────────────────────────────────────────────── */
+body.dark-mode .ced-chip { background: #161b22; border-color: #30363d; color: #c9d1d9; }
+body.dark-mode .ced-section-label::after { background: #30363d; }
+body.dark-mode .ced-card { background: #161b22; }
+body.dark-mode .ced-btn-secondary { background: #1c2129; border-color: #30363d; }
+body.dark-mode .ced-btn-secondary:hover { background: #21262d; }
+body.dark-mode .ced-empty-icon { background: linear-gradient(135deg,#1c2129,#21262d); }
+body.dark-mode .ced-empty h4 { color: #c9d1d9; }
+body.dark-mode .ced-form-header { border-color: #30363d; }
+body.dark-mode .ced-form-header a { color: #7aa2f7; }
+
+/* ── Variantes MODO TENUE (rosa) ────────────────────────────────────── */
+body.dim-mode .cea-header,
+body.dim-mode .cea-toolbar { background: #1e0f19; border-color: #4a1f38; }
+body.dim-mode .cea-title, body.dim-mode .cea-toolbar-title,
+body.dim-mode .cea-card-title, body.dim-mode .cea-unit-name,
+body.dim-mode .cea-item-name, body.dim-mode .cea-form-header h1 { color: #fde8f0; }
+body.dim-mode .cea-title small, body.dim-mode .cea-empty,
+body.dim-mode .cea-card-desc, body.dim-mode .cea-unit-desc,
+body.dim-mode .cea-content-section-label, body.dim-mode .cea-item-name small,
+body.dim-mode .cea-empty-unit { color: #d4a0bc; }
+body.dim-mode .cea-inscritos-table thead th { color: #d4a0bc; background: #261426; }
+body.dim-mode .cea-content-section-label::after { background: #4a1f38; }
+body.dim-mode .cea-card,
+body.dim-mode .cea-unit { background: #1e0f19; border-color: #4a1f38; }
+body.dim-mode .cea-chips,
+body.dim-mode .cea-unit-hdr { border-color: #4a1f38; background: #1e0f19; }
+body.dim-mode .cea-card-actions { background: #261426; border-color: #4a1f38; }
+body.dim-mode .cea-nivel-body { background: #130a10; }
+body.dim-mode .cea-item { background: #261426; border-color: #4a1f38; }
+body.dim-mode .cea-item:hover { background: #2a1422; }
+body.dim-mode .cea-item-icon.texto { background: rgba(78,115,223,.22); color: #9db8ff; }
+body.dim-mode .cea-item-icon.audio { background: rgba(6,214,160,.18); color: #5be8c4; }
+body.dim-mode .cea-item-icon.video { background: rgba(231,74,59,.18); color: #ff9b9b; }
+body.dim-mode .cea-item-icon.mixto { background: rgba(131,56,236,.2); color: #c9a4f7; }
+body.dim-mode .cea-item-icon.ejercicio { background: rgba(246,194,62,.18); color: #fdd87a; }
+body.dim-mode .cea-chip { background: rgba(78,115,223,.18); color: #9db8ff; }
+body.dim-mode .cea-chip.green { background: rgba(28,200,138,.18); color: #5be8c4; }
+body.dim-mode .cea-chip.amber { background: rgba(246,194,62,.18); color: #fdd87a; }
+body.dim-mode .cea-act-btn.view { background: rgba(54,185,204,.18); color: #82e0f0; }
+body.dim-mode .cea-act-btn.edit,
+body.dim-mode .cea-item-act.edit { background: rgba(246,194,62,.18); color: #fdd87a; }
+body.dim-mode .cea-act-btn.delete,
+body.dim-mode .cea-item-act.delete { background: rgba(231,74,59,.18); color: #ff9b9b; }
+body.dim-mode .cea-bar-wrap, body.dim-mode .cea-unit-bar-wrap { background: #4a1f38; }
+body.dim-mode .cea-group-row { background: rgba(131,56,236,.15); }
+body.dim-mode .cea-group-row:hover { background: rgba(131,56,236,.25); }
+body.dim-mode .cea-group-row td { border-top-color: #1e0f19; }
+body.dim-mode .cea-student-row:hover { background: #261426; }
+body.dim-mode .cea-student-row td { border-top-color: #321a2c; }
+body.dim-mode .cea-resp-chip { background: rgba(28,200,138,.15); color: #5be8c4; border-color: rgba(28,200,138,.35); }
+body.dim-mode .cea-inscritos-table td span { color: #fde8f0 !important; }
+body.dim-mode #cea-file-name { color: #fde8f0 !important; }
+body.dim-mode .cea-opciones-container { border-color: #4a1f38; }
+body.dim-mode .cea-opcion-row { background: #1e0f19; border-color: #321a2c; }
+body.dim-mode .cea-opcion-num { background: rgba(78,115,223,.22); color: #9db8ff; }
+body.dim-mode .cea-opcion-input { color: #fde8f0; }
+body.dim-mode .cea-opcion-input::placeholder { color: #a06080; }
+body.dim-mode .cea-add-opcion { background: rgba(78,115,223,.18); color: #9db8ff; }
+body.dim-mode .cea-add-opcion:hover { background: rgba(78,115,223,.28); }
+body.dim-mode .cea-remove-opcion { color: #ff9b9b; }
+body.dim-mode .cea-file-zone { background: linear-gradient(135deg,#2a1840,#1e1530); border-color: rgba(131,56,236,.4); }
+body.dim-mode .cea-file-zone:hover { border-color: #c9a4f7; background: #2e1c45; }
+body.dim-mode .cea-file-zone-icon { color: #c9a4f7; }
+body.dim-mode .cea-file-zone-label { color: #fde8f0; }
+body.dim-mode .cea-file-zone-hint { color: #d4a0bc; }
+body.dim-mode .cea-rec-preview-box { background: #2e1c45; border-color: rgba(131,56,236,.35); }
+body.dim-mode .cea-rec-retry-btn { background: #321a2c; color: #fde8f0; }
+body.dim-mode .cea-rec-retry-btn:hover { background: #4a1f38; }
+body.dim-mode .cea-rec-saved-box { background: #102219; border-color: rgba(28,200,138,.4); }
+body.dim-mode .cea-rec-saved-label { color: #5be8c4; }
+body.dim-mode .cea-mini-player { background: rgba(255,255,255,.07); }
+body.dim-mode .cea-mini-bar-wrap { background: rgba(255,255,255,.16); }
+body.dim-mode .cea-mini-time { color: #d4a0bc; }
+body.dim-mode .cea-form-header { border-color: #4a1f38; }
+body.dim-mode .cea-field-group,
+body.dim-mode .ced-field-group { background: #1e0f19; border-color: #4a1f38; }
+body.dim-mode .cea-img-drop,
+body.dim-mode .ced-img-drop { border-color: #4a1f38; color: #d4a0bc; }
+body.dim-mode .cea-img-drop:hover,
+body.dim-mode .ced-img-drop:hover { background: rgba(78,115,223,.12); }
+body.dim-mode .cea-toggle-label,
+body.dim-mode .ced-toggle-label { color: #fde8f0; }
+body.dim-mode .cea-slider,
+body.dim-mode .ced-slider { background: #4a1f38; }
+body.dim-mode .cea-cancel-btn,
+body.dim-mode .ced-cancel-btn { background: #261426; color: #fde8f0; }
+body.dim-mode .cea-cancel-btn:hover,
+body.dim-mode .ced-cancel-btn:hover { background: #321a2c; }
+
+body.dim-mode .ce-progress-bar-wrap,
+body.dim-mode .ce-global-bar-wrap,
+body.dim-mode .ce-unidad-progress,
+body.dim-mode .ce-unit-bar-wrap { background: #4a1f38; }
+body.dim-mode .ce-sticky-header { background: #1e0f19; border-color: #4a1f38; }
+body.dim-mode .ce-stat,
+body.dim-mode .ce-stat-card,
+body.dim-mode .ce-nivel,
+body.dim-mode .ce-level-block,
+body.dim-mode .ce-unidad,
+body.dim-mode .ce-exercise-card { background: #1e0f19; }
+body.dim-mode .ce-unidad,
+body.dim-mode .ce-exercise-card { border-color: #4a1f38; }
+body.dim-mode .ce-stat-icon.blue, body.dim-mode .ico-blue { background: rgba(58,134,255,.18); }
+body.dim-mode .ce-stat-icon.teal, body.dim-mode .ico-teal { background: rgba(6,214,160,.18); }
+body.dim-mode .ce-stat-icon.amber, body.dim-mode .ico-amber { background: rgba(255,183,3,.18); }
+body.dim-mode .ce-stat-icon.purple, body.dim-mode .ico-purple { background: rgba(131,56,236,.22); }
+body.dim-mode .ce-nivel-body { background: #130a10; }
+body.dim-mode .ce-level-block-hdr { background: #261426; border-color: #4a1f38; }
+body.dim-mode .ce-unidad-body { border-color: #321a2c; }
+body.dim-mode .ce-lesson { border-color: #321a2c; }
+body.dim-mode .ce-lesson:hover { background: #2a1422; }
+body.dim-mode .ce-lesson-status,
+body.dim-mode .ce-dot { border-color: #4a1f38; color: #4a1f38; background: #1e0f19; }
+body.dim-mode .ce-exercise-card:hover { border-color: #6e3f7a; }
+body.dim-mode .ce-exercise-card.solved { background: linear-gradient(135deg,#102219,#1e0f19); }
+body.dim-mode .ce-exercise-header { background: linear-gradient(135deg,#1e0f19,#261426); border-color: #321a2c; }
+body.dim-mode .ce-exercise-type-chip { background: rgba(131,56,236,.2); }
+body.dim-mode .ce-exercise-badge.pending { background: rgba(255,183,3,.18); color: #fdd87a; }
+body.dim-mode .ce-exercise-badge.solved { background: rgba(28,200,138,.18); color: #5be8c4; }
+body.dim-mode .ce-exercise-badge.wrong { background: rgba(231,74,59,.18); color: #ff9b9b; }
+body.dim-mode .ce-exercise-card.wrong .ce-exercise-header { background: linear-gradient(135deg,#2a140f,#1e0f19); }
+body.dim-mode .ce-feedback-wrong { background: rgba(231,74,59,.14); border-color: rgba(231,74,59,.4); }
+body.dim-mode .ce-feedback-wrong strong { color: #ff9b9b; }
+body.dim-mode .ce-feedback-wrong em { color: #fde8e8; }
+body.dim-mode .ce-option { border-color: #4a1f38; color: #fde8f0; }
+body.dim-mode .ce-option:hover { border-color: #8a4fa8; background: #261426; }
+body.dim-mode .ce-option.selected { background: linear-gradient(135deg,#2a1840,#321a3d); }
+body.dim-mode .ce-option-letter { background: #321a2c; }
+body.dim-mode .ce-option-dot { border-color: #5e4a5e; background: #1e0f19; }
+body.dim-mode .ce-option-dot, body.dim-mode .ce-option.selected .ce-option-dot { box-shadow: inset 0 0 0 3px #1e0f19; }
+body.dim-mode .ce-textarea { border-color: #4a1f38; background: #130a10; color: #fde8f0; }
+body.dim-mode .ce-textarea:focus { background: #1e0f19; }
+body.dim-mode .ce-audio-pron { background: linear-gradient(135deg,#2a1840,#1e1530); border-color: rgba(131,56,236,.35); }
+body.dim-mode .ce-audio-bar-wrap { background: rgba(131,56,236,.28); }
+body.dim-mode .ce-audio-time, body.dim-mode .ce-stat-label,
+body.dim-mode .ce-stat-lbl, body.dim-mode .ce-unit-counts { color: #d4a0bc; }
+body.dim-mode .ce-sec-heading::after { background: #4a1f38; }
+
+body.dim-mode .lec-strip { background: #4a1f38; }
+body.dim-mode .lec-tabs-wrap { background: rgba(19,10,16,.92); }
+body.dim-mode .lec-tab { background: #1e0f19; color: #d4a0bc; box-shadow: 0 1px 4px rgba(0,0,0,.4); }
+body.dim-mode .lec-tag.audio, body.dim-mode .lec-tab.audio.active, body.dim-mode .lec-tab.audio:hover,
+body.dim-mode .lec-block-hdr.audio .lec-block-hdr-icon { background: rgba(6,214,160,.18); color: #5be8c4; }
+body.dim-mode .lec-tag.video, body.dim-mode .lec-tab.video.active, body.dim-mode .lec-tab.video:hover,
+body.dim-mode .lec-block-hdr.video .lec-block-hdr-icon { background: rgba(231,74,59,.18); color: #ff9b9b; }
+body.dim-mode .lec-tag.texto, body.dim-mode .lec-tab.texto.active, body.dim-mode .lec-tab.texto:hover,
+body.dim-mode .lec-block-hdr.texto .lec-block-hdr-icon { background: rgba(58,134,255,.18); color: #9db8ff; }
+body.dim-mode .lec-block-hdr.audio { background: linear-gradient(135deg,#102219,#1e0f19); border-color: #1c3326; }
+body.dim-mode .lec-block-hdr.video { background: linear-gradient(135deg,#2a140f,#1e0f19); border-color: #3a2018; }
+body.dim-mode .lec-block-hdr.texto { background: linear-gradient(135deg,#101a2c,#1e0f19); border-color: #1c2c4a; }
+body.dim-mode .lec-audio-shell { background: linear-gradient(135deg,#102219,#101a2c); }
+body.dim-mode .lec-audio-player { background: #1e0f19; box-shadow: 0 2px 12px rgba(0,0,0,.4); }
+body.dim-mode .lec-progress-wrap { background: #4a1f38; }
+body.dim-mode .lec-audio-times { color: #a06080; }
+body.dim-mode .lec-speed-btn { background: rgba(58,134,255,.18); color: #9db8ff; }
+body.dim-mode .lec-speed-btn:hover { background: rgba(58,134,255,.28); }
+body.dim-mode .lec-text-body th { background: #261426; border-color: #4a1f38; color: #9db8ff; }
+body.dim-mode .lec-text-body td { border-color: #321a2c; }
+body.dim-mode .lec-text-body tr:nth-child(even) td { background: #1e0f19; }
+body.dim-mode .lec-text-body code { background: #321a2c; color: #c9a4f7; }
+body.dim-mode .lec-text-body blockquote { background: #1e0f19; color: #fde8f0; border-color: #9db8ff; }
+body.dim-mode .lec-nav-btn { background: #261426; border-color: #4a1f38; color: #fde8f0; }
+body.dim-mode .lec-nav-btn:hover { border-color: #9db8ff; color: #9db8ff; background: #2a1422; }
+
+body.dim-mode .ced-chip { background: #1e0f19; border-color: #4a1f38; color: #fde8f0; }
+body.dim-mode .ced-section-label::after { background: #4a1f38; }
+body.dim-mode .ced-card { background: #1e0f19; }
+body.dim-mode .ced-btn-secondary { background: #261426; border-color: #4a1f38; }
+body.dim-mode .ced-btn-secondary:hover { background: #321a2c; }
+body.dim-mode .ced-empty-icon { background: linear-gradient(135deg,#261426,#321a2c); }
+body.dim-mode .ced-empty h4 { color: #fde8f0; }
+body.dim-mode .ced-form-header { border-color: #4a1f38; }
+body.dim-mode .ced-form-header a { color: #9db8ff; }
+
+/* ── .cl- (lecciones create/edit) ──────────────────────────────────── */
+body.dark-mode .cl-card-icon.audio { background: rgba(6,214,160,.15); color: #34d399; }
+body.dark-mode .cl-card-icon.video { background: rgba(231,74,59,.15); color: #ff8080; }
+body.dark-mode .cl-card-icon.texto { background: rgba(78,115,223,.18); color: #7aa2f7; }
+body.dark-mode .cl-card-icon.meta  { background: rgba(131,56,236,.18); color: #b48ef5; }
+body.dark-mode .cl-card-icon.info  { background: rgba(246,194,62,.15); color: #fbbf24; }
+body.dark-mode .cl-badge-active.audio { background: rgba(6,214,160,.15); color: #34d399; }
+body.dark-mode .cl-badge-active.video { background: rgba(231,74,59,.15); color: #ff8080; }
+body.dark-mode .cl-badge-active.texto { background: rgba(78,115,223,.18); color: #7aa2f7; }
+body.dark-mode .cl-toggle-track { background: #30363d; }
+body.dark-mode .cl-toggle-track::before { background: #8b949e; }
+body.dark-mode .cl-file-zone { background: linear-gradient(135deg,#0f1f17,#101a2c); border-color: rgba(6,214,160,.3); }
+body.dark-mode .cl-file-zone:hover { border-color: #34d399; background: #0f1f17; }
+body.dark-mode .cl-file-zone-icon { color: #34d399; }
+body.dark-mode .cl-file-zone-label { color: #e6edf3; }
+body.dark-mode .cl-file-zone-hint { color: #8b949e; }
+body.dark-mode .cl-audio-preview-box { background: #0f1f17; border-color: rgba(6,214,160,.25); }
+body.dark-mode .cl-audio-saved-box { background: #102219; border-color: rgba(6,214,160,.3); }
+body.dark-mode .cl-saved-label { color: #34d399; }
+body.dark-mode .cl-btn-secondary { background: #21262d; color: #c9d1d9; }
+body.dark-mode .cl-btn-secondary:hover { background: #30363d; }
+body.dark-mode .note-editor.note-frame { border-color: #30363d !important; }
+body.dark-mode .note-toolbar { background: #1c2129 !important; }
+body.dark-mode .note-toolbar .note-btn { background: #161b22; border-color: #30363d; color: #c9d1d9; }
+body.dark-mode .note-editing-area .note-editable { background: #161b22 !important; color: #e6edf3 !important; }
+
+body.dim-mode .cl-card-icon.audio { background: rgba(6,214,160,.18); color: #5be8c4; }
+body.dim-mode .cl-card-icon.video { background: rgba(231,74,59,.18); color: #ff9b9b; }
+body.dim-mode .cl-card-icon.texto { background: rgba(78,115,223,.22); color: #9db8ff; }
+body.dim-mode .cl-card-icon.meta  { background: rgba(131,56,236,.22); color: #c9a4f7; }
+body.dim-mode .cl-card-icon.info  { background: rgba(246,194,62,.18); color: #fdd87a; }
+body.dim-mode .cl-badge-active.audio { background: rgba(6,214,160,.18); color: #5be8c4; }
+body.dim-mode .cl-badge-active.video { background: rgba(231,74,59,.18); color: #ff9b9b; }
+body.dim-mode .cl-badge-active.texto { background: rgba(78,115,223,.22); color: #9db8ff; }
+body.dim-mode .cl-toggle-track { background: #4a1f38; }
+body.dim-mode .cl-toggle-track::before { background: #d4a0bc; }
+body.dim-mode .cl-file-zone { background: linear-gradient(135deg,#0f1f17,#1e1530); border-color: rgba(6,214,160,.3); }
+body.dim-mode .cl-file-zone:hover { border-color: #5be8c4; background: #0f1f17; }
+body.dim-mode .cl-file-zone-icon { color: #5be8c4; }
+body.dim-mode .cl-file-zone-label { color: #fde8f0; }
+body.dim-mode .cl-file-zone-hint { color: #d4a0bc; }
+body.dim-mode .cl-audio-preview-box { background: #0f1f17; border-color: rgba(6,214,160,.28); }
+body.dim-mode .cl-audio-saved-box { background: #102219; border-color: rgba(6,214,160,.35); }
+body.dim-mode .cl-saved-label { color: #5be8c4; }
+body.dim-mode .cl-btn-secondary { background: #321a2c; color: #fde8f0; }
+body.dim-mode .cl-btn-secondary:hover { background: #4a1f38; }
+body.dim-mode .note-editor.note-frame { border-color: #4a1f38 !important; }
+body.dim-mode .note-toolbar { background: #261426 !important; }
+body.dim-mode .note-toolbar .note-btn { background: #1e0f19; border-color: #4a1f38; color: #fde8f0; }
+body.dim-mode .note-editing-area .note-editable { background: #1e0f19 !important; color: #fde8f0 !important; }
+
+/* ════════════════════════════════════════════════════════════
+   DASHBOARD ALUMNO — .alumno-* (ficha técnica, calificaciones,
+   cursos, bolsa, comunicados). Complementa alumno-area.css, que
+   sólo define la paleta clara — aquí se cubre dark-mode/dim-mode.
+   ════════════════════════════════════════════════════════════ */
+
+/* Variables de superficie/texto — el resto de alumno-area.css ya
+   consume estas custom properties, así que basta con redefinirlas
+   para que cascaded a todos los .alumno-shell, tablas, cards, etc. */
+body.alumno-app.dark-mode {
+    --alumno-bg: #0d1117;
+    --alumno-surface: #161b22;
+    --alumno-text: #e6edf3;
+    --alumno-muted: #8b949e;
+    --alumno-border: #30363d;
+    --alumno-shadow: 0 4px 24px rgba(0, 0, 0, .45);
+    --alumno-shadow-hover: 0 8px 32px rgba(0, 0, 0, .55);
+}
+
+body.alumno-app.dim-mode {
+    --alumno-bg: #130a10;
+    --alumno-surface: #1e0f19;
+    --alumno-text: #fde8f0;
+    --alumno-muted: #d4a0bc;
+    --alumno-border: #4a1f38;
+    --alumno-shadow: 0 4px 24px rgba(0, 0, 0, .5);
+    --alumno-shadow-hover: 0 8px 32px rgba(0, 0, 0, .6);
+}
+
+/* Textos que usaban var(--alumno-teal-dark)/var(--alumno-teal) como
+   color de énfasis sobre superficie clara — en modo oscuro/tenue
+   necesitan un tono claro explícito (ese par de variables se deja
+   intacto porque también arma gradientes de sidebar/botones). */
+body.dark-mode .alumno-page-title,
+body.dark-mode .alumno-table-ficha .alumno-th-label,
+body.dark-mode .alumno-prog-value,
+body.dark-mode .alumno-data-row dt,
+body.dark-mode .alumno-grade-obs-label,
+body.dark-mode .alumno-cal-hist-header,
+body.dark-mode .alumno-badge-program,
+body.dark-mode .alumno-section-heading,
+body.alumno-app.dark-mode .alumno-bolsa-card-title,
+body.alumno-app.dark-mode .alumno-bolsa-period-badge.badge-info,
+body.alumno-app.dark-mode .alumno-comunicado-title {
+    color: #e6edf3 !important;
+}
+
+body.dim-mode .alumno-page-title,
+body.dim-mode .alumno-table-ficha .alumno-th-label,
+body.dim-mode .alumno-prog-value,
+body.dim-mode .alumno-data-row dt,
+body.dim-mode .alumno-grade-obs-label,
+body.dim-mode .alumno-cal-hist-header,
+body.dim-mode .alumno-badge-program,
+body.dim-mode .alumno-section-heading,
+body.alumno-app.dim-mode .alumno-bolsa-card-title,
+body.alumno-app.dim-mode .alumno-bolsa-period-badge.badge-info,
+body.alumno-app.dim-mode .alumno-comunicado-title {
+    color: #fde8f0 !important;
+}
+
+body.dark-mode .alumno-table-ficha .alumno-th-label,
+body.dark-mode .alumno-cal-hist-header,
+body.dark-mode .alumno-badge-program {
+    background: rgba(122, 162, 247, .12) !important;
+}
+
+body.dim-mode .alumno-table-ficha .alumno-th-label,
+body.dim-mode .alumno-cal-hist-header,
+body.dim-mode .alumno-badge-program {
+    background: rgba(232, 168, 200, .14) !important;
+}
+
+body.alumno-app.dark-mode .alumno-bolsa-period-badge.badge-info {
+    background: rgba(122, 162, 247, .12) !important;
+    border-color: rgba(122, 162, 247, .3) !important;
+}
+
+body.alumno-app.dim-mode .alumno-bolsa-period-badge.badge-info {
+    background: rgba(232, 168, 200, .14) !important;
+    border-color: rgba(232, 168, 200, .3) !important;
+}
+
+body.dark-mode .alumno-curso-item a { color: #7aa2f7 !important; }
+body.dark-mode .alumno-curso-item a:hover { color: #9db8ff !important; }
+body.dim-mode .alumno-curso-item a { color: #f4b8d0 !important; }
+body.dim-mode .alumno-curso-item a:hover { color: #fde8f0 !important; }
+
+/* Encabezado de panel de notas — usa gris fijo en el original */
+body.dark-mode .alumno-grade-panel-header { background: #1c2129 !important; color: #e6edf3 !important; }
+body.dim-mode .alumno-grade-panel-header { background: #261426 !important; color: #fde8f0 !important; }
+
+body.dark-mode .alumno-grade-ciclo-badge { background: rgba(255, 255, 255, .1) !important; color: #c9d1d9 !important; }
+body.dim-mode .alumno-grade-ciclo-badge { background: rgba(255, 255, 255, .12) !important; color: #fde8f0 !important; }
+
+body.dark-mode .alumno-ficha-section-header .alumno-grade-ciclo-badge { background: rgba(255, 255, 255, .2) !important; color: #fff !important; }
+body.dim-mode .alumno-ficha-section-header .alumno-grade-ciclo-badge { background: rgba(255, 255, 255, .2) !important; color: #fff !important; }
+
+/* Placeholder de foto — gradiente claro fijo en el original */
+body.dark-mode .alumno-photo-placeholder { background: linear-gradient(145deg, #161b22 0%, #0d1117 100%) !important; color: #8b949e !important; }
+body.dim-mode .alumno-photo-placeholder { background: linear-gradient(145deg, #1e0f19 0%, #130a10 100%) !important; color: #d4a0bc !important; }
+
+/* Rayado de filas pares — overlay claro fijo */
+body.dark-mode .alumno-table-ficha tbody tr:nth-child(even) td,
+body.dark-mode .alumno-table-cal tbody tr:nth-child(even) {
+    background: rgba(255, 255, 255, .03) !important;
+}
+body.dim-mode .alumno-table-ficha tbody tr:nth-child(even) td,
+body.dim-mode .alumno-table-cal tbody tr:nth-child(even) {
+    background: rgba(255, 255, 255, .035) !important;
+}
+
+body.dark-mode .alumno-grade-obs { background: rgba(255, 255, 255, .03) !important; }
+body.dim-mode .alumno-grade-obs { background: rgba(255, 255, 255, .035) !important; }
+
+body.dark-mode .agr-head span { background: rgba(255, 255, 255, .04) !important; }
+body.dark-mode .agr-head span:first-child { background: transparent !important; }
+body.dim-mode .agr-head span { background: rgba(255, 255, 255, .045) !important; }
+body.dim-mode .agr-head span:first-child { background: transparent !important; }
+
+body.dark-mode .alumno-filter-panel { background: rgba(22, 27, 34, .9) !important; }
+body.dim-mode .alumno-filter-panel { background: rgba(30, 15, 25, .9) !important; }
+
+body.alumno-app.dark-mode .alumno-bolsa-filters { background: linear-gradient(180deg, #161b22 0%, #0d1117 100%) !important; }
+body.alumno-app.dim-mode .alumno-bolsa-filters { background: linear-gradient(180deg, #1e0f19 0%, #130a10 100%) !important; }
+
+body.alumno-app.dark-mode .alumno-bolsa-vigencia { background: rgba(230, 192, 120, .12) !important; color: #e0a84f !important; }
+body.alumno-app.dim-mode .alumno-bolsa-vigencia { background: rgba(232, 168, 200, .16) !important; color: #f4b8d0 !important; }
+
+body.alumno-app.dark-mode .alert-success { background: linear-gradient(135deg, #0d2318 0%, #102219 100%) !important; color: #56d364 !important; }
+body.alumno-app.dim-mode .alert-success { background: linear-gradient(135deg, #052e16 0%, #0d2318 100%) !important; color: #86efac !important; }
+
+/* Pastillas de nota — pares fondo claro / texto oscuro fijos */
+body.dark-mode .alumno-score-good    { background: rgba(52, 211, 153, .18) !important; color: #6ee7b7 !important; }
+body.dark-mode .alumno-score-fail    { background: rgba(255, 128, 128, .18) !important; color: #ff8080 !important; }
+body.dark-mode .alumno-score-pending { background: rgba(251, 191, 36, .18) !important; color: #fbbf24 !important; }
+body.dim-mode .alumno-score-good     { background: rgba(91, 232, 196, .18) !important; color: #5be8c4 !important; }
+body.dim-mode .alumno-score-fail     { background: rgba(255, 155, 155, .18) !important; color: #ff9b9b !important; }
+body.dim-mode .alumno-score-pending  { background: rgba(253, 216, 122, .18) !important; color: #fdd87a !important; }
+
+/* Panel de detalle competencia/docente y bolsa: fondo blanco puntual en cards internas */
+body.alumno-app.dark-mode .alumno-bolsa-card-content .card-body,
+body.alumno-app.dark-mode .bolsa-ofertas-catalogo-wrap .card.shadow-sm {
+    background-color: #161b22 !important;
+}
+body.alumno-app.dim-mode .alumno-bolsa-card-content .card-body,
+body.alumno-app.dim-mode .bolsa-ofertas-catalogo-wrap .card.shadow-sm {
+    background-color: #1e0f19 !important;
+}
+
+/* ════════════════════════════════════════════════════════════
+   DASHBOARD DOCENTE — gaps puntuales sobre .docente-ui-*
+   (la mayoría ya está cubierta más arriba: .docente-ui-card,
+   .docente-ui-title/-subtitle/-kicker, .docente-ui-accordion)
+   ════════════════════════════════════════════════════════════ */
+body.dark-mode .docente-ui-legenda { color: #8b949e !important; }
+body.dim-mode .docente-ui-legenda { color: #d4a0bc !important; }
+
+/* ════════════════════════════════════════════════════════════
+   MÓDULO CALIFICAR (docente) — .docente-cal-*
+   ════════════════════════════════════════════════════════════ */
+body.dark-mode .docente-cal-competencias a,
+body.dim-mode .docente-cal-competencias a {
+    background: rgba(78, 115, 223, 0.18);
+    color: #b9c6f7 !important;
+}
+
+body.dark-mode table.docente-cal-table tbody tr:hover,
+body.dim-mode table.docente-cal-table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.04);
+}
+
+body.dark-mode .docente-cal-course-row:hover,
+body.dim-mode .docente-cal-course-row:hover {
+    background-color: rgba(255, 255, 255, 0.035);
+}
+
+body.dark-mode .docente-cal-empty i,
+body.dim-mode .docente-cal-empty i {
+    color: #3a4459;
+}
+
+body.dark-mode .docente-cal-scroll-hint,
+body.dim-mode .docente-cal-scroll-hint {
+    color: #8b949e;
+}
+
+/* ════════════════════════════════════════════════════════════
+   DASHBOARD DOCENTE (/Dashboard-Docente) — .docente-dash-*, .docente-curso-*
+   ════════════════════════════════════════════════════════════ */
+body.dark-mode .docente-dash-hero,
+body.dim-mode .docente-dash-hero {
+    background: #161b22 !important;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(0, 0, 0, 0.45) !important;
+}
+
+body.dark-mode .docente-dash-hero h1,
+body.dim-mode .docente-dash-hero h1 {
+    color: #e6edf3;
+}
+
+body.dark-mode .docente-dash-hero .badge-periodo,
+body.dim-mode .docente-dash-hero .badge-periodo {
+    background: rgba(78, 115, 223, 0.18);
+    color: #b9c6f7;
+}
+
+body.dark-mode .docente-dash-toggle,
+body.dim-mode .docente-dash-toggle {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+body.dark-mode .docente-dash-toggle .btn,
+body.dim-mode .docente-dash-toggle .btn {
+    color: #c4c9d6;
+}
+
+body.dark-mode .docente-dash-toggle .btn .badge,
+body.dim-mode .docente-dash-toggle .btn .badge {
+    background: rgba(255, 255, 255, 0.1);
+    color: #c4c9d6;
+}
+
+body.dark-mode .docente-curso-card,
+body.dim-mode .docente-curso-card {
+    background: #1f2733;
+}
+
+body.dark-mode .docente-curso-nombre,
+body.dim-mode .docente-curso-nombre {
+    color: #e6e8ef;
+}
+
+body.dark-mode .docente-curso-stat,
+body.dim-mode .docente-curso-stat {
+    background: rgba(255, 255, 255, 0.06);
+    color: #c4c9d6;
+}
+
+body.dark-mode .docente-curso-sections,
+body.dim-mode .docente-curso-sections {
+    border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+body.dark-mode .docente-curso-comp-chip,
+body.dim-mode .docente-curso-comp-chip {
+    background: rgba(78, 115, 223, 0.18);
+    color: #b9c6f7 !important;
+}
+
+body.dark-mode .docente-curso-index,
+body.dim-mode .docente-curso-index {
+    background: rgba(78, 115, 223, 0.22);
 }

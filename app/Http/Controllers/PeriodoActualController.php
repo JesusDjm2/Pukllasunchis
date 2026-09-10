@@ -34,11 +34,15 @@ class PeriodoActualController extends Controller
             'horario' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:4096',
             'fecha_inicio' => 'nullable|date',
             'fecha_cierre' => 'nullable|date|after_or_equal:fecha_inicio',
+            'calificaciones_parcial1_inicio' => 'nullable|date',
+            'calificaciones_parcial1_cierre' => 'nullable|date|after_or_equal:calificaciones_parcial1_inicio',
+            'calificaciones_parcial2_inicio' => 'nullable|date',
+            'calificaciones_parcial2_cierre' => 'nullable|date|after_or_equal:calificaciones_parcial2_inicio',
             'actual' => 'nullable|boolean',
         ]);
 
         if ($request->has('actual') && $request->actual) {
-            PeriodoActual::where('actual', true)->update(['actual' => false]);
+            PeriodoActual::where('actual', true)->update(['actual' => false, 'formulario_habilitado' => false]);
         }
 
         $rutaImagen = null;
@@ -59,6 +63,10 @@ class PeriodoActualController extends Controller
             'horario' => $rutaImagen,
             'fecha_inicio' => $request->fecha_inicio,
             'fecha_cierre' => $request->fecha_cierre,
+            'calificaciones_parcial1_inicio' => $request->calificaciones_parcial1_inicio,
+            'calificaciones_parcial1_cierre' => $request->calificaciones_parcial1_cierre,
+            'calificaciones_parcial2_inicio' => $request->calificaciones_parcial2_inicio,
+            'calificaciones_parcial2_cierre' => $request->calificaciones_parcial2_cierre,
             'actual' => $request->has('actual') ? 1 : 0,
         ]);
 
@@ -77,11 +85,15 @@ class PeriodoActualController extends Controller
             'horario' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:5096',
             'fecha_inicio' => 'nullable|date',
             'fecha_cierre' => 'nullable|date|after_or_equal:fecha_inicio',
+            'calificaciones_parcial1_inicio' => 'nullable|date',
+            'calificaciones_parcial1_cierre' => 'nullable|date|after_or_equal:calificaciones_parcial1_inicio',
+            'calificaciones_parcial2_inicio' => 'nullable|date',
+            'calificaciones_parcial2_cierre' => 'nullable|date|after_or_equal:calificaciones_parcial2_inicio',
             'actual' => 'nullable|boolean',
         ]);
 
         if ($request->has('actual') && $request->actual) {
-            PeriodoActual::where('id', '!=', $periodoactual->id)->update(['actual' => false]);
+            PeriodoActual::where('id', '!=', $periodoactual->id)->update(['actual' => false, 'formulario_habilitado' => false]);
         }
         $rutaHorario = $periodoactual->horario;
         if ($request->hasFile('horario')) {
@@ -102,8 +114,14 @@ class PeriodoActualController extends Controller
         $periodoactual->update([
             'nombre' => $request->nombre,
             'horario' => $rutaHorario,
-            'fecha_inicio' => $request->fecha_inicio,
-            'fecha_cierre' => $request->fecha_cierre,
+            // Si el campo llega vacío, se conserva la fecha ya guardada en vez de
+            // borrarla: dejar el input en blanco no debe equivaler a "quitar la fecha".
+            'fecha_inicio' => $request->filled('fecha_inicio') ? $request->fecha_inicio : $periodoactual->fecha_inicio,
+            'fecha_cierre' => $request->filled('fecha_cierre') ? $request->fecha_cierre : $periodoactual->fecha_cierre,
+            'calificaciones_parcial1_inicio' => $request->filled('calificaciones_parcial1_inicio') ? $request->calificaciones_parcial1_inicio : $periodoactual->calificaciones_parcial1_inicio,
+            'calificaciones_parcial1_cierre' => $request->filled('calificaciones_parcial1_cierre') ? $request->calificaciones_parcial1_cierre : $periodoactual->calificaciones_parcial1_cierre,
+            'calificaciones_parcial2_inicio' => $request->filled('calificaciones_parcial2_inicio') ? $request->calificaciones_parcial2_inicio : $periodoactual->calificaciones_parcial2_inicio,
+            'calificaciones_parcial2_cierre' => $request->filled('calificaciones_parcial2_cierre') ? $request->calificaciones_parcial2_cierre : $periodoactual->calificaciones_parcial2_cierre,
             'actual' => $request->has('actual') ? 1 : 0,
         ]);
 
@@ -119,9 +137,20 @@ class PeriodoActualController extends Controller
 
     public function toggleFormulario(PeriodoActual $periodoactual)
     {
-        $periodoactual->update([
-            'formulario_habilitado' => ! $periodoactual->formulario_habilitado,
-        ]);
+        $nuevoEstado = ! $periodoactual->formulario_habilitado;
+
+        if ($nuevoEstado && ! $periodoactual->actual) {
+            return redirect()->route('periodoactual.index')
+                ->with('error', "Solo el periodo actual puede tener el formulario habilitado. \"{$periodoactual->nombre}\" no es el periodo actual.");
+        }
+
+        if ($nuevoEstado) {
+            PeriodoActual::where('id', '!=', $periodoactual->id)
+                ->where('formulario_habilitado', true)
+                ->update(['formulario_habilitado' => false]);
+        }
+
+        $periodoactual->update(['formulario_habilitado' => $nuevoEstado]);
 
         $estado = $periodoactual->formulario_habilitado ? 'habilitado' : 'deshabilitado';
 
@@ -237,7 +266,7 @@ class PeriodoActualController extends Controller
         $periodos = Periodo::with([
             'alumno.programa',
             'alumno.user',
-            'curso.ciclo',
+            'curso.ciclo.programa',
         ])
             ->where('periodo_actual_id', $id)
             ->get();
@@ -263,52 +292,179 @@ class PeriodoActualController extends Controller
                     'alumno' => $alumno,
                     'cursos' => $cursosMostrados,
                     'periodos' => $periodosAlumno->keyBy('curso_id'),
+                    // El ciclo de referencia de la fila es el del primer curso: en la
+                    // práctica todos los cursos de un alumno en un mismo periodo
+                    // pertenecen a su mismo ciclo, así que basta para clasificar.
+                    'ciclo' => $cursosMostrados->first()->ciclo,
                 ]);
             }
         }
 
-        // Ciclos únicos de los cursos mostrados
-        $ciclos = $filas->flatMap(fn ($fila) => $fila['cursos'])
-            ->pluck('ciclo')
+        // Ciclos únicos de los cursos mostrados (se usa además en el selector de exportación)
+        $ciclos = $filas->pluck('ciclo')
             ->filter()
             ->unique('id')
             ->sortBy(fn ($c) => $c->ordenCiclo() ?? 999);
 
+        // Clasificar por Programa → Ciclo para la vista agrupada, con estadísticas
+        // rápidas por grupo (mismo umbral de aprobación que usa la tabla: >11).
+        $grupos = $filas
+            ->groupBy(fn ($fila) => optional(optional($fila['ciclo'])->programa)->nombre ?? 'Sin programa asignado')
+            ->sortKeys()
+            ->map(function ($filasPrograma) {
+                $ciclosDelPrograma = $filasPrograma
+                    ->groupBy(fn ($fila) => optional($fila['ciclo'])->nombre ?? 'Sin ciclo asignado')
+                    ->sortBy(fn ($filasCiclo) => optional($filasCiclo->first()['ciclo'])->ordenCiclo() ?? 999)
+                    ->map(function ($filasCiclo) {
+                        $filasOrdenadas = $filasCiclo->sortBy(fn ($f) => $f['alumno']->apellidos ?? '')->values();
+
+                        return [
+                            'filas' => $filasOrdenadas,
+                            'stats' => $this->statsDeGrupo($filasOrdenadas),
+                        ];
+                    });
+
+                $statsPrograma = $this->statsDeGrupo($filasPrograma);
+
+                return [
+                    'ciclos' => $ciclosDelPrograma,
+                    'stats' => $statsPrograma,
+                ];
+            });
+
+        $statsGenerales = $this->statsDeGrupo($filas);
+
         return view('admin.periodos.calificaciones.show', [
             'periodoActual' => $periodoActual,
             'nombre' => $periodoActual->nombre,
-            'filas' => $filas,
+            'grupos' => $grupos,
             'ciclos' => $ciclos,
+            'statsGenerales' => $statsGenerales,
         ]);
     }
 
-    public function exportExcel($id)
+    /**
+     * Cuenta alumnos/cursos/aprobados/desaprobados de un conjunto de filas
+     * (mismo umbral >11 que usa la tabla y el export de Excel).
+     */
+    private function statsDeGrupo($filas): array
+    {
+        $alumnos = $filas->pluck('alumno.id')->unique()->count();
+        $aprobados = 0;
+        $desaprobados = 0;
+        $sinDatos = 0;
+
+        foreach ($filas as $fila) {
+            foreach ($fila['cursos'] as $curso) {
+                $periodo = $fila['periodos']->get($curso->id);
+                $calSistema = $periodo->calificacion_sistema ?? null;
+
+                if ($calSistema !== null && $calSistema !== '' && is_numeric($calSistema)) {
+                    ((float) $calSistema) > 11 ? $aprobados++ : $desaprobados++;
+                } else {
+                    $sinDatos++;
+                }
+            }
+        }
+
+        return [
+            'alumnos' => $alumnos,
+            'cursos' => $aprobados + $desaprobados + $sinDatos,
+            'aprobados' => $aprobados,
+            'desaprobados' => $desaprobados,
+            'sinDatos' => $sinDatos,
+        ];
+    }
+
+    public function updateRegistro(Request $request, Periodo $registro)
+    {
+        if (! auth()->check() || ! auth()->user()->hasRole('super-admin')) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'valoracion_curso'     => ['nullable', 'string', 'max:255'],
+            'calificacion_curso'   => ['nullable', 'string', 'max:255'],
+            'calificacion_sistema' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $registro->update([
+            'valoracion_curso'     => $validated['valoracion_curso'] ?? null,
+            'calificacion_curso'   => $validated['calificacion_curso'] ?? null,
+            'calificacion_sistema' => $validated['calificacion_sistema'] ?? null,
+        ]);
+
+        return response()->json([
+            'ok'                   => true,
+            'valoracion_curso'     => $registro->valoracion_curso,
+            'calificacion_curso'   => $registro->calificacion_curso,
+            'calificacion_sistema' => $registro->calificacion_sistema,
+        ]);
+    }
+
+    public function exportExcel($id, Request $request)
     {
         $periodoActual = PeriodoActual::findOrFail($id);
-        [$ciclos, $filas] = $this->getDataForRegistros($id);
-        $nombreArchivo = 'Calificaciones_'.$periodoActual->nombre.'.csv';
+        $soloBecas = $request->boolean('solo_becas');
+        $cicloId = $request->get('ciclo_id');
+
+        // El periodo activo aún no tiene datos "archivados" (eso requiere el botón
+        // "Crear" en Periodos, que se corre recién al cerrar el periodo). Mientras
+        // está activo, exportamos directo desde las notas de Desempeño (Periodo 3,
+        // la calificación final de cada curso) para los cursos actualmente
+        // asignados a un docente. Los periodos ya cerrados siguen usando el
+        // archivo histórico normal.
+        if ($periodoActual->actual) {
+            [$ciclos, $filas] = $this->getDataForRegistrosEnVivo($soloBecas, $cicloId);
+        } else {
+            [$ciclos, $filas] = $this->getDataForRegistros($id, $soloBecas, $cicloId);
+        }
+
+        $cicloNombre = null;
+        $nombreArchivo = 'Calificaciones_'.$periodoActual->nombre;
+        if ($soloBecas) {
+            $nombreArchivo .= '_Becas';
+        }
+        if ($cicloId) {
+            $cicloNombre = $ciclos->firstWhere('id', $cicloId)->nombre ?? $cicloId;
+            $nombreArchivo .= '_Ciclo-'.$cicloNombre;
+        }
+        $nombreArchivo .= '.xlsx';
 
         return Excel::download(
-            new RegistrosExport($ciclos, $filas),
+            new RegistrosExport($filas, $periodoActual->nombre, $cicloNombre, $soloBecas),
             $nombreArchivo
         );
     }
 
-    private function getDataForRegistros(int $id): array
+    private function getDataForRegistros(int $id, bool $soloBecas = false, $cicloId = null): array
     {
-        $periodos = Periodo::with([
+        $periodosQuery = Periodo::with([
             'alumno.programa',
             'alumno.user',
             'alumno.cursos.ciclo',
             'curso.ciclo',
         ])
-            ->where('periodo_actual_id', $id)
-            ->get()
-            ->groupBy('alumno_id');
+            ->where('periodo_actual_id', $id);
 
-        $ciclos = Periodo::where('periodo_actual_id', $id)
-            ->with('curso.ciclo')
-            ->get()
+        if ($soloBecas) {
+            $periodosQuery->whereHas('alumno.user', fn ($q) => $q->where('beca', 1));
+        }
+        if ($cicloId) {
+            $periodosQuery->whereHas('curso', fn ($q) => $q->where('ciclo_id', $cicloId));
+        }
+
+        $periodos = $periodosQuery->get()->groupBy('alumno_id');
+
+        $ciclosQuery = Periodo::where('periodo_actual_id', $id)->with('curso.ciclo');
+        if ($soloBecas) {
+            $ciclosQuery->whereHas('alumno.user', fn ($q) => $q->where('beca', 1));
+        }
+        if ($cicloId) {
+            $ciclosQuery->whereHas('curso', fn ($q) => $q->where('ciclo_id', $cicloId));
+        }
+
+        $ciclos = $ciclosQuery->get()
             ->pluck('curso.ciclo')
             ->filter()
             ->unique('id')
@@ -356,6 +512,46 @@ class PeriodoActualController extends Controller
                 'periodos' => $grupoPeriodos,
             ]);
         }
+
+        return [$ciclos, $filas];
+    }
+
+    /**
+     * Igual que getDataForRegistros(), pero para el periodo activo: no depende
+     * del archivo histórico (tabla "periodos", que solo se llena manualmente
+     * al cerrar un periodo). Lee directo la nota de Desempeño (Periodo 3 =
+     * calificación final de cada curso) de los cursos con docente asignado
+     * actualmente, que es la mejor aproximación disponible a "cursos de este
+     * periodo" ya que el esquema no vincula curso ↔ periodo directamente.
+     */
+    private function getDataForRegistrosEnVivo(bool $soloBecas = false, $cicloId = null): array
+    {
+        $cursoIdsActuales = DB::table('curso_docente')->distinct()->pluck('curso_id');
+
+        $desempenoQuery = PeriodoTres::with(['alumno.programa', 'alumno.user', 'curso.ciclo'])
+            ->whereIn('curso_id', $cursoIdsActuales);
+
+        if ($soloBecas) {
+            $desempenoQuery->whereHas('alumno.user', fn ($q) => $q->where('beca', 1));
+        }
+        if ($cicloId) {
+            $desempenoQuery->whereHas('curso', fn ($q) => $q->where('ciclo_id', $cicloId));
+        }
+
+        $registros = $desempenoQuery->get()->filter(fn ($r) => $r->alumno && $r->curso);
+
+        $ciclos = $registros->pluck('curso.ciclo')
+            ->filter()
+            ->unique('id')
+            ->sortBy(fn ($c) => $c->ordenCiclo() ?? 999);
+
+        $filas = $registros->groupBy('alumno_id')->map(function ($grupoRegistros) {
+            return [
+                'alumno' => $grupoRegistros->first()->alumno,
+                'cursos' => $grupoRegistros->pluck('curso')->unique('id')->values(),
+                'periodos' => $grupoRegistros,
+            ];
+        })->values();
 
         return [$ciclos, $filas];
     }

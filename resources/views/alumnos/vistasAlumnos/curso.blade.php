@@ -72,7 +72,23 @@
                 <div class="alumno-data-row">
                     <dt>Sílabo</dt>
                     <dd>
-                        @if ($curso->silabo)
+                        @php
+                            $periodoActualSilaboV = \App\Models\PeriodoActual::where('actual', true)->first();
+                            $silaboEstructuradoV = $curso->silabos->firstWhere('periodo_actual_id', $periodoActualSilaboV->id ?? null)
+                                ?? $curso->silabos->firstWhere('periodo', $periodoActualSilaboV->nombre ?? null);
+                            $silaboPdfV = $curso->silabosPdf->where('periodo_actual_id', $periodoActualSilaboV->id ?? null)->first();
+                        @endphp
+                        @if ($silaboEstructuradoV)
+                            <a href="{{ route('silabo.pdf', $silaboEstructuradoV->id) }}" target="_blank"
+                               class="alumno-silabo-btn">
+                                <i class="fa fa-eye mr-1"></i> Ver sílabo
+                            </a>
+                        @elseif ($silaboPdfV)
+                            <a href="{{ asset('docentes/silabo/' . $silaboPdfV->pdf) }}" target="_blank"
+                               class="alumno-silabo-btn">
+                                <i class="fa fa-eye mr-1"></i> Ver sílabo
+                            </a>
+                        @elseif ($curso->silabo)
                             <a href="{{ asset('docentes/silabo/' . $curso->silabo) }}" target="_blank"
                                class="alumno-silabo-btn">
                                 <i class="fa fa-eye mr-1"></i> Ver sílabo

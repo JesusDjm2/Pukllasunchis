@@ -15,7 +15,6 @@ use App\Models\Programa;
 use App\Models\Provincia;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -66,36 +65,6 @@ class AlumnoController extends Controller
             : collect();
 
         return view('alumnos.ficha', compact('alumno', 'periodoActual', 'cursosAsignados'));
-    }
-
-    public function mostrarContenido(Request $request)
-    {
-        $request->validate([
-            'alumno_id' => 'required|integer',
-        ]);
-
-        $user = Auth::user();
-        $alumno_id = $request->input('alumno_id');
-
-        if ($user->hasRole('alumno')) {
-            $alumno = Alumno::find($alumno_id);
-            if (! $alumno) {
-                return redirect()->back()->with('error', 'Alumno no encontrado.');
-            }
-        } elseif ($user->hasRole('alumnoB')) {
-            $alumno = ppd::find($alumno_id);
-            if (! $alumno) {
-                return redirect()->back()->with('error', 'AlumnoB no encontrado.');
-            }
-        } else {
-            return redirect()->back()->with('error', 'Rol no autorizado.');
-        }
-
-        session(['mostrar_contenido' => true]);
-        Mail::to(config('services.notificaciones.emails'))
-            ->send(new NotificacionRegistro($alumno));
-
-        return redirect()->back()->with('success', 'Correo enviado correctamente.');
     }
 
     public function create()
@@ -282,10 +251,14 @@ class AlumnoController extends Controller
             // Enviar email de notificación automáticamente al completar el formulario
             try {
                 Mail::to(config('services.notificaciones.emails'))
-                    ->send(new NotificacionRegistro($nuevoAlumno));
+                    ->send(new NotificacionRegistro($nuevoAlumno, $periodoActual));
             } catch (\Exception $e) {
                 Log::error('Error enviando email de matrícula (store): ' . $e->getMessage());
             }
+
+            // El correo con la ficha de matrícula al alumno YA NO se envía automáticamente aquí:
+            // cobranzas debe verificar el voucher primero desde el listado de Matriculados
+            // (botón "Enviar ficha", habilitado tras marcar "Verificado").
 
             return redirect()->route('alumnos.index')->with('success', '¡Matrícula completada exitosamente! Se ha enviado una notificación al administrador.');
         } else {
@@ -304,12 +277,15 @@ class AlumnoController extends Controller
             'periodo.periodoActual',
         ])->find($id);
 
+        // Traduce códigos cortos usados en registros antiguos; los registros nuevos ya
+        // guardan la oración completa (ver alumnos/datos-personales.blade.php) y no coinciden
+        // con ninguna de estas claves, por lo que se muestran tal cual llegan de la BD.
         $procedencia = [
-            'vivo_en_comunidad' => 'Yo aún vivo en la comunidad',
-            'padres_viven_en_comunidad' => 'Mis padres aún viven en la comunidad',
-            'abuelos_viven_en_comunidad' => 'Mis abuelos aún viven en la comunidad',
-            'no_vivimos_en_comunidad' => 'Ya no vivimos en la comunidad',
-            'familia_de_zona_urbana' => 'Procedemos de una zona urbana',
+            'vivo_en_comunidad' => 'Sí, yo aún vivo en la comunidad',
+            'padres_viven_en_comunidad' => 'Sí, mis padres aún viven en la comunidad',
+            'abuelos_viven_en_comunidad' => 'Sí, mis abuelos aún viven en la comunidad',
+            'no_vivimos_en_comunidad' => 'Sí, pero ya no vivimos en la comunidad',
+            'familia_de_zona_urbana' => 'No, mi familia procede de una zona urbana',
             'otra' => 'Otra',
         ];
         $consideras = [
@@ -772,23 +748,45 @@ class AlumnoController extends Controller
             auth()->user()->update(['foto' => $nombreFoto]);
         }
 
+        $mensajeExito = '¡Ficha de matrícula completada correctamente!';
+        $mostrarPopupMatricula = false;
+
         if ($periodoActual && $formularioHabilitado) {
+            $yaEstabaMatriculado = $matriculaActual !== null;
+
             $comprobante = $request->filled('comprobante') ? $request->comprobante : null;
-            Matricula::updateOrCreate(
+            $matricula = Matricula::updateOrCreate(
                 ['alumno_id' => $alumno->id, 'periodo_actual_id' => $periodoActual->id],
                 array_filter(['fecha_completado' => now(), 'estado' => 'matriculado', 'comprobante' => $comprobante])
             );
 
-            try {
-                Mail::to(config('services.notificaciones.emails'))
-                    ->send(new NotificacionRegistro($alumno));
-            } catch (\Exception $e) {
-                Log::error('Error enviando email de matrícula (actualizarDatos): ' . $e->getMessage());
+            // El correo institucional (a cobranzas/admin) sí se sigue enviando automáticamente:
+            // es la señal para que verifiquen el voucher. El correo con la ficha AL ALUMNO ya no
+            // se envía aquí — solo cuando cobranzas lo marque como verificado y presione "Enviar
+            // ficha" desde el listado de Matriculados.
+            if (! $yaEstabaMatriculado) {
+                try {
+                    Mail::to(config('services.notificaciones.emails'))
+                        ->send(new NotificacionRegistro($alumno, $periodoActual));
+                } catch (\Exception $e) {
+                    Log::error('Error enviando email de matrícula (actualizarDatos): ' . $e->getMessage());
+                }
+            }
+
+            if ($matricula->ficha_enviada_at) {
+                $mensajeExito = "Ya estás matriculado para el periodo actual: {$periodoActual->nombre}. Tu ficha de matrícula ya fue enviada a tu correo.";
+            } else {
+                $mensajeExito = $yaEstabaMatriculado
+                    ? "Ya estás matriculado para el periodo actual: {$periodoActual->nombre}."
+                    : "¡Matrícula completada! Ya estás matriculado para el periodo actual: {$periodoActual->nombre}. Se ha notificado a la institución.";
+                $mostrarPopupMatricula = true;
             }
         } elseif ($matriculaActual && $request->filled('comprobante')) {
             $matriculaActual->update(['comprobante' => $request->comprobante]);
         }
 
-        return redirect()->route('alumnos.index')->with('success', '¡Ficha de matrícula completada correctamente!');
+        return redirect()->route('alumnos.index')
+            ->with('success', $mensajeExito)
+            ->with('mostrar_popup_matricula', $mostrarPopupMatricula);
     }
 }

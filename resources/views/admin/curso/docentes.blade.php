@@ -1,0 +1,85 @@
+@php $layout = auth()->user()?->hasRole('super-admin') ? 'layouts.superadmin' : 'layouts.admin'; @endphp
+@extends($layout)
+
+@section('titulo', 'Asignar Docentes al Curso')
+
+@section('contenido')
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4"
+         style="border-bottom:1px dashed #4848fc78;padding-bottom:1em">
+        <div>
+            <h4 class="mb-0 font-weight-bold" style="color:#1e293b;">
+                <i class="fas fa-chalkboard-teacher mr-2" style="color:#6d28d9;"></i>Asignar docentes al curso
+            </h4>
+            <small class="text-muted">Vincula los docentes que dictan este curso</small>
+        </div>
+        <a href="{{ route('curso.index') }}" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-arrow-left mr-1"></i> Volver
+        </a>
+    </div>
+
+    @if (Session::has('success'))
+        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+            {{ Session::get('success') }}
+            <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+        </div>
+    @endif
+
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-7">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center mr-3"
+                             style="width:44px;height:44px;background:linear-gradient(135deg,#6d28d9,#4c1d95);">
+                            <i class="fas fa-book text-white"></i>
+                        </div>
+                        <div>
+                            <div class="font-weight-bold text-gray-800">{{ $curso->nombre }}</div>
+                            <div class="text-muted small">
+                                {{ optional($curso->ciclo->programa)->nombre }} &mdash; {{ $curso->ciclo->nombre }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form action="{{ route('curso.docentes.update', $curso->id) }}" method="POST">
+                        @csrf
+                        <p class="text-muted small mb-3">
+                            Selecciona los docentes que dictarán este curso. Puede tener varios docentes asignados.
+                        </p>
+
+                        @if ($docentes->isEmpty())
+                            <p class="text-muted">No hay docentes registrados en el sistema.</p>
+                        @else
+                            <div class="row">
+                                @foreach ($docentes as $docente)
+                                    <div class="col-6 col-sm-4 mb-2">
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input"
+                                                   id="docente{{ $docente->id }}"
+                                                   name="docentes[]"
+                                                   value="{{ $docente->id }}"
+                                                   {{ in_array($docente->id, $asignados) ? 'checked' : '' }}>
+                                            <label class="custom-control-label" for="docente{{ $docente->id }}">
+                                                {{ $docente->nombre }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+
+                        <div class="d-flex justify-content-end mt-3">
+                            <a href="{{ route('curso.index') }}" class="btn btn-outline-secondary mr-2">Cancelar</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save mr-1"></i> Guardar asignación
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection

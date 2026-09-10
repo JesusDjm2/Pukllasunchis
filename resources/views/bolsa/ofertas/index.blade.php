@@ -238,15 +238,31 @@
                             <td class="p-3">
                                 <div class="d-flex flex-wrap justify-content-between align-items-start mb-2">
                                     <h5 class="mb-1 pr-2">{{ $o->nombre }}</h5>
-                                    <span class="badge badge-info text-wrap">
-                                        {{ $mesesNombres[$o->mes] ?? $o->mes }} {{ $o->anio }}
-                                    </span>
+                                    <div class="text-right">
+                                        <span class="badge {{ $o->vigente ? 'badge-success' : 'badge-secondary' }}">
+                                            {{ $o->vigente ? 'Vigente' : 'No vigente' }}
+                                        </span>
+                                        <span class="badge badge-info text-wrap">
+                                            {{ $mesesNombres[$o->mes] ?? $o->mes }} {{ $o->anio }}
+                                        </span>
+                                    </div>
                                 </div>
                                 <p class="text-muted small mb-2">
-                                    <strong>Vigencia:</strong>
-                                    {{ $o->fecha_inicio?->format('d/m/Y') }}
-                                    —
-                                    {{ $o->fecha_fin?->format('d/m/Y') }}
+                                    <i class="far fa-calendar-alt mr-1" aria-hidden="true"></i>
+                                    Publicado: {{ $o->fecha_publicacion?->locale('es')->translatedFormat('d \\d\\e F \\d\\e\\l Y') }}
+                                    &middot; Vigente hasta: {{ $o->fechaLimiteVigencia()?->locale('es')->translatedFormat('d \\d\\e F \\d\\e\\l Y') }}
+                                </p>
+                                <p class="text-muted small mb-2">
+                                    <strong>Publicado por:</strong> {{ $o->nombre_publicador }}
+                                    @if ($o->telefono_publicador)
+                                        &middot; {{ $o->telefono_publicador }}
+                                    @endif
+                                    @if ($o->relacion_publicador)
+                                        &middot; {{ $o->relacion_publicador }}
+                                    @endif
+                                    @if ($o->numero_correo)
+                                        &middot; N° correo/oficio: {{ $o->numero_correo }}
+                                    @endif
                                 </p>
                                 <div class="contenido-rico-bolsa border rounded bg-light p-2">
                                     {!! $o->detalles !!}

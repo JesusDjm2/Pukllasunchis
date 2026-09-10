@@ -49,6 +49,16 @@
         </div>
     @endif
 
+    {{-- Aviso: los sílabos de este periodo aún no están disponibles (se habilitan desde la 3ª semana) --}}
+    @if (auth()->user()->alumno && isset($periodoActual) && $periodoActual && !$periodoActual->silabosVisibles())
+        <div class="alert alert-info d-flex align-items-center shadow-sm mb-4 py-2 border-0">
+            <i class="fas fa-info-circle fa-lg mr-3 flex-shrink-0"></i>
+            <span>Los sílabos de <strong>{{ $periodoActual->nombre }}</strong> estarán disponibles a partir del
+                <strong>{{ $periodoActual->fechaSilabosVisibles()->format('d/m/Y') }}</strong>. Los docentes están
+                trabajando en ellos.</span>
+        </div>
+    @endif
+
     @if (auth()->user()->alumno)
 
         {{-- ① Datos personales --}}
@@ -158,15 +168,19 @@
                                     @endphp
                                     @if ($silaboObj || $curso->silabo)
                                         @if ($periodoSilabo === ($periodoActual->nombre ?? null))
-                                            @php
-                                                $sílaboURL = $silaboObj
-                                                    ? route('silabos.show', $silaboObj->id)
-                                                    : asset('docentes/silabo/' . $curso->silabo);
-                                            @endphp
-                                            <a href="{{ $sílaboURL }}" target="_blank"
-                                               class="alumno-silabo-btn">
-                                                <i class="fa fa-eye mr-1"></i> Sílabo
-                                            </a>
+                                            @if ($periodoActual && $periodoActual->silabosVisibles())
+                                                @php
+                                                    $sílaboURL = $silaboObj
+                                                        ? route('silabos.show', $silaboObj->id)
+                                                        : asset('docentes/silabo/' . $curso->silabo);
+                                                @endphp
+                                                <a href="{{ $sílaboURL }}" target="_blank"
+                                                   class="alumno-silabo-btn">
+                                                    <i class="fa fa-eye mr-1"></i> Sílabo
+                                                </a>
+                                            @else
+                                                <span class="alumno-no-silabo">Disponible pronto</span>
+                                            @endif
                                         @else
                                             <span class="alumno-no-silabo">Sin sílabo disponible</span>
                                         @endif
@@ -218,3 +232,30 @@
     @endif
 
 @endsection
+
+@if (auth()->user()->alumno && isset($periodoActual) && $periodoActual && $periodoActual->formulario_habilitado && isset($yaMatriculado) && !$yaMatriculado)
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                if (sessionStorage.getItem('matriculaAlertVista')) return;
+
+                Swal.fire({
+                    icon: 'warning',
+                    title: '¡Aún no te has matriculado!',
+                    html: 'El período <strong>{{ $periodoActual->nombre }}</strong> ya está abierto. Completa tu ficha de matrícula lo antes posible.',
+                    showCancelButton: true,
+                    confirmButtonText: 'Completar matrícula ahora',
+                    cancelButtonText: 'Recordarme después',
+                    confirmButtonColor: '#4e73df',
+                    cancelButtonColor: '#858796',
+                    reverseButtons: true,
+                }).then(function (resultado) {
+                    sessionStorage.setItem('matriculaAlertVista', '1');
+                    if (resultado.isConfirmed) {
+                        window.location.href = '{{ route('alumnos.editarDatos') }}';
+                    }
+                });
+            });
+        </script>
+    @endpush
+@endif

@@ -7,13 +7,13 @@
         h4,
         h5 {
             font-size: 20px;
-            color: #c78d40;
+            color: var(--ppd-accent);
             font-weight: 600;
         }
 
         h3 {
             font-size: 16px;
-            color: #c78d40;
+            color: var(--ppd-accent);
             font-weight: 600;
         }
 
@@ -79,6 +79,7 @@
                             class="img-fluid" style="max-width: 200px;">
                     </td>
                     <td style="width: 70%; vertical-align: middle; text-align: right">
+                        <div class="font-weight-bold text-uppercase" style="font-size:.75rem; letter-spacing:.12em; color:var(--ppd-accent);">SÍLABO</div>
                         <h5 class="font-weight-bold mb-1">
                             {{ $curso->ciclo->programa->nombre }} - Ciclo: {{ $curso->ciclo->nombre }}
                         </h5>
@@ -89,7 +90,7 @@
                 </tr>
             </table>
 
-            <div style="width: 100%; height: 2px; border-top: 1px dashed #c78d40;"></div>
+            <div style="width: 100%; height: 2px; border-top: 1px dashed var(--ppd-accent);"></div>
             <!---Boton flotante de impresión------->
             {{--  <button id="printButton" onclick="window.print()" class="btn btn-primary print-btn">
                 <i class="fa fa-file-export"></i>
@@ -135,7 +136,7 @@
                         <tr>
                             <td style="font-weight: 600; padding: 2px;">1.5 <span style="margin-left:1em">Semestre
                                     Académico</span></td>
-                            <td style="padding: 1px;">: {{ $silabo->periodo }}</td>
+                            <td style="padding: 1px;">: {{ optional($silabo->periodoActual)->nombre ?? $silabo->periodo }}</td>
                         </tr>
                         <tr>
                             <td style="font-weight: 600; padding: 2px;">1.6 <span style="margin-left:1em">Créditos</span>
@@ -175,12 +176,12 @@
                         <tr>
                             <td style="font-weight: 600; padding: 2px;">1.11 <span style="margin-left:0.4em">Fecha de
                                     inicio</span></td>
-                            <td style="padding: 2px;">: {{ \Carbon\Carbon::parse($periodoActual->fecha_inicio)->translatedFormat('d \d\e F \d\e\l Y') }}</td>
+                            <td style="padding: 2px;">: {{ $periodoActual->fecha_inicio ? \Carbon\Carbon::parse($periodoActual->fecha_inicio)->translatedFormat('d \d\e F \d\e\l Y') : '—' }}</td>
                         </tr>
                         <tr>
                             <td style="font-weight: 600; padding: 2px;">1.12 <span style="margin-left:0.4em">Fecha de
                                     término</span></td>
-                            <td style="padding: 2px;">: {{ \Carbon\Carbon::parse($periodoActual->fecha_cierre)->translatedFormat('d \d\e F \d\e\l Y') }}</td>
+                            <td style="padding: 2px;">: {{ $periodoActual->fecha_cierre ? \Carbon\Carbon::parse($periodoActual->fecha_cierre)->translatedFormat('d \d\e F \d\e\l Y') : '—' }}</td>
                         </tr>
 
                     </tbody>
@@ -200,7 +201,7 @@
             <table class="table">
                 <tbody>
                     <tr>
-                        <td style="border:none; color: #c78d40"><strong>Proyecto Integrador:</strong></td>
+                        <td style="border:none; color: var(--ppd-accent)"><strong>Proyecto Integrador:</strong></td>
                         <td style="border:none">
                             <span class="p-2">
                                 {{ $silabo->proyecto_integrador ?? 'Sin datos' }}
@@ -208,7 +209,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <td style="border:none; color: #c78d40"><strong>Producto del Proyecto Integrador:</strong></td>
+                        <td style="border:none; color: var(--ppd-accent)"><strong>Producto del Proyecto Integrador:</strong></td>
                         <td style="border:none">
                             <div>
                                 {{ $curso->ciclo->proyecto->producto ?? 'Sin proyecto asignado' }}
@@ -219,7 +220,7 @@
             </table>
 
             <div class="col-lg-12 mb-3">
-                <label for="descripcion_proyecto" style="color: #c78d40"><strong>Propósito del Proyecto
+                <label for="descripcion_proyecto" style="color: var(--ppd-accent)"><strong>Propósito del Proyecto
                         Integrador:</strong></label>
                 <div style="text-align: justify">
                     {!! $silabo->descripcion_proyecto_integrador ?? 'Sin datos' !!}
@@ -227,7 +228,7 @@
             </div>
 
             <div class="col-lg-12 mb-3">
-                <label for="vinculacion_pi" style="color: #c78d40"><strong>Vinculación o aporte del curso con el proyecto
+                <label for="vinculacion_pi" style="color: var(--ppd-accent)"><strong>Vinculación o aporte del curso con el proyecto
                         integrador:</strong></label>
                 <div>
                     {!! $silabo->vinculacion_pi ?? 'Sin datos' !!}
@@ -235,7 +236,7 @@
             </div>
 
             <div class="col-lg-12 mb-3">
-                <label for="producto_curso" style="color: #c78d40"><strong>Producto del Curso:</strong></label>
+                <label for="producto_curso" style="color: var(--ppd-accent)"><strong>Producto del Curso:</strong></label>
                 <div>
                     {!! $silabo->producto_curso ?? 'Sin datos' !!}
                 </div>
@@ -245,7 +246,7 @@
                 <h2 class="mt-5">IV. Enfoques Transversales:</h2>
             </div>
             <table class="table table-bordered">
-                <thead style="color: #c78d40">
+                <thead style="color: var(--ppd-accent)">
                     <tr>
                         <th style="width: 35%">Enfoque</th>
                         <th>¿Cuándo son observables en la EESP?</th>
@@ -256,7 +257,7 @@
                     @forelse ($silabo->enfoques as $enfoque)
                         <tr>
                             <td style="text-align: justify"><strong
-                                    style="color: #c78d40">{{ $enfoque->nombre }}</strong><br>
+                                    style="color: var(--ppd-accent)">{{ $enfoque->nombre }}</strong><br>
                                 {{ $enfoque->descripcion }}
                             </td>
                             <td style="text-align: justify">{{ $enfoque->enfoque_observables }}</td>
@@ -412,8 +413,8 @@
             </div>
         </div>
     </div>
-    <a href="javascript:history.back()" class="btn btn-danger boton-volver btn-sm"
+    <a href="javascript:history.back()" class="btn btn-sm btn-ppd-volver boton-volver shadow-sm"
         style="position: fixed; top: 120px; right: 20px; z-index: 1000;">
-        Volver
+        <i class="fa fa-arrow-left"></i> Volver
     </a>
 @endsection

@@ -33,8 +33,12 @@ class AlumnoCursoController extends Controller
             ? $alumno->cursosDelPeriodo($periodoActual->id)->pluck('cursos.id')->toArray()
             : [];
 
-        // Si no hay asignaciones en este período, los cursos del ciclo se muestran todos seleccionados por defecto
-        $cicloIdsDefecto = $asignadosIds === [] ? $cursosCiclo->pluck('id')->toArray() : [];
+        // Si no hay asignaciones en este período, los cursos del ciclo se muestran todos seleccionados por
+        // defecto (conveniencia para alumnos nuevos). Un inhabilitado NUNCA recibe este default: si un admin
+        // lo vació a propósito, debe quedarse vacío en vez de "revivir" con todos los cursos del ciclo marcados.
+        $cicloIdsDefecto = ($asignadosIds === [] && ! $user->hasRole('inhabilitado'))
+            ? $cursosCiclo->pluck('id')->toArray()
+            : [];
 
         return view('admin.curso.asignarcursos.asignacion', compact(
             'alumno',
@@ -58,11 +62,23 @@ class AlumnoCursoController extends Controller
             ->pluck('id')
             ->toArray();
 
-        // Eliminar asignaciones del período actual para este alumno
-        DB::table('alumno_cursos')
-            ->where('alumno_id', $alumno->id)
-            ->where('periodo_actual_id', $periodoActual?->id)
-            ->delete();
+        // Eliminar asignaciones del período actual para este alumno.
+        $borrado = DB::table('alumno_cursos')->where('alumno_id', $alumno->id);
+
+        // Para inhabilitados, también se limpian filas heredadas sin período (datos antiguos de antes de que
+        // "alumno_cursos" tuviera periodo_actual_id), que de otro modo nunca se borran y lo mantienen visible
+        // indefinidamente en las pantallas de calificar. NO se hace esto para alumnos activos: hay ~300
+        // asignaciones legítimas de "cursos adicionales" que aún dependen de esas filas sin período.
+        if ($alumno->user && $alumno->user->hasRole('inhabilitado')) {
+            $borrado->where(function ($q) use ($periodoActual) {
+                $q->where('periodo_actual_id', $periodoActual?->id)
+                    ->orWhereNull('periodo_actual_id');
+            });
+        } else {
+            $borrado->where('periodo_actual_id', $periodoActual?->id);
+        }
+
+        $borrado->delete();
 
         // Insertar las nuevas asignaciones con el período
         $now = now();

@@ -32,18 +32,13 @@ class AlumnosPpdExport implements FromCollection, WithHeadings, WithMapping, Wit
             'Nombres',
             'DNI',
             'Email',
-            'Teléfono',
-            'Género',
             'Estado civil',
             'Fecha nacimiento',
             'Domicilio',
             'Lengua 1',
             'Lengua 2',
-            'Beca',
-            'Condición',
-            'Completó matrícula',
             'Número (matrícula)',
-            'Roles',
+            'Número de referencia (matrícula)',
         ];
     }
 
@@ -61,18 +56,13 @@ class AlumnosPpdExport implements FromCollection, WithHeadings, WithMapping, Wit
             (string) ($alumno->name ?? ''),
             (string) ($alumno->dni ?? ''),
             (string) ($alumno->email ?? ''),
-            (string) ($alumno->telefono ?? ''),
-            $this->generoLabel($alumno->genero),
-            (string) ($alumno->estadoCivil ?? ''),
+            $ppd ? (string) ($ppd->estado_civil ?? '') : (string) ($alumno->estadoCivil ?? ''),
             $alumno->fecha_nacimiento ? (string) $alumno->fecha_nacimiento : '',
-            (string) ($alumno->domicilio ?? ''),
-            (string) ($alumno->lengua_1 ?? ''),
-            (string) ($alumno->lengua_2 ?? ''),
-            $alumno->beca ? 'Sí' : 'No',
-            (string) ($alumno->condicion ?? ''),
-            $ppd ? 'Sí' : 'No',
+            $ppd ? (string) ($ppd->direccion ?? '') : (string) ($alumno->domicilio ?? ''),
+            $ppd ? (string) ($ppd->lengua_1 ?? '') : (string) ($alumno->lengua_1 ?? ''),
+            $ppd ? (string) ($ppd->lengua_2 ?? '') : (string) ($alumno->lengua_2 ?? ''),
             $ppd ? (string) ($ppd->numero ?? '') : '',
-            $alumno->roles->pluck('name')->implode(', '),
+            $ppd ? (string) ($ppd->numero_referencia ?? '') : '',
         ];
     }
 
@@ -92,14 +82,5 @@ class AlumnosPpdExport implements FromCollection, WithHeadings, WithMapping, Wit
                 ],
             ],
         ];
-    }
-
-    private function generoLabel(mixed $genero): string
-    {
-        if ($genero === null || $genero === '') {
-            return '';
-        }
-
-        return (int) $genero === 1 ? 'Masculino' : 'Femenino';
     }
 }

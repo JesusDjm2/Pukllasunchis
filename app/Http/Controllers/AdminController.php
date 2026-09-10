@@ -4,19 +4,28 @@ namespace App\Http\Controllers;
 
 use App\Exports\AlumnosFidExport;
 use App\Exports\AlumnosPpdExport;
+use App\Exports\BecasCalificacionesExport;
+use App\Mail\NotificacionRegistro;
 use App\Models\Alumno;
 use App\Models\Ciclo;
 use App\Models\Curso;
 use App\Models\Departamento;
 use App\Models\Docente;
 use App\Models\Matricula;
+use App\Models\MatriculaPpd;
 use App\Models\PeriodoActual;
+use App\Models\PeriodoActualPpd;
+use App\Models\PeriodoDos;
+use App\Models\PeriodoTres;
+use App\Models\PeriodoUno;
 use App\Models\ppd;
 use App\Models\Programa;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use Spatie\Permission\Models\Role;
@@ -25,13 +34,27 @@ class AdminController extends Controller
 {
     public function login()
     {
+        if (auth()->check()) {
+            return $this->redirectToDashboard(auth()->user());
+        }
+
         return view('admin.login');
+    }
+
+    /**
+     * Destino de RouteServiceProvider::HOME ('/home'): a dónde manda el
+     * middleware "guest" a un usuario ya autenticado (p. ej. si intenta
+     * enviar el formulario de /login con una sesión ya iniciada).
+     */
+    public function homeRedirect()
+    {
+        return $this->redirectToDashboard(auth()->user());
     }
 
     public function index()
     {
         $alumno = auth()->user()?->alumno;
-        $admins = User::all();
+        $admins = User::with(['tutorCiclos', 'docente.cursos'])->get();
         $totalAlumnos = User::whereHas('roles', function ($query) {
             $query->where('name', 'alumno');
         })->count();
@@ -74,10 +97,24 @@ class AdminController extends Controller
 
         $soloBecas = $request->get('solo_becas') === '1';
 
+        $estadoMatricula = in_array($request->input('estado_matricula'), ['matriculados', 'no_matriculados'], true)
+            ? $request->input('estado_matricula')
+            : null;
+
         $query = $this->alumnosFidFilteredQuery($request);
 
-        if ($periodoFiltroId) {
+        // Conteos para la tarjeta resumen: se calculan ANTES de aplicar el filtro de
+        // estado de matrícula, para que el resumen siempre refleje el universo completo
+        // (programa/ciclo/búsqueda) independientemente de qué estado esté filtrado.
+        $totalListadoBase = $periodoFiltroId ? (clone $query)->count() : null;
+        $totalMatriculadosBase = $periodoFiltroId
+            ? (clone $query)->whereHas('matriculas', fn ($m) => $m->where('periodo_actual_id', $periodoFiltroId))->count()
+            : null;
+
+        if ($periodoFiltroId && $estadoMatricula === 'matriculados') {
             $query->whereHas('matriculas', fn ($m) => $m->where('periodo_actual_id', $periodoFiltroId));
+        } elseif ($periodoFiltroId && $estadoMatricula === 'no_matriculados') {
+            $query->whereDoesntHave('matriculas', fn ($m) => $m->where('periodo_actual_id', $periodoFiltroId));
         }
 
         $busquedaActiva = $request->filled('search') && trim((string) $request->input('search')) !== '';
@@ -102,7 +139,6 @@ class AdminController extends Controller
 
         $totalesPorCicloId = Alumno::query()
             ->whereHas('user', fn ($sub) => $this->applyAlumnoFidUserConstraints($sub))
-            ->when($periodoFiltroId, fn ($q) => $q->whereHas('matriculas', fn ($m) => $m->where('periodo_actual_id', $periodoFiltroId)))
             ->when($soloBecas, fn ($q) => $q->whereHas('user', fn ($u) => $u->where('beca', 1)))
             ->whereNotNull('ciclo_id')
             ->selectRaw('ciclo_id, COUNT(*) as total')
@@ -110,16 +146,28 @@ class AdminController extends Controller
             ->get()
             ->keyBy('ciclo_id');
 
+        // Mismos totales por ciclo pero solo de alumnos matriculados en el periodo
+        // filtrado — alimenta la vista previa del modal de exportación cuando se
+        // elige "Solo matriculados" / "Faltan matricularse".
+        $totalesMatriculadosPorCicloId = $periodoFiltroId
+            ? Alumno::query()
+                ->whereHas('user', fn ($sub) => $this->applyAlumnoFidUserConstraints($sub))
+                ->when($soloBecas, fn ($q) => $q->whereHas('user', fn ($u) => $u->where('beca', 1)))
+                ->whereNotNull('ciclo_id')
+                ->whereHas('matriculas', fn ($m) => $m->where('periodo_actual_id', $periodoFiltroId))
+                ->selectRaw('ciclo_id, COUNT(*) as total')
+                ->groupBy('ciclo_id')
+                ->get()
+                ->keyBy('ciclo_id')
+            : collect();
+
         if ($alumnos->isEmpty() && ! $request->has('search_page')) {
             session()->flash('error', 'No se han encontrado resultados. Se ha buscado un total de '.$totalRecords.' registros.');
         }
 
         $programasFiltro = Programa::query()
-            ->whereHas('alumnos', function ($q) use ($periodoFiltroId, $soloBecas) {
+            ->whereHas('alumnos', function ($q) use ($soloBecas) {
                 $q->whereHas('user', fn ($sub) => $this->applyAlumnoFidUserConstraints($sub));
-                if ($periodoFiltroId) {
-                    $q->whereHas('matriculas', fn ($m) => $m->where('periodo_actual_id', $periodoFiltroId));
-                }
                 if ($soloBecas) {
                     $q->whereHas('user', fn ($u) => $u->where('beca', 1));
                 }
@@ -131,11 +179,8 @@ class AdminController extends Controller
         if ($request->filled('programa_id')) {
             $ciclosFiltro = Ciclo::query()
                 ->where('programa_id', (int) $request->input('programa_id'))
-                ->whereHas('alumnos', function ($q) use ($periodoFiltroId, $soloBecas) {
+                ->whereHas('alumnos', function ($q) use ($soloBecas) {
                     $q->whereHas('user', fn ($sub) => $this->applyAlumnoFidUserConstraints($sub));
-                    if ($periodoFiltroId) {
-                        $q->whereHas('matriculas', fn ($m) => $m->where('periodo_actual_id', $periodoFiltroId));
-                    }
                     if ($soloBecas) {
                         $q->whereHas('user', fn ($u) => $u->where('beca', 1));
                     }
@@ -163,7 +208,7 @@ class AdminController extends Controller
         $todosLosPeriodos = PeriodoActual::orderBy('nombre', 'asc')->get();
 
         if ($request->boolean('partial')) {
-            return view('alumnos._tabla_fid', compact('alumnos', 'conteoGrupoListado', 'totalesPorCicloId'));
+            return view('alumnos._tabla_fid', compact('alumnos', 'conteoGrupoListado', 'totalesPorCicloId', 'periodoFiltroId'));
         }
 
         return view('alumnos.index', compact(
@@ -173,27 +218,35 @@ class AdminController extends Controller
             'ciclosFiltro',
             'conteoGrupoListado',
             'totalesPorCicloId',
+            'totalesMatriculadosPorCicloId',
             'busquedaActiva',
             'ciclosParaExportacion',
             'periodoActual',
             'periodoFiltroId',
             'todosLosPeriodos',
             'soloBecas',
+            'estadoMatricula',
+            'totalListadoBase',
+            'totalMatriculadosBase',
         ));
     }
 
     public function exportAlumnosExcel(Request $request)
     {
-        if (! auth()->check() || ! auth()->user()->hasRole('admin')) {
+        if (! auth()->check() || ! auth()->user()->hasAnyRole(['admin', 'super-admin'])) {
             abort(403);
         }
 
         $validated = $request->validate([
             'ciclo_ids' => ['required', 'array', 'min:1'],
             'ciclo_ids.*' => ['integer', 'exists:ciclos,id'],
+            'estado_matricula' => ['nullable', 'in:matriculados,no_matriculados'],
+            'solo_importantes' => ['nullable', 'boolean'],
         ]);
 
         $cicloIds = array_values(array_unique(array_map('intval', $validated['ciclo_ids'])));
+        $estadoMatricula = $validated['estado_matricula'] ?? null;
+        $soloImportantes = $request->boolean('solo_importantes');
 
         $periodoFiltroId = $request->filled('periodo_id')
             ? (int) $request->input('periodo_id')
@@ -202,11 +255,19 @@ class AdminController extends Controller
         $query = $this->alumnosFidFilteredQuery($request, false)
             ->whereIn('ciclo_id', $cicloIds);
 
-        if ($periodoFiltroId) {
+        if ($periodoFiltroId && $estadoMatricula === 'matriculados') {
             $query->whereHas('matriculas', fn ($m) => $m->where('periodo_actual_id', $periodoFiltroId));
+        } elseif ($periodoFiltroId && $estadoMatricula === 'no_matriculados') {
+            $query->whereDoesntHave('matriculas', fn ($m) => $m->where('periodo_actual_id', $periodoFiltroId));
         }
+
         $alumnos = $query
-            ->with(['programa', 'ciclo', 'user.roles'])
+            ->with([
+                'programa',
+                'ciclo',
+                'user.roles',
+                'matriculas' => fn ($q) => $periodoFiltroId ? $q->where('periodo_actual_id', $periodoFiltroId) : $q,
+            ])
             ->orderByRaw('programa_id IS NULL, programa_id')
             ->orderByRaw('ciclo_id IS NULL, ciclo_id')
             ->orderBy('apellidos')
@@ -216,7 +277,65 @@ class AdminController extends Controller
         $prefijo = $request->get('solo_becas') === '1' ? 'alumnos_becas_fid' : 'alumnos_fid';
         $nombreArchivo = $prefijo.'_'.now()->format('Y-m-d_His').'.xlsx';
 
-        return Excel::download(new AlumnosFidExport($alumnos), $nombreArchivo);
+        return Excel::download(new AlumnosFidExport($alumnos, $periodoFiltroId, $soloImportantes), $nombreArchivo);
+    }
+
+    /**
+     * Calificaciones (Parcial 1, Parcial 2, Desempeño) de alumnos becarios.
+     * Lee directo de periodo_uno/periodo_dos/periodo_tres (datos en vivo del ciclo
+     * en curso), no de la tabla `periodos` que solo se llena al archivar un periodo cerrado.
+     */
+    public function exportBecasCalificaciones()
+    {
+        if (! auth()->check() || ! auth()->user()->hasAnyRole(['admin', 'super-admin'])) {
+            abort(403);
+        }
+
+        $alumnoIds = Alumno::whereHas('user', fn ($q) => $q->where('beca', 1))->pluck('id');
+
+        $parcial1 = PeriodoUno::whereIn('alumno_id', $alumnoIds)->get()->groupBy('alumno_id');
+        $parcial2 = PeriodoDos::whereIn('alumno_id', $alumnoIds)->get()->groupBy('alumno_id');
+        $desempeno = PeriodoTres::whereIn('alumno_id', $alumnoIds)->get()->groupBy('alumno_id');
+
+        $cursoIds = $parcial1->flatten()->pluck('curso_id')
+            ->merge($parcial2->flatten()->pluck('curso_id'))
+            ->merge($desempeno->flatten()->pluck('curso_id'))
+            ->unique();
+
+        $cursos = Curso::with('ciclo')->whereIn('id', $cursoIds)->get()->keyBy('id');
+        $alumnos = Alumno::with(['user', 'programa'])->whereIn('id', $alumnoIds)->get()->keyBy('id');
+
+        $filas = collect();
+
+        foreach ($alumnoIds as $alumnoId) {
+            $p1ByCurso = ($parcial1->get($alumnoId) ?? collect())->keyBy('curso_id');
+            $p2ByCurso = ($parcial2->get($alumnoId) ?? collect())->keyBy('curso_id');
+            $p3ByCurso = ($desempeno->get($alumnoId) ?? collect())->keyBy('curso_id');
+
+            $alumnoCursoIds = $p1ByCurso->keys()
+                ->merge($p2ByCurso->keys())
+                ->merge($p3ByCurso->keys())
+                ->unique();
+
+            foreach ($alumnoCursoIds as $cursoId) {
+                $curso = $cursos->get($cursoId);
+                if (! $curso) {
+                    continue;
+                }
+
+                $filas->push([
+                    'alumno' => $alumnos->get($alumnoId),
+                    'curso' => $curso,
+                    'parcial1' => $p1ByCurso->get($cursoId),
+                    'parcial2' => $p2ByCurso->get($cursoId),
+                    'desempeno' => $p3ByCurso->get($cursoId),
+                ]);
+            }
+        }
+
+        $nombreArchivo = 'Calificaciones_Becas_'.now()->format('Y-m-d_His').'.xlsx';
+
+        return Excel::download(new BecasCalificacionesExport($filas), $nombreArchivo);
     }
 
     public function alumnoCarnet(Alumno $alumno)
@@ -231,11 +350,39 @@ class AdminController extends Controller
 
     public function alumnosppd(Request $request)
     {
+        $periodoActualPpd = PeriodoActualPpd::where('actual', true)->first();
+        $periodoFiltroId = $request->filled('periodo_id')
+            ? (int) $request->input('periodo_id')
+            : ($periodoActualPpd?->id);
+
+        $estadoMatricula = in_array($request->input('estado_matricula'), ['matriculados', 'no_matriculados'], true)
+            ? $request->input('estado_matricula')
+            : null;
+
         $query = $this->alumnosPpdFilteredQuery($request);
         $busquedaActiva = $request->filled('search') && trim((string) $request->input('search')) !== '';
 
+        $totalListadoBase = $periodoFiltroId ? (clone $query)->count() : null;
+        $totalMatriculadosBase = $periodoFiltroId
+            ? (clone $query)->whereHas('alumnoB.matriculas', fn ($m) => $m->where('periodo_actual_ppd_id', $periodoFiltroId))->count()
+            : null;
+
+        if ($periodoFiltroId && $estadoMatricula === 'matriculados') {
+            $query->whereHas('alumnoB.matriculas', fn ($m) => $m->where('periodo_actual_ppd_id', $periodoFiltroId));
+        } elseif ($periodoFiltroId && $estadoMatricula === 'no_matriculados') {
+            $query->where(function ($q) use ($periodoFiltroId) {
+                $q->whereDoesntHave('alumnoB')
+                    ->orWhereDoesntHave('alumnoB.matriculas', fn ($m) => $m->where('periodo_actual_ppd_id', $periodoFiltroId));
+            });
+        }
+
         $alumnos = $query
-            ->with(['programa', 'ciclo.programa', 'alumnoB', 'roles'])
+            ->with([
+                'programa',
+                'ciclo.programa',
+                'alumnoB.matriculas' => fn ($q) => $q->where('periodo_actual_ppd_id', $periodoFiltroId),
+                'roles',
+            ])
             ->orderByRaw('programa_id IS NULL, programa_id')
             ->orderByRaw('ciclo_id IS NULL, ciclo_id')
             ->orderBy('apellidos')
@@ -292,8 +439,10 @@ class AdminController extends Controller
             ->orderBy('id')
             ->get();
 
+        $todosLosPeriodosPpd = PeriodoActualPpd::orderBy('nombre', 'asc')->get();
+
         if ($request->boolean('partial')) {
-            return view('alumnos.ppd._tabla_ppd', compact('alumnos', 'conteoGrupoListado', 'totalesPorCicloId'));
+            return view('alumnos.ppd._tabla_ppd', compact('alumnos', 'conteoGrupoListado', 'totalesPorCicloId', 'periodoFiltroId'));
         }
 
         return view('alumnos.ppd.lista', compact(
@@ -305,6 +454,12 @@ class AdminController extends Controller
             'totalesPorCicloId',
             'busquedaActiva',
             'ciclosParaExportacion',
+            'periodoActualPpd',
+            'periodoFiltroId',
+            'todosLosPeriodosPpd',
+            'estadoMatricula',
+            'totalListadoBase',
+            'totalMatriculadosBase',
         ));
     }
 
@@ -505,12 +660,14 @@ class AdminController extends Controller
 
         if (in_array('docente', $roles)) {
             $docente = $user->docente;
-            if ($docente) {
-                $docente->nombre = $request->input('name').' '.$request->input('apellidos');
-                $docente->dni = $request->input('dni');
-                $docente->email = $request->input('email');
-                $docente->save();
+            if (! $docente) {
+                $docente = new Docente;
+                $docente->user_id = $user->id;
             }
+            $docente->nombre = $request->input('name').' '.$request->input('apellidos');
+            $docente->dni = $request->input('dni');
+            $docente->email = $request->input('email');
+            $docente->save();
         }
 
         if (in_array('alumno', $roles) || in_array('alumnoB', $roles)) {
@@ -736,7 +893,11 @@ class AdminController extends Controller
                     }
                     $sub->where(function ($q) use ($term) {
                         $q->where('name', 'like', '%'.$term.'%')
-                            ->orWhere('apellidos', 'like', '%'.$term.'%');
+                            ->orWhere('apellidos', 'like', '%'.$term.'%')
+                            ->orWhereHas('alumnoB', function ($qb) use ($term) {
+                                $qb->where('numero', 'like', '%'.$term.'%')
+                                    ->orWhere('numero_referencia', 'like', '%'.$term.'%');
+                            });
                     })->orWhere('dni', 'like', '%'.$term.'%');
                 }
             });
@@ -752,13 +913,182 @@ class AdminController extends Controller
         return redirect()->back()->with('success', 'Matrícula eliminada correctamente.');
     }
 
+    public function quitarMatriculaPpd(MatriculaPpd $matricula)
+    {
+        $matricula->delete();
+
+        return redirect()->back()->with('success', 'Matrícula PPD eliminada correctamente.');
+    }
+
+    public function verificarVoucherMatricula(Request $request, Matricula $matricula)
+    {
+        $nuevoEstado = ! $matricula->voucher_verificado;
+        $matricula->update([
+            'voucher_verificado' => $nuevoEstado,
+            'voucher_verificado_at' => $nuevoEstado ? now() : null,
+        ]);
+
+        $mensaje = $nuevoEstado
+            ? 'Voucher marcado como verificado.'
+            : 'Verificación de voucher removida.';
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'voucher_verificado' => $nuevoEstado,
+                'ficha_enviada' => (bool) $matricula->ficha_enviada_at,
+                'message' => $mensaje,
+            ]);
+        }
+
+        return redirect()->back()->with('success', $mensaje);
+    }
+
+    public function enviarFichaMatricula(Request $request, Matricula $matricula)
+    {
+        $wantsJson = $request->wantsJson() || $request->ajax();
+
+        if (! $matricula->voucher_verificado) {
+            $mensaje = 'Debes verificar el voucher antes de enviar la ficha.';
+
+            return $wantsJson
+                ? response()->json(['success' => false, 'message' => $mensaje], 422)
+                : redirect()->back()->with('error', $mensaje);
+        }
+
+        $yaEnviada = (bool) $matricula->ficha_enviada_at;
+
+        $alumno = $matricula->alumno()->with('programa', 'ciclo')->first();
+        $email = $alumno?->user()->first()?->email ?? $alumno?->email;
+
+        if (! $alumno || ! $email) {
+            $mensaje = 'El alumno no tiene un correo registrado.';
+
+            return $wantsJson
+                ? response()->json(['success' => false, 'message' => $mensaje], 422)
+                : redirect()->back()->with('error', $mensaje);
+        }
+
+        try {
+            Mail::to($email)->send(new NotificacionRegistro($alumno, $matricula->periodoActual, true));
+            $matricula->update(['ficha_enviada_at' => now()]);
+
+            $mensaje = $yaEnviada
+                ? 'Ficha de matrícula reenviada correctamente al alumno.'
+                : 'Ficha de matrícula enviada correctamente al alumno.';
+
+            if ($wantsJson) {
+                return response()->json([
+                    'success' => true,
+                    'message' => $mensaje,
+                    'ficha_enviada_at' => $matricula->ficha_enviada_at->format('d/m/Y H:i'),
+                ]);
+            }
+
+            return redirect()->back()->with('success', $mensaje);
+        } catch (\Exception $e) {
+            Log::error('Error enviando ficha de matrícula (verificación manual): '.$e->getMessage());
+            $mensaje = 'Ocurrió un error al enviar el correo. Revisa el log.';
+
+            return $wantsJson
+                ? response()->json(['success' => false, 'message' => $mensaje], 500)
+                : redirect()->back()->with('error', $mensaje);
+        }
+    }
+
+    public function verificarVoucherMatriculaPpd(Request $request, MatriculaPpd $matricula)
+    {
+        $nuevoEstado = ! $matricula->voucher_verificado;
+        $matricula->update([
+            'voucher_verificado' => $nuevoEstado,
+            'voucher_verificado_at' => $nuevoEstado ? now() : null,
+        ]);
+
+        $mensaje = $nuevoEstado
+            ? 'Voucher marcado como verificado.'
+            : 'Verificación de voucher removida.';
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'voucher_verificado' => $nuevoEstado,
+                'ficha_enviada' => (bool) $matricula->ficha_enviada_at,
+                'message' => $mensaje,
+            ]);
+        }
+
+        return redirect()->back()->with('success', $mensaje);
+    }
+
+    public function enviarFichaMatriculaPpd(Request $request, MatriculaPpd $matricula)
+    {
+        $wantsJson = $request->wantsJson() || $request->ajax();
+
+        if (! $matricula->voucher_verificado) {
+            $mensaje = 'Debes verificar el voucher antes de enviar la ficha.';
+
+            return $wantsJson
+                ? response()->json(['success' => false, 'message' => $mensaje], 422)
+                : redirect()->back()->with('error', $mensaje);
+        }
+
+        $yaEnviada = (bool) $matricula->ficha_enviada_at;
+
+        $alumno = $matricula->ppd()->with('programa', 'ciclo')->first();
+        $email = $alumno?->user()->first()?->email ?? $alumno?->email;
+
+        if (! $alumno || ! $email) {
+            $mensaje = 'El alumno no tiene un correo registrado.';
+
+            return $wantsJson
+                ? response()->json(['success' => false, 'message' => $mensaje], 422)
+                : redirect()->back()->with('error', $mensaje);
+        }
+
+        try {
+            Mail::to($email)->send(new NotificacionRegistro($alumno, $matricula->periodoActualPpd, true));
+            $matricula->update(['ficha_enviada_at' => now()]);
+
+            $mensaje = $yaEnviada
+                ? 'Notificación de matrícula PPD reenviada correctamente al alumno.'
+                : 'Notificación de matrícula PPD enviada correctamente al alumno.';
+
+            if ($wantsJson) {
+                return response()->json([
+                    'success' => true,
+                    'message' => $mensaje,
+                    'ficha_enviada_at' => $matricula->ficha_enviada_at->format('d/m/Y H:i'),
+                ]);
+            }
+
+            return redirect()->back()->with('success', $mensaje);
+        } catch (\Exception $e) {
+            Log::error('Error enviando ficha de matrícula PPD (verificación manual): '.$e->getMessage());
+            $mensaje = 'Ocurrió un error al enviar el correo. Revisa el log.';
+
+            return $wantsJson
+                ? response()->json(['success' => false, 'message' => $mensaje], 500)
+                : redirect()->back()->with('error', $mensaje);
+        }
+    }
+
     private function applyAlumnoFidUserConstraints($userQuery): void
     {
         $userQuery
             ->whereDoesntHave('roles', fn ($r) => $r->where('name', 'alumnoB'))
             ->where(function ($q) {
                 $q->whereHas('roles', fn ($r) => $r->where('name', 'alumno'))
-                  ->orWhereHas('roles', fn ($r) => $r->where('name', 'inhabilitado'));
+                  ->orWhere(function ($q2) {
+                      $q2->whereHas('roles', fn ($r) => $r->where('name', 'inhabilitado'))
+                          ->where('perfil', '!=', 'Retirado');
+                  });
+            })
+            // Cada promoción que termina el programa conserva su Ciclo X real (para no
+            // perder el vínculo con sus cursos/calificaciones), pero no es parte del
+            // periodo actual: no debe contarse en la Matrícula ni en los selectores/
+            // conteos por Ciclo (mismo criterio que ya se aplica en PPD).
+            ->where(function ($q) {
+                $q->whereNull('condicion')->orWhere('condicion', '!=', 'Egresado');
             });
     }
 }

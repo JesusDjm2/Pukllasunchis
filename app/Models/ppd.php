@@ -22,6 +22,11 @@ class ppd extends Model
         'numero_referencia',
         'procedencia_familiar',
         'direccion',
+        'departamento',
+        'provincia',
+        'distrito',
+        'genero',
+        'fecha_nacimiento',
         'lugar_nacimiento',
         'permanencia_vivienda',
         'te_consideras',
@@ -109,6 +114,16 @@ class ppd extends Model
     public function calificaciones()
     {
         return $this->hasMany(Calificacionesppd::class);
+    }
+
+    public function matriculas()
+    {
+        return $this->hasMany(MatriculaPpd::class, 'ppd_id');
+    }
+
+    public function matriculaEnPeriodo(int $periodoActualPpdId): ?MatriculaPpd
+    {
+        return $this->matriculas()->where('periodo_actual_ppd_id', $periodoActualPpdId)->first();
     }
 
     public static function asociarPorEmail($email)

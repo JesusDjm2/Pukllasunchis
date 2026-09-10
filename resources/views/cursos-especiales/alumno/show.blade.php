@@ -396,10 +396,30 @@
 </div>
 
 @if (session('success'))
-    <div class="alert alert-success alert-dismissible fade show mb-3">
-        <i class="fas fa-check-circle mr-2"></i>{{ session('success') }}
-        <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
-    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                icon: 'success',
+                title: '¡Listo!',
+                text: @json(session('success')),
+                confirmButtonColor: '#28a745',
+                timer: 4000,
+                timerProgressBar: true
+            });
+        });
+    </script>
+@endif
+@if (session('error'))
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: @json(session('error')),
+                confirmButtonColor: '#dc3545'
+            });
+        });
+    </script>
 @endif
 
 {{-- Stats --}}
@@ -476,7 +496,8 @@
                                 <span class="ce-lesson-status {{ $done ? 'done' : '' }}">
                                     <i class="fas fa-{{ $done ? 'check' : 'circle' }}"></i>
                                 </span>
-                                <i class="fas fa-{{ $leccion->tipo === 'audio' ? 'headphones' : ($leccion->tipo === 'video' ? 'play-circle' : 'file-alt') }} ce-lesson-type-icon"></i>
+                                @php $td = $leccion->tipo_display; @endphp
+                                <i class="fas fa-{{ $td === 'audio' ? 'headphones' : ($td === 'video' ? 'play-circle' : ($td === 'mixto' ? 'layer-group' : 'file-alt')) }} ce-lesson-type-icon"></i>
                                 <span class="ce-lesson-name">{{ $leccion->nombre }}</span>
                                 @if ($leccion->duracion_min)
                                     <span class="ce-lesson-dur">
@@ -571,13 +592,15 @@
                                                            class="ce-exercise-audio"
                                                            preload="auto">
                                                         @php
-                                                            $audioMime = match(pathinfo($ejercicio->audio_url, PATHINFO_EXTENSION)) {
-                                                                'm4a', 'mp4' => 'audio/mp4',
-                                                                'ogg'        => 'audio/ogg',
-                                                                default      => 'audio/webm',
+                                                            $audioMime = match(strtolower(pathinfo($ejercicio->audio_url, PATHINFO_EXTENSION))) {
+                                                                'm4a', 'mp4', 'aac' => 'audio/mp4',
+                                                                'ogg'               => 'audio/ogg',
+                                                                'mp3'               => 'audio/mpeg',
+                                                                'wav'               => 'audio/wav',
+                                                                default             => 'audio/webm',
                                                             };
                                                         @endphp
-                                                        <source src="{{ $ejercicio->audio_url }}"
+                                                        <source src="{{ $ejercicio->audio_src }}"
                                                                 type="{{ $audioMime }}">
                                                     </audio>
                                                 </div>
@@ -627,13 +650,15 @@
                                                                    class="ce-exercise-audio"
                                                                    preload="auto">
                                                                 @php
-                                                                    $audioMime = match(pathinfo($ejercicio->audio_url, PATHINFO_EXTENSION)) {
-                                                                        'm4a', 'mp4' => 'audio/mp4',
-                                                                        'ogg'        => 'audio/ogg',
-                                                                        default      => 'audio/webm',
+                                                                    $audioMime = match(strtolower(pathinfo($ejercicio->audio_url, PATHINFO_EXTENSION))) {
+                                                                        'm4a', 'mp4', 'aac' => 'audio/mp4',
+                                                                        'ogg'               => 'audio/ogg',
+                                                                        'mp3'               => 'audio/mpeg',
+                                                                        'wav'               => 'audio/wav',
+                                                                        default             => 'audio/webm',
                                                                     };
                                                                 @endphp
-                                                                <source src="{{ $ejercicio->audio_url }}"
+                                                                <source src="{{ $ejercicio->audio_src }}"
                                                                         type="{{ $audioMime }}">
                                                             </audio>
                                                         </div>
@@ -831,11 +856,17 @@ function animateExercisesIn(container) {
             const icon    = document.getElementById('play-icon-' + id);
             if (!audio) return;
 
+            const self = this;
             if (audio.paused) {
                 stopAllAudio(audioId);
-                audio.play().catch(() => {});
-                if (icon) icon.className = 'fas fa-pause';
-                this.classList.add('playing');
+                audio.play()
+                    .then(() => {
+                        if (icon) icon.className = 'fas fa-pause';
+                        self.classList.add('playing');
+                    })
+                    .catch(err => {
+                        console.error('Audio error:', audio.currentSrc, err);
+                    });
             } else {
                 audio.pause();
                 if (icon) icon.className = 'fas fa-play';

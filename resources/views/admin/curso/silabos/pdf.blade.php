@@ -109,6 +109,7 @@
                     </td>
 
                     <td style="width: 70%; vertical-align: middle; text-align: right; border: none;">
+                        <div style="font-weight: bold; text-transform: uppercase; font-size: 11px; letter-spacing: 2px; color: #c78d40;">SÍLABO</div>
                         <h5 style="margin-bottom: 5px; line-height: 1.2;">
                             {{ $curso->ciclo->programa->nombre }} - Ciclo: {{ $curso->ciclo->nombre }}
                         </h5>
@@ -211,12 +212,12 @@
                         <tr>
                             <td style="font-weight: 600; padding: 2px; border: none;">1.11 <span
                                     style="margin-left:0.4em">Fecha de inicio</span></td>
-                            <td style="padding: 2px; border: none;">: {{ \Carbon\Carbon::parse($periodoActual->fecha_inicio)->translatedFormat('d \d\e F \d\e\l Y') }}</td>
+                            <td style="padding: 2px; border: none;">: {{ $periodoActual->fecha_inicio ? \Carbon\Carbon::parse($periodoActual->fecha_inicio)->translatedFormat('d \d\e F \d\e\l Y') : '—' }}</td>
                         </tr>
                         <tr>
                             <td style="font-weight: 600; padding: 2px; border: none;">1.12 <span
                                     style="margin-left:0.4em">Fecha de término</span></td>
-                            <td style="padding: 2px; border: none;">: {{ \Carbon\Carbon::parse($periodoActual->fecha_cierre)->translatedFormat('d \d\e F \d\e\l Y') }}</td>
+                            <td style="padding: 2px; border: none;">: {{ $periodoActual->fecha_cierre ? \Carbon\Carbon::parse($periodoActual->fecha_cierre)->translatedFormat('d \d\e F \d\e\l Y') : '—' }}</td>
                         </tr>
 
                     </tbody>

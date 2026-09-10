@@ -6,6 +6,7 @@
                 <th scope="col">Nombre</th>
                 <th scope="col">Detalles académicos</th>
                 <th scope="col">Foto</th>
+                <th scope="col">Voucher</th>
                 <th scope="col">Acciones</th>
             </tr>
         </thead>
@@ -29,7 +30,7 @@
                         $nGrupo = $conteoGrupoListado[$kGrupo] ?? 0;
                     @endphp
                     <tr class="table-active">
-                        <td colspan="5" class="py-2">
+                        <td colspan="6" class="py-2">
                             <strong>{{ $grupo }}</strong>
                             <span class="badge badge-secondary ml-2">{{ $nGrupo }}
                                 {{ $nGrupo === 1 ? 'alumno' : 'alumnos' }}</span>
@@ -57,6 +58,17 @@
                             <span class="badge badge-warning ml-1 align-middle"
                                 title="Usuario inhabilitado por deuda">Deuda</span>
                         @endif
+                        @if ($periodoFiltroId ?? null)
+                            @if ($alumno->matriculas->isNotEmpty())
+                                <span class="badge badge-success ml-1 align-middle" title="Matriculado en el período filtrado">
+                                    <i class="fas fa-check-circle fa-xs"></i> Matriculado
+                                </span>
+                            @else
+                                <span class="badge badge-secondary ml-1 align-middle" title="Aún no completa su matrícula en el período filtrado">
+                                    <i class="fas fa-exclamation-circle fa-xs"></i> No matriculado
+                                </span>
+                            @endif
+                        @endif
                         <ul>
                             <li> Trabajas:
                                 @if ($alumno->trabajas === 1 || $alumno->trabajas === '1')
@@ -76,6 +88,7 @@
                             <li>{{ $alumno->programa->nombre }} - {{ $alumno->ciclo->nombre }}</li>
                             <li>{{ $alumno->email }}</li>
                             <li>Teléfono: {{ $alumno->numero }}</li>
+                            <li>Referencia: {{ $alumno->numero_referencia }}</li>
                             <li>Fecha de nacimiento:
                                 @php $fechaNacFmt = $alumno->fechaNacimientoResueltaFormateada(); @endphp
                                 @if ($fechaNacFmt !== '')
@@ -106,6 +119,40 @@
                             <span class="alumno-avatar-empty" title="Sin foto">
                                 <i class="fa fa-user"></i>
                             </span>
+                        @endif
+                    </td>
+                    <td>
+                        @php $matriculaVoucher = $alumno->matriculas->first(); @endphp
+                        @if ($matriculaVoucher)
+                            <div class="small font-weight-bold mb-1">{{ $matriculaVoucher->comprobante ?? '—' }}</div>
+                            <form action="{{ route('matriculas.verificarVoucher', $matriculaVoucher->id) }}"
+                                method="POST" class="d-inline js-toggle-verificado">
+                                @csrf
+                                <label class="mb-1 small" style="cursor:pointer;">
+                                    <input type="checkbox" class="js-verificado-checkbox"
+                                        {{ $matriculaVoucher->voucher_verificado ? 'checked' : '' }}>
+                                    Verificado
+                                </label>
+                            </form>
+                            <form action="{{ route('matriculas.enviarFicha', $matriculaVoucher->id) }}"
+                                method="POST" class="d-inline js-enviar-ficha"
+                                data-nombre="{{ $alumno->apellidos }}, {{ $alumno->nombres }}"
+                                data-reenvio="{{ $matriculaVoucher->ficha_enviada_at ? '1' : '0' }}">
+                                @csrf
+                                <button type="submit" class="btn btn-sm {{ $matriculaVoucher->ficha_enviada_at ? 'btn-outline-primary' : 'btn-primary' }} d-block"
+                                    {{ $matriculaVoucher->voucher_verificado ? '' : 'disabled' }}
+                                    data-title-enabled="Enviar ficha de matrícula al alumno"
+                                    data-title-disabled="Marca el voucher como verificado primero"
+                                    title="{{ $matriculaVoucher->voucher_verificado ? 'Enviar ficha de matrícula al alumno' : 'Marca el voucher como verificado primero' }}">
+                                    <i class="fa {{ $matriculaVoucher->ficha_enviada_at ? 'fa-redo' : 'fa-paper-plane' }} fa-xs"></i>
+                                    {{ $matriculaVoucher->ficha_enviada_at ? 'Reenviar correo' : 'Enviar ficha' }}
+                                </button>
+                            </form>
+                            @if ($matriculaVoucher->ficha_enviada_at)
+                                <span class="text-muted small d-block" title="Última vez enviado">
+                                    <i class="fa fa-check-double fa-xs"></i> Enviada el {{ $matriculaVoucher->ficha_enviada_at->format('d/m/Y H:i') }}
+                                </span>
+                            @endif
                         @endif
                     </td>
                     <td>
@@ -171,18 +218,20 @@
                             </a>|
                         @endif
                         @php $matriculaActual = $alumno->matriculas->first(); @endphp
-                        @if($matriculaActual)
-                            <form action="{{ route('matriculas.quitar', $matriculaActual->id) }}"
-                                  method="POST" class="d-inline js-quitar-matricula"
-                                  data-nombre="{{ $alumno->apellidos }}, {{ $alumno->nombres }}">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-warning btn-sm"
-                                    title="Quitar matrícula del período actual">
-                                    <i class="fa fa-user-times fa-sm"></i>
-                                </button>
-                            </form> |
-                        @endif
+                        @role('super-admin')
+                            @if($matriculaActual)
+                                <form action="{{ route('matriculas.quitar', $matriculaActual->id) }}"
+                                      method="POST" class="d-inline js-quitar-matricula"
+                                      data-nombre="{{ $alumno->apellidos }}, {{ $alumno->nombres }}">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-warning btn-sm"
+                                        title="Quitar matrícula del período actual (solo super-admin)">
+                                        <i class="fa fa-user-times fa-sm"></i>
+                                    </button>
+                                </form> |
+                            @endif
+                        @endrole
                         <form id="deleteForm"
                             action="{{ route('alumnos.destroy', ['alumno' => $alumno->id]) }}"
                             method="POST" class="d-inline">
@@ -224,7 +273,7 @@
                 @php $numeroRegistro++; @endphp
             @empty
                 <tr>
-                    <td colspan="5" class="text-center">No se encontraron alumnos.</td>
+                    <td colspan="6" class="text-center">No se encontraron alumnos.</td>
                 </tr>
             @endforelse
         </tbody>

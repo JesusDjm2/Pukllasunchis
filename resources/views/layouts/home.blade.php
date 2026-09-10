@@ -5,6 +5,15 @@
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    @if (config('services.google_analytics.id'))
+        <script async src="https://www.googletagmanager.com/gtag/js?id={{ config('services.google_analytics.id') }}"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', '{{ config('services.google_analytics.id') }}');
+        </script>
+    @endif
     @yield('metas')
     <meta name="author" content="David Miranda">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -24,41 +33,21 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
         integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <!-- Script para cargar archivos CSS de forma asíncrona -->
+    <!-- owl.carousel.min.css cargado diferido (único que no estaba en head) -->
     <script>
-        function loadAsyncCSS(url) {
-            var cssLink = document.createElement('link');
-            cssLink.rel = 'stylesheet';
-            cssLink.href = url;
-            cssLink.media = 'print'; // Inicialmente carga de manera asíncrona, pero solo para medios impresos
-            cssLink.onload = function() {
-                this.media = 'all'; // Cambia el atributo media después de que se haya cargado el CSS
-            };
-
-            // Agrega la etiqueta link al head
-            document.head.appendChild(cssLink);
-        }
-
-        // Llama a la función para cargar archivos CSS después de que la página se haya cargado
         document.addEventListener('DOMContentLoaded', function() {
-            loadAsyncCSS('{{ asset('css/bootstrap.min.css') }}');
-            loadAsyncCSS('{{ asset('css/owl.carousel.min.css') }}');
-            loadAsyncCSS('{{ asset('css/magnific-popup.css') }}');
-            loadAsyncCSS('{{ asset('css/themify-icons.css') }}');
-            loadAsyncCSS('{{ asset('css/nice-select.css') }}');
-            loadAsyncCSS('{{ asset('css/flaticon.css') }}');
-            loadAsyncCSS('{{ asset('css/gijgo.css') }}');
-            loadAsyncCSS('{{ asset('css/animate.css') }}');
-            loadAsyncCSS('{{ asset('css/slicknav.css') }}');
-            loadAsyncCSS('{{ asset('css/style.css') }}');
-            loadAsyncCSS('{{ asset('css/estilos.css') }}');
-            loadAsyncCSS('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css');
-            // Agrega más llamadas según sea necesario para cargar otros archivos CSS
+            var link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.media = 'print';
+            link.onload = function() { this.media = 'all'; };
+            link.href = '{{ asset('css/owl.carousel.min.css') }}';
+            document.head.appendChild(link);
         });
     </script>
 </head>
 
 <body>
+    @include('partials.public-preloader')
     <button id="scrollToTopBtn"><i class="fa fa-arrow-up"></i></button>
     <a class="wasa fa-brands fa-whatsapp"
         href="https://wa.me/51984529158/?text=Buen%20día,%20me%20gustaría%20más%20información%20por%20favor."
@@ -131,45 +120,41 @@
                                     <li><a href="http://repositorio.pukllasunchis.org/xmlui/" target="_blank"
                                             class="text-uppercase"><i class="fa fa-file-pdf"></i>
                                             Repositorio</a></li>
-                                    @auth
-                                        @php
-                                            $user = auth()->user();
-                                        @endphp
-                                        @if ($user->hasRole('admin'))
-                                            <li>
-                                                <a href="{{ route('admin') }}">
-                                                    <i class="fa fa-user"></i> Administrador
-                                                </a>
-                                            </li>
-                                        @elseif ($user->hasRole('docente'))
-                                            <li><a href="{{ route('vistaDocente', ['docente' => $user->docente->id]) }}">
-                                                    <i class="fa fa-user"></i> Docente</a>
-                                            </li>
-                                        @elseif ($user->hasRole('tutor'))
-                                            <li><a href="{{ route('tutor.dashboard') }}"> <i class="fa fa-user"></i>
-                                                    Tutor</a>
-                                            </li>
-                                        @elseif ($user->hasRole('adminB'))
-                                            <li><a href="{{ route('trabajo.index') }}"> <i class="fa fa-user"></i>
-                                                    Bolsa</a>
-                                            </li>
-                                        @elseif ($user->hasRole('alumnoB'))
-                                            <li><a href="{{ route('ppd.index') }}"> <i class="fa fa-user"></i>
-                                                    Matrícula</a>
-                                            </li>
-                                        @elseif ($user->hasRole('alumno'))
-                                            <li><a href="{{ route('alumnos.index') }}"> <i class="fa fa-user"></i>
-                                                    Matrícula</a></li>
-                                        @else
-                                            <li><a href="{{ route('login') }}"> <i class="fa fa-user"></i> Matrícula</a>
-                                            </li>
-                                        @endif
-                                    @else
-                                        <li><a href="{{ route('login') }}"> <i class="fa fa-user"></i> Matrícula</a></li>
-                                    @endauth
-                                    <li><a
-                                            href="https://wa.me/51984529158/?text=Buen%20día,%20me%20gustaría%20más%20información%20por%20favor.">
-                                            <i class="fa fa-phone"></i> +51 984 529 158</a></li>
+                                    <li class="dropdown">
+                                        <a href="#" id="bolsaTrabajoTopDropdown" class="dropdown-toggle header-dropdown-toggle"
+                                            role="button" aria-haspopup="true"
+                                            aria-expanded="false">
+                                            <i class="fa fa-user"></i> Bolsa de Trabajo</a>
+                                        <div class="dropdown-menu" aria-labelledby="bolsaTrabajoTopDropdown">
+                                            <a class="dropdown-item" href="#"
+                                                onclick="event.preventDefault(); bolsaGlobalRegistroModalOpen();">Publicar
+                                                oportunidad</a>
+                                            <a class="dropdown-item" href="{{ route('bolsa') }}">Ver oportunidades</a>
+                                        </div>
+                                    </li>
+                                    <li class="dropdown">
+                                        <a href="#" id="contactoTopDropdown" class="dropdown-toggle header-dropdown-toggle"
+                                            role="button" aria-haspopup="true"
+                                            aria-expanded="false">
+                                            <i class="fa fa-phone"></i> Contáctenos</a>
+                                        <div class="dropdown-menu" aria-labelledby="contactoTopDropdown">
+                                            <a class="dropdown-item"
+                                                href="https://wa.me/51984529158/?text=Buen%20día,%20me%20gustaría%20más%20información%20de%20Informes."
+                                                target="_blank" rel="noopener noreferrer">
+                                                <i class="fa-brands fa-whatsapp mr-1" aria-hidden="true"></i>
+                                                Informes: +51 984 529 158</a>
+                                            <a class="dropdown-item"
+                                                href="https://wa.me/51969572566/?text=Buen%20día,%20me%20gustaría%20comunicarme%20con%20Secretaría."
+                                                target="_blank" rel="noopener noreferrer">
+                                                <i class="fa-brands fa-whatsapp mr-1" aria-hidden="true"></i>
+                                                Secretaría: +51 969 572 566</a>
+                                            <a class="dropdown-item"
+                                                href="https://wa.me/51996676676/?text=Buen%20día,%20me%20gustaría%20comunicarme%20con%20Cobranzas."
+                                                target="_blank" rel="noopener noreferrer">
+                                                <i class="fa-brands fa-whatsapp mr-1" aria-hidden="true"></i>
+                                                Cobranzas: +51 996 676 676</a>
+                                        </div>
+                                    </li>
                                 </ul>
                             </div>
                         </div>
@@ -191,7 +176,14 @@
                             <div class="main-menu  d-none d-lg-block">
                                 <nav>
                                     <ul id="navigation">
-                                        <li><a class="active" href="{{ route('nosotros') }}">Nosotros</a></li>
+                                        <li><a style="cursor: pointer">Nosotros<i class="ti-angle-down"></i></a>
+                                            <ul class="submenu">
+                                                <li><a href="{{ route('nosotros') }}">¿Quiénes somos?</a></li>
+                                                <li><a href="{{ route('nosotros') }}#organigrama">Organigrama</a></li>
+                                                <li><a href="{{ route('informacion') }}">Información Institucional</a>
+                                                </li>
+                                            </ul>
+                                        </li>
                                         <li><a style="cursor: pointer">Programas<i class="ti-angle-down"></i></a>
                                             <ul class="submenu">
                                                 <li><a href="{{ route('inicial') }}">Educación Inicial</a></li>
@@ -218,6 +210,8 @@
                                             <ul class="submenu">
                                                 <li><a href="{{ route('matricula') }}">Matrícula</a></li>
                                                 <li><a href="{{ route('Ttraslado') }}">Traslado</a></li>
+                                                <li><a href="{{ route('subvenciones') }}">Subvenciones y becas</a>
+                                                </li>
                                                 <li><a href="{{ route('licencia') }}">Licencia de estudios</a></li>
                                                 <li><a href="{{ route('partes') }}">Mesa de partes</a></li>
                                                 <li><a href="{{ asset('pdf/TUPA-EESPP-2025-2-08022024.pdf') }}"
@@ -232,16 +226,14 @@
                                                 <li><a href="{{ route('investigacion') }}">Investigación</a></li>
                                                 <li><a href="{{ route('preProfesional') }}">Práctica pre
                                                         profesional</a></li>
-                                                <li><a href="{{ route('subvenciones') }}">Subvenciones y becas</a>
-                                                </li>
+                                                
                                             </ul>
                                         </li>
                                         <li><a style="cursor: pointer">Información<i class="ti-angle-down"></i></a>
                                             <ul class="submenu">
-                                                <li><a href="{{ route('novedades') }}">Novedades</a></li>
+                                                <li><a href="{{ route('novedades') }}">Comunicados</a></li>
                                                 <li><a href="{{ route('articulos') }}">Artículos</a></li>
-                                                <li><a href="{{ route('proyectos') }}">Proyectos académicos</a></li>
-                                                <li><a href="{{ route('innovaciones') }}">innovaciones</a></li>
+                                                <li><a href="{{ route('proyectos') }}">Proyectos de aprendizaje</a></li>
                                                 <li><a href="{{ route('bolsa') }}">Bolsa de trabajo</a></li>
                                             </ul>
                                         </li>
@@ -359,7 +351,7 @@
                                         Condiciones</a></li>
                                 <li><a href="{{ route('informacion') }}"><i class="fa fa-building-columns"></i>
                                         Información Institucional</a></li>
-                                <li><a href="#"><i class="fa fa-book"></i> Libro de Reclamaciones</a></li>
+                                <li><a href="{{ route('reclamos.public.create') }}"><i class="fa fa-book"></i> Libro de Reclamaciones</a></li>
                                 <li><a href="https://admin.pukllasunchis.startapps.com.pe/login" target="_blank"><i
                                             class="fa fa-download"></i> Intranet</a></li>
                                 <li><a href="http://repositorio.pukllasunchis.org/xmlui/" target="_blank"><i
@@ -825,7 +817,101 @@
     <script src="{{ asset('js/plugins.js') }}"></script>
     <script src="{{ asset('js/gijgo.min.js') }}"></script>
     <script src="{{ asset('js/main.js') }}"></script>
-    @include('partials.pukllabot-widget')
+    @unless(app()->environment('production'))
+        @include('partials.pukllabot-widget')
+    @endunless
+    <script>
+        /* Dropdowns de la barra superior (Bolsa de Trabajo, Contáctenos):
+           se manejan sin Popper.js porque su posicionamiento automático
+           entraba en conflicto con el CSS responsive y hacía que el panel
+           se saliera de la pantalla en algunos celulares. */
+        document.addEventListener('DOMContentLoaded', function () {
+            var closeAllHeaderDropdowns = function () {
+                document.querySelectorAll('.header-top_area .short_contact_list li.dropdown.show').forEach(function (li) {
+                    li.classList.remove('show');
+                    var menu = li.querySelector('.dropdown-menu');
+                    if (menu) menu.classList.remove('show');
+                    var toggle = li.querySelector('.header-dropdown-toggle');
+                    if (toggle) toggle.setAttribute('aria-expanded', 'false');
+                });
+            };
+
+            document.querySelectorAll('.header-top_area .short_contact_list .header-dropdown-toggle').forEach(function (toggle) {
+                toggle.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    var li = toggle.closest('li.dropdown');
+                    var menu = li ? li.querySelector('.dropdown-menu') : null;
+                    var wasOpen = li && li.classList.contains('show');
+                    closeAllHeaderDropdowns();
+                    if (li && menu && !wasOpen) {
+                        if (window.innerWidth <= 767) {
+                            var top = toggle.getBoundingClientRect().bottom + 10;
+                            document.documentElement.style.setProperty('--header-dropdown-top', top + 'px');
+                        }
+                        li.classList.add('show');
+                        menu.classList.add('show');
+                        toggle.setAttribute('aria-expanded', 'true');
+                    }
+                });
+            });
+
+            document.addEventListener('click', function (e) {
+                if (!e.target.closest('.header-top_area .short_contact_list li.dropdown')) {
+                    closeAllHeaderDropdowns();
+                }
+            });
+
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') closeAllHeaderDropdowns();
+            });
+        });
+    </script>
+    <script>
+        /* Indicador de página activa en el menú principal */
+        document.addEventListener('DOMContentLoaded', function () {
+            var current = window.location.pathname;
+            document.querySelectorAll('#navigation > li').forEach(function (li) {
+                var mainLink = li.querySelector(':scope > a[href]');
+                if (!mainLink) return;
+                var tryActivate = function (href) {
+                    if (!href || href === '#') return false;
+                    try {
+                        var p = new URL(href, window.location.origin).pathname;
+                        return current === p || current.startsWith(p + '/');
+                    } catch (e) { return false; }
+                };
+                if (tryActivate(mainLink.getAttribute('href'))) {
+                    mainLink.classList.add('active');
+                    return;
+                }
+                li.querySelectorAll('.submenu a[href]').forEach(function (sub) {
+                    if (tryActivate(sub.getAttribute('href'))) {
+                        mainLink.classList.add('active');
+                        sub.classList.add('active');
+                    }
+                });
+            });
+        });
+    </script>
+    <script src="{{ asset('js/gsap-animations.js') }}"></script>
+    <script>
+        (function () {
+            var pl = document.getElementById('pl-public');
+            if (!pl) return;
+            function hidePl() {
+                if (pl.classList.contains('plp-out')) return;
+                pl.classList.add('plp-out');
+                setTimeout(function () { pl.style.display = 'none'; }, 520);
+            }
+            // Ocultar cuando todo esté cargado (mínimo 800 ms de visibilidad)
+            window.addEventListener('load', function () {
+                setTimeout(hidePl, 800);
+            });
+            // Tope de seguridad: máximo 4 segundos
+            setTimeout(hidePl, 4000);
+        })();
+    </script>
     <!--contact js-->
     {{-- <script src="{{ asset('js/contact.js') }}"></script>
     <script src="{{ asset('js/jquery.ajaxchimp.min.js') }}"></script>
@@ -833,7 +919,7 @@
     <script src="{{ asset('js/jquery.validate.min.js') }}"></script>
     <script src="{{ asset('js/mail-script.js') }}"></script> --}}
 
-
+    @include('partials.bolsa-oferta-popup-global')
 </body>
 
 </html>

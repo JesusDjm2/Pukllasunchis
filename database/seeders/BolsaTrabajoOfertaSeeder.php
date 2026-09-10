@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\BolsaTrabajoOferta;
-use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\File;
 
@@ -45,16 +44,15 @@ class BolsaTrabajoOfertaSeeder extends Seeder
             'Gestión de proyectos sociales',
         ];
 
+        $publicadores = [
+            ['nombre' => 'María Quispe', 'telefono' => '984111222', 'relacion' => 'Soy de la Asociación Pukllasunchis'],
+            ['nombre' => 'Juan Mamani', 'telefono' => '984333444', 'relacion' => 'Alumno de la EESPPP'],
+            ['nombre' => 'Rosa Huamán', 'telefono' => null, 'relacion' => 'Externo a la Asociación'],
+        ];
+
         for ($i = 1; $i <= 22; $i++) {
             $mes = random_int(1, $maxMonth);
-            $ultimoDia = (int) Carbon::create($year, $mes, 1)->endOfMonth()->day;
-            $diaInicio = random_int(1, max(1, $ultimoDia - 10));
-
-            $inicio = Carbon::create($year, $mes, $diaInicio)->startOfDay();
-            $fin = (clone $inicio)->addDays(random_int(12, 50));
-            if ($fin->lt($inicio)) {
-                $fin = (clone $inicio)->addDays(20);
-            }
+            $publicador = $publicadores[($i - 1) % count($publicadores)];
 
             $base = $plantillas[($i - 1) % count($plantillas)];
             $nombre = 'Demo Bolsa '.$i.' — '.$base;
@@ -74,8 +72,13 @@ class BolsaTrabajoOfertaSeeder extends Seeder
                 'nombre' => $nombre,
                 'detalles' => $detalles,
                 'imagen' => $rutaImagen,
-                'fecha_inicio' => $inicio->toDateString(),
-                'fecha_fin' => $fin->toDateString(),
+                // Entre 0 y 30 días atrás: parte queda vigente (<=20 días) y parte vencida, para probar el filtro.
+                'fecha_publicacion' => now()->subDays(random_int(0, 30))->toDateString(),
+                'nombre_publicador' => $publicador['nombre'],
+                'telefono_publicador' => $publicador['telefono'],
+                'relacion_publicador' => $publicador['relacion'],
+                'anio' => $year,
+                'mes' => $mes,
             ]);
         }
     }

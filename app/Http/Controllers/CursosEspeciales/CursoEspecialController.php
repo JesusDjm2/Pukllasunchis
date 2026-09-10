@@ -51,7 +51,7 @@ class CursoEspecialController extends Controller
         ]);
 
         if ($request->hasFile('imagen')) {
-            $data['imagen'] = $request->file('imagen')->store('cursos-especiales', 'public');
+            $data['imagen'] = $request->file('imagen')->store('cursos-especiales', 'uploads');
         }
 
         $data['activo'] = $request->boolean('activo', true);
@@ -92,9 +92,9 @@ class CursoEspecialController extends Controller
 
         if ($request->hasFile('imagen')) {
             if ($curso->imagen) {
-                Storage::disk('public')->delete($curso->imagen);
+                Storage::disk('uploads')->delete($curso->imagen);
             }
-            $data['imagen'] = $request->file('imagen')->store('cursos-especiales', 'public');
+            $data['imagen'] = $request->file('imagen')->store('cursos-especiales', 'uploads');
         }
 
         $data['activo'] = $request->boolean('activo');
@@ -107,7 +107,7 @@ class CursoEspecialController extends Controller
     public function destroy(CursoEspecial $curso)
     {
         if ($curso->imagen) {
-            Storage::disk('public')->delete($curso->imagen);
+            Storage::disk('uploads')->delete($curso->imagen);
         }
 
         $curso->delete();

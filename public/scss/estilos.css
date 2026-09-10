@@ -1,6 +1,6 @@
 /*
 Error: wrong number of arguments (1 for 3) for `rgb'
-        on line 193 of C:\xampp\htdocs\Puklla2023\public\scss\estilos.scss
+        on line 193 of C:\xampp\htdocs\Puklla2026\public\scss\estilos.scss
 
 188:     position: absolute;
 189:     top: 0;
@@ -15,7 +15,7 @@ Error: wrong number of arguments (1 for 3) for `rgb'
 198:     width: 35px;
 
 Backtrace:
-C:\xampp\htdocs\Puklla2023\public\scss\estilos.scss:193
+C:\xampp\htdocs\Puklla2026\public\scss\estilos.scss:193
 C:/Program Files/Adobe/Adobe Dreamweaver 2021/ruby/lib/ruby/gems/3.0.0/gems/sass-3.7.4/lib/sass/script/tree/funcall.rb:311:in `reformat_argument_error'
 C:/Program Files/Adobe/Adobe Dreamweaver 2021/ruby/lib/ruby/gems/3.0.0/gems/sass-3.7.4/lib/sass/script/tree/funcall.rb:158:in `rescue in _perform'
 C:/Program Files/Adobe/Adobe Dreamweaver 2021/ruby/lib/ruby/gems/3.0.0/gems/sass-3.7.4/lib/sass/script/tree/funcall.rb:127:in `_perform'
@@ -63,4 +63,4 @@ C:/Program Files/Adobe/Adobe Dreamweaver 2021/ruby/bin/sass:23:in `<main>'
 body:before {
   white-space: pre;
   font-family: monospace;
-  content: "Error: wrong number of arguments (1 for 3) for `rgb'\A         on line 193 of C:\xampp\htdocs\Puklla2023\public\scss\estilos.scss\A \A 188:     position: absolute;\A 189:     top: 0;\A 190:     left: 0;\A 191:     width: 100%;\A 192:     height: 100%;\A 193:     background: rgb(0 0 0 / 67%);\A 194: }\A 195: \A 196: .linea-white {\A 197:     text-align: center;\A 198:     width: 35px;"; }
+  content: "Error: wrong number of arguments (1 for 3) for `rgb'\A         on line 193 of C:\xampp\htdocs\Puklla2026\public\scss\estilos.scss\A \A 188:     position: absolute;\A 189:     top: 0;\A 190:     left: 0;\A 191:     width: 100%;\A 192:     height: 100%;\A 193:     background: rgb(0 0 0 / 67%);\A 194: }\A 195: \A 196: .linea-white {\A 197:     text-align: center;\A 198:     width: 35px;"; }

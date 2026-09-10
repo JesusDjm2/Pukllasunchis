@@ -4,6 +4,27 @@
 
 @section('contenido')
     <style>
+        .docente-cal-progress {
+            height: 7px;
+            border-radius: 999px;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.06);
+        }
+
+        .docente-cal-progress .progress-bar {
+            transition: width 0.9s cubic-bezier(.22, 1, .36, 1);
+        }
+
+        .docente-cal-progress-ppd .progress-bar {
+            background: linear-gradient(90deg, #e5973a, #f5b45f);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .docente-cal-progress .progress-bar {
+                transition: none;
+            }
+        }
+
         .highlighted {
             background-color: #d4edda;
             transition: background-color 0.5s ease;
@@ -28,42 +49,6 @@
             color: white;
         }
 
-        .docente-cal-ppd-comp-modal {
-            display: none;
-            position: fixed;
-            z-index: 2000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.4);
-        }
-
-        .docente-cal-ppd-comp-modal .modal-content {
-            background-color: #fefefe;
-            margin: 15% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 640px;
-            position: relative;
-        }
-
-        .docente-cal-ppd-comp-modal .close {
-            color: #000000;
-            font-weight: bold;
-            right: 1em !important;
-            position: absolute;
-        }
-
-        .docente-cal-ppd-comp-modal .close:hover,
-        .docente-cal-ppd-comp-modal .close:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
         /* Quitar flechas de inputs numéricos */
         input[type=number]::-webkit-inner-spin-button,
         input[type=number]::-webkit-outer-spin-button {
@@ -77,64 +62,99 @@
             outline: 2px solid #e6a817 !important;
             background-color: #fff9e6 !important;
         }
+
+        /* ── Rediseño premium ── */
+        .docente-cal-savebar {
+            position: sticky;
+            top: 0.5rem;
+            z-index: 30;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 0.65rem;
+        }
+
+        .docente-cal-savebar .btn {
+            border-radius: 999px;
+            padding: 0.5rem 1.5rem;
+            font-weight: 700;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.16);
+        }
+
+        .docente-cal-savebar .btn.is-guardando {
+            opacity: 0.85;
+            cursor: progress;
+        }
+
+        /* Affordance de scroll horizontal para la tabla PPD (muy ancha por diseño) */
+        .docente-cal-scroll-wrap {
+            position: relative;
+        }
+
+        .docente-cal-scroll-hint {
+            display: none;
+            text-align: center;
+            font-size: 0.78rem;
+            color: #858796;
+            padding: 0.35rem 0 0.5rem;
+        }
+
+        .docente-cal-scroll-hint i {
+            margin-right: 0.3rem;
+        }
+
+        @media (max-width: 991.98px) {
+            .docente-cal-scroll-hint {
+                display: block;
+            }
+        }
+
+        table.docente-cal-table tbody tr:hover {
+            background-color: rgba(78, 115, 223, 0.05);
+        }
     </style>
     <div class="container-fluid docente-ui-page">
         @include('docentes.partials.ui-header', [
             'kicker' => 'Calificaciones PPD',
             'title' => $curso->nombre,
             'subtitle' => ($curso->ciclo->programa->nombre ?? '') . ' — ' . ($curso->ciclo->nombre ?? ''),
-            'backUrl' => route('calificar', $docente->id),
+            'backUrl' => route('vistaDocente', $docente->id),
             'backLabel' => 'Volver a cursos',
+            'competencias' => $competenciasSeleccionadas,
+            'rightExtra' => view('docentes.partials.calificacion-legenda')->render(),
         ])
 
-        <div class="card docente-ui-card mb-3">
-            <div class="card-body py-3 d-flex flex-column flex-md-row align-items-md-center justify-content-between">
-                <form action="{{ route('calificaciones.exportar.ppd', ['docenteId' => $docente->id, 'cursoId' => $curso->id]) }}"
-                    method="GET" class="mb-3 mb-md-0">
-                    @csrf
-                    @foreach ($competenciasSeleccionadas as $competencia)
-                        <input type="hidden" name="competencias[]" value="{{ $competencia->id }}">
-                    @endforeach
-                    <button type="submit" class="btn btn-primary btn-sm">
-                        <i class="fa fa-file-csv mr-1"></i> Exportar CSV
-                    </button>
-                </form>
-            </div>
-        </div>
-
-        <div class="card docente-ui-card mb-3">
-            <div class="card-body py-3">
-                <p class="docente-ui-legenda text-center mb-0">
-                    <span class="legenda-item text-danger">Previo al inicio: 1–5</span>
-                    <span class="d-none d-sm-inline"> | </span>
-                    <span class="legenda-item d-block d-sm-inline text-danger">Inicio: 6–10</span>
-                    <span class="d-none d-sm-inline"> | </span>
-                    <span class="legenda-item d-block d-sm-inline" style="color:#c1ac0f">En proceso: 11–13</span>
-                    <span class="d-none d-sm-inline"> | </span>
-                    <span class="legenda-item d-block d-sm-inline" style="color:#0b954e">Logrado: 14–16</span>
-                    <span class="d-none d-sm-inline"> | </span>
-                    <span class="legenda-item d-block d-sm-inline" style="color:#103b86">Destacado: 17–20</span>
-                </p>
-            </div>
-        </div>
-        <div class="col-lg-12 text-center mb-3 px-0">
-            @foreach ($competenciasSeleccionadas as $competencia)
-                <a class="text-center align-middle font-weight-bold text-primary" style="font-size: 15px; cursor: pointer;"
-                    data-id="{{ $competencia->id }}" data-nombre="{{ $competencia->nombre }}"
-                    data-descripcion="{{ addslashes($competencia->descripcion) }}"
-                    data-capacidades="{!! addslashes($competencia->capacidades) !!}" onclick="openModal(this)">
-                    {{ $competencia->nombre }}
-                </a>
-                @if (!$loop->last)
-                    <span class="text-muted mx-1">|</span>
-                @endif
-            @endforeach
-        </div>
+        @php $pctPPD = $curso->porcentajePPD(); @endphp
         <div class="row">
             <div class="col-12">
+                <div class="mb-3" style="max-width:420px;">
+                    <div class="d-flex align-items-center" style="gap:6px;">
+                        <span style="font-size:12px;width:78px;font-weight:600;color:#d97706;">Calificado:</span>
+                        <div class="progress flex-fill docente-cal-progress docente-cal-progress-ppd">
+                            <div class="progress-bar" role="progressbar" style="width:{{ $pctPPD }}%;"></div>
+                        </div>
+                        <small style="width:50px;text-align:right;font-size:12px;color:#d97706;font-weight:600;">{{ number_format($pctPPD, 2) }}%</small>
+                    </div>
+                </div>
                 @if (Session::has('success'))
                     <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
                         {{ Session::get('success') }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                @endif
+                @if (Session::has('error'))
+                    <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+                        {{ Session::get('error') }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                @endif
+                @if ($errors->any())
+                    <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+                        Algunas notas no se guardaron por tener valores fuera de rango (0–20). Corrige los campos
+                        resaltados y vuelve a guardar. Lo que ya tenías escrito no se perdió.
                         <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar">
                             <span aria-hidden="true">&times;</span>
                         </button>
@@ -151,11 +171,12 @@
                     @foreach ($competenciasSeleccionadas as $competencia)
                         <input type="hidden" name="competencias[]" value="{{ $competencia->id }}">
                     @endforeach
-                    <div class="text-center">
-                        <button type="submit" class="btn btn-primary btn-sm mb-2">Guardar/Actualizar</button>
+                    <div class="docente-cal-savebar">
+                        <button type="submit" class="btn btn-primary btn-sm mb-2" data-loading-text="Guardando…"><i class="fas fa-save mr-1"></i> Guardar/Actualizar</button>
                     </div>
-                    <div style="max-height: 800px; overflow-x: auto;">
-                        <table class="table table-hover table-bordered text-center text-dark"
+                    <p class="docente-cal-scroll-hint"><i class="fas fa-arrows-alt-h"></i>Desliza horizontalmente para ver todas las columnas</p>
+                    <div class="docente-cal-scroll-wrap" style="max-height: 800px; overflow-x: auto;">
+                        <table class="table table-hover table-bordered text-center text-dark docente-cal-table"
                             style="font-size: 13px; min-width: 4000px;">
                             <thead style="color: #000">
                                 <tr>
@@ -280,7 +301,7 @@
                                                 <td>
                                                     <input type="number" style="width: 60px"
                                                         name="alumnos[{{ $alumno->id }}][proceso][c{{ $c }}][indicador_{{ $i }}]"
-                                                        class="form-control form-control-sm text-center indicador-input {{ $i < 4 ? 'editable' : '' }}"
+                                                        class="form-control form-control-sm text-center indicador-input {{ $i < 4 ? 'editable' : '' }} @error("alumnos.{$alumno->id}.proceso.c{$c}.indicador_{$i}") is-invalid @enderror"
                                                         data-alumno="{{ $alumno->id }}"
                                                         data-competencia="{{ $c }}"
                                                         data-indicador="{{ $i }}"
@@ -297,7 +318,7 @@
                                                 <td>
                                                     <input type="number" style="width: 60px"
                                                         name="alumnos[{{ $alumno->id }}][final][c{{ $c }}][indicador_{{ $i }}]"
-                                                        class="form-control form-control-sm text-center final-indicador-input"
+                                                        class="form-control form-control-sm text-center final-indicador-input @error("alumnos.{$alumno->id}.final.c{$c}.indicador_{$i}") is-invalid @enderror"
                                                         data-alumno="{{ $alumno->id }}"
                                                         data-competencia="{{ $c }}"
                                                         data-indicador="{{ $i }}"
@@ -356,39 +377,8 @@
         </div>
     </div>
 
-    <div id="competenciaModal" class="docente-cal-ppd-comp-modal" onclick="closeModal(event)">
-        <div class="modal-content" onclick="event.stopPropagation();">
-            <span class="close" onclick="closeModal(event)">&times;</span>
-            <h4 id="competenciaNombre" class="font-weight-bold"></h4>
-            <p id="competenciaDescripcion" class="text-justify"></p>
-            <h5>Capacidades:</h5>
-            <p id="competenciaCapacidades" class="text-justify"></p>
-        </div>
-    </div>
-    {{-- Modal --}}
-    <script>
-        function openModal(element) {
-            // Extraer datos del elemento a partir de los atributos "data-"
-            var nombre = element.getAttribute('data-nombre');
-            var descripcion = element.getAttribute('data-descripcion');
-            var capacidades = element.getAttribute('data-capacidades');
-
-            // Asigna los valores al modal
-            document.getElementById("competenciaNombre").innerText = nombre;
-            document.getElementById("competenciaDescripcion").innerText = descripcion;
-            document.getElementById("competenciaCapacidades").innerHTML = capacidades; // Texto enriquecido
-
-            // Muestra el modal
-            document.getElementById("competenciaModal").style.display = "block";
-        }
-
-        function closeModal(event) {
-            if (event) {
-                event.stopPropagation();
-            }
-            document.getElementById("competenciaModal").style.display = "none";
-        }
-    </script>
+    @include('docentes.partials.calificar-scripts')
+    @include('docentes.partials.competencia-modal')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const inputs = document.querySelectorAll('.indicador-input.editable');

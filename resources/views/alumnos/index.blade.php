@@ -68,6 +68,7 @@
                 'search_page' => request('search_page'),
                 'with_user' => request('with_user'),
                 'solo_becas' => request('solo_becas'),
+                'estado_matricula' => request('estado_matricula'),
             ],
             fn($v) => $v !== null && $v !== '',
         );
@@ -91,7 +92,7 @@
             style="border-bottom: 1px dashed #80808078">
             <div class="mb-2 mb-sm-0">
                 <h4 class="mb-0 font-weight-bold" style="color:#1e293b;">
-                    <i class="fas fa-graduation-cap mr-2" style="color:#4e73df;"></i>Alumnos FID{{ $soloBecas ? ' &mdash; Solo Becas' : '' }}
+                    <i class="fas fa-graduation-cap mr-2" style="color:#4e73df;"></i>Alumnos FID{{ $soloBecas ? ' — Solo Becas' : '' }}
                     @if($soloBecas)
                         <span class="badge badge-success ml-1" style="font-size:.65rem; vertical-align:middle;">Becas</span>
                     @endif
@@ -99,7 +100,7 @@
                 <small class="text-muted">Formación Inicial Docente &nbsp;&middot;&nbsp; {{ $totalRecords }} registros</small>
             </div>
             <div class="d-flex flex-wrap align-items-center">
-                @role('admin')
+                @if (auth()->user()->hasAnyRole(['admin', 'super-admin']))
                     @php
                         $becasToggleUrl = $soloBecas
                             ? route('adminAlumnos', array_filter(['with_user' => request('with_user'), 'periodo_id' => $periodoFiltroId], fn($v) => $v !== null && $v !== ''))
@@ -119,7 +120,7 @@
                         <i class="fas fa-file-excel mr-2" style="opacity: 0.95;"></i>
                         Exportar Excel
                     </button>
-                @endrole
+                @endif
                 <a href="{{ route('registerAdmin') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm mb-2 mb-sm-0">
                     Nuevo Alumno &nbsp;<i class="fa fa-plus fa-sm"></i>
                 </a>
@@ -135,6 +136,14 @@
                         </a>
                     </div>
                 @endif
+                @if (Session::has('error'))
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{ Session::get('error') }}
+                        <a type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </a>
+                    </div>
+                @endif
             </div>
             <div class="col-12 mb-3">
                 <div class="card shadow-sm border-left-primary">
@@ -144,7 +153,7 @@
                                 <i class="fas fa-filter mr-1"></i>
                                 Filtros académicos
                             </h6>
-                            @if (request()->filled('programa_id') || request()->filled('ciclo_id') || request()->filled('search'))
+                            @if (request()->filled('programa_id') || request()->filled('ciclo_id') || request()->filled('search') || request()->filled('estado_matricula'))
                                 <a href="{{ route('adminAlumnos', $limpiarFiltrosBase) }}"
                                     class="btn btn-sm btn-outline-secondary">Limpiar filtros</a>
                             @endif
@@ -168,18 +177,70 @@
                                 @endforeach
                             </div>
                         </div>
-                        <div class="mb-2">
-                            <span class="small font-weight-bold text-secondary mr-2 d-block d-sm-inline">Programa</span>
-                            <div class="btn-group flex-wrap mt-1" role="group" aria-label="Filtrar por programa">
-                                <a href="{{ route('adminAlumnos', $qBase) }}"
-                                    class="btn btn-sm {{ !request()->filled('programa_id') ? 'btn-primary' : 'btn-outline-primary' }}">Todos</a>
-                                @foreach ($programasFiltro as $prog)
-                                    @php $qProg = array_merge($qBase, ['programa_id' => $prog->id]); @endphp
-                                    <a href="{{ route('adminAlumnos', $qProg) }}"
-                                        class="btn btn-sm {{ (int) request('programa_id') === (int) $prog->id ? 'btn-primary' : 'btn-outline-primary' }}">{{ \Illuminate\Support\Str::limit($prog->nombre, 42) }}</a>
-                                @endforeach
+                        <div class="d-flex flex-wrap justify-content-between align-items-start filtros-programa-matricula">
+                            <div class="mb-2 mr-3 flex-grow-1" style="min-width:220px;">
+                                <span class="small font-weight-bold text-secondary mr-2 d-block d-sm-inline">Programa</span>
+                                <div class="btn-group flex-wrap mt-1" role="group" aria-label="Filtrar por programa">
+                                    <a href="{{ route('adminAlumnos', $qBase) }}"
+                                        class="btn btn-sm {{ !request()->filled('programa_id') ? 'btn-primary' : 'btn-outline-primary' }}">Todos</a>
+                                    @foreach ($programasFiltro as $prog)
+                                        @php $qProg = array_merge($qBase, ['programa_id' => $prog->id]); @endphp
+                                        <a href="{{ route('adminAlumnos', $qProg) }}"
+                                            class="btn btn-sm {{ (int) request('programa_id') === (int) $prog->id ? 'btn-primary' : 'btn-outline-primary' }}">{{ \Illuminate\Support\Str::limit($prog->nombre, 42) }}</a>
+                                    @endforeach
+                                </div>
                             </div>
+                            @if ($periodoFiltroId)
+                                <div class="mb-2 text-lg-right">
+                                    <span class="small font-weight-bold text-secondary mr-2 d-block d-sm-inline">
+                                        <i class="fas fa-user-check mr-1"></i>Estado de matrícula
+                                    </span>
+                                    @php
+                                        $qEstadoTodos = array_merge($qBase, ['periodo_id' => $periodoFiltroId]);
+                                        unset($qEstadoTodos['estado_matricula']);
+                                        $qEstadoMatriculados = array_merge($qBase, ['periodo_id' => $periodoFiltroId, 'estado_matricula' => 'matriculados']);
+                                        $qEstadoNoMatriculados = array_merge($qBase, ['periodo_id' => $periodoFiltroId, 'estado_matricula' => 'no_matriculados']);
+                                    @endphp
+                                    <div class="btn-group flex-wrap mt-1" role="group">
+                                        <a href="{{ route('adminAlumnos', $qEstadoTodos) }}"
+                                            class="btn btn-sm {{ !$estadoMatricula ? 'btn-secondary' : 'btn-outline-secondary' }}">
+                                            Todos
+                                            @if ($totalListadoBase !== null)
+                                                <span class="badge badge-light text-dark ml-1">{{ $totalListadoBase }}</span>
+                                            @endif
+                                        </a>
+                                        <a href="{{ route('adminAlumnos', $qEstadoMatriculados) }}"
+                                            class="btn btn-sm {{ $estadoMatricula === 'matriculados' ? 'btn-success' : 'btn-outline-success' }}">
+                                            Matriculados
+                                            @if ($totalMatriculadosBase !== null)
+                                                <span class="badge badge-light text-dark ml-1">{{ $totalMatriculadosBase }}</span>
+                                            @endif
+                                        </a>
+                                        <a href="{{ route('adminAlumnos', $qEstadoNoMatriculados) }}"
+                                            class="btn btn-sm {{ $estadoMatricula === 'no_matriculados' ? 'btn-warning' : 'btn-outline-warning' }}">
+                                            Faltan matricularse
+                                            @if ($totalListadoBase !== null && $totalMatriculadosBase !== null)
+                                                <span class="badge badge-light text-dark ml-1">{{ $totalListadoBase - $totalMatriculadosBase }}</span>
+                                            @endif
+                                        </a>
+                                    </div>
+                                </div>
+                            @endif
                         </div>
+                        @if ($periodoFiltroId && $totalListadoBase)
+                            @php $pctMatriculados = $totalListadoBase > 0 ? round(($totalMatriculadosBase / $totalListadoBase) * 100) : 0; @endphp
+                            <div class="mb-3">
+                                <div class="progress" style="height: 6px;">
+                                    <div class="progress-bar bg-success" role="progressbar"
+                                        style="width: {{ $pctMatriculados }}%"
+                                        aria-valuenow="{{ $pctMatriculados }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <small class="text-muted d-block mt-1">
+                                    {{ $totalMatriculadosBase }} de {{ $totalListadoBase }} matriculados ({{ $pctMatriculados }}%)
+                                    para {{ $periodoActual && (int) $periodoActual->id === (int) $periodoFiltroId ? 'el periodo actual' : 'el periodo seleccionado' }}.
+                                </small>
+                            </div>
+                        @endif
                         @if ($ciclosFiltro->isNotEmpty())
                             <div class="mb-0">
                                 <span class="small font-weight-bold text-secondary mr-2 d-block d-sm-inline">Ciclo</span>
@@ -240,7 +301,7 @@
             </div>
         </div>
     </div>
-    @role('admin')
+    @if (auth()->user()->hasAnyRole(['admin', 'super-admin']))
         <div class="modal fade" id="modalExportarAlumnosExcel" tabindex="-1" role="dialog"
             aria-labelledby="modalExportarAlumnosExcelLabel" aria-hidden="true">
             <div class="modal-dialog modal-lg" role="document">
@@ -291,6 +352,45 @@
                                     archivo solo traerá alumnos que coincidan con el texto; la vista previa numérica
                                     usa totales por ciclo (todos los FID de ese ciclo).</p>
                             @endif
+                            <div class="mb-3 border rounded bg-light px-3 py-2">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="soloImportantesCheck" name="solo_importantes" value="1">
+                                    <label class="custom-control-label font-weight-bold small" for="soloImportantesCheck">
+                                        Exportar solo los datos más importantes
+                                    </label>
+                                </div>
+                                <small class="text-muted d-block mt-1">
+                                    Programa, Ciclo, Nombre, DNI, Número, Número de referencia, Estado de matrícula y Email.
+                                    Si no marcas esta opción, se exportan todos los datos registrados del alumno.
+                                </small>
+                            </div>
+                            @if ($periodoFiltroId)
+                                <div class="mb-3">
+                                    <span class="small font-weight-bold text-secondary d-block mb-1">
+                                        <i class="fas fa-user-check mr-1"></i>Estado de matrícula a exportar
+                                    </span>
+                                    <div class="btn-group btn-group-sm flex-wrap" id="exportEstadoMatriculaGroup">
+                                        <label class="btn btn-outline-secondary {{ !$estadoMatricula ? 'active' : '' }}">
+                                            <input type="radio" name="estado_matricula" value="" autocomplete="off" {{ !$estadoMatricula ? 'checked' : '' }}>
+                                            Todos
+                                        </label>
+                                        <label class="btn btn-outline-success {{ $estadoMatricula === 'matriculados' ? 'active' : '' }}">
+                                            <input type="radio" name="estado_matricula" value="matriculados" autocomplete="off" {{ $estadoMatricula === 'matriculados' ? 'checked' : '' }}>
+                                            Solo matriculados
+                                        </label>
+                                        <label class="btn btn-outline-warning {{ $estadoMatricula === 'no_matriculados' ? 'active' : '' }}">
+                                            <input type="radio" name="estado_matricula" value="no_matriculados" autocomplete="off" {{ $estadoMatricula === 'no_matriculados' ? 'checked' : '' }}>
+                                            Faltan matricularse
+                                        </label>
+                                    </div>
+                                    <small class="text-muted d-block mt-1">
+                                        <span class="d-inline-block mr-2"><span style="display:inline-block;width:10px;height:10px;background:#D9F2E3;border:1px solid #b7e0c5;vertical-align:middle;"></span> Matriculado</span>
+                                        <span class="d-inline-block"><span style="display:inline-block;width:10px;height:10px;background:#FBE2E1;border:1px solid #f0c2c0;vertical-align:middle;"></span> No matriculado</span>
+                                        — el Excel resalta cada fila con estos colores para que el tutor identifique
+                                        rápido a quién le falta matricularse.
+                                    </small>
+                                </div>
+                            @endif
                             <div class="d-flex flex-wrap align-items-center mb-3 border-bottom pb-2">
                                 <span class="small font-weight-bold text-secondary mr-2">Vista previa:</span>
                                 <span class="badge badge-primary mr-2"><span id="exportPreviewCiclos">0</span> ciclos</span>
@@ -318,7 +418,9 @@
                                             <div class="row mx-n1">
                                                 @foreach ($grupoCiclos as $cicExport)
                                                     @php
-                                                        $nCicExport = optional($totalesPorCicloId->get($cicExport->id))->total;
+                                                        $nCicExport = (int) (optional($totalesPorCicloId->get($cicExport->id))->total ?? 0);
+                                                        $nCicExportMatriculados = (int) (optional($totalesMatriculadosPorCicloId->get($cicExport->id))->total ?? 0);
+                                                        $nCicExportNoMatriculados = max(0, $nCicExport - $nCicExportMatriculados);
                                                         $checked = (int) request('ciclo_id') === (int) $cicExport->id ||
                                                             ((int) request('programa_id') === (int) $cicExport->programa_id && !request()->filled('ciclo_id'));
                                                     @endphp
@@ -328,7 +430,9 @@
                                                                 <input type="checkbox" class="custom-control-input ciclo-export-check"
                                                                     name="ciclo_ids[]" value="{{ $cicExport->id }}"
                                                                     id="ciclo_export_{{ $cicExport->id }}"
-                                                                    data-total="{{ (int) ($nCicExport ?? 0) }}"
+                                                                    data-total="{{ $nCicExport }}"
+                                                                    data-total-matriculados="{{ $nCicExportMatriculados }}"
+                                                                    data-total-no-matriculados="{{ $nCicExportNoMatriculados }}"
                                                                     data-programa-id="{{ (int) $cicExport->programa_id }}"
                                                                     {{ $checked ? 'checked' : '' }}>
                                                                 <label class="custom-control-label small mb-0" for="ciclo_export_{{ $cicExport->id }}">
@@ -355,20 +459,32 @@
                 </div>
             </div>
         </div>
-    @endrole
+    @endif
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function() {
+            function atributoTotalSegunEstado() {
+                var estado = $('input[name="estado_matricula"]:checked').val();
+                if (estado === 'matriculados') return 'data-total-matriculados';
+                if (estado === 'no_matriculados') return 'data-total-no-matriculados';
+                return 'data-total';
+            }
             function refreshExportPreview() {
                 var ciclos = 0, total = 0;
+                var attr = atributoTotalSegunEstado();
                 $('.ciclo-export-check:checked').each(function() {
                     ciclos++;
-                    total += parseInt($(this).attr('data-total'), 10) || 0;
+                    total += parseInt($(this).attr(attr), 10) || 0;
                 });
                 $('#exportPreviewCiclos').text(ciclos);
                 $('#exportPreviewCount').text(total);
             }
             $(document).on('change', '.ciclo-export-check', refreshExportPreview);
+            $(document).on('change', 'input[name="estado_matricula"]', function() {
+                $(this).closest('.btn-group').find('label').removeClass('active');
+                $(this).closest('label').addClass('active');
+                refreshExportPreview();
+            });
             $(document).on('click', '.export-ciclo-fila', function(e) {
                 if ($(e.target).is('input[type="checkbox"]')) return;
                 if ($(e.target).closest('label').length) return;
@@ -533,6 +649,107 @@
                     if (result.isConfirmed) {
                         form.submit();
                     }
+                });
+            });
+        });
+
+        document.querySelectorAll('.js-toggle-verificado').forEach(function (form) {
+            var checkbox = form.querySelector('.js-verificado-checkbox');
+            var tokenInput = form.querySelector('input[name="_token"]');
+            if (!checkbox || !tokenInput) return;
+            checkbox.addEventListener('change', function () {
+                var estadoAnterior = !checkbox.checked;
+                checkbox.disabled = true;
+                fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': tokenInput.value,
+                        'Accept': 'application/json',
+                    },
+                }).then(function (response) {
+                    if (!response.ok) throw new Error('request failed');
+                    return response.json();
+                }).then(function (data) {
+                    checkbox.checked = data.voucher_verificado;
+                    var fichaForm = form.parentElement.querySelector('.js-enviar-ficha');
+                    if (fichaForm) {
+                        var btn = fichaForm.querySelector('button[type="submit"]');
+                        if (btn) {
+                            btn.disabled = !data.voucher_verificado;
+                            btn.title = data.voucher_verificado ? btn.dataset.titleEnabled : btn.dataset.titleDisabled;
+                        }
+                    }
+                }).catch(function () {
+                    checkbox.checked = estadoAnterior;
+                    if (window.Swal) {
+                        Swal.fire('Error', 'No se pudo actualizar la verificación del voucher.', 'error');
+                    } else {
+                        alert('No se pudo actualizar la verificación del voucher.');
+                    }
+                }).finally(function () {
+                    checkbox.disabled = false;
+                });
+            });
+        });
+
+        document.querySelectorAll('.js-enviar-ficha').forEach(function (form) {
+            var tokenInput = form.querySelector('input[name="_token"]');
+            form.addEventListener('submit', function (e) {
+                var btn = form.querySelector('button[type="submit"]');
+                if (btn && btn.disabled) return;
+                e.preventDefault();
+                var nombre = form.dataset.nombre;
+                var esReenvio = form.dataset.reenvio === '1';
+                Swal.fire({
+                    title: esReenvio ? '¿Reenviar correo?' : '¿Enviar ficha de matrícula?',
+                    html: (esReenvio
+                        ? 'Se volverá a enviar el correo de matrícula completada, con la ficha en PDF adjunta, a <strong>' + nombre + '</strong>.'
+                        : 'Se enviará el correo de matrícula completada, con la ficha en PDF adjunta, a <strong>' + nombre + '</strong>.'),
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#4e73df',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Sí, enviar',
+                    cancelButtonText: 'Cancelar',
+                }).then(function (result) {
+                    if (!result.isConfirmed) return;
+
+                    if (btn) btn.disabled = true;
+                    fetch(form.action, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': tokenInput.value,
+                            'Accept': 'application/json',
+                        },
+                    }).then(function (response) {
+                        return response.json().then(function (data) {
+                            if (!response.ok || !data.success) throw new Error(data.message || 'No se pudo enviar el correo.');
+                            return data;
+                        });
+                    }).then(function (data) {
+                        form.dataset.reenvio = '1';
+                        if (btn) {
+                            btn.classList.remove('btn-primary');
+                            btn.classList.add('btn-outline-primary');
+                            btn.innerHTML = '<i class="fa fa-redo fa-xs"></i> Reenviar correo';
+                            btn.title = btn.dataset.titleEnabled;
+                        }
+
+                        var estadoSpan = form.parentElement.querySelector('.js-ficha-enviada-estado');
+                        if (!estadoSpan) {
+                            estadoSpan = document.createElement('span');
+                            estadoSpan.className = 'text-muted small d-block js-ficha-enviada-estado';
+                            estadoSpan.title = 'Última vez enviado';
+                            form.insertAdjacentElement('afterend', estadoSpan);
+                        }
+                        estadoSpan.innerHTML = '<i class="fa fa-check-double fa-xs"></i> Enviada el ' + data.ficha_enviada_at;
+
+                        Swal.fire('Enviado', data.message, 'success');
+                    }).catch(function (err) {
+                        Swal.fire('Error', err.message || 'Ocurrió un error al enviar el correo.', 'error');
+                    }).finally(function () {
+                        if (btn) btn.disabled = false;
+                    });
                 });
             });
         });

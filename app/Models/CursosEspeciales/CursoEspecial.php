@@ -18,7 +18,7 @@ class CursoEspecial extends Model
 
     public function getImagenUrlAttribute(): ?string
     {
-        return $this->imagen ? Storage::url($this->imagen) : null;
+        return $this->imagen ? Storage::disk('uploads')->url($this->imagen) : null;
     }
 
     public function docente()

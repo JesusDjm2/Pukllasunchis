@@ -286,6 +286,8 @@
                                 <option value="Beca Continua" {{ old('condicion')=='Beca Continua' ? 'selected':'' }}>Beca Continua</option>
                                 <option value="Beca 18"       {{ old('condicion')=='Beca 18'       ? 'selected':'' }}>Beca 18</option>
                                 <option value="Beca Puklla"   {{ old('condicion')=='Beca Puklla'   ? 'selected':'' }}>Beca Puklla</option>
+                                <option value="Reincorporación" {{ old('condicion')=='Reincorporación' ? 'selected':'' }}>Reincorporación</option>
+                                <option value="Egresado" {{ old('condicion')=='Egresado' ? 'selected':'' }}>Egresado</option>
                             </select>
                             @error('condicion')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>

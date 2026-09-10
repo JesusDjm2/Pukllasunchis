@@ -17,12 +17,22 @@ class PeriodoActualPpd extends Model
         'fecha_inicio',
         'fecha_cierre',
         'actual',
+        'formulario_habilitado',
+    ];
+
+    protected $casts = [
+        'formulario_habilitado' => 'boolean',
     ];
 
     // Añade esta relación
     public function periodosPpd()
     {
         return $this->hasMany(PeriodoPpd::class, 'periodo_actual_ppd_id');
+    }
+
+    public function matriculas()
+    {
+        return $this->hasMany(MatriculaPpd::class);
     }
 
     /**
@@ -46,7 +56,7 @@ class PeriodoActualPpd extends Model
                 // Desactivar otros períodos actuales
                 static::where('id', '!=', $model->id)
                     ->where('actual', true)
-                    ->update(['actual' => false]);
+                    ->update(['actual' => false, 'formulario_habilitado' => false]);
             }
         });
 

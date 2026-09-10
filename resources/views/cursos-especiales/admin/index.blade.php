@@ -283,10 +283,30 @@
         </div>
 
         @if (session('success'))
-            <div class="alert alert-success alert-dismissible fade show mb-4">
-                <i class="fas fa-check-circle mr-2"></i>{{ session('success') }}
-                <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
-            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Listo!',
+                        text: @json(session('success')),
+                        confirmButtonColor: '#28a745',
+                        timer: 4000,
+                        timerProgressBar: true
+                    });
+                });
+            </script>
+        @endif
+        @if (session('error'))
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: @json(session('error')),
+                        confirmButtonColor: '#dc3545'
+                    });
+                });
+            </script>
         @endif
 
         @if ($cursos->isEmpty())
@@ -354,7 +374,8 @@
                                 <i class="fas fa-edit"></i> Editar
                             </a>
                             <form action="{{ route('ce.cursos.destroy', $curso) }}" method="POST"
-                                onsubmit="return confirm('¿Eliminar «{{ $curso->nombre }}» y todo su contenido? Esta acción no se puede deshacer.')">
+                                class="js-confirm-delete"
+                                data-mensaje="¿Eliminar «{{ $curso->nombre }}» y todo su contenido? Esta acción no se puede deshacer.">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="cea-act-btn delete">
                                     <i class="fas fa-trash"></i>
@@ -371,6 +392,28 @@
 
 @push('scripts')
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script>
+        document.addEventListener('submit', function(e) {
+            const form = e.target.closest('form.js-confirm-delete');
+            if (!form || form.dataset.confirmado === '1') return;
+            e.preventDefault();
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: form.dataset.mensaje,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.dataset.confirmado = '1';
+                    form.submit();
+                }
+            });
+        });
+    </script>
     <script>
         (function() {
             if (typeof gsap === 'undefined' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;

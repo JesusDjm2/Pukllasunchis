@@ -190,9 +190,6 @@
                     </div>
                 </div><br>
 
-
-
-
                 <h3>Requisitos para la obtención del Título de Licenciado: </h3>
                 <p>Una vez terminada la Tesis, para la obtención del Título de Licenciado se siguen estos pasos:
                 </p>
@@ -202,22 +199,31 @@
                             <li>Hacer el pago correspondiente por derecho de revisión de originalidad (Turnitin)
                                 <strong>como pago ordinario</strong> en las
                                 oficinas de Caja Cusco. <small class="text-info">(Concepto: REVISION TURNITIN DE TESIS /
-                                    Codigo: 37 / Costo: s/30.00)</small>
+                                    Codigo: 37 / Costo: s/25.00)</small>
                             </li>
                             <li>Llenar <a
                                     href="https://docs.google.com/forms/d/e/1FAIpQLSc1Bam9QlzjkT66NYeKMxS-xyoU4MchYtYiGCMmtvKVbHiCjg/viewform"
                                     target="_blank" class="text-primary"> FORMULARIO DE REVISIÓN DE ORIGINALIDAD.</a></li>
                             <li>Adjuntar:
                                 <ul>
-                                    <li>Versión final de la Tesis en formato WORD</li>
+                                    <li>Versión final de la Tesis en formato WORD <br>
+                                        &nbsp;&nbsp;
+                                        NOTA: Si tu tesis es continuidad de un TI con el que obtuviste el grado de
+                                        bachiller, para la revisión preliminar de originalidad <strong>deberás excluir
+                                            únicamente la
+                                            sección "Base Teórica".</strong> La versión oficial de la tesis deberá
+                                        presentarse íntegra
+                                        en las etapas posteriores, conforme al artículo 94 del Reglamento de Investigación.
+                                    </li>
                                     <li>Comprobante de pago por derecho de revisión de originalidad</li>
+                                    <li>Este pago tiene el tiempo de duración de una semana.</li>
                                 </ul>
                             </li>
-                            <li>Este pago tiene el tiempo de duración de una semana.</li>
+
                             <li>Como resultado de este trámite, recibirás en tu correo institucional el Reporte de
                                 originalidad (Turnitin), en un plazo no mayor a 10 días hábiles. Con el pago que usted
-                                realiza puede hacer 1 revisión de originalidad en un plazo no mayor a 30 días.</li>
-                                <small style="color: #000; font-style: italic;">Nota: el porcentaje máximo para aprobar el
+                                realiza puede hacer 1 revisión de originalidad en un plazo no mayor a 5 días hábiles.</li>
+                            <small style="color: #000; font-style: italic;">Nota: el porcentaje máximo para aprobar el
                                 reporte de originalidad debe ser 20%, de lo contrario, debe corregir el documento y
                                 solicitar nuevamente la revisión. </small>
                         </ul>
@@ -253,15 +259,14 @@
                             <li>Adjuntar:
                                 <ul>
                                     <li>Informe de Tesis apta en formato WORD</li>
-                                    <li>Reporte de originalidad Turnitin (con máximo 20% de similitud en Turnitin)</li>
-                                    <li>Versión final de la Tesis en formato WORD</li>
+                                    <li>Reporte de originalidad Turnitin (con m�ximo 20% de similitud en Turnitin)</li>
+                                    <li>Versi�n final de la Tesis en formato WORD </li>
                                     <li>Diapositivas para sustentación de Tesis en formato PPT</li>
                                     <li>Constancia de inscripción en SUNEDU del diploma de Bachiller en formato PDF
                                     </li>
                                     <li>Comprobante de pago por derecho de sustentación de Tesis</li>
                                 </ul>
                             </li>
-
                         </ul>
                     </li>
                     <li> Solicitar Resolución Directoral (RD) de aprobación de sustentación
@@ -321,25 +326,20 @@
                         </ul>
                     </li>
                     <li>Solicitar emisión de diploma de Licenciado previo pago de s/400.00 en las oficinas de <span
-                            class="text-danger font-weight-bold">Caja
-                            Cusco:</span>
+                            class="text-danger font-weight-bold">Caja Cusco:</span>
                         <ul>
-                            <li>Este trámite solo se realiza de manera virtual. Enviar su FUT debidamente llenado al correo
-                                institucional: <a href="mailto:eespp@pukllasunchis.org"
-                                    class="text-primary">eespp@pukllasunchis.org</a>
-                                <br>Adjuntar al FUT la boleta de pago correspondiente.
-                                En el asunto del correo debe consignar:
-                                <strong>“Emisión de diploma de Bachiller”</strong>.
-                                Una vez ingresada la solicitud, se le informará oportunamente la fecha en la que deberá
-                                acudir de forma presencial para la firma del acta correspondiente.<br>
-                                <small class="text-info">(Concepto: Emisión título de Licenciado /
-                                    Codigo: 35 / Costo: s/400.00)</small>
-                            </li>
-                            <li>
-                                <span class="text-info">
-                                    👉 Este trámite tiene un lapso de duración de 15 días hábiles.
-                                </span>
-                            </li>
+                            <li>Este trámite solo se realiza de manera virtual. </li>
+                            <li> <a href="https://forms.gle/oVAax2L4GiaPGTWp9" class="text-primary">FORMULARIO DE
+                                SOLICITUD DE EMISIÓN DE DIPLOMA</a></li>
+                            <li>Adjuntar la boleta de pago correspondiente.</li>
+                            <span class="text-dark" style="font-weight: 400">Una vez ingresada la solicitud, se le informará oportunamente la fecha en la que deberá
+                                acudir de forma presencial para la firma del acta correspondiente.</span>
+                                <small class="text-info" style="font-weight: 400">(Concepto: Emisión título de Licenciado /
+                                Codigo: 35 / Costo: s/400.00)</small>
+                            <br>
+                            <span class="text-info" style="font-weight: 400">
+                                👉 Este trámite tiene un lapso de duración de 15 días hábiles.
+                            </span>
                         </ul>
                     </li>
                     <li>Solicitar registro e inscripción de Diploma de Licenciado previo pago de s/200.00 en las oficinas de
@@ -483,7 +483,6 @@
         </div>
     </div>
     <!-- Pop-up Modal -->
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous">
     </script>

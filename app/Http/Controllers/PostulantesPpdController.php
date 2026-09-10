@@ -18,6 +18,33 @@ use Illuminate\Support\Facades\Mail;
 
 class PostulantesPpdController extends Controller
 {
+    /**
+     * Las fotos de postulantes PPD se guardan como 'img/admin/ppd/archivo.jpg' (ruta relativa),
+     * pero users.foto se espera como solo el nombre de archivo dentro de img/estudiantes/.
+     * Mueve el archivo físico y devuelve el nombre para mantener esa convención.
+     */
+    private function moverFotoAEstudiantes(?string $rutaRelativa): ?string
+    {
+        if (! $rutaRelativa) {
+            return null;
+        }
+
+        $origen = public_path($rutaRelativa);
+        if (! file_exists($origen)) {
+            return null;
+        }
+
+        $destinoDir = public_path('img/estudiantes');
+        if (! file_exists($destinoDir)) {
+            mkdir($destinoDir, 0755, true);
+        }
+
+        $nombre = basename($rutaRelativa);
+        copy($origen, $destinoDir.DIRECTORY_SEPARATOR.$nombre);
+
+        return $nombre;
+    }
+
     public function index()
     {
         /*  $postulantes = PostulantesPpd::orderBy('apellidos')->get(); */
@@ -420,7 +447,7 @@ class PostulantesPpdController extends Controller
                     'lengua_2' => $postulante->lengua_2,
                     'domicilio' => $postulante->domicilio,
                     'telefono' => $postulante->telefono,
-                    'foto' => $postulante->foto,
+                    'foto' => $this->moverFotoAEstudiantes($postulante->foto),
                     'dni_adjunto' => $postulante->dni_adjunto,
                     'condicion' => 'activo',
                     'perfil' => 'postulante',
@@ -559,7 +586,7 @@ class PostulantesPpdController extends Controller
                     'lengua_2' => $postulante->lengua_2,
                     'domicilio' => $postulante->domicilio,
                     'telefono' => $postulante->telefono,
-                    'foto' => $postulante->foto,
+                    'foto' => $this->moverFotoAEstudiantes($postulante->foto),
                     'dni_adjunto' => $postulante->dni_adjunto,
                     'condicion' => 'activo',
                     'perfil' => 'postulante',

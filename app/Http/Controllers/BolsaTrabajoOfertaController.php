@@ -16,8 +16,10 @@ class BolsaTrabajoOfertaController extends Controller
             'nombre' => 'required|string|max:255',
             'detalles' => 'required|string|max:50000',
             'imagen' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
-            'fecha_inicio' => 'required|date',
-            'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
+            'nombre_publicador' => 'required|string|max:255',
+            'telefono_publicador' => 'nullable|string|max:50',
+            'relacion_publicador' => 'nullable|string|max:255',
+            'numero_correo' => 'nullable|string|max:50',
         ]);
 
         $ruta = null;
@@ -36,8 +38,10 @@ class BolsaTrabajoOfertaController extends Controller
             'nombre' => $validated['nombre'],
             'detalles' => $this->sanitizeDetalles($validated['detalles']),
             'imagen' => $ruta,
-            'fecha_inicio' => $validated['fecha_inicio'],
-            'fecha_fin' => $validated['fecha_fin'],
+            'nombre_publicador' => $validated['nombre_publicador'],
+            'telefono_publicador' => $validated['telefono_publicador'] ?? null,
+            'relacion_publicador' => $validated['relacion_publicador'] ?? null,
+            'numero_correo' => $validated['numero_correo'] ?? null,
         ]);
 
         $bolsaQuery = array_filter([
@@ -57,8 +61,7 @@ class BolsaTrabajoOfertaController extends Controller
         $this->ensureAdminBolsa();
 
         $query = BolsaTrabajoOferta::query()
-            ->orderByDesc('fecha_inicio')
-            ->orderByDesc('fecha_fin')
+            ->orderByDesc('created_at')
             ->orderByDesc('id');
 
         if ($request->filled('anio')) {
@@ -98,15 +101,21 @@ class BolsaTrabajoOfertaController extends Controller
             'nombre' => 'required|string|max:255',
             'detalles' => 'required|string|max:50000',
             'imagen' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
-            'fecha_inicio' => 'required|date',
-            'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
+            'fecha_publicacion' => 'required|date',
+            'nombre_publicador' => 'required|string|max:255',
+            'telefono_publicador' => 'nullable|string|max:50',
+            'relacion_publicador' => 'nullable|string|max:255',
+            'numero_correo' => 'nullable|string|max:50',
         ]);
 
         $data = [
             'nombre' => $validated['nombre'],
             'detalles' => $this->sanitizeDetalles($validated['detalles']),
-            'fecha_inicio' => $validated['fecha_inicio'],
-            'fecha_fin' => $validated['fecha_fin'],
+            'fecha_publicacion' => $validated['fecha_publicacion'],
+            'nombre_publicador' => $validated['nombre_publicador'],
+            'telefono_publicador' => $validated['telefono_publicador'] ?? null,
+            'relacion_publicador' => $validated['relacion_publicador'] ?? null,
+            'numero_correo' => $validated['numero_correo'] ?? null,
         ];
 
         if ($request->hasFile('imagen')) {

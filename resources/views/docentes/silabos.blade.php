@@ -3,14 +3,6 @@
 @section('titulo', 'Repositorio de sílabos')
 
 @section('contenido')
-    @php
-        $cursosAgrupados = $cursos->isEmpty()
-            ? collect()
-            : $cursos->groupBy(function ($curso) {
-                return $curso->relacionsilabo ? $curso->relacionsilabo->periodo : 'Sílabo sin periodo';
-            });
-    @endphp
-
     <div class="container-fluid docente-ui-page">
         @include('docentes.partials.ui-header', [
             'kicker' => 'Documentos',
@@ -36,23 +28,29 @@
             </div>
         </div>
 
-        @if ($cursos->isEmpty())
+        @if ($cursosAgrupados->isEmpty())
             <div class="alert alert-info shadow-sm text-center mb-0">No hay sílabos disponibles.</div>
         @else
             <div class="accordion docente-ui-accordion" id="accordionSilabosDocente">
-                @foreach ($cursosAgrupados as $periodo => $grupoCursos)
-                    @php $sid = 'silabo-period-' . $loop->index; @endphp
+                @foreach ($cursosAgrupados as $periodo => $filasGrupo)
+                    @php
+                        $sid = 'silabo-period-' . $loop->index;
+                        $esPeriodoActual = $nombrePeriodoActual && $periodo === $nombrePeriodoActual;
+                    @endphp
                     <div class="card docente-silabo-period-card">
                         <div class="card-header" id="heading-{{ $sid }}">
                             <h2 class="mb-0 h6">
-                                <button class="btn btn-link collapsed" type="button" data-toggle="collapse"
-                                    data-target="#collapse-{{ $sid }}" aria-expanded="false"
+                                <button class="btn btn-link {{ $esPeriodoActual ? '' : 'collapsed' }}" type="button" data-toggle="collapse"
+                                    data-target="#collapse-{{ $sid }}" aria-expanded="{{ $esPeriodoActual ? 'true' : 'false' }}"
                                     aria-controls="collapse-{{ $sid }}">
                                     <i class="far fa-calendar-alt mr-2"></i> Periodo: {{ $periodo }}
+                                    @if ($esPeriodoActual)
+                                        <span class="badge badge-primary ml-2">Actual</span>
+                                    @endif
                                 </button>
                             </h2>
                         </div>
-                        <div id="collapse-{{ $sid }}" class="collapse" aria-labelledby="heading-{{ $sid }}"
+                        <div id="collapse-{{ $sid }}" class="collapse {{ $esPeriodoActual ? 'show' : '' }}" aria-labelledby="heading-{{ $sid }}"
                             data-parent="#accordionSilabosDocente">
                             <div class="card-body p-0">
                                 <div class="table-responsive">
@@ -67,46 +65,45 @@
                                         </thead>
                                         <tbody>
                                             @php $contador = 1; @endphp
-                                            @foreach ($grupoCursos as $curso)
-                                                @if ($curso->silabo || $curso->relacionsilabo)
-                                                    <tr>
-                                                        <td>{{ $contador++ }}</td>
-                                                        <td class="text-left curso-nombre">
-                                                            <strong>{{ $curso->nombre }}</strong>
-                                                            <ul class="mb-0 small pl-3">
-                                                                <li>Horas: {{ $curso->horas }}</li>
-                                                                <li>Créditos: {{ $curso->creditos }}</li>
-                                                                <li>CC: {{ $curso->cc }}</li>
-                                                            </ul>
-                                                        </td>
-                                                        <td class="small">
-                                                            {{ $curso->ciclo && $curso->ciclo->programa
-                                                                ? (str_contains($curso->ciclo->programa->nombre, 'Inicial')
-                                                                    ? 'Programa Inicial'
-                                                                    : (str_contains($curso->ciclo->programa->nombre, 'EIB')
-                                                                        ? 'Programa EIB'
-                                                                        : $curso->ciclo->programa->nombre))
-                                                                : 'Sin programa asignado' }}
-                                                            —
-                                                            {{ $curso->ciclo ? $curso->ciclo->nombre : 'Sin ciclo asignado' }}
-                                                        </td>
-                                                        <td>
-                                                            @if ($curso->silabo)
-                                                                <a class="btn btn-success btn-sm mb-1"
-                                                                    href="{{ asset('docentes/silabo/' . $curso->silabo) }}"
-                                                                    target="_blank" rel="noopener noreferrer" title="Ver PDF">
-                                                                    <i class="fa fa-file-pdf"></i> PDF
-                                                                </a>
-                                                            @endif
-                                                            @if ($curso->relacionsilabo)
-                                                                <a href="{{ route('silabos.show', ['silabo' => $curso->relacionsilabo->id]) }}"
-                                                                    class="btn btn-info btn-sm mb-1" title="Ver sílabo en sistema">
-                                                                    <i class="fa fa-eye"></i> Ver
-                                                                </a>
-                                                            @endif
-                                                        </td>
-                                                    </tr>
-                                                @endif
+                                            @foreach ($filasGrupo as $fila)
+                                                @php $curso = $fila->curso; @endphp
+                                                <tr>
+                                                    <td>{{ $contador++ }}</td>
+                                                    <td class="text-left curso-nombre">
+                                                        <strong>{{ $curso->nombre }}</strong>
+                                                        <ul class="mb-0 small pl-3">
+                                                            <li>Horas: {{ $curso->horas }}</li>
+                                                            <li>Créditos: {{ $curso->creditos }}</li>
+                                                            <li>CC: {{ $curso->cc }}</li>
+                                                        </ul>
+                                                    </td>
+                                                    <td class="small">
+                                                        {{ $curso->ciclo && $curso->ciclo->programa
+                                                            ? (str_contains($curso->ciclo->programa->nombre, 'Inicial')
+                                                                ? 'Programa Inicial'
+                                                                : (str_contains($curso->ciclo->programa->nombre, 'EIB')
+                                                                    ? 'Programa EIB'
+                                                                    : $curso->ciclo->programa->nombre))
+                                                            : 'Sin programa asignado' }}
+                                                        —
+                                                        {{ $curso->ciclo ? $curso->ciclo->nombre : 'Sin ciclo asignado' }}
+                                                    </td>
+                                                    <td>
+                                                        @if ($fila->mostrarPdfLegacy)
+                                                            <a class="btn btn-success btn-sm mb-1"
+                                                                href="{{ asset('docentes/silabo/' . $curso->silabo) }}"
+                                                                target="_blank" rel="noopener noreferrer" title="Ver PDF">
+                                                                <i class="fa fa-file-pdf"></i> PDF
+                                                            </a>
+                                                        @endif
+                                                        @if ($fila->silabo)
+                                                            <a href="{{ route('silabos.show', ['silabo' => $fila->silabo->id]) }}"
+                                                                class="btn btn-info btn-sm mb-1" title="Ver sílabo en sistema">
+                                                                <i class="fa fa-eye"></i> Ver
+                                                            </a>
+                                                        @endif
+                                                    </td>
+                                                </tr>
                                             @endforeach
                                         </tbody>
                                     </table>

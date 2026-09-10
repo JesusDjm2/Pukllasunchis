@@ -50,10 +50,11 @@ trait CeCursoEstadisticasTrait
                 $completedCount = $progresos->get($user->id)?->count() ?? 0;
 
                 return [
-                    'user' => $user,
-                    'programa' => $user->programa?->nombre ?? 'Sin programa',
-                    'ciclo' => $user->ciclo?->nombre ?? 'Sin ciclo',
-                    'porcentaje' => $totalItems > 0 ? (int) round($completedCount / $totalItems * 100) : 0,
+                    'user'        => $user,
+                    'programa'    => $user->programa?->nombre ?? 'Sin programa',
+                    'ciclo'       => $user->ciclo?->nombre ?? 'Sin ciclo',
+                    'porcentaje'  => $totalItems > 0 ? (int) round($completedCount / $totalItems * 100) : 0,
+                    'inscrito_at' => $inscripcion->inscrito_at,
                 ];
             });
 

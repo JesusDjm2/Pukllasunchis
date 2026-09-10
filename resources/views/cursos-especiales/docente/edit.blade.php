@@ -199,10 +199,30 @@
         </div>
 
         @if (session('success'))
-            <div class="alert alert-success alert-dismissible fade show mb-4">
-                <i class="fas fa-check-circle mr-2"></i>{{ session('success') }}
-                <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
-            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Listo!',
+                        text: @json(session('success')),
+                        confirmButtonColor: '#28a745',
+                        timer: 4000,
+                        timerProgressBar: true
+                    });
+                });
+            </script>
+        @endif
+        @if (session('error'))
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: @json(session('error')),
+                        confirmButtonColor: '#dc3545'
+                    });
+                });
+            </script>
         @endif
 
         <form action="{{ route('ce.docente.update', $curso) }}" method="POST" enctype="multipart/form-data">

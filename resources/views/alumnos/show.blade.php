@@ -1,721 +1,600 @@
-﻿@php $layout = auth()->user()?->hasRole('super-admin') ? 'layouts.superadmin' : 'layouts.admin'; @endphp
+@php $layout = auth()->user()?->hasRole('super-admin') ? 'layouts.superadmin' : 'layouts.admin'; @endphp
 @extends($layout)
 @section('contenido')
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-    <div class="container-fluid">
-        <div class="d-sm-flex align-items-center justify-content-between mb-4">
-            <h2 class="h3 mb-0 text-gray-800">
-                Alumno: <strong>{{ $alumno->apellidos }}, {{ $alumno->nombres }}</strong>
-            </h2>
-            <a href="javascript:history.go(-1)" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
-                Volver
+    <div class="container-fluid alu-page">
+        <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap" style="gap:.75rem;">
+            <h2 class="h4 mb-0 text-gray-800">Ficha del alumno</h2>
+            <a href="javascript:history.go(-1)" class="alu-btn-back">
+                <i class="fas fa-arrow-left mr-1"></i> Volver
             </a>
         </div>
-        <div class="row">
-            <div class="col-lg-12 table-responsive">
-                <div class="accordion" id="accordionAlumno">
-                    {{-- ========================= CARRERA ========================= --}}
-                    <div class="accordion-item">
-                        <h2 class="accordion-header text-center fw-bold" id="headingCarrera">
-                            <button class="accordion-button justify-content-center fw-bold bg-secondary text-white"
-                                type="button" data-bs-toggle="collapse" data-bs-target="#collapseCarrera"
-                                aria-expanded="true" aria-controls="collapseCarrera">
-                                🎓 Carrera
-                            </button>
-                        </h2>
-                        <div id="collapseCarrera" class="accordion-collapse collapse show" aria-labelledby="headingCarrera"
-                            data-bs-parent="#accordionAlumno">
-                            <div class="accordion-body">
-                                <div class="row align-items-start mb-3">
-                                    <div class="col-md-3 text-center">
-                                        @if ($alumno->user && $alumno->user->foto )
-                                            <div class="card shadow-sm border-0">
-                                                <div class="card-body p-2 text-center">
-                                                    <img src="{{ asset('img/estudiantes/' . $alumno->user->foto) }}"
-                                                        alt="Foto de {{ $alumno->nombres }}"
-                                                        class="img-fluid rounded-circle border border-3 mb-2"
-                                                        style="width: 200px; height: 200px; object-fit: cover;">
-                                                        <p>{{ $alumno->apellidos }}, {{ $alumno->nombres }}</p>
-                                                </div>
-                                            </div>
-                                        @else
-                                            <div class="card shadow-sm border-0 text-center">
-                                                <div class="card-body p-3">
-                                                    <img src="{{ asset('img/default-user.png') }}" alt="Sin foto"
-                                                        class="img-fluid rounded-circle border border-3 mb-2"
-                                                        style="width: 140px; height: 140px; object-fit: cover;">
-                                                    <h6 class="fw-bold text-secondary mt-2">Sin Foto</h6>
-                                                </div>
-                                            </div>
-                                        @endif
 
-                                    </div>
-                                    <!-- Datos de Carrera -->
-                                    <div class="col-md-9">
-                                        <table class="table">
-                                            <tbody>
-                                                <tr>
-                                                    <td class="fw-bold">Programa:</td>
-                                                    <td>
-                                                        <a style="text-decoration: none"
-                                                            href="{{ route('programa.show', ['programa' => $alumno->programa->id]) }}">
-                                                            {{ $alumno->programa->nombre }}
-                                                        </a>
-                                                    </td>
-                                                    <td class="fw-bold">Ciclo:</td>
-                                                    <td>
-                                                        <a style="text-decoration: none"
-                                                            href="{{ route('ciclo.show', ['ciclo' => $alumno->ciclo->id]) }}">
-                                                            {{ $alumno->ciclo->nombre }}
-                                                        </a>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="fw-bold">Cursos:</td>
-                                                    <td colspan="3">
-                                                        @if ($alumno->cursos->isNotEmpty())
-                                                            @foreach ($alumno->cursos as $curso)
-                                                                <li>
-                                                                    <a style="text-decoration: none"
-                                                                        href="{{ route('curso.show', ['curso' => $curso->id]) }}">{{ $curso->nombre }}</a>
-                                                                    @if ($curso->ciclo_id != $alumno->ciclo_id)
-                                                                        <span class="badge bg-info text-dark">Ciclo
-                                                                            {{ $curso->ciclo->nombre }}</span>
-                                                                    @endif
-                                                                </li>
-                                                            @endforeach
-                                                        @else
-                                                            @foreach ($alumno->ciclo->cursos as $curso)
-                                                                <li style="margin-left: 1.4em">
-                                                                    <a style="text-decoration: none"
-                                                                        href="{{ route('curso.show', ['curso' => $curso->id]) }}">{{ $curso->nombre }}</a>
-                                                                </li>
-                                                            @endforeach
-                                                        @endif
-                                                    </td>
-                                                </tr>
-
-                                                @if (isset($alumno->user->pendiente))
-                                                    <tr style="background: #ff9090!important">
-                                                        <td colspan="2" style="background: none">Curso(s) a cargo:</td>
-                                                        <td colspan="2" style="background: none">
-                                                            @php $cursos = explode(',', $alumno->user->pendiente); @endphp
-                                                            @foreach ($cursos as $curso)
-                                                                <li style="margin-left: 1.4em">{{ trim($curso) }}</li>
-                                                            @endforeach
-                                                        </td>
-                                                    </tr>
-                                                @endif
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- <div id="collapseCarrera" class="accordion-collapse collapse show" aria-labelledby="headingCarrera"
-                            data-bs-parent="#accordionAlumno">
-                            <div class="accordion-body">
-                                <table class="table">
-                                    <tbody>
-                                        <tr>
-                                            <td class="fw-bold">Programa:</td>
-                                            <td>
-                                                <a style="text-decoration: none"
-                                                    href="{{ route('programa.show', ['programa' => $alumno->programa->id]) }}">
-                                                    {{ $alumno->programa->nombre }}
-                                                </a>
-                                            </td>
-                                            <td class="fw-bold">Ciclo:</td>
-                                            <td>
-                                                <a style="text-decoration: none"
-                                                    href="{{ route('ciclo.show', ['ciclo' => $alumno->ciclo->id]) }}">
-                                                    {{ $alumno->ciclo->nombre }}
-                                                </a>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Cursos:</td>
-                                            <td colspan="3">
-                                                @if ($alumno->cursos->isNotEmpty())
-                                                    @foreach ($alumno->cursos as $curso)
-                                                        <li>
-                                                            <a style="text-decoration: none"
-                                                                href="{{ route('curso.show', ['curso' => $curso->id]) }}">{{ $curso->nombre }}</a>
-                                                            @if ($curso->ciclo_id != $alumno->ciclo_id)
-                                                                <span class="badge bg-info text-dark">Ciclo
-                                                                    {{ $curso->ciclo->nombre }}</span>
-                                                            @endif
-                                                        </li>
-                                                    @endforeach
-                                                @else
-                                                    @foreach ($alumno->ciclo->cursos as $curso)
-                                                        <li style="margin-left: 1.4em"><a style="text-decoration: none"
-                                                                href="{{ route('curso.show', ['curso' => $curso->id]) }}">{{ $curso->nombre }}</a>
-                                                        </li>
-                                                    @endforeach
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        @if (isset($alumno->user->pendiente))
-                                            <tr style="background: #ff9090!important">
-                                                <td colspan="2" style="background: none">Curso(s) a cargo:</td>
-                                                <td colspan="2" style="background: none">
-                                                    @php $cursos = explode(',', $alumno->user->pendiente); @endphp
-                                                    @foreach ($cursos as $curso)
-                                                        <li style="margin-left: 1.4em">{{ trim($curso) }}</li>
-                                                    @endforeach
-                                                </td>
-                                            </tr>
-                                        @endif
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div> --}}
+        {{-- ========================= CABECERA / PERFIL ========================= --}}
+        <div class="alu-profile" data-alu-reveal>
+            <div class="alu-profile-photo">
+                @if ($alumno->user && $alumno->user->foto)
+                    <img src="{{ asset('img/estudiantes/' . $alumno->user->foto) }}"
+                        alt="Foto de {{ $alumno->nombres }}">
+                @else
+                    <div class="alu-profile-photo-placeholder">
+                        <i class="fas fa-user"></i>
                     </div>
-                    {{-- ========================= DATOS PERSONALES ========================= --}}
-                    <div class="accordion-item">
-                        <h2 class="accordion-header text-center fw-bold" id="headingDatos">
-                            <button class="accordion-button collapsed fw-bold bg-secondary text-white" type="button"
-                                data-bs-toggle="collapse" data-bs-target="#collapseDatos" aria-expanded="false"
-                                aria-controls="collapseDatos">
-                                👤 Datos Personales
-                            </button>
-                        </h2>
-                        <div id="collapseDatos" class="accordion-collapse collapse" aria-labelledby="headingDatos"
-                            data-bs-parent="#accordionAlumno">
-                            <div class="accordion-body">
-                                <table class="table">
-                                    <tbody>
-                                        <tr>
-                                            <td class="fw-bold" colspan="2">Nombre Completo:</td>
-                                            <td colspan="2">{{ $alumno->nombres }} {{ $alumno->apellidos }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Email:</td>
-                                            <td>{{ $alumno->email }}</td>
-                                            <td class="fw-bold">DNI:</td>
-                                            <td>{{ $alumno->dni }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Género:</td>
-                                            <td>{{ $alumno->genero ?? '—' }}</td>
-                                            <td class="fw-bold">Fecha de nacimiento:</td>
-                                            <td>
-                                                @php $fechaNacFmtShow = $alumno->fechaNacimientoResueltaFormateada(); @endphp
-                                                @if ($fechaNacFmtShow !== '')
-                                                    {{ $fechaNacFmtShow }}
-                                                    @if ($alumno->edad !== null)
-                                                        <span class="text-muted">({{ $alumno->edad }}
-                                                            {{ $alumno->edad === 1 ? 'año' : 'años' }})</span>
-                                                    @endif
-                                                @else
-                                                    —
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Número:</td>
-                                            <td>{{ $alumno->numero }}</td>
-                                            <td class="fw-bold">Número de referencia:</td>
-                                            <td>{{ $alumno->numero_referencia }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Lugar de nacimiento:</td>
-                                            <td>{{ $alumno->lugar_nacimiento ?? '—' }}</td>
-                                            <td class="fw-bold">Permanencia en la vivienda:</td>
-                                            <td>{{ $alumno->permanencia_vivienda ?? '—' }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Departamento:</td>
-                                            <td>{{ $alumno->departamento ?? '—' }}</td>
-                                            <td class="fw-bold">Provincia:</td>
-                                            <td>{{ $alumno->provincia ?? '—' }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Distrito:</td>
-                                            <td>{{ $alumno->distrito ?? '—' }}</td>
-                                            <td class="fw-bold">Dirección:</td>
-                                            <td>{{ $alumno->direccion ?? '—' }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Procedencia familiar:</td>
-                                            <td>{{ $procedencia[$alumno->procedencia_familiar] ?? $alumno->procedencia_familiar ?? '—' }}
-                                            </td>
-                                            <td class="fw-bold">Sector laboral:</td>
-                                            <td>{{ $alumno->sector_laboral ? $alumno->sector_laboral : '—' }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Usuario del sistema:</td>
-                                            <td colspan="3">
-                                                @if ($alumno->user)
-                                                    {{ $alumno->user->email }}
-                                                    @if ($alumno->user->name)
-                                                        <span class="text-muted">({{ $alumno->user->name }})</span>
-                                                    @endif
-                                                @else
-                                                    <span class="text-muted">Sin cuenta vinculada</span>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Te consideras:</td>
-                                            <td>{{ $consideras[$alumno->te_consideras] ?? $alumno->te_consideras }}</td>
-                                            <td class="fw-bold">Lengua 1:</td>
-                                            <td>{{ $alumno->lengua_1 }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Lengua 2:</td>
-                                            <td>{{ $alumno->lengua_2 }}</td>
-                                            <td class="fw-bold">Estado Civil:</td>
-                                            <td>{{ $alumno->estado_civil }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Eres padre/madre soltero(a):</td>
-                                            <td>{{ $alumno->p_m_soltero ? 'Sí' : 'No' }}</td>
-                                            <td class="fw-bold">Cantidad de hijos(a):</td>
-                                            <td>{{ $alumno->num_hijos }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Sector socioeconómico:</td>
-                                            <td>{{ $sector[$alumno->sector_socioeconomico] ?? $alumno->sector_socioeconomico }}
-                                            </td>
-                                            @if (stristr($alumno->num_comprobante, 'Beca'))
-                                                <td class="fw-bold text-white bg-success">N° de Comprobante:</td>
-                                                <td class="bg-success text-white">Beca</td>
-                                            @else
-                                                <td class="fw-bold">N° de Comprobante:</td>
-                                                <td>{{ $alumno->num_comprobante }}</td>
-                                            @endif
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- ========================= ASPECTOS FAMILIARES ========================= --}}
-                    <div class="accordion-item">
-                        <h2 class="accordion-header text-center fw-bold" id="headingFamilia">
-                            <button class="accordion-button collapsed fw-bold bg-secondary text-white" type="button"
-                                data-bs-toggle="collapse" data-bs-target="#collapseFamilia" aria-expanded="false"
-                                aria-controls="collapseFamilia">
-                                🏠 Aspectos Familiares
-                            </button>
-                        </h2>
-                        <div id="collapseFamilia" class="accordion-collapse collapse" aria-labelledby="headingFamilia"
-                            data-bs-parent="#accordionAlumno">
-                            <div class="accordion-body">
-                                <table class="table">
-                                    <tbody>
-                                        <tr>
-                                            <td class="fw-bold">Con quienes vive:</td>
-                                            <td>{{ $alumno->convivientes }}</td>
-                                            <td class="fw-bold">Quién mantiene su hogar:</td>
-                                            <td>{{ $alumno->quien_mantiene }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Dependientes menores:</td>
-                                            <td>{{ $alumno->cant_dependientes_child }}</td>
-                                            <td class="fw-bold">Dependientes tercera edad:</td>
-                                            <td>{{ $alumno->cant_dependientes_old }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Dependientes otros:</td>
-                                            <td>{{ $alumno->cant_dependientes_otros }}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- ========================= ASPECTOS EDUCATIVOS ========================= --}}
-                    <div class="accordion-item">
-                        <h2 class="accordion-header text-center fw-bold" id="headingEducacion">
-                            <button class="accordion-button collapsed fw-bold bg-secondary text-white" type="button"
-                                data-bs-toggle="collapse" data-bs-target="#collapseEducacion" aria-expanded="false"
-                                aria-controls="collapseEducacion">
-                                📚 Aspectos Educativos
-                            </button>
-                        </h2>
-                        <div id="collapseEducacion" class="accordion-collapse collapse"
-                            aria-labelledby="headingEducacion" data-bs-parent="#accordionAlumno">
-                            <div class="accordion-body">
-                                <table class="table">
-                                    <tbody>
-                                        <tr>
-                                            <td class="fw-bold">Estudio/Beca:</td>
-                                            <td>{{ $alumno->estudio_beca }}</td>
-                                            <td class="fw-bold">Origen Beca:</td>
-                                            <td>{{ $alumno->origen_beca }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Postulaciones EESP:</td>
-                                            <td>{{ $alumno->postulaciones_eesp }}</td>
-                                            <td class="fw-bold">Postulaciones Inst/Uni:</td>
-                                            <td>{{ $alumno->postulaciones_inst_uni }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Postulaciones Otros:</td>
-                                            <td>{{ $alumno->postulaciones_otros }}</td>
-                                            <td class="fw-bold">Tipo de Preparación:</td>
-                                            <td>{{ $alumno->tipo_preparacion }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Motivo para estudiar en EESP:</td>
-                                            <td>{{ $alumno->motivo_estudio_eesp }}</td>
-                                            <td class="fw-bold">Motivo para estudiar docencia:</td>
-                                            <td>{{ $alumno->motivo_docencia }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Motivo por el cual elegiste tu especialidad:</td>
-                                            <td>{{ $alumno->motivo_especialidad }}</td>
-                                            <td class="fw-bold">¿Tienes acceso a internet en casa?</td>
-                                            <td>{{ $alumno->internet ? 'Sí' : 'No' }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Si no, ¿dónde se conecta?</td>
-                                            <td>{{ $alumno->internet_lugar }}</td>
-                                            <td class="fw-bold">Principal servicio:</td>
-                                            <td>{{ $alumno->servicio_internet }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Dispositivo:</td>
-                                            <td>{{ $alumno->dispositivo_internet }}</td>
-                                            <td class="fw-bold">Uso:</td>
-                                            <td>{{ $alumno->propio_compartido ? 'Propio' : 'Compartido' }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Usa correo electrónico:</td>
-                                            <td>{{ $alumno->correo ? 'Sí' : 'No' }}</td>
-                                            <td class="fw-bold">Horas de estudio:</td>
-                                            <td>{{ $alumno->num_hrs_estudio }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Forma de estudio:</td>
-                                            <td colspan="3">{{ $alumno->forma_estudio }}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- ========================= ASPECTOS SOCIOECONÓMICOS ========================= --}}
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="headingSocio">
-                            <button class="accordion-button collapsed fw-bold bg-secondary text-white" type="button"
-                                data-bs-toggle="collapse" data-bs-target="#collapseSocio" aria-expanded="false"
-                                aria-controls="collapseSocio">
-                                💰 Aspectos Socioeconómicos
-                            </button>
-                        </h2>
-                        <div id="collapseSocio" class="accordion-collapse collapse" aria-labelledby="headingSocio"
-                            data-bs-parent="#accordionAlumno">
-                            <div class="accordion-body">
-                                <table class="table">
-                                    <tbody>
-                                        <tr>
-                                            <td class="fw-bold">¿Actualmente trabaja?:</td>
-                                            <td>
-                                                @php
-                                                    $tr = $alumno->trabajas;
-                                                    $trabTxt = match (true) {
-                                                        $tr === 1 || $tr === '1' => 'Sí',
-                                                        $tr === 0 || $tr === '0' => 'No',
-                                                        default => $tr !== null && $tr !== '' ? (string) $tr : '—',
-                                                    };
-                                                @endphp
-                                                {{ $trabTxt }}
-                                            </td>
-                                            <td class="fw-bold">Lugar de trabajo:</td>
-                                            <td>{{ $alumno->donde_trabajas ?? '—' }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Ingreso mensual:</td>
-                                            <td>{{ $alumno->ingreso_mensual }}</td>
-                                            <td class="fw-bold">Egreso:</td>
-                                            <td>{{ $alumno->egreso }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Horas laboradas/semana:</td>
-                                            <td>{{ $alumno->hrs_laboradas_sem }}</td>
-                                            <td class="fw-bold">¿Recibe ayuda económica?:</td>
-                                            <td>{{ $alumno->ayuda_economica ? 'Sí' : 'No' }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Tiempo de ayuda:</td>
-                                            <td>{{ $alumno->tiempo_ayuda }}</td>
-                                            <td class="fw-bold">Tipo de apoyo:</td>
-                                            <td>{{ $alumno->tipo_apoyo_formacion }}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- ========================= ASPECTOS VIVIENDA ========================= --}}
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="headingVivienda">
-                            <button class="accordion-button collapsed fw-bold bg-secondary text-white" type="button"
-                                data-bs-toggle="collapse" data-bs-target="#collapseVivienda" aria-expanded="false"
-                                aria-controls="collapseVivienda">
-                                🏡 Aspectos Vivienda
-                            </button>
-                        </h2>
-                        <div id="collapseVivienda" class="accordion-collapse collapse" aria-labelledby="headingVivienda"
-                            data-bs-parent="#accordionAlumno">
-                            <div class="accordion-body">
-                                <table class="table">
-                                    <tbody>
-                                        <tr>
-                                            <td class="fw-bold">Tipo de Vivienda:</td>
-                                            <td>{{ $alumno->tipo_vivienda }}</td>
-                                            <td class="fw-bold">Situación:</td>
-                                            <td>{{ $alumno->situacion_vivienda }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Dormitorios:</td>
-                                            <td>{{ $alumno->dormitorios_vivienda }}</td>
-                                            <td class="fw-bold">Baños:</td>
-                                            <td>{{ $alumno->banos_vivienda }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Material:</td>
-                                            <td>{{ $alumno->material_vivienda }}</td>
-                                            <td class="fw-bold">Bienes:</td>
-                                            <td>
-                                                @php
-                                                    $bienesRaw = $alumno->bienes_vivienda;
-                                                    $bienesList = is_array($bienesRaw)
-                                                        ? $bienesRaw
-                                                        : array_filter(array_map('trim', explode(',', (string) $bienesRaw)));
-                                                @endphp
-                                                @if (count($bienesList))
-                                                    <ul class="mb-0 ps-3">
-                                                        @foreach ($bienesList as $b)
-                                                            <li>{{ $b }}</li>
-                                                        @endforeach
-                                                    </ul>
-                                                @else
-                                                    —
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Horas Agua:</td>
-                                            <td>{{ $alumno->hrs_disponibles_agua }}</td>
-                                            <td class="fw-bold">Horas Desagüe:</td>
-                                            <td>{{ $alumno->hrs_disponibles_desague }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Horas Luz:</td>
-                                            <td>{{ $alumno->hrs_disponibles_luz }}</td>
-                                            <td class="fw-bold">Otros servicios:</td>
-                                            <td>
-                                                @php
-                                                    $otrosRaw = $alumno->otros_servicios;
-                                                    $otrosList = is_array($otrosRaw)
-                                                        ? $otrosRaw
-                                                        : array_filter(array_map('trim', explode(',', (string) $otrosRaw)));
-                                                @endphp
-                                                @if (count($otrosList))
-                                                    <ul class="mb-0 ps-3">
-                                                        @foreach ($otrosList as $o)
-                                                            <li>{{ $o }}</li>
-                                                        @endforeach
-                                                    </ul>
-                                                @else
-                                                    —
-                                                @endif
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- ========================= ASPECTOS SALUD ========================= --}}
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="headingSalud">
-                            <button class="accordion-button collapsed fw-bold bg-secondary text-white" type="button"
-                                data-bs-toggle="collapse" data-bs-target="#collapseSalud" aria-expanded="false"
-                                aria-controls="collapseSalud">
-                                ❤️ Aspectos Salud
-                            </button>
-                        </h2>
-                        <div id="collapseSalud" class="accordion-collapse collapse" aria-labelledby="headingSalud"
-                            data-bs-parent="#accordionAlumno">
-                            <div class="accordion-body">
-                                <table class="table">
-                                    <tbody>
-                                        <tr>
-                                            <td class="fw-bold">Problemas de salud:</td>
-                                            <td>{{ $alumno->problemas_salud ? 'Sí' : 'No' }}</td>
-                                            <td class="fw-bold">Última consulta:</td>
-                                            <td>{{ $alumno->ultima_consulta ? 'Sí' : 'No' }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Motivo de la consulta:</td>
-                                            <td>{{ $alumno->motivo_consulta }}</td>
-                                            <td class="fw-bold">Tipo de seguro:</td>
-                                            <td>{{ $alumno->tipo_seguro }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Familiar con problemas de salud:</td>
-                                            <td>{{ $alumno->familiar_salud ? 'Sí' : 'No' }}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- ========================= ASPECTOS CULTURALES ========================= --}}
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="headingCultura">
-                            <button class="accordion-button collapsed fw-bold bg-secondary text-white" type="button"
-                                data-bs-toggle="collapse" data-bs-target="#collapseCultura" aria-expanded="false"
-                                aria-controls="collapseCultura">
-                                🎭 Aspectos Culturales
-                            </button>
-                        </h2>
-                        <div id="collapseCultura" class="accordion-collapse collapse" aria-labelledby="headingCultura"
-                            data-bs-parent="#accordionAlumno">
-                            <div class="accordion-body">
-                                <table class="table">
-                                    <tbody>
-                                        <tr>
-                                            <td class="fw-bold">Frecuencia de lectura:</td>
-                                            <td>{{ $alumno->frecuencia_lectura }}</td>
-                                            <td class="fw-bold">Acceso a lectura:</td>
-                                            <td>{{ $alumno->acceso_lectura }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">Visitas a museos:</td>
-                                            <td>{{ $alumno->visitas_museos }}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- ========================= ASPECTOS ADICIONALES ========================= --}}
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="headingAdicional">
-                            <button class="accordion-button collapsed fw-bold bg-secondary text-white" type="button"
-                                data-bs-toggle="collapse" data-bs-target="#collapseAdicional" aria-expanded="false"
-                                aria-controls="collapseAdicional">
-                                🌟 Aspectos Adicionales
-                            </button>
-                        </h2>
-                        <div id="collapseAdicional" class="accordion-collapse collapse"
-                            aria-labelledby="headingAdicional" data-bs-parent="#accordionAlumno">
-                            <div class="accordion-body">
-                                <table class="table">
-                                    <tbody>
-                                        <tr>
-                                            <td class="fw-bold">Actividades en Internet:</td>
-                                            <td>{{ $alumno->actividades_internet }}</td>
-                                            <td class="fw-bold">Habilidades:</td>
-                                            <td>
-                                                @php
-                                                    $habRaw = $alumno->habilidades;
-                                                    $habList = is_array($habRaw)
-                                                        ? $habRaw
-                                                        : array_filter(preg_split('/[-,]/', (string) $habRaw) ?: []);
-                                                @endphp
-                                                @if (count($habList))
-                                                    <ul class="mb-0 ps-3">
-                                                        @foreach ($habList as $h)
-                                                            <li>{{ trim($h) }}</li>
-                                                        @endforeach
-                                                    </ul>
-                                                @else
-                                                    —
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td class="fw-bold">¿Dispone de tiempo libre?:</td>
-                                            <td>{{ $alumno->tiempo_libre ? 'Sí' : 'No' }}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-
+                @endif
+            </div>
+            <div class="alu-profile-info">
+                <h3 class="alu-profile-name">{{ $alumno->apellidos }}, {{ $alumno->nombres }}</h3>
+                <div class="alu-profile-badges">
+                    @if ($alumno->programa)
+                        <a href="{{ route('programa.show', ['programa' => $alumno->programa->id]) }}" class="alu-badge alu-badge-primary">
+                            <i class="fas fa-graduation-cap"></i> {{ $alumno->programa->nombre }}
+                        </a>
+                    @endif
+                    @if ($alumno->ciclo)
+                        <a href="{{ route('ciclo.show', ['ciclo' => $alumno->ciclo->id]) }}" class="alu-badge alu-badge-outline">
+                            <i class="fas fa-layer-group"></i> Ciclo {{ $alumno->ciclo->nombre }}
+                        </a>
+                    @endif
+                    <span class="alu-badge alu-badge-muted"><i class="fas fa-id-card"></i> DNI {{ $alumno->dni ?? '—' }}</span>
+                    @if (stristr($alumno->num_comprobante, 'Beca'))
+                        <span class="alu-badge alu-badge-success"><i class="fas fa-award"></i> Beca</span>
+                    @endif
                 </div>
+                <div class="alu-profile-contact">
+                    <span><i class="fas fa-envelope"></i> {{ $alumno->email ?? '—' }}</span>
+                    <span><i class="fas fa-phone"></i> {{ $alumno->numero ?? '—' }}</span>
+                    @if ($alumno->user)
+                        <span><i class="fas fa-user-shield"></i> {{ $alumno->user->email }}</span>
+                    @endif
+                </div>
+                @if (isset($alumno->user->pendiente) && $alumno->user->pendiente)
+                    <div class="alu-alert-pendiente">
+                        <i class="fas fa-triangle-exclamation"></i>
+                        <div>
+                            <strong>Curso(s) a cargo:</strong>
+                            @php $cursosPendientes = explode(',', $alumno->user->pendiente); @endphp
+                            {{ implode(', ', array_map('trim', $cursosPendientes)) }}
+                        </div>
+                    </div>
+                @endif
+            </div>
+        </div>
 
-
-
-                <div class="row mt-4">
-                    <div class="col-lg-12 table-responsive">
-                        <table class="table bg-white align-middle">
-                            <tbody>
-                                <tr>
-                                    <td colspan="4" class="table-dark text-center fw-bold">PERIODOS ANTERIORES
-                                    </td>
-                                </tr>
-                                @php
-                                    $periodosAgrupados = $alumno->periodo->groupBy(
-                                        fn($p) => $p->periodoActual->nombre ?? 'Sin periodo definido',
-                                    );
-                                @endphp
-
-                                @forelse ($periodosAgrupados as $nombrePeriodo => $periodos)
-                                    {{-- Encabezado de periodo --}}
-                                    <tr class="table-secondary text-center">
-                                        <td colspan="4" class="fw-bold text-uppercase">
-                                            📅 {{ $nombrePeriodo }}
-                                        </td>
-                                    </tr>
-
-                                    {{-- Encabezado de columnas --}}
-                                    <tr class="table-light fw-bold">
-                                        <td>Curso(s)</td>
-                                        <td>Valoración</td>
-                                        <td>Calificación</td>
-                                        <td>Calificación Sistema</td>
-                                    </tr>
-
-                                    {{-- Filas de datos --}}
-                                    @foreach ($periodos as $p)
-                                        <tr>
-                                            <td>
-                                                @if ($p->curso)
-                                                    <a style="text-decoration: none"
-                                                        href="{{ route('curso.show', ['curso' => $p->curso->id]) }}">
-                                                        {{ $p->curso->nombre }}
-                                                    </a>
-                                                @else
-                                                    N/A
+        {{-- ========================= SECCIONES ========================= --}}
+        <div class="alu-sections">
+            {{-- CARRERA --}}
+            <div class="alu-section" data-alu-reveal>
+                <button type="button" class="alu-section-hdr" onclick="toggleAluSection('carrera')">
+                    <span class="alu-section-ico"><i class="fas fa-graduation-cap"></i></span>
+                    <span class="alu-section-title">Carrera</span>
+                    <i class="fas fa-chevron-down alu-chev" id="alu-chev-carrera"></i>
+                </button>
+                <div class="alu-section-body" id="alu-body-carrera">
+                    <div class="alu-grid">
+                        <div class="alu-field">
+                            <div class="alu-field-k">Programa</div>
+                            <div class="alu-field-v">
+                                @if ($alumno->programa)
+                                    <a href="{{ route('programa.show', ['programa' => $alumno->programa->id]) }}">{{ $alumno->programa->nombre }}</a>
+                                @else — @endif
+                            </div>
+                        </div>
+                        <div class="alu-field">
+                            <div class="alu-field-k">Ciclo</div>
+                            <div class="alu-field-v">
+                                @if ($alumno->ciclo)
+                                    <a href="{{ route('ciclo.show', ['ciclo' => $alumno->ciclo->id]) }}">{{ $alumno->ciclo->nombre }}</a>
+                                @else — @endif
+                            </div>
+                        </div>
+                        <div class="alu-field alu-field--wide">
+                            <div class="alu-field-k">Cursos</div>
+                            <div class="alu-field-v">
+                                @php $listaCursos = $alumno->cursos->isNotEmpty() ? $alumno->cursos : optional($alumno->ciclo)->cursos; @endphp
+                                @if ($listaCursos && $listaCursos->isNotEmpty())
+                                    <div class="alu-chip-list">
+                                        @foreach ($listaCursos as $curso)
+                                            <a href="{{ route('curso.show', ['curso' => $curso->id]) }}" class="alu-chip">
+                                                {{ $curso->nombre }}
+                                                @if ($alumno->cursos->isNotEmpty() && $curso->ciclo_id != $alumno->ciclo_id)
+                                                    <span class="alu-chip-tag">Ciclo {{ $curso->ciclo->nombre }}</span>
                                                 @endif
-                                            </td>
-                                            <td>{{ $p->valoracion_curso ?? '-' }}</td>
-                                            <td>{{ $p->calificacion_curso ?? '-' }}</td>
-                                            <td>{{ $p->calificacion_sistema ?? '-' }}</td>
-                                        </tr>
-                                    @endforeach
-                                @empty
-                                    <tr>
-                                        <td colspan="4" class="text-center text-muted fst-italic">
-                                            No hay calificaciones registradas aún.
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+                                            </a>
+                                        @endforeach
+                                    </div>
+                                @else — @endif
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            {{-- DATOS PERSONALES --}}
+            <div class="alu-section" data-alu-reveal>
+                <button type="button" class="alu-section-hdr" onclick="toggleAluSection('personales')">
+                    <span class="alu-section-ico"><i class="fas fa-id-card"></i></span>
+                    <span class="alu-section-title">Datos personales</span>
+                    <i class="fas fa-chevron-down alu-chev" id="alu-chev-personales"></i>
+                </button>
+                <div class="alu-section-body" id="alu-body-personales">
+                    <div class="alu-grid">
+                        <div class="alu-field"><div class="alu-field-k">Nombre completo</div><div class="alu-field-v">{{ $alumno->nombres }} {{ $alumno->apellidos }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">Email</div><div class="alu-field-v">{{ $alumno->email ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">DNI</div><div class="alu-field-v">{{ $alumno->dni ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">Género</div><div class="alu-field-v">{{ $alumno->genero ?? '—' }}</div></div>
+                        <div class="alu-field">
+                            <div class="alu-field-k">Fecha de nacimiento</div>
+                            <div class="alu-field-v">
+                                @php $fechaNacFmtShow = $alumno->fechaNacimientoResueltaFormateada(); @endphp
+                                @if ($fechaNacFmtShow !== '')
+                                    {{ $fechaNacFmtShow }}
+                                    @if ($alumno->edad !== null)
+                                        <span class="text-muted">({{ $alumno->edad }} {{ $alumno->edad === 1 ? 'año' : 'años' }})</span>
+                                    @endif
+                                @else — @endif
+                            </div>
+                        </div>
+                        <div class="alu-field"><div class="alu-field-k">Celular</div><div class="alu-field-v">{{ $alumno->numero ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">Celular de contacto de emergencia</div><div class="alu-field-v">{{ $alumno->numero_referencia ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">Lugar de nacimiento</div><div class="alu-field-v">{{ $alumno->lugar_nacimiento ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">Permanencia en la vivienda</div><div class="alu-field-v">{{ $alumno->permanencia_vivienda ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">Departamento</div><div class="alu-field-v">{{ $alumno->departamento ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">Provincia</div><div class="alu-field-v">{{ $alumno->provincia ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">Distrito</div><div class="alu-field-v">{{ $alumno->distrito ?? '—' }}</div></div>
+                        <div class="alu-field alu-field--wide"><div class="alu-field-k">Domicilio</div><div class="alu-field-v">{{ $alumno->direccion ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">¿Su familia procede de una comunidad?</div><div class="alu-field-v">{{ $procedencia[$alumno->procedencia_familiar] ?? $alumno->procedencia_familiar ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">Sector laboral <span class="alu-field-hint">(si trabaja)</span></div><div class="alu-field-v">{{ $alumno->sector_laboral ?: '—' }}</div></div>
+                        <div class="alu-field alu-field--wide">
+                            <div class="alu-field-k">Usuario del sistema</div>
+                            <div class="alu-field-v">
+                                @if ($alumno->user)
+                                    {{ $alumno->user->email }}
+                                    @if ($alumno->user->name)
+                                        <span class="text-muted">({{ $alumno->user->name }})</span>
+                                    @endif
+                                @else
+                                    <span class="text-muted">Sin cuenta vinculada</span>
+                                @endif
+                            </div>
+                        </div>
+                        <div class="alu-field"><div class="alu-field-k">Se considera</div><div class="alu-field-v">{{ $consideras[$alumno->te_consideras] ?? $alumno->te_consideras ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">Lengua materna</div><div class="alu-field-v">{{ $alumno->lengua_1 ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">Lengua secundaria</div><div class="alu-field-v">{{ $alumno->lengua_2 ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">Estado civil</div><div class="alu-field-v">{{ $alumno->estado_civil ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">¿Es padre/madre soltero(a)?</div><div class="alu-field-v">{{ $alumno->p_m_soltero ? 'Sí' : 'No' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">N° de hijos(as)</div><div class="alu-field-v">{{ $alumno->num_hijos ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">Sector socioeconómico</div><div class="alu-field-v">{{ $sector[$alumno->sector_socioeconomico] ?? $alumno->sector_socioeconomico ?? '—' }}</div></div>
+                        <div class="alu-field">
+                            <div class="alu-field-k">N° de comprobante</div>
+                            <div class="alu-field-v">
+                                @if (stristr($alumno->num_comprobante, 'Beca'))
+                                    <span class="alu-badge alu-badge-success"><i class="fas fa-award"></i> Beca</span>
+                                @else
+                                    {{ $alumno->num_comprobante ?? '—' }}
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- ASPECTOS FAMILIARES --}}
+            <div class="alu-section" data-alu-reveal>
+                <button type="button" class="alu-section-hdr" onclick="toggleAluSection('familia')">
+                    <span class="alu-section-ico"><i class="fas fa-house-user"></i></span>
+                    <span class="alu-section-title">Aspectos familiares</span>
+                    <i class="fas fa-chevron-down alu-chev" id="alu-chev-familia"></i>
+                </button>
+                <div class="alu-section-body" id="alu-body-familia">
+                    <div class="alu-grid">
+                        <div class="alu-field"><div class="alu-field-k">¿Con quién(es) vive?</div><div class="alu-field-v">{{ $alumno->convivientes ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">Persona que mantiene el hogar</div><div class="alu-field-v">{{ $alumno->quien_mantiene ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">Dependientes en el hogar — niños</div><div class="alu-field-v">{{ $alumno->cant_dependientes_child ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">Dependientes en el hogar — tercera edad</div><div class="alu-field-v">{{ $alumno->cant_dependientes_old ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">Dependientes en el hogar — otros</div><div class="alu-field-v">{{ $alumno->cant_dependientes_otros ?? '—' }}</div></div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- ASPECTOS EDUCATIVOS --}}
+            <div class="alu-section" data-alu-reveal>
+                <button type="button" class="alu-section-hdr" onclick="toggleAluSection('educacion')">
+                    <span class="alu-section-ico"><i class="fas fa-book"></i></span>
+                    <span class="alu-section-title">Aspectos educativos</span>
+                    <i class="fas fa-chevron-down alu-chev" id="alu-chev-educacion"></i>
+                </button>
+                <div class="alu-section-body" id="alu-body-educacion">
+                    <div class="alu-grid">
+                        <div class="alu-field"><div class="alu-field-k">¿Estudió con beca escolar?</div><div class="alu-field-v">{{ $alumno->estudio_beca ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">Origen de la beca</div><div class="alu-field-v">{{ $alumno->origen_beca ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">N° postulaciones a EESP Pukllasunchis</div><div class="alu-field-v">{{ $alumno->postulaciones_eesp ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">N° postulaciones a otras instituciones (educación)</div><div class="alu-field-v">{{ $alumno->postulaciones_inst_uni ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">N° postulaciones a otras carreras/instituciones</div><div class="alu-field-v">{{ $alumno->postulaciones_otros ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">Tipo de preparación para postular</div><div class="alu-field-v">{{ $alumno->tipo_preparacion ?? '—' }}</div></div>
+                        <div class="alu-field alu-field--wide"><div class="alu-field-k">Motivo para estudiar en la EESP Pukllasunchis</div><div class="alu-field-v">{{ $alumno->motivo_estudio_eesp ?? '—' }}</div></div>
+                        <div class="alu-field alu-field--wide"><div class="alu-field-k">Motivo para seguir estudios de docencia</div><div class="alu-field-v">{{ $alumno->motivo_docencia ?? '—' }}</div></div>
+                        <div class="alu-field alu-field--wide"><div class="alu-field-k">Motivo para elegir su especialidad</div><div class="alu-field-v">{{ $alumno->motivo_especialidad ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">¿Tiene acceso a internet en casa?</div><div class="alu-field-v">{{ $alumno->internet ? 'Sí' : 'No' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">Lugar de conexión <span class="alu-field-hint">(si no tiene internet en casa)</span></div><div class="alu-field-v">{{ $alumno->internet_lugar ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">Principal servicio de internet</div><div class="alu-field-v">{{ $alumno->servicio_internet ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">Dispositivo para conectarse</div><div class="alu-field-v">{{ $alumno->dispositivo_internet ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">Uso del dispositivo</div><div class="alu-field-v">{{ $alumno->propio_compartido ? 'Propio' : 'Compartido' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">¿Usa correo electrónico?</div><div class="alu-field-v">{{ $alumno->correo ? 'Sí' : 'No' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">Horas de estudio</div><div class="alu-field-v">{{ $alumno->num_hrs_estudio ?? '—' }}</div></div>
+                        <div class="alu-field alu-field--wide"><div class="alu-field-k">Forma de estudio preferida</div><div class="alu-field-v">{{ $alumno->forma_estudio ?? '—' }}</div></div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- ASPECTOS SOCIOECONÓMICOS --}}
+            <div class="alu-section" data-alu-reveal>
+                <button type="button" class="alu-section-hdr" onclick="toggleAluSection('socio')">
+                    <span class="alu-section-ico"><i class="fas fa-coins"></i></span>
+                    <span class="alu-section-title">Aspectos socioeconómicos</span>
+                    <i class="fas fa-chevron-down alu-chev" id="alu-chev-socio"></i>
+                </button>
+                <div class="alu-section-body" id="alu-body-socio">
+                    <div class="alu-grid">
+                        <div class="alu-field"><div class="alu-field-k">¿Trabaja actualmente?</div><div class="alu-field-v">{{ $alumno->trabajas ?: '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">Lugar de trabajo</div><div class="alu-field-v">{{ $alumno->donde_trabajas ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">Ingreso mensual promedio</div><div class="alu-field-v">{{ $alumno->ingreso_mensual ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">Egreso mensual promedio</div><div class="alu-field-v">{{ $alumno->egreso ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">Horas laboradas por semana</div><div class="alu-field-v">{{ $alumno->hrs_laboradas_sem ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">¿Recibe ayuda económica familiar?</div><div class="alu-field-v">{{ $alumno->ayuda_economica ? 'Sí' : 'No' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">Frecuencia de la ayuda</div><div class="alu-field-v">{{ $alumno->tiempo_ayuda ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">Tipo de apoyo en su formación</div><div class="alu-field-v">{{ $alumno->tipo_apoyo_formacion ?? '—' }}</div></div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- ASPECTOS VIVIENDA --}}
+            <div class="alu-section" data-alu-reveal>
+                <button type="button" class="alu-section-hdr" onclick="toggleAluSection('vivienda')">
+                    <span class="alu-section-ico"><i class="fas fa-building"></i></span>
+                    <span class="alu-section-title">Aspectos de vivienda</span>
+                    <i class="fas fa-chevron-down alu-chev" id="alu-chev-vivienda"></i>
+                </button>
+                <div class="alu-section-body" id="alu-body-vivienda">
+                    <div class="alu-grid">
+                        <div class="alu-field"><div class="alu-field-k">Tipo de vivienda</div><div class="alu-field-v">{{ $alumno->tipo_vivienda ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">Situación de vivienda</div><div class="alu-field-v">{{ $alumno->situacion_vivienda ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">Dormitorios</div><div class="alu-field-v">{{ $alumno->dormitorios_vivienda ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">Baños</div><div class="alu-field-v">{{ $alumno->banos_vivienda ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">Material de la vivienda</div><div class="alu-field-v">{{ $alumno->material_vivienda ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">Horas de agua al día</div><div class="alu-field-v">{{ $alumno->hrs_disponibles_agua ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">Horas de desagüe al día</div><div class="alu-field-v">{{ $alumno->hrs_disponibles_desague ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">Horas de luz al día</div><div class="alu-field-v">{{ $alumno->hrs_disponibles_luz ?? '—' }}</div></div>
+                        <div class="alu-field alu-field--wide">
+                            <div class="alu-field-k">Bienes en la vivienda</div>
+                            <div class="alu-field-v">
+                                @php
+                                    $bienesRaw = $alumno->bienes_vivienda;
+                                    $bienesList = is_array($bienesRaw) ? $bienesRaw : array_filter(array_map('trim', explode(',', (string) $bienesRaw)));
+                                @endphp
+                                @if (count($bienesList))
+                                    <div class="alu-chip-list">
+                                        @foreach ($bienesList as $b)
+                                            <span class="alu-chip alu-chip-static">{{ $b }}</span>
+                                        @endforeach
+                                    </div>
+                                @else — @endif
+                            </div>
+                        </div>
+                        <div class="alu-field alu-field--wide">
+                            <div class="alu-field-k">Otros servicios en la vivienda</div>
+                            <div class="alu-field-v">
+                                @php
+                                    $otrosRaw = $alumno->otros_servicios;
+                                    $otrosList = is_array($otrosRaw) ? $otrosRaw : array_filter(array_map('trim', explode(',', (string) $otrosRaw)));
+                                @endphp
+                                @if (count($otrosList))
+                                    <div class="alu-chip-list">
+                                        @foreach ($otrosList as $o)
+                                            <span class="alu-chip alu-chip-static">{{ $o }}</span>
+                                        @endforeach
+                                    </div>
+                                @else — @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- ASPECTOS SALUD --}}
+            <div class="alu-section" data-alu-reveal>
+                <button type="button" class="alu-section-hdr" onclick="toggleAluSection('salud')">
+                    <span class="alu-section-ico"><i class="fas fa-heart-pulse"></i></span>
+                    <span class="alu-section-title">Aspectos de salud</span>
+                    <i class="fas fa-chevron-down alu-chev" id="alu-chev-salud"></i>
+                </button>
+                <div class="alu-section-body" id="alu-body-salud">
+                    <div class="alu-grid">
+                        <div class="alu-field"><div class="alu-field-k">¿Presenta algún problema de salud?</div><div class="alu-field-v">{{ $alumno->problemas_salud ? 'Sí' : 'No' }}</div></div>
+                        <div class="alu-field">
+                            <div class="alu-field-k">Consulta médica en los últimos 12 meses</div>
+                            <div class="alu-field-v">{{ $alumno->ultima_consulta ? 'Sí' : 'No' }}</div>
+                        </div>
+                        <div class="alu-field alu-field--wide"><div class="alu-field-k">Motivo de la consulta / de no haber consultado</div><div class="alu-field-v">{{ $alumno->motivo_consulta ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">Tipo de seguro de salud</div><div class="alu-field-v">{{ $alumno->tipo_seguro ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">¿Algún familiar tiene un problema de salud grave?</div><div class="alu-field-v">{{ $alumno->familiar_salud ? 'Sí' : 'No' }}</div></div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- ASPECTOS CULTURALES --}}
+            <div class="alu-section" data-alu-reveal>
+                <button type="button" class="alu-section-hdr" onclick="toggleAluSection('cultura')">
+                    <span class="alu-section-ico"><i class="fas fa-book-open"></i></span>
+                    <span class="alu-section-title">Aspectos culturales</span>
+                    <i class="fas fa-chevron-down alu-chev" id="alu-chev-cultura"></i>
+                </button>
+                <div class="alu-section-body" id="alu-body-cultura">
+                    <div class="alu-grid">
+                        <div class="alu-field"><div class="alu-field-k">Frecuencia de lectura</div><div class="alu-field-v">{{ $alumno->frecuencia_lectura ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">Acceso a lectura</div><div class="alu-field-v">{{ $alumno->acceso_lectura ?? '—' }}</div></div>
+                        <div class="alu-field"><div class="alu-field-k">¿Ha visitado museos?</div><div class="alu-field-v">{{ $alumno->visitas_museos ?? '—' }}</div></div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- ASPECTOS ADICIONALES --}}
+            <div class="alu-section" data-alu-reveal>
+                <button type="button" class="alu-section-hdr" onclick="toggleAluSection('adicional')">
+                    <span class="alu-section-ico"><i class="fas fa-star"></i></span>
+                    <span class="alu-section-title">Información adicional</span>
+                    <i class="fas fa-chevron-down alu-chev" id="alu-chev-adicional"></i>
+                </button>
+                <div class="alu-section-body" id="alu-body-adicional">
+                    <div class="alu-grid">
+                        <div class="alu-field alu-field--wide"><div class="alu-field-k">Actividades más realizadas en internet</div><div class="alu-field-v">{{ $alumno->actividades_internet ?? '—' }}</div></div>
+                        <div class="alu-field alu-field--wide">
+                            <div class="alu-field-k">Habilidades desarrolladas</div>
+                            <div class="alu-field-v">
+                                @php
+                                    $habRaw = $alumno->habilidades;
+                                    $habList = is_array($habRaw) ? $habRaw : array_filter(preg_split('/[-,]/', (string) $habRaw) ?: []);
+                                @endphp
+                                @if (count($habList))
+                                    <div class="alu-chip-list">
+                                        @foreach ($habList as $h)
+                                            <span class="alu-chip alu-chip-static">{{ trim($h) }}</span>
+                                        @endforeach
+                                    </div>
+                                @else — @endif
+                            </div>
+                        </div>
+                        <div class="alu-field"><div class="alu-field-k">¿Dispone de tiempo libre?</div><div class="alu-field-v">{{ $alumno->tiempo_libre ? 'Sí' : 'No' }}</div></div>
+                    </div>
+                </div>
+            </div>
+
         </div>
+
+        {{-- ========================= HISTORIAL ACADÉMICO ========================= --}}
+        <div class="alu-section mt-4" data-alu-reveal>
+            <div class="alu-section-hdr alu-section-hdr--static">
+                <span class="alu-section-ico"><i class="fas fa-clock-rotate-left"></i></span>
+                <span class="alu-section-title">Historial académico</span>
+            </div>
+            <div class="alu-section-body alu-section-body--open">
+                <div class="table-responsive">
+                    <table class="table table-sm alu-table mb-0">
+                        <tbody>
+                            @php
+                                $periodosAgrupados = $alumno->periodo->groupBy(
+                                    fn($p) => $p->periodoActual->nombre ?? 'Sin periodo definido',
+                                );
+                            @endphp
+
+                            @forelse ($periodosAgrupados as $nombrePeriodo => $periodos)
+                                <tr class="alu-table-periodo">
+                                    <td colspan="4"><i class="far fa-calendar-alt mr-1"></i> {{ $nombrePeriodo }}</td>
+                                </tr>
+                                <tr class="alu-table-cols">
+                                    <td>Curso(s)</td>
+                                    <td>Valoración</td>
+                                    <td>Calificación</td>
+                                    <td>Calificación sistema</td>
+                                </tr>
+                                @foreach ($periodos as $p)
+                                    <tr>
+                                        <td>
+                                            @if ($p->curso)
+                                                <a href="{{ route('curso.show', ['curso' => $p->curso->id]) }}">{{ $p->curso->nombre }}</a>
+                                            @else
+                                                N/A
+                                            @endif
+                                        </td>
+                                        <td>{{ $p->valoracion_curso ?? '-' }}</td>
+                                        <td>{{ $p->calificacion_curso ?? '-' }}</td>
+                                        <td>{{ $p->calificacion_sistema ?? '-' }}</td>
+                                    </tr>
+                                @endforeach
+                            @empty
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted fst-italic py-3">
+                                        No hay calificaciones registradas aún.
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <style>
+        .alu-page { padding-bottom: 2rem; }
+
+        .alu-btn-back {
+            display: inline-flex;
+            align-items: center;
+            padding: .5rem 1.1rem;
+            border-radius: 999px;
+            background: #33445a;
+            color: #fff;
+            font-size: .82rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: opacity .15s;
+        }
+        .alu-btn-back:hover { opacity: .85; color: #fff; text-decoration: none; }
+
+        /* ── Perfil ── */
+        .alu-profile {
+            display: flex;
+            gap: 1.25rem;
+            align-items: center;
+            background: #fff;
+            border-radius: .9rem;
+            box-shadow: 0 2px 14px rgba(0,0,0,.07);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .alu-profile-photo img,
+        .alu-profile-photo-placeholder {
+            width: 96px; height: 96px; border-radius: 50%;
+            object-fit: cover; border: 3px solid #e9ecef; flex-shrink: 0;
+        }
+        .alu-profile-photo-placeholder {
+            display: flex; align-items: center; justify-content: center;
+            background: #f1f3f9; color: #adb5bd; font-size: 2.1rem;
+        }
+        .alu-profile-info { flex: 1; min-width: 220px; }
+        .alu-profile-name { font-size: 1.25rem; font-weight: 800; color: #26314a; margin-bottom: .5rem; }
+        .alu-profile-badges { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .55rem; }
+        .alu-profile-contact { display: flex; flex-wrap: wrap; gap: 1rem; font-size: .82rem; color: #6c757d; }
+        .alu-profile-contact i { margin-right: .35rem; color: #98a2b8; }
+
+        .alu-badge {
+            display: inline-flex; align-items: center; gap: .35rem;
+            padding: .3rem .7rem; border-radius: 999px;
+            font-size: .74rem; font-weight: 700; text-decoration: none;
+        }
+        .alu-badge-primary { background: rgba(78,115,223,.12); color: #4e73df; }
+        .alu-badge-outline { background: #fff; color: #52658c; border: 1px solid #dfe2ea; }
+        .alu-badge-muted { background: #f1f3f9; color: #6c757d; }
+        .alu-badge-success { background: rgba(28,200,138,.14); color: #169b6b; }
+        .alu-badge-primary:hover, .alu-badge-outline:hover { opacity: .8; text-decoration: none; }
+
+        .alu-alert-pendiente {
+            display: flex; gap: .6rem; align-items: flex-start;
+            background: #fdecea; color: #a3283a; border: 1px solid #f6cdd2;
+            border-radius: .6rem; padding: .6rem .9rem; font-size: .82rem; margin-top: .6rem;
+        }
+
+        /* ── Secciones ── */
+        .alu-sections { display: flex; flex-direction: column; gap: .9rem; }
+        .alu-section {
+            background: #fff; border-radius: .8rem; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); border: 1px solid #edf0f5;
+        }
+        .alu-section-hdr {
+            width: 100%; border: none; cursor: pointer;
+            display: flex; align-items: center; gap: .75rem;
+            padding: .9rem 1.15rem;
+            background: linear-gradient(135deg, #33445a, #4e73df);
+            color: #fff; font-weight: 700; font-size: .92rem; text-align: left;
+        }
+        .alu-section-hdr--static { cursor: default; }
+        .alu-section-ico {
+            width: 30px; height: 30px; border-radius: 50%;
+            background: rgba(255,255,255,.18);
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: .82rem;
+        }
+        .alu-section-title { flex: 1; }
+        .alu-chev { transition: transform .1s; opacity: .85; }
+
+        .alu-section-body { display: none; overflow: hidden; }
+        .alu-section-body--open { display: block; }
+        .alu-section-body-inner { padding: 1.25rem; }
+
+        .alu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 1rem 1.5rem;
+            padding: 1.25rem;
+        }
+        .alu-field--wide { grid-column: 1 / -1; }
+        .alu-field-k {
+            font-size: .72rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: .03em; color: #8992a8; margin-bottom: .2rem;
+        }
+        .alu-field-hint { text-transform: none; letter-spacing: normal; font-weight: 500; }
+        .alu-field-v { font-size: .9rem; color: #2f3441; word-break: break-word; }
+        .alu-field-v a { color: #4e73df; text-decoration: none; }
+        .alu-field-v a:hover { text-decoration: underline; }
+
+        .alu-chip-list { display: flex; flex-wrap: wrap; gap: .4rem; }
+        .alu-chip {
+            display: inline-flex; align-items: center; gap: .35rem;
+            background: #f1f3f9; color: #4e73df; border-radius: 999px;
+            padding: .28rem .75rem; font-size: .78rem; font-weight: 600; text-decoration: none;
+        }
+        .alu-chip:hover { background: #e4e8f5; text-decoration: none; }
+        .alu-chip-static { color: #52658c; cursor: default; }
+        .alu-chip-static:hover { background: #f1f3f9; }
+        .alu-chip-tag { font-size: .68rem; opacity: .75; }
+
+        /* ── Historial ── */
+        .alu-table { font-size: .85rem; }
+        .alu-table-periodo td {
+            background: #eef1f8; font-weight: 700; text-transform: uppercase;
+            font-size: .76rem; color: #33445a; letter-spacing: .02em;
+        }
+        .alu-table-cols td { background: #f8f9fc; font-weight: 700; font-size: .74rem; color: #8992a8; }
+
+        @media (max-width: 575.98px) {
+            .alu-profile { flex-direction: column; text-align: center; }
+            .alu-profile-badges, .alu-profile-contact { justify-content: center; }
+            .alu-grid { grid-template-columns: 1fr; padding: 1rem; }
+        }
+    </style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script>
+        function toggleAluSection(id) {
+            const body = document.getElementById('alu-body-' + id);
+            const chev = document.getElementById('alu-chev-' + id);
+            const isOpen = body.style.display !== 'none' && body.style.display !== '';
+
+            if (isOpen) {
+                gsap.to(body, {
+                    height: 0, opacity: 0, duration: .28, ease: 'power2.in',
+                    onStart: () => { body.style.overflow = 'hidden'; },
+                    onComplete: () => { body.style.display = 'none'; body.style.height = 'auto'; }
+                });
+                gsap.to(chev, { rotation: -90, duration: .22, ease: 'power1.out' });
+            } else {
+                body.style.display = 'block';
+                body.style.overflow = 'hidden';
+                body.style.height = '0';
+                const h = body.scrollHeight;
+                gsap.to(body, {
+                    height: h, opacity: 1, duration: .34, ease: 'power2.out',
+                    onComplete: () => { body.style.height = 'auto'; body.style.overflow = ''; }
+                });
+                gsap.to(chev, { rotation: 0, duration: .22, ease: 'power1.out' });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Wrap each .alu-grid in a positioning helper for accurate height measurement, then hide bodies.
+            document.querySelectorAll('.alu-section-body:not(.alu-section-body--open)').forEach(function (body) {
+                body.style.display = 'none';
+            });
+
+            // Abrir "Carrera" por defecto.
+            toggleAluSection('carrera');
+
+            if (typeof gsap !== 'undefined') {
+                gsap.set('[data-alu-reveal]', { opacity: 0, y: 18 });
+                gsap.to('[data-alu-reveal]', {
+                    opacity: 1, y: 0, duration: .45, stagger: .06, ease: 'power2.out'
+                });
+            }
+        });
+    </script>
 @endsection
