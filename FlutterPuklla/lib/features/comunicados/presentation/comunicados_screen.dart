@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/network/api_exception.dart';
+import '../../../routing/app_drawer.dart';
 import '../application/comunicados_providers.dart';
 import '../data/comunicado.dart';
 import '../data/comunicados_page.dart';
@@ -16,6 +17,7 @@ class ComunicadosScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Comunicados')),
+      drawer: const AppDrawer(),
       body: pagina.when(
         data: (data) => data.items.isEmpty
             ? const Center(child: Text('No hay comunicados publicados.'))

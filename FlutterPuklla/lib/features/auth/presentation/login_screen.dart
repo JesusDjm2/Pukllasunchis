@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_exception.dart';
+import '../../../core/theme/app_assets.dart';
+import '../../../core/theme/app_colors.dart';
 import '../application/auth_controller.dart';
 import '../application/auth_state.dart';
 
@@ -67,10 +69,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  Center(
+                    child: Image.asset(AppAssets.logoColor, height: 96),
+                  ),
+                  const SizedBox(height: 20),
                   Text(
                     'Pukllasunchis',
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.headlineMedium,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Ingresa con tu cuenta institucional',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.muted),
                   ),
                   const SizedBox(height: 32),
                   TextFormField(

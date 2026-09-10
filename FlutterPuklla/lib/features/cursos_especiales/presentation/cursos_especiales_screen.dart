@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/network/api_exception.dart';
+import '../../../routing/app_drawer.dart';
 import '../application/cursos_especiales_controller.dart';
 import '../application/cursos_especiales_providers.dart';
 import '../data/curso_especial.dart';
@@ -16,6 +17,7 @@ class CursosEspecialesScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Cursos especiales')),
+      drawer: const AppDrawer(),
       body: RefreshIndicator(
         onRefresh: () => ref.refresh(cursosEspecialesProvider.future),
         child: catalogo.when(

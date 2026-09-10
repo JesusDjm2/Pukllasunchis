@@ -8,6 +8,6 @@ final matriculasProvider = FutureProvider<List<Matricula>>((ref) {
   return ref.watch(calificacionesRepositoryProvider).fetchMatriculas();
 });
 
-final calificacionesProvider = FutureProvider<List<Calificacion>>((ref) {
+final calificacionesProvider = FutureProvider<CalificacionesResponse>((ref) {
   return ref.watch(calificacionesRepositoryProvider).fetchCalificaciones();
 });
