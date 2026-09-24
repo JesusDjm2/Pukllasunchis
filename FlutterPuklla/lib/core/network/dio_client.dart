@@ -1,13 +1,14 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../features/auth/application/auth_controller.dart';
 import '../env/env.dart';
 import '../storage/token_storage.dart';
 import 'api_exception.dart';
 
 /// Cliente Dio único de la app: base URL de la API, header Bearer inyectado
 /// desde [TokenStorage], y errores normalizados a [ApiException].
-final dioProvider = Provider<Dio>((ref) {
+final Provider<Dio> dioProvider = Provider<Dio>((ref) {
   final dio = Dio(
     BaseOptions(
       baseUrl: Env.apiBaseUrl,
@@ -26,7 +27,16 @@ final dioProvider = Provider<Dio>((ref) {
         }
         handler.next(options);
       },
-      onError: (error, handler) => handler.reject(_mapError(error)),
+      onError: (error, handler) {
+        final mapped = _mapError(error);
+        if (mapped.response?.statusCode == 401) {
+          // El servidor ya no acepta este token (expiró/fue revocado) —
+          // cerramos sesión localmente y el redirect de go_router (ver
+          // routing/app_router.dart) manda sola a la pantalla de login.
+          ref.read(authControllerProvider.notifier).forceLogout();
+        }
+        handler.reject(mapped);
+      },
     ),
   );
 

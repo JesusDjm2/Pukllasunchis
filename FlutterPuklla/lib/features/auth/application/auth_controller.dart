@@ -39,4 +39,13 @@ class AuthController extends StateNotifier<AuthState> {
     await _repository.logout();
     state = const AuthState.unauthenticated();
   }
+
+  /// Cierra sesión localmente sin llamar a `/logout` — para cuando el propio
+  /// servidor ya rechazó el token (401 en cualquier request, ver
+  /// `dio_client.dart`); pedirle que lo revoque de nuevo sería redundante.
+  Future<void> forceLogout() async {
+    if (state.status == AuthStatus.unauthenticated) return;
+    await _repository.logout(silent: true);
+    state = const AuthState.unauthenticated();
+  }
 }
