@@ -19,9 +19,12 @@ void main() {
         child: const FlutterPukllaApp(),
       ),
     );
-    await tester.pumpAndSettle();
+    // No pumpAndSettle: el fondo del login tiene una animación de zoom que
+    // se repite indefinidamente ("respira"), así que nunca "se asienta".
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
 
-    expect(find.text('Pukllasunchis'), findsWidgets);
+    expect(find.text('Bienvenido(a)'), findsOneWidget);
     expect(find.text('Ingresar'), findsOneWidget);
   });
 }
