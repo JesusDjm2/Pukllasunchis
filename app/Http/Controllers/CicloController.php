@@ -264,4 +264,28 @@ class CicloController extends Controller
 
         return redirect()->route('ciclo.index')->with('success', 'Ciclo eliminado exitosamente');
     }
+
+    /**
+     * Marca a todos los alumnos (FID o PPD) de este ciclo como "Egresado"
+     * (users.condicion). Pensado para ciclos tipo "Egresados 2026-I": crear
+     * el ciclo y mover ahí a la promoción ya no basta por sí solo — sin este
+     * paso siguen contando como alumnos activos (se les sigue pidiendo
+     * matrícula, aparecen en listados de matriculados, etc., ver
+     * AdminController::applyAlumnoFidUserConstraints() y el mismo criterio
+     * ya usado en index() de este controlador). Antes esto se hacía a mano
+     * con una migración de datos por cada promoción que egresaba; ahora es
+     * una acción repetible desde el propio listado de ciclos.
+     */
+    public function marcarComoEgresados(Ciclo $ciclo)
+    {
+        $actualizados = User::where('ciclo_id', $ciclo->id)
+            ->whereHas('roles', fn ($r) => $r->whereIn('name', ['alumno', 'alumnoB', 'inhabilitado']))
+            ->update(['condicion' => 'Egresado']);
+
+        if ($actualizados === 0) {
+            return back()->with('error', 'No se encontró ningún alumno en el ciclo "'.$ciclo->nombre.'" para marcar como egresado.');
+        }
+
+        return back()->with('success', $actualizados.' alumno(s) del ciclo "'.$ciclo->nombre.'" marcados como Egresados. Ya no se les pedirá matrícula ni aparecerán en los listados de alumnos activos.');
+    }
 }

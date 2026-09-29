@@ -72,6 +72,11 @@ class User extends Authenticatable
         return $this->hasOne(Docente::class);
     }
 
+    public function seguimientoTitulacion()
+    {
+        return $this->hasOne(\App\Models\Titulacion\SeguimientoTitulacion::class);
+    }
+
     public function ciclo()
     {
         return $this->belongsTo(Ciclo::class);

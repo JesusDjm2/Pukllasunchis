@@ -170,6 +170,16 @@
                                                        class="pg-btn pg-btn-edit">
                                                         <i class="fas fa-edit fa-xs"></i>
                                                     </a>
+                                                    @if ($cnt > 0)
+                                                        <form action="{{ route('ciclo.marcarEgresados', ['ciclo' => $ciclo->id]) }}"
+                                                              method="POST" class="d-inline"
+                                                              onsubmit="return confirm(@js('Se marcará como Egresado(a) a los '.$cnt.' alumno(s) de "'.$ciclo->nombre.'" — dejarán de aparecer en listados activos y de matrícula. ¿Continuar?'));">
+                                                            @csrf @method('PUT')
+                                                            <button type="submit" class="pg-btn pg-btn-edit" title="Marcar a todos los alumnos de este ciclo como Egresados">
+                                                                <i class="fas fa-user-graduate fa-xs"></i>
+                                                            </button>
+                                                        </form>
+                                                    @endif
                                                     <form action="{{ route('ciclo.destroy', ['ciclo' => $ciclo->id]) }}"
                                                           method="POST" class="d-inline"
                                                           onsubmit="return confirm('¿Eliminar este ciclo?')">

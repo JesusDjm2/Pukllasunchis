@@ -53,6 +53,12 @@ Route::get('/home', [AdminController::class, 'homeRedirect'])
 
 Route::get('/inhabilitado', fn () => view('admin.inhabilitado'))->name('inhabilitado');
 
+// Intranet simple para egresados (condicion='Egresado') — separada de la
+// intranet normal de alumno/alumnoB porque esa asume matrícula/ciclo activo.
+Route::get('/egresado', [App\Http\Controllers\EgresadoIntranetController::class, 'index'])
+    ->middleware('auth')
+    ->name('egresado.intranet');
+
 // GET simple para mantener viva la sesión (y el token CSRF) mientras se llena
 // un formulario largo, como el de Sílabos. Un GET no necesita token CSRF y
 // StartSession ya renueva la actividad de la sesión al procesarlo.
@@ -371,6 +377,7 @@ Route::middleware('auth')->group(function () {
         });
         Route::prefix('ciclos')->group(function () {
             Route::resource('ciclo', CicloController::class);
+            Route::put('/ciclo/{ciclo}/marcar-egresados', [CicloController::class, 'marcarComoEgresados'])->name('ciclo.marcarEgresados');
         });
 
         // Gestión PPD
@@ -486,6 +493,37 @@ Route::middleware('auth')->group(function () {
             Route::get('/', [BitacoraAccesosController::class, 'index'])->name('index');
             Route::get('/en-vivo', [BitacoraAccesosController::class, 'activos'])->name('activos');
             Route::get('/fallidos', [BitacoraAccesosController::class, 'fallidos'])->name('fallidos');
+        });
+
+    // ═══════════════════════════════════════════════════════════════
+    // 🎓 TITULACIÓN — seguimiento de PTI/Tesis/Actas de egresados
+    // Mismo rol para Carlos y Marilyn (gestor-titulacion); super-admin ve
+    // y gestiona todo igual, como el resto de módulos del panel.
+    // ═══════════════════════════════════════════════════════════════
+    Route::middleware('role:super-admin|gestor-titulacion')
+        ->prefix('titulacion')
+        ->name('titulacion.')
+        ->group(function () {
+            Route::get('/', [App\Http\Controllers\Titulacion\TitulacionController::class, 'index'])->name('index');
+            Route::get('/crear-cuentas-masivo', [App\Http\Controllers\Titulacion\TitulacionController::class, 'crearCuentasMasivoPreview'])->name('crear-cuentas-masivo.preview');
+            Route::post('/crear-cuentas-masivo', [App\Http\Controllers\Titulacion\TitulacionController::class, 'crearCuentasMasivoEjecutar'])->name('crear-cuentas-masivo.ejecutar');
+            Route::get('/importaciones/{importacion}/crear-cuenta', [App\Http\Controllers\Titulacion\TitulacionController::class, 'importacionCrearCuentaForm'])->name('importaciones.crear-cuenta.form');
+            Route::post('/importaciones/{importacion}/crear-cuenta', [App\Http\Controllers\Titulacion\TitulacionController::class, 'importacionCrearCuentaGuardar'])->name('importaciones.crear-cuenta.guardar');
+            Route::get('/importaciones/{importacion}/completar-ficha', [App\Http\Controllers\Titulacion\TitulacionController::class, 'importacionCompletarFichaForm'])->name('importaciones.completar-ficha.form');
+            Route::post('/importaciones/{importacion}/completar-ficha', [App\Http\Controllers\Titulacion\TitulacionController::class, 'importacionCompletarFichaGuardar'])->name('importaciones.completar-ficha.guardar');
+            Route::get('/egresados/{egresado}', [App\Http\Controllers\Titulacion\TitulacionController::class, 'show'])->name('show');
+            Route::post('/activos/{alumno}/iniciar', [App\Http\Controllers\Titulacion\TitulacionController::class, 'iniciarSeguimiento'])->name('iniciar');
+            Route::put('/egresados/{egresado}/estado', [App\Http\Controllers\Titulacion\TitulacionController::class, 'actualizarEstado'])->name('estado.actualizar');
+            Route::post('/egresados/{egresado}/pti', [App\Http\Controllers\Titulacion\TitulacionController::class, 'ptiGuardar'])->name('pti.guardar');
+            Route::post('/egresados/{egresado}/tesis', [App\Http\Controllers\Titulacion\TitulacionController::class, 'tesisGuardar'])->name('tesis.guardar');
+            Route::post('/egresados/{egresado}/actas', [App\Http\Controllers\Titulacion\TitulacionController::class, 'actaGuardar'])->name('actas.guardar');
+            Route::delete('/actas/{acta}', [App\Http\Controllers\Titulacion\TitulacionController::class, 'actaEliminar'])->name('actas.eliminar');
+            Route::post('/actas/{acta}/jurados', [App\Http\Controllers\Titulacion\TitulacionController::class, 'juradoGuardar'])->name('jurados.guardar');
+            Route::delete('/jurados/{jurado}', [App\Http\Controllers\Titulacion\TitulacionController::class, 'juradoEliminar'])->name('jurados.eliminar');
+            Route::post('/egresados/{egresado}/resoluciones', [App\Http\Controllers\Titulacion\TitulacionController::class, 'resolucionGuardar'])->name('resoluciones.guardar');
+            Route::delete('/resoluciones/{resolucion}', [App\Http\Controllers\Titulacion\TitulacionController::class, 'resolucionEliminar'])->name('resoluciones.eliminar');
+            Route::post('/egresados/{egresado}/documentos', [App\Http\Controllers\Titulacion\TitulacionController::class, 'documentoGuardar'])->name('documentos.guardar');
+            Route::delete('/documentos/{documento}', [App\Http\Controllers\Titulacion\TitulacionController::class, 'documentoEliminar'])->name('documentos.eliminar');
         });
 
 }); // fin auth

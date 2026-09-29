@@ -397,6 +397,18 @@
                 <hr class="sidebar-divider d-none d-md-block">
             @endrole
 
+            @role('gestor-titulacion')
+                @if (Route::has('titulacion.index'))
+                    <li class="nav-item {{ request()->routeIs('titulacion.*') ? 'active' : '' }}">
+                        <a class="nav-link" href="{{ route('titulacion.index') }}">
+                            <i class="fas fa-user-graduate"></i>
+                            <span>Proceso de Titulación</span>
+                        </a>
+                    </li>
+                    <hr class="sidebar-divider d-none d-md-block">
+                @endif
+            @endrole
+
             <li class="nav-item mt-2">
                 <a class="nav-link collapsed" href="{{ route('repositorio', $docente->id) }}">
                     <i class="fas fa-file-pdf"></i>

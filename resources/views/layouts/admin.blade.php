@@ -148,6 +148,19 @@
                 @endhasanyrole
 
                 {{-- ══════════ SECCIÓN TUTOR ══════════ --}}
+                {{-- ══════════ SECCIÓN TITULACIÓN (gestor-titulacion) ══════════ --}}
+                @role('gestor-titulacion')
+                    <hr class="sidebar-divider d-none d-md-block">
+                    <div class="sidebar-heading" style="font-size:.65rem;letter-spacing:.08em;opacity:.7;">
+                        <i class="fas fa-user-graduate fa-xs mr-1"></i> Titulación
+                    </div>
+                    <li class="nav-item {{ request()->routeIs('titulacion.*') ? 'active' : '' }}">
+                        <a class="nav-link" href="{{ route('titulacion.index') }}">
+                            <i class="fas fa-fw fa-user-graduate"></i><span>Proceso de Titulación</span>
+                        </a>
+                    </li>
+                @endrole
+
                 @role('tutor')
                     <hr class="sidebar-divider d-none d-md-block">
                     <div class="sidebar-heading" style="font-size:.65rem;letter-spacing:.08em;opacity:.7;">

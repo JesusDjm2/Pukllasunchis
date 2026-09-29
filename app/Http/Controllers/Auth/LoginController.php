@@ -48,6 +48,17 @@ class LoginController extends Controller
             return redirect()->route('tutor.dashboard');
         } elseif ($user->hasRole('adminB')) {
             return redirect()->route('trabajo.index')->with('userData', $user);
+        } elseif ($user->hasRole('gestor-titulacion')) {
+            // Gestor puro (sin admin/docente): su único panel es Titulación.
+            return redirect()->route('titulacion.index');
+        } elseif ($user->condicion === 'Egresado') {
+            // Antes de la intranet normal de alumno/alumnoB: esa asume
+            // matrícula/ciclo activo (cursos, calificaciones del periodo
+            // en curso), lo cual ya no aplica a alguien que se graduó.
+            // No aplica si además tiene un rol "más fuerte" arriba
+            // (super-admin/admin/docente/tutor/adminB) — esos siguen
+            // yendo a su panel normal aunque también sean egresados.
+            return redirect()->route('egresado.intranet');
         } elseif ($user->hasRole('alumnoB')) {
             return redirect()->route('ppd.index')->with('userData', $user);
         } elseif ($user->hasRole('alumno')) {

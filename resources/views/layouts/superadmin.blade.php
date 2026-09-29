@@ -198,6 +198,14 @@
                 <i class="fas fa-fw fa-user-clock"></i><span>Bitácora de Accesos</span>
             </a>
         </li>
+        @if (Route::has('titulacion.index'))
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('titulacion.*') ? 'active' : '' }}"
+                   href="{{ route('titulacion.index') }}">
+                    <i class="fas fa-fw fa-user-graduate"></i><span>Titulación</span>
+                </a>
+            </li>
+        @endif
 
         <hr class="sidebar-divider d-none d-md-block">
 

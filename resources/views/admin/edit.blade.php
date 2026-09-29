@@ -176,6 +176,7 @@
             'admin' => 'Administrador',
             'docente' => 'Docente',
             'tutor' => 'Tutor',
+            'gestor-titulacion' => 'Gestor de Titulación',
             'alumno' => 'Alumno FID',
             'alumnoB' => 'Alumno PPD',
             'adminB' => 'Administrador Bolsa',

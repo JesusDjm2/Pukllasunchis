@@ -202,6 +202,11 @@
             </div>
         </div>
 
+        {{-- Avance de titulación (solo si ya se inició su proceso, Ciclo VIII+) --}}
+        @if (! empty($seguimientoTitulacion))
+            @include('titulacion._avance_alumno', ['seguimiento' => $seguimientoTitulacion])
+        @endif
+
         {{-- ④ Cursos a cargo (pendientes) --}}
         @if (isset($alumno->user->pendiente))
             <div class="alumno-shell alumno-pendiente-shell mb-3">

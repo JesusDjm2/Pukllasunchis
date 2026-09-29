@@ -49,8 +49,15 @@ class AlumnoController extends Controller
                 ? $cursosAsignados
                 : ($alumno->ciclo ? $alumno->ciclo->cursos : collect());
 
+            // Avance de titulación: solo existe si a este alumno (FID, Ciclo
+            // VIII+) ya se le inició el proceso desde el panel de gestores.
+            $seguimientoTitulacion = $usuario?->seguimientoTitulacion()
+                ->with('estadoTitulacion', 'pti.asesor', 'tesis.asesor', 'resoluciones')
+                ->first();
+
             return view('alumnos.vistasAlumnos.index', compact(
-                'alumno', 'usuario', 'periodoActual', 'yaMatriculado', 'cursosDelAlumno'
+                'alumno', 'usuario', 'periodoActual', 'yaMatriculado', 'cursosDelAlumno',
+                'seguimientoTitulacion'
             ));
         } else {
             return view('alumnos.vistasAlumnos.index');

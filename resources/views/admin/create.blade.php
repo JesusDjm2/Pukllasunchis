@@ -60,6 +60,7 @@
 .rp-admin   { --rc:#f59e0b; --rb:#fef3c7; --rt:#92400e; --rr:245,158,11; }
 .rp-docente { --rc:#06b6d4; --rb:#cffafe; --rt:#0e7490; --rr:6,182,212; }
 .rp-tutor   { --rc:#10b981; --rb:#d1fae5; --rt:#065f46; --rr:16,185,129; }
+.rp-titulacion { --rc:#0d9488; --rb:#ccfbf1; --rt:#115e59; --rr:13,148,136; }
 .rp-alumno  { --rc:#3b82f6; --rb:#dbeafe; --rt:#1d4ed8; --rr:59,130,246; }
 .rp-alumnoB { --rc:#6366f1; --rb:#ede9fe; --rt:#4338ca; --rr:99,102,241; }
 .rp-adminB  { --rc:#64748b; --rb:#f1f5f9; --rt:#334155; --rr:100,116,139; }
@@ -220,6 +221,7 @@
                             'admin'        => ['Administrador',   'rp-admin',   'fas fa-users-cog'],
                             'docente'      => ['Docente',         'rp-docente', 'fas fa-chalkboard-teacher'],
                             'tutor'        => ['Tutor',           'rp-tutor',   'fas fa-chalkboard'],
+                            'gestor-titulacion' => ['Gestor de Titulación', 'rp-titulacion', 'fas fa-user-graduate'],
                             'alumno'       => ['Alumno FID',      'rp-alumno',  'fas fa-graduation-cap'],
                             'alumnoB'      => ['Alumno PPD',      'rp-alumnoB', 'fas fa-user-graduate'],
                             'adminB'       => ['Admin Bolsa',     'rp-adminB',  'fas fa-briefcase'],
