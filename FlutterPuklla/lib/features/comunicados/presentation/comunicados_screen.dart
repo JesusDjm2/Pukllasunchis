@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../routing/app_drawer.dart';
+import '../../notificaciones/presentation/notification_bell_action.dart';
 import '../application/comunicados_providers.dart';
 import '../data/comunicado.dart';
 import '../data/comunicados_page.dart';
@@ -16,7 +17,10 @@ class ComunicadosScreen extends ConsumerWidget {
     final pagina = ref.watch(comunicadosProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Comunicados')),
+      appBar: AppBar(
+        title: const Text('Comunicados'),
+        actions: const [NotificationBellAction()],
+      ),
       drawer: const AppDrawer(),
       body: pagina.when(
         data: (data) => data.items.isEmpty

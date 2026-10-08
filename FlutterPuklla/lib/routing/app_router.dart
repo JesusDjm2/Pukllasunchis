@@ -9,6 +9,7 @@ import '../features/comunicados/presentation/comunicados_screen.dart';
 import '../features/cursos_especiales/presentation/curso_especial_detalle_screen.dart';
 import '../features/cursos_especiales/presentation/cursos_especiales_screen.dart';
 import '../features/home/presentation/home_screen.dart';
+import '../features/notificaciones/presentation/notificaciones_screen.dart';
 
 /// Reconstruir el GoRouter completo cuando cambia el estado de auth es
 /// aceptable para el tamaño de esta app; así el `redirect` de abajo siempre
@@ -59,6 +60,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/comunicados',
         builder: (context, state) => const ComunicadosScreen(),
+      ),
+      GoRoute(
+        path: '/notificaciones',
+        builder: (context, state) => const NotificacionesScreen(),
       ),
     ],
   );

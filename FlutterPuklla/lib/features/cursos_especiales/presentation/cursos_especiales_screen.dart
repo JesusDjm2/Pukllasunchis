@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../routing/app_drawer.dart';
+import '../../notificaciones/presentation/notification_bell_action.dart';
 import '../application/cursos_especiales_controller.dart';
 import '../application/cursos_especiales_providers.dart';
 import '../data/curso_especial.dart';
@@ -16,7 +17,10 @@ class CursosEspecialesScreen extends ConsumerWidget {
     final catalogo = ref.watch(cursosEspecialesProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Cursos especiales')),
+      appBar: AppBar(
+        title: const Text('Cursos especiales'),
+        actions: const [NotificationBellAction()],
+      ),
       drawer: const AppDrawer(),
       body: RefreshIndicator(
         onRefresh: () => ref.refresh(cursosEspecialesProvider.future),

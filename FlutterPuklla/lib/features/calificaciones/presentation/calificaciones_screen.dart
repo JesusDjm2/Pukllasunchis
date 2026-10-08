@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../routing/app_drawer.dart';
+import '../../notificaciones/presentation/notification_bell_action.dart';
 import '../application/calificaciones_providers.dart';
 import '../data/calificacion.dart';
 import '../data/matricula.dart';
@@ -20,6 +21,7 @@ class CalificacionesScreen extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Calificaciones y matrícula'),
+          actions: const [NotificationBellAction()],
           bottom: const TabBar(
             tabs: [Tab(text: 'Calificaciones'), Tab(text: 'Matrícula')],
           ),

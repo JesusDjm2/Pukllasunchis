@@ -50,6 +50,12 @@ class AppDrawer extends ConsumerWidget {
               route: '/comunicados',
               currentLocation: location,
             ),
+            _DrawerItem(
+              icon: Icons.notifications_outlined,
+              label: 'Notificaciones',
+              route: '/notificaciones',
+              currentLocation: location,
+            ),
             const Spacer(),
             const Divider(height: 1),
             ListTile(

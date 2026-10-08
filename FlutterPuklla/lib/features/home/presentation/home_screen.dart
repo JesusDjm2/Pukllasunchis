@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../routing/app_drawer.dart';
 import '../../auth/application/auth_controller.dart';
+import '../../notificaciones/presentation/notification_bell_action.dart';
 import '../../perfil/presentation/ficha_tecnica_screen.dart';
 
 /// Pantalla de aterrizaje tras el login. El contenido real (ficha técnica)
@@ -16,7 +17,10 @@ class HomeScreen extends ConsumerWidget {
     final user = ref.watch(authControllerProvider).user;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Ficha técnica')),
+      appBar: AppBar(
+        title: const Text('Ficha técnica'),
+        actions: const [NotificationBellAction()],
+      ),
       drawer: const AppDrawer(),
       body: user != null && user.isAlumno
           ? const FichaTecnicaScreen()
