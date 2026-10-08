@@ -121,6 +121,37 @@ Respuesta: `{"data": {"correcta": bool, "puntaje": int}}`.
 Auth. Paginado (15/página), más recientes primero por `fecha_publicacion`.
 `{"data": [...], "meta": {"current_page", "last_page", "total"}}`.
 
+## Notificaciones
+
+Sistema in-app v1 (sin push/FCM — ver _notes/mobile-app-plan.md). Reutiliza
+la tabla `notifications` nativa de Laravel, ya usada en la web para
+incidencias/sugerencias/tutorías (admin/tutor) — para alumno es la primera
+vez que se usa. 3 tipos, elegidos para evitar fatiga de notificación:
+`MatriculaVoucherVerificado` (al verificar el voucher, no al desverificar),
+`CalificacionRegistrada` (Parcial 1/2/Promedio — vía `NotaParcialObserver`,
+que cubre los 8 flujos de `CalificacionController`, no solo uno; con guarda
+anti-duplicado: no notifica si no cambió ninguna nota real), y
+`ComunicadoPublicado` (a todos los `alumno` al crear uno).
+
+### `GET /notificaciones`
+Auth. Paginado (15/página), más recientes primero.
+`{"data": [{"id", "tipo", "datos", "leida", "leida_at", "created_at"}, ...],
+"meta": {...}}`. `tipo` es el nombre corto de la clase (`CalificacionRegistrada`,
+`ComunicadoPublicado`, `MatriculaVoucherVerificado`) — el cliente lo usa para
+ícono/color y a dónde navegar. `datos` es el payload específico de cada tipo
+(ver las clases en `app/Notifications/`).
+
+### `GET /notificaciones/no-leidas-count`
+Auth. `{"data": {"count": N}}` — para el badge de la campanita.
+
+### `POST /notificaciones/{id}/leer`
+Auth. `{id}` es el UUID de la notificación. 404 si no existe o no es del
+usuario autenticado (no hay route model binding implícito a propósito, para
+no exponer notificaciones ajenas).
+
+### `POST /notificaciones/marcar-todas-leidas`
+Auth. Marca todas las no leídas del usuario autenticado.
+
 ## Incidencias
 
 ### `GET /incidencias`

@@ -928,6 +928,11 @@ class AdminController extends Controller
             'voucher_verificado_at' => $nuevoEstado ? now() : null,
         ]);
 
+        if ($nuevoEstado) {
+            $alumno = $matricula->alumno()->with('user')->first();
+            $alumno?->user?->notify(new \App\Notifications\MatriculaVoucherVerificado($matricula));
+        }
+
         $mensaje = $nuevoEstado
             ? 'Voucher marcado como verificado.'
             : 'Verificación de voucher removida.';

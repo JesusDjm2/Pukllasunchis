@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\ComunicadoController;
 use App\Http\Controllers\Api\CursoEspecialController;
 use App\Http\Controllers\Api\IncidenciaController;
 use App\Http\Controllers\Api\MatriculaController;
+use App\Http\Controllers\Api\NotificacionController;
 use App\Http\Controllers\Api\PeriodoActualController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -50,5 +51,10 @@ Route::prefix('v1')->group(function () {
         Route::get('/comunicados', [ComunicadoController::class, 'index']);
 
         Route::get('/incidencias', [IncidenciaController::class, 'index']);
+
+        Route::get('/notificaciones', [NotificacionController::class, 'index']);
+        Route::get('/notificaciones/no-leidas-count', [NotificacionController::class, 'noLeidasCount']);
+        Route::post('/notificaciones/{id}/leer', [NotificacionController::class, 'marcarLeida']);
+        Route::post('/notificaciones/marcar-todas-leidas', [NotificacionController::class, 'marcarTodasLeidas']);
     });
 });

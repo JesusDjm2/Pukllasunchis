@@ -8,6 +8,10 @@ use App\Models\Alumno;
 use App\Models\Docente;
 use App\Models\PeriodoActual;
 use App\Models\PeriodoActualPpd;
+use App\Models\PeriodoDos;
+use App\Models\PeriodoTres;
+use App\Models\PeriodoUno;
+use App\Observers\NotaParcialObserver;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -33,6 +37,13 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Paginator::useBootstrap();
+
+        // Notificación al alumno (ver app/Notifications/CalificacionRegistrada.php)
+        // sin importar cuál de los 8 flujos de CalificacionController haya
+        // creado/actualizado la nota.
+        PeriodoUno::observe(NotaParcialObserver::class);
+        PeriodoDos::observe(NotaParcialObserver::class);
+        PeriodoTres::observe(NotaParcialObserver::class);
 
         View::composer('layouts.docente', function ($view) {
             if (auth()->check()) {
