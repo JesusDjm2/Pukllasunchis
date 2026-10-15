@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasColumn('periodo_actual', 'formulario_habilitado')) {
+            return;
+        }
+
         Schema::table('periodo_actual', function (Blueprint $table) {
             $table->boolean('formulario_habilitado')->default(false)->after('actual');
         });
@@ -18,6 +22,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (! Schema::hasColumn('periodo_actual', 'formulario_habilitado')) {
+            return;
+        }
+
         Schema::table('periodo_actual', function (Blueprint $table) {
             $table->dropColumn('formulario_habilitado');
         });

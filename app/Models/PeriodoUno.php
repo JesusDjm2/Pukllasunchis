@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class PeriodoUno extends Model
 {
+    use HasFactory;
+
     protected $table = 'periodouno';
     protected $fillable = [
         'nombre',

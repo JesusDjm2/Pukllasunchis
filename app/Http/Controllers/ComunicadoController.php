@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Comunicado;
+use App\Models\User;
+use App\Notifications\ComunicadoPublicado;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 
 class ComunicadoController extends Controller
@@ -67,13 +70,15 @@ class ComunicadoController extends Controller
         }
         $archivoSubido->move($dir, $nombre);
 
-        Comunicado::create([
+        $comunicado = Comunicado::create([
             'titulo' => $validated['titulo'],
             'descripcion' => $validated['descripcion'] ?? null,
             'archivo' => 'docs/comunicados/'.$nombre,
             'archivo_tipo' => $tipo,
             'fecha_publicacion' => $validated['fecha_publicacion'],
         ]);
+
+        Notification::send(User::role('alumno')->get(), new ComunicadoPublicado($comunicado));
 
         return redirect()->route('admin.comunicados.index')
             ->with('success', 'Comunicado registrado correctamente.');
