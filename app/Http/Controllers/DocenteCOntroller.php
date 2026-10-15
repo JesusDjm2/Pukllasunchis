@@ -44,11 +44,33 @@ class DocenteCOntroller extends Controller
     public function vistaDocente($docenteId)
     {
         $periodoActual = PeriodoActual::actual();
-        $nombrePeriodoActual = $periodoActual->nombre ?? null;
-        $docente = Docente::findOrFail($docenteId);
+        // El filtro FID/PPD recorre programa de cada curso: se carga junto con la
+        // relación para que la vista no dispare una consulta por curso.
+        $docente = Docente::with('cursos.ciclo.programa')->findOrFail($docenteId);
         $user = $docente->user;
 
-        return view('docentes.show', compact('user', 'docente', 'periodoActual'));
+        $esPPD = fn ($curso) => str_contains($curso->ciclo->programa->nombre ?? '', 'PPD');
+        $cursosPPD = $docente->cursos->filter($esPPD);
+        $otrosCursos = $docente->cursos->reject($esPPD);
+
+        $incidencias = \DB::table('incidencias')
+            ->where('docente_id', $docente->id)
+            ->selectRaw('count(*) as total, coalesce(sum(estado = ?), 0) as pendientes', ['pendiente'])
+            ->first();
+
+        $metricas = [
+            'cursos'            => $docente->cursos->count(),
+            'cursosFid'         => $otrosCursos->count(),
+            'cursosPpd'         => $cursosPPD->count(),
+            'asincronicos'      => $docente->cursosEspeciales()->count(),
+            'incidencias'       => (int) $incidencias->total,
+            'incidenciasPendientes' => (int) $incidencias->pendientes,
+            'notificaciones'    => $user ? $user->unreadNotifications()->count() : 0,
+        ];
+
+        return view('docentes.show', compact(
+            'user', 'docente', 'periodoActual', 'cursosPPD', 'otrosCursos', 'metricas'
+        ));
     }
 
     public function asignar($id)

@@ -52,5 +52,7 @@
         @empty
             <div class="dropdown-item text-center text-muted small py-3">Sin notificaciones</div>
         @endforelse
+        <a class="dropdown-item text-center small text-gray-500 font-weight-bold"
+            href="{{ route('notificaciones.index') }}">Ver todas las notificaciones</a>
     </div>
 </li>

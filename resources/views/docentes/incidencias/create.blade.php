@@ -3,23 +3,7 @@
 @section('titulo', 'Nueva Incidencia — Docente')
 
 @push('styles')
-<style>
-    .inc-card { border: none; border-radius: .75rem; box-shadow: 0 2px 12px rgba(0,0,0,.08); }
-    .inc-section-label {
-        font-size: .72rem; font-weight: 700; letter-spacing: .08em;
-        text-transform: uppercase; color: #858796; margin-bottom: .35rem;
-    }
-    .inc-cascade-row { display: flex; gap: .75rem; flex-wrap: wrap; }
-    .inc-cascade-row .form-group { flex: 1 1 180px; min-width: 160px; }
-    .img-preview-wrap { position: relative; display: inline-block; }
-    .img-preview-wrap img { max-height: 180px; border-radius: .5rem; border: 1px solid #dee2e6; }
-    .img-preview-wrap .btn-remove-img {
-        position: absolute; top: 4px; right: 4px;
-        background: rgba(220,53,69,.85); color: #fff;
-        border: none; border-radius: 50%; width: 22px; height: 22px;
-        font-size: .75rem; line-height: 22px; text-align: center; cursor: pointer;
-    }
-</style>
+    @include('docentes.incidencias.styles')
 @endpush
 
 @section('contenido')
