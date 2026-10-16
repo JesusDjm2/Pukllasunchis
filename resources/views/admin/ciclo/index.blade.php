@@ -19,6 +19,14 @@
     padding:1rem 1rem .75rem;
     background:var(--pg-card);
 }
+
+/* ── Tutores en la tarjeta del ciclo ── */
+.ciclo-tutores {
+    font-size:.7rem; color:var(--pg-muted);
+    margin-bottom:.7rem; line-height:1.45;
+}
+.ciclo-tutores strong { color:var(--pg-text); font-weight:600; }
+.ciclo-tutores-vacio { font-style:italic; opacity:.8; }
 </style>
 
 <div class="pg-wrap">
@@ -94,13 +102,9 @@
 
     {{-- ── Acordeón por programa ── --}}
     @php
-        $grupos = [
-            1 => ['nombre' => 'Programa Inicial',       'tipo' => 'fid'],
-            2 => ['nombre' => 'Programa Primaria EIB',  'tipo' => 'fid'],
-            3 => ['nombre' => 'Programa Inicial PPD',   'tipo' => 'ppd'],
-            4 => ['nombre' => 'Programa Primaria PPD',  'tipo' => 'ppd'],
-            5 => ['nombre' => 'Otro Programa',          'tipo' => 'ppd'],
-        ];
+        $grupos = $programas->mapWithKeys(fn ($p) => [
+            $p->id => ['nombre' => $p->nombre, 'tipo' => $p->esPpd() ? 'ppd' : 'fid'],
+        ]);
     @endphp
 
     @foreach ($grupos as $programaId => $grupo)
@@ -147,7 +151,7 @@
                             @foreach ($ciclos as $ciclo)
                                 @if ($ciclo->programa->id == $programaId)
                                     @php
-                                        $cnt = in_array($programaId, [3,4,5])
+                                        $cnt = ! $esFid
                                             ? $ciclo->alumnos_b_validos_count
                                             : $ciclo->alumnos_validos_count;
                                     @endphp
@@ -158,8 +162,17 @@
                                                 <div class="pg-card-name" style="font-size:.82rem;margin-bottom:.55rem;">
                                                     {{ $ciclo->nombre }}
                                                 </div>
-                                                <div style="font-size:.72rem;color:var(--pg-muted);margin-bottom:.7rem;">
+                                                <div style="font-size:.72rem;color:var(--pg-muted);margin-bottom:.35rem;">
                                                     <i class="fas fa-users fa-xs mr-1"></i>{{ $cnt }} alumnos
+                                                </div>
+                                                <div class="ciclo-tutores">
+                                                    <i class="fas fa-chalkboard-teacher fa-xs mr-1"></i>
+                                                    @if ($ciclo->tutores->isNotEmpty())
+                                                        <strong>{{ $ciclo->tutores->count() == 1 ? 'Tutor:' : 'Tutores:' }}</strong>
+                                                        {{ $ciclo->tutores->map(fn ($t) => trim($t->name . ' ' . $t->apellidos))->implode(', ') }}
+                                                    @else
+                                                        <span class="ciclo-tutores-vacio">Sin tutor asignado</span>
+                                                    @endif
                                                 </div>
                                                 <div class="d-flex flex-wrap" style="gap:.3rem;">
                                                     <a href="{{ route('ciclo.show', ['ciclo' => $ciclo->id]) }}"
@@ -170,9 +183,19 @@
                                                        class="pg-btn pg-btn-edit">
                                                         <i class="fas fa-edit fa-xs"></i>
                                                     </a>
+                                                    @if ($cnt > 0)
+                                                        <form action="{{ route('ciclo.marcarEgresados', ['ciclo' => $ciclo->id]) }}"
+                                                              method="POST" class="d-inline"
+                                                              data-confirm="Se marcará como Egresado(a) a los {{ $cnt }} alumno(s) de &quot;{{ $ciclo->nombre }}&quot; — dejarán de aparecer en listados activos y de matrícula. ¿Continuar?">
+                                                            @csrf @method('PUT')
+                                                            <button type="submit" class="pg-btn pg-btn-edit" title="Marcar a todos los alumnos de este ciclo como Egresados">
+                                                                <i class="fas fa-user-graduate fa-xs"></i>
+                                                            </button>
+                                                        </form>
+                                                    @endif
                                                     <form action="{{ route('ciclo.destroy', ['ciclo' => $ciclo->id]) }}"
                                                           method="POST" class="d-inline"
-                                                          onsubmit="return confirm('¿Eliminar este ciclo?')">
+                                                          data-confirm="Se eliminará este ciclo." data-confirm-danger>
                                                         @csrf @method('DELETE')
                                                         <button type="submit" class="pg-btn pg-btn-del">
                                                             <i class="fas fa-trash fa-xs"></i>

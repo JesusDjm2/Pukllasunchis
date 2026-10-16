@@ -12,7 +12,7 @@
         @foreach ($docente->cursos as $curso)
             @php
                 $contador++;
-                $esPpd = str_contains($curso->ciclo->programa->nombre ?? '', 'PPD'); // Verifica si contiene PPD
+                $esPpd = $curso->esPpd();
             @endphp
             @if (!$esPpd)
                 <tr>

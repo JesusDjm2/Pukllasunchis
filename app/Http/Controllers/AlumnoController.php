@@ -13,6 +13,8 @@ use App\Models\PeriodoActualPpd;
 use App\Models\ppd;
 use App\Models\Programa;
 use App\Models\Provincia;
+use App\Models\Sugerencia;
+use App\Models\Tutoria;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -49,8 +51,23 @@ class AlumnoController extends Controller
                 ? $cursosAsignados
                 : ($alumno->ciclo ? $alumno->ciclo->cursos : collect());
 
+            // "Mis solicitudes": tutorías y sugerencias que el propio alumno envió
+            // por el formulario público (QR), para que quede registro de su estado
+            // en su perfil y no dependa solo de la notificación (que es pasajera).
+            $misTutorias = Tutoria::where('alumno_id', $alumno->id)->latest()->get();
+            $misSugerencias = Sugerencia::where('alumno_id', $alumno->id)->latest()->get();
+
+            // Avance de titulación: solo existe si a este alumno (FID, Ciclo
+            // VIII+) ya se le inició el proceso desde el panel de gestores.
+            $seguimientoTitulacion = $usuario?->seguimientoTitulacion()
+                ->with('estadoTitulacion', 'pti.asesor', 'tesis.asesor', 'actas', 'resoluciones')
+                ->first();
+            // Sin proceso todavía pero ya en edad de iniciarlo (Ciclo VIII+): se le muestra la guía.
+            $guiaTitulacion = ! $seguimientoTitulacion && $usuario && \App\Http\Controllers\Titulacion\TitulacionController::puedeIniciar($usuario);
+
             return view('alumnos.vistasAlumnos.index', compact(
-                'alumno', 'usuario', 'periodoActual', 'yaMatriculado', 'cursosDelAlumno'
+                'alumno', 'usuario', 'periodoActual', 'yaMatriculado', 'cursosDelAlumno',
+                'misTutorias', 'misSugerencias', 'seguimientoTitulacion', 'guiaTitulacion'
             ));
         } else {
             return view('alumnos.vistasAlumnos.index');
@@ -443,6 +460,11 @@ class AlumnoController extends Controller
     {
         $alumno = Alumno::with(['ciclo.cursos'])->findOrFail($id);
 
+        // Un alumno solo ve sus propias notas; el personal puede ver las de cualquiera.
+        $usuario = auth()->user();
+        abort_if(! $usuario->hasAnyRole(['admin', 'super-admin', 'docente', 'tutor', 'gestor-titulacion'])
+            && (int) $alumno->user_id !== (int) $usuario->id, 403);
+
         // Traemos todos los periodos del alumno, con curso y periodoActual
         $periodos = $alumno->periodo()
             ->with(['curso.ciclo.programa', 'periodoActual'])
@@ -469,156 +491,16 @@ class AlumnoController extends Controller
         );
     }
 
+    /**
+     * Datos demográficos de FID y PPD. El servicio normaliza las fichas y la vista filtra,
+     * cruza y grafica en el navegador; los enlaces antiguos (?tab=fid_periodo&periodo_id=…)
+     * los traduce la propia vista a sus filtros nuevos.
+     */
     public function estadisticas(\Illuminate\Http\Request $request)
     {
-        $tab = $request->input('tab', 'fid_periodo');
+        $datos = (new \App\Services\DatosDemograficos)->construir();
 
-        // ── Períodos FID ───────────────────────────────────────────────────
-        $periodos      = PeriodoActual::orderBy('id', 'desc')->get();
-        $periodoActual = PeriodoActual::where('actual', true)->first();
-
-        // ── Períodos PPD ───────────────────────────────────────────────────
-        $periodosPpd      = PeriodoActualPpd::orderBy('id', 'desc')->get();
-        $periodoActualPpd = PeriodoActualPpd::where('actual', true)->first();
-
-        // ── Período seleccionado ───────────────────────────────────────────
-        $periodoId    = $request->input('periodo_id');
-        $periodoPpdId = $request->input('periodo_ppd_id');
-
-        $periodoSeleccionado = $periodoId
-            ? PeriodoActual::find($periodoId)
-            : ($periodoActual ?? $periodos->first());
-
-        $periodoPpdSeleccionado = $periodoPpdId
-            ? PeriodoActualPpd::find($periodoPpdId)
-            : ($periodoActualPpd ?? $periodosPpd->first());
-
-        // ── Helper: orden romano ───────────────────────────────────────────
-        $romanoAInt = fn ($r) => [
-            'I' => 1, 'II' => 2, 'III' => 3, 'IV' => 4, 'V'  => 5,
-            'VI' => 6, 'VII' => 7, 'VIII' => 8, 'IX' => 9, 'X' => 10,
-        ][strtoupper(trim($r))] ?? 0;
-
-        // ── Helper: calcula estadísticas de cualquier colección ────────────
-        $computeStats = function ($collection) use ($romanoAInt) {
-            $totalAlumnos = $collection->count();
-            $hoy          = now();
-
-            $porPrograma = $collection
-                ->filter(fn ($a) => $a->programa && ! str_contains(strtolower($a->programa->nombre), 'egresados'))
-                ->groupBy(fn ($a) => $a->programa?->nombre ?? 'Sin programa')
-                ->map->count()
-                ->sortByDesc(fn ($v) => $v);
-
-            $porCiclo = $collection
-                ->filter(fn ($a) => $a->ciclo && ! str_contains(strtolower($a->ciclo->nombre), 'egresados'))
-                ->groupBy(fn ($a) => $a->ciclo?->nombre ?? 'Sin ciclo')
-                ->map->count()
-                ->sortBy(fn ($count, $nombre) => $romanoAInt($nombre));
-
-            $generos = $collection
-                ->filter(fn ($a) => ! empty($a->genero))
-                ->groupBy(fn ($a) => ucfirst(strtolower($a->genero)))
-                ->map->count();
-
-            $edad_18_25 = $collection->filter(function ($a) use ($hoy) {
-                if (empty($a->fecha_nacimiento)) {
-                    return false;
-                }
-                try {
-                    $age = $hoy->diffInYears(\Carbon\Carbon::parse($a->fecha_nacimiento));
-                } catch (\Throwable $e) {
-                    return false;
-                }
-
-                return $age >= 18 && $age <= 25;
-            })->count();
-
-            $edad_26_35 = $collection->filter(function ($a) use ($hoy) {
-                if (empty($a->fecha_nacimiento)) {
-                    return false;
-                }
-                try {
-                    $age = $hoy->diffInYears(\Carbon\Carbon::parse($a->fecha_nacimiento));
-                } catch (\Throwable $e) {
-                    return false;
-                }
-
-                return $age >= 26 && $age <= 35;
-            })->count();
-
-            $sectorSocio    = $collection->filter(fn ($a) => ! empty($a->sector_socioeconomico))->groupBy('sector_socioeconomico')->map->count();
-            $sectores       = $sectorSocio;
-            $procedencia    = $collection->filter(fn ($a) => ! empty($a->procedencia_familiar))->groupBy('procedencia_familiar')->map->count()->sortByDesc(fn ($v) => $v);
-            $sectorLaboral  = $collection->filter(fn ($a) => ! empty($a->sector_laboral))->groupBy('sector_laboral')->map->count()->sortByDesc(fn ($v) => $v);
-            $teConsideras   = $collection->filter(fn ($a) => ! empty($a->te_consideras))->groupBy('te_consideras')->map->count();
-            $lenguas        = $collection->filter(fn ($a) => trim($a->lengua_1 ?? '') !== '')->groupBy('lengua_1')->map->count()->sortByDesc(fn ($v) => $v);
-            $estadoCivil    = $collection->filter(fn ($a) => ! empty($a->estado_civil))->groupBy('estado_civil')->map->count();
-            $quienMantiene  = $collection->filter(fn ($a) => trim($a->quien_mantiene ?? '') !== '')->groupBy('quien_mantiene')->map->count()->sortByDesc(fn ($v) => $v);
-            $ingresoMensual = $collection->filter(fn ($a) => trim($a->ingreso_mensual ?? '') !== '')->groupBy('ingreso_mensual')->map->count();
-            $trabajo        = $collection->filter(fn ($a) => ! empty($a->trabajas))->groupBy('trabajas')->map->count();
-
-            return compact(
-                'totalAlumnos', 'porPrograma', 'porCiclo', 'generos',
-                'edad_18_25', 'edad_26_35', 'sectorSocio', 'sectores',
-                'procedencia', 'sectorLaboral', 'teConsideras', 'lenguas',
-                'estadoCivil', 'quienMantiene', 'ingresoMensual', 'trabajo'
-            );
-        };
-
-        // ── Carga de datos según pestaña activa ────────────────────────────
-        switch ($tab) {
-            case 'fid_todos':
-                $collection             = Alumno::with(['programa', 'ciclo'])->get();
-                $periodoSeleccionado    = null;
-                $periodoPpdSeleccionado = null;
-                break;
-
-            case 'ppd_periodo':
-                $periodoSeleccionado = null;
-                if ($periodoPpdSeleccionado) {
-                    $ppdIds     = DB::table('periodo_ppds')
-                        ->where('periodo_actual_ppd_id', $periodoPpdSeleccionado->id)
-                        ->distinct()->pluck('alumno_id');
-                    $collection = ppd::with(['programa', 'ciclo'])->whereIn('id', $ppdIds)->get();
-                } else {
-                    $collection = collect();
-                }
-                break;
-
-            case 'ppd_todos':
-                $collection             = ppd::with(['programa', 'ciclo'])->get();
-                $periodoSeleccionado    = null;
-                $periodoPpdSeleccionado = null;
-                break;
-
-            default: // fid_periodo
-                $tab                    = 'fid_periodo';
-                $periodoPpdSeleccionado = null;
-                if ($periodoSeleccionado) {
-                    $pid        = $periodoSeleccionado->id;
-                    $collection = Alumno::with(['programa', 'ciclo'])
-                        ->whereHas('matriculas', fn ($m) => $m->where('periodo_actual_id', $pid))
-                        ->get();
-                } else {
-                    $collection = collect();
-                }
-                break;
-        }
-
-        extract($computeStats($collection));
-
-        return view('admin.demograficos.alumnos', compact(
-            'tab',
-            'periodos', 'periodoSeleccionado',
-            'periodosPpd', 'periodoPpdSeleccionado',
-            'porPrograma', 'porCiclo', 'generos',
-            'edad_18_25', 'edad_26_35',
-            'sectores', 'procedencia', 'sectorLaboral',
-            'teConsideras', 'lenguas', 'estadoCivil', 'sectorSocio',
-            'quienMantiene', 'trabajo', 'ingresoMensual',
-            'totalAlumnos'
-        ));
+        return view('admin.demograficos.alumnos', compact('datos'));
     }
 
     //Fortmatos de video para Ti y Tesis

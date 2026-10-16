@@ -1,0 +1,209 @@
+/* Taq'e (Ferias de Investigación): estilos compartidos por TODAS sus vistas (alumno, docente,
+   Investigador, Super Admin). Se apoyan en las variables de pk-ui.css (.al-ui). */
+    /* Invitaciones */
+    .tq-invitacion {
+        display: flex; align-items: center; gap: .9rem; flex-wrap: wrap; padding: .9rem 1.1rem; margin-bottom: .75rem;
+        border-radius: 14px; background: var(--al-warn-f); border: 1px solid rgba(205, 146, 68, .35); border-left: 4px solid var(--al-oro);
+    }
+    .tq-invitacion-icono { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: var(--al-oro); color: #fff; flex: none; }
+    .tq-invitacion-texto { flex: 1; min-width: 200px; color: var(--al-texto); }
+    .tq-invitacion-texto small { color: var(--al-suave); }
+    .tq-invitacion-acciones { display: flex; gap: .4rem; }
+
+    /* Pasos de avance */
+    .tq-pasos { list-style: none; margin: 0; padding: .85rem 1.25rem; display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; border-bottom: 1px solid var(--al-borde); background: var(--al-fondo-2); counter-reset: none; }
+    .tq-pasos li { display: flex; align-items: center; gap: .6rem; position: relative; min-width: 0; }
+    .tq-pasos li b { display: block; font-size: .8rem; color: var(--al-texto); }
+    .tq-pasos li small { display: block; font-size: .7rem; color: var(--al-suave); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tq-paso-marca {
+        width: 28px; height: 28px; border-radius: 50%; flex: none; display: flex; align-items: center; justify-content: center;
+        font-size: .75rem; font-weight: 800; background: var(--al-fondo); color: var(--al-suave); border: 2px solid var(--al-borde);
+    }
+    .tq-pasos li.is-hecho .tq-paso-marca { background: var(--al-ok); border-color: var(--al-ok); color: #fff; }
+    .tq-pasos li.is-hecho b { color: var(--al-ok); }
+
+    /* Cuerpo del grupo */
+    .tq-grupo-cuerpo { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 1.25rem; padding: 1.1rem 1.25rem 1.25rem; }
+    @media (max-width: 991.98px) { .tq-grupo-cuerpo { grid-template-columns: 1fr; } .tq-pasos { grid-template-columns: 1fr; } }
+    .tq-bloque-titulo { font-size: .68rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--al-suave); margin-bottom: .55rem; display: flex; align-items: center; gap: .4rem; }
+    .tq-bloque-titulo i { color: var(--al-oro); }
+    .tq-grupo-acciones { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .75rem; }
+    .tq-grupo-acciones form { display: inline-block; }
+    .tq-btn-salir { background: transparent; color: var(--al-mal) !important; border-color: rgba(192, 57, 43, .3); }
+    .tq-btn-salir:hover { background: var(--al-mal-f); }
+    .tq-nota { font-size: .82rem; color: var(--al-suave); margin-bottom: .5rem; }
+
+    /* Equipo (reestiliza la fila compartida _integrante-row) */
+    .al-ui .taqe-team { border: 1px solid var(--al-borde); border-radius: 12px; overflow: hidden; }
+    .al-ui .taqe-team-row { display: flex; align-items: center; gap: .7rem; padding: .55rem .8rem; background: var(--al-fondo); }
+    .al-ui .taqe-team-row + .taqe-team-row { border-top: 1px solid var(--al-borde); }
+    .al-ui .taqe-team-avatar { width: 2.1rem; height: 2.1rem; flex-shrink: 0; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: .7rem; font-weight: 800; color: #fff; background: var(--al-petroleo); }
+    .al-ui .taqe-team-avatar.is-organizador { background: var(--al-oro); }
+    .al-ui .taqe-team-avatar.is-pendiente { background: #94a3b8; }
+    .al-ui .taqe-team-avatar.is-rechazado { background: #e2e8f0; color: #94a3b8; }
+    .al-ui .taqe-team-body { min-width: 0; flex: 1 1 auto; }
+    .al-ui .taqe-team-name { font-size: .84rem; font-weight: 600; color: var(--al-texto); display: flex; align-items: center; flex-wrap: wrap; gap: .4rem; }
+    .al-ui .taqe-team-tag { font-size: .6rem; font-weight: 800; letter-spacing: .03em; text-transform: uppercase; padding: .12rem .5rem; border-radius: 999px; display: inline-flex; align-items: center; gap: .3rem; }
+    .al-ui .taqe-team-tag.organizador { background: rgba(205, 146, 68, .16); color: var(--al-oro-2); }
+    .al-ui .taqe-team-tag.pendiente { background: var(--al-fondo-2); color: var(--al-suave); }
+    .al-ui .taqe-team-tag.rechazado { background: var(--al-mal-f); color: var(--al-mal); }
+    .al-ui .taqe-team-actions form { display: inline-block; }
+    .al-ui .taqe-team-reinvite { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding: .4rem .1rem; font-size: .82rem; color: var(--al-suave); }
+    .al-ui .taqe-companion-list { max-height: 220px; overflow-y: auto; border: 1px solid var(--al-borde); border-radius: 10px; padding: .5rem .7rem; background: var(--al-fondo-2); }
+    .al-ui .taqe-companion-list label { display: block; font-size: .84rem; font-weight: 500; margin-bottom: .3rem; color: var(--al-texto); cursor: pointer; }
+
+    /* Archivos */
+    .tq-archivo { display: flex; align-items: center; gap: .7rem; padding: .6rem .7rem; border: 1px solid var(--al-borde); border-radius: 12px; margin-bottom: .45rem; background: var(--al-fondo); }
+    .tq-archivo.is-final { border-color: rgba(14, 148, 103, .35); background: var(--al-ok-f); }
+    .tq-archivo-icono { width: 36px; height: 36px; border-radius: 10px; flex: none; display: flex; align-items: center; justify-content: center; color: var(--c); background: color-mix(in srgb, var(--c) 12%, transparent); }
+    .tq-archivo-texto { flex: 1; min-width: 0; }
+    .tq-archivo-nombre { font-size: .85rem; font-weight: 700; color: var(--al-texto); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .tq-archivo-texto small { font-size: .72rem; color: var(--al-suave); }
+    .tq-archivo-acciones { display: flex; align-items: center; gap: .2rem; }
+    .tq-archivo-acciones form { display: inline; }
+    .tq-archivo-acciones a, .tq-archivo-acciones button {
+        width: 30px; height: 30px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center;
+        color: var(--al-suave); background: transparent; border: 0; cursor: pointer; text-decoration: none; transition: background-color .15s ease, color .15s ease;
+    }
+    .tq-archivo-acciones a:hover, .tq-archivo-acciones button:hover { background: var(--al-fondo-2); color: var(--al-texto); }
+    .tq-archivo-acciones .is-peligro:hover { background: var(--al-mal-f); color: var(--al-mal); }
+
+    /* Subida */
+    .tq-subir { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin-top: .6rem; padding: .8rem; border: 1.5px dashed var(--al-borde); border-radius: 12px; background: var(--al-fondo-2); }
+    .tq-subir.collapse:not(.show) { display: none; }
+    .tq-subir input[type=text] { flex: 1 1 170px; }
+    .tq-subir input[type=file] { flex: 1 1 200px; font-size: .78rem; color: var(--al-suave); }
+    .tq-subir-ayuda { flex-basis: 100%; font-size: .72rem; color: var(--al-suave); }
+
+    /* Lateral */
+    .tq-guia { list-style: none; counter-reset: paso; margin: 0; padding: .9rem 1.25rem 1.1rem; }
+    .tq-guia li { counter-increment: paso; position: relative; padding-left: 2.4rem; margin-bottom: .85rem; }
+    .tq-guia li:last-child { margin-bottom: 0; }
+    .tq-guia li::before {
+        content: counter(paso); position: absolute; left: 0; top: 0; width: 1.7rem; height: 1.7rem; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center; font-size: .75rem; font-weight: 800; background: rgba(205, 146, 68, .15); color: var(--al-oro-2);
+    }
+    .tq-guia b { display: block; font-size: .85rem; color: var(--al-texto); }
+    .tq-guia span { font-size: .78rem; color: var(--al-suave); }
+    .tq-contacto { display: flex; flex-direction: column; gap: .2rem; font-size: .84rem; padding-bottom: .7rem; margin-bottom: .7rem; border-bottom: 1px dashed var(--al-borde); }
+    .tq-contacto:last-child { border-bottom: 0; margin-bottom: 0; padding-bottom: 0; }
+    .tq-contacto-nombre { font-weight: 800; color: var(--al-texto); }
+    .tq-contacto a, .tq-contacto span { color: var(--al-suave); }
+    .tq-contacto i { color: var(--al-oro); width: 1rem; }
+
+    /* Vista previa */
+    .tq-previa-tipo { color: var(--al-suave); font-size: .76rem; }
+    .tq-previa-cuerpo { background: var(--al-fondo-2); display: flex; align-items: center; justify-content: center; min-height: 40vh; padding: 1rem; }
+    .tq-previa-cuerpo img { max-width: 100%; max-height: 72vh; border-radius: 10px; box-shadow: 0 6px 20px rgba(0, 0, 0, .15); }
+    .tq-previa-cuerpo iframe { width: 100%; height: 72vh; border: 0; border-radius: 10px; background: #fff; }
+    .tq-previa-cuerpo video { width: 100%; max-height: 72vh; border-radius: 10px; background: #000; }
+    .tq-previa-cuerpo audio { width: 100%; max-width: 560px; }
+    .tq-previa-aviso { text-align: center; color: var(--al-suave); max-width: 420px; }
+    .tq-previa-aviso i { font-size: 2.6rem; display: block; margin-bottom: .75rem; color: var(--al-oro); }
+    .tq-previa-aviso b { display: block; color: var(--al-texto); margin-bottom: .25rem; }
+
+    /* Modales */
+    .tq-modal { border: 0; border-radius: 14px; background: var(--al-fondo, #fff); color: var(--al-texto, #1e293b); }
+    .tq-modal .modal-header, .tq-modal .modal-footer { border-color: var(--al-borde, #e2e8f0); }
+    .tq-modal .modal-title { font-size: 1rem; font-weight: 800; }
+    .tq-modal .modal-title i { color: var(--al-oro, #cd9244); }
+    /* Subida: selector Archivo / Enlace (solo CSS) */
+    .tq-modo { display: inline-flex; flex-basis: 100%; gap: .25rem; }
+    .tq-modo input { position: absolute; opacity: 0; pointer-events: none; }
+    .tq-modo label {
+        margin: 0; cursor: pointer; font-size: .76rem; font-weight: 700; padding: .3rem .8rem; border-radius: 999px;
+        border: 1px solid var(--al-borde); background: var(--al-fondo); color: var(--al-suave);
+    }
+    .tq-modo input:checked + label { background: var(--al-petroleo); border-color: var(--al-petroleo); color: #fff; }
+    .tq-modo input:focus-visible + label { box-shadow: 0 0 0 3px rgba(51, 68, 90, .25); }
+    .tq-subir .tq-campo-enlace { display: none; }
+    .tq-subir:has(input[value="enlace"]:checked) .tq-campo-enlace { display: block; }
+    .tq-subir:has(input[value="enlace"]:checked) input.tq-campo-enlace { flex: 1 1 260px; }
+    .tq-subir:has(input[value="enlace"]:checked) .tq-campo-archivo { display: none; }
+    .tq-archivo-acciones .is-mover:hover { background: rgba(14, 148, 103, .12); color: var(--al-ok); }
+    .tq-entrega { display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; padding: .75rem .9rem; margin-top: .6rem; border-radius: 12px; background: var(--al-fondo-2); border: 1px solid var(--al-borde); font-size: .82rem; color: var(--al-texto); }
+    .tq-entrega.is-entregado { background: var(--al-ok-f); border-color: rgba(14, 148, 103, .3); }
+    .tq-entrega .al-btn { margin-left: auto; }
+    .tq-proyecto { font-size: .74rem; color: var(--al-suave); margin-top: .25rem; display: flex; align-items: center; gap: .35rem; }
+    .tq-proyecto i { color: var(--al-oro); }
+    .tq-proyecto-descripcion { font-size: .86rem; color: var(--al-texto); line-height: 1.55; }
+    .tq-proyecto-descripcion p:last-child { margin-bottom: 0; }
+
+    /* Vistas de gestión (docente, Investigador, Super Admin) */
+    .tq-contexto { display: flex; flex-wrap: wrap; gap: .3rem .8rem; margin-top: .3rem; font-size: .72rem; color: var(--al-suave); }
+    .tq-contexto i { color: var(--al-oro); margin-right: .25rem; }
+    .tq-filtros { display: flex; flex-wrap: wrap; gap: .75rem; align-items: flex-end; padding: .9rem 1.1rem; }
+    .tq-filtro { flex: 1 1 160px; min-width: 150px; }
+    .tq-filtro label { font-size: .66rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--al-suave); margin-bottom: .3rem; display: block; }
+    .tq-filtros .form-control { border-radius: 8px; border-color: var(--al-borde); background: var(--al-fondo); color: var(--al-texto); }
+    .tq-filtros-fin { display: flex; gap: .5rem; align-items: center; margin-left: auto; }
+    .tq-solicitud-mensaje { font-size: .82rem; color: var(--al-texto); font-style: italic; margin-top: .2rem; }
+    .tq-invitacion-titulo { color: var(--al-texto); }
+
+    .tq-modal-etiqueta { font-size: .68rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--al-suave, #64748b); margin-bottom: .4rem; display: block; }
+
+    /* ── Tarjeta de grupo (todas las vistas): cada Proyecto Integrador con su tono, para distinguir grupos ── */
+    .al-card.tq-grupo { --tq-tono: #33445a; overflow: visible; border-left: 5px solid var(--tq-tono); margin-bottom: 2rem; }
+    .tq-grupo[data-tono="0"] { --tq-tono: #cd9244; }
+    .tq-grupo[data-tono="1"] { --tq-tono: #0e9467; }
+    .tq-grupo[data-tono="2"] { --tq-tono: #2563eb; }
+    .tq-grupo[data-tono="3"] { --tq-tono: #9b2c5a; }
+    .tq-grupo[data-tono="4"] { --tq-tono: #7c3aed; }
+    .tq-grupo[data-tono="5"] { --tq-tono: #c2410c; }
+    .tq-grupo > .al-card-cab { border-radius: 0 13px 0 0; padding: 1.1rem 1.25rem; background: linear-gradient(90deg, color-mix(in srgb, var(--tq-tono) 13%, transparent), transparent 75%); }
+    .tq-grupo > .al-card-cab .al-card-cab-icono { background: var(--tq-tono); color: #fff; }
+    .tq-grupo > .al-card-cab h2 { font-size: 1.12rem; }
+    .tq-grupo .tq-proyecto, .tq-grupo .tq-proyecto i { color: var(--tq-tono); font-weight: 700; }
+
+    /* Equipo a todo el ancho */
+    .tq-equipo { padding: 1.1rem 1.25rem .4rem; }
+    .tq-equipo-cab { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem; margin-bottom: .6rem; }
+    .tq-equipo-cab .tq-bloque-titulo { margin: 0; }
+    .tq-equipo-cab .tq-grupo-acciones { margin: 0 0 0 auto; }
+    .al-ui .taqe-team.tq-equipo-lista { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: .5rem; border: 0; border-radius: 0; overflow: visible; }
+    .al-ui .tq-equipo-lista .taqe-team-row { border: 1px solid var(--al-borde) !important; border-radius: 12px; }
+
+    /* Evidencias (izquierda) | Trabajo final (derecha) */
+    .tq-archivos { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; padding: .9rem 1.25rem 1.25rem; }
+    @media (max-width: 991.98px) { .tq-archivos { grid-template-columns: minmax(0, 1fr); } }
+    .tq-columna { border: 1px solid var(--al-borde); border-radius: 14px; padding: .9rem 1rem 1rem; background: var(--al-fondo); min-width: 0; display: flex; flex-direction: column; }
+    .tq-columna.is-final { border-color: rgba(14, 148, 103, .35); background: linear-gradient(180deg, var(--al-ok-f), var(--al-fondo) 140px); }
+    .tq-columna-cab { display: flex; align-items: center; gap: .5rem; margin-bottom: .15rem; }
+    .tq-columna-cab h3 { font-size: .95rem; font-weight: 800; color: var(--al-texto); margin: 0; display: flex; align-items: center; gap: .45rem; }
+    .tq-columna-cab h3 i { color: var(--al-oro); }
+    .tq-columna.is-final .tq-columna-cab h3 i { color: var(--al-ok); }
+    .tq-columna-cab .al-badge { margin-left: auto; }
+    .tq-columna-sub { font-size: .74rem; color: var(--al-suave); margin-bottom: .7rem; }
+    .tq-columna-lista { flex: 1; }
+
+    /* Menú "Descargar" propio: el dropdown de Bootstrap quedaba recortado por la tarjeta (y el layout carga BS4 y BS5) */
+    .tq-menu { position: relative; display: inline-block; }
+    .tq-menu > summary { list-style: none; cursor: pointer; }
+    .tq-menu > summary::-webkit-details-marker { display: none; }
+    .tq-menu > summary .fa-chevron-down { font-size: .65rem; transition: transform .15s ease; }
+    .tq-menu[open] > summary .fa-chevron-down { transform: rotate(180deg); }
+    .tq-menu-lista {
+        position: absolute; right: 0; top: calc(100% + 6px); z-index: 40; min-width: 260px; padding: .35rem;
+        background: var(--al-fondo); border: 1px solid var(--al-borde); border-radius: 12px; box-shadow: 0 14px 34px rgba(15, 23, 42, .18);
+    }
+    .tq-menu-lista a, .tq-menu-lista span { display: flex; align-items: center; gap: .6rem; padding: .5rem .7rem; border-radius: 8px; font-size: .82rem; font-weight: 600; color: var(--al-texto); text-decoration: none; }
+    .tq-menu-lista a:hover { background: var(--al-fondo-2); color: var(--al-texto); text-decoration: none; }
+    .tq-menu-lista span { color: var(--al-suave); opacity: .6; cursor: not-allowed; }
+    .tq-menu-lista small { margin-left: auto; color: var(--al-suave); font-weight: 700; }
+    .tq-menu-lista hr { margin: .3rem 0; border-color: var(--al-borde); }
+
+    /* Alumno: grupos de periodos anteriores (solo lectura) */
+    .tq-anteriores-titulo { display: flex; align-items: baseline; flex-wrap: wrap; gap: .3rem .75rem; margin: 2.25rem 0 .9rem; padding-top: 1.25rem; border-top: 1px dashed var(--al-borde); }
+    .tq-anteriores-titulo span { font-size: .78rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--al-suave); }
+    .tq-anteriores-titulo span i { color: var(--al-oro); margin-right: .3rem; }
+    .tq-anteriores-titulo small { font-size: .78rem; color: var(--al-suave); }
+
+    /* Alumno: franja del Proyecto Integrador */
+    .tq-franja { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; padding: 1rem 1.25rem; }
+    .tq-franja-icono { width: 44px; height: 44px; border-radius: 12px; flex: none; display: flex; align-items: center; justify-content: center; background: rgba(205, 146, 68, .15); color: var(--al-oro-2); font-size: 1.1rem; }
+    .tq-franja-texto { flex: 1; min-width: 220px; }
+    .tq-franja-texto small { display: block; font-size: .66rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--al-suave); }
+    .tq-franja-texto strong { display: block; font-size: .98rem; color: var(--al-texto); }
+    .tq-franja-texto span { font-size: .8rem; color: var(--al-suave); }
+    .tq-franja-acciones { display: flex; gap: .4rem; flex-wrap: wrap; }
+    .tq-modal .tq-proyecto-descripcion { font-size: .92rem; line-height: 1.65; }

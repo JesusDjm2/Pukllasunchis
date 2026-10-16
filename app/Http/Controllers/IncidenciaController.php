@@ -89,7 +89,7 @@ class IncidenciaController extends Controller
 
     public function publicCreate()
     {
-        $programas = Programa::where('nombre', 'not like', '%PPD%')->orderBy('nombre')->get();
+        $programas = Programa::fid()->orderBy('nombre')->get();
         return view('incidencias.public-create', compact('programas'));
     }
 

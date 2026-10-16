@@ -1,98 +1,6 @@
 @extends($layout ?? 'layouts.admin')
 @section('contenido')
-<style>    
-.reg-header { border-left:4px solid #4e73df; padding-left:1rem; }
-.reg-card {
-    background:#fff; border:1px solid #e2e8f0; border-radius:.75rem;
-    margin-bottom:1.25rem; overflow:hidden;
-    box-shadow:0 1px 4px rgba(0,0,0,.06);
-}
-.reg-card-head {
-    display:flex; align-items:center; gap:.6rem;
-    padding:.6rem 1.25rem; background:#f8fafc;
-    border-bottom:1px solid #e2e8f0;
-    font-size:.72rem; font-weight:700; text-transform:uppercase;
-    letter-spacing:.06em; color:#64748b;
-}
-.reg-card-body { padding:1.25rem; }
-
-.reg-label {
-    font-size:.78rem; font-weight:600; color:#374151;
-    margin-bottom:.3rem; display:block;
-}
-.reg-input-wrap .input-group-text {
-    background:#f8fafc; border-color:#d1d5db; color:#9ca3af;
-    border-radius:.45rem 0 0 .45rem; font-size:.8rem;
-}
-.reg-input-wrap .form-control {
-    border-radius:0 .45rem .45rem 0 !important;
-    border-color:#d1d5db; font-size:.85rem;
-    transition:border-color .2s, box-shadow .2s;
-}
-.reg-input-wrap .form-control:focus {
-    border-color:#4e73df;
-    box-shadow:0 0 0 .18rem rgba(78,115,223,.18);
-}
-.reg-input-solo {
-    border-radius:.45rem !important; border-color:#d1d5db !important;
-    font-size:.85rem !important; transition:border-color .2s, box-shadow .2s !important;
-}
-.reg-input-solo:focus {
-    border-color:#4e73df !important;
-    box-shadow:0 0 0 .18rem rgba(78,115,223,.18) !important;
-}
-
-.role-pill-wrap { display:flex; flex-wrap:wrap; gap:.5rem; }
-.role-pill { position:relative; display:inline-flex; }
-.role-pill input[type="checkbox"] { position:absolute; opacity:0; width:0; height:0; }
-.role-pill label {
-    display:inline-flex; align-items:center; gap:.35rem;
-    padding:.35rem .9rem; border-radius:2rem; cursor:pointer;
-    font-size:.78rem; font-weight:600;
-    border:2px solid #e2e8f0; background:#f8fafc; color:#64748b;
-    transition:all .18s; user-select:none;
-}
-.role-pill label:hover { border-color:#94a3b8; background:#f1f5f9; }
-.role-pill input:checked + label {
-    border-color:var(--rc); background:var(--rb); color:var(--rt);
-    box-shadow:0 0 0 3px rgba(var(--rr),.18);
-}
-.rp-admin   { --rc:#f59e0b; --rb:#fef3c7; --rt:#92400e; --rr:245,158,11; }
-.rp-docente { --rc:#06b6d4; --rb:#cffafe; --rt:#0e7490; --rr:6,182,212; }
-.rp-tutor   { --rc:#10b981; --rb:#d1fae5; --rt:#065f46; --rr:16,185,129; }
-.rp-alumno  { --rc:#3b82f6; --rb:#dbeafe; --rt:#1d4ed8; --rr:59,130,246; }
-.rp-alumnoB { --rc:#6366f1; --rb:#ede9fe; --rt:#4338ca; --rr:99,102,241; }
-.rp-adminB  { --rc:#64748b; --rb:#f1f5f9; --rt:#334155; --rr:100,116,139; }
-.rp-inh     { --rc:#ef4444; --rb:#fee2e2; --rt:#b91c1c; --rr:239,68,68; }
-.rp-sa      { --rc:#7c3aed; --rb:#ede9fe; --rt:#5b21b6; --rr:124,58,237; }
-
-/* Sección académica / bolsa */
-.reg-reveal {
-    border:1px dashed #c7d2fe; border-radius:.65rem;
-    background:#f5f3ff; padding:1.1rem 1.25rem; margin-top:.25rem;
-}
-.reg-reveal-blue {
-    border-color:#a5b4fc; background:#eef2ff;
-}
-.reg-reveal .sec-title {
-    font-size:.72rem; font-weight:700; text-transform:uppercase;
-    letter-spacing:.06em; color:#6d28d9;
-    display:flex; align-items:center; gap:.5rem;
-    margin-bottom:.9rem; padding-bottom:.5rem;
-    border-bottom:1px solid #ddd6fe;
-}
-.reg-reveal-blue .sec-title { color:#4338ca; border-color:#c7d2fe; }
-
-/* Sidebar CTA */
-.reg-submit {
-    background:#4e73df; border:none; border-radius:.5rem;
-    color:#fff; font-weight:700; font-size:.9rem;
-    padding:.65rem 1.5rem; width:100%; cursor:pointer;
-    transition:background .2s, transform .1s;
-}
-.reg-submit:hover { background:#3a5fd4; color:#fff; }
-.reg-submit:active { transform:scale(.98); }
-</style>
+@include('admin.usuarios._form_estilos')
 
 <div class="container-fluid py-3">
 
@@ -215,44 +123,7 @@
                     <i class="fas fa-shield-alt"></i> Rol del usuario
                 </div>
                 <div class="reg-card-body">
-                    @php
-                        $roleDefs = [
-                            'admin'        => ['Administrador',   'rp-admin',   'fas fa-users-cog'],
-                            'docente'      => ['Docente',         'rp-docente', 'fas fa-chalkboard-teacher'],
-                            'tutor'        => ['Tutor',           'rp-tutor',   'fas fa-chalkboard'],
-                            'alumno'       => ['Alumno FID',      'rp-alumno',  'fas fa-graduation-cap'],
-                            'alumnoB'      => ['Alumno PPD',      'rp-alumnoB', 'fas fa-user-graduate'],
-                            'adminB'       => ['Admin Bolsa',     'rp-adminB',  'fas fa-briefcase'],
-                            'inhabilitado' => ['Inhabilitado',    'rp-inh',     'fas fa-ban'],
-                        ];
-                    @endphp
-                    <div class="role-pill-wrap">
-                        @foreach($roleDefs as $val => [$lbl, $cls, $ico])
-                            <div class="role-pill {{ $cls }}">
-                                <input class="role-checkbox" type="checkbox"
-                                    name="roles[]" value="{{ $val }}" id="role_{{ $val }}"
-                                    {{ in_array($val, old('roles', [])) ? 'checked' : '' }}>
-                                <label for="role_{{ $val }}">
-                                    <i class="{{ $ico }} fa-xs"></i> {{ $lbl }}
-                                </label>
-                            </div>
-                        @endforeach
-                        @hasrole('super-admin')
-                            <div class="role-pill rp-sa">
-                                <input class="role-checkbox" type="checkbox"
-                                    name="roles[]" value="super-admin" id="role_superadmin"
-                                    {{ in_array('super-admin', old('roles', [])) ? 'checked' : '' }}>
-                                <label for="role_superadmin">
-                                    <i class="fas fa-crown fa-xs"></i> Super Admin
-                                </label>
-                            </div>
-                        @endhasrole
-                    </div>
-                    @error('roles')
-                        <div class="text-danger small mt-2">
-                            <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
-                        </div>
-                    @enderror
+                    @include('admin.usuarios._form_roles', ['seleccionados' => old('roles', [])])
                 </div>
             </div>
 
@@ -318,15 +189,7 @@
                                 <option value="0" {{ old('tiene_cursos_pendientes')==0 ? 'selected':'' }} selected>No</option>
                             </select>
                         </div>
-                        <div class="col-md-4 mb-3" id="cursos-pendientes"
-                             style="{{ old('tiene_cursos_pendientes')==1 ? '' : 'display:none;' }}">
-                            <label class="reg-label">Lista de cursos pendientes</label>
-                            <input type="text" name="pendiente" id="pendiente"
-                                class="form-control reg-input-solo @error('pendiente') is-invalid @enderror"
-                                value="{{ old('pendiente') }}"
-                                placeholder="Separados por comas">
-                            @error('pendiente')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                        </div>
+                        @include('admin._cursos_pendientes', ['actuales' => [], 'mostrar' => old('tiene_cursos_pendientes') == 1])
                     </div>
                 </div>
             </div>

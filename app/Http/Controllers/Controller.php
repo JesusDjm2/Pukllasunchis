@@ -28,6 +28,12 @@ class Controller extends BaseController
             return redirect()->route('tutor.dashboard');
         } elseif ($user->hasRole('adminB')) {
             return redirect()->route('trabajo.index');
+        } elseif ($user->hasRole('gestor-titulacion')) {
+            // Faltaban este caso y el de egresado: con sesión activa, el botón "Intranet"
+            // (login) los devolvía a la portada sin aviso.
+            return redirect()->route('titulacion.index');
+        } elseif ($user->condicion === 'Egresado') {
+            return redirect()->route('egresado.intranet');
         } elseif ($user->hasRole('alumnoB')) {
             return redirect()->route('ppd.index');
         } elseif ($user->hasRole('alumno')) {

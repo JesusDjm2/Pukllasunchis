@@ -37,6 +37,7 @@ return [
         'folders' => [
             'ejercicios' => env('GOOGLE_DRIVE_EJERCICIOS_FOLDER_ID'),
             'lecciones'  => env('GOOGLE_DRIVE_LECCIONES_FOLDER_ID'),
+            'taqe'       => env('GOOGLE_DRIVE_TAQE_FOLDER_ID'),
         ],
     ],
 
@@ -58,5 +59,12 @@ return [
             env('NOTIF_EMAIL_ADMIN'),
             env('NOTIF_EMAIL_COBRANZAS'),
         ]),
+    ],
+
+    'titulacion' => [
+        // Correo de la Unidad de Investigación: las respuestas de los
+        // egresados a los avisos de vencimiento del PTI llegan aquí
+        // (Reply-To). Sin él, responderían a MAIL_FROM_ADDRESS.
+        'correo_unidad' => env('TITULACION_CORREO_UNIDAD'),
     ],
 ];

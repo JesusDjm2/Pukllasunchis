@@ -6,6 +6,8 @@ use App\Models\Ciclo;
 use App\Models\Incidencia;
 use App\Models\Sugerencia;
 use App\Models\Tutoria;
+use App\Services\MensajeAlumnos;
+use App\Support\ContactoAlumno;
 use Illuminate\Http\Request;
 
 class TutorController extends Controller
@@ -44,8 +46,31 @@ class TutorController extends Controller
         abort_if(!$user->tutorCiclos->contains($cicloId), 403);
 
         $alumnos = $ciclo->alumnos()->with('user')->orderBy('apellidos')->get();
+        $contactos = $alumnos->mapWithKeys(fn ($a) => [$a->id => ContactoAlumno::desdeAlumno($a)]);
+        $puedeEscribir = (bool) $user->docente;
 
-        return view('tutor.ciclo', compact('ciclo', 'alumnos'));
+        return view('tutor.ciclo', compact('ciclo', 'alumnos', 'contactos', 'puedeEscribir'));
+    }
+
+    /** El tutor escribe por correo a uno, varios o todos los alumnos de un ciclo que tutorea. */
+    public function enviarMensaje(Request $request, Ciclo $ciclo)
+    {
+        $user = auth()->user();
+        abort_if(! $user->tutorCiclos->contains($ciclo->id), 403);
+
+        $ciclo->loadMissing('programa');
+        $permitidos = $ciclo->alumnos()->with('user')->get()->map(fn ($a) => ContactoAlumno::desdeAlumno($a));
+        $docente = $user->docente;
+
+        [$tipo, $texto] = MensajeAlumnos::desdeFormulario(
+            $request,
+            $permitidos,
+            $docente?->nombre ?: trim($user->name.' '.$user->apellidos),
+            $docente?->email ?: $user->email,
+            'Tutor(a) del Ciclo '.$ciclo->nombre.' · '.(optional($ciclo->programa)->nombre ?? ''),
+        );
+
+        return redirect()->route('tutor.ciclo', $ciclo->id)->with($tipo, $texto);
     }
 
     public function qrTutoria($cicloId, Request $request)

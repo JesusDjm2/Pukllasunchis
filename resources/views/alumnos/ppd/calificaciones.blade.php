@@ -58,7 +58,7 @@
         <div class="ppd-page-header">
             <div>
                 <span class="ppd-eyebrow"><i class="fa fa-book mr-1"></i>Ficha Técnica</span>
-                <h4 class="ppd-page-title">Calificaciones: {{ $alumno->programa->nombre }}</h4>
+                <h4 class="ppd-page-title">Calificaciones: {{ $programa->nombre ?? $alumno->programa->nombre }}</h4>
             </div>
             <a href="javascript:history.go(-1)" class="btn btn-sm btn-ppd-volver">
                 <i class="fa fa-arrow-left"></i> Volver

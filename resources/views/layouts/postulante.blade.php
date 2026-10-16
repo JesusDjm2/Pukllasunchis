@@ -102,15 +102,7 @@
                 </nav>
                 @yield('contenido')
             </div>
-            <footer class="sticky-footer bg-white">
-                <div class="container my-auto">
-                    <div class="copyright text-center my-auto">
-                        <span>Copyright &copy; {{ date('Y') }} | Hecho por <a class="text-primary"
-                                href="https://www.facebook.com/DjmWebMaster" target="_blank"
-                                rel="noopener noreferrer"> DJM2</a></span>
-                    </div>
-                </div>
-            </footer>
+            @include('layouts.partials.pie-intranet', ['area' => 'Postulantes'])
         </div>
 
     </div>

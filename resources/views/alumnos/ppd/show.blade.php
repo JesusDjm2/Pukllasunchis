@@ -70,12 +70,12 @@
                         </tr>
 
                       
-                        @if (isset($alumno->user->pendiente))
+                        @if ($alumno->user && $alumno->user->cursosPendientes())
                             <tr class="bg-danger text-white">
                                 <td colspan="2">Curso(s) a cargo:</td>
                                 <td colspan="2">
                                     @php
-                                        $cursos = explode(',', $alumno->user->pendiente);
+                                        $cursos = $alumno->user->cursosPendientes();
                                     @endphp
                                     @foreach ($cursos as $curso)
                                         <li>{{ trim($curso) }}</li>

@@ -66,18 +66,52 @@ class PeriodoActual extends Model
     }
 
     /**
-     * Visibilidad de notas para el alumno: solo mira la fecha de inicio, no la
-     * de cierre — una vez que empieza a verse una nota, se queda visible aunque
-     * ya haya cerrado la ventana en la que el docente puede editarla.
+     * Visibilidad de notas para el alumno: las ve recién al CERRARSE la ventana en la que el
+     * docente las registra (mientras está abierta todavía puede corregirlas). Sin fecha de
+     * cierre se usa la de inicio; sin ninguna fecha, se ven siempre (fail-open).
      */
     public function parcial1Visible(): bool
     {
-        return ! $this->calificaciones_parcial1_inicio || now()->greaterThanOrEqualTo($this->calificaciones_parcial1_inicio);
+        $desde = $this->fechaNotasVisibles(1);
+
+        return ! $desde || now()->greaterThanOrEqualTo($desde);
     }
 
     public function parcial2DesempenoVisible(): bool
     {
-        return ! $this->calificaciones_parcial2_inicio || now()->greaterThanOrEqualTo($this->calificaciones_parcial2_inicio);
+        $desde = $this->fechaNotasVisibles(2);
+
+        return ! $desde || now()->greaterThanOrEqualTo($desde);
+    }
+
+    /** Desde cuándo el alumno ve las notas: el día siguiente al cierre de la ventana. */
+    public function fechaNotasVisibles(int $parcial): ?\Carbon\Carbon
+    {
+        [$inicio, $cierre] = $parcial === 1
+            ? [$this->calificaciones_parcial1_inicio, $this->calificaciones_parcial1_cierre]
+            : [$this->calificaciones_parcial2_inicio, $this->calificaciones_parcial2_cierre];
+
+        return $cierre ? $cierre->copy()->addDay()->startOfDay() : $inicio?->copy();
+    }
+
+    /**
+     * Estado de una ventana de calificación para mostrarlo en listados:
+     * 'libre' (sin fechas), 'proximo', 'abierto' o 'cerrado'. Misma regla que dentroDeVentana().
+     */
+    public function estadoVentanaCalificacion(int $parcial): string
+    {
+        [$inicio, $cierre] = $parcial === 1
+            ? [$this->calificaciones_parcial1_inicio, $this->calificaciones_parcial1_cierre]
+            : [$this->calificaciones_parcial2_inicio, $this->calificaciones_parcial2_cierre];
+
+        if (! $inicio && ! $cierre) {
+            return 'libre';
+        }
+        if ($inicio && now()->lt($inicio)) {
+            return 'proximo';
+        }
+
+        return $this->dentroDeVentana($inicio, $cierre) ? 'abierto' : 'cerrado';
     }
 
     private function dentroDeVentana(?\Carbon\Carbon $inicio, ?\Carbon\Carbon $cierre): bool

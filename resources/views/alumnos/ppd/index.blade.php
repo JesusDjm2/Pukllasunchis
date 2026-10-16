@@ -93,6 +93,13 @@
             </script>
         @endif
 
+        {{-- Proceso de titulación (avance, o guía de pasos si ya puede iniciarlo) --}}
+        @if (! empty($seguimientoTitulacion))
+            <div class="mb-3">@include('titulacion._avance_alumno', ['seguimiento' => $seguimientoTitulacion])</div>
+        @elseif (! empty($guiaTitulacion))
+            @include('titulacion._guia_inicio')
+        @endif
+
         <div class="row" id="contenido-alumno">
             @if (auth()->user()->alumnoB)
                 <div class="col-lg-12">
@@ -321,7 +328,7 @@
                                         </tr>
 
                                         <!-- Cursos Pendientes (si existen) -->
-                                        @if (isset($alumno->user->pendiente) && !empty($alumno->user->pendiente))
+                                        @if ($alumno->user && $alumno->user->cursosPendientes())
                                             <tr class="bg-warning bg-gradient">
                                                 <td colspan="4" class="font-weight-bold text-white py-3">
                                                     <i class="fa fa-exclamation-triangle mr-2"></i>Cursos Pendientes
@@ -336,7 +343,7 @@
                                                     </small>
                                                     <div class="row">
                                                         @php
-                                                            $cursosPendientes = explode(',', $alumno->user->pendiente);
+                                                            $cursosPendientes = $alumno->user->cursosPendientes();
                                                         @endphp
                                                         @foreach ($cursosPendientes as $curso)
                                                             <div class="col-md-6 mb-2">

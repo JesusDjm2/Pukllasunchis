@@ -29,6 +29,67 @@
             border-color: var(--pg-border);
         }
 
+        /* ── Rango de fechas y ventanas de calificación ───────────────── */
+        .per-rango {
+            display: flex;
+            align-items: center;
+            gap: .35rem;
+            font-size: .8rem;
+            color: var(--pg-text);
+            white-space: nowrap;
+        }
+
+        .per-rango-flecha,
+        .per-rango-vacio {
+            color: var(--pg-muted);
+        }
+
+        .per-rango-vacio {
+            font-style: italic;
+            font-size: .76rem;
+        }
+
+        .per-cal-item + .per-cal-item {
+            margin-top: .45rem;
+            padding-top: .45rem;
+            border-top: 1px dashed var(--pg-border);
+        }
+
+        .per-cal-head {
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+            margin-bottom: .1rem;
+        }
+
+        .per-cal-label {
+            font-size: .7rem;
+            font-weight: 700;
+            color: var(--pg-muted);
+            text-transform: uppercase;
+            letter-spacing: .03em;
+            white-space: nowrap;
+        }
+
+        .per-estado {
+            display: inline-block;
+            font-size: .64rem;
+            font-weight: 700;
+            padding: .08rem .45rem;
+            border-radius: 999px;
+            white-space: nowrap;
+        }
+
+        .per-estado-abierto { background: #dcfce7; color: #15803d; }
+        .per-estado-proximo { background: #dbeafe; color: #1d4ed8; }
+        .per-estado-cerrado { background: #fee2e2; color: #b91c1c; }
+        .per-estado-libre   { background: #f1f5f9; color: #64748b; }
+
+        .dark-mode .per-estado-abierto, .dim-mode .per-estado-abierto { background: rgba(34, 197, 94, .18); color: #86efac; }
+        .dark-mode .per-estado-proximo, .dim-mode .per-estado-proximo { background: rgba(59, 130, 246, .2); color: #93c5fd; }
+        .dark-mode .per-estado-cerrado, .dim-mode .per-estado-cerrado { background: rgba(239, 68, 68, .18); color: #fca5a5; }
+        .dark-mode .per-estado-libre,   .dim-mode .per-estado-libre   { background: rgba(255, 255, 255, .08); color: #cbd5e1; }
+
         .dim-mode .pg-toggle-on {
             background: rgba(22, 163, 74, .12);
             color: #86efac;
@@ -230,8 +291,8 @@
                                     <th style="width:40px;">#</th>
                                     <th>Nombre</th>
                                     <th>Horario</th>
-                                    <th>Inicio</th>
-                                    <th>Fin</th>
+                                    <th>Periodo</th>
+                                    <th>Fechas de calificación</th>
                                     <th class="text-center">Estado</th>
                                     <th class="text-center">Form. Matrícula</th>
                                     <th class="text-center">Acciones</th>
@@ -257,19 +318,23 @@
                                                     archivo</span>
                                             @endif
                                         </td>
-                                        <td style="font-size:.82rem; color:var(--pg-text);">
-                                            @if ($p->fecha_inicio)
-                                                {{ \Carbon\Carbon::parse($p->fecha_inicio)->translatedFormat('d M. Y') }}
-                                            @else
-                                                <span style="color:var(--pg-muted);">—</span>
-                                            @endif
+                                        <td>
+                                            @include('admin.periodos._rango-fechas', ['inicio' => $p->fecha_inicio, 'cierre' => $p->fecha_cierre])
                                         </td>
-                                        <td style="font-size:.82rem; color:var(--pg-text);">
-                                            @if ($p->fecha_cierre)
-                                                {{ \Carbon\Carbon::parse($p->fecha_cierre)->translatedFormat('d M. Y') }}
-                                            @else
-                                                <span style="color:var(--pg-muted);">—</span>
-                                            @endif
+                                        <td>
+                                            @foreach ([1 => 'Parcial 1', 2 => 'Parcial 2 y Desempeño'] as $n => $etiqueta)
+                                                @php $estado = $p->estadoVentanaCalificacion($n); @endphp
+                                                <div class="per-cal-item">
+                                                    <div class="per-cal-head">
+                                                        <span class="per-cal-label">{{ $etiqueta }}</span>
+                                                        <span class="per-estado per-estado-{{ $estado }}">{{ ['libre' => 'Sin fechas', 'proximo' => 'Próximo', 'abierto' => 'Abierto', 'cerrado' => 'Cerrado'][$estado] }}</span>
+                                                    </div>
+                                                    @include('admin.periodos._rango-fechas', [
+                                                        'inicio' => $p->{"calificaciones_parcial{$n}_inicio"},
+                                                        'cierre' => $p->{"calificaciones_parcial{$n}_cierre"},
+                                                    ])
+                                                </div>
+                                            @endforeach
                                         </td>
                                         <td class="text-center">
                                             @if ($p->actual)
@@ -345,10 +410,9 @@
                                                     @endif
                                                 @endif
                                                 <form action="{{ route('periodoactual.destroy', $p) }}" method="POST"
-                                                    class="d-inline">
+                                                    class="d-inline" data-confirm="Se eliminará este período." data-confirm-danger>
                                                     @csrf @method('DELETE')
-                                                    <button type="submit" class="pg-btn pg-btn-del"
-                                                        onclick="return confirm('¿Eliminar este período?')">
+                                                    <button type="submit" class="pg-btn pg-btn-del">
                                                         <i class="fas fa-trash-alt fa-xs"></i>
                                                     </button>
                                                 </form>
@@ -404,8 +468,7 @@
                                     <th style="width:40px;">#</th>
                                     <th>Nombre</th>
                                     <th>Calendario</th>
-                                    <th>Inicio</th>
-                                    <th>Fin</th>
+                                    <th>Periodo</th>
                                     <th class="text-center">Estado</th>
                                     <th class="text-center">Form. Matrícula</th>
                                     <th class="text-center">Acciones</th>
@@ -431,19 +494,8 @@
                                                     archivo</span>
                                             @endif
                                         </td>
-                                        <td style="font-size:.82rem; color:var(--pg-text);">
-                                            @if ($p->fecha_inicio)
-                                                {{ \Carbon\Carbon::parse($p->fecha_inicio)->translatedFormat('d M. Y') }}
-                                            @else
-                                                <span style="color:var(--pg-muted);">—</span>
-                                            @endif
-                                        </td>
-                                        <td style="font-size:.82rem; color:var(--pg-text);">
-                                            @if ($p->fecha_cierre)
-                                                {{ \Carbon\Carbon::parse($p->fecha_cierre)->translatedFormat('d M. Y') }}
-                                            @else
-                                                <span style="color:var(--pg-muted);">—</span>
-                                            @endif
+                                        <td>
+                                            @include('admin.periodos._rango-fechas', ['inicio' => $p->fecha_inicio, 'cierre' => $p->fecha_cierre])
                                         </td>
                                         <td class="text-center">
                                             @if ($p->actual)
@@ -480,12 +532,23 @@
                                                     <i class="fas fa-lock fa-xs"></i> Deshabilitado
                                                 </button>
                                             @endif
+                                            @if ($p->actual)
+                                                {{-- PPD es anual pero se matricula por semestre (se cambia en Editar) --}}
+                                                <div class="small text-muted mt-1" title="Semestre en el que quedan matriculados quienes completen el formulario">
+                                                    Para el {{ ($p->semestre_matricula ?? 1) == 2 ? '2.º' : '1.er' }} semestre
+                                                </div>
+                                            @endif
                                         </td>
                                         <td>
                                             <div class="d-flex justify-content-center flex-wrap" style="gap:.3rem;">
                                                 <a href="{{ route('periodos.admin.ppd.edit', $p) }}"
                                                     class="pg-btn pg-btn-edit">
                                                     <i class="fas fa-pencil-alt fa-xs"></i> Editar
+                                                </a>
+                                                {{-- PPD dura un año: al terminarlo, su promoción pasa a egresada (con vista previa) --}}
+                                                <a href="{{ route('periodos.admin.ppd.cierre', $p) }}"
+                                                    class="pg-btn pg-btn-edit" title="Marcar a la promoción de este año como egresada (con vista previa)">
+                                                    <i class="fas fa-user-graduate fa-xs"></i> Cerrar año
                                                 </a>
                                                 @if ($p->actual)
                                                     <span
@@ -517,10 +580,9 @@
                                                     </a>
                                                 @endif
                                                 <form action="{{ route('periodos.admin.ppd.destroy', $p) }}"
-                                                    method="POST" class="d-inline">
+                                                    method="POST" class="d-inline" data-confirm="Se eliminará este período." data-confirm-danger>
                                                     @csrf @method('DELETE')
-                                                    <button type="submit" class="pg-btn pg-btn-del"
-                                                        onclick="return confirm('¿Eliminar este período?')">
+                                                    <button type="submit" class="pg-btn pg-btn-del">
                                                         <i class="fas fa-trash-alt fa-xs"></i>
                                                     </button>
                                                 </form>
@@ -529,7 +591,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="8" class="text-center"
+                                        <td colspan="7" class="text-center"
                                             style="padding:3rem 1rem; color:var(--pg-muted);">
                                             <i class="fas fa-clock fa-2x mb-2" style="opacity:.3; display:block;"></i>
                                             No hay períodos PPD registrados

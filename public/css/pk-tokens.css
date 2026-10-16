@@ -1,0 +1,66 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Tokens del sistema de diseño Pukllasunchis (pk) — un solo lugar para los colores
+   institucionales, la forma y la VARIACIÓN DE CADA ROL. Se carga primero en los layouts;
+   pk-sidebar.css, pk-ui.css y puklla-alert.css leen estas variables.
+
+   Variación por rol: el layout pone una clase en <body> (pk-rol-docente, pk-rol-admin,
+   pk-rol-superadmin) y aquí solo se redefinen variables. Temas: body.dark-mode y
+   body.dim-mode (tenue, paleta --lm-* de darkmode.css) tienen más especificidad que la
+   clase de rol, así que el tema siempre gana.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+    /* Institución */
+    --pk-oro: #cd9244;
+    --pk-oro-2: #b9823b;
+    --pk-marron: #9c6b37;
+    --pk-crema: #f6d39c;
+    --pk-petroleo: #33445a;
+    --pk-petroleo-2: #253449;
+    --pk-petroleo-3: #1f2b3a;
+
+    /* Estados */
+    --pk-ok: #0e9467;
+    --pk-warn: #a76d00;
+    --pk-mal: #c0392b;
+    --pk-info: #2563eb;
+
+    /* Forma */
+    --pk-radio-sm: 8px;
+    --pk-radio: 12px;
+    --pk-radio-lg: 16px;
+    --pk-sombra: 0 4px 24px rgba(15, 23, 42, .06);
+
+    /* Rol por defecto (lo redefine cada pk-rol-*) */
+    --pk-acento: var(--pk-petroleo);          /* botones de alertas, foco, enlaces de marca */
+    --pk-sb-fondo: var(--pk-petroleo);        /* fondo sólido del menú lateral */
+    --pk-sb-marca: var(--pk-oro);             /* icono activo, avatar */
+    --pk-sb-resalte: var(--pk-crema);         /* barra de la opción activa */
+}
+
+/* ── Variación por rol ── */
+.pk-rol-docente {
+    --pk-acento: var(--pk-oro-2);
+    --pk-sb-fondo: var(--pk-marron);
+}
+
+.pk-rol-admin {
+    --pk-acento: var(--pk-petroleo);
+    --pk-sb-fondo: var(--pk-petroleo);
+}
+
+.pk-rol-superadmin {
+    --pk-acento: var(--pk-petroleo);
+    --pk-sb-fondo: var(--pk-petroleo-2);
+}
+
+/* ── Temas (ganan sobre el rol) ── */
+body.dark-mode {
+    --pk-sb-fondo: #161b22;
+}
+
+body.dim-mode {
+    --pk-sb-fondo: var(--lm-bg-hondo, #1d151d);
+    --pk-sb-marca: var(--lm-acento, #f49ac1);
+    --pk-sb-resalte: var(--lm-acento-claro, #f9c2da);
+}

@@ -20,7 +20,7 @@
         rel="stylesheet">
     <link href="{{ asset('admin/css/sb-admin-2.min.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('admin/css/estilos.css') }}">
-    <link rel="stylesheet" href="{{ asset('admin/css/darkmode.css') }}">
+    <link rel="stylesheet" href="{{ asset('admin/css/darkmode.css') }}?v={{ filemtime(public_path('admin/css/darkmode.css')) }}">
     <style>
         .docente-panel #content-wrapper {
             background-color: #f8f9fc;
@@ -302,131 +302,196 @@
         .docente-ui-table-wide {
             min-width: 720px;
         }
+
     </style>
+    {{-- Sistema de diseño compartido: tokens (colores por rol/tema) y menú lateral pk-sb --}}
+    <link rel="stylesheet" href="{{ asset('css/pk-tokens.css') }}?v={{ filemtime(public_path('css/pk-tokens.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/pk-sidebar.css') }}?v={{ filemtime(public_path('css/pk-sidebar.css')) }}">
     @stack('styles')
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link rel="stylesheet" href="{{ asset('css/puklla-alert.css') }}?v={{ filemtime(public_path('css/puklla-alert.css')) }}">
 </head>
 
-<body id="page-top" class="docente-panel">
+<body id="page-top" class="docente-panel pk-rol-docente">
     <script>
         if (localStorage.getItem('puklla-theme') === 'dark') {
             document.body.classList.add('dark-mode');
         }
     </script>
     <div id="wrapper">
-        <ul class="navbar-nav bg-gradient-dark sidebar sidebar-dark accordion" id="accordionSidebar">
-            <a class="sidebar-brand d-flex align-items-center justify-content-center mb-3" href="{{ route('index') }}">
-                <div class="sidebar-brand-icon">
-                    <img class="pt-3" src="{{ asset('admin/img/Logo-Pukllasunchis-blanco.png') }}"
-                        alt="Logo Pukllasunchis" width="100%">
-                </div>
-                <div class="sidebar-brand-text mx-3">
-                    <!---Contenido solo para estilo a logo--->
-                </div>
+        @php
+            // ── Menú lateral docente: secciones por función, estado activo y roles del usuario ──
+            $usuarioSb = auth()->user();
+            $nombreSb = trim(($usuarioSb->name ?? '').' '.($usuarioSb->apellidos ?? '')) ?: ($docente->nombre ?? 'Docente');
+            $inicialesSb = collect(preg_split('/\s+/', trim(($usuarioSb->name ?? '').' '.($usuarioSb->apellidos ?? ''))))
+                ->filter()->take(2)->map(fn ($p) => mb_strtoupper(mb_substr($p, 0, 1)))->implode('') ?: 'D';
+            // Proyectos Integradores a cargo: solo cuando Taq'e está instalado (ruta presente)
+            $proyectosSb = Route::has('taqe.proyecto.index') && $docente && method_exists($docente, 'proyectosIntegradores')
+                ? $docente->proyectosIntegradores()->orderBy('nombre')->get()
+                : collect();
+            $esTutorSb = $usuarioSb?->hasRole('tutor') && Route::has('tutor.dashboard');
+            $esInvestigadorSb = $usuarioSb?->hasRole('investigador') && Route::has('taqe.investigador.index');
+            $esTitulacionSb = $usuarioSb?->hasRole('gestor-titulacion') && Route::has('titulacion.index');
+            $esBolsaSb = $usuarioSb?->hasRole('adminB');
+            $tieneFuncionesSb = $esTutorSb || $esInvestigadorSb || $esTitulacionSb || $esBolsaSb || $proyectosSb->isNotEmpty();
+        @endphp
+        <ul class="navbar-nav sidebar sidebar-dark accordion pk-sb" id="accordionSidebar">
+            <a class="pk-sb-marca" href="{{ route('index') }}" title="Ir a la página principal">
+                <img src="{{ asset('admin/img/Logo-Pukllasunchis-blanco.png') }}" alt="Logo Pukllasunchis">
+                <span class="pk-sb-area">Área docente</span>
             </a>
 
-            <li class="nav-item mt-2">
-                <a class="nav-link" href="{{ route('docente.show', $docente->id) }}">
-                    <i class="fas fa-user"></i>
-                    <span>Perfil</span>
+            {{-- Tarjeta del usuario: lleva al perfil --}}
+            @if ($docente)
+                <a class="pk-sb-perfil {{ request()->routeIs('docente.show') ? 'is-activo' : '' }}" href="{{ route('docente.show', $docente->id) }}" title="Mi perfil">
+                    <span class="pk-sb-avatar">{{ $inicialesSb }}</span>
+                    <span class="pk-sb-perfil-texto">
+                        <strong>{{ $nombreSb }}</strong>
+                        <small>Ver mi perfil</small>
+                    </span>
                 </a>
-            </li>
-            <li class="nav-item mt-2">
-                <a class="nav-link" href="{{ route('vistaDocente', ['docente' => $docente->id]) }}">
-                    <i class="fas fa-book"></i>
-                    <span>Cursos</span>
-                </a>
-            </li>
+            @endif
 
-            <li class="nav-item mt-2">
-                <a class="nav-link" href="{{ route('docente.alumnos', ['docente' => $docente->id]) }}">
-                    <i class="fas fa-user-graduate"></i>
-                    <span>Alumnos</span>
+            {{-- ── Docencia ── --}}
+            <div class="pk-sb-titulo">Docencia</div>
+            <li class="nav-item">
+                <a class="nav-link pk-sb-link {{ request()->routeIs('vistaDocente', 'competencias.calificar*', 'docente.curso.*', 'calificaciones.*') ? 'is-activo' : '' }}"
+                    href="{{ route('vistaDocente', ['docente' => $docente->id]) }}" title="Mis cursos">
+                    <span class="pk-sb-icono"><i class="fas fa-book"></i></span>
+                    <span class="pk-sb-texto">Mis cursos</span>
+                    @if ($cursosDocente->count())
+                        <span class="pk-sb-cuenta">{{ $cursosDocente->count() }}</span>
+                    @endif
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link pk-sb-link {{ request()->routeIs('docente.alumnos*') ? 'is-activo' : '' }}"
+                    href="{{ route('docente.alumnos', ['docente' => $docente->id]) }}" title="Mis alumnos">
+                    <span class="pk-sb-icono"><i class="fas fa-user-graduate"></i></span>
+                    <span class="pk-sb-texto">Mis alumnos</span>
                 </a>
             </li>
             @if ($cursosAsincronicos->isNotEmpty())
-                <hr class="sidebar-divider d-none d-md-block">
-                <li class="nav-item mt-2">
-                    <a class="nav-link {{ request()->routeIs('ce.docente.*') ? 'active' : '' }}"
-                        href="{{ route('ce.docente.index') }}">
-                        <i class="fas fa-graduation-cap"></i>
-                        <span>Cursos Asincrónicos</span>
+                <li class="nav-item">
+                    <a class="nav-link pk-sb-link {{ request()->routeIs('ce.docente.*') ? 'is-activo' : '' }}"
+                        href="{{ route('ce.docente.index') }}" title="Cursos asincrónicos">
+                        <span class="pk-sb-icono"><i class="fas fa-graduation-cap"></i></span>
+                        <span class="pk-sb-texto">Cursos asincrónicos</span>
                     </a>
                 </li>
             @endif
+            <li class="nav-item">
+                <a class="nav-link pk-sb-link {{ request()->routeIs('repositorio') ? 'is-activo' : '' }}"
+                    href="{{ route('repositorio', $docente->id) }}" title="Repositorio de sílabos">
+                    <span class="pk-sb-icono"><i class="fas fa-file-pdf"></i></span>
+                    <span class="pk-sb-texto">Repositorio de sílabos</span>
+                </a>
+            </li>
 
-            @role('adminB')
-                {{-- ── Bolsa de Trabajo ── --}}
-                <hr class="sidebar-divider d-none d-md-block">
-                <div class="sidebar-heading text-white-50 px-3 py-1"
-                    style="font-size:0.65rem;letter-spacing:.08em;text-transform:uppercase;">
-                    Bolsa de Trabajo
-                </div>
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#sBolsaDocente"
-                        aria-expanded="false" aria-controls="sBolsaDocente">
-                        <i class="fas fa-briefcase"></i>
-                        <span>Bolsa de trabajo</span>
-                    </a>
-                    <div id="sBolsaDocente" class="collapse" data-parent="#accordionSidebar">
-                        <div class="bg-white py-2 collapse-inner rounded">
-                            <h6 class="collapse-header">Ofertas y convocatorias:</h6>
-                            <a class="collapse-item" href="{{ route('bolsa-trabajo.ofertas.index') }}">
-                                <i class="fas fa-list fa-xs mr-1 text-muted"></i> Registros y filtros
-                            </a>
-                            <a class="collapse-item" href="{{ route('bolsa') }}" target="_blank" rel="noopener noreferrer">
-                                <i class="fas fa-external-link-alt fa-xs mr-1 text-muted"></i> Ver página pública
-                            </a>
+            {{-- ── Funciones adicionales según los roles de la cuenta ── --}}
+            @if ($tieneFuncionesSb)
+                <div class="pk-sb-titulo">Mis funciones</div>
+                @if ($esTutorSb)
+                    <li class="nav-item">
+                        <a class="nav-link pk-sb-link {{ request()->routeIs('tutor.*') ? 'is-activo' : '' }}" href="{{ route('tutor.dashboard') }}" title="Tutoría">
+                            <span class="pk-sb-icono"><i class="fas fa-chalkboard-teacher"></i></span>
+                            <span class="pk-sb-texto">Tutoría</span>
+                        </a>
+                    </li>
+                @endif
+                @if ($esInvestigadorSb)
+                    <li class="nav-item">
+                        <a class="nav-link pk-sb-link {{ request()->routeIs('taqe.investigador.*') ? 'is-activo' : '' }}" href="{{ route('taqe.investigador.index') }}" title="Taq'e — Seguimiento">
+                            <span class="pk-sb-icono"><i class="fas fa-microscope"></i></span>
+                            <span class="pk-sb-texto">Taq'e — Seguimiento</span>
+                        </a>
+                    </li>
+                @endif
+                @foreach ($proyectosSb as $pi)
+                    <li class="nav-item">
+                        <a class="nav-link pk-sb-link {{ request()->routeIs('taqe.proyecto.index') && (int) optional(request()->route('proyecto'))->id === $pi->id ? 'is-activo' : '' }}"
+                            href="{{ route('taqe.proyecto.index', $pi) }}" title="Proyecto Integrador: {{ $pi->nombre }}">
+                            <span class="pk-sb-icono"><i class="fas fa-project-diagram"></i></span>
+                            <span class="pk-sb-texto">
+                                {{ \Illuminate\Support\Str::limit($pi->nombre, 26) }}
+                                <small>{{ $pi->pivot->rol === 'encargado' ? 'Encargado' : 'Organizador' }} · Proyecto Integrador</small>
+                            </span>
+                        </a>
+                    </li>
+                @endforeach
+                @if ($esTitulacionSb)
+                    <li class="nav-item">
+                        <a class="nav-link pk-sb-link {{ request()->routeIs('titulacion.*') ? 'is-activo' : '' }}" href="{{ route('titulacion.index') }}" title="Proceso de titulación">
+                            <span class="pk-sb-icono"><i class="fas fa-award"></i></span>
+                            <span class="pk-sb-texto">Proceso de titulación</span>
+                        </a>
+                    </li>
+                @endif
+                @if ($esBolsaSb)
+                    <li class="nav-item">
+                        <a class="nav-link pk-sb-link collapsed {{ request()->routeIs('bolsa-trabajo.*') ? 'is-activo' : '' }}" href="#" data-toggle="collapse" data-target="#sBolsaDocente"
+                            aria-expanded="false" aria-controls="sBolsaDocente" title="Bolsa de trabajo">
+                            <span class="pk-sb-icono"><i class="fas fa-briefcase"></i></span>
+                            <span class="pk-sb-texto">Bolsa de trabajo</span>
+                        </a>
+                        <div id="sBolsaDocente" class="collapse" data-parent="#accordionSidebar">
+                            <div class="py-2 collapse-inner rounded">
+                                <h6 class="collapse-header">Ofertas y convocatorias</h6>
+                                <a class="collapse-item" href="{{ route('bolsa-trabajo.ofertas.index') }}">
+                                    <i class="fas fa-list fa-xs mr-1 text-muted"></i> Registros y filtros
+                                </a>
+                                <a class="collapse-item" href="{{ route('bolsa') }}" target="_blank" rel="noopener noreferrer">
+                                    <i class="fas fa-external-link-alt fa-xs mr-1 text-muted"></i> Ver página pública
+                                </a>
+                            </div>
                         </div>
-                    </div>
-                </li>
-            @endrole
+                    </li>
+                @endif
+            @endif
 
-            @role('tutor')
-                <hr class="sidebar-divider d-none d-md-block">
-                {{-- <div class="sidebar-heading text-white-50 px-3 py-1"
-                    style="font-size:0.65rem;letter-spacing:.08em;text-transform:uppercase;">
-                    Tutor
-                </div> --}}
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('tutor.dashboard') }}">
-                        <i class="fas fa-chalkboard-teacher"></i>
-                        <span>Tutoría</span>
-                    </a>
-                </li>
-                <hr class="sidebar-divider d-none d-md-block">
-            @endrole
-
-            <li class="nav-item mt-2">
-                <a class="nav-link collapsed" href="{{ route('repositorio', $docente->id) }}">
-                    <i class="fas fa-file-pdf"></i>
-                    <span>Repositorio de Sílabos</span>
+            {{-- ── Recursos ── --}}
+            <div class="pk-sb-titulo">Recursos</div>
+            <li class="nav-item">
+                <a class="nav-link pk-sb-link" target="_blank" rel="noopener"
+                    href="https://pukllavirtual.eesppukllasunchis.edu.pe/" title="Biblioteca virtual (abre en otra pestaña)">
+                    <span class="pk-sb-icono"><i class="fas fa-book-reader"></i></span>
+                    <span class="pk-sb-texto">Biblioteca virtual <small>Nueva</small></span>
+                    <i class="fas fa-external-link-alt pk-sb-externo"></i>
                 </a>
             </li>
-            <li class="nav-item mt-2">
-                <a class="nav-link collapsed" target="_blank"
-                    href="https://sites.google.com/pukllavirtual.edu.pe/bibliotecaeesppuklla/inicio">
-                    <i class="fas fa-book-open"></i>
-                    <span>Biblioteca</span>
+            <li class="nav-item">
+                <a class="nav-link pk-sb-link" target="_blank" rel="noopener"
+                    href="https://sites.google.com/pukllavirtual.edu.pe/bibliotecaeesppuklla/inicio" title="Biblioteca anterior en Google Sites (abre en otra pestaña)">
+                    <span class="pk-sb-icono"><i class="fas fa-book-open"></i></span>
+                    <span class="pk-sb-texto">Biblioteca <small>Google Sites</small></span>
+                    <i class="fas fa-external-link-alt pk-sb-externo"></i>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link pk-sb-link" target="_blank" rel="noopener" href="{{ route('index') }}" title="Ir a la web (abre en otra pestaña)">
+                    <span class="pk-sb-icono"><i class="fas fa-globe-americas"></i></span>
+                    <span class="pk-sb-texto">Ir a la web</span>
+                    <i class="fas fa-external-link-alt pk-sb-externo"></i>
                 </a>
             </li>
 
-            <hr class="sidebar-divider d-none d-md-block">
-            <li class="nav-item mt-3">
-                <a class="nav-link" target="_blank" href="{{ route('index') }}">
-                    <i class="fa fa-sm fa-home"></i> <span>Ir a la web</span>
+            {{-- ── Pie: cerrar sesión y contraer ── --}}
+            <div class="pk-sb-pie nav-item">
+                <a class="nav-link pk-sb-link pk-sb-salir" href="{{ route('logout') }}" title="Cerrar sesión"
+                    onclick="event.preventDefault(); document.getElementById('logout-form-docente').submit();">
+                    <span class="pk-sb-icono"><i class="fas fa-sign-out-alt"></i></span>
+                    <span class="pk-sb-texto">Cerrar sesión</span>
                 </a>
-            </li>
-            <hr class="sidebar-divider d-none d-md-block">
+                <div class="text-center d-none d-md-block">
+                    <button class="rounded-circle border-0" id="sidebarToggle" type="button"
+                        aria-label="Contraer menú lateral"></button>
+                </div>
+            </div>
 
             <form id="logout-form-docente" action="{{ route('logout') }}" method="POST" class="d-none"
                 aria-hidden="true">
                 @csrf
             </form>
-            <div class="text-center d-none d-md-inline">
-                <button class="rounded-circle border-0" id="sidebarToggle" type="button"
-                    aria-label="Contraer menú lateral"></button>
-            </div>
         </ul>
         <div id="content-wrapper" class="d-flex flex-column">
             <div id="content">
@@ -518,15 +583,7 @@
                 @endif
                 @yield('contenido')
             </div>
-            <footer class="sticky-footer bg-white border-top">
-                <div class="container my-auto px-2">
-                    <div class="copyright text-center my-auto small text-muted">
-                        <span>Copyright &copy; {{ date('Y') }} · <a class="text-primary"
-                                href="https://www.facebook.com/DjmWebMaster" target="_blank"
-                                rel="noopener noreferrer">DJM2</a> · v2026.2</span>
-                    </div>
-                </div>
-            </footer>
+            @include('layouts.partials.pie-intranet', ['area' => 'Área docente'])
         </div>
     </div>
     <a class="scroll-to-top rounded" href="#page-top">
@@ -551,6 +608,7 @@
         }
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.9.2/ckeditor.js"></script>
+    @include('partials.ckeditor-theme-sync')
     <script src="{{ asset('admin/vendor/jquery/jquery.min.js') }}"></script>
     <script src="{{ asset('admin/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('admin/vendor/jquery-easing/jquery.easing.min.js') }}"></script>
@@ -560,6 +618,7 @@
     <script src="{{ asset('admin/js/demo/chart-pie-demo.js') }}"></script>
     <script src="{{ asset('admin/js/djm.js') }}?v={{ filemtime(public_path('admin/js/djm.js')) }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('js/puklla-alert.js') }}?v={{ filemtime(public_path('js/puklla-alert.js')) }}"></script>
     @stack('scripts')
     
     <script>

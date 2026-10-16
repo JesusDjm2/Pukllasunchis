@@ -9,6 +9,7 @@ use App\Models\Programa;
 use App\Models\Sugerencia;
 use App\Models\User;
 use App\Notifications\SugerenciaCreada;
+use App\Notifications\SugerenciaRevisada;
 use App\Services\WhatsappService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -20,7 +21,7 @@ class SugerenciaController extends Controller
 
     public function publicCreate(Request $request)
     {
-        $programas = Programa::where('nombre', 'not like', '%PPD%')->orderBy('nombre')->get();
+        $programas = Programa::fid()->orderBy('nombre')->get();
 
         $cicloPreseleccionado = $request->filled('ciclo')
             ? Ciclo::with(['programa', 'tutores'])->find($request->query('ciclo'))
@@ -77,6 +78,32 @@ class SugerenciaController extends Controller
             ->with('success', '¡Gracias por tu sugerencia! Será revisada por el tutor de tu ciclo.');
     }
 
+    /** Sugerencia desde la intranet del alumno (la página la arma TutoriaController::alumnoPanel). */
+    public function alumnoStore(Request $request)
+    {
+        $alumno = TutoriaController::alumnoDeLaSesion();
+        abort_unless($alumno, 403);
+
+        $data = $request->validate([
+            'mensaje' => 'required|string|min:10|max:3000',
+        ], [
+            'mensaje.min' => 'Escribe al menos 10 caracteres para que tu tutor(a) entienda la idea.',
+        ]);
+
+        $sugerencia = Sugerencia::create($data + [
+            'programa_id' => $alumno->ciclo->programa_id,
+            'ciclo_id'    => $alumno->ciclo_id,
+            'alumno_id'   => $alumno->id,
+            'es_anonima'  => false,
+        ]);
+        $sugerencia->load(['alumno', 'ciclo.programa']);
+
+        $this->notificarTutores($sugerencia);
+
+        return redirect()->route('alumno.atencion', ['tab' => 'sugerencia'])
+            ->with('success', '¡Gracias por tu sugerencia! Tu tutor(a) la revisará.');
+    }
+
     // ── Panel admin ────────────────────────────────────────────────────────
 
     public function qr(Request $request)
@@ -112,11 +139,23 @@ class SugerenciaController extends Controller
             'notas_atencion' => 'nullable|string',
         ]);
 
+        $pasaARevisada = $sugerencia->estado !== 'revisada';
+
         $sugerencia->estado = $sugerencia->estado === 'revisada' ? 'pendiente' : 'revisada';
         $sugerencia->atendido_por = $sugerencia->estado === 'revisada' ? auth()->id() : null;
         $sugerencia->atendido_at = $sugerencia->estado === 'revisada' ? now() : null;
         $sugerencia->notas_atencion = $data['notas_atencion'] ?? $sugerencia->notas_atencion;
         $sugerencia->save();
+
+        // Solo al pasar a "revisada" (no al reabrirla), y nunca si es anónima
+        // o si el alumno identificado no tiene cuenta propia.
+        if ($pasaARevisada && ! $sugerencia->es_anonima && $sugerencia->alumno?->user) {
+            try {
+                $sugerencia->alumno->user->notify(new SugerenciaRevisada($sugerencia));
+            } catch (\Throwable $e) {
+                Log::warning("Notificación de sugerencia revisada a alumno {$sugerencia->alumno_id}: ".$e->getMessage());
+            }
+        }
 
         return back()->with('success', 'Sugerencia actualizada.');
     }

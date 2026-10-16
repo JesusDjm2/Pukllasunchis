@@ -16,14 +16,18 @@
     <link href="{{ asset('admin/css/sb-admin-2.min.css') }}" rel="stylesheet">
     {{-- Estilos globales + dark mode --}}
     <link rel="stylesheet" href="{{ asset('admin/css/estilos.css') }}">
-    <link rel="stylesheet" href="{{ asset('admin/css/darkmode.css') }}">
+    <link rel="stylesheet" href="{{ asset('admin/css/darkmode.css') }}?v={{ filemtime(public_path('admin/css/darkmode.css')) }}">
     {{-- Super Admin exclusivo (sin conflicto con admin.blade.php) --}}
     <link rel="stylesheet" href="{{ asset('admin/css/superadmin.css') }}">
+    {{-- Sistema de diseño compartido: tokens (colores por rol/tema) y menú lateral pk-sb --}}
+    <link rel="stylesheet" href="{{ asset('css/pk-tokens.css') }}?v={{ filemtime(public_path('css/pk-tokens.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/pk-sidebar.css') }}?v={{ filemtime(public_path('css/pk-sidebar.css')) }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link rel="stylesheet" href="{{ asset('css/puklla-alert.css') }}?v={{ filemtime(public_path('css/puklla-alert.css')) }}">
     @stack('styles')
 </head>
 
-<body id="page-top">
+<body id="page-top" class="pk-rol-superadmin">
 {{-- Aplicar tema guardado antes del render para evitar flash --}}
 <script>
     var _pt = localStorage.getItem('puklla-theme');
@@ -45,192 +49,8 @@
          SIDEBAR — Solo para Super Admin
          Clase .sidebar-sa → sin conflicto con .bg-gradient-superadmin
     ══════════════════════════════════════════════════════════ --}}
-    <ul class="navbar-nav sidebar sidebar-dark accordion sidebar-sa" id="accordionSidebar">
-
-        {{-- ── Logo ── --}}
-        <div class="sidebar-brand d-flex align-items-center justify-content-center">
-            <div class="sidebar-brand-icon">
-                <img src="{{ asset('admin/img/Logo-Pukllasunchis-blanco.png') }}"
-                     alt="Logo Pukllasunchis" class="sidebar-logo-img">
-            </div>
-        </div>
-
-        {{-- ── Badge de rol ── --}}
-        <div class="text-center mb-2 px-3">
-            <span class="sa-crown-badge">
-                <i class="fas fa-crown fa-xs"></i>&nbsp;Super Admin
-            </span>
-        </div>
-
-        <hr class="sidebar-divider sidebar-logo-divider">
-
-        {{-- ══ SECCIÓN: ADMINISTRACIÓN ══ --}}
-        <div class="sidebar-heading">
-            <i class="fas fa-shield-alt fa-xs"></i> Administración
-        </div>
-
-        {{-- Gestión académica --}}
-        <li class="nav-item">
-            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#saGestion"
-               aria-expanded="false" aria-controls="saGestion">
-                <i class="fas fa-fw fa-book"></i><span>Gestión académica</span>
-            </a>
-            <div id="saGestion" class="collapse" data-parent="#accordionSidebar">
-                <div class="bg-white py-2 collapse-inner rounded">
-                    <h6 class="collapse-header">Estructura del plan:</h6>
-                    <a class="collapse-item" href="{{ route('programa.index') }}">Programas</a>
-                    <a class="collapse-item" href="{{ route('ciclo.index') }}">Ciclos</a>
-                    <a class="collapse-item" href="{{ route('curso.index') }}">Cursos</a>
-                    <a class="collapse-item" href="{{ route('periodoactual.index') }}">Periodos</a>
-                </div>
-            </div>
-        </li>
-
-        {{-- Diseño curricular --}}
-        <li class="nav-item">
-            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#saDiseno"
-               aria-expanded="false" aria-controls="saDiseno">
-                <i class="fas fa-fw fa-layer-group"></i><span>Diseño curricular</span>
-            </a>
-            <div id="saDiseno" class="collapse" data-parent="#accordionSidebar">
-                <div class="bg-white py-2 collapse-inner rounded">
-                    <h6 class="collapse-header">Contenido pedagógico:</h6>
-                    <a class="collapse-item" href="{{ route('competencias.index') }}">Competencias</a>
-                    <a class="collapse-item" href="{{ route('capacidades.index') }}">Capacidades</a>
-                    <a class="collapse-item" href="{{ route('estandares.index') }}">Estándares</a>
-                    <a class="collapse-item" href="{{ route('enfoques.index') }}">Enfoques</a>
-                    <a class="collapse-item" href="{{ route('proyectos.index') }}">Proyectos integradores</a>
-                </div>
-            </div>
-        </li>
-
-        {{-- Perfiles --}}
-        <li class="nav-item">
-            <a class="nav-link {{ request()->routeIs('admin') ? 'active' : '' }}"
-               href="{{ route('admin') }}">
-                <i class="fas fa-fw fa-users-cog"></i><span>Perfiles</span>
-            </a>
-        </li>
-
-        {{-- Docentes --}}
-        <li class="nav-item">
-            <a class="nav-link {{ request()->routeIs('docente.index') ? 'active' : '' }}"
-               href="{{ route('docente.index') }}">
-                <i class="fas fa-fw fa-chalkboard-teacher"></i><span>Docentes</span>
-            </a>
-        </li>
-
-        {{-- Matriculados --}}
-        <li class="nav-item">
-            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#saAlumnos"
-               aria-expanded="false" aria-controls="saAlumnos">
-                <i class="fas fa-fw fa-graduation-cap"></i><span>Matriculados</span>
-            </a>
-            <div id="saAlumnos" class="collapse" data-parent="#accordionSidebar">
-                <div class="bg-white py-2 collapse-inner rounded">
-                    <h6 class="collapse-header">Gestionar alumnos:</h6>
-                    <a class="collapse-item" href="{{ route('adminAlumnos') }}">Alumnos FID</a>
-                    <a class="collapse-item" href="{{ route('alumnosppd') }}">Alumnos PPD</a>
-                    <a class="collapse-item" href="{{ route('alumnos.demograficos') }}">Datos demográficos</a>
-                </div>
-            </div>
-        </li>
-
-        {{-- Admisión --}}
-        <li class="nav-item">
-            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#saAdmision"
-               aria-expanded="false" aria-controls="saAdmision">
-                <i class="fas fa-fw fa-user-plus"></i><span>Admisión</span>
-            </a>
-            <div id="saAdmision" class="collapse" data-parent="#accordionSidebar">
-                <div class="bg-white py-2 collapse-inner rounded">
-                    <h6 class="collapse-header">Proceso de admisión:</h6>
-                    <a class="collapse-item" href="{{ route('regulares.index') }}">Postulantes FID</a>
-                    <a class="collapse-item" href="{{ route('postulantes.ppd.index') }}">Postulantes PPD</a>
-                    <a class="collapse-item" href="{{ route('admin-fids.index') }}">Admisiones</a>
-                </div>
-            </div>
-        </li>
-
-        <li class="nav-item">
-            <a class="nav-link {{ request()->routeIs('admin.reclamos.*') ? '' : 'collapsed' }}"
-               href="{{ route('admin.reclamos.todas') }}">
-                <i class="fas fa-fw fa-book"></i><span>Libro de Reclamaciones</span>
-            </a>
-        </li>
-
-        <li class="nav-item">
-            <a class="nav-link" href="{{ route('admin.seguimiento') }}">
-                <i class="fas fa-fw fa-hands-helping"></i><span>Seguimiento</span>
-            </a>
-        </li>
-
-        <hr class="sidebar-divider d-none d-md-block">
-
-        {{-- ══ SECCIÓN: GESTIÓN INTERNA ══ --}}
-        <div class="sidebar-heading">
-            <i class="fas fa-building fa-xs"></i> Gestión Interna
-        </div>
-        <li class="nav-item">
-            <a class="nav-link {{ request()->routeIs('bolsa-trabajo.*', 'admin.comunicados.*', 'admin.minkarikuy.*') ? '' : 'collapsed' }}"
-               href="#" data-toggle="collapse" data-target="#saBolsa"
-               aria-expanded="{{ request()->routeIs('bolsa-trabajo.*', 'admin.comunicados.*', 'admin.minkarikuy.*') ? 'true' : 'false' }}"
-               aria-controls="saBolsa">
-                <i class="fas fa-fw fa-briefcase"></i><span>Bolsa y Comunicados</span>
-            </a>
-            <div id="saBolsa" class="collapse {{ request()->routeIs('bolsa-trabajo.*', 'admin.comunicados.*', 'admin.minkarikuy.*') ? 'show' : '' }}"
-                 data-parent="#accordionSidebar">
-                <div class="bg-white py-2 collapse-inner rounded">
-                    <a class="collapse-item {{ request()->routeIs('bolsa-trabajo.*') ? 'active' : '' }}"
-                       href="{{ route('bolsa-trabajo.ofertas.index') }}">Bolsa de Trabajo</a>
-                    <a class="collapse-item {{ request()->routeIs('admin.comunicados.*') ? 'active' : '' }}"
-                       href="{{ route('admin.comunicados.index') }}">Comunicados</a>
-                    <a class="collapse-item {{ request()->routeIs('admin.minkarikuy.*') ? 'active' : '' }}"
-                       href="{{ route('admin.minkarikuy.index') }}">
-                        <i class="fas fa-qrcode fa-xs mr-1"></i>Mink'arikuy
-                    </a>
-                </div>
-            </div>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link {{ request()->routeIs('bitacora.*') ? 'active' : '' }}"
-               href="{{ route('bitacora.index') }}">
-                <i class="fas fa-fw fa-user-clock"></i><span>Bitácora de Accesos</span>
-            </a>
-        </li>
-
-        <hr class="sidebar-divider d-none d-md-block">
-
-        {{-- ══ SECCIÓN: CURSOS ESPECIALES ══ --}}
-        <div class="sidebar-heading">
-            <i class="fas fa-play-circle fa-xs"></i> Formación Asincrónica
-        </div>
-        <li class="nav-item">
-            <a class="nav-link {{ request()->routeIs('ce.cursos.*') ? 'active' : '' }}"
-               href="{{ route('ce.cursos.index') }}">
-                <i class="fas fa-fw fa-graduation-cap"></i><span>Cursos Asincrónicos</span>
-            </a>
-        </li>
-
-        <hr class="sidebar-divider d-none d-md-block">
-
-        {{-- ══ SECCIÓN: RECURSOS ══ --}}
-        <div class="sidebar-heading">
-            <i class="fas fa-book-open fa-xs"></i> Recursos
-        </div>
-        <li class="nav-item">
-            <a class="nav-link"
-               href="https://pukllavirtual.eesppukllasunchis.edu.pe/"
-               target="_blank" rel="noopener">
-                <i class="fas fa-fw fa-book-open"></i><span>Biblioteca</span>
-            </a>
-        </li>
-
-        <hr class="sidebar-divider d-none d-md-block">
-        <div class="text-center d-none d-md-inline">
-            <button class="rounded-circle border-0" id="sidebarToggle"></button>
-        </div>
-    </ul>
+    {{-- Menú lateral pk-sb compartido con layouts.admin (color por rol: pk-tokens.css) --}}
+    @include('layouts.partials.menu-lateral-gestion', ['area' => 'Super Admin', 'iconoArea' => 'fa-crown'])
     {{-- ══ FIN SIDEBAR ══ --}}
 
     {{-- ══════════════════════════════════════════════════════
@@ -321,20 +141,7 @@
         </div>
 
         {{-- ── FOOTER ── --}}
-        <footer class="sticky-footer bg-white">
-            <div class="container my-auto">
-                <div class="copyright text-center my-auto">
-                    <span>
-                        Copyright &copy; {{ date('Y') }}
-                        &nbsp;|&nbsp; Panel Super Admin
-                        &nbsp;|&nbsp;Hecho por
-                        <a class="text-primary" href="https://www.facebook.com/DjmWebMaster"
-                           target="_blank" rel="noopener noreferrer">DJM2</a>
-                        &nbsp;|&nbsp;Versión 2026.2
-                    </span>
-                </div>
-            </div>
-        </footer>
+        @include('layouts.partials.pie-intranet', ['area' => 'Panel Super Admin'])
     </div>
 </div>
 
@@ -352,9 +159,19 @@
         setTimeout(function () { pl.style.display = 'none'; }, 90);
     });
 </script>
+{{-- Bootstrap 5: lo usan vistas con layout dinámico (calificaciones, admisión,
+     postulantes: new bootstrap.Modal / data-bs-*). No quitar aunque el resto
+     del panel use Bootstrap 4 (data-toggle) del vendor de sb-admin-2. --}}
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.9.2/ckeditor.js"></script>
+@include('partials.ckeditor-theme-sync')
 <script src="{{ asset('admin/vendor/jquery/jquery.min.js') }}"></script>
 <script src="{{ asset('admin/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+{{-- Solo se carga Bootstrap 4 (vendor, jQuery-based) — es el único que usan
+     estas vistas (data-toggle/data-target/data-dismiss, sb-admin-2). El CDN
+     de Bootstrap 5 que estaba acá antes no lo usaba ninguna vista de este
+     layout (ninguna usa data-bs-*/btn-close/new bootstrap.X) y cargar los
+     dos bundles juntos podía pisarse entre sí en algunos clics. --}}
 <script src="{{ asset('admin/vendor/jquery-easing/jquery.easing.min.js') }}"></script>
 <script src="{{ asset('admin/js/sb-admin-2.min.js') }}"></script>
 <script src="{{ asset('admin/vendor/chart.js/Chart.min.js') }}"></script>
@@ -363,6 +180,7 @@
 <script src="{{ asset('admin/js/djm.js') }}?v={{ filemtime(public_path('admin/js/djm.js')) }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{{ asset('js/puklla-alert.js') }}?v={{ filemtime(public_path('js/puklla-alert.js')) }}"></script>
 
 {{-- Dark Mode Cycle: light → tenue → oscuro --}}
 <script>

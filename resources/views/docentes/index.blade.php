@@ -2,119 +2,510 @@
 @extends($layout)
 @section('contenido')
     <style>
-        .quitarCurso {
-            border: none;
-            color: #e74a3b;
-            background: none;
-            font-size: 13px
+        /* ══ Lista de docentes: pestañas FID/PPD + tarjetas ═════════════════ */
+        .dl {
+            --dl-card: #fff;
+            --dl-soft: #f8fafc;
+            --dl-border: #e5e7eb;
+            --dl-text: #1e293b;
+            --dl-muted: #64748b;
+            --dl-fid: #16a34a;
+            --dl-fid-soft: rgba(22, 163, 74, .08);
+            --dl-ppd: #d97706;
+            --dl-ppd-soft: rgba(217, 119, 6, .09);
+            --dl-accent: #0891b2;
+            --dl-shadow: 0 1px 2px rgba(15, 23, 42, .05), 0 4px 14px rgba(15, 23, 42, .04);
+            /* hereda el fondo de la página para que la barra fija (sticky) no quede transparente */
+            background: inherit;
         }
 
-        .quitarCurso:hover {
-            color: #e74a3b;
-            transition: 0.4s ease;
-            text-decoration: underline
+        .dark-mode .dl,
+        .dim-mode .dl {
+            --dl-card: rgba(255, 255, 255, .035);
+            --dl-soft: rgba(255, 255, 255, .03);
+            --dl-border: rgba(255, 255, 255, .1);
+            --dl-text: #e2e8f0;
+            --dl-muted: #94a3b8;
+            --dl-fid: #4ade80;
+            --dl-fid-soft: rgba(74, 222, 128, .1);
+            --dl-ppd: #fbbf24;
+            --dl-ppd-soft: rgba(251, 191, 36, .1);
+            --dl-accent: #22d3ee;
+            --dl-shadow: none;
         }
 
-        /* ── Diferenciación FID / PPD (funciona en light, dim y dark) ── */
-        .curso-fid-item {
-            border-left: 4px solid #28a745;
-            padding-left: 10px !important;
-            border-radius: 0 4px 4px 0;
-            background-color: rgba(40, 167, 69, 0.05);
-            transition: background-color .2s;
-        }
-        .curso-ppd-item {
-            border-left: 4px solid #f59e0b;
-            padding-left: 10px !important;
-            border-radius: 0 4px 4px 0;
-            background-color: rgba(245, 158, 11, 0.07);
-            transition: background-color .2s;
-        }
-
-        /* dark / dim mode: fondo un poco más visible */
-        .dark-mode .curso-fid-item,
-        .dim-mode  .curso-fid-item {
-            background-color: rgba(40, 167, 69, 0.13);
-        }
-        .dark-mode .curso-ppd-item,
-        .dim-mode  .curso-ppd-item {
-            background-color: rgba(245, 158, 11, 0.15);
-        }
-
-        /* Badges FID / PPD */
-        .badge-tipo {
-            font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-weight: 700;
-            letter-spacing: .04em;
-            vertical-align: middle;
-        }
-        .badge-fid {
-            background-color: #28a745;
-            color: #fff;
-        }
-        .badge-ppd {
-            background-color: #f59e0b;
-            color: #fff;
-        }
-        /* en modo oscuro los badges quedan con texto oscuro para contraste */
-        .dark-mode .badge-ppd,
-        .dim-mode  .badge-ppd {
-            background-color: #fbbf24;
-            color: #1a1a1a;
-        }
-        .dark-mode .badge-fid,
-        .dim-mode  .badge-fid {
-            background-color: #34d058;
-            color: #1a1a1a;
-        }
-
-        /* ── Progreso por periodo (Parcial 1 / Parcial 2 / Desempeño) ── */
-        .curso-progreso-fila {
+        /* Barra de herramientas */
+        .dl-toolbar {
+            position: sticky;
+            top: 0;
+            z-index: 5;
             display: flex;
-            align-items: center;
             flex-wrap: wrap;
-            gap: 20px;
-            width: 100%;
-            max-width: 560px;
+            align-items: center;
+            gap: .6rem;
+            padding: .65rem 0;
+            margin-bottom: .75rem;
+            background: inherit;
+            border-bottom: 1px solid var(--dl-border);
         }
-        .curso-progreso-item {
+
+        .dl-tabs {
+            display: inline-flex;
+            padding: 3px;
+            border-radius: 10px;
+            background: var(--dl-soft);
+            border: 1px solid var(--dl-border);
+        }
+
+        .dl-tab {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            border: 0;
+            background: transparent;
+            color: var(--dl-muted);
+            font-size: .8rem;
+            font-weight: 600;
+            padding: .38rem .85rem;
+            border-radius: 7px;
+            cursor: pointer;
+            transition: background .15s, color .15s, box-shadow .15s;
+        }
+
+        .dl-tab:hover { color: var(--dl-text); }
+        .dl-tab:focus-visible { outline: 2px solid var(--dl-accent); outline-offset: 1px; }
+
+        .dl-tab.is-active {
+            background: var(--dl-card);
+            color: var(--dl-text);
+            box-shadow: 0 1px 3px rgba(15, 23, 42, .12);
+        }
+
+        .dark-mode .dl-tab.is-active,
+        .dim-mode .dl-tab.is-active { background: rgba(255, 255, 255, .1); box-shadow: none; }
+
+        .dl-tab[data-tab="fid"].is-active { color: var(--dl-fid); }
+        .dl-tab[data-tab="ppd"].is-active { color: var(--dl-ppd); }
+
+        .dl-tab-count {
+            font-size: .68rem;
+            font-weight: 700;
+            padding: .05rem .45rem;
+            border-radius: 999px;
+            background: var(--dl-border);
+            color: var(--dl-muted);
+        }
+
+        .dl-search {
+            position: relative;
+            flex: 1 1 260px;
+            max-width: 420px;
+        }
+
+        .dl-search i {
+            position: absolute;
+            left: .7rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--dl-muted);
+            font-size: .78rem;
+        }
+
+        .dl-search input {
+            width: 100%;
+            height: 34px;
+            padding: 0 .75rem 0 2rem;
+            font-size: .82rem;
+            color: var(--dl-text);
+            background: var(--dl-card);
+            border: 1px solid var(--dl-border);
+            border-radius: 8px;
+        }
+
+        .dl-search input:focus {
+            outline: none;
+            border-color: var(--dl-accent);
+            box-shadow: 0 0 0 3px rgba(8, 145, 178, .15);
+        }
+
+        .dl-chip {
+            border: 1px solid var(--dl-border);
+            background: var(--dl-card);
+            color: var(--dl-muted);
+            font-size: .76rem;
+            font-weight: 600;
+            padding: .32rem .7rem;
+            border-radius: 999px;
+            cursor: pointer;
+        }
+
+        .dl-chip.is-active {
+            border-color: var(--dl-accent);
+            color: var(--dl-accent);
+            background: rgba(8, 145, 178, .08);
+        }
+
+        .dl-toolbar-end {
+            margin-left: auto;
             display: flex;
             align-items: center;
-            gap: 8px;
-            flex: 1;
-            min-width: 155px;
-            padding-right: 20px;
-            border-right: 1px solid rgba(0, 0, 0, .08);
+            gap: .5rem;
         }
-        .curso-progreso-item:last-child {
-            border-right: none;
-            padding-right: 0;
+
+        .dl-result {
+            font-size: .76rem;
+            color: var(--dl-muted);
+            white-space: nowrap;
         }
-        .curso-progreso-label {
-            font-size: 11px;
-            font-weight: 700;
-            width: 62px;
+
+        .dl-link-btn {
+            border: 0;
+            background: none;
+            color: var(--dl-accent);
+            font-size: .76rem;
+            font-weight: 600;
+            padding: .25rem .35rem;
+            cursor: pointer;
+        }
+
+        /* Tarjeta del docente */
+        .dl-card {
+            background: var(--dl-card);
+            border: 1px solid var(--dl-border);
+            border-radius: 12px;
+            box-shadow: var(--dl-shadow);
+            margin-bottom: .7rem;
+        }
+
+        .dl-head {
+            display: flex;
+            align-items: center;
+            gap: .85rem;
+            padding: .8rem 1rem;
+            border-radius: 11px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .dl-head:hover { background: var(--dl-soft); }
+
+        .dl-avatar {
+            width: 40px;
+            height: 40px;
             flex-shrink: 0;
-            text-transform: uppercase;
-            letter-spacing: .02em;
-        }
-        .curso-progreso-pct {
-            font-size: 11px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .8rem;
             font-weight: 700;
-            padding: 2px 8px;
+            color: #0e7490;
+            background: linear-gradient(135deg, #cffafe, #a5f3fc);
+        }
+
+        .dark-mode .dl-avatar,
+        .dim-mode .dl-avatar { color: #a5f3fc; background: rgba(34, 211, 238, .15); }
+
+        .dl-id { flex: 1 1 auto; min-width: 0; }
+
+        .dl-name {
+            font-size: .92rem;
+            font-weight: 700;
+            color: var(--dl-text);
+            line-height: 1.25;
+        }
+
+        .dl-sub {
+            font-size: .74rem;
+            color: var(--dl-muted);
+            display: flex;
+            flex-wrap: wrap;
+            gap: .15rem .65rem;
+            margin-top: .1rem;
+        }
+
+        .dl-sub a { color: inherit; text-decoration: underline dotted; }
+
+        /* Nombre, correo y DNI se pueden seleccionar y copiar aunque estén en la cabecera
+           del acordeón (que es clicable): al soltar con texto seleccionado no se abre/cierra. */
+        .dl-head .dl-name, .dl-head .dl-sub { user-select: text; }
+        .dl-head .dl-sub { cursor: auto; }
+        .dl-copiar {
+            border: 0; background: transparent; padding: 0 .15rem; margin-left: .15rem;
+            color: inherit; opacity: .45; cursor: pointer; font-size: .72rem; line-height: 1;
+            border-radius: 4px; transition: opacity .15s, color .15s;
+        }
+        .dl-copiar:hover, .dl-copiar:focus-visible { opacity: 1; color: var(--dl-accent, #4e73df); outline: 0; }
+        .dl-copiar.is-ok { opacity: 1; color: #16a34a; }
+
+        .dl-tutor {
+            display: inline-block;
+            font-size: .66rem;
+            font-weight: 700;
+            padding: .05rem .45rem;
             border-radius: 999px;
-            flex-shrink: 0;
-            min-width: 44px;
-            text-align: center;
+            background: rgba(100, 116, 139, .12);
+            color: var(--dl-muted);
+            margin-left: .2rem;
         }
-        .curso-progreso-pct-primary { background: rgba(13, 110, 253, .12); color: #0d6efd; }
-        .curso-progreso-pct-success { background: rgba(25, 135, 84, .12); color: #198754; }
-        .curso-progreso-pct-info    { background: rgba(13, 202, 240, .18); color: #0a97b0; }
-        .dark-mode .curso-progreso-item,
-        .dim-mode  .curso-progreso-item {
-            border-right-color: rgba(255, 255, 255, .12);
+
+        .dl-stats {
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+            flex-shrink: 0;
+        }
+
+        .dl-pill {
+            font-size: .7rem;
+            font-weight: 700;
+            padding: .18rem .55rem;
+            border-radius: 999px;
+            white-space: nowrap;
+        }
+
+        .dl-pill-fid { background: var(--dl-fid-soft); color: var(--dl-fid); }
+        .dl-pill-ppd { background: var(--dl-ppd-soft); color: var(--dl-ppd); }
+        .dl-pill-none { background: var(--dl-soft); color: var(--dl-muted); font-weight: 600; }
+
+        .dl-ring {
+            --p: 0;
+            width: 38px;
+            height: 38px;
+            flex-shrink: 0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: conic-gradient(var(--dl-accent) calc(var(--p) * 1%), var(--dl-border) 0);
+        }
+
+        .dl-ring span {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--dl-card);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .62rem;
+            font-weight: 700;
+            color: var(--dl-text);
+        }
+
+        .dark-mode .dl-ring span,
+        .dim-mode .dl-ring span { background: #1f2937; }
+
+        .dl-actions {
+            display: flex;
+            gap: .3rem;
+            flex-shrink: 0;
+        }
+
+        .dl-icon-btn {
+            width: 30px;
+            height: 30px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            border: 1px solid var(--dl-border);
+            background: var(--dl-card);
+            color: var(--dl-muted);
+            font-size: .75rem;
+            cursor: pointer;
+            text-decoration: none !important;
+            transition: color .15s, border-color .15s, background .15s;
+        }
+
+        .dl-icon-btn:hover { color: var(--dl-accent); border-color: var(--dl-accent); }
+        .dl-icon-btn.is-add:hover { color: var(--dl-fid); border-color: var(--dl-fid); }
+        .dl-icon-btn.is-danger:hover { color: #dc2626; border-color: #dc2626; background: rgba(220, 38, 38, .06); }
+
+        .dl-chevron {
+            color: var(--dl-muted);
+            font-size: .75rem;
+            transition: transform .2s;
+            flex-shrink: 0;
+        }
+
+        .dl-card.is-open .dl-chevron { transform: rotate(180deg); }
+
+        .dl-body {
+            display: none;
+            border-top: 1px solid var(--dl-border);
+            padding: .35rem 1rem .8rem;
+        }
+
+        .dl-card.is-open .dl-body { display: block; }
+
+        .dl-empty-cursos {
+            font-size: .8rem;
+            color: var(--dl-muted);
+            font-style: italic;
+            padding: .6rem 0 .1rem;
+        }
+
+        /* Grupo FID / PPD dentro de la tarjeta */
+        .dl-group-title {
+            display: flex;
+            align-items: center;
+            gap: .45rem;
+            font-size: .68rem;
+            font-weight: 800;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            margin: .75rem 0 .35rem;
+        }
+
+        .dl-group-title::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: var(--dl-border);
+        }
+
+        .dl-group[data-mod="fid"] .dl-group-title { color: var(--dl-fid); }
+        .dl-group[data-mod="ppd"] .dl-group-title { color: var(--dl-ppd); }
+
+        /* Fila de curso */
+        .dl-course {
+            display: grid;
+            grid-template-columns: minmax(200px, 1.3fr) minmax(220px, 1.4fr) auto;
+            align-items: center;
+            gap: .5rem 1.1rem;
+            padding: .55rem .7rem;
+            border-radius: 9px;
+            border-left: 3px solid transparent;
+        }
+
+        .dl-course + .dl-course { margin-top: .3rem; }
+        .dl-group[data-mod="fid"] .dl-course { border-left-color: var(--dl-fid); background: var(--dl-fid-soft); }
+        .dl-group[data-mod="ppd"] .dl-course { border-left-color: var(--dl-ppd); background: var(--dl-ppd-soft); }
+
+        .dl-course-name {
+            font-size: .84rem;
+            font-weight: 700;
+            color: var(--dl-text);
+            line-height: 1.3;
+        }
+
+        .dl-course-meta {
+            font-size: .72rem;
+            color: var(--dl-muted);
+            margin-top: .1rem;
+        }
+
+        .dl-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: .25rem;
+            font-size: .66rem;
+            font-weight: 700;
+            padding: .05rem .45rem;
+            border-radius: 999px;
+            margin-left: .35rem;
+            white-space: nowrap;
+        }
+
+        .dl-tag-ok { background: rgba(22, 163, 74, .12); color: var(--dl-fid); }
+        .dl-tag-warn { background: rgba(220, 38, 38, .1); color: #dc2626; }
+        .dl-tag-muted { background: var(--dl-soft); color: var(--dl-muted); }
+
+        .dark-mode .dl-tag-warn,
+        .dim-mode .dl-tag-warn { color: #fca5a5; }
+
+        .dl-bars { display: grid; gap: .28rem; }
+
+        .dl-bar {
+            display: grid;
+            grid-template-columns: 74px 1fr 38px;
+            align-items: center;
+            gap: .5rem;
+            font-size: .68rem;
+            font-weight: 700;
+        }
+
+        .dl-bar-track {
+            height: 6px;
+            border-radius: 999px;
+            background: rgba(100, 116, 139, .15);
+            overflow: hidden;
+        }
+
+        .dl-bar-fill { height: 100%; border-radius: 999px; }
+        .dl-bar-val { text-align: right; color: var(--dl-text); }
+
+        .dl-bar.p1 .dl-bar-label { color: #4e73df; }
+        .dl-bar.p1 .dl-bar-fill { background: #4e73df; }
+        .dl-bar.p2 .dl-bar-label { color: #17a673; }
+        .dl-bar.p2 .dl-bar-fill { background: #1cc88a; }
+        .dl-bar.p3 .dl-bar-label { color: #2c9faf; }
+        .dl-bar.p3 .dl-bar-fill { background: #36b9cc; }
+        .dl-bar.ppd .dl-bar-label { color: var(--dl-ppd); }
+        .dl-bar.ppd .dl-bar-fill { background: linear-gradient(90deg, #e5973a, #f5b45f); }
+
+        .dark-mode .dl-bar.p1 .dl-bar-label,
+        .dim-mode .dl-bar.p1 .dl-bar-label { color: #93a8f4; }
+        .dark-mode .dl-bar.p2 .dl-bar-label,
+        .dim-mode .dl-bar.p2 .dl-bar-label { color: #6ee7b7; }
+        .dark-mode .dl-bar.p3 .dl-bar-label,
+        .dim-mode .dl-bar.p3 .dl-bar-label { color: #7dd3e0; }
+
+        .dl-course-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: .3rem;
+        }
+
+        .dl-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+            font-size: .74rem;
+            font-weight: 600;
+            padding: .3rem .65rem;
+            border-radius: 7px;
+            border: 1px solid var(--dl-border);
+            background: var(--dl-card);
+            color: var(--dl-text);
+            white-space: nowrap;
+            text-decoration: none !important;
+        }
+
+        .dl-btn:hover { border-color: var(--dl-accent); color: var(--dl-accent); }
+
+        .dl-btn-primary {
+            background: #0891b2;
+            border-color: #0891b2;
+            color: #fff;
+        }
+
+        .dl-btn-primary:hover { background: #0e7490; border-color: #0e7490; color: #fff; }
+
+        .dl-menu .dropdown-item { font-size: .8rem; }
+        .dl-menu .dropdown-item i { width: 16px; }
+
+        .dl-empty {
+            text-align: center;
+            padding: 2.5rem 1rem;
+            color: var(--dl-muted);
+            font-size: .85rem;
+        }
+
+        @media (max-width: 991.98px) {
+            .dl-course { grid-template-columns: 1fr; }
+            .dl-course-actions { justify-content: flex-start; }
+        }
+
+        @media (max-width: 767.98px) {
+            .dl-head { flex-wrap: wrap; }
+            .dl-id { flex-basis: calc(100% - 60px); }
+            .dl-stats { order: 3; }
+            .dl-actions { order: 4; margin-left: auto; }
+            .dl-chevron { order: 2; }
+            .dl-toolbar-end { margin-left: 0; width: 100%; justify-content: space-between; }
         }
 
         /* ── "Exportar por ciclo": select + botón unificados ── */
@@ -140,18 +531,6 @@
         .export-ciclo-group .btn {
             border: none;
             border-radius: 0;
-        }
-
-        /* ── Lista de cursos por docente: sin viñetas, con sangría prolija en vez de espacio de punto perdido ── */
-        .lista-cursos-docente,
-        .lista-cursos-docente ul {
-            list-style: none;
-            margin: 0;
-            padding-left: 0;
-        }
-        .lista-cursos-docente ul {
-            padding-left: 14px;
-            margin-top: 4px;
         }
 
         /* ── Zona de riesgo: cierre de periodo ── */
@@ -485,396 +864,463 @@
             </div> --}}
 
         </div>
-        <!-- Buscador -->
-        <div class="row mb-3">
-            <div class="col-lg-12">
-                <input type="text" id="searchInput" class="form-control form-control-sm"
-                    placeholder="Buscar por nombre, dni o email...">
+        @php
+            // Agrupación FID / PPD y avance por docente, resuelto una sola vez para toda la vista.
+            // $avanceCursos llega de DocenteCOntroller@index (FID: [1,2,3]; PPD: float).
+            $avanceDe = fn ($curso) => is_array($a = $avanceCursos[$curso->id] ?? 0) ? array_sum($a) / 3 : (float) $a;
+            $fichas = $docentes->map(function ($docente) use ($avanceDe) {
+                $cursos = $docente->cursos->sortBy('nombre');
+                [$ppd, $fid] = $cursos->partition(fn ($c) => $c->esPpd());
+
+                return (object) [
+                    'docente' => $docente,
+                    'fid' => $fid->values(),
+                    'ppd' => $ppd->values(),
+                    'avance' => $cursos->isNotEmpty() ? round($cursos->avg($avanceDe)) : null,
+                    'esTutor' => (bool) $docente->user?->hasRole('tutor'),
+                ];
+            });
+            $nDocFid = $fichas->filter(fn ($f) => $f->fid->isNotEmpty())->count();
+            $nDocPpd = $fichas->filter(fn ($f) => $f->ppd->isNotEmpty())->count();
+            $iniciales = fn ($nombre) => collect(preg_split('/\s+/', trim($nombre)))
+                ->filter()->take(2)->map(fn ($p) => mb_strtoupper(mb_substr($p, 0, 1)))->implode('');
+        @endphp
+
+        <div class="dl" id="dl">
+            {{-- ── Barra: pestañas FID/PPD + búsqueda + filtros ── --}}
+            <div class="dl-toolbar">
+                <div class="dl-tabs" role="tablist" aria-label="Modalidad">
+                    <button type="button" class="dl-tab is-active" data-tab="todos" role="tab" aria-selected="true">
+                        Todos <span class="dl-tab-count">{{ $fichas->count() }}</span>
+                    </button>
+                    <button type="button" class="dl-tab" data-tab="fid" role="tab" aria-selected="false">
+                        <i class="fas fa-graduation-cap fa-xs"></i> FID <span class="dl-tab-count">{{ $nDocFid }}</span>
+                    </button>
+                    <button type="button" class="dl-tab" data-tab="ppd" role="tab" aria-selected="false">
+                        <i class="fas fa-user-graduate fa-xs"></i> PPD <span class="dl-tab-count">{{ $nDocPpd }}</span>
+                    </button>
+                </div>
+
+                <div class="dl-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="dlBuscar" placeholder="Buscar docente, DNI, email o curso…" autocomplete="off">
+                </div>
+
+                <button type="button" class="dl-chip" data-chip="tutor">
+                    <i class="fas fa-user-shield fa-xs mr-1"></i> Tutores
+                </button>
+                <button type="button" class="dl-chip" data-chip="sincursos">
+                    Sin cursos
+                </button>
+
+                <div class="dl-toolbar-end">
+                    <span class="dl-result"><span id="dlVisibles">{{ $fichas->count() }}</span> docentes</span>
+                    <button type="button" class="dl-link-btn" id="dlToggleTodo">Expandir todo</button>
+                </div>
             </div>
-        </div>
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="table-responsive table-container">
-                    <table class="table table-bordered" id="docentes-table">
-                        <thead class="thead-dark" style="position: sticky; top: 0; z-index: 2;">
-                            <tr>
-                                <th>ID</th>
-                                <th>Docente</th>
-                                <th>Cursos</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @php
-                                $docentesOrdenados = $docentes->sortBy('nombre');
-                                $docenteCount = 0;
-                            @endphp
-                            @foreach ($docentesOrdenados as $docente)
-                                @php
-                                    $docenteCount++;
-                                @endphp
-                                <tr style="border-bottom: 2.2px solid #919191 !important">
-                                    <td>{{ $docente->id }}</td>
-                                    <td>
-                                        <div style="position: sticky; top:2em">
-                                            <strong>{{ $docente->nombre }}</strong>
-                                            @php
-                                                $totalEnviadas = $docente->incidencias->count();
-                                                $totalRecibidas = $docente->user?->hasRole('tutor')
-                                                    ? $docente->user->tutorCiclos->sum(fn($c) => $c->incidencias->count())
-                                                    : 0;
-                                            @endphp
-                                            <ul class="mt-1">
-                                                <li>Email: {{ $docente->email }}</li>
-                                                <li>DNI: {{ $docente->dni }}</li>
-                                                @if ($docente->user?->hasRole('tutor'))
-                                                    <li class="mt-1">
-                                                        <span>
-                                                            <i class="fa fa-user-shield fa-xs mr-1"></i> Tutor:
-                                                        </span>
-                                                        @foreach ($docente->user->tutorCiclos as $cicloTutor)
-                                                            @php
-                                                                $progNombre = $cicloTutor->programa->nombre ?? '';
-                                                                $progAbrev = match(true) {
-                                                                    str_contains($progNombre, 'Inicial') => 'INI',
-                                                                    str_contains($progNombre, 'EIB')     => 'EIB',
-                                                                    default => $progNombre,
-                                                                };
-                                                            @endphp
-                                                            <span class="badge badge-pill badge-secondary ml-1"
-                                                                style="font-size:10px">
-                                                                @if ($progAbrev) {{ $progAbrev }} · @endif{{ $cicloTutor->nombre }}
-                                                            </span>
-                                                        @endforeach
-                                                    </li>
+
+            {{-- ── Tarjetas ── --}}
+            @foreach ($fichas as $f)
+                @php
+                    $docente = $f->docente;
+                    $totalEnviadas = $docente->incidencias->count();
+                    $totalRecibidas = $f->esTutor
+                        ? $docente->user->tutorCiclos->sum(fn ($c) => $c->incidencias->count())
+                        : 0;
+                    $textoBusqueda = \Illuminate\Support\Str::lower(\Illuminate\Support\Str::ascii(implode(' ', [
+                        $docente->nombre, $docente->email, $docente->dni,
+                        $f->fid->pluck('nombre')->implode(' '), $f->ppd->pluck('nombre')->implode(' '),
+                    ])));
+                @endphp
+                <div class="dl-card" data-fid="{{ $f->fid->count() }}" data-ppd="{{ $f->ppd->count() }}"
+                    data-tutor="{{ $f->esTutor ? 1 : 0 }}" data-buscar="{{ $textoBusqueda }}">
+
+                    <div class="dl-head" role="button" tabindex="0" aria-expanded="false">
+                        <div class="dl-avatar" aria-hidden="true">{{ $iniciales($docente->nombre) }}</div>
+
+                        <div class="dl-id">
+                            <div class="dl-name">
+                                {{ $docente->nombre }}
+                                @if ($f->esTutor)
+                                    @foreach ($docente->user->tutorCiclos as $cicloTutor)
+                                        @php
+                                            $progTutor = $cicloTutor->programa;
+                                            $progAbrev = match (true) {
+                                                (bool) $progTutor?->esInicial() => 'INI',
+                                                (bool) $progTutor?->eib => 'EIB',
+                                                default => $progTutor->nombre ?? '',
+                                            };
+                                        @endphp
+                                        <span class="dl-tutor" title="Tutor de este ciclo">
+                                            <i class="fas fa-user-shield fa-xs"></i>
+                                            @if ($progAbrev) {{ $progAbrev }} · @endif{{ $cicloTutor->nombre }}
+                                        </span>
+                                    @endforeach
+                                @endif
+                            </div>
+                            <div class="dl-sub">
+                                <span>
+                                    {{ $docente->email }}
+                                    @if ($docente->email)
+                                        <button type="button" class="dl-copiar" data-copiar="{{ $docente->email }}" data-que="Correo" title="Copiar correo" aria-label="Copiar correo"><i class="far fa-copy"></i></button>
+                                    @endif
+                                </span>
+                                <span>
+                                    DNI {{ $docente->dni }}
+                                    @if ($docente->dni)
+                                        <button type="button" class="dl-copiar" data-copiar="{{ $docente->dni }}" data-que="DNI" title="Copiar DNI" aria-label="Copiar DNI"><i class="far fa-copy"></i></button>
+                                    @endif
+                                </span>
+                                <span>
+                                    <i class="fas fa-exclamation-triangle fa-xs"></i>
+                                    @if ($totalEnviadas > 0)
+                                        <a href="{{ route('admin.docente.incidencias', $docente->id) }}" onclick="event.stopPropagation()">{{ $totalEnviadas }} incid. enviadas</a>
+                                    @else
+                                        0 incid. enviadas
+                                    @endif
+                                </span>
+                                @if ($f->esTutor)
+                                    <span>
+                                        <i class="fas fa-inbox fa-xs"></i>
+                                        @if ($totalRecibidas > 0)
+                                            <a href="{{ route('admin.docente.incidencias', $docente->id) }}" onclick="event.stopPropagation()">{{ $totalRecibidas }} recibidas</a>
+                                        @else
+                                            0 recibidas
+                                        @endif
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+
+                        <div class="dl-stats">
+                            @if ($f->fid->isEmpty() && $f->ppd->isEmpty())
+                                <span class="dl-pill dl-pill-none">Sin cursos</span>
+                            @else
+                                @if ($f->fid->isNotEmpty())
+                                    <span class="dl-pill dl-pill-fid" data-pill="fid">FID · {{ $f->fid->count() }}</span>
+                                @endif
+                                @if ($f->ppd->isNotEmpty())
+                                    <span class="dl-pill dl-pill-ppd" data-pill="ppd">PPD · {{ $f->ppd->count() }}</span>
+                                @endif
+                                <div class="dl-ring" style="--p: {{ $f->avance }};"
+                                    title="Avance promedio de calificación de sus cursos: {{ $f->avance }}%">
+                                    <span>{{ $f->avance }}%</span>
+                                </div>
+                            @endif
+                        </div>
+
+                        <div class="dl-actions" onclick="event.stopPropagation()">
+                            @if ($docente->user)
+                                <a href="{{ route('asignar', ['id' => $docente->user->id]) }}" class="dl-icon-btn is-add"
+                                    title="Asignar curso"><i class="fas fa-plus"></i></a>
+                                <a href="{{ route('adminEdit', ['id' => $docente->user->id]) }}" class="dl-icon-btn"
+                                    title="Editar docente"><i class="fas fa-pen"></i></a>
+                            @endif
+                            <button type="button" class="dl-icon-btn is-danger js-eliminar-docente" title="Eliminar docente"
+                                data-url="{{ route('docente.destroy', $docente->id) }}" data-nombre="{{ $docente->nombre }}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+
+                        <i class="fas fa-chevron-down dl-chevron" aria-hidden="true"></i>
+                    </div>
+
+                    <div class="dl-body">
+                        @if ($f->fid->isEmpty() && $f->ppd->isEmpty())
+                            <div class="dl-empty-cursos">
+                                No tiene cursos asignados.
+                                @if ($docente->user)
+                                    <a href="{{ route('asignar', ['id' => $docente->user->id]) }}">Asignar curso</a>
+                                @endif
+                            </div>
+                        @endif
+
+                        @foreach (['fid' => $f->fid, 'ppd' => $f->ppd] as $mod => $cursosMod)
+                            @continue($cursosMod->isEmpty())
+                            <div class="dl-group" data-mod="{{ $mod }}">
+                                <div class="dl-group-title">
+                                    <i class="fas {{ $mod === 'fid' ? 'fa-graduation-cap' : 'fa-user-graduate' }}"></i>
+                                    {{ strtoupper($mod) }} · {{ $cursosMod->count() }} {{ $cursosMod->count() === 1 ? 'curso' : 'cursos' }}
+                                </div>
+
+                                @foreach ($cursosMod as $curso)
+                                    @php
+                                        $esPPD = $mod === 'ppd';
+                                        $competenciasParaUrl = $curso->competenciasSeleccionadas->isNotEmpty()
+                                            ? $curso->competenciasSeleccionadas->pluck('id')->all()
+                                            : ($curso->competencias->count() <= 3 ? $curso->competencias->pluck('id')->all() : []);
+                                        $urlVerCalificaciones = route($esPPD ? 'competencias.calificar.ppd' : 'competencias.calificar', [
+                                            'docente' => $docente->id,
+                                            'curso' => $curso->id,
+                                            'competencias' => $competenciasParaUrl,
+                                        ]);
+                                        $esExtra = str_contains((string) $curso->cc, 'Extracurricular');
+                                        $urlSilabo = $curso->relacionsilabo
+                                            ? route('silabos.show', $curso->relacionsilabo->id)
+                                            : ($curso->silabo ? asset('docentes/silabo/' . $curso->silabo) : null);
+                                        $faltaElegirComp = $curso->competenciasSeleccionadas->isEmpty() && $curso->competencias->count() > 3;
+                                        $avance = $avanceCursos[$curso->id] ?? ($esPPD ? 0 : [1 => 0, 2 => 0, 3 => 0]);
+                                    @endphp
+                                    <div class="dl-course">
+                                        <div>
+                                            <div class="dl-course-name">{{ $curso->nombre }}</div>
+                                            <div class="dl-course-meta">
+                                                {{ $curso->ciclo->programa->nombre ?? '' }} · {{ $curso->ciclo->nombre ?? '' }}
+                                                @if ($esExtra)
+                                                    <span class="dl-tag dl-tag-muted">Extracurricular</span>
+                                                @elseif ($urlSilabo)
+                                                    <a href="{{ $urlSilabo }}" target="_blank" class="dl-tag dl-tag-ok" title="Ver sílabo">
+                                                        <i class="fas fa-file-alt"></i> Sílabo
+                                                    </a>
+                                                @else
+                                                    <span class="dl-tag dl-tag-warn"><i class="fas fa-file-excel"></i> Sin sílabo</span>
                                                 @endif
-                                                <li>
-                                                    @if ($totalEnviadas > 0)
-                                                        <a href="{{ route('admin.docente.incidencias', $docente->id) }}">
-                                                            <i class="fa fa-exclamation-triangle fa-xs mr-1"></i>
-                                                            Incidencias enviadas: {{ $totalEnviadas }}                                                             
-                                                        </a>
-                                                    @else
-                                                        <span>
-                                                            <i class="fa fa-exclamation-triangle fa-xs mr-1"></i>
-                                                            Incidencias enviadas: 0
-                                                        </span>
-                                                    @endif
-                                                </li>
-                                                @if ($docente->user?->hasRole('tutor'))
-                                                    <li>
-                                                        @if ($totalRecibidas > 0)
-                                                            <a href="{{ route('admin.docente.incidencias', $docente->id) }}">
-                                                                <i class="fa fa-inbox fa-xs mr-1"></i>
-                                                                Incidencias recibidas: {{ $totalRecibidas }}
-                                                            </a>
-                                                        @else
-                                                            <span>
-                                                                <i class="fa fa-inbox fa-xs mr-1"></i>
-                                                                Incidencias recibidas: 0
-                                                            </span>
-                                                        @endif
-                                                    </li>
+                                                @if ($faltaElegirComp)
+                                                    <a href="{{ route('curso.gestionar.competencias', $curso->id) }}" class="dl-tag dl-tag-warn"
+                                                        title="El curso tiene más de 3 competencias: hay que elegir cuáles se califican">
+                                                        <i class="fas fa-tasks"></i> Elegir competencias
+                                                    </a>
                                                 @endif
-                                            </ul>
+                                            </div>
                                         </div>
-                                    </td>
-                                    <td>
-                                        @if ($docente->cursos->count() > 0)
-                                            <ul class="lista-cursos-docente">
-                                                @php
-                                                    $cursosOrdenados = $docente->cursos->sortBy('nombre');
-                                                @endphp
-                                                @foreach ($cursosOrdenados as $curso)
-                                                    @php
-                                                        $esPPD = str_contains(
-                                                            $curso->ciclo->programa->nombre ?? '',
-                                                            'PPD',
-                                                        );
-                                                        $claseCurso = $esPPD ? 'curso-ppd-item' : 'curso-fid-item';
 
-                                                        $competenciasParaUrl = $curso->competenciasSeleccionadas->isNotEmpty()
-                                                            ? $curso->competenciasSeleccionadas->pluck('id')->all()
-                                                            : ($curso->competencias->count() <= 3
-                                                                ? $curso->competencias->pluck('id')->all()
-                                                                : []);
-
-                                                        $urlVerCalificaciones = $esPPD
-                                                            ? route('competencias.calificar.ppd', [
-                                                                'docente' => $docente->id,
-                                                                'curso' => $curso->id,
-                                                                'competencias' => $competenciasParaUrl,
-                                                            ])
-                                                            : route('competencias.calificar', [
-                                                                'docente' => $docente->id,
-                                                                'curso' => $curso->id,
-                                                                'competencias' => $competenciasParaUrl,
-                                                            ]);
-                                                    @endphp
-                                                    <li class="mb-2 {{ $claseCurso }}">
-                                                        <strong>{{ $curso->nombre }}</strong>
-                                                        <span class="badge-tipo {{ $esPPD ? 'badge-ppd' : 'badge-fid' }}">
-                                                            {{ $esPPD ? 'PPD' : 'FID' }}
-                                                        </span>
-                                                        (
-                                                        {{ $curso->ciclo->programa->nombre }} -
-                                                        {{ $curso->ciclo->nombre }})
-                                                        <ul>
-                                                            <li>
-                                                                @if (str_contains($curso->cc, 'Extracurricular') === false)
-                                                                    @if ($curso->relacionsilabo || $curso->silabo)
-                                                                        @php
-                                                                            $sílaboURL = $curso->relacionsilabo
-                                                                                ? route(
-                                                                                    'silabos.show',
-                                                                                    $curso->relacionsilabo->id,
-                                                                                )
-                                                                                : asset(
-                                                                                    'docentes/silabo/' . $curso->silabo,
-                                                                                );
-                                                                        @endphp
-                                                                        <a href="{{ $sílaboURL }}" class="mb-2"
-                                                                            style="font-size: 13px" target="_blank">
-                                                                            Ver Sílabo <i class="fa fa-pdf"></i>
-                                                                        </a>
-                                                                    @else
-                                                                        <span style="font-size: 13px">No hay sílabo
-                                                                            disponible.</span>
-                                                                    @endif
-                                                                @else
-                                                                    <span style="font-size: 13px">Sin sílabo por
-                                                                        Extracurricular!</span>
-                                                                @endif
-                                                            </li>
-                                                        </ul>
-                                                        @if ($curso->competenciasSeleccionadas->count() > 0)
-                                                            <ul>
-                                                                <li>
-                                                                    <a style="font-size: 13px"
-                                                                        href="{{ route('curso.gestionar.competencias', $curso->id) }}"
-                                                                        class="text-primary">
-                                                                        Editar competencias a calificar <i
-                                                                            class="fa fa-sm fa-tasks"></i>
-                                                                    </a>
-                                                                </li>
-                                                            </ul>
-                                                        @elseif ($curso->competencias->count() > 3)
-                                                            <ul>
-                                                                <li>
-                                                                    <a href="{{ route('curso.gestionar.competencias', $curso->id) }}"
-                                                                        class="text-danger">
-                                                                        <small>Elegir competencias (max 3) <i
-                                                                                class="fa fa-sm fa-tasks"></i></small>
-                                                                    </a>
-                                                                </li>
-                                                            </ul>
-                                                        @endif
-                                                        <ul>
-                                                                <li>
-                                                                    <a href="{{ $urlVerCalificaciones }}" class="text-primary"
-                                                                        id="{{ $curso->id }}"
-                                                                        style="font-size:14px; text-decoration: underline; cursor: pointer;">
-                                                                        Ver calificaciones
-                                                                    </a>
-                                                                    @if (!$esPPD)
-                                                                        <ul>
-                                                                            <li>
-                                                                                <div class="curso-progreso-fila">
-                                                                                    <div class="curso-progreso-item">
-                                                                                        <span class="curso-progreso-label text-primary">Parcial 1</span>
-                                                                                        <div class="progress flex-fill" style="height: 8px;">
-                                                                                            <div class="progress-bar bg-primary"
-                                                                                                role="progressbar"
-                                                                                                style="width: {{ $curso->porcentajePeriodo(1) }}%;"
-                                                                                                aria-valuenow="{{ $curso->porcentajePeriodo(1) }}"
-                                                                                                aria-valuemin="0"
-                                                                                                aria-valuemax="100">
-                                                                                            </div>
-                                                                                        </div>
-                                                                                        <span class="curso-progreso-pct curso-progreso-pct-primary">
-                                                                                            {{ number_format($curso->porcentajePeriodo(1), 0) }}%
-                                                                                        </span>
-                                                                                    </div>
-
-                                                                                    <div class="curso-progreso-item">
-                                                                                        <span class="curso-progreso-label text-success">Parcial 2</span>
-                                                                                        <div class="progress flex-fill" style="height: 8px;">
-                                                                                            <div class="progress-bar bg-success"
-                                                                                                role="progressbar"
-                                                                                                style="width: {{ $curso->porcentajePeriodo(2) }}%;"
-                                                                                                aria-valuenow="{{ $curso->porcentajePeriodo(2) }}"
-                                                                                                aria-valuemin="0"
-                                                                                                aria-valuemax="100">
-                                                                                            </div>
-                                                                                        </div>
-                                                                                        <span class="curso-progreso-pct curso-progreso-pct-success">
-                                                                                            {{ number_format($curso->porcentajePeriodo(2), 0) }}%
-                                                                                        </span>
-                                                                                    </div>
-
-                                                                                    <div class="curso-progreso-item">
-                                                                                        <span class="curso-progreso-label text-info">Desempeño</span>
-                                                                                        <div class="progress flex-fill" style="height: 8px;">
-                                                                                            <div class="progress-bar bg-info"
-                                                                                                role="progressbar"
-                                                                                                style="width: {{ $curso->porcentajePeriodo(3) }}%;"
-                                                                                                aria-valuenow="{{ $curso->porcentajePeriodo(3) }}"
-                                                                                                aria-valuemin="0"
-                                                                                                aria-valuemax="100">
-                                                                                            </div>
-                                                                                        </div>
-                                                                                        <span class="curso-progreso-pct curso-progreso-pct-info">
-                                                                                            {{ number_format($curso->porcentajePeriodo(3), 0) }}%
-                                                                                        </span>
-                                                                                    </div>
-                                                                                </div>
-                                                                            </li>
-                                                                        </ul>
-                                                                    @else
-                                                                        @php $pctPPD = $curso->porcentajePPD(); @endphp
-                                                                        <ul>
-                                                                            <li>
-                                                                                <div class="d-flex align-items-center"
-                                                                                    style="gap: 6px; width: 100%; max-width: 400px;">
-                                                                                    <span style="font-size: 12px; width: 80px; font-weight:600; color:#d97706;">Calificado:</span>
-                                                                                    <div class="progress flex-fill" style="height: 8px;">
-                                                                                        <div class="progress-bar"
-                                                                                            role="progressbar"
-                                                                                            style="width: {{ $pctPPD }}%; background-color: #f59e0b;"
-                                                                                            aria-valuenow="{{ $pctPPD }}"
-                                                                                            aria-valuemin="0"
-                                                                                            aria-valuemax="100">
-                                                                                        </div>
-                                                                                    </div>
-                                                                                    <small style="width: 48px; text-align: right; color:#d97706; font-weight:600;">
-                                                                                        {{ number_format($pctPPD, 2) }}%
-                                                                                    </small>
-                                                                                </div>
-                                                                            </li>
-                                                                        </ul>
-                                                                    @endif
-                                                                </li>
-                                                        </ul>
-                                                        <ul>
-                                                            <li>
-                                                                <form
-                                                                    action="{{ route('docente.curso.eliminar', [$docente->id, $curso->id]) }}"
-                                                                    method="POST" style="display:inline;">
-                                                                    @csrf
-                                                                    @method('DELETE')
-                                                                    <button type="submit" class="quitarCurso"
-                                                                        title="Quitar Curso asignado"
-                                                                        style="margin-left: -3px"
-                                                                        onclick="return confirm('¿Estás seguro de que deseas quitar este curso?')">
-                                                                        Quitar Curso <i class="fa fa-sm fa-trash"></i>
-                                                                    </button>
-                                                                </form>
-                                                            </li>
-                                                        </ul>
-                                                    </li>
+                                        <div class="dl-bars">
+                                            @if ($esPPD)
+                                                <div class="dl-bar ppd">
+                                                    <span class="dl-bar-label">Calificado</span>
+                                                    <div class="dl-bar-track"><div class="dl-bar-fill" style="width: {{ $avance }}%;"></div></div>
+                                                    <span class="dl-bar-val">{{ number_format($avance, 0) }}%</span>
+                                                </div>
+                                            @else
+                                                @foreach ([1 => 'Parcial 1', 2 => 'Parcial 2', 3 => 'Desempeño'] as $n => $etiqueta)
+                                                    <div class="dl-bar p{{ $n }}">
+                                                        <span class="dl-bar-label">{{ $etiqueta }}</span>
+                                                        <div class="dl-bar-track"><div class="dl-bar-fill" style="width: {{ $avance[$n] }}%;"></div></div>
+                                                        <span class="dl-bar-val">{{ number_format($avance[$n], 0) }}%</span>
+                                                    </div>
                                                 @endforeach
-                                            </ul>
-                                        @else
-                                            <span class="text-muted">No hay cursos asignados</span>
-                                        @endif
-                                    </td>
-                                    <td style="width: 160px">
-                                        @if ($docente->user)
-                                            <a href="{{ route('asignar', ['id' => $docente->user->id]) }}"
-                                                class="btn btn-success btn-sm" title="Asignar Curso">
-                                                <i class="fa fa-plus fa-sm"></i>
+                                            @endif
+                                        </div>
+
+                                        <div class="dl-course-actions">
+                                            <a href="{{ $urlVerCalificaciones }}" class="dl-btn dl-btn-primary">
+                                                <i class="fas fa-clipboard-check"></i> Calificaciones
                                             </a>
-                                        @else
-                                            <span class="text-danger">No User Assigned</span>
-                                        @endif
-                                        <a href="{{ route('adminEdit', ['id' => $docente->user->id]) }}"
-                                            class="btn btn-info btn-sm">
-                                            <i class="fa fa-pen fa-sm"></i>
-                                        </a>
-                                        {{-- <a href="{{ route('admin.docente.incidencias', $docente->id) }}"
-                                            class="btn btn-warning btn-sm"
-                                            title="Ver incidencias{{ $docente->user?->hasRole('tutor') ? ' (Tutor)' : '' }}">
-                                            <i class="fa fa-exclamation-triangle fa-sm"></i>
-                                        </a> --}}
-
-                                        <button type="button" class="btn btn-danger btn-sm" data-toggle="modal"
-                                            data-target="#confirmDeleteModal">
-                                            <i class="fa fa-sm fa-trash"></i>
-                                        </button>
-
-                                        <!-- Modal de confirmación -->
-                                        <div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog"
-                                            aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
-                                            <div class="modal-dialog" role="document">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar
-                                                            eliminación</h5>
-                                                        <button type="button" class="close" data-dismiss="modal"
-                                                            aria-label="Close">
-                                                            <span aria-hidden="true">&times;</span>
+                                            <div class="dropdown">
+                                                <button type="button" class="dl-icon-btn" data-toggle="dropdown" aria-haspopup="true"
+                                                    aria-expanded="false" title="Más acciones"><i class="fas fa-ellipsis-h"></i></button>
+                                                <div class="dropdown-menu dropdown-menu-right shadow dl-menu">
+                                                    @if ($urlSilabo && ! $esExtra)
+                                                        <a class="dropdown-item" href="{{ $urlSilabo }}" target="_blank">
+                                                            <i class="fas fa-file-alt text-primary"></i> Ver sílabo
+                                                        </a>
+                                                    @endif
+                                                    @if ($curso->competenciasSeleccionadas->isNotEmpty() || $faltaElegirComp)
+                                                        <a class="dropdown-item" href="{{ route('curso.gestionar.competencias', $curso->id) }}">
+                                                            <i class="fas fa-tasks text-info"></i>
+                                                            {{ $faltaElegirComp ? 'Elegir competencias (máx. 3)' : 'Editar competencias a calificar' }}
+                                                        </a>
+                                                    @endif
+                                                    <div class="dropdown-divider"></div>
+                                                    <form action="{{ route('docente.curso.eliminar', [$docente->id, $curso->id]) }}" method="POST"
+                                                        onsubmit="return confirm('¿Quitar «{{ addslashes($curso->nombre) }}» de {{ addslashes($docente->nombre) }}?')">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="dropdown-item text-danger">
+                                                            <i class="fas fa-unlink"></i> Quitar curso
                                                         </button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        ¿Estás seguro de que deseas eliminar este docente?
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary"
-                                                            data-dismiss="modal">Cancelar</button>
-                                                        <form action="{{ route('docente.destroy', $docente->id) }}"
-                                                            method="POST" style="display:inline;">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit"
-                                                                class="btn btn-danger">Eliminar</button>
-                                                        </form>
-                                                    </div>
+                                                    </form>
                                                 </div>
                                             </div>
                                         </div>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endforeach
+
+            <div class="dl-empty" id="dlVacio" style="display:none;">
+                <i class="fas fa-search mb-2 d-block" style="font-size:1.4rem;opacity:.35;"></i>
+                Ningún docente coincide con los filtros.
+            </div>
+        </div>
+
+        {{-- Modal ÚNICO de eliminación: recibe el docente desde el botón que lo abre (antes había
+             un modal por fila con el mismo id y siempre se abría el del primer docente). --}}
+        <div class="modal fade" id="modalEliminarDocente" tabindex="-1" role="dialog" aria-labelledby="modalEliminarDocenteLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalEliminarDocenteLabel">Eliminar docente</h5>
+                        <button type="button" class="close" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Cerrar">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        ¿Seguro que deseas eliminar a <strong id="modalEliminarDocenteNombre"></strong>? Esta acción no se puede deshacer.
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal" data-bs-dismiss="modal">Cancelar</button>
+                        <form id="formEliminarDocente" action="" method="POST" class="d-inline">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-danger">Eliminar</button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
     <script>
-        document.getElementById('searchInput').addEventListener('keyup', function() {
-            var searchValue = normalizeString(this.value.toLowerCase());
-            var searchTerms = searchValue.split(' ').filter(term => term.length >
-                0);
-            var tableRows = document.querySelectorAll('#docentes-table tbody tr');
+        document.addEventListener('DOMContentLoaded', function () {
+            var cards = Array.prototype.slice.call(document.querySelectorAll('#dl .dl-card'));
+            var tabs = document.querySelectorAll('#dl .dl-tab');
+            var chips = document.querySelectorAll('#dl .dl-chip');
+            var buscar = document.getElementById('dlBuscar');
+            var visiblesEl = document.getElementById('dlVisibles');
+            var vacioEl = document.getElementById('dlVacio');
+            var toggleTodo = document.getElementById('dlToggleTodo');
+            var estado = { tab: 'todos', tutor: false, sincursos: false, q: '' };
 
-            tableRows.forEach(function(row) {
-                var docenteName = normalizeString(row.querySelector('td:nth-child(2) strong').innerText
-                    .toLowerCase());
-                var docenteEmail = normalizeString(row.querySelector('td:nth-child(2) ul li:nth-child(1)')
-                    .innerText.toLowerCase());
-                var docenteDni = normalizeString(row.querySelector('td:nth-child(2) ul li:nth-child(2)')
-                    .innerText.toLowerCase());
+            try {
+                var guardada = localStorage.getItem('docentes.tab');
+                if (['todos', 'fid', 'ppd'].indexOf(guardada) !== -1) estado.tab = guardada;
+            } catch (e) {}
 
-                var cursosAsignados = Array.from(row.querySelectorAll('td:nth-child(3) ul li'))
-                    .map(li => normalizeString(li.innerText.toLowerCase()))
-                    .join(' ');
+            function normalizar(s) {
+                return (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+            }
 
-                var matches = searchTerms.every(term =>
-                    docenteName.includes(term) || docenteEmail.includes(term) || docenteDni.includes(
-                        term) || cursosAsignados.includes(term)
-                );
+            function abrir(card, abierta) {
+                card.classList.toggle('is-open', abierta);
+                card.querySelector('.dl-head').setAttribute('aria-expanded', abierta ? 'true' : 'false');
+            }
 
-                if (matches) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
+            function aplicar() {
+                var terminos = normalizar(estado.q).split(/\s+/).filter(Boolean);
+                var visibles = 0;
+
+                cards.forEach(function (card) {
+                    var nFid = +card.dataset.fid, nPpd = +card.dataset.ppd;
+                    var ok = true;
+
+                    if (estado.tab === 'fid' && nFid === 0) ok = false;
+                    if (estado.tab === 'ppd' && nPpd === 0) ok = false;
+                    if (estado.tutor && card.dataset.tutor !== '1') ok = false;
+                    if (estado.sincursos && nFid + nPpd > 0) ok = false;
+                    if (ok && terminos.length) {
+                        ok = terminos.every(function (t) { return card.dataset.buscar.indexOf(t) !== -1; });
+                    }
+
+                    card.style.display = ok ? '' : 'none';
+                    if (ok) visibles++;
+
+                    // En FID/PPD solo se ve el grupo de esa modalidad dentro de la tarjeta.
+                    card.querySelectorAll('.dl-group').forEach(function (g) {
+                        g.style.display = (estado.tab === 'todos' || g.dataset.mod === estado.tab) ? '' : 'none';
+                    });
+                    card.querySelectorAll('[data-pill]').forEach(function (p) {
+                        p.style.display = (estado.tab === 'todos' || p.dataset.pill === estado.tab) ? '' : 'none';
+                    });
+
+                    // Al buscar, se abren las tarjetas que coinciden para ver el curso encontrado.
+                    if (terminos.length) abrir(card, ok);
+                });
+
+                visiblesEl.textContent = visibles;
+                vacioEl.style.display = visibles ? 'none' : '';
+
+                tabs.forEach(function (t) {
+                    var activa = t.dataset.tab === estado.tab;
+                    t.classList.toggle('is-active', activa);
+                    t.setAttribute('aria-selected', activa ? 'true' : 'false');
+                });
+            }
+
+            tabs.forEach(function (t) {
+                t.addEventListener('click', function () {
+                    estado.tab = t.dataset.tab;
+                    try { localStorage.setItem('docentes.tab', estado.tab); } catch (e) {}
+                    aplicar();
+                });
             });
-        });
 
-        function normalizeString(str) {
-            return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        }
+            chips.forEach(function (c) {
+                c.addEventListener('click', function () {
+                    estado[c.dataset.chip] = !estado[c.dataset.chip];
+                    c.classList.toggle('is-active', estado[c.dataset.chip]);
+                    aplicar();
+                });
+            });
+
+            var espera;
+            buscar.addEventListener('input', function () {
+                clearTimeout(espera);
+                espera = setTimeout(function () {
+                    estado.q = buscar.value;
+                    aplicar();
+                }, 120);
+            });
+
+            cards.forEach(function (card) {
+                var head = card.querySelector('.dl-head');
+                head.addEventListener('click', function (e) {
+                    // Copiar, o terminar de seleccionar texto (correo, DNI): no abre ni cierra.
+                    if (e.target.closest('.dl-copiar')) return;
+                    if (String(window.getSelection ? window.getSelection() : '').trim() !== '') return;
+                    abrir(card, !card.classList.contains('is-open'));
+                });
+                head.addEventListener('keydown', function (e) {
+                    if (e.target === head && (e.key === 'Enter' || e.key === ' ')) {
+                        e.preventDefault();
+                        abrir(card, !card.classList.contains('is-open'));
+                    }
+                });
+            });
+
+            toggleTodo.addEventListener('click', function () {
+                var expandir = toggleTodo.textContent.trim() === 'Expandir todo';
+                cards.forEach(function (card) { if (card.style.display !== 'none') abrir(card, expandir); });
+                toggleTodo.textContent = expandir ? 'Contraer todo' : 'Expandir todo';
+            });
+
+            document.querySelectorAll('.js-eliminar-docente').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    document.getElementById('formEliminarDocente').action = btn.dataset.url;
+                    document.getElementById('modalEliminarDocenteNombre').textContent = btn.dataset.nombre;
+                    $('#modalEliminarDocente').modal('show');
+                });
+            });
+
+            aplicar();
+        });
+    </script>
+    <script>
+        document.addEventListener('click', function (e) {
+            var b = e.target.closest('.dl-copiar');
+            if (!b) return;
+            e.preventDefault();
+            e.stopPropagation();
+            var texto = b.dataset.copiar, que = b.dataset.que || 'Dato';
+            var listo = function () {
+                b.classList.add('is-ok');
+                b.innerHTML = '<i class="fas fa-check"></i>';
+                setTimeout(function () { b.classList.remove('is-ok'); b.innerHTML = '<i class="far fa-copy"></i>'; }, 1400);
+                if (window.PkAlert) PkAlert.toast(que + ' copiado: ' + texto);
+            };
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(texto).then(listo);
+            } else {
+                var t = document.createElement('textarea');
+                t.value = texto; t.style.position = 'fixed'; t.style.opacity = '0';
+                document.body.appendChild(t); t.select();
+                try { document.execCommand('copy'); listo(); } catch (err) {}
+                t.remove();
+            }
+        }, true);
     </script>
 @endsection

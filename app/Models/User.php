@@ -52,6 +52,31 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
+    /**
+     * Cada cambio de perfil / condición / ciclo / programa de un estudiante queda como evento
+     * de trayectoria (licencia, retiro, reincorporación, egreso…): estos campos solo guardan
+     * el estado actual. En 'updated' getOriginal() todavía tiene los valores de antes.
+     */
+    protected static function booted(): void
+    {
+        static::updated(function (User $user) {
+            $campos = array_intersect(['perfil', 'condicion', 'ciclo_id', 'programa_id'], array_keys($user->getChanges()));
+            if ($campos) {
+                \App\Services\Trayectoria::registrarCambios(
+                    $user,
+                    collect($campos)->mapWithKeys(fn ($c) => [$c => $user->getOriginal($c)])->all()
+                );
+            }
+            // Nombres, DNI, programa y ciclo también viven en la ficha de matrícula: se mantienen iguales.
+            \App\Services\SincronizarFicha::desdeCuenta($user);
+        });
+    }
+
+    public function trayectoriaEventos()
+    {
+        return $this->hasMany(TrayectoriaEvento::class)->orderByDesc('fecha_inicio')->orderByDesc('id');
+    }
+
     public function alumno()
     {
         return $this->hasOne(Alumno::class);
@@ -70,6 +95,33 @@ class User extends Authenticatable
     public function docente()
     {
         return $this->hasOne(Docente::class);
+    }
+
+    /** Separador de users.pendiente: los nombres de curso pueden tener comas. */
+    public const SEPARADOR_PENDIENTES = ' | ';
+
+    /**
+     * Cursos pendientes (a cargo) como lista. Se guardan elegidos de los cursos reales
+     * ("Nombre - Ciclo X", separados por " | "); los registros antiguos, escritos a mano,
+     * están separados por comas. "No", "Ninguno", "-"… no son cursos: lista vacía.
+     */
+    public function cursosPendientes(): array
+    {
+        $texto = trim((string) $this->pendiente);
+        if ($texto === '') {
+            return [];
+        }
+        $partes = str_contains($texto, '|') ? explode('|', $texto) : explode(',', $texto);
+
+        return array_values(array_filter(
+            array_map('trim', $partes),
+            fn ($p) => $p !== '' && ! preg_match('/^(no|ninguno|ninguna|-+|n\/?a|sin cursos?( pendientes?)?)\.?$/iu', $p)
+        ));
+    }
+
+    public function seguimientoTitulacion()
+    {
+        return $this->hasOne(\App\Models\Titulacion\SeguimientoTitulacion::class);
     }
 
     public function ciclo()

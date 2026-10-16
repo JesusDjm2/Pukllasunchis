@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Modalidad;
+use App\Enums\NivelPrograma;
 use App\Mail\ConfirmacionInscripcionPpdMail;
 use App\Models\AdminPpd;
 use App\Models\Ciclo;
@@ -378,13 +380,9 @@ class PostulantesPpdController extends Controller
         DB::beginTransaction();
 
         try {
-            $programaInicial = Programa::where('nombre', 'LIKE', '%Inicial%')
-                ->where('nombre', 'LIKE', '%PPD%')
-                ->first();
+            $programaInicial = Programa::buscar(Modalidad::PPD, NivelPrograma::INICIAL, false);
 
-            $programaPrimaria = Programa::where('nombre', 'LIKE', '%Primaria%')
-                ->where('nombre', 'LIKE', '%PPD%')
-                ->first();
+            $programaPrimaria = Programa::buscar(Modalidad::PPD, NivelPrograma::PRIMARIA, false);
 
             if (! $programaInicial || ! $programaPrimaria) {
                 throw new \Exception('No se encontraron los programas Inicial PPD o Primaria PPD en el sistema');
@@ -525,13 +523,9 @@ class PostulantesPpdController extends Controller
         DB::beginTransaction();
 
         try {
-            $programaInicial = Programa::where('nombre', 'LIKE', '%Inicial%')
-                ->where('nombre', 'LIKE', '%PPD%')
-                ->first();
+            $programaInicial = Programa::buscar(Modalidad::PPD, NivelPrograma::INICIAL, false);
 
-            $programaPrimaria = Programa::where('nombre', 'LIKE', '%Primaria%')
-                ->where('nombre', 'LIKE', '%PPD%')
-                ->first();
+            $programaPrimaria = Programa::buscar(Modalidad::PPD, NivelPrograma::PRIMARIA, false);
 
             if (! $programaInicial || ! $programaPrimaria) {
                 throw new \Exception('No se encontraron los programas Inicial PPD o Primaria PPD en el sistema');

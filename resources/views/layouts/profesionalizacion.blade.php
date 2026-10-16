@@ -17,6 +17,7 @@
     <link href="{{ asset('admin/css/sb-admin-2.min.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('admin/css/estilos.css') }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link rel="stylesheet" href="{{ asset('css/puklla-alert.css') }}">
     <style>
         :root {
             --ppd-accent: #4e73df;
@@ -192,7 +193,8 @@
                     <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
                         <i class="fa fa-bars"></i>
                     </button>
-                    <ul class="navbar-nav ml-auto">
+                    <ul class="navbar-nav ml-auto align-items-center">
+                        @include('docentes.partials.notificaciones-dropdown')
                         <div class="topbar-divider d-none d-sm-block"></div>
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
@@ -216,17 +218,7 @@
                 </nav>
                 @yield('contenido')
             </div>
-            <footer class="sticky-footer bg-white">
-                <div class="container my-auto">
-                    <div class="copyright text-center my-auto">
-                        <span>Copyright &copy; {{ date('Y') }} | Hecho por <a class="text-primary"
-                                href="https://www.facebook.com/DjmWebMaster" target="_blank"
-                                rel="noopener noreferrer">
-                                DJM2</a> | Versión 2026.2
-                        </span>
-                    </div>
-                </div>
-            </footer>
+            @include('layouts.partials.pie-intranet', ['area' => 'Intranet PPD'])
         </div>
     </div>
     <a class="scroll-to-top rounded" href="#page-top">
@@ -242,6 +234,8 @@
     <script src="{{ asset('admin/js/demo/chart-pie-demo.js') }}"></script>
     <script src="{{ asset('admin/js/djm.js') }}?v={{ filemtime(public_path('admin/js/djm.js')) }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>window.PK_BRAND_COLOR = '#4e73df';</script>
+    <script src="{{ asset('js/puklla-alert.js') }}"></script>
     @stack('scripts')
 
 </body>

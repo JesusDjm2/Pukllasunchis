@@ -28,6 +28,20 @@ class SilaboController extends Controller
         return $user && ($user->hasRole('docente') || $user->hasRole('admin') || $user->hasRole('super-admin'));
     }
 
+    /**
+     * Un docente solo puede crear/editar/eliminar sílabos de cursos que
+     * tiene asignados — sin esto, cualquier docente podía manipular el
+     * sílabo de un curso ajeno solo cambiando el id en la URL/formulario.
+     * Admin y super-admin no tienen esta restricción.
+     */
+    private function abortSiDocenteSinAcceso(Curso $curso): void
+    {
+        $user = auth()->user();
+        if ($user->hasRole('docente')) {
+            abort_unless($user->docente && $curso->docentes->contains('id', $user->docente->id), 403);
+        }
+    }
+
     public function index(Request $request)
     {
         abort_unless($this->puedeGestionarSilabos(), 403);
@@ -95,6 +109,9 @@ class SilaboController extends Controller
     {
         abort_unless($this->puedeGestionarSilabos(), 403);
 
+        $curso = Curso::findOrFail($request->curso_id);
+        $this->abortSiDocenteSinAcceso($curso);
+
         $periodoActual = PeriodoActual::actual();
 
         if (! $periodoActual) {
@@ -141,8 +158,6 @@ class SilaboController extends Controller
             'recursos' => 'nullable|string',
             'referencias' => 'nullable|string',
         ]);
-
-        $curso = Curso::findOrFail($request->curso_id);
 
         $silabo = Silabo::create([
             'curso_id' => $curso->id,
@@ -197,7 +212,7 @@ class SilaboController extends Controller
             }
         }
         // Guardar unidades
-        foreach ($request->titulo_unidad as $key => $titulo) {
+        foreach ($request->titulo_unidad ?? [] as $key => $titulo) {
             if (! empty($titulo)) {
                 Unidades::create([
                     'silabo_id' => $silabo->id,
@@ -212,7 +227,7 @@ class SilaboController extends Controller
             }
         }
         //Rúbricas
-        foreach ($request->criterio as $index => $criterio) {
+        foreach ($request->criterio ?? [] as $index => $criterio) {
             if (! empty($criterio)) { // Verifica que el criterio no sea null o vacío
                 Rubricas::create([
                     'silabo_id' => $silabo->id,
@@ -290,6 +305,7 @@ class SilaboController extends Controller
         abort_unless($this->puedeGestionarSilabos(), 403);
 
         $silabo = Silabo::with(['unidades', 'rubricas', 'enfoques'])->findOrFail($id);
+        $this->abortSiDocenteSinAcceso($silabo->curso);
         $curso = $request->filled('curso_id') ? Curso::findOrFail($request->curso_id) : $silabo->curso;
         $docente = $request->filled('docente_id') ? Docente::findOrFail($request->docente_id) : $curso->docentes->first();
         $proyectos = Proyecto::all();
@@ -321,6 +337,7 @@ class SilaboController extends Controller
     public function update(Request $request, Silabo $silabo)
     {
         abort_unless($this->puedeGestionarSilabos(), 403);
+        $this->abortSiDocenteSinAcceso($silabo->curso);
 
         $curso = $request->filled('curso_id') ? Curso::findOrFail($request->curso_id) : $silabo->curso;
         $request->validate([
@@ -458,6 +475,7 @@ class SilaboController extends Controller
     public function destroy(Silabo $silabo)
     {
         abort_unless($this->puedeGestionarSilabos(), 403);
+        $this->abortSiDocenteSinAcceso($silabo->curso);
 
         $silabo->delete();
 
@@ -482,10 +500,7 @@ class SilaboController extends Controller
 
         $curso = $silabo->curso;
         $user = auth()->user();
-
-        if ($user->hasRole('docente')) {
-            abort_unless($user->docente && $curso->docentes->contains('id', $user->docente->id), 403);
-        }
+        $this->abortSiDocenteSinAcceso($curso);
 
         $periodoActual = PeriodoActual::actual();
         if (! $periodoActual) {
@@ -499,9 +514,16 @@ class SilaboController extends Controller
             return redirect()->back()->with('error', 'Ya existe un sílabo registrado para este curso en el periodo actual.');
         }
 
-        $nuevo = $silabo->replicate(['periodo', 'periodo_actual_id', 'created_at', 'updated_at']);
+        // Al reutilizar, solo se copia el contenido editable del sílabo (sumilla,
+        // competencias, unidades, rúbricas, etc.). Todo lo referido al periodo
+        // académico — nombre, id y fechas de inicio/término — debe salir del
+        // periodo actual, nunca del sílabo original (que puede ser de un periodo
+        // ya cerrado, con fechas que ya no aplican).
+        $nuevo = $silabo->replicate(['periodo', 'periodo_actual_id', 'fecha1', 'fecha2', 'created_at', 'updated_at']);
         $nuevo->periodo = $periodoActual->nombre;
         $nuevo->periodo_actual_id = $periodoActual->id;
+        $nuevo->fecha1 = $periodoActual->fecha_inicio;
+        $nuevo->fecha2 = $periodoActual->fecha_cierre;
         $nuevo->save();
 
         foreach ($silabo->enfoques as $enfoque) {
@@ -529,6 +551,14 @@ class SilaboController extends Controller
 
     public function exportarPDF(Silabo $silabo)
     {
+        // Mismo candado que show(): sin esto, un alumno podía saltarse la
+        // restricción de "sílabo visible recién en la 3ª semana" entrando
+        // directo a esta URL en vez de pasar por el link del dashboard.
+        if (Auth::user()->hasAnyRole(['alumno', 'alumnoB']) && ! ($silabo->periodoActual?->silabosVisibles() ?? true)) {
+            return redirect()->back()->with('error', 'Este sílabo estará disponible a partir del '
+                .$silabo->periodoActual->fechaSilabosVisibles()->format('d/m/Y').'.');
+        }
+
         $curso = $silabo->curso;
         // Mismo criterio que show(): el PDF debe reflejar el periodo del sílabo,
         // no el periodo activo del día en que se genera el PDF.

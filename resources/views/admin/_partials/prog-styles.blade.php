@@ -27,12 +27,12 @@
     --pg-sh-amber: 0 10px 28px rgba(245,158,11,.3);
 }
 .dim-mode .pg-wrap {
-    --pg-card:     #243044;
-    --pg-border:   #2d4060;
-    --pg-text:     #d1d5db;
-    --pg-text-2:   #9ca3af;
-    --pg-muted:    #8899a6;
-    --pg-input-bg: #1a2535;
+    --pg-card:     var(--lm-superficie);
+    --pg-border:   var(--lm-borde);
+    --pg-text:     var(--lm-texto);
+    --pg-text-2:   var(--lm-texto-2);
+    --pg-muted:    var(--lm-suave);
+    --pg-input-bg: var(--lm-bg-hondo);
     --pg-shadow:   0 2px 12px rgba(0,0,0,.3);
     --pg-sh-blue:  0 10px 28px rgba(37,99,235,.28);
     --pg-sh-amber: 0 10px 28px rgba(245,158,11,.22);
@@ -47,7 +47,7 @@
     position: relative; overflow: hidden;
 }
 .dark-mode .pg-hero { background: linear-gradient(130deg, #0d1b36 0%, #1d4ed8 55%, #0284c7 100%); }
-.dim-mode  .pg-hero { background: linear-gradient(130deg, #12263f 0%, #1e40af 55%, #0369a1 100%); }
+.dim-mode  .pg-hero { background: linear-gradient(130deg, #3d2440 0%, #8a3f6e 55%, #c46d9b 100%); }
 .pg-hero::before {
     content:''; position:absolute; top:-50px; right:-50px;
     width:220px; height:220px; border-radius:50%;
@@ -78,6 +78,33 @@
     display:inline-flex; align-items:center; gap:.3rem;
 }
 .pg-hero-btn:hover { background:rgba(255,255,255,.24); }
+
+/* ── Hero compacto con conteos (Cursos, Directorio…) ─────────── */
+.cu-hero { padding: .9rem 1.25rem !important; margin-bottom: 1rem !important; }
+.cu-hero__fila { position: relative; z-index: 1; display: flex; align-items: center; flex-wrap: wrap; gap: .75rem 1.25rem; }
+.cu-hero__titulo { flex: 1 1 12rem; min-width: 0; }
+.cu-hero__titulo h4 { font-size: 1.3rem !important; }
+.cu-hero__kpis { display: flex; gap: .5rem; }
+.cu-kpi {
+    display: flex; flex-direction: column; align-items: flex-start; min-width: 4.6rem;
+    padding: .35rem .75rem; border-radius: .65rem;
+    background: rgba(255, 255, 255, .13); border: 1px solid rgba(255, 255, 255, .22);
+    color: #fff; line-height: 1.1;
+}
+.cu-kpi--ppd { background: rgba(251, 191, 36, .2); border-color: rgba(251, 191, 36, .38); }
+.cu-kpi__val { font-size: 1.25rem; font-weight: 800; }
+.cu-kpi__lbl { font-size: .64rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; opacity: .85; white-space: nowrap; }
+.cu-kpi__lbl i { font-size: .6rem; margin-right: .15rem; }
+.cu-hero__btn { white-space: nowrap; }
+
+.cu-kpi--link { text-decoration:none !important; cursor:pointer; transition:background .15s, border-color .15s; }
+.cu-kpi--link:hover { background:rgba(255,255,255,.22); border-color:rgba(255,255,255,.45); color:#fff; }
+.cu-kpi--beca { background:rgba(74,222,128,.2); border-color:rgba(74,222,128,.4); }
+.cu-kpi__sub { font-size:.62rem; font-weight:600; opacity:.85; margin-left:.15rem; }
+@media (max-width: 767.98px) {
+    .cu-hero__kpis { order: 3; width: 100%; }
+    .cu-kpi { flex: 1; }
+}
 
 /* ── Section label ───────────────────────────────────────────── */
 .pg-section-lbl {

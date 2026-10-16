@@ -18,10 +18,12 @@ class PeriodoActualPpd extends Model
         'fecha_cierre',
         'actual',
         'formulario_habilitado',
+        'semestre_matricula', // 1|2: semestre abierto para matricularse (PPD es anual, se matricula por semestre)
     ];
 
     protected $casts = [
         'formulario_habilitado' => 'boolean',
+        'semestre_matricula' => 'integer',
     ];
 
     // Añade esta relación

@@ -9,6 +9,12 @@ class ppd extends Model
 {
     use HasFactory;
 
+    /** Nombres, DNI, programa y ciclo se mantienen iguales en la cuenta (ver SincronizarFicha). */
+    protected static function booted(): void
+    {
+        static::updated(fn (ppd $ficha) => \App\Services\SincronizarFicha::desdeFicha($ficha));
+    }
+
     protected $table = 'ppds';
 
     protected $fillable = [
@@ -121,9 +127,15 @@ class ppd extends Model
         return $this->hasMany(MatriculaPpd::class, 'ppd_id');
     }
 
-    public function matriculaEnPeriodo(int $periodoActualPpdId): ?MatriculaPpd
+    /**
+     * Matrícula del alumno en un periodo PPD y semestre. Sin semestre: el que el periodo tenga
+     * abierto para matricularse (PPD es anual, pero cada semestre tiene su propia matrícula).
+     */
+    public function matriculaEnPeriodo(int $periodoActualPpdId, ?int $semestre = null): ?MatriculaPpd
     {
-        return $this->matriculas()->where('periodo_actual_ppd_id', $periodoActualPpdId)->first();
+        $semestre ??= PeriodoActualPpd::find($periodoActualPpdId)?->semestre_matricula ?? 1;
+
+        return $this->matriculas()->where('periodo_actual_ppd_id', $periodoActualPpdId)->where('semestre', $semestre)->first();
     }
 
     public static function asociarPorEmail($email)

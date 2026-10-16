@@ -275,6 +275,7 @@ class PeriodoActualPpdController extends Controller
             'fecha_inicio' => 'nullable|date',
             'fecha_cierre' => 'nullable|date|after_or_equal:fecha_inicio',
             'actual' => 'nullable|boolean',
+            'semestre_matricula' => 'nullable|in:1,2',
         ]);
 
         // Si se marca actual, desmarcar los demás
@@ -315,6 +316,7 @@ class PeriodoActualPpdController extends Controller
             'fecha_inicio' => $request->filled('fecha_inicio') ? $request->fecha_inicio : $periodo->fecha_inicio,
             'fecha_cierre' => $request->filled('fecha_cierre') ? $request->fecha_cierre : $periodo->fecha_cierre,
             'actual' => $request->actual == 1 ? 1 : 0,
+            'semestre_matricula' => (int) ($request->input('semestre_matricula') ?: $periodo->semestre_matricula ?: 1),
         ]);
 
         return redirect()->route('periodoactual.index')
@@ -609,6 +611,49 @@ class PeriodoActualPpdController extends Controller
         return redirect()->route('periodoactual.index')
             ->with('success', "Sincronización completada: {$total} registros procesados para el período {$periodo->nombre} y {$alumnosMarcados} alumnos marcados como guardados.");
     } */
+    /**
+     * Cierre del año PPD — vista previa: quiénes de la promoción egresan y quiénes no (motivo).
+     * Nada cambia hasta confirmar.
+     */
+    public function cierreAnio(PeriodoActualPpd $periodos_de_ppd)
+    {
+        $layout = auth()->user()?->hasRole('super-admin') ? 'layouts.superadmin' : 'layouts.admin';
+
+        return view('admin.periodos.ppd.cierre', [
+            'periodo' => $periodos_de_ppd,
+            'anio' => \App\Services\CierreAnioPpd::anioDe($periodos_de_ppd),
+            'candidatos' => \App\Services\CierreAnioPpd::candidatos($periodos_de_ppd),
+            'notasArchivadas' => \App\Services\CierreAnioPpd::notasArchivadas($periodos_de_ppd),
+            'layout' => $layout,
+        ]);
+    }
+
+    /**
+     * Cierre del año PPD — confirma: marca como Egresado a los seleccionados. Se guarda con save()
+     * para que el egreso quede registrado en la trayectoria de cada uno (observer de User).
+     * Su ciclo real (Ciclo II) se conserva a propósito: mantiene el vínculo con cursos y notas.
+     */
+    public function cerrarAnio(Request $request, PeriodoActualPpd $periodos_de_ppd)
+    {
+        $request->validate(['user_ids' => ['required', 'array', 'min:1'], 'user_ids.*' => ['integer']], [
+            'user_ids.required' => 'Selecciona al menos un estudiante para marcar como egresado.',
+        ]);
+
+        // Solo se aceptan estudiantes de ESTA promoción (no se confía en los ids que llegan)
+        $validos = \App\Services\CierreAnioPpd::candidatos($periodos_de_ppd)->pluck('u')->keyBy('id');
+        $marcados = 0;
+        foreach (array_unique($request->input('user_ids')) as $id) {
+            if ($user = $validos->get((int) $id)) {
+                $user->condicion = 'Egresado';
+                $user->save();
+                $marcados++;
+            }
+        }
+
+        return redirect()->route('periodoactual.index')
+            ->with('success', "Cierre de {$periodos_de_ppd->nombre}: {$marcados} estudiante(s) marcados como egresados. Ya figuran en Titulación y en el directorio como «Promoción ".\App\Services\CierreAnioPpd::anioDe($periodos_de_ppd).'».');
+    }
+
     public function toggleFormulario(PeriodoActualPpd $periodos_de_ppd)
     {
         $nuevoEstado = ! $periodos_de_ppd->formulario_habilitado;
@@ -629,7 +674,7 @@ class PeriodoActualPpdController extends Controller
         $estado = $periodos_de_ppd->formulario_habilitado ? 'habilitado' : 'deshabilitado';
 
         return redirect()->route('periodoactual.index')
-            ->with('success', "Formulario de matrícula PPD {$estado} para el período: {$periodos_de_ppd->nombre}.");
+            ->with('success', "Formulario de matrícula PPD {$estado} para el período: {$periodos_de_ppd->nombre} (".(($periodos_de_ppd->semestre_matricula ?? 1) == 2 ? '2.º' : '1.er')." semestre).");
     }
 
     public function destroy(PeriodoActualPpd $periodos_de_ppd)

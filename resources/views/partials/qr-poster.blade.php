@@ -245,8 +245,8 @@
         }).catch(function () {
             alert('No se pudo generar la imagen. Intenta imprimir en su lugar, o toma una captura de pantalla.');
         }).finally(function () {
-            btn.disabled = false;
-            btn.innerHTML = original;
+             btn.disabled = false;
+             btn.innerHTML = original;
         });
     });
 })();

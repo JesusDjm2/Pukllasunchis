@@ -23,6 +23,9 @@ class NotificacionRegistro extends Mailable
 
     protected $paraAlumno;
 
+    // Matrícula concreta que se notifica (PPD tiene una por semestre). Protegida por el mismo motivo.
+    protected $matricula;
+
     /**
      * Create a new message instance.
      *
@@ -30,8 +33,9 @@ class NotificacionRegistro extends Mailable
      * @param  bool  $paraAlumno  true si este envío va dirigido al propio alumno (cambia el saludo inicial)
      * @return void
      */
-    public function __construct($alumno, $periodo = null, $paraAlumno = false)
+    public function __construct($alumno, $periodo = null, $paraAlumno = false, $matricula = null)
     {
+        $this->matricula = $matricula;
         $this->alumno = $alumno;
         $this->periodo = $periodo;
         $this->paraAlumno = $paraAlumno;
@@ -46,7 +50,7 @@ class NotificacionRegistro extends Mailable
     {
         // El voucher vigente vive en la matrícula del período (Matricula/MatriculaPpd), no en el
         // campo legado Alumno::num_comprobante (que es del registro inicial, no por período).
-        $matricula = $this->periodo ? $this->alumno->matriculaEnPeriodo($this->periodo->id) : null;
+        $matricula = $this->matricula ?? ($this->periodo ? $this->alumno->matriculaEnPeriodo($this->periodo->id) : null);
 
         if ($this->paraAlumno) {
             $tituloMensaje = '¡Completaste tu matrícula con éxito!';
@@ -65,7 +69,7 @@ class NotificacionRegistro extends Mailable
                         'num_comprobante' => $matricula?->comprobante ?? $this->alumno->num_comprobante,
                         'programa' => $this->alumno->programa->nombre,
                         'ciclo' => $this->alumno->ciclo ? $this->alumno->ciclo->nombre : 'N/A',
-                        'periodo' => $this->periodo?->nombre ?? 'N/A',
+                        'periodo' => ($this->periodo?->nombre ?? 'N/A').($matricula?->semestre_etiqueta ? ' · '.$matricula->semestre_etiqueta : ''),
                         'tituloMensaje' => $tituloMensaje,
                         'subtituloMensaje' => $subtituloMensaje,
                     ]);

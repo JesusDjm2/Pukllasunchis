@@ -6,8 +6,10 @@ use App\Mail\TutoriaMail;
 use App\Models\Alumno;
 use App\Models\Ciclo;
 use App\Models\Programa;
+use App\Models\Sugerencia;
 use App\Models\Tutoria;
 use App\Models\User;
+use App\Notifications\TutoriaAtendida;
 use App\Notifications\TutoriaCreada;
 use App\Services\WhatsappService;
 use Illuminate\Http\Request;
@@ -20,7 +22,7 @@ class TutoriaController extends Controller
 
     public function publicCreate(Request $request)
     {
-        $programas = Programa::where('nombre', 'not like', '%PPD%')->orderBy('nombre')->get();
+        $programas = Programa::fid()->orderBy('nombre')->get();
 
         $cicloPreseleccionado = $request->filled('ciclo')
             ? Ciclo::with(['programa', 'tutores'])->find($request->query('ciclo'))
@@ -76,6 +78,52 @@ class TutoriaController extends Controller
             ->with('success', '¡Solicitud enviada correctamente! El tutor de tu ciclo se pondrá en contacto contigo.');
     }
 
+    // ── Intranet del alumno ────────────────────────────────────────────────
+    // Los mismos formularios del QR, pero con la sesión iniciada: el alumno no elige
+    // programa, ciclo ni su nombre (salen de su cuenta) y ve el estado de lo que envió.
+
+    /** Alumno FID con ciclo; null si no aplica (PPD, sin ficha o sin ciclo). */
+    public static function alumnoDeLaSesion(): ?Alumno
+    {
+        $alumno = auth()->user()?->alumno;
+
+        return ($alumno && $alumno->ciclo_id) ? $alumno->loadMissing('ciclo.programa', 'ciclo.tutores') : null;
+    }
+
+    public function alumnoPanel()
+    {
+        $alumno = self::alumnoDeLaSesion();
+        $tutorias = $alumno ? Tutoria::where('alumno_id', $alumno->id)->latest()->take(15)->get() : collect();
+        $sugerencias = $alumno ? Sugerencia::where('alumno_id', $alumno->id)->latest()->take(15)->get() : collect();
+
+        return view('alumnos.atencion', compact('alumno', 'tutorias', 'sugerencias'));
+    }
+
+    public function alumnoStore(Request $request)
+    {
+        $alumno = self::alumnoDeLaSesion();
+        abort_unless($alumno, 403);
+
+        $data = $request->validate([
+            'motivo'   => 'required|string|min:10|max:3000',
+            'urgencia' => 'required|in:Alta,Media,Baja',
+        ], [
+            'motivo.min' => 'Cuéntale un poco más a tu tutor(a): escribe al menos 10 caracteres.',
+        ]);
+
+        $tutoria = Tutoria::create($data + [
+            'programa_id' => $alumno->ciclo->programa_id,
+            'ciclo_id'    => $alumno->ciclo_id,
+            'alumno_id'   => $alumno->id,
+        ]);
+        $tutoria->load(['alumno', 'ciclo.programa']);
+
+        $this->notificarTutores($tutoria);
+
+        return redirect()->route('alumno.atencion', ['tab' => 'tutoria'])
+            ->with('success', 'Solicitud enviada. Tu tutor(a) ya fue notificado y se pondrá en contacto contigo.');
+    }
+
     // ── Panel admin ────────────────────────────────────────────────────────
 
     public function qr(Request $request)
@@ -111,11 +159,23 @@ class TutoriaController extends Controller
             'notas_atencion' => 'nullable|string',
         ]);
 
+        $pasaAAtendida = $tutoria->estado !== 'atendida';
+
         $tutoria->estado = $tutoria->estado === 'atendida' ? 'pendiente' : 'atendida';
         $tutoria->atendido_por = $tutoria->estado === 'atendida' ? auth()->id() : null;
         $tutoria->atendido_at = $tutoria->estado === 'atendida' ? now() : null;
         $tutoria->notas_atencion = $data['notas_atencion'] ?? $tutoria->notas_atencion;
         $tutoria->save();
+
+        // Solo al pasar a "atendida" (no al reabrirla) y solo si el alumno
+        // identificado tiene cuenta propia — así se entera en su perfil.
+        if ($pasaAAtendida && $tutoria->alumno?->user) {
+            try {
+                $tutoria->alumno->user->notify(new TutoriaAtendida($tutoria));
+            } catch (\Throwable $e) {
+                Log::warning("Notificación de tutoría atendida a alumno {$tutoria->alumno_id}: ".$e->getMessage());
+            }
+        }
 
         return back()->with('success', 'Solicitud de tutoría actualizada.');
     }

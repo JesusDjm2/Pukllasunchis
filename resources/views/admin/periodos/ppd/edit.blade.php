@@ -76,6 +76,22 @@
                 </div>
             </div>
 
+            {{-- Semestre abierto para matricularse: el periodo PPD es anual (notas una vez al año),
+                 pero cada semestre tiene su propia matrícula, voucher y verificación. --}}
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label>Matrícula abierta para:</label>
+                    <select name="semestre_matricula" class="form-control form-control-sm @error('semestre_matricula') is-invalid @enderror">
+                        <option value="1" @selected(old('semestre_matricula', $periodoActualPpd->semestre_matricula ?? 1) == 1)>1.er semestre (Ciclo I)</option>
+                        <option value="2" @selected(old('semestre_matricula', $periodoActualPpd->semestre_matricula ?? 1) == 2)>2.º semestre (Ciclo II)</option>
+                    </select>
+                    <small class="text-muted">Al matricularse, el alumno queda registrado en este semestre. Cámbialo antes de habilitar el formulario del 2.º semestre.</small>
+                    @error('semestre_matricula')
+                        <span class="invalid-feedback d-block">{{ $message }}</span>
+                    @enderror
+                </div>
+            </div>
+
             {{-- Actual --}}
             <div class="form-check mb-4">
                 <input type="hidden" name="actual" value="0">

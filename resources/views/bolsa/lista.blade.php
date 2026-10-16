@@ -98,7 +98,7 @@
                                     <td>{{ $post->dni }}</td>
                                     <td class="perfil">{{ $post->user->perfil }}</td>
                                     <td> {{$post->user->ciclo->nombre}} <br>
-                                        @if ($post->user->programa->nombre === 'Programa Primaria EIB')
+                                        @if ($post->user->programa?->esFid() && $post->user->programa->eib)
                                             Programa EIB
                                         @else
                                             Inicial

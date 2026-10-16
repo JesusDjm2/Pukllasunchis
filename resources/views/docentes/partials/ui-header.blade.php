@@ -128,9 +128,7 @@
             @if (!empty($backUrl) || !empty($rightExtra))
                 <div class="flex-shrink-0 text-md-right">
                     @if (!empty($backUrl))
-                        <a href="{{ $backUrl }}" class="btn btn-outline-secondary btn-sm btn-block d-md-inline-block">
-                            <i class="fas fa-arrow-left mr-1"></i> {{ $backLabel }}
-                        </a>
+                        @include('docentes.partials.boton-volver', ['url' => $backUrl, 'label' => $backLabel])
                     @endif
                     @if (!empty($rightExtra))
                         <div class="mt-2">{!! $rightExtra !!}</div>

@@ -11,6 +11,14 @@
                 <p class="text-secondary fs-5 mb-4">
                     Tu sesión ha expirado por inactividad o el formulario ya no es válido.
                 </p>
+                @if (request()->is('silabos', 'silabos/*'))
+                    {{-- El formulario de sílabo guarda un borrador local que NO se borra al enviar:
+                         al reabrirlo se ofrece recuperarlo (ver silabos/partials/borrador). --}}
+                    <div style="background:#fbf3e6; border:1px solid #f0dfc2; border-left:4px solid #c78d40; border-radius:8px; padding:12px 14px; text-align:left; margin-bottom:18px; color:#2e3448; font-size:14px;">
+                        <strong>Tu sílabo no se perdió.</strong> El avance quedó guardado en este equipo.
+                        Inicia sesión de nuevo, abre el mismo sílabo y elige <strong>Recuperar</strong> en el aviso que aparece arriba del formulario.
+                    </div>
+                @endif
                 <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
 
                     {{-- <a href="{{ url('/') }}"

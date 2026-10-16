@@ -70,11 +70,10 @@
                                 </a>
 
                                 <form action="{{ route('periodos.admin.ppd.destroy', $p) }}" method="POST"
-                                    style="display:inline-block;">
+                                    style="display:inline-block;" data-confirm="Se eliminará este período." data-confirm-danger>
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger"
-                                        onclick="return confirm('¿Seguro que deseas eliminar este período?')">
+                                    <button type="submit" class="btn btn-sm btn-danger">
                                         Eliminar <small><i class="fa fa-trash"></i></small>
                                     </button>
                                 </form>

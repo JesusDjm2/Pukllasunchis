@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Facades\Excel;
 use Spatie\Permission\Models\Role;
 
@@ -51,33 +52,126 @@ class AdminController extends Controller
         return $this->redirectToDashboard(auth()->user());
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $alumno = auth()->user()?->alumno;
-        $admins = User::with(['tutorCiclos', 'docente.cursos'])->get();
-        $totalAlumnos = User::whereHas('roles', function ($query) {
-            $query->where('name', 'alumno');
-        })->count();
+        $esSuperAdmin = (bool) auth()->user()?->hasRole('super-admin');
 
-        // Conteos
-        $totalRecords        = User::count();
-        $conteoDocentes      = User::role('docente')->count();
-        $conteoAlumnos       = User::role('alumno')->count();
-        $conteoPpd           = User::role('alumnoB')->count();
-        $conteoAdmin         = User::role('admin')->count();
-        $conteoSuperAdmin    = User::role('super-admin')->count();
-        $conteoInhabilitados = User::role('inhabilitado')->count();
-        $conteoTutores       = User::role('tutor')->count();
-        $alumnosConBeca = User::where('beca', 1)
-            ->whereHas('roles', function ($query) {
-                $query->where('name', 'alumno');
-            })
-            ->count();
+        // Periodo de matrícula que se muestra (FID y PPD tienen periodos distintos).
+        // Por defecto el vigente; ?periodo= / ?periodo_ppd= permiten revisar uno anterior.
+        $periodosFid = PeriodoActual::orderByDesc('id')->get(['id', 'nombre', 'actual']);
+        $periodosPpd = PeriodoActualPpd::orderByDesc('id')->get(['id', 'nombre', 'actual', 'semestre_matricula']);
+        $periodoFid = $periodosFid->firstWhere('id', (int) $request->input('periodo')) ?? $periodosFid->firstWhere('actual', true) ?? $periodosFid->first();
+        $periodoPpd = $periodosPpd->firstWhere('id', (int) $request->input('periodo_ppd')) ?? $periodosPpd->firstWhere('actual', true) ?? $periodosPpd->first();
+        // PPD es anual pero se matricula por semestre: ?semestre_ppd= o el abierto en el periodo.
+        $semestrePpd = in_array((int) $request->input('semestre_ppd'), [1, 2], true) ? (int) $request->input('semestre_ppd') : ($periodoPpd?->semestre_matricula ?? 1);
+
+        // Una sola consulta con todo lo que pintan las pestañas (antes: ~2300 consultas por
+        // hasRole()/programa/ciclo/alumno resueltos fila por fila en la vista). La matrícula
+        // del periodo elegido viene en la misma carga: el directorio reemplaza a "Matrículas".
+        $usuarios = User::with([
+            'roles', 'programa', 'ciclo.programa',
+            'alumno.matriculas' => fn ($q) => $q->where('periodo_actual_id', $periodoFid?->id ?? 0),
+            'alumnoB.matriculas' => fn ($q) => $q->where('periodo_actual_ppd_id', $periodoPpd?->id ?? 0)->where('semestre', $semestrePpd),
+            'docente.cursos.ciclo.programa', 'tutorCiclos.programa',
+        ])->orderBy('apellidos')->orderBy('name')->get();
+
+        $conRol = fn (string $rol) => $usuarios->filter(fn ($u) => $u->roles->contains('name', $rol))->values();
+        $listas = [
+            'fid' => $conRol('alumno'),
+            'ppd' => $conRol('alumnoB'),
+            'inhabilitados' => $conRol('inhabilitado'),
+            'docentes' => $conRol('docente'),
+            'tutores' => $conRol('tutor'),
+            'admins' => $conRol('admin'),
+            'titulacion' => $conRol('gestor-titulacion'),
+            'superadmins' => $esSuperAdmin ? $conRol('super-admin') : collect(),
+            'bolsa' => $conRol('adminB'),
+        ];
+
+        // Estudiantes agrupados por Programa → Ciclo, en el orden real (FID antes que PPD,
+        // Ciclo I antes que X, luego los "Egresados <año>-<I|II>" del más reciente al más
+        // antiguo); los que no tienen programa/ciclo van en un grupo al final.
+        $ordenCiclo = function ($ciclo) {
+            if (! $ciclo) {
+                return 99999;
+            }
+            if (($n = $ciclo->ordenCiclo()) < 999) { // 999 = "no es un ciclo I–X"
+                return $n;
+            }
+            if (preg_match('/(\d{4})\s*-\s*(I{1,2})\b/', $ciclo->nombre, $m)) {
+                return 1000 + (3000 - (int) $m[1]) * 10 + (3 - strlen($m[2]));
+            }
+
+            return 900;
+        };
+        // PPD dura un año: sus egresados se agrupan por PROMOCIÓN ("Promoción 2025"), no por su
+        // ciclo (todos terminan en Ciclo II y se confundirían con quienes lo cursan ahora).
+        $promocionesPpd = \App\Services\PromocionPpd::anios($usuarios->filter(fn ($u) => $u->programa?->esPpd()));
+        $grupoDe = fn ($u) => $u->condicion === 'Egresado' && isset($promocionesPpd[$u->id])
+            ? ($u->programa_id ?? 0) . '-p' . $promocionesPpd[$u->id]
+            : ($u->programa_id ?? 0) . '-' . ($u->ciclo_id ?? 0);
+        $agrupar = fn ($lista) => $lista
+            ->groupBy($grupoDe)
+            ->sortBy(fn ($g, $clave) => [
+                $g->first()->programa ? 0 : 1,
+                $g->first()->programa?->modalidad?->value ?? '',
+                $g->first()->programa_id ?? 0,
+                str_contains($clave, '-p') ? 2000 + (3000 - (int) substr($clave, strpos($clave, '-p') + 2)) : $ordenCiclo($g->first()->ciclo),
+            ]);
+        $gruposEstudiantes = [
+            'fid' => $agrupar($listas['fid']),
+            'ppd' => $agrupar($listas['ppd']),
+            'inhabilitados' => $agrupar($listas['inhabilitados']),
+        ];
+
+        // Conteos (mismos nombres de antes: los usan las tarjetas de ambas vistas)
+        $totalRecords        = $usuarios->count();
+        $totalAlumnos        = $listas['fid']->count();
+        $conteoAlumnos       = $totalAlumnos;
+        $conteoPpd           = $listas['ppd']->count();
+        $conteoDocentes      = $listas['docentes']->count();
+        $conteoAdmin         = $listas['admins']->count();
+        $conteoSuperAdmin    = $conRol('super-admin')->count();
+        $conteoInhabilitados = $listas['inhabilitados']->count();
+        $conteoTutores       = $listas['tutores']->count();
+        // Becas: solo estudiantes vigentes (FID y PPD, sin egresados ni retirados). Antes se
+        // mostraba junto al total de registros, que incluye docentes y personal.
+        $vigentes = $listas['fid']->concat($listas['ppd'])->unique('id')
+            ->reject(fn ($u) => $u->condicion === 'Egresado' || in_array($u->perfil, ['Egresado', 'Retirado'], true));
+        $estudiantesVigentes = $vigentes->count();
+        $becas = [
+            'total' => $vigentes->where('beca', 1)->count(),
+            'fid' => $vigentes->where('beca', 1)->filter(fn ($u) => $listas['fid']->contains('id', $u->id))->count(),
+        ];
+        $becas['ppd'] = $becas['total'] - $becas['fid'];
+        $alumnosConBeca = $becas['total'];
+
+        // Estado de matrícula de cada estudiante (misma regla que la exportación) y conteos por
+        // pestaña para los filtros rápidos.
+        $matriculas = [];
+        $conteoMatricula = [];
+        foreach (['fid', 'ppd', 'inhabilitados'] as $tab) {
+            $conteoMatricula[$tab] = ['matriculado' => 0, 'sin_matricula' => 0, 'sin_ficha' => 0, 'por_verificar' => 0, 'sin_enviar' => 0];
+            foreach ($listas[$tab] as $u) {
+                $m = $matriculas[$u->id] ??= \App\Services\EstadoMatricula::de($u);
+                if (isset($conteoMatricula[$tab][$m->estado])) {
+                    $conteoMatricula[$tab][$m->estado]++;
+                }
+                if ($m->estado === 'matriculado' && ! $m->voucher_verificado) {
+                    $conteoMatricula[$tab]['por_verificar']++;
+                }
+                if ($m->estado === 'matriculado' && $m->voucher_verificado && ! $m->ficha_enviada_at) {
+                    $conteoMatricula[$tab]['sin_enviar']++;
+                }
+            }
+        }
 
         $data = compact(
-            'alumno', 'admins', 'totalAlumnos', 'totalRecords', 'alumnosConBeca',
+            'alumno', 'esSuperAdmin', 'listas', 'gruposEstudiantes', 'totalAlumnos', 'totalRecords', 'alumnosConBeca', 'becas', 'estudiantesVigentes',
             'conteoDocentes', 'conteoAdmin', 'conteoSuperAdmin', 'conteoInhabilitados',
-            'conteoAlumnos', 'conteoPpd', 'conteoTutores'
+            'conteoAlumnos', 'conteoPpd', 'conteoTutores',
+            'matriculas', 'conteoMatricula', 'periodosFid', 'periodosPpd', 'periodoFid', 'periodoPpd', 'semestrePpd', 'promocionesPpd'
         );
 
         // Super-admin usa layout y vista propios (sin conflicto con admin)
@@ -86,6 +180,67 @@ class AdminController extends Controller
         }
 
         return view('admin.index', $data);
+    }
+
+    /**
+     * Las antiguas pantallas "Matrículas FID / PPD" ahora son pestañas del directorio
+     * (/Administrador). Se redirige para no romper marcadores ni enlaces viejos.
+     */
+    public function directorioRedirect(Request $request, string $tab)
+    {
+        $query = array_filter(['periodo' => $tab !== 'ppd' ? $request->input('periodo_id') : null,
+            'periodo_ppd' => $tab === 'ppd' ? $request->input('periodo_id') : null]);
+
+        return redirect()->to(route('admin', $query) . '#tab=' . $tab);
+    }
+
+    /**
+     * Exportador único del directorio: exporta EXACTAMENTE lo que el usuario ve (o lo que
+     * seleccionó). La lista de ids la arma la vista con los filtros aplicados.
+     */
+    public function exportarDirectorio(Request $request)
+    {
+        $datos = $request->validate([
+            'ids' => ['required', 'array', 'min:1', 'max:5000'],
+            'ids.*' => ['integer'],
+            'tab' => ['required', 'in:fid,ppd,inhabilitados'],
+            'preset' => ['required', Rule::in(array_keys(\App\Exports\DirectorioEstudiantesExport::PRESETS))],
+            'periodo' => ['nullable', 'integer'],
+            'periodo_ppd' => ['nullable', 'integer'],
+            'semestre_ppd' => ['nullable', 'in:1,2'],
+        ], ['ids.required' => 'No hay estudiantes para exportar con los filtros actuales.']);
+
+        $periodoFid = PeriodoActual::find($datos['periodo'] ?? null) ?? PeriodoActual::actual();
+        $periodoPpd = PeriodoActualPpd::find($datos['periodo_ppd'] ?? null) ?? PeriodoActualPpd::actual();
+        $esPpd = $datos['tab'] === 'ppd';
+        $semestrePpd = (int) ($datos['semestre_ppd'] ?? ($periodoPpd?->semestre_matricula ?? 1));
+        $sufijo = $datos['tab'] . '_' . now()->format('Y-m-d_His') . '.xlsx';
+
+        // Ficha completa (socioeconómica): las exportaciones de siempre, con los mismos alumnos.
+        if ($datos['preset'] === 'ficha') {
+            if ($esPpd) {
+                $usuarios = User::with(['programa', 'ciclo.programa', 'alumnoB', 'roles'])->whereIn('id', $datos['ids'])
+                    ->has('alumnoB')->orderBy('apellidos')->orderBy('name')->get();
+
+                return Excel::download(new AlumnosPpdExport($usuarios), 'estudiantes_ficha_' . $sufijo);
+            }
+            $alumnos = Alumno::with(['programa', 'ciclo', 'user.roles',
+                'matriculas' => fn ($q) => $q->where('periodo_actual_id', $periodoFid?->id ?? 0)])
+                ->whereIn('user_id', $datos['ids'])->orderBy('apellidos')->orderBy('nombres')->get();
+
+            return Excel::download(new AlumnosFidExport($alumnos, $periodoFid?->id), 'estudiantes_ficha_' . $sufijo);
+        }
+
+        $usuarios = User::with([
+            'programa', 'ciclo', 'roles',
+            'alumno.matriculas' => fn ($q) => $q->where('periodo_actual_id', $periodoFid?->id ?? 0),
+            'alumnoB.matriculas' => fn ($q) => $q->where('periodo_actual_ppd_id', $periodoPpd?->id ?? 0)->where('semestre', $semestrePpd),
+        ])->whereIn('id', $datos['ids'])->orderBy('apellidos')->orderBy('name')->get();
+
+        return Excel::download(
+            new \App\Exports\DirectorioEstudiantesExport($usuarios, $datos['preset'], $esPpd ? $periodoPpd?->nombre . ' · ' . ($semestrePpd === 2 ? '2.º' : '1.er') . ' semestre' : $periodoFid?->nombre),
+            'estudiantes_' . $datos['preset'] . '_' . $sufijo
+        );
     }
 
     public function alumnos(Request $request)
@@ -122,7 +277,7 @@ class AdminController extends Controller
         $alumnos = $query
             ->with([
                 'programa',
-                'ciclo',
+                'ciclo.tutores',
                 'user.roles',
                 'matriculas' => fn ($q) => $q->where('periodo_actual_id', $periodoFiltroId),
             ])
@@ -544,6 +699,30 @@ class AdminController extends Controller
         return view('admin.edit', compact('admin', 'programas', 'ciclos', 'currentRoles', 'currentCicloId', 'currentProgramId', 'departamentosData', 'layout'));
     }
 
+    /**
+     * users.pendiente a partir del formulario: los cursos elegidos ("Nombre - Ciclo X") unidos
+     * con " | ", o nada si se marcó "No" o no se eligió ninguno. Si llega el campo de texto
+     * antiguo (otra pantalla), se respeta tal cual.
+     */
+    private function pendienteDesdeRequest(Request $request): ?string
+    {
+        if (! $request->has('pendientes') && ! $request->has('tiene_cursos_pendientes')) {
+            return $request->input('pendiente');
+        }
+        if ($request->input('tiene_cursos_pendientes') === '0') {
+            return null;
+        }
+        $cursos = collect($request->input('pendientes', []))->map(fn ($c) => trim((string) $c))->filter()->unique()->values();
+
+        $texto = $cursos->implode(User::SEPARADOR_PENDIENTES);
+        // La columna admite 500 caracteres (unos 8 cursos con su ciclo).
+        if (mb_strlen($texto) > 500) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['pendientes' => 'Demasiados cursos pendientes para guardarlos juntos: quite alguno.']);
+        }
+
+        return $cursos->isEmpty() ? null : $texto;
+    }
+
     public function store(Request $request)
     {
         $request->validate([
@@ -552,12 +731,18 @@ class AdminController extends Controller
             'dni' => 'required|string|max:255',
             'condicion' => 'nullable|string|max:40',
             'pendiente' => 'nullable|string',
+            'pendientes' => 'nullable|array',
+            'pendientes.*' => 'string|max:255',
             'perfil' => 'nullable|string',
             'beca' => 'nullable|boolean',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:7|confirmed',
-            'roles' => 'required|array|min:1',
-            'roles.*' => 'string|in:super-admin,admin,docente,alumno,adminB,alumnoB,inhabilitado,tutor',
+            'roles' => ['required', 'array', 'min:1', function ($attribute, $value, $fail) {
+                if (in_array('investigador', $value, true) && ! in_array('docente', $value, true)) {
+                    $fail('El rol Investigador requiere que también se asigne el rol Docente.');
+                }
+            }],
+            'roles.*' => 'string|in:super-admin,admin,docente,alumno,adminB,alumnoB,inhabilitado,tutor,investigador,gestor-titulacion',
             'programa_id' => [\Illuminate\Validation\Rule::requiredIf(fn () => !empty(array_intersect($request->input('roles', []), ['alumno', 'alumnoB']))), 'nullable', 'exists:programas,id'],
             'ciclo_id' => [\Illuminate\Validation\Rule::requiredIf(fn () => !empty(array_intersect($request->input('roles', []), ['alumno', 'alumnoB']))), 'nullable', 'exists:ciclos,id'],
         ]);
@@ -567,7 +752,7 @@ class AdminController extends Controller
             'apellidos' => $request->input('apellidos'),
             'dni' => $request->input('dni'),
             'condicion' => $request->input('condicion'),
-            'pendiente' => $request->input('pendiente'),
+            'pendiente' => $this->pendienteDesdeRequest($request),
             'perfil' => $request->input('perfil'),
             'beca' => $request->input('beca'),
             'email' => $request->input('email'),
@@ -607,11 +792,17 @@ class AdminController extends Controller
             'condicion' => 'nullable|string',
             'perfil' => 'nullable|string',
             'pendiente' => 'nullable|string',
+            'pendientes' => 'nullable|array',
+            'pendientes.*' => 'string|max:255',
             'beca' => 'nullable|boolean',
             'email' => 'required|email|unique:users,email,'.$id,
             'password' => 'nullable|string|min:7|confirmed',
-            'roles' => 'required|array|min:1',
-            'roles.*' => 'string|in:super-admin,admin,docente,alumno,adminB,alumnoB,inhabilitado,tutor',
+            'roles' => ['required', 'array', 'min:1', function ($attribute, $value, $fail) {
+                if (in_array('investigador', $value, true) && ! in_array('docente', $value, true)) {
+                    $fail('El rol Investigador requiere que también se asigne el rol Docente.');
+                }
+            }],
+            'roles.*' => 'string|in:super-admin,admin,docente,alumno,adminB,alumnoB,inhabilitado,tutor,investigador,gestor-titulacion',
             'programa_id' => [\Illuminate\Validation\Rule::requiredIf(fn () => !empty(array_intersect($request->input('roles', []), ['alumno', 'alumnoB']))), 'nullable', 'exists:programas,id'],
             'ciclo_id' => [\Illuminate\Validation\Rule::requiredIf(fn () => !empty(array_intersect($request->input('roles', []), ['alumno', 'alumnoB']))), 'nullable', 'exists:ciclos,id'],
             'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
@@ -620,12 +811,19 @@ class AdminController extends Controller
         ]);
 
         $user = User::findOrFail($id);
+
+        // Licencia: máximo 2 años ACUMULADOS (aunque estén partidas) — ver Trayectoria.
+        if ($request->input('perfil') === 'Licencia' && $user->perfil !== 'Licencia'
+            && ! \App\Services\Trayectoria::puedeIniciarLicencia($user)) {
+            return back()->withInput()->withErrors(['perfil' => \App\Services\Trayectoria::mensajeLicenciaAgotada($user)]);
+        }
+
         $user->name = $request->input('name');
         $user->apellidos = $request->input('apellidos');
         $user->dni = $request->input('dni');
         $user->condicion = $request->input('condicion');
         $user->perfil = $request->input('perfil');
-        $user->pendiente = $request->input('pendiente');
+        $user->pendiente = $this->pendienteDesdeRequest($request);
         $user->beca = $request->input('beca');
         $user->email = $request->input('email');
 
@@ -676,7 +874,81 @@ class AdminController extends Controller
         }
         $user->save();
 
+        if (in_array('inhabilitado', $roles) && $user->perfil === 'Licencia') {
+            $this->matricularAutomaticamentePorLicencia($user);
+        }
+
         return redirect()->route('admin')->with('success', 'Usuario actualizado correctamente');
+    }
+
+    /**
+     * Un alumno FID inhabilitado por Licencia sigue siendo, formalmente,
+     * alumno de la institución (pausó su carrera por un tiempo, no la dejó
+     * como uno Retirado) — a diferencia de otros motivos de inhabilitación,
+     * este debe: (1) conservar el rol "alumno" además de "inhabilitado", y
+     * (2) quedar matriculado automáticamente en el periodo actual, sin pasar
+     * por el flujo normal de voucher/comprobante, para que no desaparezca de
+     * los listados y reportes de matrícula.
+     */
+    private function matricularAutomaticamentePorLicencia(User $user): void
+    {
+        if (! $user->hasRole('alumno')) {
+            $user->assignRole('alumno');
+        }
+
+        $alumno = Alumno::where('user_id', $user->id)->first();
+        $periodoActual = PeriodoActual::where('actual', true)->first();
+
+        if (! $alumno || ! $periodoActual) {
+            // Sin ficha de alumno o sin periodo activo configurado no hay a
+            // qué matricular — el rol ya quedó asignado arriba de todos modos.
+            return;
+        }
+
+        Matricula::firstOrCreate(
+            ['alumno_id' => $alumno->id, 'periodo_actual_id' => $periodoActual->id],
+            [
+                'fecha_completado' => now(),
+                'estado' => 'matriculado',
+                'comprobante' => 'Matrícula automática por Licencia (sin voucher)',
+                'voucher_verificado' => false,
+            ]
+        );
+    }
+
+    /**
+     * Cambia solo el motivo de inhabilitación (perfil) de un usuario ya
+     * inhabilitado, desde el popup de la pestaña "Inhabilitados" — sin pasar
+     * por el formulario completo de edición (que exige nombre/DNI/email/roles
+     * de nuevo). El rol "inhabilitado" no se toca aquí: esto solo reclasifica
+     * el motivo (Deuda ⇄ Licencia ⇄ Retirado ⇄ Sin matrícula), nunca rehabilita
+     * a alguien por completo (eso sigue siendo una decisión del edit completo).
+     */
+    public function actualizarPerfilInhabilitado(Request $request, User $user)
+    {
+        abort_unless($user->hasRole('inhabilitado'), 404);
+
+        $validated = $request->validate([
+            'perfil' => ['required', \Illuminate\Validation\Rule::in(['Deuda', 'Sin matrícula', 'Licencia', 'Retirado'])],
+        ]);
+
+        // También se cambia desde las pestañas FID/PPD (chip "Inhabilitado · …"): volver a la misma.
+        $volver = in_array($request->input('volver'), ['fid', 'ppd', 'inhabilitados'], true) ? $request->input('volver') : 'inhabilitados';
+
+        if ($validated['perfil'] === 'Licencia' && $user->perfil !== 'Licencia'
+            && ! \App\Services\Trayectoria::puedeIniciarLicencia($user)) {
+            return redirect(route('admin').'#'.$volver)->with('error', \App\Services\Trayectoria::mensajeLicenciaAgotada($user));
+        }
+
+        $user->perfil = $validated['perfil'];
+        $user->save();
+
+        if ($validated['perfil'] === 'Licencia') {
+            $this->matricularAutomaticamentePorLicencia($user);
+        }
+
+        return redirect(route('admin').'#'.$volver)
+            ->with('success', 'Motivo de inhabilitación de '.$user->apellidos.', '.$user->name.' actualizado a "'.$validated['perfil'].'".');
     }
 
     public function destroy($id)
@@ -969,31 +1241,42 @@ class AdminController extends Controller
                 : redirect()->back()->with('error', $mensaje);
         }
 
-        try {
-            Mail::to($email)->send(new NotificacionRegistro($alumno, $matricula->periodoActual, true));
-            $matricula->update(['ficha_enviada_at' => now()]);
+        return $this->enviarFichaDespuesDeResponder($request, $matricula, $alumno, $matricula->periodoActual, $email, $yaEnviada, 'FID');
+    }
 
-            $mensaje = $yaEnviada
-                ? 'Ficha de matrícula reenviada correctamente al alumno.'
-                : 'Ficha de matrícula enviada correctamente al alumno.';
-
-            if ($wantsJson) {
-                return response()->json([
-                    'success' => true,
-                    'message' => $mensaje,
-                    'ficha_enviada_at' => $matricula->ficha_enviada_at->format('d/m/Y H:i'),
+    /**
+     * Envía la ficha de matrícula DESPUÉS de responder al navegador.
+     *
+     * Antes el correo se mandaba en el momento (SMTP de Gmail: conexión, TLS, login y subida del
+     * PDF adjunto) y el clic quedaba esperando varios segundos. Ahora se responde al instante y el
+     * envío corre al terminar la petición (PHP-FPM cierra la respuesta con fastcgi_finish_request;
+     * si el servidor no lo soporta, se comporta como antes: no empeora nada).
+     * ficha_enviada_at se marca SOLO si el envío sale bien; si falla queda en el log.
+     */
+    private function enviarFichaDespuesDeResponder(Request $request, $matricula, $alumno, $periodo, string $email, bool $yaEnviada, string $tipo)
+    {
+        app()->terminating(function () use ($matricula, $alumno, $periodo, $email, $tipo) {
+            try {
+                Mail::to($email)->send(new NotificacionRegistro($alumno, $periodo, true, $matricula));
+                $matricula->update(['ficha_enviada_at' => now()]);
+            } catch (\Throwable $e) {
+                Log::error("Error enviando ficha de matrícula {$tipo} (envío diferido)", [
+                    'matricula_id' => $matricula->id, 'email' => $email, 'error' => $e->getMessage(),
                 ]);
             }
+        });
 
-            return redirect()->back()->with('success', $mensaje);
-        } catch (\Exception $e) {
-            Log::error('Error enviando ficha de matrícula (verificación manual): '.$e->getMessage());
-            $mensaje = 'Ocurrió un error al enviar el correo. Revisa el log.';
+        $mensaje = ($yaEnviada ? 'Reenviando' : 'Enviando') . " la ficha de matrícula a {$email}. Llegará en unos segundos.";
 
-            return $wantsJson
-                ? response()->json(['success' => false, 'message' => $mensaje], 500)
-                : redirect()->back()->with('error', $mensaje);
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => $mensaje,
+                'ficha_enviada_at' => now()->format('d/m/Y'),
+            ]);
         }
+
+        return redirect()->back()->with('success', $mensaje);
     }
 
     public function verificarVoucherMatriculaPpd(Request $request, MatriculaPpd $matricula)
@@ -1045,31 +1328,7 @@ class AdminController extends Controller
                 : redirect()->back()->with('error', $mensaje);
         }
 
-        try {
-            Mail::to($email)->send(new NotificacionRegistro($alumno, $matricula->periodoActualPpd, true));
-            $matricula->update(['ficha_enviada_at' => now()]);
-
-            $mensaje = $yaEnviada
-                ? 'Notificación de matrícula PPD reenviada correctamente al alumno.'
-                : 'Notificación de matrícula PPD enviada correctamente al alumno.';
-
-            if ($wantsJson) {
-                return response()->json([
-                    'success' => true,
-                    'message' => $mensaje,
-                    'ficha_enviada_at' => $matricula->ficha_enviada_at->format('d/m/Y H:i'),
-                ]);
-            }
-
-            return redirect()->back()->with('success', $mensaje);
-        } catch (\Exception $e) {
-            Log::error('Error enviando ficha de matrícula PPD (verificación manual): '.$e->getMessage());
-            $mensaje = 'Ocurrió un error al enviar el correo. Revisa el log.';
-
-            return $wantsJson
-                ? response()->json(['success' => false, 'message' => $mensaje], 500)
-                : redirect()->back()->with('error', $mensaje);
-        }
+        return $this->enviarFichaDespuesDeResponder($request, $matricula, $alumno, $matricula->periodoActualPpd, $email, $yaEnviada, 'PPD');
     }
 
     private function applyAlumnoFidUserConstraints($userQuery): void

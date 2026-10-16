@@ -43,13 +43,16 @@
             font-weight: bold;
             margin-bottom: 15px;
         }
+
         .modal-body {
             font-size: 14px;
             margin-bottom: 15px;
         }
+
         .modal-body li {
             margin-bottom: 12px;
         }
+
         .modal-body .span {
             background: #cd9244;
             border-radius: 50%;
@@ -58,6 +61,7 @@
             margin-right: 5px;
             position: relative;
         }
+
         .modal-body .span::after {
             content: '';
             display: block;
@@ -159,11 +163,37 @@
                                         <li>Una fotocopia de DNI ampliado y legalizado. </li>
                                         <li>Partida de nacimiento original.</li>
                                         <li>Certificado de estudios de secundaria original.
-											
-										</li>
-                                        <li>8 Fotos tamaño pasaporte fondo blanco, con terno y en papel mate, medidas: 4cm x 5cm.</li>
-                                        <li>Documento que acredite conocimiento de idioma A2/ lengua originaria primaria EIB
+
                                         </li>
+                                        <li>8 Fotos tamaño pasaporte fondo blanco, con terno y en papel mate, medidas: 4cm x
+                                            5cm.</li>
+                                        <li>Documento que acredite conocimiento de idioma A2/ lengua originaria primaria EIB
+                                            <p class="generic-blockquote mt-4">
+                                                <strong>Niveles de inglés A (usuario básico)</strong><br>
+                                                <strong>Test de inglés A2:</strong> Es capaz de comprender frases y
+                                                expresiones
+                                                de uso frecuente
+                                                relacionadas con áreas de experiencia que le son especialmente relevantes
+                                                (información básica sobre sí
+                                                mismo y su familia, compras, lugares de interés, ocupaciones, etc.). Sabe
+                                                comunicarse a la hora de
+                                                llevar a cabo tareas simples y cotidianas que no requieran más que
+                                                intercambios
+                                                sencillos y directos de
+                                                información sobre cuestiones que le son conocidas o habituales. Sabe
+                                                describir
+                                                en términos sencillos
+                                                aspectos de su pasado y su entorno, así como cuestiones relacionadas con sus
+                                                necesidades inmediatas.<br>
+                                                <a href="https://tracktest.eu/es/niveles-de-ingles-mcer-cefr/#Ingl%C3%A9susuariobasico"
+                                                    target="_blanck" style="color: #ff5e13"><strong>Niveles de inglés MCER
+                                                        (CEFR)</strong></a><br>
+                                                <i>De acuerdo a lo establecido en los LAG de la ley N° 30512</i>
+                                            </p>
+                                        </li>
+
+
+
                                     </ul>
                                     <h5 class="mt-3">Documentos a tramitar con la Institución: </h5>
                                     <ul class="listanueva">
@@ -175,11 +205,15 @@
                                                 </a>
                                             </small>
                                         </li>
-										<li>Certificado de estudios superiores, la duranción del trámite es de 30 días hábiles.
-                                            <small class="text-info">Codigo: 8 | Concepto: Certificado estudios por Ciclo | Precio: s/50.00                                            </small>
+                                        <li>Certificado de estudios superiores, la duranción del trámite es de 30 días
+                                            hábiles.
+                                            <small class="text-info">Codigo: 8 | Concepto: Certificado estudios por Ciclo |
+                                                Precio: s/50.00 </small>
                                         </li>
-										
-                                        <li>Una copia de RD de haber aprobado las prácticas pre profesionales. <small class="text-info">Codigo: 30 | Concepto: RD DE APROBACION DE PRACTICAS | Monto:
+
+                                        <li>Una copia de RD de haber aprobado las prácticas pre profesionales. <small
+                                                class="text-info">Codigo: 30 | Concepto: RD DE APROBACION DE PRACTICAS |
+                                                Monto:
                                                 s/50.00</small>
                                         </li>
                                         <li>Carta de aceptación de la I.E. donde se realiza la investigación, original.
@@ -187,7 +221,8 @@
                                         </li>
                                         <li>Constancia de no deudor original.
                                             <small class="text-info">Codigo: 28 | Concepto: Constacia de no deudor | Monto:
-                                                s/ 30.00</small>, luego de ello solicitar la constancia con el área de Cobranzas.
+                                                s/ 30.00</small>, luego de ello solicitar la constancia con el área de
+                                            Cobranzas.
                                         </li>
                                         <li>Constancia de egresado original.
                                             <small class="text-info">Codigo: 9 | Concepto: Constacia de Egresado | Monto: s/
@@ -202,7 +237,7 @@
                                                 Monto: s/ 50.00</small>
                                         </li>
                                         <li>Informe de Trabajo de Investigación Apto original.</li>
-                                        
+
                                         <li>Comprobante de pago por Derecho de obtención de grado de Bachiller original.
                                             <small class="text-info">Codigo: 18 | Concepto: Armado de expediente de
                                                 Titulación | Monto: s/ 500.00</small>
@@ -216,7 +251,7 @@
                             </div>
                         </div>
                     </div>
- 
+
                     <div class="card">
                         <div class="card-header" id="headingTwo">
                             <h5 class="mb-0">
@@ -232,9 +267,32 @@
                                 <div class="row">
                                     <h5>Documentos externos a presentar en la Institución: </h5>
                                     <ul class="listanueva">
-                                        <li>Una fotocopia de DNI ampliado y legalizado. </li>                                        
-                                        <li>Cuatro (4) Fotos tamaño pasaporte fondo blanco, con terno y en papel mate, medidas: 4cm x 5cm.</li>
-                                        <li>Documento que acredite conocimiento de idioma A2/ lengua originaria primaria EIB
+                                        <li>Una fotocopia de DNI ampliado y legalizado. </li>
+                                        <li>Cuatro (4) Fotos tamaño pasaporte fondo blanco, con terno y en papel mate,
+                                            medidas: 4cm x 5cm.</li>
+                                        <li>Documento que acredite conocimiento de idioma A2/ lengua originaria primaria EIB.
+                                            <p class="generic-blockquote mt-4">
+                                                <strong>Niveles de inglés A (usuario básico)</strong><br>
+                                                <strong>Test de inglés A2:</strong> Es capaz de comprender frases y
+                                                expresiones
+                                                de uso frecuente
+                                                relacionadas con áreas de experiencia que le son especialmente relevantes
+                                                (información básica sobre sí
+                                                mismo y su familia, compras, lugares de interés, ocupaciones, etc.). Sabe
+                                                comunicarse a la hora de
+                                                llevar a cabo tareas simples y cotidianas que no requieran más que
+                                                intercambios
+                                                sencillos y directos de
+                                                información sobre cuestiones que le son conocidas o habituales. Sabe
+                                                describir
+                                                en términos sencillos
+                                                aspectos de su pasado y su entorno, así como cuestiones relacionadas con sus
+                                                necesidades inmediatas.<br>
+                                                <a href="https://tracktest.eu/es/niveles-de-ingles-mcer-cefr/#Ingl%C3%A9susuariobasico"
+                                                    target="_blanck" style="color: #ff5e13"><strong>Niveles de inglés MCER
+                                                        (CEFR)</strong></a><br>
+                                                <i>De acuerdo a lo establecido en los LAG de la ley N° 30512</i>
+                                            </p>
                                         </li>
                                     </ul>
                                     <h5 class="mt-3">Documentos a tramitar con la Institución: </h5>
@@ -245,7 +303,8 @@
                                         </li>
                                         <li>Constancia de no deudor original.
                                             <small class="text-info">Codigo: 28 | Concepto: Constacia de no deudor | Monto:
-                                                s/ 30.00</small>, luego de ello solicitar la constancia con el área de Cobranzas.
+                                                s/ 30.00</small>, luego de ello solicitar la constancia con el área de
+                                            Cobranzas.
                                         </li>
                                         <li>Constancia de egresado original.
                                             <small class="text-info">Codigo: 9 | Concepto: Constacia de Egresado | Monto: s/
@@ -257,13 +316,17 @@
                                         </li>
                                         <li>Certificado original de Estudios Superiores:
                                             <ul>
-                                                <li style="list-style: disc!important">Para estudiantes provenientes de Institutos (IESP): Certificado
+                                                <li style="list-style: disc!important">Para estudiantes provenientes de
+                                                    Institutos (IESP): Certificado
                                                     de Estudios original, visado por la DREC.
                                                 </li>
-                                                <li style="list-style: disc!important">Para estudiantes provenientes de Universidad. Legalizado por notaria oFedatado por la misma Universidad.</li>
-												<li style="list-style: disc!important">
-												Si este documento ya está en tu expediente de ingreso, no es necesario volver a presentarlo.
-											</li>
+                                                <li style="list-style: disc!important">Para estudiantes provenientes de
+                                                    Universidad. Legalizado por notaria oFedatado por la misma Universidad.
+                                                </li>
+                                                <li style="list-style: disc!important">
+                                                    Si este documento ya está en tu expediente de ingreso, no es necesario
+                                                    volver a presentarlo.
+                                                </li>
                                             </ul>
                                         </li>
                                         <li>Resolución Directoral de Aprobación de PTI y asignación de asesor original.
@@ -283,11 +346,11 @@
                                     <h5 class="mt-">
                                         Como resultado de este trámite obtendrás una Carta de aceptación de Expediente de
                                         Graduación completo.
-                                    </h5>                                    
+                                    </h5>
                                 </div>
                             </div>
                         </div>
-                    </div>                   
+                    </div>
                 </div>
 
                 <h3 class="mt-4"> Carta de presentación para solicitar autorización de investigación:</h3>
@@ -332,7 +395,7 @@
                         web.</li>
                     <li>Dos fotos tamaño carné, en fondo blanco y con terno.</li>
                     <li>Comprobante de pago por Constancia de Egresado.</li>
-					<li>Constancia de egresado se obtiene presentando la Constancia de No Deudor</li>
+                    <li>Constancia de egresado se obtiene presentando la Constancia de No Deudor</li>
                 </ul>
                 <p>
                     Como resultado de este trámite obtendrás una Constancia de Egresado.
@@ -347,7 +410,7 @@
                     <li>FUT debidamente llenado. Puedes solicitarlo en la oficina de secretaría o descargarlo de la página
                         web.</li>
                     <li>Seis fotos tamaño pasaporte, en fondo blanco y con terno.</li>
-                    <li>Comprobante de pago por Certificado de Estudios Superiores.</li>					
+                    <li>Comprobante de pago por Certificado de Estudios Superiores.</li>
                 </ul>
                 <p> Como resultado de este trámite obtendrás los Certificados de Estudios Superiores.</p>
 
@@ -364,7 +427,6 @@
                 <p>
                     Estos pagos ordinarios SOLO SE PUEDEN PAGAR EN VENTANILLAS de cualquier agencia a nivel nacional.
                 </p>
-
             </div>
         </div>
     </div>

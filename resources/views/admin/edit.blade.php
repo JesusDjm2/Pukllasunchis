@@ -1,479 +1,434 @@
 @extends($layout ?? 'layouts.admin')
 @section('contenido')
-    <div class="container-fluid">
-        <div class="d-sm-flex align-items-center justify-content-between mb-4"
-            style="border-bottom: 1px dashed #4848fc78; padding-bottom:1em">
-            <div>
-                <h4 class="mb-0 font-weight-bold" style="color:#1e293b;">
-                    <i class="fas fa-user-edit mr-2" style="color:#4e73df;"></i>Editar: <span
-                        style="color:#4e73df;">{{ $admin->apellidos }}, {{ $admin->name }}</span>
-                </h4>
-                <small class="text-muted">Actualiza los datos de acceso, rol y perfil del usuario</small>
-            </div>
-            <a href="{{ route('admin') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
-                Volver
-            </a>
+@include('admin.usuarios._form_estilos')
+@php
+    $selectedRoles = old('roles', $currentRoles);
+    $iniciales = mb_strtoupper(mb_substr(trim((string) $admin->name), 0, 1) . mb_substr(trim((string) $admin->apellidos), 0, 1));
+    $esEstudiante = $admin->hasAnyRole(['alumno', 'alumnoB', 'inhabilitado']) || $admin->alumno || $admin->alumnoB;
+    // "No", "Ninguno"… escritos en el campo antiguo no cuentan como cursos pendientes.
+    $tienePendientes = old('tiene_cursos_pendientes', $admin->cursosPendientes() ? 1 : 0) == 1;
+    $condiciones = ['Regular', 'Beca Continua', 'Beca 18', 'Beca Puklla', 'Reincorporación', 'Egresado'];
+    $perfilesBolsa = ['Estudiante', 'Bachiller', 'Titulado', 'Egresado'];
+    $motivosInhabilitacion = ['Deuda' => 'Deuda', 'Sin matrícula' => 'Sin matrícula', 'Licencia' => 'Licencia', 'Retirado' => 'Retirado'];
+    // Ciclos del programa del usuario + siempre su ciclo actual (aunque un dato inconsistente lo deje
+    // en otro programa): si no estuviera en la lista, al guardar se le borraría el ciclo.
+    $cicloActualId = old('ciclo_id', $currentCicloId);
+    $ciclosDelPrograma = $ciclos->filter(fn ($c) => $c->programa_id == old('programa_id', $currentProgramId) || $c->id == $cicloActualId);
+@endphp
+
+<div class="container-fluid py-3">
+
+    {{-- Header --}}
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-4" style="gap:.75rem;">
+        <div class="reg-header">
+            <h4 class="mb-0 font-weight-bold" style="color:#1e293b;">
+                <i class="fas fa-user-edit mr-2" style="color:#4e73df;"></i>Editar usuario
+            </h4>
+            <small class="text-muted">Actualiza los datos de acceso, roles y perfil de <strong>{{ $admin->apellidos }}, {{ $admin->name }}</strong></small>
         </div>
+        <a href="{{ route('admin') }}" class="btn btn-sm btn-outline-secondary" style="border-radius:.5rem;">
+            <i class="fas fa-arrow-left fa-xs mr-1"></i> Volver
+        </a>
+    </div>
 
-        {{-- MOSTRAR ERRORES GENERALES DEL FORMULARIO --}}
-        @if ($errors->any())
-            <div class="alert alert-danger">
-                <ul class="mb-0">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
+    @if ($errors->any())
+        <div class="alert alert-danger" style="border-radius:.6rem;">
+            <div class="font-weight-bold mb-1"><i class="fas fa-exclamation-triangle mr-1"></i> Revisa los siguientes datos:</div>
+            <ul class="mb-0 pl-3">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+    @if (session('success'))
+        <div class="alert alert-success" style="border-radius:.6rem;"><i class="fas fa-check-circle mr-1"></i> {{ session('success') }}</div>
+    @endif
 
-        {{-- MOSTRAR MENSAJE DE ÉXITO --}}
-        @if (session('success'))
-            <div class="alert alert-success">
-                {{ session('success') }}
-            </div>
-        @endif
+    <form id="editForm" method="POST" action="{{ route('adminUpdate', $admin->id) }}" enctype="multipart/form-data">
+    @csrf
+    @method('PUT')
+    <div class="row">
 
-        <div class="row">
-            <style>
-                .vertical-align {
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                }
-            </style>
-            <div class="col-lg-2" style="border-bottom: 1px dashed #4848fc78; padding-bottom:1em">
-                @if ($admin->foto)
-                    <label class="font-weight-bold">Foto actual:</label>
-                    <img src="{{ asset('img/estudiantes/' . $admin->foto) }}" alt="Foto del usuario" class="img-fluid">
-                @else
-                    <div
-                        style="width: 100%; height: 150px; background-color: #e0e0e0; display: flex; justify-content: center; align-items: center;">
-                        <span class="text-muted">Sin foto asignada</span>
+        {{-- Columna principal --}}
+        <div class="col-xl-8 col-lg-7">
+
+            {{-- Información personal --}}
+            <div class="reg-card">
+                <div class="reg-card-head">
+                    <i class="fas fa-id-card"></i> Información personal
+                </div>
+                <div class="reg-card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="reg-label" for="name">Nombres <span class="text-danger">*</span></label>
+                            <div class="input-group reg-input-wrap">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-user fa-xs"></i></span>
+                                </div>
+                                <input type="text" name="name" id="name"
+                                    class="form-control @error('name') is-invalid @enderror"
+                                    value="{{ old('name', $admin->name) }}" placeholder="Nombres" required>
+                                @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="reg-label" for="apellidos">Apellidos <span class="text-danger">*</span></label>
+                            <div class="input-group reg-input-wrap">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-user fa-xs"></i></span>
+                                </div>
+                                <input type="text" name="apellidos" id="apellidos"
+                                    class="form-control @error('apellidos') is-invalid @enderror"
+                                    value="{{ old('apellidos', $admin->apellidos) }}" placeholder="Apellidos" required>
+                                @error('apellidos')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="reg-label" for="dni">DNI <span class="text-danger">*</span></label>
+                            <div class="input-group reg-input-wrap">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-id-badge fa-xs"></i></span>
+                                </div>
+                                <input type="text" name="dni" id="dni"
+                                    class="form-control @error('dni') is-invalid @enderror"
+                                    value="{{ old('dni', $admin->dni) }}" placeholder="Nº de DNI" required>
+                                @error('dni')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            </div>
+                        </div>
                     </div>
-                @endif
-            </div>
-            <div class="col-lg-10 vertical-align" style="border-bottom: 1px dashed #4848fc78; padding-bottom:1em">
-                <div>
-                    @if ($admin->alumno)
-                        <p><strong>Programa:</strong>
-                            {{ $admin->programa ? $admin->programa->nombre : 'No asignado' }} | <strong>Ciclo:</strong>
-                            {{ optional($admin->ciclo)->nombre ?? 'N/A' }}
-                        </p>
-                        <p><strong>Condición:</strong> {{ $admin->condicion }} | <strong>Perfil: </strong>
-                            @if ($admin->perfil)
-                                {{ $admin->perfil }}
-                            @else
-                                Sin perfil
-                            @endif
-                        </p>
-                        @if ($admin->pendiente)
-                            <p>{{ $admin->pendiente }}</p>
-                        @endif
-                    @endif
                 </div>
             </div>
-            <div class="col-lg-12">
-                <form id="editForm" method="POST" action="{{ route('adminUpdate', $admin->id) }}" class="mt-3"
-                    enctype="multipart/form-data">
-                    @csrf
-                    @method('PUT')
+
+            {{-- Credenciales --}}
+            <div class="reg-card">
+                <div class="reg-card-head">
+                    <i class="fas fa-lock"></i> Credenciales de acceso
+                </div>
+                <div class="reg-card-body">
                     <div class="row">
-                        <!-- Campo para subir la foto -->
-                        <div class="col-lg-2 mb-3">
-                            <label for="foto" class="form-label">Subir Foto:</label>
-                            <input type="file" name="foto" id="foto" accept="image/*"
-                                class="form-control form-control-sm @error('foto') is-invalid @enderror"
-                                onchange="previewImage(event)">
-                            @error('foto')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                        <div class="col-lg-2">
-                            <label>Subir/Actualizar:</label>
-                            <div>
-                                <img id="preview" src="#" alt="Previsualización de la imagen"
-                                    style="width: 100%; display: none;">
+                        <div class="col-md-4 mb-3">
+                            <label class="reg-label" for="email">Correo electrónico <span class="text-danger">*</span></label>
+                            <div class="input-group reg-input-wrap">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-envelope fa-xs"></i></span>
+                                </div>
+                                <input type="email" name="email" id="email"
+                                    class="form-control @error('email') is-invalid @enderror"
+                                    value="{{ old('email', $admin->email) }}" placeholder="correo@ejemplo.com" required>
+                                @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
                         </div>
-
-                        <script>
-                            function previewImage(event) {
-                                const input = event.target;
-                                const reader = new FileReader();
-
-                                reader.onload = function() {
-                                    const preview = document.getElementById('preview');
-                                    preview.src = reader.result;
-                                    preview.style.display = 'block';
-                                };
-
-                                if (input.files && input.files[0]) {
-                                    reader.readAsDataURL(input.files[0]);
-                                }
-                            }
-                        </script>
-
-                        <div class="col-lg-4 mb-3">
-                            <label for="name" class="form-label">Nombre:</label>
-                            <input type="text" class="form-control form-control-sm @error('name') is-invalid @enderror"
-                                id="name" name="name" value="{{ old('name', $admin->name) }}" required>
-                            @error('name')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="col-lg-4 mb-3">
-                            <label for="apellidos" class="form-label">Apellidos:</label>
-                            <input type="text"
-                                class="form-control form-control-sm @error('apellidos') is-invalid @enderror" id="apellidos"
-                                name="apellidos" value="{{ old('apellidos', $admin->apellidos) }}" required>
-                            @error('apellidos')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="col-lg-2 mb-3">
-                            <label for="dni" class="form-label">DNI:</label>
-                            <input type="text" class="form-control form-control-sm @error('dni') is-invalid @enderror"
-                                id="dni" name="dni" value="{{ old('dni', $admin->dni) }}" required>
-                            @error('dni')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="col-lg-3 mb-3">
-                            <label for="email" class="form-label">Correo electrónico:</label>
-                            <input type="email" class="form-control form-control-sm @error('email') is-invalid @enderror"
-                                id="email" name="email" value="{{ old('email', $admin->email) }}" required>
-                            @error('email')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="col-lg-3 mb-3">
-                            <label for="password">Nueva Contraseña (opcional):</label>
-                            <input type="password" name="password" id="password"
-                                class="form-control form-control-sm @error('password') is-invalid @enderror">
-                            @error('password')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="col-lg-4 mb-3">
-                            <label for="password_confirmation">Confirmar Contraseña (opcional):</label>
-                            <input type="password" name="password_confirmation" id="password_confirmation"
-                                class="form-control form-control-sm @error('password') is-invalid @enderror"
-                                placeholder="Confirmar contraseña">
-                            @error('password')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="col-lg-6 mb-3">
-                            <label class="form-label">Roles asignados:</label>
-                            @php $selectedRoles = old('roles', $currentRoles); @endphp
-                            @foreach ([
-            'admin' => 'Administrador',
-            'docente' => 'Docente',
-            'tutor' => 'Tutor',
-            'alumno' => 'Alumno FID',
-            'alumnoB' => 'Alumno PPD',
-            'adminB' => 'Administrador Bolsa',
-            'inhabilitado' => 'Inhabilitado',
-        ] as $val => $label)
-                                <div class="form-check">
-                                    <input class="form-check-input role-checkbox" type="checkbox" name="roles[]"
-                                        value="{{ $val }}" id="role_{{ $val }}"
-                                        {{ in_array($val, $selectedRoles) ? 'checked' : '' }}>
-                                    <label class="form-check-label"
-                                        for="role_{{ $val }}">{{ $label }}</label>
+                        <div class="col-md-4 mb-3">
+                            <label class="reg-label" for="password">Nueva contraseña</label>
+                            <div class="input-group reg-input-wrap">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-key fa-xs"></i></span>
                                 </div>
-                            @endforeach
-                            @hasrole('super-admin')
-                                <div class="form-check mt-1">
-                                    <input class="form-check-input role-checkbox" type="checkbox" name="roles[]"
-                                        value="super-admin" id="role_superadmin"
-                                        {{ in_array('super-admin', $selectedRoles) ? 'checked' : '' }}>
-                                    <label class="form-check-label font-weight-bold" for="role_superadmin"
-                                        style="color:#7c3aed;">
-                                        <i class="fas fa-crown fa-xs mr-1"></i>Super Admin
-                                    </label>
-                                </div>
-                            @endhasrole
-                            @error('roles')
-                                <div class="text-danger small mt-1">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="col-lg-6">
-                            <div id="motivo-inhabilitado-container" style="display: none;">
-                                <label for="perfil_inhabilitado">Motivo de inhabilitación</label>
-                                <select name="perfil" id="perfil_inhabilitado"
-                                    class="form-control form-control-sm @error('perfil') is-invalid @enderror">
-                                    <option value="Deuda"
-                                        {{ old('perfil', $admin->perfil) == 'Deuda' ? 'selected' : '' }}>Deuda</option>
-                                    <option value="Sin matrícula"
-                                        {{ old('perfil', $admin->perfil) == 'Sin matrícula' ? 'selected' : '' }}>Sin
-                                        Matrícula</option>
-                                    <option value="Licencia"
-                                        {{ old('perfil', $admin->perfil) == 'Licencia' ? 'selected' : '' }}>Licencia
-                                    </option>
-                                    <option value="Retirado"
-                                        {{ old('perfil', $admin->perfil) == 'Retirado' ? 'selected' : '' }}>Retirado</option>
-                                </select>
-                                @error('perfil')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                                <input type="password" name="password" id="password" autocomplete="new-password"
+                                    class="form-control @error('password') is-invalid @enderror"
+                                    placeholder="Mín. 7 caracteres">
+                                @error('password')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
+                            <span class="reg-hint">Déjala vacía para mantener la actual.</span>
                         </div>
-
-                        <div class="col-lg-12" id="admin-fields" style="display: none;">
-                            <div class="row">
-                                <div class="col-lg-3 mb-3">
-                                    <label for="programa_id" class="form-label">Seleccionar Programa:</label>
-                                    <select id="programa_id" name="programa_id"
-                                        class="form-control form-control-sm @error('programa_id') is-invalid @enderror">
-                                        <option value="">Seleccionar Programa</option>
-                                        @foreach ($programas as $programa)
-                                            <option value="{{ $programa->id }}"
-                                                {{ old('programa_id', $currentProgramId) == $programa->id ? 'selected' : '' }}>
-                                                {{ $programa->nombre }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    @error('programa_id')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                        <div class="col-md-4 mb-3">
+                            <label class="reg-label" for="password_confirmation">Confirmar contraseña</label>
+                            <div class="input-group reg-input-wrap">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-key fa-xs"></i></span>
                                 </div>
-
-                                <div class="col-lg-3 mb-3">
-                                    <label for="ciclo_id" class="form-label">Seleccionar Ciclo:</label>
-                                    <select id="ciclo_id" name="ciclo_id"
-                                        class="form-control form-control-sm @error('ciclo_id') is-invalid @enderror">
-                                        <option value="">Seleccionar Ciclo</option>
-                                        @foreach ($ciclos as $ciclo)
-                                            <option value="{{ $ciclo->id }}"
-                                                {{ old('ciclo_id', $currentCicloId) == $ciclo->id ? 'selected' : '' }}>
-                                                {{ $ciclo->nombre }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    @error('ciclo_id')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <div class="col-lg-3 mb-2">
-                                    <label for="condicion">Condición:</label>
-                                    <select class="form-control form-control-sm @error('condicion') is-invalid @enderror"
-                                        id="condicion" name="condicion">
-                                        <option value=""
-                                            {{ old('condicion', $admin->condicion) == '' ? 'selected' : '' }}>Seleccionar
-                                            Condición</option>
-                                        <option value="Regular"
-                                            {{ old('condicion', $admin->condicion) == 'Regular' ? 'selected' : '' }}>
-                                            Regular</option>
-                                        <option value="Beca Continua"
-                                            {{ old('condicion', $admin->condicion) == 'Beca Continua' ? 'selected' : '' }}>
-                                            Beca Continua</option>
-                                        <option value="Beca 18"
-                                            {{ old('condicion', $admin->condicion) == 'Beca 18' ? 'selected' : '' }}>Beca
-                                            18</option>
-                                        <option value="Beca Puklla"
-                                            {{ old('condicion', $admin->condicion) == 'Beca Puklla' ? 'selected' : '' }}>
-                                            Beca Puklla</option>
-                                        <option value="Reincorporación"
-                                            {{ old('condicion', $admin->condicion) == 'Reincorporación' ? 'selected' : '' }}>
-                                            Reincorporación</option>
-                                        <option value="Egresado"
-                                            {{ old('condicion', $admin->condicion) == 'Egresado' ? 'selected' : '' }}>
-                                            Egresado</option>
-                                    </select>
-                                    @error('condicion')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <div class="col-lg-3 mb-2">
-                                    <label for="perfil_bolsa">Perfil: <small>Este campo se usa para bolsa de
-                                            trabajo</small></label>
-                                    <select class="form-control form-control-sm @error('perfil') is-invalid @enderror"
-                                        id="perfil_bolsa" name="perfil">
-                                        <option value=""
-                                            {{ old('perfil', $admin->perfil) == '' ? 'selected' : '' }}>Seleccionar Perfil
-                                        </option>
-                                        <option value="Estudiante"
-                                            {{ old('perfil', $admin->perfil) == 'Estudiante' ? 'selected' : '' }}>
-                                            Estudiante</option>
-                                        <option value="Bachiller"
-                                            {{ old('perfil', $admin->perfil) == 'Bachiller' ? 'selected' : '' }}>Bachiller
-                                        </option>
-                                        <option value="Titulado"
-                                            {{ old('perfil', $admin->perfil) == 'Titulado' ? 'selected' : '' }}>Titulado
-                                        </option>
-                                        <option value="Egresado"
-                                            {{ old('perfil', $admin->perfil) == 'Egresado' ? 'selected' : '' }}>Egresado
-                                        </option>
-                                    </select>
-                                    @error('perfil')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <div class="col-lg-3 mb-4">
-                                    <label for="beca" class="form-label">Beca:</label>
-                                    <select id="beca" name="beca"
-                                        class="form-control form-control-sm @error('beca') is-invalid @enderror">
-                                        <option value="1" {{ old('beca', $admin->beca) == 1 ? 'selected' : '' }}>Sí
-                                        </option>
-                                        <option value="0" {{ old('beca', $admin->beca) == 0 ? 'selected' : '' }}>No
-                                        </option>
-                                    </select>
-                                    @error('beca')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <div class="col-lg-3 mb-3">
-                                    <label for="tiene_cursos_pendientes" class="form-label">¿Tiene cursos
-                                        pendientes?</label>
-                                    <select id="tiene_cursos_pendientes" name="tiene_cursos_pendientes"
-                                        class="form-control form-control-sm">
-                                        <option value="1"
-                                            {{ old('tiene_cursos_pendientes', isset($admin->pendiente) ? 1 : 0) == 1 ? 'selected' : '' }}>
-                                            Sí</option>
-                                        <option value="0"
-                                            {{ old('tiene_cursos_pendientes', isset($admin->pendiente) ? 1 : 0) == 0 ? 'selected' : '' }}>
-                                            No</option>
-                                    </select>
-                                </div>
-
-                                <div class="col-lg-12 mb-4" id="cursos-pendientes"
-                                    style="{{ old('tiene_cursos_pendientes', isset($admin->pendiente) ? 1 : 0) == 1 ? '' : 'display: none;' }}">
-                                    <label for="pendiente" class="form-label">Cursos Pendientes:</label>
-                                    <input type="text" id="pendiente" name="pendiente"
-                                        class="form-control form-control-sm @error('pendiente') is-invalid @enderror"
-                                        value="{{ old('pendiente', $admin->pendiente ?? '') }}"
-                                        placeholder="Escriba los cursos pendientes separados por comas">
-                                    @error('pendiente')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
+                                <input type="password" name="password_confirmation" id="password_confirmation" autocomplete="new-password"
+                                    class="form-control" placeholder="Repite la nueva contraseña">
                             </div>
-                        </div>
-
-                        {{-- Teléfono y WhatsApp (docente y/o tutor) --}}
-                        @if ($admin->hasAnyRole(['docente', 'tutor']))
-                            <div class="col-lg-12 mb-3">
-                                <hr>
-                                <h6 class="font-weight-bold text-primary">
-                                    <i class="fas fa-phone mr-1"></i> Contacto y notificaciones
-                                </h6>
-                                <div class="row">
-                                    <div class="col-lg-4 mb-3">
-                                        <label for="telefono">Teléfono</label>
-                                        <input type="text" id="telefono" name="telefono"
-                                            class="form-control form-control-sm"
-                                            value="{{ old('telefono', $admin->telefono) }}" placeholder="984529158">
-                                        <small class="text-muted">Número de contacto del docente/tutor.</small>
-                                    </div>
-                                    @if ($admin->hasRole('tutor'))
-                                        <div class="col-lg-4 mb-3">
-                                            <label for="whatsapp_key">Clave CallMeBot (WhatsApp)</label>
-                                            <input type="text" id="whatsapp_key" name="whatsapp_key"
-                                                class="form-control form-control-sm"
-                                                value="{{ old('whatsapp_key', $admin->whatsapp_key) }}"
-                                                placeholder="123456">
-                                            <small class="text-muted">
-                                                El tutor activa su clave enviando
-                                                <strong>I allow callmebot to send me messages</strong>
-                                                al <strong>+34 644 52 74 61</strong> por WhatsApp.
-                                                Recibirá su API key en respuesta.
-                                            </small>
-                                        </div>
-                                    @endif
-                                </div>
-                            </div>
-                        @endif
-
-                        <div class="col-lg-12">
-                            <button type="submit" class="btn btn-primary">Actualizar</button>
                         </div>
                     </div>
-                </form>
+                </div>
+            </div>
+
+            {{-- Roles --}}
+            <div class="reg-card">
+                <div class="reg-card-head">
+                    <i class="fas fa-shield-alt"></i> Roles del usuario
+                </div>
+                <div class="reg-card-body">
+                    @include('admin.usuarios._form_roles', ['seleccionados' => $selectedRoles])
+
+                    {{-- Motivo de inhabilitación: con el rol Inhabilitado, tenga o no además alumno/alumnoB --}}
+                    <div id="motivo-inhabilitado-container" class="reg-reveal mt-3" style="display:none; border-color:#fecaca; background:#fef2f2;">
+                        <div class="sec-title" style="color:#b91c1c; border-color:#fecaca;">
+                            <i class="fas fa-ban"></i> Motivo de inhabilitación
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <select id="perfil_inhabilitado"
+                                    class="form-control reg-input-solo @error('perfil') is-invalid @enderror">
+                                    <option value="" @selected(! array_key_exists((string) old('perfil', $admin->perfil), $motivosInhabilitacion))>Seleccionar motivo</option>
+                                    @foreach ($motivosInhabilitacion as $valor => $etiqueta)
+                                        <option value="{{ $valor }}" @selected(old('perfil', $admin->perfil) === $valor)>{{ $etiqueta }}</option>
+                                    @endforeach
+                                </select>
+                                @error('perfil')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                <span class="reg-hint">Las licencias suman como máximo 2 años en total (ver expediente).</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Datos académicos (alumno / alumnoB) --}}
+            <div id="admin-fields" style="display:none;">
+                <div class="reg-reveal mb-4">
+                    <div class="sec-title">
+                        <i class="fas fa-university"></i> Datos académicos
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="reg-label" for="programa_id">Programa</label>
+                            <select id="programa_id" name="programa_id" class="form-control reg-input-solo @error('programa_id') is-invalid @enderror">
+                                <option value="">Seleccionar programa</option>
+                                @foreach ($programas as $programa)
+                                    <option value="{{ $programa->id }}" @selected(old('programa_id', $currentProgramId) == $programa->id)>{{ $programa->nombre }}</option>
+                                @endforeach
+                            </select>
+                            @error('programa_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="reg-label" for="ciclo_id">Ciclo</label>
+                            <select id="ciclo_id" name="ciclo_id" class="form-control reg-input-solo @error('ciclo_id') is-invalid @enderror">
+                                <option value="">Seleccionar ciclo</option>
+                                {{-- Solo los ciclos del programa actual (antes salían los de todos los programas mezclados) --}}
+                                @foreach ($ciclosDelPrograma as $ciclo)
+                                    <option value="{{ $ciclo->id }}" @selected(old('ciclo_id', $currentCicloId) == $ciclo->id)>{{ $ciclo->nombre }}</option>
+                                @endforeach
+                            </select>
+                            @error('ciclo_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="reg-label" for="condicion">Condición</label>
+                            <select name="condicion" id="condicion" class="form-control reg-input-solo @error('condicion') is-invalid @enderror">
+                                <option value="" @selected(old('condicion', $admin->condicion) == '')>Seleccionar</option>
+                                @foreach ($condiciones as $c)
+                                    <option value="{{ $c }}" @selected(old('condicion', $admin->condicion) === $c)>{{ $c }}</option>
+                                @endforeach
+                            </select>
+                            @error('condicion')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="reg-label" for="perfil_bolsa">
+                                Perfil <small class="text-muted font-weight-normal">(bolsa de trabajo)</small>
+                            </label>
+                            <select id="perfil_bolsa" class="form-control reg-input-solo @error('perfil') is-invalid @enderror">
+                                <option value="" @selected(old('perfil', $admin->perfil) == '')>Seleccionar</option>
+                                @foreach ($perfilesBolsa as $p)
+                                    <option value="{{ $p }}" @selected(old('perfil', $admin->perfil) === $p)>{{ $p }}</option>
+                                @endforeach
+                            </select>
+                            @error('perfil')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            <span id="perfil_bolsa_aviso" class="reg-hint" style="display:none;">
+                                <i class="fas fa-info-circle"></i> No aplica mientras esté inhabilitado: se guarda el motivo de inhabilitación.
+                            </span>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label class="reg-label" for="beca">Beca</label>
+                            <select name="beca" id="beca" class="form-control reg-input-solo @error('beca') is-invalid @enderror">
+                                <option value="1" @selected(old('beca', $admin->beca) == 1)>Sí</option>
+                                <option value="0" @selected(old('beca', $admin->beca) == 0)>No</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="reg-label" for="tiene_cursos_pendientes">¿Cursos pendientes?</label>
+                            <select id="tiene_cursos_pendientes" name="tiene_cursos_pendientes" class="form-control reg-input-solo">
+                                <option value="1" @selected($tienePendientes)>Sí</option>
+                                <option value="0" @selected(! $tienePendientes)>No</option>
+                            </select>
+                        </div>
+                        @include('admin._cursos_pendientes', ['actuales' => $admin->cursosPendientes(), 'mostrar' => $tienePendientes])
+                    </div>
+                </div>
+            </div>
+
+            {{-- Contacto (docente y/o tutor) --}}
+            @if ($admin->hasAnyRole(['docente', 'tutor']))
+                <div class="reg-card">
+                    <div class="reg-card-head">
+                        <i class="fas fa-phone"></i> Contacto y notificaciones
+                    </div>
+                    <div class="reg-card-body">
+                        <div class="row">
+                            <div class="col-md-5 mb-3">
+                                <label class="reg-label" for="telefono">Teléfono</label>
+                                <div class="input-group reg-input-wrap">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-phone fa-xs"></i></span>
+                                    </div>
+                                    <input type="text" id="telefono" name="telefono" class="form-control"
+                                        value="{{ old('telefono', $admin->telefono) }}" placeholder="984529158">
+                                </div>
+                                <span class="reg-hint">Número de contacto del docente o tutor.</span>
+                            </div>
+                            @if ($admin->hasRole('tutor'))
+                                <div class="col-md-7 mb-3">
+                                    <label class="reg-label" for="whatsapp_key">Clave CallMeBot (WhatsApp)</label>
+                                    <div class="input-group reg-input-wrap">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"><i class="fab fa-whatsapp fa-xs"></i></span>
+                                        </div>
+                                        <input type="text" id="whatsapp_key" name="whatsapp_key" class="form-control"
+                                            value="{{ old('whatsapp_key', $admin->whatsapp_key) }}" placeholder="123456">
+                                    </div>
+                                    <span class="reg-hint">
+                                        El tutor la activa enviando <strong>I allow callmebot to send me messages</strong>
+                                        al <strong>+34 644 52 74 61</strong> por WhatsApp; recibe su clave en respuesta.
+                                    </span>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+        </div>{{-- /col-xl-8 --}}
+
+        {{-- Barra lateral: foto, resumen y guardar --}}
+        <div class="col-xl-4 col-lg-5">
+            <div style="position:sticky; top:1.25rem;">
+                <div class="reg-card">
+                    <div class="reg-card-head">
+                        <i class="fas fa-user-circle"></i> Usuario
+                    </div>
+                    <div class="reg-card-body">
+                        <div class="text-center">
+                            @if ($admin->foto)
+                                <img src="{{ asset('img/estudiantes/' . $admin->foto) }}" alt="Foto de {{ $admin->name }}" class="reg-foto" id="preview">
+                            @else
+                                <div class="reg-foto" id="previewIniciales">{{ $iniciales }}</div>
+                                <img src="" alt="Vista previa" class="reg-foto" id="preview" style="display:none;">
+                            @endif
+                            <div class="reg-resumen-nombre">{{ $admin->apellidos }}, {{ $admin->name }}</div>
+                            <div class="reg-resumen-sub">{{ $admin->email }}</div>
+                            <label class="reg-foto-btn mt-2 mb-1" for="foto">
+                                <i class="fas fa-camera"></i> {{ $admin->foto ? 'Cambiar foto' : 'Subir foto' }}
+                            </label>
+                            <input type="file" name="foto" id="foto" accept="image/*" class="d-none @error('foto') is-invalid @enderror">
+                            @error('foto')<div class="text-danger small">{{ $message }}</div>@enderror
+                            <span class="reg-hint" id="fotoNombre"></span>
+                        </div>
+
+                        <div class="mt-3">
+                            <div class="reg-resumen-dato">
+                                <span>Roles</span>
+                                <span>
+                                    @forelse ($currentRoles as $rol)
+                                        <span class="reg-rol-mini">{{ $rol }}</span>
+                                    @empty
+                                        —
+                                    @endforelse
+                                </span>
+                            </div>
+                            @if ($esEstudiante)
+                                <div class="reg-resumen-dato"><span>Programa</span><span>{{ $admin->programa->nombre ?? 'No asignado' }}</span></div>
+                                <div class="reg-resumen-dato"><span>Ciclo</span><span>{{ optional($admin->ciclo)->nombre ?? '—' }}</span></div>
+                                <div class="reg-resumen-dato"><span>Condición</span><span>{{ $admin->condicion ?: '—' }}</span></div>
+                                <div class="reg-resumen-dato"><span>Perfil</span><span>{{ $admin->perfil ?: '—' }}</span></div>
+                            @endif
+                        </div>
+
+                        @if ($esEstudiante && Route::has('expediente.show'))
+                            <a href="{{ route('expediente.show', $admin) }}" class="btn btn-sm btn-outline-primary btn-block mt-3" style="border-radius:.45rem;">
+                                <i class="fas fa-folder-open fa-xs mr-1"></i> Ver expediente
+                            </a>
+                        @endif
+                    </div>
+                </div>
+
+                <div class="reg-card">
+                    <div class="reg-card-body">
+                        <button type="submit" class="reg-submit mb-2">
+                            <i class="fas fa-save mr-2"></i> Guardar cambios
+                        </button>
+                        <a href="{{ route('admin') }}" class="btn btn-sm btn-light btn-block" style="border-radius:.45rem;">
+                            <i class="fas fa-times fa-xs mr-1"></i> Cancelar
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var tieneCursosPendientes = document.getElementById('tiene_cursos_pendientes');
-            var cursosPendientesContainer = document.getElementById('cursos-pendientes');
 
-            tieneCursosPendientes.addEventListener('change', function() {
-                cursosPendientesContainer.style.display = tieneCursosPendientes.value == 1 ? 'block' :
-                    'none';
-            });
-        });
-    </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const adminFields = document.getElementById('admin-fields');
-            const motivoInhabilitadoContainer = document.getElementById('motivo-inhabilitado-container');
-            const selectPerfilBolsa = document.getElementById('perfil_bolsa');
-            const selectPerfilInhabilitado = document.getElementById('perfil_inhabilitado');
+    </div>{{-- /row --}}
+    </form>
+</div>
 
-            function getCheckedRoles() {
-                return Array.from(document.querySelectorAll('.role-checkbox:checked')).map(cb => cb.value);
-            }
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const adminFields   = document.getElementById('admin-fields');
+    const motivoBox     = document.getElementById('motivo-inhabilitado-container');
+    const perfilBolsa   = document.getElementById('perfil_bolsa');
+    const perfilInhab   = document.getElementById('perfil_inhabilitado');
+    const tieneCursos   = document.getElementById('tiene_cursos_pendientes');
+    const cursosPend    = document.getElementById('cursos-pendientes');
+    const programaSel   = document.getElementById('programa_id');
+    const cicloSel      = document.getElementById('ciclo_id');
 
-            function toggleFields() {
-                const roles = getCheckedRoles();
+    function getRoles() {
+        return Array.from(document.querySelectorAll('.role-checkbox:checked')).map(cb => cb.value);
+    }
 
-                if (roles.includes('alumno') || roles.includes('alumnoB')) {
-                    adminFields.style.display = 'block';
-                    motivoInhabilitadoContainer.style.display = 'none';
-                    selectPerfilBolsa.name = 'perfil';
-                    selectPerfilInhabilitado.removeAttribute('name');
-                } else if (roles.includes('inhabilitado')) {
-                    adminFields.style.display = 'none';
-                    motivoInhabilitadoContainer.style.display = 'block';
-                    selectPerfilInhabilitado.name = 'perfil';
-                    selectPerfilBolsa.removeAttribute('name');
-                } else {
-                    adminFields.style.display = 'none';
-                    motivoInhabilitadoContainer.style.display = 'none';
-                    selectPerfilBolsa.removeAttribute('name');
-                    selectPerfilInhabilitado.removeAttribute('name');
-                }
-            }
+    // Hay dos selects de "perfil" (bolsa de trabajo / motivo de inhabilitación) y una sola
+    // columna users.perfil: solo uno lleva name="perfil" para que no se pisen al enviar.
+    // Con el rol Inhabilitado manda el motivo, aunque además tenga alumno/alumnoB (antes el
+    // motivo solo aparecía quitando el rol de alumno).
+    function toggleFields() {
+        const roles = getRoles();
+        const esAlumno = roles.includes('alumno') || roles.includes('alumnoB');
+        const esInhabilitado = roles.includes('inhabilitado');
 
-            document.querySelectorAll('.role-checkbox').forEach(cb => cb.addEventListener('change', toggleFields));
-            toggleFields();
-        });
-    </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var programaSelector = document.getElementById('programa_id');
-            var cicloSelector = document.getElementById('ciclo_id');
+        adminFields.style.display = esAlumno ? 'block' : 'none';
+        motivoBox.style.display = esInhabilitado ? 'block' : 'none';
+        perfilBolsa.toggleAttribute('name', false);
+        perfilInhab.toggleAttribute('name', false);
+        perfilInhab.required = esInhabilitado;
+        perfilBolsa.disabled = esInhabilitado;
+        document.getElementById('perfil_bolsa_aviso').style.display = (esAlumno && esInhabilitado) ? 'block' : 'none';
+        if (esInhabilitado) perfilInhab.name = 'perfil';
+        else if (esAlumno) perfilBolsa.name = 'perfil';
+    }
+    document.querySelectorAll('.role-checkbox').forEach(cb => cb.addEventListener('change', toggleFields));
+    toggleFields();
 
-            programaSelector.addEventListener('change', function() {
-                var programaId = programaSelector.value;
-                cicloSelector.innerHTML = '<option value="">Seleccionar Ciclo</option>';
+    tieneCursos.addEventListener('change', function () {
+        cursosPend.style.display = this.value == 1 ? 'block' : 'none';
+    });
 
-                if (programaId) {
-                    fetch('/obtener-ciclos/' + programaId)
-                        .then(response => response.json())
-                        .then(data => {
-                            data.forEach(ciclo => {
-                                var option = document.createElement('option');
-                                option.value = ciclo.id;
-                                option.text = ciclo.nombre;
-                                cicloSelector.appendChild(option);
-                            });
-                        })
-                        .catch(error => console.error('Error:', error));
-                }
-            });
-        });
-    </script>
+    // Ciclos del programa elegido
+    programaSel.addEventListener('change', function () {
+        cicloSel.innerHTML = '<option value="">Seleccionar ciclo</option>';
+        if (!this.value) return;
+        fetch('{{ url('obtener-ciclos') }}/' + this.value)
+            .then(r => r.json())
+            .then(data => data.forEach(c => {
+                const o = document.createElement('option');
+                o.value = c.id; o.text = c.nombre;
+                cicloSel.appendChild(o);
+            }))
+            .catch(() => {});
+    });
+
+    // Vista previa de la foto nueva
+    document.getElementById('foto').addEventListener('change', function () {
+        const archivo = this.files && this.files[0];
+        if (!archivo) return;
+        const reader = new FileReader();
+        reader.onload = function () {
+            const prev = document.getElementById('preview');
+            prev.src = reader.result;
+            prev.style.display = 'flex';
+            const ini = document.getElementById('previewIniciales');
+            if (ini) ini.style.display = 'none';
+        };
+        reader.readAsDataURL(archivo);
+        document.getElementById('fotoNombre').textContent = archivo.name + ' (se guardará al pulsar «Guardar cambios»)';
+    });
+});
+</script>
 @endsection

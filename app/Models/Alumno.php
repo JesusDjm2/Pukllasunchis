@@ -10,6 +10,12 @@ use Illuminate\Database\Eloquent\Model;
 class Alumno extends Model
 {
     use HasFactory;
+
+    /** Nombres, DNI, programa y ciclo se mantienen iguales en la cuenta (ver SincronizarFicha). */
+    protected static function booted(): void
+    {
+        static::updated(fn (Alumno $alumno) => \App\Services\SincronizarFicha::desdeFicha($alumno));
+    }
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -64,6 +70,20 @@ class Alumno extends Model
     public function matriculas()
     {
         return $this->hasMany(Matricula::class);
+    }
+
+    /** Grupos Taq'e donde este alumno es integrante (cualquier estado: pendiente/aceptado/rechazado). */
+    public function taqeGrupos()
+    {
+        return $this->belongsToMany(TaqeGrupo::class, 'taqe_grupo_alumno')
+            ->withPivot(['estado', 'respondido_at'])
+            ->withTimestamps();
+    }
+
+    /** Grupos Taq'e creados por este alumno. */
+    public function taqeGruposCreados()
+    {
+        return $this->hasMany(TaqeGrupo::class, 'creador_alumno_id');
     }
 
     public function matriculaEnPeriodo(int $periodoActualId): ?Matricula

@@ -79,9 +79,9 @@
                                                     </td>
                                                     <td class="small">
                                                         {{ $curso->ciclo && $curso->ciclo->programa
-                                                            ? (str_contains($curso->ciclo->programa->nombre, 'Inicial')
+                                                            ? ($curso->ciclo->programa->esInicial()
                                                                 ? 'Programa Inicial'
-                                                                : (str_contains($curso->ciclo->programa->nombre, 'EIB')
+                                                                : ($curso->ciclo->programa->eib
                                                                     ? 'Programa EIB'
                                                                     : $curso->ciclo->programa->nombre))
                                                             : 'Sin programa asignado' }}

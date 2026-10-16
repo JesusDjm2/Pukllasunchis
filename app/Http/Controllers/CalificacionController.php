@@ -20,8 +20,58 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class CalificacionController extends Controller
 {
+    /** Niveles de logro que calcula el formulario a partir de la nota vigesimal. */
+    private const NIVELES_LOGRO = ['Previo al inicio', 'Inicio', 'En proceso', 'Logrado', 'Destacado'];
+
+    /**
+     * Rangos de las notas FID, iguales a los que calcula el formulario del docente: valoración por
+     * competencia 0–5 (0 = sin seleccionar), promedio 0–5, nota vigesimal 0–20 y nivel de logro
+     * de la lista. Antes el servidor aceptaba cualquier texto ("25", "abc"…) y el alumno lo veía.
+     */
+    private function validarNotasFid(Request $request, array $prefijos): void
+    {
+        // El formulario reenvía las notas ya guardadas: "-" (marcador vacío de registros
+        // antiguos) se acepta, y el nivel de logro se compara sin distinguir mayúsculas, para
+        // que una nota vieja no haga rechazar toda la tabla del docente.
+        $rango = fn (float $min, float $max, bool $entero = false) => function ($atributo, $valor, $fail) use ($min, $max, $entero) {
+            if ($valor === null || trim((string) $valor) === '-') {
+                return;
+            }
+            if (! is_numeric($valor) || ($entero && (float) $valor != (int) $valor)) {
+                $fail('La :attribute debe ser un número' . ($entero ? ' entero' : '') . '.');
+            } elseif ($valor < $min || $valor > $max) {
+                $fail("La :attribute debe estar entre {$min} y {$max}.");
+            }
+        };
+        $niveles = array_map('mb_strtolower', self::NIVELES_LOGRO);
+        $nivel = function ($atributo, $valor, $fail) use ($niveles) {
+            if ($valor !== null && trim((string) $valor) !== '-' && ! in_array(mb_strtolower(trim((string) $valor)), $niveles, true)) {
+                $fail('El :attribute no es válido.');
+            }
+        };
+
+        $reglas = [];
+        $nombres = [];
+        foreach ($prefijos as $p) {
+            foreach ([1, 2, 3] as $n) {
+                $reglas["{$p}valoracion_{$n}"] = ['nullable', $rango(0, 5, true)];
+                $nombres["{$p}valoracion_{$n}"] = "valoración de la competencia {$n}";
+            }
+            $reglas["{$p}valoracion_curso"] = ['nullable', $rango(0, 5)];
+            $reglas["{$p}calificacion_sistema"] = ['nullable', $rango(0, 20)];
+            $reglas["{$p}calificacion_curso"] = ['nullable', $nivel];
+            $nombres["{$p}valoracion_curso"] = 'valoración del curso';
+            $nombres["{$p}calificacion_sistema"] = 'nota vigesimal';
+            $nombres["{$p}calificacion_curso"] = 'nivel de logro';
+        }
+
+        $request->validate($reglas, [], $nombres);
+    }
+
     public function gestionarCompetencias($cursoId)
     {
+        \App\Services\AccesoCalificaciones::autorizarCurso($cursoId);
+
         $curso = Curso::findOrFail($cursoId);
         $competencias = $curso->competencias;
         $competenciasSeleccionadas = $curso->competenciasSeleccionadas()->pluck('competencias.id')->toArray();
@@ -30,6 +80,8 @@ class CalificacionController extends Controller
 
     public function guardarCompetenciasSeleccionadas(Request $request, $cursoId)
     {
+        \App\Services\AccesoCalificaciones::autorizarCurso($cursoId);
+
         $curso = Curso::findOrFail($cursoId);
 
         $validated = $request->validate([
@@ -185,7 +237,7 @@ class CalificacionController extends Controller
         $competenciasIds = array_unique($competenciasIds);
         $competenciasSeleccionadas = Competencia::whereIn('id', $competenciasIds)->get();
 
-        $alumnosRelacionados = $curso->alumnos()
+        $alumnosRelacionados = $curso->alumnosDelPeriodo()
             ->whereHas('user', function ($q) {
                 $q->whereDoesntHave('roles', fn ($r) => $r->where('name', 'inhabilitado'))
                     ->orWhere(function ($q2) {
@@ -242,6 +294,12 @@ class CalificacionController extends Controller
 
     public function guardarPeriodoTres(Request $request)
     {
+        $periodoActual = PeriodoActual::where('actual', true)->first();
+        if (! auth()->user()->hasAnyRole(['admin', 'super-admin']) && $periodoActual && ! $periodoActual->parcial2DesempenoHabilitado()) {
+            return back()->withInput()->with('error', 'El registro de Parcial 2 y Desempeño no está habilitado en este momento.');
+        }
+
+
         $request->validate([
             'curso_id' => 'required|exists:cursos,id',
             'docente_id' => 'required|exists:docentes,id',
@@ -287,7 +345,7 @@ class CalificacionController extends Controller
 
         $competenciasIds = array_unique($competenciasIds);
         $competenciasSeleccionadas = Competencia::whereIn('id', $competenciasIds)->get();
-        $alumnosRelacionados = $curso->alumnos()
+        $alumnosRelacionados = $curso->alumnosDelPeriodo()
             ->whereHas('user', function ($q) {
                 $q->whereDoesntHave('roles', fn ($r) => $r->where('name', 'inhabilitado'))
                     ->orWhere(function ($q2) {
@@ -357,6 +415,8 @@ class CalificacionController extends Controller
 
     public function guardarPeriodo2yDesempenoEnBloque(Request $request)
     {
+        \App\Services\AccesoCalificaciones::autorizar($request->input('docente_id'), $request->input('curso_id'));
+
         $periodoActual = PeriodoActual::where('actual', true)->first();
         if (! auth()->user()->hasAnyRole(['admin', 'super-admin']) && $periodoActual && ! $periodoActual->parcial2DesempenoHabilitado()) {
             return back()->withInput()->with('error', 'El registro de Parcial 2 y Desempeño no está habilitado en este momento.');
@@ -381,6 +441,7 @@ class CalificacionController extends Controller
             'alumnos.*.periodo3.valoracion_2' => 'nullable|string',
             'alumnos.*.periodo3.valoracion_3' => 'nullable|string',
         ]);
+        $this->validarNotasFid($request, ['alumnos.*.periodo2.', 'alumnos.*.periodo3.']);
 
         try {
             $docenteId = $request->input('docente_id');
@@ -449,6 +510,12 @@ class CalificacionController extends Controller
 
     public function publicarPeriodoUno(Request $request)
     {
+        $periodoActual = PeriodoActual::where('actual', true)->first();
+        if (! auth()->user()->hasAnyRole(['admin', 'super-admin']) && $periodoActual && ! $periodoActual->parcial1Habilitado()) {
+            return back()->withInput()->with('error', 'El registro de Parcial 1 no está habilitado en este momento.');
+        }
+
+
         $curso = Curso::findOrFail($request->curso_id);
         $docente = Docente::findOrFail($request->docente_id);
         $alumnos = $curso->ciclo->alumnos()->orderBy('apellidos')->get();
@@ -497,6 +564,8 @@ class CalificacionController extends Controller
 
     public function storePeriodoEnBloque(Request $request)
     {
+        \App\Services\AccesoCalificaciones::autorizar($request->input('docente_id'), $request->input('curso_id'));
+
         $periodoActual = PeriodoActual::where('actual', true)->first();
         if (! auth()->user()->hasAnyRole(['admin', 'super-admin']) && $periodoActual && ! $periodoActual->parcial1Habilitado()) {
             return back()->withInput()->with('error', 'El registro de Parcial 1 no está habilitado en este momento.');
@@ -515,6 +584,7 @@ class CalificacionController extends Controller
             'alumnos.*.competencias' => 'required|array|min:1|max:3',
             'alumnos.*.observaciones' => 'nullable|string|max:1000',
         ]);
+        $this->validarNotasFid($request, ['alumnos.*.']);
 
         try {
         $docenteId = $request->input('docente_id');
@@ -563,6 +633,13 @@ class CalificacionController extends Controller
 
     public function eliminarPeriodoUno()
     {
+        // Antes de vaciar, Parcial 1 queda archivado en periodo_parciales (expediente del alumno).
+        // Si el archivo falla, NO se borra nada.
+        try {
+            \App\Services\ArchivoParciales::archivar(PeriodoActual::actual(), [1]);
+        } catch (\Throwable $e) {
+            return back()->with('error', 'No se pudo archivar Parcial 1 antes de eliminarlo; no se borró nada. Revisa el log.');
+        }
         \DB::table('periodouno')->truncate();
 
         return back()->with('success', 'Todos los datos de Periodo 1 han sido eliminados correctamente.');
@@ -570,6 +647,12 @@ class CalificacionController extends Controller
 
     public function storePeriodoDos(Request $request)
     {
+        $periodoActual = PeriodoActual::where('actual', true)->first();
+        if (! auth()->user()->hasAnyRole(['admin', 'super-admin']) && $periodoActual && ! $periodoActual->parcial2DesempenoHabilitado()) {
+            return back()->withInput()->with('error', 'El registro de Parcial 2 y Desempeño no está habilitado en este momento.');
+        }
+
+
         $alumnos = Alumno::whereHas('user.roles', function ($query) {
             $query->where('name', '!=', 'inhabilitado');
         })->get();
@@ -617,6 +700,12 @@ class CalificacionController extends Controller
 
     public function eliminarPeriodoDos()
     {
+        // Antes de vaciar, Parcial 2 queda archivado en periodo_parciales (expediente del alumno).
+        try {
+            \App\Services\ArchivoParciales::archivar(PeriodoActual::actual(), [2]);
+        } catch (\Throwable $e) {
+            return back()->with('error', 'No se pudo archivar Parcial 2 antes de eliminarlo; no se borró nada. Revisa el log.');
+        }
         \DB::table('periodo_dos')->truncate();
 
         return back()->with('success', 'Todos los datos de Periodo 2 han sido eliminados correctamente.');
@@ -624,6 +713,12 @@ class CalificacionController extends Controller
 
     public function storePeriodoTres(Request $request)
     {
+        $periodoActual = PeriodoActual::where('actual', true)->first();
+        if (! auth()->user()->hasAnyRole(['admin', 'super-admin']) && $periodoActual && ! $periodoActual->parcial2DesempenoHabilitado()) {
+            return back()->withInput()->with('error', 'El registro de Parcial 2 y Desempeño no está habilitado en este momento.');
+        }
+
+
         $alumnos = Alumno::whereHas('user.roles', function ($query) {
             $query->where('name', '!=', 'inhabilitado');
         })->get();
@@ -678,6 +773,8 @@ class CalificacionController extends Controller
 
     public function exportarCSV($docenteId, $cursoId, Request $request)
     {
+        \App\Services\AccesoCalificaciones::autorizar($docenteId, $cursoId);
+
         $competenciasSeleccionadas = $request->input('competencias');
 
         if (is_null($competenciasSeleccionadas) || ! is_array($competenciasSeleccionadas)) {
@@ -700,6 +797,8 @@ class CalificacionController extends Controller
 
     public function exportarCSVppd(Request $request, $docenteId, $cursoId)
     {
+        \App\Services\AccesoCalificaciones::autorizar($docenteId, $cursoId);
+
         $competenciasSeleccionadas = $request->input('competencias');
 
         if (is_null($competenciasSeleccionadas) || ! is_array($competenciasSeleccionadas)) {
@@ -753,7 +852,7 @@ class CalificacionController extends Controller
         $cursos = Curso::with(['ciclo.programa', 'competencias', 'competenciasSeleccionadas'])
             ->whereIn('id', $cursoIdsActuales)
             ->get()
-            ->reject(fn ($curso) => str_contains($curso->ciclo->programa->nombre ?? '', 'PPD'))
+            ->reject(fn ($curso) => $curso->esPpd())
             ->reject(fn ($curso) => str_contains(strtolower($curso->cc ?? ''), 'extracurricular'))
             ->sortBy([
                 fn ($a, $b) => ($a->ciclo->ordenCiclo() ?? 999) <=> ($b->ciclo->ordenCiclo() ?? 999),
@@ -782,7 +881,7 @@ class CalificacionController extends Controller
                 ->orderBy('apellidos')
                 ->get();
 
-            $alumnosRelacionados = $curso->alumnos()
+            $alumnosRelacionados = $curso->alumnosDelPeriodo()
                 ->orderBy('apellidos')
                 ->get();
 
@@ -832,7 +931,7 @@ class CalificacionController extends Controller
     {
         // Obtener los IDs de cursos que NO son de programas PPD
         $cursosNoPPD = Curso::whereHas('ciclo.programa', function ($query) {
-            $query->where('nombre', 'NOT LIKE', '%PPD%');
+            $query->fid();
         })->pluck('id');
 
         // Eliminar solo las asignaciones de cursos que NO son PPD
@@ -847,7 +946,7 @@ class CalificacionController extends Controller
     {
         // Obtener los IDs de cursos que SÍ son de programas PPD
         $cursosPPD = Curso::whereHas('ciclo.programa', function ($query) {
-            $query->where('nombre', 'LIKE', '%PPD%');
+            $query->ppd();
         })->pluck('id');
 
         // Eliminar solo las asignaciones de cursos PPD

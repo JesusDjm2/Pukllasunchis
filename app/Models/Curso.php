@@ -17,6 +17,12 @@ class Curso extends Model
         return $this->belongsTo(Ciclo::class);
     }
 
+    /** true si el curso pertenece a un programa PPD (false si no tiene ciclo/programa). */
+    public function esPpd(): bool
+    {
+        return (bool) $this->ciclo?->programa?->esPpd();
+    }
+
     public function users()
     {
         return $this->belongsToMany(User::class)->withTimestamps();
@@ -76,6 +82,12 @@ class Curso extends Model
         return $this->hasMany(Silabo::class, 'curso_id');
     }
 
+    /** Grupos Taq'e (Ferias de Investigación) formados dentro de este curso. */
+    public function taqeGrupos()
+    {
+        return $this->hasMany(TaqeGrupo::class, 'curso_id');
+    }
+
     public function enfoques()
     {
         return $this->hasMany(Enfoques::class);
@@ -98,9 +110,23 @@ class Curso extends Model
         return $this->belongsToMany(Alumno::class, 'alumno_cursos')->withTimestamps();
     }
 
+    /**
+     * Alumnos asignados a este curso en el período actual (o el indicado) — los que llevan
+     * el curso por "Asignar cursos" (cursos de otro ciclo, p. ej. uno desaprobado). Las
+     * asignaciones de períodos pasados, y las antiguas sin período, ya no cuentan: antes
+     * quien llevó un curso extra seguía apareciendo en él para siempre, aunque ya estuviera
+     * en otro ciclo. Los alumnos del ciclo del curso se suman aparte (por su ciclo).
+     */
+    public function alumnosDelPeriodo(?PeriodoActual $periodo = null)
+    {
+        $periodo ??= PeriodoActual::actual();
+
+        return $periodo ? $this->alumnos()->wherePivot('periodo_actual_id', $periodo->id) : $this->alumnos();
+    }
+
     public function alumnosValidosIds(): \Illuminate\Support\Collection
     {
-        $rel = $this->alumnos()
+        $rel = $this->alumnosDelPeriodo()
             ->whereHas('user.roles', fn ($q) => $q->where('name', '!=', 'inhabilitado'))
             ->pluck('alumnos.id');
         // La rama por ciclo trae a TODOS los del ciclo del curso, incluso a quien nunca se
@@ -251,9 +277,24 @@ class Curso extends Model
         return $campos;
     }
 
-    public function porcentajePeriodo(int $periodo, array $camposClave = ['calificacion_curso']): float
+    /**
+     * % calificado de los 3 periodos FID (Parcial 1, Parcial 2, Desempeño) resolviendo el universo
+     * de alumnos una sola vez — para listados donde se pinta muchos cursos a la vez.
+     */
+    public function porcentajesFid(): array
     {
         $ids = $this->alumnosValidosIds();
+
+        return [
+            1 => $this->porcentajePeriodo(1, ['calificacion_curso'], $ids),
+            2 => $this->porcentajePeriodo(2, ['calificacion_curso'], $ids),
+            3 => $this->porcentajePeriodo(3, ['calificacion_curso'], $ids),
+        ];
+    }
+
+    public function porcentajePeriodo(int $periodo, array $camposClave = ['calificacion_curso'], ?\Illuminate\Support\Collection $ids = null): float
+    {
+        $ids ??= $this->alumnosValidosIds();
         $total = $ids->count();
         if ($total === 0) {
             return 0.0;

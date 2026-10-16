@@ -28,7 +28,19 @@ class SeguimientoController extends Controller
             ->orderByDesc('created_at')
             ->paginate(20, ['*'], 'sugerencias_page');
 
-        return view('admin.seguimiento.index', compact('incidencias', 'tutorias', 'sugerencias'));
+        // La paginación de cada lista conserva en qué lista se estaba.
+        $incidencias->appends(['tab' => 'incidencias']);
+        $tutorias->appends(['tab' => 'tutorias']);
+        $sugerencias->appends(['tab' => 'sugerencias']);
+
+        // Pendientes del total (antes se contaban solo los de la página visible).
+        $conteos = [
+            'incidencias' => $incidencias->total(),
+            'tutorias_pendientes' => Tutoria::where('estado', '!=', 'atendida')->count(),
+            'sugerencias_pendientes' => Sugerencia::where('estado', '!=', 'revisada')->count(),
+        ];
+
+        return view('admin.seguimiento.index', compact('incidencias', 'tutorias', 'sugerencias', 'conteos'));
     }
 
     /**

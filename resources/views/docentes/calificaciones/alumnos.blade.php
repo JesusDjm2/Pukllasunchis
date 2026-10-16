@@ -171,14 +171,16 @@
         }
     </style>
     <div class="container-fluid docente-ui-page">
-        @include('docentes.partials.ui-header', [
-            'kicker' => 'Calificaciones FID',
-            'title' => $curso->nombre,
-            'subtitle' => ($curso->ciclo->programa->nombre ?? '') . ' — ' . ($curso->ciclo->nombre ?? ''),
-            'backUrl' => route('vistaDocente', $docente->id),
-            'backLabel' => 'Volver a cursos',
+        @include('docentes.partials.calificar-hero', [
+            'tipo' => 'FID',
             'competencias' => $competenciasSeleccionadas,
-            'rightExtra' => view('docentes.partials.calificacion-legenda')->render(),
+            'totalAlumnos' => count($alumnos),
+            'periodo' => $periodoActual?->nombre,
+            'avance' => [
+                ['Parcial 1', $curso->porcentajePeriodo(1), '#4e73df'],
+                ['Parcial 2', $curso->porcentajePeriodo(2), '#1cc88a'],
+                ['Desempeño', $curso->porcentajePeriodo(3), '#36b9cc'],
+            ],
         ])
 
         <div class="row bg-white">

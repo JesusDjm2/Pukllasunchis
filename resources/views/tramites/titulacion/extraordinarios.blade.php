@@ -141,7 +141,7 @@
                                     <img height="100%" src="{{ asset('img/min/cambio.png') }}"
                                         alt="Ficha de Inscrición Pukllasunchis">
                                 </div>
-                                <p class="text-center">Modificación de cambio de tema <br><small class="text-info">
+                                <p class="text-center">Cambios en la RD de aprobación del PTI <br><small class="text-info">
                                         Modificación de tema de Invest. <br> Codigo: 12 - Costo: s/30.00</small></p>
                                 <p></p>
                             </a>
@@ -181,7 +181,7 @@
                                         alt="">
                                 </div>
                                 <p class="text-center">Anulación RD de PTI<br> <small class="text-info"> Anulación de RD de
-                                        PTI <br> Codigo: 53 - Costo: s/20.00</small></p>
+                                        PTI <br> Codigo: 53 - Costo: s/30.00</small></p>
                             </a>
                         </div>
                     </div>
@@ -214,9 +214,6 @@
                         </div>
                     </div>
                 </div>
-
-                {{-- <h2 class="mt-4 linea-debajo">Documentos para el proceso de aprobación de PTI</h2> --}}
-                <!-- Pop-up Modal -->
                 <div class="modal-overlay" id="modalOverlay"></div>
                 <div class="modal" id="modal">
                     <div class="modal-header text-center">

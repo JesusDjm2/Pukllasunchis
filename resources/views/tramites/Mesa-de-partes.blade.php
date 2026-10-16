@@ -36,7 +36,6 @@
             </div>
             <div class="col-lg-9">
                 <h2 class="linea-debajo">¿Cómo realizar un trámite en la mesa de partes virutal?</h2>
-                
                 <ul class="listasCuerpo">
                     <li>Descarga el formulario Único de Trámite (FUT) </li>
                     <li>Completa todos los datos solicitados en el FUT.</li>
@@ -46,11 +45,10 @@
                     <li>Podrás registrar tu trámite virtual de lunes a viernes en el horario: <strong>8:00am - 4:00pm</strong></li>
                     <li>Recuerda que todos los trámites tienen un plazo de atención mínima de 3 días hábiles.</li>
                 </ul>
-                
                 <div class="row justify-content-center align-items-center fichas mt-3">
                     <div class="col-lg-4 col-12">
                         <div class="card">
-                            <a href="{{ asset('pdf/FUT-2026.docx') }}" target="_blank" class="text-center">
+                            <a href="{{ asset('pdf/FUT-2026-II.docx') }}" target="_blank" class="text-center">
                                 <img width="80%" src="{{ asset('img/min/Ficha-de-inscripcion-Pukllasunchis.png') }}"
                                     alt="Ficha de Inscrición Pukllasunchis">
                                 <p class="text-center">Descargar FUT</p>

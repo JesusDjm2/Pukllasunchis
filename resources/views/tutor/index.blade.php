@@ -68,10 +68,10 @@
                 @role('docente')
                     @if(auth()->user()->docente)
                         <div class="flex-shrink-0">
-                            <a href="{{ route('vistaDocente', ['docente' => auth()->user()->docente->id]) }}"
-                               class="btn btn-outline-secondary btn-sm btn-block d-md-inline-block">
-                                <i class="fas fa-arrow-left mr-1"></i> Ir a mi panel de Docente
-                            </a>
+                            @include('docentes.partials.boton-volver', [
+                                'url' => route('vistaDocente', ['docente' => auth()->user()->docente->id]),
+                                'label' => 'Ir a mi panel de Docente',
+                            ])
                         </div>
                     @endif
                 @endrole

@@ -37,7 +37,9 @@ class AppServiceProvider extends ServiceProvider
 
         View::composer('layouts.docente', function ($view) use ($periodoActual) {
             if (auth()->check()) {
-                $docente = Docente::where('user_id', auth()->id())->first();
+                // Respeta el $docente que manda la vista (p. ej. un admin viendo el perfil de un docente):
+                // antes se pisaba siempre con el del usuario en sesión y, para un admin, quedaba null → error 500.
+                $docente = $view->getData()['docente'] ?? Docente::where('user_id', auth()->id())->first();
                 $view->with([
 
                     'docente' => $docente,

@@ -1,59 +1,28 @@
-﻿@php $layout = auth()->user()?->hasRole('super-admin') ? 'layouts.superadmin' : 'layouts.admin'; @endphp
+@php $layout = auth()->user()?->hasRole('super-admin') ? 'layouts.superadmin' : 'layouts.admin'; @endphp
 @extends($layout)
 
+@section('titulo', 'Nuevo Proyecto Integrador')
+
 @section('contenido')
-    <div class="container-fluid bg-white">
-        <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3 pb-2">
-            <div>
-                <h4 class="mb-0 font-weight-bold" style="color:#1e293b;">
-                    <i class="fas fa-plus-circle mr-2" style="color:#4e73df;"></i>Crear Nuevo Proyecto
-                </h4>
-                <small class="text-muted">Registra un nuevo proyecto integrador vinculado a un sílabo</small>
-            </div>
-            <a href="{{ route('proyectos.index') }}" class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm">
-                Volver
-            </a>
-        </div>
-        <form action="{{ route('proyectos.store') }}" method="POST">
-            @csrf
-            <div class="row">
-                <div class="col-lg-12 mb-3">
-                    <label for="nombre">Nombre del Proyecto:</label>
-                    <input type="text" name="nombre" class="form-control form-control-sm" required>
-                </div>
-                <div class="col-lg-12 mb-3">
-                    <label for="producto">Producto del proyecto:</label>
-                    <input type="text" name="producto" class="form-control form-control-sm" required>
-                </div>
-                <div class="col-lg-12 mb-3">
-                    <label for="descripcion">Descripción:</label>
-                    <textarea name="descripcion" class="form-control form-control-sm" required></textarea>
-                </div>
+    @include('alumnos.partials.ui')
+    @include('admin.curso.silabos.proyectos._estilos')
 
-                <!-- Relación con Ciclos (Checkboxes) -->
-                <div class="col-lg-12 mb-3">
-                    <label>Asociar ciclos:</label>
-                    <div class="border rounded p-2">
-                        @foreach($ciclos as $programa => $ciclosGrupo)
-                            <strong class="d-block mt-2">{{ $programa }}</strong> <!-- Nombre del Programa -->
-                            @foreach($ciclosGrupo as $ciclo)
-                                <div class="form-check form-check-inline">
-                                    <input type="checkbox" 
-                                        name="ciclos[]" 
-                                        value="{{ $ciclo->id }}" 
-                                        id="ciclo_{{ $ciclo->id }}"
-                                        class="form-check-input">
-                                    <label class="form-check-label" for="ciclo_{{ $ciclo->id }}">
-                                        {{ $ciclo->nombre }}
-                                    </label>
-                                </div>
-                            @endforeach
-                        @endforeach
-                    </div>
+    <div class="container-fluid al-ui">
+        <section class="al-hero">
+            <div class="al-hero-fila">
+                <div class="al-hero-texto">
+                    <div class="al-kicker"><i class="fas fa-project-diagram"></i> Proyectos Integradores</div>
+                    <h1>{{ $proyecto->exists ? $proyecto->nombre : 'Nuevo proyecto' }}</h1>
+                    <p class="al-hero-sub">Define el proyecto, su producto, su descripción y los ciclos que lo trabajan.</p>
                 </div>
-
+                <div class="al-hero-acciones">
+                    <a href="{{ route('proyectos.index') }}" class="al-btn al-btn-claro"><i class="fas fa-arrow-left"></i> Volver</a>
+                </div>
             </div>
-            <button type="submit" class="mt-3 mb-3 btn btn-sm btn-primary">Guardar Proyecto</button>
-        </form>
+        </section>
+
+        @include('admin.curso.silabos.proyectos._alertas')
+
+        @include('admin.curso.silabos.proyectos._form', ['accion' => route('proyectos.store'), 'metodo' => 'POST', 'titulo' => 'Nuevo Proyecto Integrador'])
     </div>
 @endsection

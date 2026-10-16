@@ -26,6 +26,11 @@ class Docente extends Model
     {
         return $this->belongsToMany(Curso::class, 'curso_docente');
     }
+    /** Proyectos Integradores donde es encargado u organizador (pivot rol). */
+    public function proyectosIntegradores()
+    {
+        return $this->belongsToMany(Proyecto::class, 'proyecto_docente')->withPivot('rol')->withTimestamps();
+    }
     public function competenciasPorCurso($cursoId)
     {
         return $this->belongsToMany(Competencia::class, 'docente_curso_competencia')

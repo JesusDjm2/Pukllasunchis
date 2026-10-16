@@ -113,28 +113,16 @@
         }
     </style>
     <div class="container-fluid docente-ui-page">
-        @include('docentes.partials.ui-header', [
-            'kicker' => 'Calificaciones PPD',
-            'title' => $curso->nombre,
-            'subtitle' => ($curso->ciclo->programa->nombre ?? '') . ' — ' . ($curso->ciclo->nombre ?? ''),
-            'backUrl' => route('vistaDocente', $docente->id),
-            'backLabel' => 'Volver a cursos',
+        @include('docentes.partials.calificar-hero', [
+            'tipo' => 'PPD',
             'competencias' => $competenciasSeleccionadas,
-            'rightExtra' => view('docentes.partials.calificacion-legenda')->render(),
+            'totalAlumnos' => count($alumnos),
+            'periodo' => \App\Models\PeriodoActualPpd::actual()?->nombre,
+            'avance' => [['Calificado', $curso->porcentajePPD(), '#e5973a']],
         ])
 
-        @php $pctPPD = $curso->porcentajePPD(); @endphp
         <div class="row">
             <div class="col-12">
-                <div class="mb-3" style="max-width:420px;">
-                    <div class="d-flex align-items-center" style="gap:6px;">
-                        <span style="font-size:12px;width:78px;font-weight:600;color:#d97706;">Calificado:</span>
-                        <div class="progress flex-fill docente-cal-progress docente-cal-progress-ppd">
-                            <div class="progress-bar" role="progressbar" style="width:{{ $pctPPD }}%;"></div>
-                        </div>
-                        <small style="width:50px;text-align:right;font-size:12px;color:#d97706;font-weight:600;">{{ number_format($pctPPD, 2) }}%</small>
-                    </div>
-                </div>
                 @if (Session::has('success'))
                     <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
                         {{ Session::get('success') }}

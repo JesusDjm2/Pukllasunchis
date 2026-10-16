@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Modalidad;
+use App\Enums\NivelPrograma;
 use App\Models\AdminFid;
 use App\Models\AdminPpd;
 use App\Models\Comunicado;
 use App\Models\Postulante;
+use App\Models\Programa;
 use App\Support\BolsaTrabajoListado;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
@@ -222,8 +225,8 @@ class EnlacesController extends Controller
     public function bolsa(Request $request)
     {
         $postulantes = Postulante::all();
-        $postulantes1 = Postulante::where('programa_id', 1)->get();
-        $postulantes2 = Postulante::where('programa_id', 2)->get();
+        $postulantes1 = Postulante::where('programa_id', Programa::buscar(Modalidad::FID, NivelPrograma::INICIAL, false)?->id ?? 0)->get();
+        $postulantes2 = Postulante::where('programa_id', Programa::buscar(Modalidad::FID, NivelPrograma::PRIMARIA, true)?->id ?? 0)->get();
 
         return view('informacion.bolsa-de-trabajo', array_merge(
             compact('postulantes', 'postulantes1', 'postulantes2'),

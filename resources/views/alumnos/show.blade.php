@@ -46,13 +46,12 @@
                         <span><i class="fas fa-user-shield"></i> {{ $alumno->user->email }}</span>
                     @endif
                 </div>
-                @if (isset($alumno->user->pendiente) && $alumno->user->pendiente)
+                @if ($alumno->user && $alumno->user->cursosPendientes())
                     <div class="alu-alert-pendiente">
                         <i class="fas fa-triangle-exclamation"></i>
                         <div>
                             <strong>Curso(s) a cargo:</strong>
-                            @php $cursosPendientes = explode(',', $alumno->user->pendiente); @endphp
-                            {{ implode(', ', array_map('trim', $cursosPendientes)) }}
+                            {{ implode(' · ', $alumno->user->cursosPendientes()) }}
                         </div>
                     </div>
                 @endif

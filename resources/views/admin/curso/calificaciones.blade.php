@@ -151,7 +151,7 @@
                         <span class="text-primary">Docente: {{ $docente->nombre }}</span>
                     </div>
 
-                    @if (str_contains($curso->ciclo->programa->nombre ?? '', 'PPD'))
+                    @if ($curso->esPpd())
                         @php $pctPPD = $curso->porcentajePPD(); @endphp
                         <div class="mt-2" style="max-width:420px;">
                             <div class="d-flex align-items-center" style="gap:6px;">
@@ -187,7 +187,7 @@
                 </div>
 
                 <div class="d-flex align-items-center flex-shrink-0" style="gap:8px;">
-                    @php $esPPDHeader = str_contains($curso->ciclo->programa->nombre ?? '', 'PPD'); @endphp
+                    @php $esPPDHeader = $curso->esPpd(); @endphp
                     <form action="{{ $esPPDHeader
                             ? route('calificaciones.exportar.ppd', [$docente->id, $curso->id])
                             : route('calificaciones.exportar', [$docente->id, $curso->id]) }}"
@@ -227,7 +227,7 @@
         <div class="row">
             <div class="col-12">
                 @php
-                    $esPPD = str_contains($curso->ciclo->programa->nombre ?? '', 'PPD');
+                    $esPPD = $curso->esPpd();
                 @endphp
                 
                 @if ($esPPD)

@@ -43,7 +43,7 @@
         </div>
         <div class="row mb-4" id="grid-fid">
             @foreach ($programas as $programa)
-                @if (in_array($programa->id, [1, 2]))
+                @if ($programa->esFid())
                     <div class="col-lg-4 col-md-6 mb-3 d-flex">
                         <div class="pg-card pg-card-fid w-100 h-100">
                             <div class="pg-card-top pg-top-blue"></div>
@@ -52,6 +52,11 @@
                                     <i class="fas fa-graduation-cap"></i>
                                 </div>
                                 <div class="pg-card-name">{{ $programa->nombre }}</div>
+                                <div style="font-size:.72rem;color:var(--pg-muted);margin:-.35rem 0 .6rem;">
+                                    {{ $programa->modalidad->value }}
+                                    @if ($programa->nivel) &middot; {{ $programa->nivel->etiqueta() }} @endif
+                                    @if ($programa->eib) &middot; EIB @endif
+                                </div>
                                 <div class="d-flex flex-wrap" style="gap:.4rem;">
                                     <a href="{{ route('programa.show', ['programa' => $programa->id]) }}"
                                         class="pg-btn pg-btn-view">
@@ -84,7 +89,7 @@
         </div>
         <div class="row" id="grid-ppd">
             @foreach ($programas as $programa)
-                @if (in_array($programa->id, [3, 4, 5]))
+                @if ($programa->esPpd())
                     <div class="col-lg-4 col-md-6 mb-3 d-flex">
                         <div class="pg-card pg-card-ppd w-100 h-100">
                             <div class="pg-card-top pg-top-amber"></div>
@@ -93,6 +98,11 @@
                                     <i class="fas fa-user-graduate"></i>
                                 </div>
                                 <div class="pg-card-name">{{ $programa->nombre }}</div>
+                                <div style="font-size:.72rem;color:var(--pg-muted);margin:-.35rem 0 .6rem;">
+                                    {{ $programa->modalidad->value }}
+                                    @if ($programa->nivel) &middot; {{ $programa->nivel->etiqueta() }} @endif
+                                    @if ($programa->eib) &middot; EIB @endif
+                                </div>
                                 <div class="d-flex flex-wrap" style="gap:.4rem;">
                                     <a href="{{ route('programa.show', ['programa' => $programa->id]) }}"
                                         class="pg-btn pg-btn-view">

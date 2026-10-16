@@ -15,7 +15,7 @@ class CicloController extends Controller
 {
     public function index()
     {
-        $ciclos = Ciclo::whereIn('programa_id', [1, 2, 3, 4, 5])->get();
+        $ciclos = Ciclo::whereHas('programa')->with(['programa', 'tutores'])->get();
 
         foreach ($ciclos as $ciclo) {
             $alumnos = $ciclo->alumnos()
@@ -50,7 +50,10 @@ class CicloController extends Controller
             $ciclo->alumnos_b_validos_count = $alumnosB->count();
         }
 
-        return view('admin.ciclo.index', compact('ciclos'));
+        // FID primero y luego PPD (antes era una lista fija de ids 1–5 en la vista).
+        $programas = Programa::orderBy('modalidad')->orderBy('id')->get();
+
+        return view('admin.ciclo.index', compact('ciclos', 'programas'));
     }
 
     public function create()
@@ -141,6 +144,7 @@ class CicloController extends Controller
         )
             ->where('ciclo_id', $ciclo->id)
             ->whereHas('alumnoB')
+            ->with(['roles', 'alumnoB'])
             ->orderBy('apellidos')
             ->get();
 
@@ -174,11 +178,13 @@ class CicloController extends Controller
         $usuarios = User::whereIn('id', $usuariosIds)->get();
 
         $alumnosNormalesIds = [];
+        $omitidosLicencia = [];
         $alumnosPpdIds = [];
         $usuariosValidos = [];
 
         foreach ($usuarios as $user) {
             if ($user->perfil === 'Licencia') {
+                $omitidosLicencia[] = $user->apellidos;
                 continue;
             }
 
@@ -193,7 +199,15 @@ class CicloController extends Controller
 
         // Actualizar ciclo_id solo para los usuarios válidos
         if (! empty($usuariosValidos)) {
+            $ciclosAntes = $usuarios->whereIn('id', $usuariosValidos)->pluck('ciclo_id', 'id');
             User::whereIn('id', $usuariosValidos)->update(['ciclo_id' => $nuevoCicloId]);
+
+            // update() en bloque no dispara el observer de User: el cambio de ciclo se
+            // registra en la trayectoria a mano.
+            foreach ($usuarios->whereIn('id', $usuariosValidos) as $user) {
+                $user->ciclo_id = $nuevoCicloId;
+                \App\Services\Trayectoria::registrarCambios($user, ['ciclo_id' => $ciclosAntes[$user->id]]);
+            }
         }
 
         if (! empty($alumnosNormalesIds)) {
@@ -208,7 +222,15 @@ class CicloController extends Controller
             return redirect()->back()->with('warning', 'Ningún alumno pertenece al programa del ciclo seleccionado.');
         }
 
-        return redirect()->back()->with('success', 'Ciclo actualizado exitosamente para los alumnos válidos.');
+        $omitidos = $usuarios->count() - count($usuariosValidos);
+        $mensaje = count($usuariosValidos).' alumno(s) movido(s) a '.$nuevoCiclo->nombre.'.';
+        if ($omitidos > 0) {
+            $mensaje .= ' Se omitieron '.$omitidos.': '
+                .($omitidosLicencia ? count($omitidosLicencia).' con licencia' : '')
+                .($omitidos - count($omitidosLicencia) > 0 ? ($omitidosLicencia ? ' y ' : '').($omitidos - count($omitidosLicencia)).' sin ficha del programa de ese ciclo' : '').'.';
+        }
+
+        return redirect()->back()->with('success', $mensaje);
     }
 
     public function edit(Ciclo $ciclo)
@@ -263,5 +285,39 @@ class CicloController extends Controller
         $ciclo->delete();
 
         return redirect()->route('ciclo.index')->with('success', 'Ciclo eliminado exitosamente');
+    }
+
+    /**
+     * Marca a todos los alumnos (FID o PPD) de este ciclo como "Egresado"
+     * (users.condicion). Pensado para ciclos tipo "Egresados 2026-I": crear
+     * el ciclo y mover ahí a la promoción ya no basta por sí solo — sin este
+     * paso siguen contando como alumnos activos (se les sigue pidiendo
+     * matrícula, aparecen en listados de matriculados, etc., ver
+     * AdminController::applyAlumnoFidUserConstraints() y el mismo criterio
+     * ya usado en index() de este controlador). Antes esto se hacía a mano
+     * con una migración de datos por cada promoción que egresaba; ahora es
+     * una acción repetible desde el propio listado de ciclos.
+     */
+    public function marcarComoEgresados(Ciclo $ciclo)
+    {
+        $query = User::where('ciclo_id', $ciclo->id)
+            ->whereHas('roles', fn ($r) => $r->whereIn('name', ['alumno', 'alumnoB', 'inhabilitado']));
+        $recienEgresados = (clone $query)->where(fn ($q) => $q->whereNull('condicion')->orWhere('condicion', '!=', 'Egresado'))->get();
+
+        $actualizados = $query->update(['condicion' => 'Egresado']);
+
+        // update() en bloque no dispara el observer de User: el egreso se registra a mano,
+        // solo para quienes no eran ya egresados.
+        foreach ($recienEgresados as $user) {
+            $antes = $user->condicion;
+            $user->condicion = 'Egresado';
+            \App\Services\Trayectoria::registrarCambios($user, ['condicion' => $antes]);
+        }
+
+        if ($actualizados === 0) {
+            return back()->with('error', 'No se encontró ningún alumno en el ciclo "'.$ciclo->nombre.'" para marcar como egresado.');
+        }
+
+        return back()->with('success', $actualizados.' alumno(s) del ciclo "'.$ciclo->nombre.'" marcados como Egresados. Ya no se les pedirá matrícula ni aparecerán en los listados de alumnos activos.');
     }
 }

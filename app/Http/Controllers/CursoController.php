@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Modalidad;
+use App\Enums\NivelPrograma;
 use App\Models\Ciclo;
 use App\Models\Competencia;
 use App\Models\Curso;
@@ -23,10 +25,11 @@ class CursoController extends Controller
     public function index()
     {
         $cursos       = Curso::all();
-        $cursosInicial = Curso::whereHas('ciclo', fn($q) => $q->where('programa_id', 1))->get();
-        $cursosEib     = Curso::whereHas('ciclo', fn($q) => $q->where('programa_id', 2))->get();
-        $inicialPPD    = Curso::whereHas('ciclo', fn($q) => $q->where('programa_id', 3))->get();
-        $primariaPPD   = Curso::whereHas('ciclo', fn($q) => $q->where('programa_id', 4))->get();
+        $delPrograma = fn (?Programa $p) => $p ? Curso::whereHas('ciclo', fn($q) => $q->where('programa_id', $p->id))->get() : collect();
+        $cursosInicial = $delPrograma(Programa::buscar(Modalidad::FID, NivelPrograma::INICIAL, false));
+        $cursosEib     = $delPrograma(Programa::buscar(Modalidad::FID, NivelPrograma::PRIMARIA, true));
+        $inicialPPD    = $delPrograma(Programa::buscar(Modalidad::PPD, NivelPrograma::INICIAL, false));
+        $primariaPPD   = $delPrograma(Programa::buscar(Modalidad::PPD, NivelPrograma::PRIMARIA, false));
 
         // ── Ocultar extracurriculares para admin (no super-admin) ──────────
         if (! $this->esSuperAdmin()) {
@@ -44,6 +47,16 @@ class CursoController extends Controller
         $iniPPD = $inicialPPD->count();
         $priPPD = $primariaPPD->count();
 
+        // % calificado de cada curso PPD (mismo cálculo que ven docentes y admin al calificar).
+        // Se calcula una sola vez por curso: cada curso sale en "Todos" y en la tabla de su programa.
+        $pctPpd = $inicialPPD->merge($primariaPPD)
+            ->mapWithKeys(fn ($c) => [$c->id => $c->porcentajePPD()]);
+
+        // % calificado de cada curso FID por periodo (Parcial 1, Parcial 2, Desempeño): mismo
+        // cálculo que ve el docente en su panel.
+        $pctFid = $cursosInicial->merge($cursosEib)
+            ->mapWithKeys(fn ($c) => [$c->id => $c->porcentajesFid()]);
+
         $competencias = Competencia::all();
         // Solo ciclos con al menos un curso: un ciclo vacío (p. ej. "Egresados <año>")
         // en este selector siempre daría 0 resultados si se elige.
@@ -55,7 +68,7 @@ class CursoController extends Controller
             'cursos', 'cant', 'inicial', 'cursosInicial',
             'EIB', 'cursosEib', 'competencias',
             'inicialPPD', 'primariaPPD', 'iniPPD', 'priPPD',
-            'ciclosPorPrograma'
+            'ciclosPorPrograma', 'pctPpd', 'pctFid'
         ));
     }
 
@@ -145,7 +158,14 @@ class CursoController extends Controller
 
     public function destroySilabo(Curso $curso)
     {
-        $silaboPdf = SilaboPdf::where('curso_id', $curso->id)->first();
+        // El botón de borrar en el dashboard solo se muestra para el PDF del
+        // periodo actual: sin este filtro, un curso con PDFs subidos en varios
+        // periodos borraría el primero que encuentre (potencialmente uno de un
+        // periodo distinto), dejando intacto el del periodo actual.
+        $periodoActual = PeriodoActual::actual();
+        $silaboPdf = SilaboPdf::where('curso_id', $curso->id)
+            ->when($periodoActual, fn ($q) => $q->where('periodo_actual_id', $periodoActual->id))
+            ->first();
 
         if ($silaboPdf) {
             $path = public_path("docentes/silabo/{$silaboPdf->pdf}");
@@ -319,7 +339,7 @@ class CursoController extends Controller
             ->orderBy('apellidos')
             ->get();
         $alumnosPrograma = $usersPrograma->pluck('alumnoB')->filter();
-        $alumnosRelacionados = $curso->alumnos()->orderBy('apellidos')->get();
+        $alumnosRelacionados = $curso->alumnosDelPeriodo()->orderBy('apellidos')->get();
         $alumnos = $alumnosPrograma->merge($alumnosRelacionados)->unique('id')->values();
         $cantidadAlumnos = $alumnos->count();
         $docentes = $curso->docentes;

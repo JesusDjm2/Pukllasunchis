@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\NivelPrograma;
 use App\Exports\PostulantesRegularExport;
 use App\Mail\ConfirmacionInscripcionMail;
 use App\Models\AdminFid;
@@ -457,24 +458,16 @@ class PostulantesRegularController extends Controller
         if (stripos($nombrePrograma, 'PPD') !== false) {
             return null;
         }
-        $programa = Programa::where('nombre', $nombrePrograma)
-            ->where('nombre', 'NOT LIKE', '%PPD%')
-            ->first();
+        $programa = Programa::fid()->where('nombre', $nombrePrograma)->first();
 
         if (! $programa && stripos($nombrePrograma, 'Inicial') !== false) {
-            $programa = Programa::where('nombre', 'LIKE', '%Inicial%')
-                ->where('nombre', 'NOT LIKE', '%PPD%')
-                ->first();
+            $programa = Programa::fid()->nivel(NivelPrograma::INICIAL)->orderBy('id')->first();
         }
         if (! $programa && stripos($nombrePrograma, 'Primaria') !== false) {
-            $programa = Programa::where('nombre', 'LIKE', '%Primaria%')
-                ->where('nombre', 'NOT LIKE', '%PPD%')
-                ->first();
+            $programa = Programa::fid()->nivel(NivelPrograma::PRIMARIA)->orderBy('id')->first();
         }
         if (! $programa) {
-            $programa = Programa::where('nombre', 'LIKE', "%{$nombrePrograma}%")
-                ->where('nombre', 'NOT LIKE', '%PPD%')
-                ->first();
+            $programa = Programa::fid()->where('nombre', 'LIKE', "%{$nombrePrograma}%")->first();
         }
 
         return $programa;
@@ -482,7 +475,7 @@ class PostulantesRegularController extends Controller
 
     private function crearUsuario($postulante, $programa, $ciclo)
     {
-        $email = $this->generarEmailUnico($postulante, $programa->nombre);
+        $email = $this->generarEmailUnico($postulante, $programa);
 
         $userData = [
             'name' => $postulante->nombres,
@@ -515,15 +508,15 @@ class PostulantesRegularController extends Controller
         return $user;
     }
 
-    private function generarEmailUnico($postulante, $programaNombre)
+    private function generarEmailUnico($postulante, Programa $programa)
     {
         $primerNombre = strtolower(preg_replace('/[^a-zA-Z]/', '', explode(' ', trim($postulante->nombres))[0]));
         $primerApellido = strtolower(preg_replace('/[^a-zA-Z]/', '', explode(' ', trim($postulante->apellidos))[0]));
 
         // Abreviatura del programa
         $abrev = match (true) {
-            stripos($programaNombre, 'Inicial') !== false => 'ini',
-            stripos($programaNombre, 'Primaria') !== false => 'eib',
+            $programa->esInicial() => 'ini',
+            $programa->esPrimaria() => 'eib',
             default => 'gen'
         };
 

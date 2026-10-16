@@ -8,6 +8,7 @@
 @section('titulo', 'Crear sílabo')
 
 @section('contenido')
+    @include('partials.silabo-form-styles')
     <style>
         table tr,
         table td,
@@ -24,51 +25,12 @@
         table select {
             pointer-events: auto;
         }
-
-        .btn-flotante {
-            position: fixed;
-            top: 50%;
-            right: -2px;
-            transform: translateY(-50%);
-            z-index: 9999;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
-            transition: 0.4s ease;
-
-            animation: entradaBoton 1s ease-out;
-        }
-
-        /* Hover suave como lo pediste */
-        .btn-flotante:hover {
-            padding: 0.7em;
-            transition: 0.2s ease;
-        }
-
-        /* Animación personalizada */
-        @@keyframes entradaBoton {
-            0% {
-                opacity: 0;
-                transform: translate(100%, -50%) scale(0.6) rotate(10deg);
-            }
-
-            60% {
-                opacity: 1;
-                transform: translate(-10px, -50%) scale(1.05);
-            }
-
-            80% {
-                transform: translate(5px, -50%) scale(0.98);
-            }
-
-            100% {
-                transform: translateY(-50%) scale(1);
-            }
-        }
     </style>
-    <div class="container-fluid docente-ui-page">
-        @include('docentes.partials.ui-header', [
-            'kicker' => 'Sílabos',
-            'title' => 'Crear sílabo',
-            'subtitle' => 'Complete el formulario del sílabo para el curso asignado.',
+    <div class="container-fluid docente-ui-page silabo-form">
+        @include('admin.curso.silabos.partials.cabecera', [
+            'accion' => 'Nuevo sílabo',
+            'curso' => $curso,
+            'periodo' => $periodoActual->nombre,
             'backUrl' => optional($docente)->id ? route('vistaDocente', $docente->id) : route('silabos.index'),
             'backLabel' => 'Mis cursos',
         ])
@@ -97,31 +59,23 @@
             @endif
         </div>
 
-        <div class="card docente-ui-card mb-3">
-            <div class="card-body p-3 p-md-4">
-                <div class="row align-items-center">
-                <!-- Logo alineado a la izquierda -->
-                <div class="col-lg-3 d-flex justify-content-start">
-                    <img src="{{ asset('img/logo-iesp-pukllasunchis.png') }}" alt="Logo IESP Pukllasunchis"
-                        class="img-fluid" style="max-width: 200px;">
-                </div>
+        <div class="silabo-layout">
+        <aside class="silabo-layout-indice">
+            @include('admin.curso.silabos.partials.indice')
+        </aside>
+        <div class="silabo-layout-main">
 
-                <!-- Información del Programa, Ciclo y Curso alineada a la derecha -->
-                <div class="col-lg-9 d-flex justify-content-end flex-column align-items-end"
-                    style="color: #c78d40 !important;">
-                    <div class="font-weight-bold text-uppercase" style="font-size:.75rem; letter-spacing:.12em;">SÍLABO</div>
-                    <h5 class="font-weight-bold mb-1">{{ $curso->ciclo->programa->nombre }} - Ciclo:
-                        {{ $curso->ciclo->nombre }}</h5>
-                    <h4 class="font-weight-bold">{{ $curso->nombre }}</h4>
-                </div>
-                </div>
+        {{-- Sección I: la tabla conserva el formato del Ministerio (es la que se exporta a PDF). --}}
+        <div class="silabo-section silabo-section-datos" data-informativa>
+            <div class="silabo-section-header">
+                <span class="silabo-section-icon"><i class="fas fa-id-card"></i></span>
+                <div><span class="silabo-section-eyebrow">Sección I</span><h4>Datos generales</h4></div>
+                <button type="button" class="silabo-datos-toggle" aria-expanded="false" aria-controls="silaboDatosCuerpo"
+                    onclick="var c=document.getElementById('silaboDatosCuerpo'); c.hidden=!c.hidden; this.setAttribute('aria-expanded', !c.hidden); this.querySelector('span').textContent = c.hidden ? 'Ver datos generales' : 'Ocultar';">
+                    <span>Ver datos generales</span> <i class="fas fa-chevron-down"></i>
+                </button>
             </div>
-        </div>
-        <div style="width: 100%; height: 2px; border-top: 1px dashed #c78d40;"></div>
-
-        <!-- Información del Curso -->
-        <div class="mb-4 mt-3">
-            <h4 style="font-weight: 600; color: #c78d40" class="mt-4">I. Datos Generales:</h4>
+            <div class="silabo-datos-cuerpo" id="silaboDatosCuerpo" hidden>
             <table class="table table-borderless" style="margin-bottom: 0; font-size: 14px; margin-left: 1em;">
                 <tbody>
                     <tr>
@@ -172,8 +126,8 @@
                     <tr>
                         <td style="font-weight: 600; padding: 2px;">1.9 <span style="margin-left:1em">Docente(s)</span></td>
                         <td style="padding: 2px;">:
-                            @foreach ($curso->docentes as $docente)
-                                {{ $docente->nombre }}@if (!$loop->last)
+                            @foreach ($curso->docentes as $docenteFila)
+                                {{ $docenteFila->nombre }}@if (!$loop->last)
                                     ,
                                 @endif
                             @endforeach
@@ -202,18 +156,28 @@
                     </tr>
                 </tbody>
             </table>
+            </div>
         </div>
+
         <form action="{{ route('silabos.store') }}" method="POST" id="silaboForm">
             @csrf
             <input type="hidden" name="curso_id" value="{{ $curso->id }}">
             <input type="hidden" name="docente_id" value="{{ $docente->id }}">
+            {{-- $periodoActual->fecha_inicio/fecha_cierre: al crear desde cero no hay
+                 un sílabo previo del cual heredar fecha1/fecha2, siempre son las del
+                 periodo actual. --}}
             <input type="hidden" id="hidden_fecha1" name="fecha1"
-                value="{{ old('fecha1', $silabo->fecha1 ?? $periodoActual->fecha_inicio) }}">
+                value="{{ old('fecha1', $periodoActual->fecha_inicio) }}">
             <input type="hidden" id="hidden_fecha2" name="fecha2"
-                value="{{ old('fecha2', $silabo->fecha2 ?? $periodoActual->fecha_cierre) }}">
+                value="{{ old('fecha2', $periodoActual->fecha_cierre) }}">
 
-            <div class="col-lg-12 mb-3">
-                <h4 style="font-weight: 600; color: #c78d40;" class="mt-5">II. Sumilla:</h4>
+            @include('admin.curso.silabos.partials.aviso-borrador')
+
+            <div class="silabo-section">
+                <div class="silabo-section-header">
+                    <span class="silabo-section-icon"><i class="fas fa-align-left"></i></span>
+                    <div><span class="silabo-section-eyebrow">Sección II</span><h4>Sumilla</h4></div>
+                </div>
                 <textarea name="sumilla" id="sumilla" class="ckeditor form-control form-control-sm">
                     {{ old('sumilla', $curso->sumilla ?? 'Texto por asignar') }}
                 </textarea>
@@ -222,79 +186,84 @@
                 @enderror
             </div>
 
-            <div class="col-lg-12 mb-3">
-                <h4 style="font-weight: 600; color: #c78d40" class="mt-5">III. Vinculación al Proyecto Integrador:</h4>
-            </div>
-            <div class="col-lg-12 mb-3">
-                <label for="proyecto_integrador">Proyecto Integrador:</label>
-                <input type="text" name="proyecto_integrador" class="form-control form-control-sm"
-                    value="{{ $curso->ciclo->proyecto->nombre ?? 'Sin proyecto asignado' }}" readonly>
-            </div>
-            <div class="col-lg-12 mb-3">
-                <label for="producto_proyecto">Producto del Proyecto:</label>
-                <input type="text" id="producto_proyecto" name="producto_proyecto"
-                    class="form-control form-control-sm" required readonly
-                    value="{{ $curso->ciclo->proyecto->producto ?? 'Sin proyecto asignado' }}">
-            </div>
-            <div class="col-lg-12 mb-3">
-                <label for="descripcion_proyecto">Propósito del Proyecto Integrador:</label>
-                <textarea id="descripcion_proyecto_integrador" name="descripcion_proyecto_integrador"
-                    class="ckeditor form-control form-control-sm" rows="4">
-                    {{ old('descripcion_proyecto', $curso->ciclo->proyecto->descripcion ?? 'Sin descripción asignada') }}
-                </textarea>
-            </div>
-            <div class="col-lg-12 mb-3">
-                <label for="vinculacion_pi">Vinculación o aporte del curso con el proyecto integrador:</label>
-                <textarea name="vinculacion_pi" id="vinculacion_pi" class="ckeditor form-control form-control-sm" rows="6"></textarea>
-            </div>
-            <div class="col-lg-12 mb-3">
-                <label for="producto_curso">Producto del Curso:</label>
-                <textarea name="producto_curso" id="producto_curso" class="ckeditor form-control form-control-sm" rows="6"></textarea>
-            </div>
-
-            <div class="col-lg-12 mb-3">
-                <h4 style="font-weight: 600; color: #c78d40" class="mt-5">IV. Enfoques Tranversales:</h4>
-            </div>
-
-            <!-- Select para elegir Enfoques -->
-            <div class="col-lg-12 mb-3">
-                <select id="enfoque_id" class="form-control form-control-sm">
-                    <option selected disabled>Elegir un Enfoque</option>
-                    @foreach ($enfoques as $enfoque)
-                        <option value="{{ $enfoque->id }}" data-nombre="{{ $enfoque->nombre }}"
-                            data-descripcion="{{ $enfoque->descripcion }}"
-                            data-observables="{{ $enfoque->observables }}" data-concretas="{{ $enfoque->concretas }}">
-                            {{ $enfoque->nombre }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            <input type="hidden" id="enfoques" name="enfoques">
-            <div class="col-lg-12 mb-3">
-                <button type="button" id="agregarEnfoque" class="btn btn-sm btn-primary">Agregar Enfoque +</button>
-            </div>
-            <div class="col-lg-12 mb-3">
-                <p style="font-weight: 600">Detalles de los Enfoques Seleccionados:</p>
-                <table class="table table-bordered">
-                    <thead>
-                        <tr class="text-center">
-                            <th style="width: 30%">Enfoque</th>
-                            <th>¿Cuándo son observables en la EESP?</th>
-                            <th>¿En qué acciones concretas se observa?</th>
-                            <th id="acciones">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tablaEnfoques">
-                    </tbody>
-                </table>
+            <div class="silabo-section">
+                <div class="silabo-section-header">
+                    <span class="silabo-section-icon"><i class="fas fa-project-diagram"></i></span>
+                    <div><span class="silabo-section-eyebrow">Sección III</span><h4>Vinculación al proyecto integrador</h4></div>
+                </div>
+                <div class="mb-3">
+                    <label for="proyecto_integrador">Proyecto Integrador:</label>
+                    <input type="text" name="proyecto_integrador" class="form-control form-control-sm"
+                        value="{{ $curso->ciclo->proyecto->nombre ?? 'Sin proyecto asignado' }}" readonly>
+                </div>
+                <div class="mb-3">
+                    <label for="producto_proyecto">Producto del Proyecto:</label>
+                    <input type="text" id="producto_proyecto" name="producto_proyecto"
+                        class="form-control form-control-sm" required readonly
+                        value="{{ $curso->ciclo->proyecto->producto ?? 'Sin proyecto asignado' }}">
+                </div>
+                <div class="mb-3">
+                    <label for="descripcion_proyecto">Propósito del Proyecto Integrador:</label>
+                    <textarea id="descripcion_proyecto_integrador" name="descripcion_proyecto_integrador"
+                        class="ckeditor form-control form-control-sm" rows="4">
+                        {{ old('descripcion_proyecto', $curso->ciclo->proyecto->descripcion ?? 'Sin descripción asignada') }}
+                    </textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="vinculacion_pi">Vinculación o aporte del curso con el proyecto integrador:</label>
+                    <textarea name="vinculacion_pi" id="vinculacion_pi" class="ckeditor form-control form-control-sm" rows="6"></textarea>
+                </div>
+                <div class="mb-0">
+                    <label for="producto_curso">Producto del Curso:</label>
+                    <textarea name="producto_curso" id="producto_curso" class="ckeditor form-control form-control-sm" rows="6"></textarea>
+                </div>
             </div>
 
-            <div class="col-lg-12 mb-3">
-                <h4 style="font-weight: 600; color: #c78d40" class="mt-5">
-                    V. Matriz de planificación y evaluación de aprendizaje:
-                </h4>
+            <div class="silabo-section">
+                <div class="silabo-section-header">
+                    <span class="silabo-section-icon"><i class="fas fa-users"></i></span>
+                    <div><span class="silabo-section-eyebrow">Sección IV</span><h4>Enfoques transversales</h4></div>
+                </div>
+
+                <!-- Select para elegir Enfoques -->
+                <div class="mb-3">
+                    <select id="enfoque_id" class="form-control form-control-sm">
+                        <option selected disabled>Elegir un Enfoque</option>
+                        @foreach ($enfoques as $enfoque)
+                            <option value="{{ $enfoque->id }}" data-nombre="{{ $enfoque->nombre }}"
+                                data-descripcion="{{ $enfoque->descripcion }}"
+                                data-observables="{{ $enfoque->observables }}" data-concretas="{{ $enfoque->concretas }}">
+                                {{ $enfoque->nombre }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <input type="hidden" id="enfoques" name="enfoques">
+                <div class="mb-3">
+                    <button type="button" id="agregarEnfoque" class="btn btn-sm btn-primary">Agregar Enfoque +</button>
+                </div>
+                <div class="mb-0">
+                    <p style="font-weight: 600">Detalles de los Enfoques Seleccionados:</p>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr class="text-center">
+                                <th style="width: 30%">Enfoque</th>
+                                <th>¿Cuándo son observables en la EESP?</th>
+                                <th>¿En qué acciones concretas se observa?</th>
+                                <th id="acciones">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaEnfoques">
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <div class="col-lg-12 mb-4">
+
+            <div class="silabo-section">
+                <div class="silabo-section-header">
+                    <span class="silabo-section-icon"><i class="fas fa-table"></i></span>
+                    <div><span class="silabo-section-eyebrow">Sección V</span><h4>Matriz de planificación y evaluación de aprendizaje</h4></div>
+                </div>
                 @foreach ($competencias as $index => $competencia)
                     @php
                         $num = $index + 1;
@@ -384,9 +353,11 @@
                 @endforeach
             </div>
 
-            <div class="col-lg-12 mb-3">
-                <h4 style="font-weight: 600; color: #c78d40">VI. Organización de Unidades de aprendizaje:</h4>
-            </div>
+            <div class="silabo-section">
+                <div class="silabo-section-header">
+                    <span class="silabo-section-icon"><i class="fas fa-layer-group"></i></span>
+                    <div><span class="silabo-section-eyebrow">Sección VI</span><h4>Organización de unidades de aprendizaje</h4></div>
+                </div>
             <div id="contenedor-tablas">
                 <div class="unidad">
                     <table class="table table-bordered">
@@ -441,10 +412,14 @@
                 </div>
             </div>
             <button type="button" class="btn btn-primary mt-2 btn-sm mb-3" id="btn-agregar">Agregar Unidad +</button>
+            </div>
 
-
-            <h4 style="font-weight: 600; color: #c78d40" class="mt-4">VII. RÚBRICAS DE EVALUACIÓN</h4>
-            <table class="table table-bordered" id="tabla-rubricas">
+            <div class="silabo-section">
+                <div class="silabo-section-header">
+                    <span class="silabo-section-icon"><i class="fas fa-clipboard-check"></i></span>
+                    <div><span class="silabo-section-eyebrow">Sección VII</span><h4>Rúbricas de evaluación</h4></div>
+                </div>
+                <table class="table table-bordered" id="tabla-rubricas">
                 <thead>
                     <tr>
                         <th>Criterio de Evaluación</th>
@@ -481,27 +456,38 @@
                     </tr>
                 </tbody>
             </table>
-            <button type="button" class="btn btn-primary btn-sm mb-4" id="btn-agregar-fila">Agregar Criterio +</button>
+                <button type="button" class="btn btn-primary btn-sm mt-2" id="btn-agregar-fila">Agregar Criterio +</button>
+            </div>
 
-            <h4 style="font-weight: 600; color: #c78d40" class="mt-3">VIII. MODELOS METODOLÓGICOS (METODOLOGÍA)</h4>
-
-            <div class="col-lg-12 mb-3">
+            <div class="silabo-section">
+                <div class="silabo-section-header">
+                    <span class="silabo-section-icon"><i class="fas fa-chalkboard-teacher"></i></span>
+                    <div><span class="silabo-section-eyebrow">Sección VIII</span><h4>Modelos metodológicos (metodología)</h4></div>
+                </div>
                 <textarea id="modelos_metodologicos" name="modelos_metodologicos" class="ckeditor form-control form-control-sm"
                     rows="6"></textarea>
             </div>
 
-            <h4 style="font-weight: 600; color: #c78d40" class="mt-3">IX. RECURSOS Y MATERIALES DIDÁCTICOS</h4>
-
-            <div class="col-lg-12 mb-3">
+            <div class="silabo-section">
+                <div class="silabo-section-header">
+                    <span class="silabo-section-icon"><i class="fas fa-toolbox"></i></span>
+                    <div><span class="silabo-section-eyebrow">Sección IX</span><h4>Recursos y materiales didácticos</h4></div>
+                </div>
                 <textarea id="recursos" name="recursos" class="ckeditor form-control form-control-sm" rows="6"></textarea>
             </div>
-            <h4 style="font-weight: 600; color: #c78d40" class="mt-3">X. Referencias</h4>
 
-            <div class="col-lg-12 mb-3">
+            <div class="silabo-section">
+                <div class="silabo-section-header">
+                    <span class="silabo-section-icon"><i class="fas fa-book"></i></span>
+                    <div><span class="silabo-section-eyebrow">Sección X</span><h4>Referencias</h4></div>
+                </div>
                 <textarea id="referencias" name="referencias" class="ckeditor form-control form-control-sm" rows="6"></textarea>
             </div>
-            <button type="submit" class="btn btn-primary btn-flotante">Guardar Sílabo</button>
+
+            @include('admin.curso.silabos.partials.barra-guardar', ['textoGuardar' => 'Guardar sílabo'])
         </form>
+        </div>{{-- /.silabo-layout-main --}}
+        </div>{{-- /.silabo-layout --}}
     </div>
         <!-- Enfoques -->
         <script>
@@ -724,15 +710,20 @@
                     }
                 });
 
+                // El formulario ya no tiene un <select id="proyecto_id"> (el proyecto
+                // integrador se muestra como texto de solo lectura tomado del ciclo),
+                // pero se deja el listener por si vuelve a agregarse ese selector.
                 const selectProyecto = document.getElementById('proyecto_id');
-                selectProyecto.addEventListener('change', function() {
-                    const selectedOption = selectProyecto.options[selectProyecto.selectedIndex];
-                    const descripcion = selectedOption.getAttribute('data-descripcion') || '';
+                if (selectProyecto) {
+                    selectProyecto.addEventListener('change', function() {
+                        const selectedOption = selectProyecto.options[selectProyecto.selectedIndex];
+                        const descripcion = selectedOption.getAttribute('data-descripcion') || '';
 
-                    if (CKEDITOR.instances.descripcion_proyecto) {
-                        CKEDITOR.instances.descripcion_proyecto.setData(descripcion);
-                    }
-                });
+                        if (CKEDITOR.instances.descripcion_proyecto) {
+                            CKEDITOR.instances.descripcion_proyecto.setData(descripcion);
+                        }
+                    });
+                }
 
                 // Este formulario es largo: mantener la sesión activa mientras se llena
                 // para que el token CSRF no expire antes de guardar (error 419).
@@ -741,4 +732,11 @@
                 }, 4 * 60 * 1000);
             });
         </script>
+
+        {{-- Borrador local: lo NO guardado queda en este navegador y se ofrece recuperarlo. --}}
+        @include('admin.curso.silabos.partials.borrador', [
+            'claveBorrador' => 'puklla-silabo-draft-create-'.$curso->id,
+            'clavesObsoletas' => [],
+            'conNombresOcultos' => false,
+        ])
     @endsection

@@ -4,15 +4,15 @@ namespace App\Notifications;
 
 use App\Mail\IncidenciaMail;
 use App\Models\Incidencia;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Str;
 
-class IncidenciaCreada extends Notification implements ShouldQueue
+// Nota: NO implementa ShouldQueue. Sin un worker (`queue:work`) corriendo en
+// producción, una notificación encolada se queda para siempre en la tabla
+// `jobs` y nunca se entrega (mismo bug que tenía TaqeInvitacionGrupo) — mejor
+// alineada con SugerenciaCreada/TutoriaCreada, que sí se ejecutan síncronas.
+class IncidenciaCreada extends Notification
 {
-    use Queueable;
-
     public function __construct(public Incidencia $incidencia)
     {
     }

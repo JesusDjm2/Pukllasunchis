@@ -4,10 +4,10 @@
     @php
         $primerNombre = explode(' ', trim($docente->nombre))[0];
         $cursosPPD = $docente->cursos->filter(
-            fn($curso) => str_contains($curso->ciclo->programa->nombre ?? '', 'PPD'),
+            fn($curso) => $curso->esPpd(),
         );
         $otrosCursos = $docente->cursos->filter(
-            fn($curso) => !str_contains($curso->ciclo->programa->nombre ?? '', 'PPD'),
+            fn($curso) => !$curso->esPpd(),
         );
         $cursosPPDCount = $cursosPPD->count();
         $cursosFidCount = $otrosCursos->count();
@@ -178,6 +178,131 @@
             font-size: 0.72rem;
         }
 
+        /* Acciones de la tarjeta en columna: Calificar → Descargar notas → Cambiar competencias. */
+        .docente-curso-cabecera-accion {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.4rem;
+        }
+
+        .docente-curso-cabecera-accion .docente-cal-select-link {
+            order: 3;
+            margin-top: 0 !important;
+        }
+
+        /* Botones de acceso de la tarjeta (Descargar notas, chip Alumnos): mismo comportamiento que
+           "Calificar" (.docente-btn-header-accion): sube, cruza un brillo diagonal y el ícono gira. */
+        .docente-btn-descargar,
+        a.docente-curso-stat-link {
+            position: relative;
+            overflow: hidden;
+            color: #fff !important;
+            text-decoration: none !important;
+            transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.28s ease, filter 0.28s ease;
+        }
+
+        .docente-btn-descargar::after,
+        a.docente-curso-stat-link::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -75%;
+            width: 45%;
+            height: 100%;
+            background: linear-gradient(115deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+            transform: skewX(-20deg);
+            transition: left 0.6s ease;
+            pointer-events: none;
+        }
+
+        .docente-btn-descargar i,
+        a.docente-curso-stat-link i {
+            display: inline-block;
+            color: #fff !important;
+            transition: transform 0.3s ease;
+        }
+
+        .docente-btn-descargar:hover,
+        a.docente-curso-stat-link:hover {
+            color: #fff !important;
+            transform: translateY(-2px);
+            filter: brightness(1.04);
+        }
+
+        .docente-btn-descargar:hover::after,
+        a.docente-curso-stat-link:hover::after {
+            left: 125%;
+        }
+
+        .docente-btn-descargar:hover i,
+        a.docente-curso-stat-link:hover i {
+            transform: rotate(-10deg) scale(1.12);
+        }
+
+        .docente-btn-descargar:active,
+        a.docente-curso-stat-link:active {
+            transform: translateY(0);
+            filter: brightness(0.98);
+        }
+
+        /* Descargar notas: verde Excel sólido */
+        .docente-btn-descargar {
+            order: 2;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.32rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.78rem;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            background: #1d6f42;
+            border: 1px solid #1d6f42;
+            box-shadow: 0 2px 6px rgba(29, 111, 66, 0.25);
+        }
+
+        .docente-btn-descargar:hover {
+            box-shadow: 0 10px 20px -4px rgba(29, 111, 66, 0.4);
+        }
+
+        /* Chip Alumnos: azul sólido como "Calificar" */
+        a.docente-curso-stat-link {
+            background: #4e73df;
+            border: 1px solid #4e73df;
+            box-shadow: 0 2px 6px rgba(78, 115, 223, 0.25);
+        }
+
+        a.docente-curso-stat-link:hover {
+            box-shadow: 0 10px 20px -4px rgba(78, 115, 223, 0.38);
+        }
+
+        /* Modos oscuro/tenue: darkmode.css pinta .docente-curso-stat con fondo translúcido. */
+        body.dark-mode .docente-btn-descargar,
+        body.dim-mode .docente-btn-descargar {
+            background: #1d6f42;
+            color: #fff !important;
+        }
+
+        body.dark-mode a.docente-curso-stat-link,
+        body.dim-mode a.docente-curso-stat-link {
+            background: #4e73df;
+            color: #fff !important;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .docente-btn-descargar, a.docente-curso-stat-link,
+            .docente-btn-descargar::after, a.docente-curso-stat-link::after,
+            .docente-btn-descargar i, a.docente-curso-stat-link i { transition: none; }
+        }
+
+        @media (max-width: 767.98px) {
+            .docente-curso-cabecera-accion {
+                align-items: flex-start;
+            }
+        }
+
+
         .docente-curso-sections {
             margin-top: 1rem;
             padding-top: 1rem;
@@ -208,7 +333,11 @@
             font-weight: 700;
             padding: 0.15rem 0.55rem;
             border-radius: 999px;
-            margin-left: auto;
+            /* Pegado al título "Sílabo" (antes margin-left:auto lo mandaba al extremo derecho,
+               junto a la columna de Classroom, y parecía ser de Classroom). */
+            margin-left: 0.4rem;
+            text-transform: none;
+            letter-spacing: normal;
         }
 
         .docente-curso-status.is-ok {
@@ -322,6 +451,58 @@
             font-size: 0.68rem;
             color: #b7b9c8;
             margin-left: 0.6rem;
+        }
+
+        /* El enlace se abre con un clic mientras no se está editando. */
+        .docente-classroom-input[name="classroom"][readonly]:not(:placeholder-shown) {
+            cursor: pointer;
+            color: #4e73df;
+            text-decoration: underline;
+            text-decoration-color: rgba(78, 115, 223, 0.35);
+            text-underline-offset: 2px;
+        }
+
+        /* Botones Abrir / Copiar pegados al campo */
+        .docente-classroom-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.74rem;
+            font-weight: 600;
+            color: #4e73df;
+            background: #eef1fb;
+            border: 1px solid #d1d3e2;
+            border-left: 0;
+            transition: background-color 0.15s ease, color 0.15s ease;
+        }
+
+        .docente-classroom-btn:hover:not(:disabled) {
+            background: #4e73df;
+            color: #fff;
+        }
+
+        .docente-classroom-btn:disabled {
+            color: #b7b9c8;
+            background: #f8f9fc;
+            cursor: not-allowed;
+        }
+
+        .docente-classroom-btn.is-copiado,
+        .docente-classroom-btn.is-copiado:hover {
+            background: #1cc88a;
+            border-color: #1cc88a;
+            color: #fff;
+        }
+
+        .docente-classroom-btn i {
+            font-size: 0.7rem;
+        }
+
+        body.dark-mode .docente-classroom-btn,
+        body.dim-mode .docente-classroom-btn {
+            background: rgba(78, 115, 223, 0.15);
+            border-color: rgba(255, 255, 255, 0.12);
+            color: #a9bbf5;
         }
 
         .docente-silabo-opcion {
@@ -643,6 +824,23 @@
             </div>
         </div>
 
+        {{-- Taq'e --}}
+        @php $proyectosACargo = $docente->proyectosIntegradores()->orderBy('nombre')->get(); @endphp
+        @if ($proyectosACargo->isNotEmpty())
+            <div class="card docente-ui-card mb-3 mb-md-4">
+                <div class="card-body p-3 d-flex flex-wrap align-items-center" style="gap:.5rem .75rem;">
+                    <span class="font-weight-bold text-secondary small text-uppercase" style="letter-spacing:.06em;">
+                        <i class="fas fa-project-diagram mr-1"></i>Proyectos Integradores a tu cargo
+                    </span>
+                    @foreach ($proyectosACargo as $pi)
+                        <a href="{{ route('taqe.proyecto.index', $pi) }}" class="docente-curso-stat" title="Grupos Taq'e de este proyecto">
+                            <i class="fas fa-flask"></i> {{ $pi->nombre }} · {{ $pi->pivot->rol === 'encargado' ? 'Encargado' : 'Organizador' }}
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+        
 
         <div class="row pb-5">
             <div class="col-12" id="tablafid">
@@ -755,6 +953,11 @@
                                                 @endif
                                             @endif
                                         @endif
+                                        {{-- Descarga del curso: debajo de Calificar, con la extensión visible para que se entienda que es un archivo. --}}
+                                        <a href="{{ route('docente.curso.excel', ['docente' => $docente->id, 'curso' => $curso->id]) }}"
+                                            class="docente-btn-descargar" title="Descargar las calificaciones de este curso en Excel">
+                                            <i class="fas fa-download"></i> Descargar notas
+                                        </a>
                                     </div>
                                 </div>
                                 <div class="docente-curso-stats">
@@ -763,6 +966,15 @@
                                     <span class="docente-curso-stat"><i class="fas fa-star"></i>
                                         {{ $curso->creditos }} créditos</span>
                                     <span class="docente-curso-stat"><i class="fas fa-tag"></i> {{ $curso->cc }}</span>
+                                    <a href="{{ route('docente.alumnos', ['docente' => $docente->id, 'curso' => $curso->id]) }}" class="docente-curso-stat docente-curso-stat-link" title="Ver la lista de alumnos y contactarlos">
+                                        <i class="fas fa-user-graduate"></i> Alumnos</a>
+                                    {{-- Taq'e --}}
+                                    @php $nTaqe = $curso->taqeGrupos()->count(); @endphp
+                                    @if ($nTaqe > 0)
+                                        <a href="{{ route('docente.curso.taqe', ['docente' => $docente->id, 'curso' => $curso->id]) }}" class="docente-curso-stat"
+                                            title="Grupos Taq'e de este curso"><i class="fas fa-flask"></i> Taq'e · {{ $nTaqe }}</a>
+                                    @endif
+                                    
                                 </div>
 
                                 <div class="row docente-curso-sections">
@@ -971,7 +1183,15 @@
                                                 <input type="text" name="classroom"
                                                     class="form-control form-control-sm docente-classroom-input"
                                                     value="{{ $curso->classroom }}"
-                                                    placeholder="Enlace de Classroom" readonly>
+                                                    placeholder="Enlace de Classroom" readonly
+                                                    title="Clic para abrir el Classroom" onclick="if (this.readOnly) abrirClassroom(this)"
+                                                    oninput="actualizarBotonClassroom(this)">
+                                                <div class="input-group-append">
+                                                    <button type="button" class="btn docente-classroom-btn" onclick="abrirClassroom(this)"
+                                                        title="Abrir el Classroom en otra pestaña" @disabled(! $curso->classroom)>
+                                                        <i class="fas fa-external-link-alt"></i><span class="docente-classroom-btn-texto">Abrir</span>
+                                                    </button>
+                                                </div>
                                             </div>
                                             <div class="input-group input-group-sm mb-2 docente-classroom-group">
                                                 <div class="input-group-prepend">
@@ -979,7 +1199,14 @@
                                                 </div>
                                                 <input type="text" name="clave"
                                                     class="form-control form-control-sm docente-classroom-input"
-                                                    value="{{ $curso->clave }}" placeholder="Código Classroom" readonly>
+                                                    value="{{ $curso->clave }}" placeholder="Código Classroom" readonly
+                                                    oninput="actualizarBotonClassroom(this)">
+                                                <div class="input-group-append">
+                                                    <button type="button" class="btn docente-classroom-btn" onclick="copiarClaveClassroom(this)"
+                                                        title="Copiar el código" @disabled(! $curso->clave)>
+                                                        <i class="far fa-copy"></i><span class="docente-classroom-btn-texto">Copiar</span>
+                                                    </button>
+                                                </div>
                                             </div>
 
                                             <div class="docente-classroom-actions" id="classroom-actions-view-{{ $curso->id }}">
@@ -1104,6 +1331,11 @@
                                                 @endif
                                             @endif
                                         @endif
+                                        {{-- Descarga del curso: debajo de Calificar, con la extensión visible para que se entienda que es un archivo. --}}
+                                        <a href="{{ route('docente.curso.excel', ['docente' => $docente->id, 'curso' => $curso->id]) }}"
+                                            class="docente-btn-descargar" title="Descargar las calificaciones de este curso en Excel">
+                                            <i class="fas fa-download"></i> Descargar notas
+                                        </a>
                                     </div>
                                 </div>
                                 <div class="docente-curso-stats">
@@ -1112,6 +1344,15 @@
                                     <span class="docente-curso-stat"><i class="fas fa-star"></i>
                                         {{ $curso->creditos }} créditos</span>
                                     <span class="docente-curso-stat"><i class="fas fa-tag"></i> {{ $curso->cc }}</span>
+                                    <a href="{{ route('docente.alumnos', ['docente' => $docente->id, 'curso' => $curso->id]) }}" class="docente-curso-stat docente-curso-stat-link" title="Ver la lista de alumnos y contactarlos">
+                                        <i class="fas fa-user-graduate"></i> Alumnos</a>
+                                    {{-- Taq'e --}}
+                                    @php $nTaqe = $curso->taqeGrupos()->count(); @endphp
+                                    @if ($nTaqe > 0)
+                                        <a href="{{ route('docente.curso.taqe', ['docente' => $docente->id, 'curso' => $curso->id]) }}" class="docente-curso-stat"
+                                            title="Grupos Taq'e de este curso"><i class="fas fa-flask"></i> Taq'e · {{ $nTaqe }}</a>
+                                    @endif
+                                    
                                 </div>
 
                                 <div class="row docente-curso-sections">
@@ -1350,7 +1591,15 @@
                                                 <input type="text" name="classroom"
                                                     class="form-control form-control-sm docente-classroom-input"
                                                     value="{{ $curso->classroom }}"
-                                                    placeholder="Enlace de Classroom" readonly>
+                                                    placeholder="Enlace de Classroom" readonly
+                                                    title="Clic para abrir el Classroom" onclick="if (this.readOnly) abrirClassroom(this)"
+                                                    oninput="actualizarBotonClassroom(this)">
+                                                <div class="input-group-append">
+                                                    <button type="button" class="btn docente-classroom-btn" onclick="abrirClassroom(this)"
+                                                        title="Abrir el Classroom en otra pestaña" @disabled(! $curso->classroom)>
+                                                        <i class="fas fa-external-link-alt"></i><span class="docente-classroom-btn-texto">Abrir</span>
+                                                    </button>
+                                                </div>
                                             </div>
                                             <div class="input-group input-group-sm mb-2 docente-classroom-group">
                                                 <div class="input-group-prepend">
@@ -1358,7 +1607,14 @@
                                                 </div>
                                                 <input type="text" name="clave"
                                                     class="form-control form-control-sm docente-classroom-input"
-                                                    value="{{ $curso->clave }}" placeholder="Código Classroom" readonly>
+                                                    value="{{ $curso->clave }}" placeholder="Código Classroom" readonly
+                                                    oninput="actualizarBotonClassroom(this)">
+                                                <div class="input-group-append">
+                                                    <button type="button" class="btn docente-classroom-btn" onclick="copiarClaveClassroom(this)"
+                                                        title="Copiar el código" @disabled(! $curso->clave)>
+                                                        <i class="far fa-copy"></i><span class="docente-classroom-btn-texto">Copiar</span>
+                                                    </button>
+                                                </div>
                                             </div>
 
                                             <div class="docente-classroom-actions" id="classroom-actions-view-{{ $curso->id }}">
@@ -1569,6 +1825,66 @@
 
             document.getElementById('classroom-actions-edit-' + cursoId).classList.add('d-none');
             document.getElementById('classroom-actions-view-' + cursoId).classList.remove('d-none');
+        }
+
+        // ── Classroom: abrir el enlace y copiar el código ──
+        function urlClassroom(valor) {
+            valor = (valor || '').trim();
+            if (!valor) return '';
+            return /^https?:\/\//i.test(valor) ? valor : 'https://' + valor;
+        }
+
+        function abrirClassroom(origen) {
+            var input = origen.closest('.docente-classroom-group').querySelector('input[name="classroom"]');
+            var url = urlClassroom(input && input.value);
+            if (url) window.open(url, '_blank', 'noopener');
+        }
+
+        function copiarClaveClassroom(btn) {
+            var input = btn.closest('.docente-classroom-group').querySelector('input[name="clave"]');
+            var codigo = input ? input.value.trim() : '';
+            if (!codigo) return;
+
+            var listo = function () {
+                var texto = btn.querySelector('.docente-classroom-btn-texto');
+                var icono = btn.querySelector('i');
+                btn.classList.add('is-copiado');
+                if (texto) texto.textContent = 'Copiado';
+                if (icono) icono.className = 'fas fa-check';
+                clearTimeout(btn._copiadoTimer);
+                btn._copiadoTimer = setTimeout(function () {
+                    btn.classList.remove('is-copiado');
+                    if (texto) texto.textContent = 'Copiar';
+                    if (icono) icono.className = 'far fa-copy';
+                }, 1600);
+            };
+
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(codigo).then(listo, function () { copiarConRespaldo(codigo) && listo(); });
+            } else if (copiarConRespaldo(codigo)) {
+                listo();
+            }
+        }
+
+        // Respaldo para navegadores sin Clipboard API (o páginas sin HTTPS).
+        function copiarConRespaldo(texto) {
+            var aux = document.createElement('textarea');
+            aux.value = texto;
+            aux.setAttribute('readonly', '');
+            aux.style.position = 'fixed';
+            aux.style.opacity = '0';
+            document.body.appendChild(aux);
+            aux.select();
+            var ok = false;
+            try { ok = document.execCommand('copy'); } catch (e) {}
+            document.body.removeChild(aux);
+            return ok;
+        }
+
+        // Al editar, cada botón se activa/desactiva según haya enlace o código (oninput del campo).
+        function actualizarBotonClassroom(input) {
+            var btn = input.closest('.docente-classroom-group').querySelector('.docente-classroom-btn');
+            if (btn) btn.disabled = !input.value.trim();
         }
 
         function mostrarTabla(tipo) {

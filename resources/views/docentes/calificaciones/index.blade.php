@@ -59,10 +59,10 @@
     </style>
     @php
         $cursosFID = $docente->cursos->reject(
-            fn($curso) => str_contains($curso->ciclo->programa->nombre ?? '', 'PPD'),
+            fn($curso) => $curso->esPpd(),
         );
         $cursosPPD = $docente->cursos->filter(
-            fn($curso) => str_contains($curso->ciclo->programa->nombre ?? '', 'PPD'),
+            fn($curso) => $curso->esPpd(),
         );
         $fechaLimite = \Carbon\Carbon::now()->addSeconds(20);
         $mostrarBoton = \Carbon\Carbon::now()->lt($fechaLimite);

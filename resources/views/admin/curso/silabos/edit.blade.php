@@ -8,6 +8,7 @@
 @section('titulo', 'Editar sílabo')
 
 @section('contenido')
+    @include('partials.silabo-form-styles')
     <style>
         #acciones {
             pointer-events: visible;
@@ -24,64 +25,12 @@
         table select {
             pointer-events: auto;
         }
-
-        /* .btn-flotante {
-                            position: fixed;
-                            top: 50%;
-                            right: -2px;
-                            transform: translateY(-50%);
-                            z-index: 9999;
-                            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
-                            transition: 0.4s ease;
-                        }
-                        .btn-flotante:hover {
-                            padding: 0.7em;
-                            transition: 0.2s ease;
-                        } */
-        .btn-flotante {
-            position: fixed;
-            top: 50%;
-            right: -2px;
-            transform: translateY(-50%);
-            z-index: 9999;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
-            transition: 0.4s ease;
-
-            animation: entradaBoton 1s ease-out;
-        }
-
-        /* Hover suave como lo pediste */
-        .btn-flotante:hover {
-            padding: 0.7em;
-            transition: 0.2s ease;
-        }
-
-        /* Animación personalizada */
-        @@keyframes entradaBoton {
-            0% {
-                opacity: 0;
-                transform: translate(100%, -50%) scale(0.6) rotate(10deg);
-            }
-
-            60% {
-                opacity: 1;
-                transform: translate(-10px, -50%) scale(1.05);
-            }
-
-            80% {
-                transform: translate(5px, -50%) scale(0.98);
-            }
-
-            100% {
-                transform: translateY(-50%) scale(1);
-            }
-        }
     </style>
-    <div class="container-fluid docente-ui-page">
-        @include('docentes.partials.ui-header', [
-            'kicker' => 'Sílabos',
-            'title' => 'Actualizar sílabo',
-            'subtitle' => 'Modifique las secciones y guarde los cambios.',
+    <div class="container-fluid docente-ui-page silabo-form">
+        @include('admin.curso.silabos.partials.cabecera', [
+            'accion' => 'Editando sílabo',
+            'curso' => $curso,
+            'periodo' => $silabo->periodo,
             'backUrl' => url()->previous() !== url()->current() ? url()->previous() : (optional($docente)->id ? route('vistaDocente', $docente->id) : route('silabos.index')),
             'backLabel' => 'Volver',
         ])
@@ -97,31 +46,36 @@
                     </div>
                 @endif
             </div>
+            @if ($errors->any())
+                <div class="col-12">
+                    <div class="alert alert-danger shadow-sm">
+                        <ul class="mb-0 pl-3">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            @endif
         </div>
 
-        <div class="mt-3 mb-3">
-            <div class="row align-items-center">
-                <!-- Logo alineado a la izquierda -->
-                <div class="col-lg-3 d-flex justify-content-start">
-                    <img src="{{ asset('img/logo-iesp-pukllasunchis.png') }}" alt="Logo IESP Pukllasunchis"
-                        class="img-fluid" style="max-width: 200px;">
-                </div>
+        <div class="silabo-layout">
+        <aside class="silabo-layout-indice">
+            @include('admin.curso.silabos.partials.indice')
+        </aside>
+        <div class="silabo-layout-main">
 
-                <!-- Información del Programa, Ciclo y Curso alineada a la derecha -->
-                <div class="col-lg-9 d-flex justify-content-end flex-column align-items-end"
-                    style="color: #c78d40 !important;">
-                    <div class="font-weight-bold text-uppercase" style="font-size:.75rem; letter-spacing:.12em;">SÍLABO</div>
-                    <h5 class="font-weight-bold mb-1">{{ $curso->ciclo->programa->nombre }} - Ciclo:
-                        {{ $curso->ciclo->nombre }}</h5>
-                    <h4 class="font-weight-bold">{{ $curso->nombre }}</h4>
-                </div>
+        {{-- Sección I: la tabla conserva el formato del Ministerio (es la que se exporta a PDF). --}}
+        <div class="silabo-section silabo-section-datos" data-informativa>
+            <div class="silabo-section-header">
+                <span class="silabo-section-icon"><i class="fas fa-id-card"></i></span>
+                <div><span class="silabo-section-eyebrow">Sección I</span><h4>Datos generales</h4></div>
+                <button type="button" class="silabo-datos-toggle" aria-expanded="false" aria-controls="silaboDatosCuerpo"
+                    onclick="var c=document.getElementById('silaboDatosCuerpo'); c.hidden=!c.hidden; this.setAttribute('aria-expanded', !c.hidden); this.querySelector('span').textContent = c.hidden ? 'Ver datos generales' : 'Ocultar';">
+                    <span>Ver datos generales</span> <i class="fas fa-chevron-down"></i>
+                </button>
             </div>
-        </div>
-        <div style="width: 100%; height: 2px; border-top: 1px dashed #c78d40;"></div>
-
-        <!-- Información del Curso -->
-        <div class="mb-4 mt-3">
-            <h4 style="font-weight: 600; color: #c78d40" class="mt-4">I. Datos Generales:</h4>
+            <div class="silabo-datos-cuerpo" id="silaboDatosCuerpo" hidden>
             <table class="table table-borderless" style="margin-bottom: 0; font-size: 14px; margin-left: 1em;">
                 <tbody>
                     <tr>
@@ -172,8 +126,8 @@
                     <tr>
                         <td style="font-weight: 600; padding: 2px;">1.9 <span style="margin-left:1em">Docente(s)</span></td>
                         <td style="padding: 2px;">:
-                            @foreach ($curso->docentes as $docente)
-                                {{ $docente->nombre }}@if (!$loop->last)
+                            @foreach ($curso->docentes as $docenteFila)
+                                {{ $docenteFila->nombre }}@if (!$loop->last)
                                     ,
                                 @endif
                             @endforeach
@@ -186,98 +140,94 @@
                             {{ $curso->docentes->first()->email ?? 'Sin datos' }}
                         </td>
                     </tr>
-                    {{-- <tr>
+                    <tr>
                         <td style="font-weight: 600; padding: 2px;">1.11 <span style="margin-left:0.4em">Fecha de
                                 inicio</span></td>
                         <td style="padding: 2px;">:
-                            <input type="date" id="fecha1" name="fecha1"
-                                class="form-control form-control-sm d-inline-block"
-                                value="{{ old('fecha1', $silabo->fecha1 ?? '') }}" style="max-width: 150px; padding: 2px;">
+                            {{ $silabo->periodoActual?->fecha_inicio ? \Carbon\Carbon::parse($silabo->periodoActual->fecha_inicio)->translatedFormat('d \d\e F \d\e\l Y') : ($silabo->fecha1 ?? 'Sin datos') }}
                         </td>
                     </tr>
                     <tr>
                         <td style="font-weight: 600; padding: 2px;">1.12 <span style="margin-left:0.4em">Fecha de
                                 término</span></td>
                         <td style="padding: 2px;">:
-                            <input type="date" id="fecha2" name="fecha2"
-                                class="form-control form-control-sm d-inline-block"
-                                value="{{ old('fecha2', $silabo->fecha2 ?? '') }}" style="max-width: 150px; padding: 2px;">
+                            {{ $silabo->periodoActual?->fecha_cierre ? \Carbon\Carbon::parse($silabo->periodoActual->fecha_cierre)->translatedFormat('d \d\e F \d\e\l Y') : ($silabo->fecha2 ?? 'Sin datos') }}
                         </td>
-                    </tr> --}}
-                    <tr>
-                        <td style="font-weight: 600; padding: 2px;">1.11 <span style="margin-left:0.4em">Fecha de
-                                inicio</span></td>
-                        <td style="padding: 2px;">: 24 de marzo de 2025</td>
-                    </tr>
-                    <tr>
-                        <td style="font-weight: 600; padding: 2px;">1.12 <span style="margin-left:0.4em">Fecha de
-                                término</span></td>
-                        <td style="padding: 2px;">: 18 de julio de 2025</td>
                     </tr>
                 </tbody>
             </table>
+            </div>
         </div>
+
         <form id="silaboForm" action="{{ route('silabos.update', $silabo->id) }}" method="POST">
             @csrf
             @method('PUT')
             <input type="hidden" name="curso_id" value="{{ $curso->id }}">
             <input type="hidden" name="docente_id" value="{{ optional($docente)->id }}">
 
-            <div class="col-lg-12 mb-3">
-                <h4 style="font-weight: 600; color: #c78d40;" class="mt-5">II. Sumilla:</h4>
+            @include('admin.curso.silabos.partials.aviso-borrador')
+
+            <div class="silabo-section">
+                <div class="silabo-section-header">
+                    <span class="silabo-section-icon"><i class="fas fa-align-left"></i></span>
+                    <div><span class="silabo-section-eyebrow">Sección II</span><h4>Sumilla</h4></div>
+                </div>
                 <textarea name="sumilla" id="sumilla" class="ckeditor form-control form-control-sm" rows="6">
                 {{ old('sumilla', $silabo->sumilla ?? '') }}
             </textarea>
-                <div class="text-end mt-1">
-                    <small id="wordCount" class="text-muted">0 / 2100 palabras</small>
-                </div>
 
                 @error('sumilla')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
             </div>
 
-            <div class="col-lg-12 mb-3">
-                <h4 style="font-weight: 600; color: #c78d40" class="mt-5">III. Vinculación al Proyecto Integrador:</h4>
+            <div class="silabo-section">
+                <div class="silabo-section-header">
+                    <span class="silabo-section-icon"><i class="fas fa-project-diagram"></i></span>
+                    <div><span class="silabo-section-eyebrow">Sección III</span><h4>Vinculación al proyecto integrador</h4></div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="proyecto_integrador">Proyecto Integrador:</label>
+                    <input type="text" name="proyecto_integrador" class="form-control form-control-sm"
+                        value="{{ old('proyecto_integrador', $curso->ciclo->proyecto->nombre ?? '') }}">
+                </div>
+                <div class="mb-3">
+                    <label for="producto_proyecto">Producto del Proyecto:</label>
+                    <input type="text" id="producto_proyecto" name="producto_proyecto"
+                        class="form-control form-control-sm" required
+                        value="{{ old('producto_proyecto', $curso->ciclo->proyecto->producto ?? '') }}">
+                </div>
+                <div class="mb-3">
+                    <label for="descripcion_proyecto">Propósito del Proyecto Integrador:</label>
+                    <textarea id="descripcion_proyecto_integrador" name="descripcion_proyecto_integrador"
+                        class="ckeditor form-control form-control-sm" rows="4">
+                        {{ old('descripcion_proyecto_integrador', $curso->ciclo->proyecto->descripcion ?? '') }}
+                    </textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="vinculacion_pi">Vinculación o aporte del curso con el proyecto integrador:</label>
+                    <textarea name="vinculacion_pi" id="vinculacion_pi" class="ckeditor form-control form-control-sm" rows="6">
+                        {{ old('vinculacion_pi', $silabo->vinculacion_pi ?? '') }}
+                    </textarea>
+                </div>
+                <div class="mb-0">
+                    <label for="producto_curso">Producto del Curso:</label>
+                    <textarea name="producto_curso" id="producto_curso" class="ckeditor form-control form-control-sm" rows="6">
+                        {{ old('producto_curso', $silabo->producto_curso ?? '') }}
+                    </textarea>
+                </div>
             </div>
 
-            <div class="col-lg-12 mb-3">
-                <label for="proyecto_integrador">Proyecto Integrador:</label>
-                <input type="text" name="proyecto_integrador" class="form-control form-control-sm"
-                    value="{{ old('proyecto_integrador', $curso->ciclo->proyecto->nombre ?? '') }}">
-            </div>
-            <div class="col-lg-12 mb-3">
-                <label for="producto_proyecto">Producto del Proyecto:</label>
-                <input type="text" id="producto_proyecto" name="producto_proyecto"
-                    class="form-control form-control-sm" required
-                    value="{{ old('producto_proyecto', $curso->ciclo->proyecto->producto ?? '') }}">
-            </div>
-            <div class="col-lg-12 mb-3">
-                <label for="descripcion_proyecto">Propósito del Proyecto Integrador:</label>
-                <textarea id="descripcion_proyecto_integrador" name="descripcion_proyecto_integrador"
-                    class="ckeditor form-control form-control-sm" rows="4">
-                    {{ old('descripcion_proyecto_integrador', $curso->ciclo->proyecto->descripcion ?? '') }}
-                </textarea>
-            </div>
-            <div class="col-lg-12 mb-3">
-                <label for="vinculacion_pi">Vinculación o aporte del curso con el proyecto integrador:</label>
-                <textarea name="vinculacion_pi" id="vinculacion_pi" class="ckeditor form-control form-control-sm" rows="6">
-                    {{ old('vinculacion_pi', $silabo->vinculacion_pi ?? '') }}
-                </textarea>
-            </div>
-            <div class="col-lg-12 mb-3">
-                <label for="producto_curso">Producto del Curso:</label>
-                <textarea name="producto_curso" id="producto_curso" class="ckeditor form-control form-control-sm" rows="6">
-                    {{ old('producto_curso', $silabo->producto_curso ?? '') }}
-                </textarea>
-            </div>
-            <div class="col-lg-12 mb-3">
-                <h4 style="font-weight: 600; color: #c78d40" class="mt-5">IV. Enfoques Tranversales:</h4>
-            </div>
+            <div class="silabo-section">
+                <div class="silabo-section-header">
+                    <span class="silabo-section-icon"><i class="fas fa-users"></i></span>
+                    <div><span class="silabo-section-eyebrow">Sección IV</span><h4>Enfoques transversales</h4></div>
+                </div>
 
-            <!-- Select para elegir Enfoques -->
-            <div class="col-lg-12 mb-3">
-                <select id="enfoque_id" class="form-control form-control-sm">
+                <!-- Select para elegir Enfoques -->
+                <div class="mb-3">
+                    <select id="enfoque_id" class="form-control form-control-sm">
                     <option selected disabled>Elegir un Enfoque</option>
                     @foreach ($enfoques as $enfoque)
                         <option value="{{ $enfoque->id }}" data-nombre="{{ $enfoque->nombre }}"
@@ -287,15 +237,15 @@
                         </option>
                     @endforeach
                 </select>
-            </div>
-            <input type="hidden" id="enfoques" name="enfoques">
+                </div>
+                <input type="hidden" id="enfoques" name="enfoques">
 
-            <div class="col-lg-12 mb-3">
-                <button type="button" id="agregarEnfoque" class="btn btn-sm btn-primary">Agregar Enfoque +</button>
-            </div>
+                <div class="mb-3">
+                    <button type="button" id="agregarEnfoque" class="btn btn-sm btn-primary">Agregar Enfoque +</button>
+                </div>
 
-            <div class="col-lg-12 mb-3">
-                <p style="font-weight: 600">Detalles de los Enfoques Seleccionados:</p>
+                <div class="mb-0">
+                    <p style="font-weight: 600">Detalles de los Enfoques Seleccionados:</p>
                 <table class="table table-bordered">
                     <thead>
                         <tr class="text-center">
@@ -306,30 +256,6 @@
                         </tr>
                     </thead>
                     <tbody id="tablaEnfoques">
-                        {{-- @if ($silabo->enfoques)
-                            @foreach ($silabo->enfoques as $enfoque)
-                                <tr data-id="{{ $enfoque->id }}">
-                                    <td style="width: 30%">
-                                        <input type="hidden" name="enfoques[]" value="{{ $enfoque->id }}">
-                                        <input style="font-weight:800; border:none; background:transparent" type="text"
-                                            class="form-control form-control-sm" value="{{ $enfoque->nombre }}" readonly>
-                                        <small
-                                            style="display:block; color:gray; text-align: justify;">{{ $enfoque->descripcion }}</small>
-                                        
-                                    </td>
-                                    <td>
-                                        <textarea name="observables[]" class="form-control form-control-sm" rows="3">{{ $enfoque->enfoque_observables }}</textarea>
-                                    </td>
-                                    <td>
-                                        <textarea name="concretas[]" class="form-control form-control-sm" rows="3">{{ $enfoque->silabo_concretas }}</textarea>
-                                    </td>
-                                    <td class="text-center" id="acciones">
-                                        <button type="button"
-                                            class="btn btn-sm btn-danger eliminarEnfoque">Eliminar</button>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        @endif --}}
                         @if ($silabo->enfoques)
                             @foreach ($silabo->enfoques as $enfoque)
                                 <tr data-id="{{ $enfoque->id }}">
@@ -361,15 +287,15 @@
 
                     </tbody>
                 </table>
+                </div>
             </div>
 
-            <div class="col-lg-12 mb-3">
-                <h4 style="font-weight: 600; color: #c78d40" class="mt-5">
-                    V. Matriz de planificación y evaluación de aprendizaje:
-                </h4>
-            </div>
+            <div class="silabo-section">
+                <div class="silabo-section-header">
+                    <span class="silabo-section-icon"><i class="fas fa-table"></i></span>
+                    <div><span class="silabo-section-eyebrow">Sección V</span><h4>Matriz de planificación y evaluación de aprendizaje</h4></div>
+                </div>
 
-            <div class="col-lg-12 mb-4">
                 @foreach ($competencias as $index => $competencia)
                     @php
                         $num = $index + 1;
@@ -436,124 +362,11 @@
                 @endforeach
             </div>
 
-            {{-- <div class="col-lg-12 mb-3">
-                <h4 style="font-weight: 600; color: #c78d40">VI. Organización de Unidades de aprendizaje:</h4>
-            </div>
-            <div id="contenedor-tablas">
-                @if ($silabo->unidades)
-                    @foreach ($silabo->unidades as $unidad)
-                        <div class="unidad">
-                            <table class="table table-bordered">
-                                <thead class="thead-dark">
-                                    <tr>
-                                        <th>Título de la Unidad</th>
-                                        <th style="width: 80%">
-                                            <input type="text" name="titulo_unidad[]"
-                                                class="form-control form-control-sm" value="{{ $unidad->titulo }}">
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>Situación de Aprendizaje</td>
-                                        <td>
-                                            <textarea name="situacion_aprendizaje[]" class="form-control form-control-sm" rows="2">{{ $unidad->situacion_aprendizaje }}</textarea>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            <table class="table table-bordered" style="margin-top:-15px">
-                                <thead class="bg-secondary text-white">
-                                    <tr>
-                                        <th>Duración</th>
-                                        <th>Desempeño Específico</th>
-                                        <th>Ejes Temáticos (Conocimiento)</th>
-                                        <th>Evidencia de Proceso</th>
-                                        <th>Evidencia Final</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>
-                                            <textarea name="duracion[]" class="form-control form-control-sm" rows="2">{{ $unidad->duracion }}</textarea>
-                                        </td>
-                                        <td>
-                                            <textarea name="desempeno_especifico[]" class="form-control form-control-sm" rows="2">{{ $unidad->desempeno_especifico }}</textarea>
-                                        </td>
-                                        <td>
-                                            <textarea name="ejes_tematicos[]" class="form-control form-control-sm" rows="2">{{ $unidad->ejes_tematicos }}</textarea>
-                                        </td>
-                                        <td>
-                                            <textarea name="evidencia_proceso[]" class="form-control form-control-sm" rows="2">{{ $unidad->evidencia_proceso }}</textarea>
-                                        </td>
-                                        <td>
-                                            <textarea name="evidencia_final[]" class="form-control form-control-sm" rows="2">{{ $unidad->evidencia_final }}</textarea>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            <button type="button" class="btn btn-danger btn-sm btn-eliminar mb-2">Eliminar Tabla</button>
-                        </div>
-                    @endforeach
-                @else
-                    <div class="unidad">
-                        <table class="table table-bordered">
-                            <thead class="thead-dark">
-                                <tr>
-                                    <th>Título de la Unidad</th>
-                                    <th style="width: 80%">
-                                        <input type="text" name="titulo_unidad[]"
-                                            class="form-control form-control-sm">
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Situación de Aprendizaje</td>
-                                    <td>
-                                        <textarea name="situacion_aprendizaje[]" class="form-control form-control-sm" rows="2"></textarea>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <table class="table table-bordered" style="margin-top:-15px">
-                            <thead class="bg-secondary text-white">
-                                <tr>
-                                    <th>Duración</th>
-                                    <th>Desempeño Específico</th>
-                                    <th>Ejes Temáticos (Conocimiento)</th>
-                                    <th>Evidencia de Proceso</th>
-                                    <th>Evidencia Final</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>
-                                        <textarea name="duracion[]" class="form-control form-control-sm" rows="2"></textarea>
-                                    </td>
-                                    <td>
-                                        <textarea name="desempeno_especifico[]" class="form-control form-control-sm" rows="2"></textarea>
-                                    </td>
-                                    <td>
-                                        <textarea name="ejes_tematicos[]" class="form-control form-control-sm" rows="2"></textarea>
-                                    </td>
-                                    <td>
-                                        <textarea name="evidencia_proceso[]" class="form-control form-control-sm" rows="2"></textarea>
-                                    </td>
-                                    <td>
-                                        <textarea name="evidencia_final[]" class="form-control form-control-sm" rows="2"></textarea>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <button type="button" class="btn btn-danger btn-sm btn-eliminar mb-2">Eliminar Tabla</button>
-                    </div>
-                @endif
-            </div>
-            <button type="button" class="btn btn-primary mt-2 btn-sm mb-3" id="btn-agregar">Agregar Unidad +</button> --}}
-            <div class="col-lg-12 mb-3">
-                <h4 style="font-weight: 600; color: #c78d40">VI. Organización de Unidades de Aprendizaje:</h4>
-            </div>
+            <div class="silabo-section">
+                <div class="silabo-section-header">
+                    <span class="silabo-section-icon"><i class="fas fa-layer-group"></i></span>
+                    <div><span class="silabo-section-eyebrow">Sección VI</span><h4>Organización de unidades de aprendizaje</h4></div>
+                </div>
             <div id="contenedor-tablas">
                 @foreach ($silabo->unidades as $unidad)
                     <div class="unidad">
@@ -611,11 +424,15 @@
                 @endforeach
             </div>
             <button type="button" class="btn btn-primary mt-2 btn-sm mb-3" id="btn-agregar">Agregar Unidad +</button>
+            </div>
 
+            <div class="silabo-section">
+                <div class="silabo-section-header">
+                    <span class="silabo-section-icon"><i class="fas fa-clipboard-check"></i></span>
+                    <div><span class="silabo-section-eyebrow">Sección VII</span><h4>Rúbricas de evaluación</h4></div>
+                </div>
 
-            <h4 style="font-weight: 600; color: #c78d40" class="mt-4">VII. RÚBRICAS DE EVALUACIÓN</h4>
-
-            <table class="table table-bordered" id="tabla-rubricas">
+                <table class="table table-bordered" id="tabla-rubricas">
                 <thead>
                     <tr>
                         <th>Criterio de Evaluación</th>
@@ -678,28 +495,38 @@
                 </tbody>
             </table>
 
+                <button type="button" class="btn btn-primary btn-sm mt-2" id="btn-agregar-fila">Agregar Criterio +</button>
+            </div>
 
-            <button type="button" class="btn btn-primary btn-sm mb-4" id="btn-agregar-fila">Agregar Criterio +</button>
-
-            <h4 style="font-weight: 600; color: #c78d40" class="mt-3">VIII. MODELOS METODOLÓGICOS (METODOLOGÍA)</h4>
-
-            <div class="col-lg-12 mb-3">
+            <div class="silabo-section">
+                <div class="silabo-section-header">
+                    <span class="silabo-section-icon"><i class="fas fa-chalkboard-teacher"></i></span>
+                    <div><span class="silabo-section-eyebrow">Sección VIII</span><h4>Modelos metodológicos (metodología)</h4></div>
+                </div>
                 <textarea id="modelos_metodologicos" name="modelos_metodologicos" class="ckeditor form-control form-control-sm"
                     rows="6">{{ old('modelos_metodologicos', $silabo->modelos_metodologicos ?? '') }}</textarea>
             </div>
 
-            <h4 style="font-weight: 600; color: #c78d40" class="mt-3">IX. RECURSOS Y MATERIALES DIDÁCTICOS</h4>
-
-            <div class="col-lg-12 mb-3">
+            <div class="silabo-section">
+                <div class="silabo-section-header">
+                    <span class="silabo-section-icon"><i class="fas fa-toolbox"></i></span>
+                    <div><span class="silabo-section-eyebrow">Sección IX</span><h4>Recursos y materiales didácticos</h4></div>
+                </div>
                 <textarea id="recursos" name="recursos" class="ckeditor form-control form-control-sm" rows="6">{{ old('recursos', $silabo->recursos ?? '') }}</textarea>
             </div>
-            <h4 style="font-weight: 600; color: #c78d40" class="mt-3">X. Referencias</h4>
 
-            <div class="col-lg-12 mb-3">
+            <div class="silabo-section">
+                <div class="silabo-section-header">
+                    <span class="silabo-section-icon"><i class="fas fa-book"></i></span>
+                    <div><span class="silabo-section-eyebrow">Sección X</span><h4>Referencias</h4></div>
+                </div>
                 <textarea id="referencias" name="referencias" class="ckeditor form-control form-control-sm" rows="6">{{ old('referencias', $silabo->referencias ?? '') }}</textarea>
             </div>
-            <button type="submit" class="btn btn-primary btn-flotante">Actualizar Sílabo</button>
+
+            @include('admin.curso.silabos.partials.barra-guardar', ['textoGuardar' => 'Guardar cambios'])
         </form>
+        </div>{{-- /.silabo-layout-main --}}
+        </div>{{-- /.silabo-layout --}}
     </div>
 
         <!-- Script para agregar enfoques dinámicamente -->
@@ -926,17 +753,20 @@
                     }
                 });
 
-                // Seleccionar el dropdown de proyectos
+                // Seleccionar el dropdown de proyectos (ya no existe en este formulario;
+                // se deja el listener protegido por si vuelve a agregarse el selector)
                 const selectProyecto = document.getElementById('proyecto_id');
-                selectProyecto.addEventListener('change', function() {
-                    const selectedOption = selectProyecto.options[selectProyecto.selectedIndex];
-                    const descripcion = selectedOption.getAttribute('data-descripcion') || '';
+                if (selectProyecto) {
+                    selectProyecto.addEventListener('change', function() {
+                        const selectedOption = selectProyecto.options[selectProyecto.selectedIndex];
+                        const descripcion = selectedOption.getAttribute('data-descripcion') || '';
 
-                    // Verificar si CKEditor está inicializado antes de actualizar
-                    if (CKEDITOR.instances.descripcion_proyecto) {
-                        CKEDITOR.instances.descripcion_proyecto.setData(descripcion);
-                    }
-                });
+                        // Verificar si CKEditor está inicializado antes de actualizar
+                        if (CKEDITOR.instances.descripcion_proyecto) {
+                            CKEDITOR.instances.descripcion_proyecto.setData(descripcion);
+                        }
+                    });
+                }
 
                 // Este formulario es largo: mantener la sesión activa mientras se llena
                 // para que el token CSRF no expire antes de guardar (error 419).
@@ -945,4 +775,12 @@
                 }, 4 * 60 * 1000);
             });
         </script>
+
+        {{-- Borrador local: lo NO guardado queda en este navegador y se ofrece recuperarlo.
+             El borrador de "crear" de este curso ya no sirve: el sílabo existe. --}}
+        @include('admin.curso.silabos.partials.borrador', [
+            'claveBorrador' => 'puklla-silabo-draft-edit-'.$silabo->id,
+            'clavesObsoletas' => ['puklla-silabo-draft-create-'.$curso->id],
+            'conNombresOcultos' => true,
+        ])
     @endsection

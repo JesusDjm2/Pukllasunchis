@@ -3,6 +3,39 @@
 @section('contenido')
     @include('admin._partials.prog-styles')
     <style>
+        /* Hero compacto (.cu-hero / .cu-kpi): vive en admin._partials.prog-styles */
+
+        /* ── Barra de filtros en una tarjeta ──────────────────────────── */
+        .cu-toolbar {
+            display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem .75rem;
+            padding: .5rem .6rem; border-radius: .8rem;
+            background: var(--pg-card); border: 1px solid var(--pg-border); box-shadow: var(--pg-shadow);
+        }
+        .cu-toolbar__programas { display: flex; align-items: center; gap: .3rem; overflow-x: auto; scrollbar-width: thin; padding-bottom: 1px; }
+        .cu-toolbar__programas .pg-filter-btn { flex-shrink: 0; white-space: nowrap; }
+        .cu-toolbar__sep { width: 1px; align-self: stretch; margin: .2rem .15rem; background: var(--pg-border); flex-shrink: 0; }
+        .cu-chip-num {
+            display: inline-block; min-width: 1.35rem; padding: 0 .35rem; border-radius: 999px;
+            background: rgba(0, 0, 0, .07); font-size: .68rem; font-weight: 700; text-align: center;
+        }
+        .pg-filter-btn.active .cu-chip-num { background: rgba(255, 255, 255, .25); }
+        .cu-toolbar__buscar { display: flex; align-items: center; gap: .35rem; flex: 1 1 26rem; justify-content: flex-end; min-width: 0; }
+        .cu-toolbar__buscar .pg-search-wrap { max-width: 26rem; }
+        .cu-toolbar__buscar .pg-input { padding-right: 2rem !important; }
+        .cu-toolbar__buscar input[type="search"]::-webkit-search-cancel-button { cursor: pointer; }
+        .cu-kbd {
+            position: absolute; right: .55rem; top: 50%; transform: translateY(-50%);
+            padding: 0 .38rem; border-radius: .3rem; font-size: .68rem; line-height: 1.35;
+            color: var(--pg-muted); background: var(--pg-input-bg); border: 1px solid var(--pg-border); box-shadow: none;
+            pointer-events: none;
+        }
+        .pg-search-wrap:focus-within .cu-kbd { display: none; }
+        .dark-mode .cu-chip-num, .dim-mode .cu-chip-num { background: rgba(255, 255, 255, .1); }
+        @media (max-width: 767.98px) {
+            .cu-toolbar__buscar { justify-content: stretch; }
+            .cu-toolbar__buscar .pg-search-wrap { max-width: none; }
+            .cu-kbd { display: none; }
+        }
         /* ── Filtro de tabs ────────────────────────────────────────────── */
         .pg-filter-btn {
             display: inline-flex;
@@ -244,6 +277,17 @@
             line-height: 1.3;
         }
 
+        /* ── Columna Calificación (antes dentro de Datos del curso) ── */
+        .curso-calif-th { width: 30%; min-width: 220px; }
+        .curso-calif-td { vertical-align: middle !important; }
+        .curso-calif { margin-top: 0 !important; }
+        .curso-calif li.curso-pct-ppd,
+        .curso-calif li.curso-pct-fid { max-width: none !important; }
+        .curso-calif li.curso-pct-ppd,
+        .curso-calif li.curso-pct-fid-p1 { margin-top: 0 !important; }
+        .curso-calif li + li { margin-top: .2rem; }
+        .curso-calif-vacio { color: var(--pg-muted); }
+
         .curso-meta {
             margin: 0;
             padding: 0;
@@ -261,62 +305,145 @@
             color: var(--pg-text-2, var(--pg-text));
             font-weight: 600;
         }
+
+        /* ── % calificado (solo cursos PPD) ───────────────────────────── */
+        .curso-meta li.curso-pct-ppd {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            max-width: 300px;
+            margin-top: .15rem;
+        }
+
+        .curso-pct-ppd-label,
+        .curso-pct-ppd-val {
+            font-weight: 600;
+            color: #d97706;
+            white-space: nowrap;
+        }
+
+        .curso-pct-ppd-val {
+            min-width: 48px;
+            text-align: right;
+        }
+
+        .curso-pct-ppd-bar {
+            height: 7px;
+            border-radius: 999px;
+            overflow: hidden;
+            background: rgba(0, 0, 0, .06);
+        }
+
+        .curso-pct-ppd-bar .progress-bar {
+            background: linear-gradient(90deg, #e5973a, #f5b45f);
+        }
+
+        .dark-mode .curso-pct-ppd-bar,
+        .dim-mode .curso-pct-ppd-bar {
+            background: rgba(255, 255, 255, .1);
+        }
+
+        .dark-mode .curso-pct-ppd-label,
+        .dark-mode .curso-pct-ppd-val,
+        .dim-mode .curso-pct-ppd-label,
+        .dim-mode .curso-pct-ppd-val {
+            color: #fcd34d;
+        }
+
+        /* ── % calificado por periodo (solo cursos FID) ───────────────── */
+        .curso-meta li.curso-pct-fid {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            max-width: 300px;
+        }
+
+        .curso-meta li.curso-pct-fid-p1 {
+            margin-top: .15rem;
+        }
+
+        .curso-pct-fid-label,
+        .curso-pct-fid-val {
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .curso-pct-fid-label {
+            min-width: 72px;
+        }
+
+        .curso-pct-fid-val {
+            min-width: 48px;
+            text-align: right;
+        }
+
+        .curso-pct-fid-bar {
+            height: 7px;
+            border-radius: 999px;
+            overflow: hidden;
+            background: rgba(0, 0, 0, .06);
+        }
+
+        .curso-pct-fid-p1 .curso-pct-fid-label,
+        .curso-pct-fid-p1 .curso-pct-fid-val { color: #4e73df; }
+        .curso-pct-fid-p1 .progress-bar { background: #4e73df; }
+
+        .curso-pct-fid-p2 .curso-pct-fid-label,
+        .curso-pct-fid-p2 .curso-pct-fid-val { color: #17a673; }
+        .curso-pct-fid-p2 .progress-bar { background: #1cc88a; }
+
+        .curso-pct-fid-p3 .curso-pct-fid-label,
+        .curso-pct-fid-p3 .curso-pct-fid-val { color: #2c9faf; }
+        .curso-pct-fid-p3 .progress-bar { background: #36b9cc; }
+
+        .dark-mode .curso-pct-fid-bar,
+        .dim-mode .curso-pct-fid-bar {
+            background: rgba(255, 255, 255, .1);
+        }
+
+        .dark-mode .curso-pct-fid-p1 .curso-pct-fid-label,
+        .dark-mode .curso-pct-fid-p1 .curso-pct-fid-val,
+        .dim-mode .curso-pct-fid-p1 .curso-pct-fid-label,
+        .dim-mode .curso-pct-fid-p1 .curso-pct-fid-val { color: #93a8f4; }
+
+        .dark-mode .curso-pct-fid-p2 .curso-pct-fid-label,
+        .dark-mode .curso-pct-fid-p2 .curso-pct-fid-val,
+        .dim-mode .curso-pct-fid-p2 .curso-pct-fid-label,
+        .dim-mode .curso-pct-fid-p2 .curso-pct-fid-val { color: #6ee7b7; }
+
+        .dark-mode .curso-pct-fid-p3 .curso-pct-fid-label,
+        .dark-mode .curso-pct-fid-p3 .curso-pct-fid-val,
+        .dim-mode .curso-pct-fid-p3 .curso-pct-fid-label,
+        .dim-mode .curso-pct-fid-p3 .curso-pct-fid-val { color: #7dd3e0; }
     </style>
 
     <div class="pg-wrap">
         <div class="container-fluid py-3">
 
-            {{-- ── Hero ── --}}
-            <div class="pg-hero" id="pg-hero">
-                <div class="d-flex align-items-center justify-content-between flex-wrap"
-                    style="gap:1rem; position:relative; z-index:1;">
-                    <div>
-                        <div class="pg-hero-label">
-                            <i class="fas fa-university"></i> EESP Pukllasunchis
-                        </div>
-                        <h4>Cursos</h4>
-                        <p class="pg-hero-sub">Listado completo de cursos organizados por programa y ciclo</p>
+            {{-- ── Hero compacto: título + conteos + acción ── --}}
+            <div class="pg-hero cu-hero" id="pg-hero">
+                <div class="cu-hero__fila">
+                    <div class="cu-hero__titulo">
+                        <h4 class="mb-0">Cursos</h4>
+                        <p class="pg-hero-sub">Por programa y ciclo · EESP Pukllasunchis</p>
                     </div>
-                    <a href="{{ route('curso.create') }}" class="pg-hero-btn align-self-start">
-                        <i class="fas fa-plus fa-xs"></i> Nuevo Curso
+                    <div class="cu-hero__kpis" aria-label="Resumen de cursos">
+                        <div class="cu-kpi">
+                            <span class="cu-kpi__val">{{ $cant }}</span>
+                            <span class="cu-kpi__lbl"><i class="fas fa-book"></i> Total</span>
+                        </div>
+                        <div class="cu-kpi">
+                            <span class="cu-kpi__val">{{ $inicial + $EIB }}</span>
+                            <span class="cu-kpi__lbl"><i class="fas fa-graduation-cap"></i> FID</span>
+                        </div>
+                        <div class="cu-kpi cu-kpi--ppd">
+                            <span class="cu-kpi__val">{{ $iniPPD + $priPPD }}</span>
+                            <span class="cu-kpi__lbl"><i class="fas fa-user-graduate"></i> PPD</span>
+                        </div>
+                    </div>
+                    <a href="{{ route('curso.create') }}" class="pg-hero-btn cu-hero__btn">
+                        <i class="fas fa-plus fa-xs"></i> Nuevo curso
                     </a>
-                </div>
-            </div>
-
-            {{-- ── Stats ── --}}
-            <div class="row mb-3">
-                <div class="col-sm-4 col-6 mb-3">
-                    <div class="pg-stat">
-                        <div class="pg-stat-icon" style="background:linear-gradient(135deg,#dbeafe,#bfdbfe);">
-                            <i class="fas fa-book" style="color:#2563eb;"></i>
-                        </div>
-                        <div>
-                            <div class="pg-stat-val">{{ $cant }}</div>
-                            <div class="pg-stat-lbl">Total Cursos</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-4 col-6 mb-3">
-                    <div class="pg-stat">
-                        <div class="pg-stat-icon" style="background:linear-gradient(135deg,#dcfce7,#bbf7d0);">
-                            <i class="fas fa-graduation-cap" style="color:#16a34a;"></i>
-                        </div>
-                        <div>
-                            <div class="pg-stat-val">{{ $inicial + $EIB }}</div>
-                            <div class="pg-stat-lbl">Cursos FID</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-4 col-6 mb-3">
-                    <div class="pg-stat">
-                        <div class="pg-stat-icon" style="background:linear-gradient(135deg,#fef9c3,#fde68a);">
-                            <i class="fas fa-user-graduate" style="color:#d97706;"></i>
-                        </div>
-                        <div>
-                            <div class="pg-stat-val">{{ $iniPPD + $priPPD }}</div>
-                            <div class="pg-stat-lbl">Cursos PPD</div>
-                        </div>
-                    </div>
                 </div>
             </div>
 
@@ -328,38 +455,33 @@
                 </div>
             @endif
 
-            {{-- ── Filtros + Buscador ── --}}
-            <div class="d-flex flex-wrap align-items-center justify-content-between mb-3" style="gap:.6rem;">
-                <div class="d-flex flex-wrap" style="gap:.4rem;">
-                    <button class="pg-filter-btn active" id="todos">
-                        <i class="fas fa-th-list fa-xs"></i> Todos <span class="ml-1"
-                            style="opacity:.7;">{{ $cant }}</span>
+            {{-- ── Barra de filtros: programa (con su conteo) + búsqueda + ciclo ── --}}
+            <div class="cu-toolbar mb-3" role="search">
+                <div class="cu-toolbar__programas" role="tablist" aria-label="Programa">
+                    <button class="pg-filter-btn active" id="todos" role="tab">
+                        Todos <span class="cu-chip-num">{{ $cant }}</span>
                     </button>
-                    <button class="pg-filter-btn active-fid" id="inicial" data-programa-id="1">
-                        <i class="fas fa-graduation-cap fa-xs"></i> Inicial <span class="ml-1"
-                            style="opacity:.7;">{{ $inicial }}</span>
+                    <button class="pg-filter-btn active-fid" id="inicial" data-programa-id="1" role="tab">
+                        Inicial <span class="cu-chip-num">{{ $inicial }}</span>
                     </button>
-                    <button class="pg-filter-btn active-fid" id="eib" data-programa-id="2">
-                        <i class="fas fa-graduation-cap fa-xs"></i> Primaria EIB <span class="ml-1"
-                            style="opacity:.7;">{{ $EIB }}</span>
+                    <button class="pg-filter-btn active-fid" id="eib" data-programa-id="2" role="tab">
+                        Primaria EIB <span class="cu-chip-num">{{ $EIB }}</span>
                     </button>
-                    <button class="pg-filter-btn active-ppd" id="inippd" data-programa-id="3">
-                        <i class="fas fa-user-graduate fa-xs"></i> Inicial PPD <span class="ml-1"
-                            style="opacity:.7;">{{ $iniPPD }}</span>
+                    <span class="cu-toolbar__sep" aria-hidden="true"></span>
+                    <button class="pg-filter-btn active-ppd" id="inippd" data-programa-id="3" role="tab">
+                        Inicial PPD <span class="cu-chip-num">{{ $iniPPD }}</span>
                     </button>
-                    <button class="pg-filter-btn active-ppd" id="prippd" data-programa-id="4">
-                        <i class="fas fa-user-graduate fa-xs"></i> Primaria PPD <span class="ml-1"
-                            style="opacity:.7;">{{ $priPPD }}</span>
+                    <button class="pg-filter-btn active-ppd" id="prippd" data-programa-id="4" role="tab">
+                        Primaria PPD <span class="cu-chip-num">{{ $priPPD }}</span>
                     </button>
                 </div>
-                <div class="d-flex align-items-center pg-filtros-linea" style="gap:.35rem;">
-                    <span class="pg-count-badge" id="pgCountBadge" title="Cursos visibles con los filtros actuales">
-                        <i class="fas fa-filter"></i> <span id="pgCountNum">{{ $cant }}</span> cursos
-                    </span>
-                    <button type="button" class="pg-filter-btn flex-shrink-0" id="limpiarFiltros" title="Quitar ciclo y búsqueda">
-                        <i class="fas fa-rotate-left fa-xs"></i> Limpiar
-                    </button>
-                    <select id="filtroCiclo" class="pg-select pg-select-compact" title="Filtrar por ciclo">
+                <div class="cu-toolbar__buscar pg-filtros-linea">
+                    <div class="pg-search-wrap mb-0">
+                        <i class="fas fa-search pg-search-icon"></i>
+                        <input type="search" class="pg-input" id="buscador" placeholder="Buscar curso, docente o competencia…" autocomplete="off" aria-label="Buscar curso">
+                        <kbd class="cu-kbd" title="Atajo: presione / para buscar">/</kbd>
+                    </div>
+                    <select id="filtroCiclo" class="pg-select pg-select-compact" title="Filtrar por ciclo" aria-label="Ciclo">
                         <option value="">Ciclo</option>
                         @foreach ($ciclosPorPrograma as $programaId => $ciclosDelPrograma)
                             <optgroup label="{{ optional($ciclosDelPrograma->first()->programa)->nombre ?? 'Programa' }}" data-programa-id="{{ $programaId }}">
@@ -369,10 +491,12 @@
                             </optgroup>
                         @endforeach
                     </select>
-                    <div class="pg-search-wrap mb-0">
-                        <i class="fas fa-search pg-search-icon"></i>
-                        <input type="text" class="pg-input" id="buscador" placeholder="Buscar curso...">
-                    </div>
+                    <span class="pg-count-badge" id="pgCountBadge" title="Cursos visibles con los filtros actuales" aria-live="polite">
+                        <span id="pgCountNum">{{ $cant }}</span>&nbsp;visibles
+                    </span>
+                    <button type="button" class="pg-filter-btn flex-shrink-0" id="limpiarFiltros" title="Quitar programa, ciclo y búsqueda (Esc)" hidden>
+                        <i class="fas fa-times fa-xs"></i> Limpiar
+                    </button>
                 </div>
             </div>
 
@@ -391,6 +515,7 @@
                         <thead>
                             <tr>
                                 <th>Datos del Curso</th>
+                                <th class="curso-calif-th">Calificación</th>
                                 <th>Docente(s)</th>
                                 <th>Competencias</th>
                                 <th class="text-center">Acciones</th>
@@ -404,9 +529,9 @@
                                         <ul class="curso-meta">
                                             <li>
                                                 <strong>Prog/Ciclo:</strong>
-                                                @if (str_contains($curso->ciclo->programa->nombre, 'Programa Primaria EIB'))
+                                                @if ($curso->ciclo->programa->esFid() && $curso->ciclo->programa->eib)
                                                     EIB
-                                                @elseif(str_contains($curso->ciclo->programa->nombre, 'Programa Inicial'))
+                                                @elseif($curso->ciclo->programa->esFid() && $curso->ciclo->programa->esInicial())
                                                     Inicial
                                                 @else
                                                     {{ $curso->ciclo->programa->nombre }}
@@ -417,6 +542,16 @@
                                             <li><strong>Horas:</strong> {{ $curso->horas }} &nbsp;|&nbsp;
                                                 <strong>Créditos:</strong> {{ $curso->creditos }}</li>
                                         </ul>
+                                    </td>
+                                    <td class="curso-calif-td">
+                                        @if (is_null($pctPpd[$curso->id] ?? null) && is_null($pctFid[$curso->id] ?? null))
+                                            <span class="curso-calif-vacio">—</span>
+                                        @else
+                                            <ul class="curso-meta curso-calif">
+                                                @include('admin.curso._pct-ppd', ['pct' => $pctPpd[$curso->id] ?? null])
+                                                @include('admin.curso._pct-fid', ['pct' => $pctFid[$curso->id] ?? null])
+                                            </ul>
+                                        @endif
                                     </td>
                                     <td style="font-size:.8rem; color:var(--pg-text);">
                                         @foreach ($curso->docentes as $docente)
@@ -471,6 +606,7 @@
                         <thead>
                             <tr>
                                 <th>Datos del Curso</th>
+                                <th class="curso-calif-th">Calificación</th>
                                 <th>Docente(s)</th>
                                 <th>Competencias</th>
                                 <th class="text-center">Acciones</th>
@@ -484,9 +620,9 @@
                                         <ul class="curso-meta">
                                             <li>
                                                 <strong>Prog/Ciclo:</strong>
-                                                @if (str_contains($curso->ciclo->programa->nombre, 'Programa Primaria EIB'))
+                                                @if ($curso->ciclo->programa->esFid() && $curso->ciclo->programa->eib)
                                                     EIB
-                                                @elseif(str_contains($curso->ciclo->programa->nombre, 'Programa Inicial'))
+                                                @elseif($curso->ciclo->programa->esFid() && $curso->ciclo->programa->esInicial())
                                                     Inicial
                                                 @else
                                                     {{ $curso->ciclo->programa->nombre }}
@@ -497,6 +633,16 @@
                                             <li><strong>Horas:</strong> {{ $curso->horas }} &nbsp;|&nbsp;
                                                 <strong>Créditos:</strong> {{ $curso->creditos }}</li>
                                         </ul>
+                                    </td>
+                                    <td class="curso-calif-td">
+                                        @if (is_null($pctPpd[$curso->id] ?? null) && is_null($pctFid[$curso->id] ?? null))
+                                            <span class="curso-calif-vacio">—</span>
+                                        @else
+                                            <ul class="curso-meta curso-calif">
+                                                @include('admin.curso._pct-ppd', ['pct' => $pctPpd[$curso->id] ?? null])
+                                                @include('admin.curso._pct-fid', ['pct' => $pctFid[$curso->id] ?? null])
+                                            </ul>
+                                        @endif
                                     </td>
                                     <td style="font-size:.8rem; color:var(--pg-text);">
                                         @foreach ($curso->docentes as $docente)
@@ -545,6 +691,7 @@
                         <thead>
                             <tr>
                                 <th>Datos del Curso</th>
+                                <th class="curso-calif-th">Calificación</th>
                                 <th>Docente(s)</th>
                                 <th>Competencias</th>
                                 <th class="text-center">Acciones</th>
@@ -558,9 +705,9 @@
                                         <ul class="curso-meta">
                                             <li>
                                                 <strong>Prog/Ciclo:</strong>
-                                                @if (str_contains($curso->ciclo->programa->nombre, 'Programa Primaria EIB'))
+                                                @if ($curso->ciclo->programa->esFid() && $curso->ciclo->programa->eib)
                                                     EIB
-                                                @elseif(str_contains($curso->ciclo->programa->nombre, 'Programa Inicial'))
+                                                @elseif($curso->ciclo->programa->esFid() && $curso->ciclo->programa->esInicial())
                                                     Inicial
                                                 @else
                                                     {{ $curso->ciclo->programa->nombre }}
@@ -571,6 +718,16 @@
                                             <li><strong>Horas:</strong> {{ $curso->horas }} &nbsp;|&nbsp;
                                                 <strong>Créditos:</strong> {{ $curso->creditos }}</li>
                                         </ul>
+                                    </td>
+                                    <td class="curso-calif-td">
+                                        @if (is_null($pctPpd[$curso->id] ?? null) && is_null($pctFid[$curso->id] ?? null))
+                                            <span class="curso-calif-vacio">—</span>
+                                        @else
+                                            <ul class="curso-meta curso-calif">
+                                                @include('admin.curso._pct-ppd', ['pct' => $pctPpd[$curso->id] ?? null])
+                                                @include('admin.curso._pct-fid', ['pct' => $pctFid[$curso->id] ?? null])
+                                            </ul>
+                                        @endif
                                     </td>
                                     <td style="font-size:.8rem; color:var(--pg-text);">
                                         @foreach ($curso->docentes as $docente)
@@ -619,6 +776,7 @@
                         <thead>
                             <tr>
                                 <th>Datos del Curso</th>
+                                <th class="curso-calif-th">Calificación</th>
                                 <th>Docente(s)</th>
                                 <th>Competencias</th>
                                 <th class="text-center">Acciones</th>
@@ -632,9 +790,9 @@
                                         <ul class="curso-meta">
                                             <li>
                                                 <strong>Prog/Ciclo:</strong>
-                                                @if (str_contains($curso->ciclo->programa->nombre, 'Programa Primaria EIB'))
+                                                @if ($curso->ciclo->programa->esFid() && $curso->ciclo->programa->eib)
                                                     EIB
-                                                @elseif(str_contains($curso->ciclo->programa->nombre, 'Programa Inicial'))
+                                                @elseif($curso->ciclo->programa->esFid() && $curso->ciclo->programa->esInicial())
                                                     Inicial
                                                 @else
                                                     {{ $curso->ciclo->programa->nombre }}
@@ -645,6 +803,16 @@
                                             <li><strong>Horas:</strong> {{ $curso->horas }} &nbsp;|&nbsp;
                                                 <strong>Créditos:</strong> {{ $curso->creditos }}</li>
                                         </ul>
+                                    </td>
+                                    <td class="curso-calif-td">
+                                        @if (is_null($pctPpd[$curso->id] ?? null) && is_null($pctFid[$curso->id] ?? null))
+                                            <span class="curso-calif-vacio">—</span>
+                                        @else
+                                            <ul class="curso-meta curso-calif">
+                                                @include('admin.curso._pct-ppd', ['pct' => $pctPpd[$curso->id] ?? null])
+                                                @include('admin.curso._pct-fid', ['pct' => $pctFid[$curso->id] ?? null])
+                                            </ul>
+                                        @endif
                                     </td>
                                     <td style="font-size:.8rem; color:var(--pg-text);">
                                         @foreach ($curso->docentes as $docente)
@@ -693,6 +861,7 @@
                         <thead>
                             <tr>
                                 <th>Datos del Curso</th>
+                                <th class="curso-calif-th">Calificación</th>
                                 <th>Docente(s)</th>
                                 <th>Competencias</th>
                                 <th class="text-center">Acciones</th>
@@ -706,9 +875,9 @@
                                         <ul class="curso-meta">
                                             <li>
                                                 <strong>Prog/Ciclo:</strong>
-                                                @if (str_contains($curso->ciclo->programa->nombre, 'Programa Primaria EIB'))
+                                                @if ($curso->ciclo->programa->esFid() && $curso->ciclo->programa->eib)
                                                     EIB
-                                                @elseif(str_contains($curso->ciclo->programa->nombre, 'Programa Inicial'))
+                                                @elseif($curso->ciclo->programa->esFid() && $curso->ciclo->programa->esInicial())
                                                     Inicial
                                                 @else
                                                     {{ $curso->ciclo->programa->nombre }}
@@ -719,6 +888,16 @@
                                             <li><strong>Horas:</strong> {{ $curso->horas }} &nbsp;|&nbsp;
                                                 <strong>Créditos:</strong> {{ $curso->creditos }}</li>
                                         </ul>
+                                    </td>
+                                    <td class="curso-calif-td">
+                                        @if (is_null($pctPpd[$curso->id] ?? null) && is_null($pctFid[$curso->id] ?? null))
+                                            <span class="curso-calif-vacio">—</span>
+                                        @else
+                                            <ul class="curso-meta curso-calif">
+                                                @include('admin.curso._pct-ppd', ['pct' => $pctPpd[$curso->id] ?? null])
+                                                @include('admin.curso._pct-fid', ['pct' => $pctFid[$curso->id] ?? null])
+                                            </ul>
+                                        @endif
                                     </td>
                                     <td style="font-size:.8rem; color:var(--pg-text);">
                                         @foreach ($curso->docentes as $docente)
@@ -782,7 +961,7 @@
                     scale: 1,
                     duration: .5
                 })
-                .fromTo('.pg-stat', {
+                .fromTo('.cu-kpi', {
                     opacity: 0,
                     y: 18,
                     scale: .93
@@ -878,6 +1057,34 @@
 
             buscador.addEventListener('input', aplicarFiltros);
             window.aplicarFiltrosCursos = aplicarFiltros;
+
+            // "Limpiar" solo aparece si hay algo que limpiar.
+            function actualizarLimpiar() {
+                var todos = document.getElementById('todos');
+                btnLimpiar.hidden = !buscador.value && !selectCiclo.value && todos.classList.contains('active');
+            }
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.pg-filter-btn')) setTimeout(actualizarLimpiar, 0);
+            });
+            buscador.addEventListener('input', actualizarLimpiar);
+            selectCiclo.addEventListener('change', actualizarLimpiar);
+
+            // Atajos: "/" enfoca la búsqueda; Esc la limpia (o quita todos los filtros).
+            document.addEventListener('keydown', function(e) {
+                var escribiendo = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName);
+                if (e.key === '/' && !escribiendo) {
+                    e.preventDefault();
+                    buscador.focus();
+                } else if (e.key === 'Escape' && document.activeElement === buscador) {
+                    if (buscador.value) {
+                        buscador.value = '';
+                        aplicarFiltros();
+                        actualizarLimpiar();
+                    } else {
+                        buscador.blur();
+                    }
+                }
+            });
 
             btnLimpiar.addEventListener('click', function() {
                 buscador.value = '';

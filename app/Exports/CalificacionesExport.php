@@ -63,7 +63,7 @@ class CalificacionesExport implements FromCollection, WithHeadings, WithCustomCs
 
         $alumnosCiclo = $curso->ciclo->alumnos()->orderBy('apellidos')->get();
 
-        $alumnosRelacionados = $curso->alumnos()->orderBy('apellidos')->get();
+        $alumnosRelacionados = $curso->alumnosDelPeriodo($periodoActual)->orderBy('apellidos')->get();
 
         $alumnos = $alumnosCiclo->merge($alumnosRelacionados)->unique('id')->values();
 

@@ -49,16 +49,17 @@ class PpdController extends Controller
 
         if ($alumno) {
             // Obtener todos los cursos del programa a través de los ciclos
-            $programa = $alumno->user->programa;
+            $programa = $this->resolverProgramaPpd($alumno);
 
-            $cursos = Curso::whereHas('ciclo', function ($query) use ($programa) {
-                $query->where('programa_id', $programa->id);
-            })
-                ->with(['ciclo', 'docentes' => fn ($q) => $q->orderBy('nombre')])
-                ->orderBy('ciclo_id')
-                ->orderBy('nombre')
-                ->get();
-
+            $cursos = $programa
+                ? Curso::whereHas('ciclo', function ($query) use ($programa) {
+                    $query->where('programa_id', $programa->id);
+                })
+                    ->with(['ciclo', 'docentes' => fn ($q) => $q->orderBy('nombre')])
+                    ->orderBy('ciclo_id')
+                    ->orderBy('nombre')
+                    ->get()
+                : collect();
         } else {
             $cursos = collect();
         }
@@ -73,8 +74,16 @@ class PpdController extends Controller
         // único "periodo actual" que usa el sistema de sílabos.
         $periodoActual = PeriodoActual::where('actual', true)->first();
 
+        // Titulación: PPD puede iniciar desde el Ciclo I (programa de un año). Con proceso → su avance;
+        // sin proceso pero habilitado → la guía de pasos.
+        $usuario = auth()->user();
+        $seguimientoTitulacion = $usuario->seguimientoTitulacion()
+            ->with('estadoTitulacion', 'pti.asesor', 'tesis.asesor', 'actas', 'resoluciones')->first();
+        $guiaTitulacion = ! $seguimientoTitulacion && \App\Http\Controllers\Titulacion\TitulacionController::puedeIniciar($usuario);
+
         return view('alumnos.ppd.index', compact(
-            'alumno', 'cursos', 'periodoActualPpd', 'matriculaActual', 'formularioHabilitado', 'periodoActual'
+            'alumno', 'cursos', 'periodoActualPpd', 'matriculaActual', 'formularioHabilitado', 'periodoActual',
+            'seguimientoTitulacion', 'guiaTitulacion'
         ));
     }
 
@@ -102,11 +111,16 @@ class PpdController extends Controller
     public function calificacionesppd()
     {
         $alumno = auth()->user()->alumnoB;
-        if (! $alumno || ! $alumno->ciclo) {
+        if (! $alumno) {
             return view('alumnos.ppd.calificaciones')->with('mensaje', 'No tienes ciclo asignado.');
         }
-        $programaId = $alumno->ciclo->programa_id;
-        $ciclosConCursos = Ciclo::where('programa_id', $programaId)
+
+        $programa = $this->resolverProgramaPpd($alumno);
+        if (! $programa) {
+            return view('alumnos.ppd.calificaciones')->with('mensaje', 'No tienes un programa asignado.');
+        }
+
+        $ciclosConCursos = Ciclo::where('programa_id', $programa->id)
             ->with([
                 'cursos' => function ($query) use ($alumno) {
                     $query->with([
@@ -122,7 +136,34 @@ class PpdController extends Controller
             ->sortBy(fn ($ciclo) => $ciclo->ordenCiclo())
             ->values();
 
-        return view('alumnos.ppd.calificaciones', compact('alumno', 'ciclosConCursos'));
+        return view('alumnos.ppd.calificaciones', compact('alumno', 'ciclosConCursos', 'programa'));
+    }
+
+    /**
+     * Programa PPD real de un alumno de profesionalización docente.
+     *
+     * En registros antiguos el propio `programa_id` del alumno PPD quedó
+     * desalineado (apuntando a un programa de FID, p.ej. 1 = "Programa
+     * Inicial") mientras que el `programa_id` de su usuario sí conserva el
+     * programa PPD correcto. Como consecuencia, pantallas que confiaban
+     * ciegamente en `$alumno->programa` (o en `$alumno->ciclo->programa`)
+     * terminaban listando cursos de FID en vez de los de PPD. Aquí se usa
+     * el programa del alumno solo si es efectivamente de PPD; si no, se cae
+     * al del usuario.
+     */
+    private function resolverProgramaPpd(ppd $alumno): ?Programa
+    {
+        $programa = $alumno->programa;
+        if ($programa?->esPpd()) {
+            return $programa;
+        }
+
+        $programaUsuario = $alumno->user?->programa;
+        if ($programaUsuario?->esPpd()) {
+            return $programaUsuario;
+        }
+
+        return $programa ?: $programaUsuario;
     }
 
     public function store(Request $request)
@@ -424,6 +465,8 @@ class PpdController extends Controller
 
     public function calificar(Request $request)
     {
+        \App\Services\AccesoCalificaciones::autorizar($request->input('docente_id'), $request->input('curso_id'));
+
         $request->validate([
             'curso_id' => 'required|exists:cursos,id',
             'docente_id' => 'required|exists:docentes,id',
@@ -516,40 +559,13 @@ class PpdController extends Controller
             }
         }
 
-        // 🔥 Recuperar alumnos con la misma lógica de calificarCursoPPD
-        $competenciasSeleccionadas = Competencia::whereIn('id', $request->input('competencias'))->get();
-
-        $alumnos = User::where(function ($q) {
-            $q->whereHas('roles', fn ($r) => $r->where('name', 'alumnoB'))
-              ->orWhere(function ($q2) {
-                  $q2->whereHas('roles', fn ($r) => $r->where('name', 'inhabilitado'))
-                      ->where('perfil', '!=', 'Retirado');
-              });
-        })
-            ->whereHas('programa.ciclos.cursos', function ($query) use ($curso) {
-                $query->where('id', $curso->id);
-            })
-            ->whereDoesntHave('alumnoB', function ($query) {
-                $query->where('guardado', true);
-            })
-            ->with(['programa.ciclos.cursos', 'roles', 'alumnoB'])
-            ->orderBy('apellidos')
-            ->get()
-            ->map(function ($alumno) {
-                $alumno->es_inhabilitado = $alumno->roles->contains('name', 'inhabilitado');
-                $alumno->tiene_ppd = $alumno->alumnoB !== null;
-
-                return $alumno;
-            });
-
-        session()->flash('success', "¡Felicidades $primerNombre! Las calificaciones se guardaron exitosamente.");
-
-        return view('docentes.calificaciones.alumnosppd', [
-            'curso' => $curso,
-            'docente' => $docente,
-            'competenciasSeleccionadas' => $competenciasSeleccionadas,
-            'alumnos' => $alumnos,
-        ]);
+        // Volver a la pantalla de calificar (GET): misma lista que al entrar, con las notas
+        // recién guardadas, y recargar la página ya no reenvía el formulario.
+        return redirect()->route('competencias.calificar.ppd', [
+            'docente' => $docente->id,
+            'curso' => $curso->id,
+            'competencias' => $request->input('competencias'),
+        ])->with('success', "¡Felicidades $primerNombre! Las calificaciones se guardaron exitosamente.");
         } catch (\Throwable $e) {
             Log::error('Error al guardar calificaciones PPD', [
                 'curso_id' => $request->input('curso_id'),
@@ -639,10 +655,13 @@ class PpdController extends Controller
 
             $datosMatricula = ['fecha_completado' => now(), 'estado' => 'matriculado', 'comprobante' => $validated['num_comprobante']];
 
+            // PPD es anual pero se matricula por semestre: cada semestre es su propia matrícula
+            // (antes la del 2.º sobrescribía a la del 1.º y heredaba "voucher verificado").
             $matricula = MatriculaPpd::updateOrCreate(
-                ['ppd_id' => $alumno->id, 'periodo_actual_ppd_id' => $periodoActualPpd->id],
+                ['ppd_id' => $alumno->id, 'periodo_actual_ppd_id' => $periodoActualPpd->id, 'semestre' => $periodoActualPpd->semestre_matricula ?? 1],
                 $datosMatricula
             );
+            $nombrePeriodo = $periodoActualPpd->nombre.' · '.$matricula->semestre_etiqueta;
 
             // El correo institucional (a cobranzas/admin) sí se sigue enviando automáticamente:
             // es la señal para que verifiquen el voucher. El correo con la ficha AL ALUMNO ya no
@@ -658,11 +677,11 @@ class PpdController extends Controller
             }
 
             if ($matricula->ficha_enviada_at) {
-                $mensajeExito = "Ya estás matriculado para el periodo actual: {$periodoActualPpd->nombre}. Tu ficha de matrícula ya fue enviada a tu correo.";
+                $mensajeExito = "Ya estás matriculado para el periodo actual: {$nombrePeriodo}. Tu ficha de matrícula ya fue enviada a tu correo.";
             } else {
                 $mensajeExito = $yaEstabaMatriculado
-                    ? "Ya estás matriculado para el periodo actual: {$periodoActualPpd->nombre}."
-                    : "¡Matrícula completada! Ya estás matriculado para el periodo actual: {$periodoActualPpd->nombre}. Se ha notificado a la institución.";
+                    ? "Ya estás matriculado para el periodo actual: {$nombrePeriodo}."
+                    : "¡Matrícula completada! Ya estás matriculado para el periodo actual: {$nombrePeriodo}. Se ha notificado a la institución.";
                 $mostrarPopupMatricula = true;
             }
         }

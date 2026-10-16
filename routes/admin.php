@@ -53,6 +53,17 @@ Route::get('/home', [AdminController::class, 'homeRedirect'])
 
 Route::get('/inhabilitado', fn () => view('admin.inhabilitado'))->name('inhabilitado');
 
+// Intranet simple para egresados (condicion='Egresado') — separada de la
+// intranet normal de alumno/alumnoB porque esa asume matrícula/ciclo activo.
+Route::get('/egresado', [App\Http\Controllers\EgresadoIntranetController::class, 'index'])
+    ->middleware('auth')
+    ->name('egresado.intranet');
+
+// "¿Algún dato no coincide?" desde Mi proceso de titulación (egresado o alumno FID).
+Route::post('/mi-titulacion/reportar', [App\Http\Controllers\MiTitulacionController::class, 'reportar'])
+    ->middleware(['auth', 'throttle:5,60'])
+    ->name('mi-titulacion.reportar');
+
 // GET simple para mantener viva la sesión (y el token CSRF) mientras se llena
 // un formulario largo, como el de Sílabos. Un GET no necesita token CSRF y
 // StartSession ya renueva la actividad de la sesión al procesarlo.
@@ -108,10 +119,37 @@ Route::middleware('auth')->group(function () {
         Route::get('calificaciones/{alumno}', [AlumnoController::class, 'calificaciones'])->name('calificaciones');
     });
 
+    // Tutoría individual y buzón de sugerencias desde la intranet (los mismos del QR, con sesión).
+    Route::middleware('role:alumno')->group(function () {
+        Route::get('alumnos/tutoria-y-sugerencias', [App\Http\Controllers\TutoriaController::class, 'alumnoPanel'])->name('alumno.atencion');
+        Route::post('alumnos/tutoria', [App\Http\Controllers\TutoriaController::class, 'alumnoStore'])->name('alumno.tutoria.store')->middleware('throttle:5,1');
+        Route::post('alumnos/sugerencia', [App\Http\Controllers\SugerenciaController::class, 'alumnoStore'])->name('alumno.sugerencia.store')->middleware('throttle:5,1');
+    });
+
     Route::get('alumnos/actualizar-datos', [AlumnoController::class, 'editarDatos'])->name('alumnos.editarDatos');
     Route::post('alumnos/actualizar-datos', [AlumnoController::class, 'actualizarDatos'])->name('alumnos.actualizarDatos');
     Route::get('ficha-matricula/{alumno}', [AlumnoController::class, 'ficha'])->name('ficha-matricula');
     Route::get('/alumnos/{alumno}/ficha-pdf', [vistasAlumnosController::class, 'exportarFichaPDF'])->name('alumno.ficha.pdf');
+
+    // ── Taq'e (Ferias de Investigación) — alumno ────────────────
+    Route::prefix('taqe')->name('taqe.')->group(function () {
+        Route::get('/', [App\Http\Controllers\TaqeController::class, 'index'])->name('index');
+        Route::post('/', [App\Http\Controllers\TaqeController::class, 'store'])->name('store');
+        Route::get('/curso/{curso}/alumnos', [App\Http\Controllers\TaqeController::class, 'alumnosDelCurso'])->name('alumnosDelCurso');
+        Route::post('/{grupo}/responder', [App\Http\Controllers\TaqeController::class, 'responder'])->name('responder');
+        Route::post('/{grupo}/salir', [App\Http\Controllers\TaqeController::class, 'salir'])->name('salir');
+        Route::post('/{grupo}/integrantes', [App\Http\Controllers\TaqeController::class, 'agregarIntegrantes'])->name('integrantes.agregar');
+        Route::delete('/{grupo}/integrantes/{integrante}', [App\Http\Controllers\TaqeController::class, 'retirarIntegrante'])->name('integrantes.retirar');
+        Route::post('/{grupo}/organizador', [App\Http\Controllers\TaqeController::class, 'cambiarOrganizador'])->name('organizador.cambiar');
+        Route::post('/{grupo}/solicitar-ayuda', [App\Http\Controllers\TaqeController::class, 'solicitarAyuda'])->name('solicitarAyuda');
+        Route::post('/{grupo}/trabajos', [App\Http\Controllers\TaqeController::class, 'storeTrabajo'])->name('trabajos.store');
+        // Trabajo final: varios archivos/enlaces (subidos directo o pasados desde evidencias); el organizador lo entrega.
+        Route::post('/{grupo}/entregar', [App\Http\Controllers\TaqeController::class, 'entregar'])->name('entregar');
+        Route::post('/{grupo}/reabrir', [App\Http\Controllers\TaqeController::class, 'reabrir'])->name('reabrir');
+        Route::post('/trabajos/{trabajo}/mover', [App\Http\Controllers\TaqeController::class, 'moverTrabajo'])->name('trabajos.mover');
+        Route::get('/trabajos/{trabajo}/ver', [App\Http\Controllers\TaqeController::class, 'verTrabajo'])->name('trabajos.ver');
+        Route::delete('/trabajos/{trabajo}', [App\Http\Controllers\TaqeController::class, 'destroyTrabajo'])->name('trabajos.destroy');
+    });
 
     Route::get('Alumnos-Formulario', [vistasAlumnosController::class, 'form'])->name('vistAlumno');
     Route::get('/obtener-ciclos/{programa}', [vistasAlumnosController::class, 'obtenerCiclos']);
@@ -121,7 +159,7 @@ Route::middleware('auth')->group(function () {
     // ── PPD ───────────────────────────────────────────────────
     Route::resource('profesionalización-docente', PpdController::class)->names('ppd');
     Route::get('calificacionesppd/{alumno}', [PpdController::class, 'calificacionesppd'])->name('calificacionesppd');
-    Route::post('/Calificar-Profesionalizacion-Docente', [PpdController::class, 'calificar'])->name('calificarppd');
+    Route::post('/Calificar-Profesionalizacion-Docente', [PpdController::class, 'calificar'])->name('calificarppd')->middleware('role:docente|admin|super-admin');
     Route::get('calificaciones-PPD/{alumno}', [PpdController::class, 'calificaciones'])->name('calificacionesPPD');
     Route::get('form-PPD', [PpdController::class, 'form'])->name('formPPD');
 
@@ -133,6 +171,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/ciclo/{ciclo}/qr-sugerencia', [App\Http\Controllers\TutorController::class, 'qrSugerencia'])->name('qr.sugerencia');
         Route::post('/tutorias/{tutoria}/estado', [App\Http\Controllers\TutoriaController::class, 'marcarEstado'])->name('tutorias.estado');
         Route::post('/sugerencias/{sugerencia}/estado', [App\Http\Controllers\SugerenciaController::class, 'marcarEstado'])->name('sugerencias.estado');
+        Route::post('/ciclo/{ciclo}/mensaje', [App\Http\Controllers\TutorController::class, 'enviarMensaje'])->name('mensaje')->middleware('throttle:10,1');
     });
 
     // ── Notificaciones (in-app) ──────────────────────────────
@@ -193,15 +232,48 @@ Route::middleware('auth')->group(function () {
     Route::get('Dashboard-Docente/{docente}', [DocenteCOntroller::class, 'vistaDocente'])->name('vistaDocente');
     Route::get('asignar-cursos/{id}', [DocenteCOntroller::class, 'asignar'])->name('asignar');
     Route::get('/docente/{docente}/alumnos', [DocenteCOntroller::class, 'alumnosPanel'])->name('docente.alumnos');
+    Route::get('/docente/{docente}/curso/{curso}/calificaciones/excel', [DocenteCOntroller::class, 'exportarCalificacionesCurso'])->name('docente.curso.excel');
+    Route::post('/docente/{docente}/curso/{curso}/mensaje', [DocenteCOntroller::class, 'enviarMensajeCurso'])->name('docente.curso.mensaje')->middleware(['role:docente', 'throttle:10,1']);
     Route::get('repositorio-de-silabos/{docente}', [DocenteCOntroller::class, 'repositorio'])->name('repositorio');
     Route::get('calificar/{id}', [DocenteCOntroller::class, 'calificar'])->name('calificar');
 
     Route::get('/docente/{docente}/blog/', [DocenteCOntroller::class, 'showBlog'])->name('docente.blog.show');
     Route::get('/Lista-de-alumnos/{curso}/{docente}', [DocenteCOntroller::class, 'showAlumnos'])->name('docentes.cursos.alumnos');
     Route::delete('/docente/{docente}/curso/{curso}', [DocenteCOntroller::class, 'eliminarCurso'])->name('docente.curso.eliminar');
-    Route::match(['get', 'post'], 'docentes/{docente}/cursos/{curso}/calificar', [DocenteCOntroller::class, 'calificarCurso'])->name('competencias.calificar');
-    Route::match(['get', 'post'], 'docentes/{docente}/cursosPPD/{curso}/calificar', [DocenteCOntroller::class, 'calificarCursoPPD'])->name('competencias.calificar.ppd');
+    Route::match(['get', 'post'], 'docentes/{docente}/cursos/{curso}/calificar', [DocenteCOntroller::class, 'calificarCurso'])->name('competencias.calificar')->middleware('role:docente|admin|super-admin');
+    Route::match(['get', 'post'], 'docentes/{docente}/cursosPPD/{curso}/calificar', [DocenteCOntroller::class, 'calificarCursoPPD'])->name('competencias.calificar.ppd')->middleware('role:docente|admin|super-admin');
     Route::post('/docentes/blog/{id}', [DocenteCOntroller::class, 'updateBlog'])->name('docentes.updateBlog');
+
+    // ── Taq'e — vista de solo lectura del docente, por curso ────
+    Route::get('docentes/{docente}/cursos/{curso}/taqe', [DocenteCOntroller::class, 'verTaqe'])->name('docente.curso.taqe');
+
+    // ── Taq'e — encargados/organizadores de un Proyecto Integrador (proyecto_docente) ────
+    Route::middleware('role:docente|admin|super-admin')->prefix('proyectos-integradores')->name('taqe.proyecto.')->group(function () {
+        Route::get('/{proyecto}/taqe', [App\Http\Controllers\TaqeProyectoDocenteController::class, 'index'])->name('index');
+        Route::get('/taqe/trabajos/{trabajo}/ver', [App\Http\Controllers\TaqeProyectoDocenteController::class, 'verTrabajo'])->name('trabajos.ver');
+        Route::get('/taqe/{grupo}/descargar/{que}', [App\Http\Controllers\TaqeProyectoDocenteController::class, 'descargarZip'])->whereIn('que', ['evidencias', 'final', 'todo'])->name('descargar');
+    });
+
+    // ── Taq'e — seguimiento institucional del Investigador ──────
+    Route::middleware('role:investigador')->prefix('taqe-investigador')->group(function () {
+        Route::get('/', [App\Http\Controllers\TaqeInvestigadorController::class, 'index'])->name('taqe.investigador.index');
+        Route::post('/solicitudes/{solicitud}/atender', [App\Http\Controllers\TaqeInvestigadorController::class, 'marcarAtendida'])->name('taqe.investigador.solicitudes.atender');
+        Route::get('/trabajos/{trabajo}/ver', [App\Http\Controllers\TaqeInvestigadorController::class, 'verTrabajo'])->name('taqe.investigador.trabajos.ver');
+        Route::get('/{grupo}/descargar/{que}', [App\Http\Controllers\TaqeInvestigadorController::class, 'descargarZip'])->whereIn('que', ['evidencias', 'final', 'todo'])->name('taqe.investigador.descargar');
+    });
+
+    // ── Taq'e — gestión institucional del Super Admin (control total sobre cualquier grupo) ──
+    Route::middleware('role:super-admin')->prefix('admin/taqe')->name('admin.taqe.')->group(function () {
+        Route::get('/', [App\Http\Controllers\TaqeSuperAdminController::class, 'index'])->name('index');
+        Route::get('/{grupo}/alumnos-disponibles', [App\Http\Controllers\TaqeSuperAdminController::class, 'alumnosDisponibles'])->name('alumnosDisponibles');
+        Route::post('/{grupo}/integrantes', [App\Http\Controllers\TaqeSuperAdminController::class, 'agregarIntegrantes'])->name('integrantes.agregar');
+        Route::delete('/{grupo}/integrantes/{integrante}', [App\Http\Controllers\TaqeSuperAdminController::class, 'retirarIntegrante'])->name('integrantes.retirar');
+        Route::post('/solicitudes/{solicitud}/atender', [App\Http\Controllers\TaqeSuperAdminController::class, 'marcarAtendidaSolicitud'])->name('solicitudes.atender');
+        Route::get('/trabajos/{trabajo}/ver', [App\Http\Controllers\TaqeSuperAdminController::class, 'verTrabajo'])->name('trabajos.ver');
+        Route::delete('/trabajos/{trabajo}', [App\Http\Controllers\TaqeSuperAdminController::class, 'destroyTrabajo'])->name('trabajos.destroy');
+        Route::get('/{grupo}/descargar/{que}', [App\Http\Controllers\TaqeSuperAdminController::class, 'descargarZip'])->whereIn('que', ['evidencias', 'final', 'todo'])->name('descargar');
+        Route::delete('/{grupo}', [App\Http\Controllers\TaqeSuperAdminController::class, 'destroy'])->name('destroy');
+    });
 
     // ── Incidencias (docentes autenticados) ───────────────────
     Route::get('admin/docente/{docente}/incidencias', [App\Http\Controllers\IncidenciaController::class, 'adminIndex'])->name('admin.docente.incidencias');
@@ -231,24 +303,24 @@ Route::middleware('auth')->group(function () {
     });
 
     // ── Calificaciones (docentes + admin) ─────────────────────
-    Route::post('/publicar-periodo-uno', [CalificacionController::class, 'publicarPeriodoUno'])->name('publicar.periodo.uno');
-    Route::post('/periodouno/storeBloque', [CalificacionController::class, 'storePeriodoEnBloque'])->name('periodouno.storeBloque');
-    Route::delete('/eliminar-periodo-uno', [CalificacionController::class, 'eliminarPeriodoUno'])->name('periodouno.eliminar');
-    Route::post('/periododos/storeBloque', [CalificacionController::class, 'storePeriodoDos'])->name('storePeriodoDos');
-    Route::delete('/eliminar-periodo-dos', [CalificacionController::class, 'eliminarPeriodoDos'])->name('periododos.eliminar');
-    Route::post('/periodotres/storeBloque', [CalificacionController::class, 'storePeriodoTres'])->name('storePeriodoTres');
-    Route::delete('/eliminar-periodo-tres', [CalificacionController::class, 'eliminarPeriodoTres'])->name('periodotres.eliminar');
-    Route::delete('/docentes/cursos/eliminar-todos-global', [CalificacionController::class, 'eliminarTodosCursosGlobal'])->name('docente.cursos.eliminarTodosGlobal');
-    Route::delete('/docentes/cursos-ppd/eliminar-todos-global', [CalificacionController::class, 'eliminarTodosCursosGlobalPPD'])->name('docente.cursos.eliminarTodosGlobalPPD');
-    Route::post('/calificaciones/store', [CalificacionController::class, 'nuevaCalificacion'])->name('guardarCalificacion');
-    Route::post('/guardar-calificaciones', [CalificacionController::class, 'guardarCalificacionesEnBloque'])->name('guardarCalificacionesEnBloque');
-    Route::post('/guardar-periodo-tres', [CalificacionController::class, 'guardarPeriodoTres'])->name('guardarPeriodoTres');
-    Route::post('/guardar-periodo2-desempeno', [CalificacionController::class, 'guardarPeriodo2yDesempenoEnBloque'])->name('guardarPeriodo2yDesempenoEnBloque');
-    Route::post('/borrarCalificaciones', [CalificacionController::class, 'borrarCalificaciones'])->name('borrarCalificaciones');
-    Route::get('/calificaciones/eliminar-todas', [CalificacionController::class, 'borrarTodasLasCalificaciones'])->name('calificaciones.eliminarTodas');
-    Route::get('/exportar-csv/{docenteId}/{cursoId}', [CalificacionController::class, 'exportarCSV'])->name('calificaciones.exportar');
-    Route::get('/exportar-csvppd/{docenteId}/{cursoId}', [CalificacionController::class, 'exportarCSVppd'])->name('calificaciones.exportar.ppd');
-    Route::get('/exportar-periodo-actual-fid', [CalificacionController::class, 'exportarPeriodoActualFID'])->name('calificaciones.exportar.periodoActualFID');
+    Route::post('/publicar-periodo-uno', [CalificacionController::class, 'publicarPeriodoUno'])->name('publicar.periodo.uno')->middleware('role:admin|super-admin');
+    Route::post('/periodouno/storeBloque', [CalificacionController::class, 'storePeriodoEnBloque'])->name('periodouno.storeBloque')->middleware('role:docente|admin|super-admin');
+    Route::delete('/eliminar-periodo-uno', [CalificacionController::class, 'eliminarPeriodoUno'])->name('periodouno.eliminar')->middleware('role:admin|super-admin');
+    Route::post('/periododos/storeBloque', [CalificacionController::class, 'storePeriodoDos'])->name('storePeriodoDos')->middleware('role:admin|super-admin');
+    Route::delete('/eliminar-periodo-dos', [CalificacionController::class, 'eliminarPeriodoDos'])->name('periododos.eliminar')->middleware('role:admin|super-admin');
+    Route::post('/periodotres/storeBloque', [CalificacionController::class, 'storePeriodoTres'])->name('storePeriodoTres')->middleware('role:admin|super-admin');
+    Route::delete('/eliminar-periodo-tres', [CalificacionController::class, 'eliminarPeriodoTres'])->name('periodotres.eliminar')->middleware('role:admin|super-admin');
+    Route::delete('/docentes/cursos/eliminar-todos-global', [CalificacionController::class, 'eliminarTodosCursosGlobal'])->name('docente.cursos.eliminarTodosGlobal')->middleware('role:admin|super-admin');
+    Route::delete('/docentes/cursos-ppd/eliminar-todos-global', [CalificacionController::class, 'eliminarTodosCursosGlobalPPD'])->name('docente.cursos.eliminarTodosGlobalPPD')->middleware('role:admin|super-admin');
+    Route::post('/calificaciones/store', [CalificacionController::class, 'nuevaCalificacion'])->name('guardarCalificacion')->middleware('role:admin|super-admin');
+    Route::post('/guardar-calificaciones', [CalificacionController::class, 'guardarCalificacionesEnBloque'])->name('guardarCalificacionesEnBloque')->middleware('role:admin|super-admin');
+    Route::post('/guardar-periodo-tres', [CalificacionController::class, 'guardarPeriodoTres'])->name('guardarPeriodoTres')->middleware('role:admin|super-admin');
+    Route::post('/guardar-periodo2-desempeno', [CalificacionController::class, 'guardarPeriodo2yDesempenoEnBloque'])->name('guardarPeriodo2yDesempenoEnBloque')->middleware('role:docente|admin|super-admin');
+    Route::post('/borrarCalificaciones', [CalificacionController::class, 'borrarCalificaciones'])->name('borrarCalificaciones')->middleware('role:admin|super-admin');
+    Route::get('/calificaciones/eliminar-todas', [CalificacionController::class, 'borrarTodasLasCalificaciones'])->name('calificaciones.eliminarTodas')->middleware('role:admin|super-admin');
+    Route::get('/exportar-csv/{docenteId}/{cursoId}', [CalificacionController::class, 'exportarCSV'])->name('calificaciones.exportar')->middleware('role:docente|admin|super-admin');
+    Route::get('/exportar-csvppd/{docenteId}/{cursoId}', [CalificacionController::class, 'exportarCSVppd'])->name('calificaciones.exportar.ppd')->middleware('role:docente|admin|super-admin');
+    Route::get('/exportar-periodo-actual-fid', [CalificacionController::class, 'exportarPeriodoActualFID'])->name('calificaciones.exportar.periodoActualFID')->middleware('role:admin|super-admin');
 
     // ── Cursos, Sílabos, Competencias ─────────────────────────
     Route::prefix('cursos')->group(function () {
@@ -260,8 +332,8 @@ Route::middleware('auth')->group(function () {
     Route::post('cursos/{curso}/upload-silabo', [CursoController::class, 'uploadSilabo'])->name('cursos.uploadSilabo');
     Route::delete('cursos/{curso}/destroy-silabo', [CursoController::class, 'destroySilabo'])->name('cursos.destroySilabo');
     Route::post('/cursos/{curso}/classroomClaveCRUD', [CursoController::class, 'classroomClaveCRUD'])->name('cursos.classroomClaveCRUD');
-    Route::get('/curso/{cursoId}/competencias', [CalificacionController::class, 'gestionarCompetencias'])->name('curso.gestionar.competencias');
-    Route::post('/curso/{cursoId}/competencias/guardar', [CalificacionController::class, 'guardarCompetenciasSeleccionadas'])->name('curso.guardar.competencias');
+    Route::get('/curso/{cursoId}/competencias', [CalificacionController::class, 'gestionarCompetencias'])->name('curso.gestionar.competencias')->middleware('role:docente|admin|super-admin');
+    Route::post('/curso/{cursoId}/competencias/guardar', [CalificacionController::class, 'guardarCompetenciasSeleccionadas'])->name('curso.guardar.competencias')->middleware('role:docente|admin|super-admin');
     Route::get('/curso/{curso}/docentes', [CursoController::class, 'asignarDocentesForm'])->name('curso.docentes.form');
     Route::post('/curso/{curso}/docentes', [CursoController::class, 'asignarDocentesUpdate'])->name('curso.docentes.update');
 
@@ -271,7 +343,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('competencias', CompetenciaController::class)->names('competencias');
     Route::resource('capacidades', CapacidadesController::class)->names('capacidades');
     Route::resource('enfoques', EnfoquesController::class)->names('enfoques');
-    Route::resource('proyectos', ProyectoController::class)->names('proyectos');
+    // Proyectos Integradores: solo admin y super-admin (antes bastaba con iniciar sesión).
+    Route::resource('proyectos', ProyectoController::class)->names('proyectos')->middleware('role:admin|super-admin');
     Route::resource('estandares', EstandaresController::class)->names('estandares');
 
     // ── Períodos ──────────────────────────────────────────────
@@ -281,14 +354,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/periodos/{nombre}', [PeriodoController::class, 'show'])->name('periodos.show');
     Route::resource('Periodo-Actual', PeriodoActualController::class)
         ->names('periodoactual')
-        ->parameters(['Periodo-Actual' => 'periodoactual']);
-    Route::post('Periodo-Actual/{periodoactual}/crear-calificaciones', [PeriodoActualController::class, 'crearCalificaciones'])->name('periodoactual.crearCalificaciones');
-    Route::get('/periodo-actual/{id}/actualizar-notas', [PeriodoActualController::class, 'actualizarNotas'])->name('periodoactual.actualizarNotas');
-    Route::get('Periodo-Actual/{periodoactual}/registros', [PeriodoActualController::class, 'showRegistros'])->name('periodoactual.showRegistros');
-    Route::patch('admin/periodo-registro/{registro}', [PeriodoActualController::class, 'updateRegistro'])->name('periodoactual.registro.update');
-    Route::post('Periodo-Actual/{periodoactual}/toggle-formulario', [PeriodoActualController::class, 'toggleFormulario'])->name('periodoactual.toggleFormulario');
-    Route::get('/admin/periodos/{id}/export', [PeriodoActualController::class, 'exportExcel'])->name('periodos.export');
-    Route::get('/admin/becas/calificaciones/export', [AdminController::class, 'exportBecasCalificaciones'])->name('admin.becas.calificaciones.export');
+        ->parameters(['Periodo-Actual' => 'periodoactual'])
+        ->middleware('role:admin|super-admin');
+    Route::post('Periodo-Actual/{periodoactual}/crear-calificaciones', [PeriodoActualController::class, 'crearCalificaciones'])->name('periodoactual.crearCalificaciones')->middleware('role:admin|super-admin');
+    Route::get('/periodo-actual/{id}/actualizar-notas', [PeriodoActualController::class, 'actualizarNotas'])->name('periodoactual.actualizarNotas')->middleware('role:admin|super-admin');
+    Route::get('Periodo-Actual/{periodoactual}/registros', [PeriodoActualController::class, 'showRegistros'])->name('periodoactual.showRegistros')->middleware('role:admin|super-admin');
+    Route::patch('admin/periodo-registro/{registro}', [PeriodoActualController::class, 'updateRegistro'])->name('periodoactual.registro.update')->middleware('role:admin|super-admin');
+    Route::post('Periodo-Actual/{periodoactual}/toggle-formulario', [PeriodoActualController::class, 'toggleFormulario'])->name('periodoactual.toggleFormulario')->middleware('role:admin|super-admin');
+    Route::get('/admin/periodos/{id}/export', [PeriodoActualController::class, 'exportExcel'])->name('periodos.export')->middleware('role:admin|super-admin');
+    Route::get('/admin/becas/calificaciones/export', [AdminController::class, 'exportBecasCalificaciones'])->name('admin.becas.calificaciones.export')->middleware('role:admin|super-admin');
     Route::get('periodos-de-admision', [PeriodoActualController::class, 'periodos'])->name('periodos.admision');
     Route::put('/ciclo/update-alumnos', [CicloController::class, 'updateCicloAlumnos'])->name('ciclo.updateAlumnos');
 
@@ -323,6 +397,11 @@ Route::middleware('auth')->group(function () {
     // 🛡️ RUTAS SOLO ADMINISTRADOR
     // ═══════════════════════════════════════════════════════════
 
+    // Expediente del estudiante: admin y super-admin lo gestionan; el gestor de titulación lo
+    // ve en solo lectura (con la pestaña Titulación). Las acciones siguen en el grupo de abajo.
+    Route::get('/expediente/{user}', [\App\Http\Controllers\ExpedienteController::class, 'show'])
+        ->middleware('role:admin|super-admin|gestor-titulacion')->name('expediente.show');
+
     Route::middleware('role:admin|super-admin')->group(function () {
 
         // Panel principal y gestión de usuarios
@@ -330,11 +409,28 @@ Route::middleware('auth')->group(function () {
         Route::get('admin/edit/{id}', [AdminController::class, 'edit'])->name('adminEdit');
         Route::get('admin/destroy/{id}', [AdminController::class, 'destroy'])->name('adminDestroy');
         Route::put('/admin/update/{id}', [AdminController::class, 'update'])->name('adminUpdate');
+        Route::put('/admin/inhabilitados/{user}/perfil', [AdminController::class, 'actualizarPerfilInhabilitado'])->name('adminInhabilitados.perfil');
         Route::get('/registro', [AdminController::class, 'create'])->name('registerAdmin');
         Route::post('/admin/store', [AdminController::class, 'store'])->name('adminStore');
 
+        // Expediente del estudiante: trayectoria (licencias, retiros, reincorporaciones…) y notas por periodo
+        Route::get('/seguimiento-estudiantil', [\App\Http\Controllers\PanelSeguimientoController::class, 'index'])->name('expediente.panel');
+        Route::get('/seguimiento-estudiantil/exportar/{lista}', [\App\Http\Controllers\PanelSeguimientoController::class, 'exportar'])->name('expediente.panel.exportar');
+        Route::post('/expediente/{user}/eventos', [\App\Http\Controllers\ExpedienteController::class, 'storeEvento'])->name('expediente.eventos.store');
+        Route::put('/expediente/eventos/{evento}', [\App\Http\Controllers\ExpedienteController::class, 'updateEvento'])->name('expediente.eventos.update');
+        Route::delete('/expediente/eventos/{evento}', [\App\Http\Controllers\ExpedienteController::class, 'destroyEvento'])->name('expediente.eventos.destroy');
+        Route::post('/expediente/{user}/seguimiento', [\App\Http\Controllers\ExpedienteController::class, 'storeAccion'])->name('expediente.acciones.store');
+        Route::put('/expediente/seguimiento/{accion}', [\App\Http\Controllers\ExpedienteController::class, 'updateAccion'])->name('expediente.acciones.update');
+        Route::patch('/expediente/seguimiento/{accion}/estado', [\App\Http\Controllers\ExpedienteController::class, 'toggleAccion'])->name('expediente.acciones.toggle');
+        Route::delete('/expediente/seguimiento/{accion}', [\App\Http\Controllers\ExpedienteController::class, 'destroyAccion'])->name('expediente.acciones.destroy');
+        Route::post('/expediente/{user}/documentos', [\App\Http\Controllers\ExpedienteController::class, 'storeDocumento'])->name('expediente.documentos.store');
+        Route::get('/expediente/documentos/{documento}', [\App\Http\Controllers\ExpedienteController::class, 'verDocumento'])->name('expediente.documentos.ver');
+        Route::delete('/expediente/documentos/{documento}', [\App\Http\Controllers\ExpedienteController::class, 'destroyDocumento'])->name('expediente.documentos.destroy');
+
         // Listados y exportaciones de alumnos
-        Route::get('/admin/alumnos', [AdminController::class, 'alumnos'])->name('adminAlumnos');
+        // "Matrículas FID/PPD" ahora son pestañas del directorio (/Administrador): las URLs viejas redirigen.
+        Route::get('/admin/alumnos', [AdminController::class, 'directorioRedirect'])->defaults('tab', 'fid')->name('adminAlumnos');
+        Route::post('/admin/estudiantes/exportar', [AdminController::class, 'exportarDirectorio'])->name('admin.estudiantes.exportar');
         Route::post('/admin/alumnos/exportar-excel', [AdminController::class, 'exportAlumnosExcel'])->name('admin.alumnos.export-excel');
         Route::get('/admin/alumnos/{alumno}/carnet', [AdminController::class, 'alumnoCarnet'])->name('admin.alumnos.carnet');
         Route::get('/admin/alumnos/demograficos', [AlumnoController::class, 'estadisticas'])->name('alumnos.demograficos');
@@ -358,7 +454,7 @@ Route::middleware('auth')->group(function () {
         Route::get('admin/reclamos', [App\Http\Controllers\ReclamoController::class, 'adminAll'])->name('admin.reclamos.todas');
         Route::get('admin/reclamos/{reclamo}', [App\Http\Controllers\ReclamoController::class, 'adminShow'])->name('admin.reclamos.show');
 
-        Route::get('/admin/alumnosPPD', [AdminController::class, 'alumnosppd'])->name('alumnosppd');
+        Route::get('/admin/alumnosPPD', [AdminController::class, 'directorioRedirect'])->defaults('tab', 'ppd')->name('alumnosppd');
         Route::post('/admin/alumnosPPD/exportar-excel', [AdminController::class, 'exportAlumnosPpdExcel'])->name('admin.alumnosppd.export-excel');
 
         // Asignación de roles y usuarios (operaciones críticas)
@@ -371,6 +467,7 @@ Route::middleware('auth')->group(function () {
         });
         Route::prefix('ciclos')->group(function () {
             Route::resource('ciclo', CicloController::class);
+            Route::put('/ciclo/{ciclo}/marcar-egresados', [CicloController::class, 'marcarComoEgresados'])->name('ciclo.marcarEgresados');
         });
 
         // Gestión PPD
@@ -384,6 +481,9 @@ Route::middleware('auth')->group(function () {
         Route::post('periodos-admision-ppd/{id}/crear-calificaciones', [PeriodoActualPpdController::class, 'crearCalificaciones'])->name('periodos.admin.ppd.crearCalificaciones');
         Route::post('periodos-admision-ppd/{id}/sincronizar-calificaciones', [PeriodoActualPpdController::class, 'sincronizarCalificaciones'])->name('periodos.admin.ppd.sincronizarCalificaciones');
         Route::post('periodos-de-ppd/{periodos_de_ppd}/toggle-formulario', [PeriodoActualPpdController::class, 'toggleFormulario'])->name('periodos.admin.ppd.toggleFormulario');
+        // Cierre del año PPD: vista previa y confirmación del paso de la promoción a egresados
+        Route::get('periodos-de-ppd/{periodos_de_ppd}/cierre', [PeriodoActualPpdController::class, 'cierreAnio'])->name('periodos.admin.ppd.cierre');
+        Route::post('periodos-de-ppd/{periodos_de_ppd}/cierre', [PeriodoActualPpdController::class, 'cerrarAnio'])->name('periodos.admin.ppd.cerrar');
 
         // Gestión FID
         Route::resource('admin-fids', AdminFidController::class);
@@ -487,5 +587,53 @@ Route::middleware('auth')->group(function () {
             Route::get('/en-vivo', [BitacoraAccesosController::class, 'activos'])->name('activos');
             Route::get('/fallidos', [BitacoraAccesosController::class, 'fallidos'])->name('fallidos');
         });
+
+    // ═══════════════════════════════════════════════════════════════
+    // 🎓 TITULACIÓN — seguimiento de PTI/Tesis/Actas de egresados
+    // Mismo rol para Carlos y Marilyn (gestor-titulacion); super-admin ve
+    // y gestiona todo igual, como el resto de módulos del panel.
+    // ═══════════════════════════════════════════════════════════════
+    Route::middleware('role:super-admin|gestor-titulacion')
+        ->prefix('titulacion')
+        ->name('titulacion.')
+        ->group(function () {
+            Route::get('/', [App\Http\Controllers\Titulacion\TitulacionController::class, 'index'])->name('index');
+            Route::get('/crear-cuentas-masivo', [App\Http\Controllers\Titulacion\TitulacionController::class, 'crearCuentasMasivoPreview'])->name('crear-cuentas-masivo.preview');
+            Route::post('/crear-cuentas-masivo', [App\Http\Controllers\Titulacion\TitulacionController::class, 'crearCuentasMasivoEjecutar'])->name('crear-cuentas-masivo.ejecutar');
+            Route::get('/importaciones/{importacion}/crear-cuenta', [App\Http\Controllers\Titulacion\TitulacionController::class, 'importacionCrearCuentaForm'])->name('importaciones.crear-cuenta.form');
+            Route::post('/importaciones/{importacion}/crear-cuenta', [App\Http\Controllers\Titulacion\TitulacionController::class, 'importacionCrearCuentaGuardar'])->name('importaciones.crear-cuenta.guardar');
+            Route::get('/importaciones/{importacion}/completar-ficha', [App\Http\Controllers\Titulacion\TitulacionController::class, 'importacionCompletarFichaForm'])->name('importaciones.completar-ficha.form');
+            Route::post('/importaciones/{importacion}/completar-ficha', [App\Http\Controllers\Titulacion\TitulacionController::class, 'importacionCompletarFichaGuardar'])->name('importaciones.completar-ficha.guardar');
+            Route::get('/egresados/{egresado}', [App\Http\Controllers\Titulacion\TitulacionController::class, 'show'])->name('show');
+            Route::get('/egresados/{egresado}/ficha', [App\Http\Controllers\Titulacion\TitulacionController::class, 'ficha'])->name('ficha');
+            Route::post('/activos/{alumno}/iniciar', [App\Http\Controllers\Titulacion\TitulacionController::class, 'iniciarSeguimiento'])->name('iniciar');
+            Route::put('/egresados/{egresado}/estado', [App\Http\Controllers\Titulacion\TitulacionController::class, 'actualizarEstado'])->name('estado.actualizar');
+            Route::post('/egresados/{egresado}/pti', [App\Http\Controllers\Titulacion\TitulacionController::class, 'ptiGuardar'])->name('pti.guardar');
+            Route::post('/egresados/{egresado}/pti/nuevo', [App\Http\Controllers\Titulacion\TitulacionController::class, 'ptiNuevo'])->name('pti.nuevo');
+            Route::post('/egresados/{egresado}/aviso-pti', [App\Http\Controllers\Titulacion\TitulacionController::class, 'avisoPtiEnviar'])->name('aviso-pti.enviar');
+            Route::get('/egresados/{egresado}/aviso-pti/{tipo}', [App\Http\Controllers\Titulacion\TitulacionController::class, 'avisoPtiVista'])->name('aviso-pti.vista');
+            Route::post('/egresados/{egresado}/tesis',[App\Http\Controllers\Titulacion\TitulacionController::class, 'tesisGuardar'])->name('tesis.guardar');
+            Route::post('/egresados/{egresado}/actas', [App\Http\Controllers\Titulacion\TitulacionController::class, 'actaGuardar'])->name('actas.guardar');
+            Route::delete('/actas/{acta}', [App\Http\Controllers\Titulacion\TitulacionController::class, 'actaEliminar'])->name('actas.eliminar');
+            Route::put('/actas/{acta}', [App\Http\Controllers\Titulacion\TitulacionController::class, 'actaActualizar'])->name('actas.actualizar');
+            Route::post('/actas/{acta}/jurados', [App\Http\Controllers\Titulacion\TitulacionController::class, 'juradoGuardar'])->name('jurados.guardar');
+            Route::delete('/jurados/{jurado}', [App\Http\Controllers\Titulacion\TitulacionController::class, 'juradoEliminar'])->name('jurados.eliminar');
+            Route::post('/egresados/{egresado}/resoluciones', [App\Http\Controllers\Titulacion\TitulacionController::class, 'resolucionGuardar'])->name('resoluciones.guardar');
+            Route::delete('/resoluciones/{resolucion}', [App\Http\Controllers\Titulacion\TitulacionController::class, 'resolucionEliminar'])->name('resoluciones.eliminar');
+            Route::put('/resoluciones/{resolucion}', [App\Http\Controllers\Titulacion\TitulacionController::class, 'resolucionActualizar'])->name('resoluciones.actualizar');
+            Route::get('/asesores', [App\Http\Controllers\Titulacion\TitulacionController::class, 'asesoresIndex'])->name('asesores.index');
+            Route::get('/demograficos', [App\Http\Controllers\Titulacion\TitulacionController::class, 'demograficos'])->name('demograficos');
+            Route::post('/asesores', [App\Http\Controllers\Titulacion\TitulacionController::class, 'asesorGuardar'])->name('asesores.guardar');
+            Route::put('/asesores/{asesor}', [App\Http\Controllers\Titulacion\TitulacionController::class, 'asesorActualizar'])->name('asesores.actualizar');
+            Route::post('/egresados/{egresado}/documentos', [App\Http\Controllers\Titulacion\TitulacionController::class, 'documentoGuardar'])->name('documentos.guardar');
+            Route::delete('/documentos/{documento}', [App\Http\Controllers\Titulacion\TitulacionController::class, 'documentoEliminar'])->name('documentos.eliminar');
+            // Resoluciones Directorales generadas por el sistema (PDF) y carga de la versión firmada
+            Route::get('/egresados/{egresado}/rd/{plantilla}', [App\Http\Controllers\Titulacion\ResolucionDirectoralController::class, 'crear'])->name('rd.crear');
+            Route::post('/egresados/{egresado}/rd/{plantilla}', [App\Http\Controllers\Titulacion\ResolucionDirectoralController::class, 'emitir'])->name('rd.emitir');
+            Route::post('/resoluciones/{resolucion}/pdf', [App\Http\Controllers\Titulacion\ResolucionDirectoralController::class, 'subir'])->name('rd.subir');
+        });
+
+    // PDF de una RD guardada por el sistema: el controlador verifica quién puede abrirlo.
+    Route::get('/titulacion/rd/archivo/{nombre}', [App\Http\Controllers\Titulacion\ResolucionDirectoralController::class, 'archivo'])->name('titulacion.rd.archivo');
 
 }); // fin auth

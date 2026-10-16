@@ -307,25 +307,25 @@ body.dark-mode .topbar-sa {
 /* ═══════════════════════════════════════════════════════════════════════════
    MODO TENUE
    ═══════════════════════════════════════════════════════════════════════════ */
+/* Paleta "Rosa empolvado" (variables --lm-* definidas en darkmode.css). */
 body.dim-mode .sidebar.sidebar-sa {
     background: linear-gradient(180deg,
-        #08081c 0%,
-        #0f0f30 30%,
-        #14143e 60%,
-        #170d38 85%,
-        #08081c 100%) !important;
+        #1d151d 0%,
+        #2a1d2b 35%,
+        #3a2638 75%,
+        #4a2c45 100%) !important;
 }
 body.dim-mode .sidebar.sidebar-sa::before { opacity: .35; }
-body.dim-mode .sidebar.sidebar-sa .sidebar-heading    { color: #cbd5e1 !important; }
-body.dim-mode .sidebar.sidebar-sa .nav-item .nav-link { color: #94a3b8 !important; }
-body.dim-mode .sidebar.sidebar-sa .nav-item .nav-link:hover { color: #cbd5e1 !important; }
+body.dim-mode .sidebar.sidebar-sa .sidebar-heading    { color: var(--lm-acento-claro, #f8b9d4) !important; }
+body.dim-mode .sidebar.sidebar-sa .nav-item .nav-link { color: var(--lm-suave, #c9adbf) !important; }
+body.dim-mode .sidebar.sidebar-sa .nav-item .nav-link:hover { color: var(--lm-texto, #f6e9f1) !important; }
 body.dim-mode .sidebar.sidebar-sa .collapse-inner {
-    background: rgba(10, 10, 26, .9) !important;
-    border-color: rgba(124, 58, 237, .2) !important;
+    background: rgba(29, 21, 29, .92) !important;
+    border-color: rgba(244, 154, 193, .25) !important;
 }
-body.dim-mode .sidebar.sidebar-sa .collapse-inner .collapse-item { color: rgba(180,180,210,.75) !important; }
-body.dim-mode .sidebar.sidebar-sa .collapse-inner .collapse-item:hover { color: #bae6fd !important; }
-body.dim-mode .sidebar.sidebar-sa .collapse-header { color: #94a3b8 !important; }
+body.dim-mode .sidebar.sidebar-sa .collapse-inner .collapse-item { color: var(--lm-suave, #c9adbf) !important; }
+body.dim-mode .sidebar.sidebar-sa .collapse-inner .collapse-item:hover { color: var(--lm-acento-claro, #f8b9d4) !important; }
+body.dim-mode .sidebar.sidebar-sa .collapse-header { color: var(--lm-suave-2, #a68aa0) !important; }
 
 /* ═══════════════════════════════════════════════════════════════════════════
    ANCHO DESKTOP — 16rem

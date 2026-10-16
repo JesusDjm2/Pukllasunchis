@@ -160,6 +160,9 @@ class PeriodoActualController extends Controller
 
     public function crearCalificaciones(PeriodoActual $periodoactual)
     {
+        // Junto con la nota final se archivan Parcial 1 y Parcial 2 (expediente del alumno).
+        \App\Services\ArchivoParciales::archivar($periodoactual);
+
         $datosPeriodoTres = PeriodoTres::whereHas('alumno.user', function ($query) {
             $query->whereHas('roles', function ($q) {
                 $q->where('name', '!=', 'inhabilitado');

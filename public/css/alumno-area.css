@@ -538,6 +538,14 @@ body.alumno-app .alumno-section-heading {
     filter: brightness(1.1);
 }
 
+/* ".alumno-curso-item a" (arriba) tiene más especificidad que ".alumno-silabo-btn"
+   (clase+etiqueta vs. una sola clase) y le pisaba el color blanco por el teal
+   oscuro del texto, dejándolo invisible sobre su propio fondo. */
+.alumno-curso-item a.alumno-silabo-btn,
+.alumno-curso-item a.alumno-silabo-btn:hover {
+    color: #fff;
+}
+
 .alumno-no-silabo {
     font-size: 0.8rem;
     color: var(--alumno-muted);

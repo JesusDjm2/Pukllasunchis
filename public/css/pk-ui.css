@@ -1,0 +1,137 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Sistema de diseño compartido (.al-ui) — hero, indicadores, tarjetas, filas de datos,
+   insignias, avisos y botones. Paleta institucional: azul petróleo + dorado (#cd9244),
+   con modos oscuro y tenue. Lo usan todos los roles (alumno, docente, admin, Taq'e…).
+   Se carga desde alumnos/partials/ui. Las variaciones por rol van con variables CSS,
+   no copiando reglas.
+   ═══════════════════════════════════════════════════════════════════════════ */
+    .al-ui {
+        --al-petroleo: #33445a; --al-petroleo-2: #253449; --al-oro: #cd9244; --al-oro-2: #b9823b;
+        --al-fondo: #fff; --al-fondo-2: #f5f7fa; --al-borde: rgba(15, 23, 42, .08); --al-texto: #1e293b; --al-suave: #64748b;
+        --al-ok: #0e9467; --al-ok-f: #e3f6ee; --al-warn: #a76d00; --al-warn-f: #fff4dc; --al-mal: #c0392b; --al-mal-f: #fdecea;
+        --al-info: #2563eb; --al-info-f: #e8f0fe; --al-sombra: 0 4px 24px rgba(15, 23, 42, .06);
+    }
+    body.dark-mode .al-ui {
+        --al-fondo: #161b22; --al-fondo-2: #0d1117; --al-borde: #30363d; --al-texto: #e6e8ef; --al-suave: #9aa3b5;
+        --al-ok-f: rgba(14, 148, 103, .16); --al-warn-f: rgba(205, 146, 68, .16); --al-mal-f: rgba(192, 57, 43, .18); --al-info-f: rgba(37, 99, 235, .16);
+        --al-ok: #4fd1a1; --al-warn: #f0b955; --al-mal: #f08a7e; --al-info: #8fb3ff; --al-sombra: none;
+    }
+    body.dim-mode .al-ui {
+        --al-fondo: var(--lm-superficie); --al-fondo-2: var(--lm-superficie-2); --al-borde: var(--lm-borde); --al-texto: var(--lm-texto);
+        --al-suave: var(--lm-suave); --al-sombra: none; --al-oro: var(--lm-acento);
+        --al-ok-f: var(--lm-menta-fondo); --al-ok: var(--lm-menta); --al-warn-f: var(--lm-durazno-fondo); --al-warn: var(--lm-durazno);
+        --al-mal-f: var(--lm-coral-fondo); --al-mal: var(--lm-coral); --al-info-f: var(--lm-lavanda-fondo); --al-info: var(--lm-lavanda-claro);
+    }
+
+    /* ── Hero ── */
+    .al-hero {
+        position: relative; overflow: hidden; border-radius: 16px; padding: 1.5rem 1.75rem; margin-bottom: 1.25rem; color: #fff;
+        background: linear-gradient(135deg, var(--al-petroleo) 0%, var(--al-petroleo-2) 100%);
+        box-shadow: 0 10px 30px rgba(37, 52, 73, .22);
+    }
+    .al-hero::after {
+        content: ''; position: absolute; right: -60px; top: -60px; width: 240px; height: 240px; border-radius: 50%;
+        background: radial-gradient(circle, rgba(205, 146, 68, .35) 0%, rgba(205, 146, 68, 0) 70%); pointer-events: none;
+    }
+    .al-hero-fila { position: relative; z-index: 1; display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap; }
+    .al-hero-texto { flex: 1; min-width: 220px; }
+    .al-kicker { font-size: .7rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: #f2c88e; }
+    .al-hero h1 { font-size: 1.55rem; font-weight: 800; margin: .2rem 0 .5rem; color: #fff; letter-spacing: -.02em; line-height: 1.2; }
+    .al-hero-sub { color: rgba(255, 255, 255, .78); font-size: .9rem; margin: 0; max-width: 46rem; }
+    .al-chips { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .65rem; }
+    .al-chip {
+        display: inline-flex; align-items: center; gap: .35rem; font-size: .76rem; font-weight: 600; padding: .25rem .7rem;
+        border-radius: 999px; background: rgba(255, 255, 255, .12); color: #fff; border: 1px solid rgba(255, 255, 255, .16);
+    }
+    .al-chip i { color: #f2c88e; font-size: .72rem; }
+    .al-chip.is-ok { background: rgba(79, 209, 161, .2); border-color: rgba(79, 209, 161, .4); }
+    .al-chip.is-ok i { color: #6ee7b7; }
+    .al-chip.is-warn { background: rgba(240, 185, 85, .2); border-color: rgba(240, 185, 85, .45); }
+    .al-hero-acciones { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+    .al-hero-foto {
+        width: 92px; height: 92px; border-radius: 22px; object-fit: cover; flex: none;
+        border: 3px solid rgba(255, 255, 255, .85); box-shadow: 0 8px 20px rgba(0, 0, 0, .25); background: rgba(255, 255, 255, .1);
+    }
+    .al-hero-foto-vacia { display: flex; align-items: center; justify-content: center; font-size: 1.9rem; font-weight: 800; color: #fff; }
+
+    /* ── Botones ── */
+    .al-btn {
+        display: inline-flex; align-items: center; gap: .45rem; padding: .55rem 1.1rem; border-radius: 10px; font-weight: 700;
+        font-size: .84rem; border: 1px solid transparent; text-decoration: none !important; cursor: pointer; line-height: 1.2;
+        transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease;
+    }
+    .al-btn:hover { transform: translateY(-1px); }
+    .al-btn-oro { background: var(--al-oro); color: #fff !important; box-shadow: 0 6px 16px rgba(205, 146, 68, .35); }
+    .al-btn-oro:hover { background: var(--al-oro-2); }
+    .al-btn-claro { background: rgba(255, 255, 255, .14); color: #fff !important; border-color: rgba(255, 255, 255, .3); }
+    .al-btn-claro:hover { background: rgba(255, 255, 255, .24); }
+    .al-btn-petroleo { background: var(--al-petroleo); color: #fff !important; }
+    .al-btn-petroleo:hover { background: var(--al-petroleo-2); }
+    .al-btn-borde { background: var(--al-fondo); color: var(--al-texto) !important; border-color: var(--al-borde); }
+    .al-btn-borde:hover { border-color: var(--al-oro); }
+    .al-btn-sm { padding: .38rem .8rem; font-size: .78rem; border-radius: 8px; }
+
+    /* ── Indicadores ── */
+    .al-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: .85rem; margin-bottom: 1.25rem; }
+    .al-stat {
+        display: flex; align-items: center; gap: .85rem; background: var(--al-fondo); border: 1px solid var(--al-borde);
+        border-radius: 14px; padding: .9rem 1rem; box-shadow: var(--al-sombra);
+    }
+    .al-stat-icono {
+        width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex: none;
+        font-size: 1rem; background: var(--al-fondo-2); color: var(--al-petroleo);
+    }
+    body.dark-mode .al-stat-icono, body.dim-mode .al-stat-icono { color: var(--al-oro); }
+    .al-stat-icono.is-oro { background: rgba(205, 146, 68, .14); color: var(--al-oro-2); }
+    .al-stat-icono.is-ok { background: var(--al-ok-f); color: var(--al-ok); }
+    .al-stat-icono.is-mal { background: var(--al-mal-f); color: var(--al-mal); }
+    .al-stat-icono.is-info { background: var(--al-info-f); color: var(--al-info); }
+    .al-stat-valor { font-size: 1.35rem; font-weight: 800; color: var(--al-texto); line-height: 1.1; }
+    .al-stat-etiqueta { font-size: .74rem; color: var(--al-suave); font-weight: 600; }
+
+    /* ── Tarjetas ── */
+    .al-card { background: var(--al-fondo); border: 1px solid var(--al-borde); border-radius: 14px; box-shadow: var(--al-sombra); margin-bottom: 1.25rem; overflow: hidden; }
+    .al-card-cab { display: flex; align-items: center; gap: .75rem; padding: 1rem 1.25rem; border-bottom: 1px solid var(--al-borde); }
+    .al-card-cab-icono {
+        width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex: none;
+        background: rgba(205, 146, 68, .13); color: var(--al-oro-2); font-size: .95rem;
+    }
+    .al-card-cab h2 { font-size: 1rem; font-weight: 800; color: var(--al-texto); margin: 0; letter-spacing: -.01em; }
+    .al-card-cab p { font-size: .78rem; color: var(--al-suave); margin: .1rem 0 0; }
+    .al-card-cab-extra { margin-left: auto; display: flex; gap: .4rem; align-items: center; flex-wrap: wrap; }
+    .al-card-cuerpo { padding: 1.1rem 1.25rem; }
+
+    /* ── Datos (definición) ── */
+    .al-datos { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: .1rem 1.25rem; margin: 0; }
+    .al-dato { padding: .6rem 0; border-bottom: 1px dashed var(--al-borde); min-width: 0; }
+    .al-dato dt { font-size: .68rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--al-suave); margin-bottom: .15rem; }
+    .al-dato dd { font-size: .9rem; color: var(--al-texto); margin: 0; font-weight: 600; word-break: break-word; }
+    .al-dato dd a { color: var(--al-petroleo); }
+    body.dark-mode .al-dato dd a, body.dim-mode .al-dato dd a { color: var(--al-oro); }
+
+    /* ── Insignias ── */
+    .al-badge { display: inline-flex; align-items: center; gap: .3rem; font-size: .7rem; font-weight: 700; padding: .2rem .6rem; border-radius: 999px; white-space: nowrap; }
+    .al-badge.is-ok { background: var(--al-ok-f); color: var(--al-ok); }
+    .al-badge.is-warn { background: var(--al-warn-f); color: var(--al-warn); }
+    .al-badge.is-mal { background: var(--al-mal-f); color: var(--al-mal); }
+    .al-badge.is-info { background: var(--al-info-f); color: var(--al-info); }
+    .al-badge.is-muted { background: var(--al-fondo-2); color: var(--al-suave); }
+
+    /* ── Avisos ── */
+    .al-aviso { display: flex; gap: .85rem; align-items: flex-start; padding: .85rem 1.1rem; border-radius: 12px; margin-bottom: 1rem; font-size: .88rem; border: 1px solid transparent; }
+    .al-aviso > i { font-size: 1.05rem; margin-top: .1rem; }
+    .al-aviso.is-warn { background: var(--al-warn-f); color: var(--al-texto); border-color: rgba(205, 146, 68, .3); }
+    .al-aviso.is-warn > i { color: var(--al-warn); }
+    .al-aviso.is-info { background: var(--al-info-f); color: var(--al-texto); border-color: rgba(37, 99, 235, .2); }
+    .al-aviso.is-info > i { color: var(--al-info); }
+    .al-aviso.is-mal { background: var(--al-mal-f); color: var(--al-texto); border-color: rgba(192, 57, 43, .25); }
+    .al-aviso.is-mal > i { color: var(--al-mal); }
+
+    .al-vacio { text-align: center; color: var(--al-suave); padding: 2.2rem 1rem; }
+    .al-vacio i { font-size: 2rem; opacity: .45; display: block; margin-bottom: .6rem; }
+
+    @media (max-width: 575.98px) {
+        .al-hero { padding: 1.2rem; border-radius: 12px; }
+        .al-hero h1 { font-size: 1.25rem; }
+        .al-hero-foto { width: 72px; height: 72px; border-radius: 16px; }
+    }

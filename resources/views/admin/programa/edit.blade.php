@@ -57,6 +57,7 @@
                         <div class="invalid-feedback d-block mt-1" style="font-size:.78rem;">{{ $message }}</div>
                     @enderror
                 </div>
+                @include('admin.programa._clasificacion', ['programa' => $programa])
                 <button type="submit" class="pg-submit">
                     <i class="fas fa-save mr-1"></i> Guardar cambios
                 </button>

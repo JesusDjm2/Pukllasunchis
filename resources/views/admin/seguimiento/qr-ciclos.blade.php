@@ -88,7 +88,7 @@
             <small class="text-muted">Cada QR notifica únicamente al tutor o tutores asignados a ese ciclo</small>
         </div>
         <a href="{{ route('admin.seguimiento') }}" class="btn btn-sm btn-secondary">
-            <i class="fa fa-arrow-left fa-sm mr-1"></i> Volver a Seguimiento
+            <i class="fa fa-arrow-left fa-sm mr-1"></i> Volver a Incidencias y tutorías
         </a>
     </div>
 

@@ -14,9 +14,10 @@
         rel="stylesheet">
     <link href="{{ asset('admin/css/sb-admin-2.min.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('admin/css/estilos.css') }}">
-    <link rel="stylesheet" href="{{ asset('admin/css/darkmode.css') }}">
+    <link rel="stylesheet" href="{{ asset('admin/css/darkmode.css') }}?v={{ filemtime(public_path('admin/css/darkmode.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/alumno-area.css') }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link rel="stylesheet" href="{{ asset('css/puklla-alert.css') }}">
     @stack('styles')
 </head>
 
@@ -53,6 +54,27 @@
                     <a class="nav-link collapsed" href="{{ route('calificaciones', $alumno->id) }}">
                         <i class="fas fa-fw fa-clipboard-list"></i>
                         <span>Calificaciones</span>
+                    </a>
+                </li>
+                @if (Route::has('taqe.index'))
+                    <li class="nav-item {{ request()->routeIs('taqe.index') ? 'active' : '' }}">
+                        <a class="nav-link collapsed" href="{{ route('taqe.index') }}">
+                            <i class="fas fa-fw fa-flask"></i>
+                            <span>Taq'e
+                                @php $taqePendientes = $alumno->taqeGrupos()->wherePivot('estado', 'pendiente')->count(); @endphp
+                                @if ($taqePendientes > 0)
+                                    <span class="badge badge-warning">{{ $taqePendientes }}</span>
+                                @endif
+                            </span>
+                        </a>
+                    </li>
+                @endif
+            @endif
+            @if (Route::has('alumno.atencion') && auth()->user()?->hasRole('alumno'))
+                <li class="nav-item {{ request()->routeIs('alumno.atencion') ? 'active' : '' }}">
+                    <a class="nav-link collapsed" href="{{ route('alumno.atencion') }}">
+                        <i class="fas fa-fw fa-hands-helping"></i>
+                        <span>Tutoría y sugerencias</span>
                     </a>
                 </li>
             @endif
@@ -119,32 +141,6 @@
                                 Ver Horario {{ $periodoActual->nombre }}
                             </button>
                         </div>
-
-                        <div class="modal fade" id="modalHorario" tabindex="-1" role="dialog"
-                            aria-labelledby="modalHorarioLabel" aria-hidden="true">
-                            <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
-                                <div class="modal-content">
-                                    <div class="modal-body text-center bg-light position-relative pt-5">
-                                        <button type="button" class="btn btn-danger position-absolute"
-                                            style="top: 0.5rem; right: 0.5rem; z-index: 2;" data-dismiss="modal"
-                                            aria-label="Cerrar">
-                                            ✕
-                                        </button>
-                                        <img src="{{ asset($periodoActual->horario) }}"
-                                            alt="Horario {{ $periodoActual->nombre }}"
-                                            class="img-fluid rounded shadow">
-                                    </div>
-                                    <div class="modal-footer justify-content-center">
-                                        <button type="button" class="btn btn-secondary btn-sm"
-                                            data-dismiss="modal">Cerrar</button>
-                                        <a href="{{ asset($periodoActual->horario) }}" target="_blank"
-                                            class="btn btn-primary btn-sm">
-                                            Ver en nueva pestaña
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     @else
                         <span class="small text-muted ml-md-3 mb-0">Sin horario asignado para este periodo.</span>
                     @endif
@@ -156,6 +152,7 @@
                                 <i class="fas fa-moon" id="darkModeIcon"></i>
                             </button>
                         </li>
+                        @include('docentes.partials.notificaciones-dropdown')
                         <div class="topbar-divider d-none d-sm-block"></div>
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle d-flex align-items-center py-2" href="#" id="userDropdown"
@@ -190,20 +187,43 @@
                         </li>
                     </ul>
                 </nav>
+
+                {{-- Fuera del <nav>: .topbar es position:sticky con su propio z-index,
+                     y anidar el modal ahí lo dejaba atrapado detrás del backdrop
+                     (el botón de cerrar quedaba inaccesible). --}}
+                @if (isset($periodoActual) && $periodoActual->horario)
+                    <div class="modal fade" id="modalHorario" tabindex="-1" role="dialog"
+                        aria-labelledby="modalHorarioLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+                            <div class="modal-content">
+                                <div class="modal-body text-center bg-light position-relative pt-5">
+                                    <button type="button" class="btn btn-danger position-absolute"
+                                        style="top: 0.5rem; right: 0.5rem; z-index: 2;" data-dismiss="modal"
+                                        aria-label="Cerrar">
+                                        ✕
+                                    </button>
+                                    <img src="{{ asset($periodoActual->horario) }}"
+                                        alt="Horario {{ $periodoActual->nombre }}"
+                                        class="img-fluid rounded shadow">
+                                </div>
+                                <div class="modal-footer justify-content-center">
+                                    <button type="button" class="btn btn-secondary btn-sm"
+                                        data-dismiss="modal">Cerrar</button>
+                                    <a href="{{ asset($periodoActual->horario) }}" target="_blank"
+                                        class="btn btn-primary btn-sm">
+                                        Ver en nueva pestaña
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
                 <main class="alumno-main container-fluid px-3 px-lg-4">
                     @yield('contenido')
                 </main>
             </div>
-            <footer class="sticky-footer bg-white">
-                <div class="container my-auto">
-                    <div class="copyright text-center my-auto">
-                        <span>Copyright &copy; {{ date('Y') }} | Hecho por <a class="text-primary"
-                                href="https://www.facebook.com/DjmWebMaster" target="_blank"
-                                rel="noopener noreferrer">
-                                DJM2 </a> | Versión 2026.2</span>
-                    </div>
-                </div>
-            </footer>
+            @include('layouts.partials.pie-intranet', ['area' => 'Intranet del estudiante'])
         </div>
     </div>
     <a class="scroll-to-top rounded" href="#page-top">
@@ -215,6 +235,8 @@
     <script src="{{ asset('admin/js/sb-admin-2.min.js') }}"></script>
     <script src="{{ asset('admin/js/djm.js') }}?v={{ filemtime(public_path('admin/js/djm.js')) }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>window.PK_BRAND_COLOR = '#33445a';</script>
+    <script src="{{ asset('js/puklla-alert.js') }}"></script>
     @stack('scripts')
 
 {{-- Dark Mode Cycle: light → tenue → oscuro --}}

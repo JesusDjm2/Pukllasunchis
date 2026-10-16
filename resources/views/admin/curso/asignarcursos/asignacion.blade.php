@@ -30,6 +30,15 @@
         padding-bottom: 6px;
         margin-bottom: 10px;
     }
+    .extras-elegidos { padding: .6rem .75rem; border: 1px dashed #f6c23e; border-radius: 8px; background: #fffbeb; }
+    .extras-chips { display: flex; flex-wrap: wrap; gap: .35rem; }
+    .extras-chip { display: inline-flex; align-items: center; gap: .3rem; padding: .2rem .3rem .2rem .65rem; border-radius: 999px; background: #fff; border: 1px solid #f6c23e; font-size: .8rem; }
+    .extras-chip small { color: #92400e; }
+    .extras-chip button { border: 0; background: transparent; width: 20px; height: 20px; border-radius: 50%; line-height: 1; font-size: 1rem; color: #92400e; cursor: pointer; }
+    .extras-chip button:hover { background: rgba(0, 0, 0, .08); }
+    .dark-mode .extras-elegidos, .dim-mode .extras-elegidos { background: rgba(246, 194, 62, .08); }
+    .dark-mode .extras-chip, .dim-mode .extras-chip { background: transparent; color: inherit; }
+    .dark-mode .extras-chip small, .dim-mode .extras-chip small, .dark-mode .extras-chip button, .dim-mode .extras-chip button { color: #f6c23e; }
     .resumen-bar {
         position: sticky;
         bottom: 0;
@@ -117,7 +126,17 @@
             </div>
         </div>
 
-        {{-- SECCIÓN 2: Cursos adicionales (a cargo) --}}
+        {{-- SECCIÓN 2: Cursos adicionales — se elige el ciclo y se marcan sus cursos.
+             Todos los ciclos quedan en la página (ocultos): lo marcado en uno se conserva
+             al cambiar a otro, y el resumen de arriba muestra todo lo elegido. --}}
+        @php
+            $ciclosConCursos = $ciclosExtras
+                ->filter(fn ($c) => $c->cursos->isNotEmpty())
+                ->sortBy(fn ($c) => $c->ordenCiclo())
+                ->values();
+            $etiquetaCiclo = fn ($c) => preg_match('/^[IVX]+$/', trim($c->nombre)) ? 'Ciclo '.trim($c->nombre) : $c->nombre;
+            $cicloInicial = $ciclosConCursos->first(fn ($c) => $c->cursos->contains(fn ($cu) => in_array($cu->id, $asignadosIds)));
+        @endphp
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-light py-2">
                 <span class="font-weight-bold text-dark">
@@ -126,36 +145,44 @@
                     <span class="badge badge-warning ml-1" id="badge-extras">0</span>
                 </span>
                 <p class="small text-muted mb-0 mt-1">
-                    Cursos de otros ciclos del mismo programa que el alumno llevará adicionalmente.
+                    Cursos de otros ciclos de su programa ({{ $alumno->programa->nombre ?? '—' }}) que el alumno llevará además
+                    — por ejemplo, uno desaprobado. Puede elegir varios, de uno o más ciclos. Valen solo para este período.
                 </p>
             </div>
-            <div class="card-body p-0">
-                @forelse($ciclosExtras as $ciclo)
-                    @php
-                        $cursosDelCiclo = $ciclo->cursos;
-                        $haySeleccionados = $cursosDelCiclo->contains(fn($c) => in_array($c->id, $asignadosIds));
-                    @endphp
-                    <div class="border-bottom">
-                        <button type="button"
-                                class="btn btn-link w-100 text-left py-2 px-3 d-flex align-items-center justify-content-between ciclo-toggle"
-                                data-target="ciclo-extra-{{ $ciclo->id }}">
-                            <span class="font-weight-bold text-dark small">
-                                <i class="fas fa-chevron-right mr-1 toggle-icon" style="font-size:0.7rem;"></i>
-                                {{ $ciclo->nombre }}
-                                @if($haySeleccionados)
-                                    <span class="badge badge-success ml-1">con selección</span>
-                                @endif
-                            </span>
-                            <span class="text-muted small">{{ $cursosDelCiclo->count() }} cursos</span>
-                        </button>
-                        <div id="ciclo-extra-{{ $ciclo->id }}"
-                             class="px-3 pb-3 {{ $haySeleccionados ? '' : 'd-none' }}">
+            <div class="card-body">
+                @if ($ciclosConCursos->isEmpty())
+                    <p class="text-muted small mb-0">No hay otros ciclos con cursos en este programa.</p>
+                @else
+                    <div class="extras-elegidos mb-3" id="extras-elegidos" aria-live="polite"></div>
+
+                    <div class="form-group mb-3" style="max-width: 360px;">
+                        <label for="extras-ciclo" class="small font-weight-bold mb-1">Ciclo</label>
+                        <select id="extras-ciclo" class="form-control">
+                            <option value="">Elegir un ciclo…</option>
+                            @foreach ($ciclosConCursos as $ciclo)
+                                <option value="{{ $ciclo->id }}" data-nombre="{{ $etiquetaCiclo($ciclo) }}" @selected($cicloInicial && $cicloInicial->id === $ciclo->id)>
+                                    {{ $etiquetaCiclo($ciclo) }} ({{ $ciclo->cursos->count() }} cursos)
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <p class="small text-muted mb-2" id="extras-vacio">Elija un ciclo para ver sus cursos.</p>
+                    @foreach ($ciclosConCursos as $ciclo)
+                        <div class="extras-panel d-none" data-ciclo="{{ $ciclo->id }}">
+                            <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap" style="gap:.5rem;">
+                                <span class="ciclo-extra-header mb-0 border-0 p-0">{{ $etiquetaCiclo($ciclo) }}</span>
+                                <span>
+                                    <button type="button" class="btn btn-xs btn-outline-success mr-1" onclick="selectCiclo({{ $ciclo->id }}, true)">Marcar todos</button>
+                                    <button type="button" class="btn btn-xs btn-outline-secondary" onclick="selectCiclo({{ $ciclo->id }}, false)">Desmarcar todos</button>
+                                </span>
+                            </div>
                             <div class="row">
-                                @foreach($cursosDelCiclo as $curso)
+                                @foreach ($ciclo->cursos as $curso)
                                     @php $sel = in_array($curso->id, $asignadosIds); @endphp
                                     <div class="col-md-4 col-sm-6 mb-2">
                                         <label class="curso-card w-100 {{ $sel ? 'selected' : '' }}"
-                                               data-group="extras"
+                                               data-group="extras" data-ciclo="{{ $ciclo->id }}" data-nombre="{{ $curso->nombre }}"
                                                onclick="toggleCard(this)">
                                             <input type="checkbox" name="cursos[]" value="{{ $curso->id }}"
                                                    class="d-none" {{ $sel ? 'checked' : '' }}>
@@ -169,10 +196,8 @@
                                 @endforeach
                             </div>
                         </div>
-                    </div>
-                @empty
-                    <p class="text-muted small p-3 mb-0">No hay otros ciclos disponibles en este programa.</p>
-                @endforelse
+                    @endforeach
+                @endif
             </div>
         </div>
 
@@ -222,25 +247,70 @@
 
         const extras = document.querySelectorAll('[data-group="extras"] input:checked').length;
         document.getElementById('badge-extras').textContent = extras;
+        pintarExtras();
     }
 
-    // Accordion para ciclos extra
-    document.querySelectorAll('.ciclo-toggle').forEach(btn => {
-        btn.addEventListener('click', function () {
-            const target = document.getElementById(this.dataset.target);
-            const icon = this.querySelector('.toggle-icon');
-            target.classList.toggle('d-none');
-            icon.style.transform = target.classList.contains('d-none') ? '' : 'rotate(90deg)';
-        });
-    });
+    // Cursos adicionales: el selector muestra un ciclo a la vez; lo marcado en los demás se conserva.
+    const selCiclo = document.getElementById('extras-ciclo');
+    function mostrarCiclo(id) {
+        document.querySelectorAll('.extras-panel').forEach(p => p.classList.toggle('d-none', p.dataset.ciclo !== String(id)));
+        const vacio = document.getElementById('extras-vacio');
+        if (vacio) vacio.classList.toggle('d-none', !!id);
+    }
+    if (selCiclo) {
+        selCiclo.addEventListener('change', () => mostrarCiclo(selCiclo.value));
+        mostrarCiclo(selCiclo.value);
+    }
 
-    // Estado inicial de iconos de accordion
-    document.querySelectorAll('.ciclo-toggle').forEach(btn => {
-        const target = document.getElementById(btn.dataset.target);
-        const icon = btn.querySelector('.toggle-icon');
-        if (target && !target.classList.contains('d-none')) {
-            icon.style.transform = 'rotate(90deg)';
+    function selectCiclo(cicloId, state) {
+        document.querySelectorAll(`[data-group="extras"][data-ciclo="${cicloId}"]`).forEach(label => {
+            const checkbox = label.querySelector('input[type=checkbox]');
+            const icon = label.querySelector('.curso-check');
+            checkbox.checked = state;
+            label.classList.toggle('selected', state);
+            icon.classList.toggle('fa-check-circle', state);
+            icon.classList.toggle('fa-circle', !state);
+        });
+        actualizarContadores();
+    }
+
+    // Resumen de los cursos adicionales elegidos (de todos los ciclos), con opción de quitar.
+    function pintarExtras() {
+        const caja = document.getElementById('extras-elegidos');
+        if (!caja || !selCiclo) return;
+        const nombreCiclo = {};
+        selCiclo.querySelectorAll('option[value]').forEach(o => { if (o.value) nombreCiclo[o.value] = o.dataset.nombre; });
+        const porCiclo = {};
+        document.querySelectorAll('[data-group="extras"]').forEach(label => {
+            if (!label.querySelector('input').checked) return;
+            (porCiclo[label.dataset.ciclo] = porCiclo[label.dataset.ciclo] || []).push(label);
+        });
+        // El conteo de cada ciclo, en el propio selector.
+        selCiclo.querySelectorAll('option[value]').forEach(o => {
+            if (!o.value) return;
+            const n = (porCiclo[o.value] || []).length;
+            const total = document.querySelectorAll(`[data-group="extras"][data-ciclo="${o.value}"]`).length;
+            o.textContent = nombreCiclo[o.value] + ' (' + total + ' cursos' + (n ? ' · ' + n + ' elegido' + (n > 1 ? 's' : '') : '') + ')';
+        });
+        const ids = Object.keys(porCiclo);
+        if (!ids.length) {
+            caja.innerHTML = '<span class="small text-muted"><i class="fas fa-info-circle mr-1"></i>Sin cursos adicionales: llevará solo los de su ciclo.</span>';
+            return;
         }
+        let h = '<div class="small font-weight-bold mb-1">Cursos adicionales elegidos</div><div class="extras-chips">';
+        ids.forEach(id => porCiclo[id].forEach(label => {
+            const cursoId = label.querySelector('input').value;
+            h += '<span class="extras-chip">' + label.dataset.nombre.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))
+                + ' <small>· ' + nombreCiclo[id] + '</small>'
+                + '<button type="button" data-quitar="' + cursoId + '" title="Quitar" aria-label="Quitar">&times;</button></span>';
+        }));
+        caja.innerHTML = h + '</div>';
+    }
+    document.addEventListener('click', e => {
+        const b = e.target.closest('[data-quitar]');
+        if (!b) return;
+        const input = document.querySelector('[data-group="extras"] input[value="' + b.dataset.quitar + '"]');
+        if (input && input.checked) toggleCard(input.closest('label'));
     });
 
     // Contador inicial

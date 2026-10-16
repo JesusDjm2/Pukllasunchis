@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Modalidad;
+use App\Enums\NivelPrograma;
 use App\Models\Programa;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rules\Enum;
 
 class ProgramaController extends Controller
 {
@@ -18,13 +21,22 @@ class ProgramaController extends Controller
         return view('admin.programa.create');
     }
 
+    /** Reglas comunes de store/update: la clasificación FID/PPD ya no sale del nombre. */
+    private function validar(Request $request): array
+    {
+        $datos = $request->validate([
+            'nombre' => 'required|string|max:255',
+            'modalidad' => ['required', new Enum(Modalidad::class)],
+            'nivel' => ['nullable', new Enum(NivelPrograma::class)],
+        ]);
+        $datos['eib'] = $request->boolean('eib');
+
+        return $datos;
+    }
+
     public function store(Request $request)
     {
-        $request->validate([
-            'nombre' => 'required|string|max:255',
-        ]);
-
-        Programa::create($request->all());
+        Programa::create($this->validar($request));
 
         return redirect()->route('programa.index')
             ->with('success', 'Programa creado exitosamente');
@@ -43,11 +55,7 @@ class ProgramaController extends Controller
 
     public function update(Request $request, Programa $programa)
     {
-        $request->validate([
-            'nombre' => 'required|string|max:255',
-        ]);
-
-        $programa->update($request->all());
+        $programa->update($this->validar($request));
 
         return redirect()->route('programa.index')
             ->with('success', 'Programa actualizado exitosamente');

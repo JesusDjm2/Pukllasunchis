@@ -43,6 +43,14 @@
                                     title="Total FID en este ciclo (sin filtros de búsqueda)">·
                                     {{ $nTotalCiclo }} en ciclo (total)</span>
                             @endif
+                            @php
+                                $nombresTutoresGrupo = optional($alumno->ciclo)
+                                    ? $alumno->ciclo->tutores->map->nombreCorto()->filter()->implode(', ')
+                                    : '';
+                            @endphp
+                            <span class="text-muted small ml-2">
+                                <i class="fas fa-user-tie fa-xs mr-1"></i>{{ $nombresTutoresGrupo !== '' ? $nombresTutoresGrupo : 'Sin tutor asignado' }}
+                            </span>
                         </td>
                     </tr>
                 @endif
@@ -54,9 +62,12 @@
                                 Beca
                             </span>
                         @endif
-                        @if ($alumno->user && $alumno->user->hasRole('inhabilitado') && ($alumno->user->perfil ?? '') === 'Deuda')
-                            <span class="badge badge-warning ml-1 align-middle"
-                                title="Usuario inhabilitado por deuda">Deuda</span>
+                        @if ($alumno->user && $alumno->user->hasRole('inhabilitado'))
+                            @php $colorInhabilitado = ($alumno->user->perfil ?? '') === 'Retirado' ? 'badge-danger' : 'badge-warning'; @endphp
+                            <span class="badge {{ $colorInhabilitado }} ml-1 align-middle"
+                                title="Usuario inhabilitado{{ $alumno->user->perfil ? ' — '.$alumno->user->perfil : '' }}">
+                                <i class="fas fa-ban fa-xs"></i> {{ $alumno->user->perfil ?: 'Inhabilitado' }}
+                            </span>
                         @endif
                         @if ($periodoFiltroId ?? null)
                             @if ($alumno->matriculas->isNotEmpty())
