@@ -356,6 +356,8 @@
                                             class="fa fa-download"></i> Intranet</a></li>
                                 <li><a href="http://repositorio.pukllasunchis.org/xmlui/" target="_blank"><i
                                             class="fa fa-file-pdf"></i> Repositorio</a></li>
+                                <li><a href="https://heyzine.com/flip-book/7964b0937c.html" target="_blank" rel="noopener"><i
+                                            class="fa fa-shield-halved"></i> Reglamento de Protección de Datos</a></li>
                                 <li><a href="{{ route('bolsa') }}" target="_blank"><i class="fa fa-dollar-sign"></i>
                                         Bolsa de trabajo</a></li>
                                 {{-- <li><a href="{{ route('incidencias.public.create') }}" target="_blank"><i class="fas fa-clipboard-list"></i>
@@ -748,9 +750,14 @@
                         <p style="color:#cde;margin-bottom:1rem;font-size:.95rem;">
                             {{ $__minka->fecha->format('d/m/Y') }}
                             &nbsp;—&nbsp;
-                            {{ \Carbon\Carbon::createFromFormat('H:i:s', $__minka->hora)->format('H:i') }}
+                            {{ $__minka->hora_texto }}
                         </p>
-                        @if ($__minka->imagen)
+                        {{-- El QR se genera del enlace; la imagen subida queda solo para registros antiguos sin enlace --}}
+                        @if ($__minkaQr = $__minka->qrSvg(240))
+                            <div style="display:inline-block;background:#fff;padding:12px;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.4);line-height:0;max-width:100%;">
+                                {!! $__minkaQr !!}
+                            </div>
+                        @elseif ($__minka->imagen)
                             <img src="{{ asset('img/minkarikuy/'.$__minka->imagen) }}"
                                 alt="QR Mink'arikuy"
                                 style="max-width:100%;max-height:320px;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.4);">
@@ -760,7 +767,7 @@
                         @if ($__minka->url)
                             <a href="{{ $__minka->url }}" target="_blank" rel="noopener noreferrer"
                                 style="display:inline-block;margin-top:1.2rem;padding:.65rem 1.8rem;background:#fff;color:#1a3a6b;font-weight:700;border-radius:8px;text-decoration:none;font-size:.95rem;box-shadow:0 4px 12px rgba(0,0,0,.25);transition:all .2s;">
-                                <i class="fas fa-external-link-alt" style="margin-right:.4rem;"></i> Ir la enlace
+                                <i class="fas fa-external-link-alt" style="margin-right:.4rem;"></i> Ir al enlace
                             </a>
                         @endif
                     </div>

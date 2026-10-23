@@ -167,7 +167,7 @@
 
             <div class="pa-card">
                 <div class="pa-card-title">Ventanas de calificaciones</div>
-                <div class="pa-card-hint">Sin fecha, esa ventana no restringe nada (el docente puede calificar en cualquier momento).</div>
+                <div class="pa-card-hint">El docente califica desde el <strong>inicio</strong> de cada parcial hasta el <strong>cierre del período</strong>. El <strong>cierre</strong> del parcial solo marca cuándo se publican las notas a los alumnos (al día siguiente); después el docente aún puede corregirlas. Sin fecha, no se restringe nada.</div>
                 <div class="pa-row">
                     <div class="pa-field pa-field-narrow">
                         <label for="calificaciones_parcial1_inicio">Parcial 1 — Inicio</label>

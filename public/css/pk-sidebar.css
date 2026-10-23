@@ -17,13 +17,16 @@
 }
 
 /* Temas oscuros (oscuro y tenue): el fondo viene de los tokens; aquí solo se suavizan las capas
-   translúcidas, que sobre un fondo muy oscuro se verían demasiado claras. */
-body.dark-mode .pk-sb, body.dim-mode .pk-sb { --sb-linea: rgba(255, 255, 255, .1); --sb-suave: rgba(255, 255, 255, .5); --sb-texto: rgba(255, 255, 255, .8); }
-body.dark-mode .pk-sb .pk-sb-icono, body.dim-mode .pk-sb .pk-sb-icono { background: rgba(255, 255, 255, .06); }
+   translúcidas, que sobre un fondo muy oscuro se verían demasiado claras. El menú del docente
+   es oscuro siempre (pk-tokens.css), así que también lleva estos ajustes en tema claro. */
+body.dark-mode .pk-sb, body.dim-mode .pk-sb, body.pk-rol-docente .pk-sb { --sb-linea: rgba(255, 255, 255, .1); --sb-suave: rgba(255, 255, 255, .5); --sb-texto: rgba(255, 255, 255, .8); }
+body.dark-mode .pk-sb .pk-sb-icono, body.dim-mode .pk-sb .pk-sb-icono, body.pk-rol-docente .pk-sb .pk-sb-icono { background: rgba(255, 255, 255, .06); }
 body.dark-mode #accordionSidebar.pk-sb .nav-item .nav-link.pk-sb-link.is-activo,
-body.dim-mode #accordionSidebar.pk-sb .nav-item .nav-link.pk-sb-link.is-activo { background: color-mix(in srgb, var(--sb-acento-fuerte) 18%, transparent); }
+body.dim-mode #accordionSidebar.pk-sb .nav-item .nav-link.pk-sb-link.is-activo,
+body.pk-rol-docente #accordionSidebar.pk-sb .nav-item .nav-link.pk-sb-link.is-activo { background: color-mix(in srgb, var(--sb-acento-fuerte) 18%, transparent); }
 body.dark-mode .pk-sb-perfil:hover, body.dark-mode .pk-sb-perfil.is-activo,
-body.dim-mode .pk-sb-perfil:hover, body.dim-mode .pk-sb-perfil.is-activo {
+body.dim-mode .pk-sb-perfil:hover, body.dim-mode .pk-sb-perfil.is-activo,
+body.pk-rol-docente .pk-sb-perfil:hover, body.pk-rol-docente .pk-sb-perfil.is-activo {
     background: color-mix(in srgb, var(--sb-acento-fuerte) 14%, transparent); border-color: color-mix(in srgb, var(--sb-acento-fuerte) 38%, transparent);
 }
 
@@ -96,9 +99,14 @@ body.dim-mode .pk-sb-perfil:hover, body.dim-mode .pk-sb-perfil.is-activo {
 .pk-sb-externo { font-size: .6rem !important; color: var(--sb-suave); }
 
 /* Submenú (Bolsa de trabajo) con el mismo lenguaje */
-#accordionSidebar.pk-sb .collapse-inner { background: rgba(255, 255, 255, .06) !important; margin: .2rem .75rem .4rem 2.6rem !important; border: 1px solid var(--sb-linea); box-shadow: none; }
-#accordionSidebar.pk-sb .collapse-inner .collapse-item { white-space: normal; line-height: 1.3; }
-#accordionSidebar.pk-sb .collapse-inner .collapse-header { color: var(--sb-suave); }
+/* El submenú mide el 96% del ancho de los enlaces principales (que ocupan el menú menos .75rem
+   por lado), centrado bajo ellos: antes perdía ≈4rem a la izquierda y los nombres largos se partían. */
+#accordionSidebar.pk-sb .collapse-inner {
+    background: rgba(255, 255, 255, .06) !important; border: 1px solid var(--sb-linea); box-shadow: none;
+    width: calc((100% - 1.5rem) * .96); margin: .2rem auto .4rem !important;
+}
+#accordionSidebar.pk-sb .collapse-inner .collapse-item { white-space: normal; line-height: 1.3; margin: 0 .3rem; padding: .45rem .65rem; }
+#accordionSidebar.pk-sb .collapse-inner .collapse-header { color: var(--sb-suave); padding: .45rem .95rem; margin: 0; }
 #accordionSidebar.pk-sb .collapse-inner .collapse-item { color: var(--sb-texto); }
 #accordionSidebar.pk-sb .collapse-inner .collapse-item:hover { background: rgba(255, 255, 255, .08); color: #fff; }
 #accordionSidebar.pk-sb .collapse-inner .collapse-item.active { background: rgba(255, 255, 255, .14); color: #fff; font-weight: 700; box-shadow: inset 3px 0 0 var(--sb-acento); }

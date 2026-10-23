@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Titulacion\SeguimientoTitulacion;
+use App\Services\HistorialAcademico;
 use Illuminate\Http\Request;
 
 /**
@@ -12,6 +13,9 @@ use Illuminate\Http\Request;
  * graduado). Muestra sus datos básicos y "Mi proceso de titulación"
  * (titulacion/_avance_alumno: línea de tiempo, siguiente paso, vigencia del
  * PTI, grupo y aviso de datos incorrectos).
+ *
+ * Egresado PPD: misma intranet PPD (menú lateral, diseño .al-ui) con su historial
+ * de estudios por ciclo y su titulación, sin nada de matrícula ni del año en curso.
  */
 class EgresadoIntranetController extends Controller
 {
@@ -23,6 +27,13 @@ class EgresadoIntranetController extends Controller
         $seguimiento = SeguimientoTitulacion::where('user_id', $user->id)
             ->with('estadoTitulacion', 'pti.asesor', 'tesis.asesor', 'actas', 'resoluciones')
             ->first();
+
+        if ($alumno = $user->alumnoB) {
+            $guiaTitulacion = ! $seguimiento && Titulacion\TitulacionController::puedeIniciar($user);
+            $cursosPpd = HistorialAcademico::cursosPpdPorCiclo($user);
+
+            return view('egresado.ppd', compact('user', 'alumno', 'seguimiento', 'guiaTitulacion', 'cursosPpd'));
+        }
 
         return view('egresado.intranet', compact('user', 'seguimiento'));
     }

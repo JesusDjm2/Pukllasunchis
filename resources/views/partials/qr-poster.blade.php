@@ -1,8 +1,3 @@
-{{--
-    Póster de QR reutilizable — Tutoría individual / Buzón de sugerencias.
-    Variables esperadas: $tipo ('tutoria'|'sugerencia'), $titulo, $descripcion, $url,
-    $contexto (opcional, ej. "Programa Inicial · Ciclo V").
---}}
 @php
     $qrTipoInfo = [
         'tutoria' => [
@@ -12,6 +7,10 @@
         'sugerencia' => [
             'icono'   => 'fa-comment-dots',
             'etiqueta' => 'Buzón de Sugerencias',
+        ],
+        'minkarikuy' => [
+            'icono'   => 'fa-people-carry',
+            'etiqueta' => "Mink'arikuy",
         ],
     ][$tipo] ?? ['icono' => 'fa-qrcode', 'etiqueta' => 'Código QR'];
 @endphp
@@ -92,6 +91,36 @@
         font-weight: 700;
         letter-spacing: .03em;
     }
+    #qrPoster .qrp-ciclo {
+        margin-top: 1rem;
+        display: inline-block;
+        padding: .55rem 1.6rem .6rem;
+        border: 2px solid var(--qr-gold);
+        border-radius: 14px;
+        background: rgba(205, 146, 68, .14);
+    }
+    #qrPoster .qrp-ciclo-nombre {
+        color: #fff;
+        font-size: 2.3rem;
+        font-weight: 900;
+        line-height: 1.05;
+        letter-spacing: .02em;
+        text-transform: uppercase;
+    }
+    #qrPoster .qrp-ciclo-programa {
+        color: #f1dfc4;
+        font-size: .9rem;
+        font-weight: 700;
+        margin-top: .2rem;
+    }
+    #qrPoster .qrp-pregunta {
+        color: var(--qr-ink);
+        font-size: 1.45rem;
+        font-weight: 900;
+        line-height: 1.3;
+        max-width: 32rem;
+        margin: 0 auto 1rem;
+    }
     #qrPoster .qrp-body {
         padding: 2.4rem 2.4rem 1.6rem;
         text-align: center;
@@ -153,7 +182,6 @@
         text-transform: uppercase;
         font-weight: 600;
     }
-
     @media print {
         @page { size: A4 portrait; margin: 15mm; }
         .d-print-none { display: none !important; }
@@ -170,7 +198,12 @@
         }
         #qrPoster .qrp-band { padding: 3rem 2.2rem 2.2rem; }
         #qrPoster .qrp-body { padding: 3rem 2.6rem 2rem; }
+        /* Tutoría lleva la pregunta y las opciones: más compacto para que entre en una hoja */
+        #qrPoster.qrp-tutoria .qrp-band { padding: 2rem 2rem 1.6rem; }
+        #qrPoster.qrp-tutoria .qrp-body { padding: 1.8rem 2.4rem 1.4rem; }
+        #qrPoster.qrp-tutoria .qrp-desc { margin-bottom: 1.3rem; }
     }
+    #qrPoster.qrp-tutoria .qrp-desc { margin-bottom: 1.4rem; }
 </style>
 
 @php
@@ -187,18 +220,30 @@
     </button>
 </div>
 
-<div id="qrPoster">
+<div id="qrPoster" class="qrp-{{ $tipo }}">
     <div class="qrp-band">
         <span class="qrp-logo-chip">
             <img src="{{ asset('img/logo-iesp-pukllasunchis.png') }}" alt="Pukllasunchis" class="qrp-logo" crossorigin="anonymous">
         </span>
         <div class="qrp-kicker"><i class="fas {{ $qrTipoInfo['icono'] }}"></i> {{ $qrTipoInfo['etiqueta'] }}</div>
         <h1 class="qrp-title">{{ $titulo }}</h1>
-        @if (!empty($contexto))
-            <div><span class="qrp-contexto"><i class="fas fa-layer-group mr-1"></i> {{ $contexto }}</span></div>
+        @if (!empty($cicloNombre))
+            <div>
+                <div class="qrp-ciclo">
+                    <div class="qrp-ciclo-nombre">{{ $cicloNombre }}</div>
+                    @if (!empty($programaNombre))
+                        <div class="qrp-ciclo-programa">{{ $programaNombre }}</div>
+                    @endif
+                </div>
+            </div>
+        @elseif (!empty($contexto))
+            <div><span class="qrp-contexto"><i class="fas {{ $tipo === 'minkarikuy' ? 'fa-calendar-alt' : 'fa-layer-group' }} mr-1"></i> {{ $contexto }}</span></div>
         @endif
     </div>
     <div class="qrp-body">
+        @if ($tipo === 'tutoria')
+            <h2 class="qrp-pregunta">¿Te gustaría conversar individualmente con el tutor sobre alguna situación?</h2>
+        @endif
         <p class="qrp-desc">{{ $descripcion }}</p>
         <div class="qrp-qr-frame">
             {!! QrCode::size(260)->margin(1)->color(205, 146, 68)->generate($url) !!}

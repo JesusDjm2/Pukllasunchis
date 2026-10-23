@@ -3,6 +3,7 @@
 namespace App\Models\Titulacion;
 
 use App\Models\User;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 
 class Importacion extends Model
@@ -19,6 +20,27 @@ class Importacion extends Model
         'datos_originales' => 'array',
         'datos_normalizados' => 'array',
     ];
+
+    private ?string $datosCrudos = null;
+
+    private ?array $datosDecodificados = null;
+
+    /**
+     * El cast 'array' decodifica el JSON en CADA lectura, y el listado de Titulación lee los datos
+     * de ~7.000 filas varias veces cada una: se decodifica una vez y se reutiliza mientras el JSON
+     * guardado no cambie. Al asignar, el cast sigue codificando como siempre.
+     */
+    protected function datosNormalizados(): Attribute
+    {
+        return Attribute::make(get: function ($valor) {
+            if ($valor !== $this->datosCrudos) {
+                $this->datosCrudos = $valor;
+                $this->datosDecodificados = $valor === null ? null : json_decode($valor, true);
+            }
+
+            return $this->datosDecodificados;
+        });
+    }
 
     public function user()
     {

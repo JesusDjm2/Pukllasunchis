@@ -34,7 +34,11 @@
             <input type="checkbox" class="up-check js-sel" aria-label="Seleccionar a {{ $nombre }}">
         @endif
         @if ($esEstudiante && $u->foto)
-            <img src="{{ asset('img/estudiantes/' . $u->foto) }}" alt="" class="up-avatar" loading="lazy">
+            {{-- Clic: la foto en grande (visor compartido pk-foto.js) --}}
+            <button type="button" class="up-avatar-btn" data-foto="{{ asset('img/estudiantes/' . $u->foto) }}"
+                data-foto-titulo="{{ $nombre }}" data-foto-sub="DNI {{ $u->dni ?: '—' }}" title="Ver foto">
+                <img src="{{ asset('img/estudiantes/' . $u->foto) }}" alt="Foto de {{ $nombre }}" class="up-avatar" loading="lazy">
+            </button>
         @else
             <div class="up-avatar {{ $tonoAvatar }}" aria-hidden="true">{{ $iniciales }}</div>
         @endif
@@ -77,13 +81,9 @@
                 <span>DNI {{ $u->dni ?: '—' }}</span>
                 <span>{{ $u->email }}</span>
                 @if ($esEstudiante)
-                    <span>N° {{ $ficha?->numero ?? '—' }} · Ref {{ $ficha?->numero_referencia ?? '—' }}</span>
-                    @if ($mat?->voucher)
-                        <span><i class="fas fa-receipt fa-xs"></i> Voucher {{ $mat->voucher }}
-                            @if ($mat->voucher_imagen)<a href="{{ $mat->voucher_imagen }}" target="_blank" class="up-muted">(ver)</a>@endif
-                        </span>
-                    @endif
-                    <span class="up-muted">ID {{ $u->id }}</span>
+                    <span title="Teléfono"><i class="fas fa-phone-alt fa-xs"></i> {{ $ficha?->numero ?: '—' }}</span>
+                    {{-- El n.º de referencia a veces trae nombre y parentesco: se recorta y se ve completo al pasar el mouse --}}
+                    <span class="up-ref" title="N.º de referencia: {{ $ficha?->numero_referencia ?: '—' }}">N.º ref. {{ $ficha?->numero_referencia ?: '—' }}</span>
                 @endif
             </div>
         </div>
@@ -136,6 +136,9 @@
                 <div class="up-menu" role="menu">
                     @if ($esEstudiante)
                         <a role="menuitem" href="{{ route('expediente.show', $u) }}"><i class="fas fa-folder-open"></i> Ver expediente</a>
+                    @endif
+                    @if ($mat?->voucher_imagen)
+                        <a role="menuitem" href="{{ $mat->voucher_imagen }}" target="_blank" rel="noopener"><i class="fas fa-receipt"></i> Ver voucher{{ $mat->voucher ? ' · ' . $mat->voucher : '' }}</a>
                     @endif
                     @if ($mat?->ficha)
                         {{-- Las opciones de matrícula las arma el JS de _panel al abrir el menú (armarMenuMatricula),

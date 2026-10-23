@@ -85,6 +85,25 @@ class Expediente
         return $uno ? [$uno] : [];
     }
 
+    /**
+     * Siguientes números de expediente, correlativos al último registrado de su serie: FID
+     * ("0296-T/PUK") y PPD ("0014-T/PUK-PPD") llevan cada una la suya. $saltar = cuántos
+     * números de esa serie ya se reservaron en esta misma operación (integrantes de un grupo).
+     */
+    public static function siguiente(bool $ppd, int $saltar = 0): string
+    {
+        $sufijo = $ppd ? '-T/PUK-PPD' : '-T/PUK';
+        $maximo = \App\Models\Titulacion\SeguimientoTitulacion::withTrashed()
+            ->whereNotNull('numero_expediente')
+            ->pluck('numero_expediente')
+            ->map(fn ($n) => self::normalizar($n))
+            ->filter(fn ($n) => $n && str_ends_with($n, $sufijo) && ($ppd || ! str_ends_with($n, '-PPD')))
+            ->map(fn ($n) => (int) $n)
+            ->max() ?? 0;
+
+        return sprintf('%04d', $maximo + 1 + $saltar).$sufijo;
+    }
+
     public static function mostrar(?string $normalizado): string
     {
         return $normalizado ? 'N° '.$normalizado : '—';

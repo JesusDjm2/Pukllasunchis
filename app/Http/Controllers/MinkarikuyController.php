@@ -10,43 +10,28 @@ class MinkarikuyController extends Controller
 {
     public function index()
     {
-        $registros = Minkarikuy::latest()->get();
+        $registros = Minkarikuy::orderByDesc('activo')->orderByDesc('fecha')->orderByDesc('id')->get();
+
         return view('admin.minkarikuy.index', compact('registros'));
     }
 
     public function create()
     {
-        return view('admin.minkarikuy.create');
+        return view('admin.minkarikuy.create', ['minkarikuy' => new Minkarikuy()]);
     }
 
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'nombre' => 'required|string|max:200',
-            'fecha'  => 'required|date',
-            'hora'   => 'required|date_format:H:i',
-            'imagen' => 'nullable|image|max:4096',
-            'url'    => 'nullable|url|max:500',
-            'activo' => 'nullable|boolean',
-        ]);
-
-        $data['activo'] = $request->boolean('activo');
-
-        if ($request->hasFile('imagen')) {
-            $file = $request->file('imagen');
-            $name = time().'_'.preg_replace('/[^a-zA-Z0-9._-]/', '_', $file->getClientOriginalName());
-            $file->move(public_path('img/minkarikuy'), $name);
-            $data['imagen'] = $name;
-        }
+        $data = $this->validar($request);
 
         if ($data['activo']) {
             Minkarikuy::where('activo', true)->update(['activo' => false]);
         }
 
-        Minkarikuy::create($data);
+        $minkarikuy = Minkarikuy::create($data);
 
         return redirect()->route('admin.minkarikuy.index')
-            ->with('success', 'Registro creado correctamente.');
+            ->with('success', "Mink'arikuy \"{$minkarikuy->nombre}\" creado. Su QR ya está listo para descargar o imprimir.");
     }
 
     public function edit(Minkarikuy $minkarikuy)
@@ -56,28 +41,7 @@ class MinkarikuyController extends Controller
 
     public function update(Request $request, Minkarikuy $minkarikuy)
     {
-        $data = $request->validate([
-            'nombre' => 'required|string|max:200',
-            'fecha'  => 'required|date',
-            'hora'   => 'required|date_format:H:i',
-            'imagen' => 'nullable|image|max:4096',
-            'url'    => 'nullable|url|max:500',
-            'activo' => 'nullable|boolean',
-        ]);
-
-        $data['activo'] = $request->boolean('activo');
-
-        if ($request->hasFile('imagen')) {
-            if ($minkarikuy->imagen && File::exists(public_path('img/minkarikuy/'.$minkarikuy->imagen))) {
-                File::delete(public_path('img/minkarikuy/'.$minkarikuy->imagen));
-            }
-            $file = $request->file('imagen');
-            $name = time().'_'.preg_replace('/[^a-zA-Z0-9._-]/', '_', $file->getClientOriginalName());
-            $file->move(public_path('img/minkarikuy'), $name);
-            $data['imagen'] = $name;
-        } else {
-            unset($data['imagen']);
-        }
+        $data = $this->validar($request);
 
         if ($data['activo']) {
             Minkarikuy::where('activo', true)->where('id', '!=', $minkarikuy->id)->update(['activo' => false]);
@@ -86,7 +50,37 @@ class MinkarikuyController extends Controller
         $minkarikuy->update($data);
 
         return redirect()->route('admin.minkarikuy.index')
-            ->with('success', 'Registro actualizado correctamente.');
+            ->with('success', 'Registro actualizado. Si cambiaste el enlace, el QR ya apunta al nuevo.');
+    }
+
+    /** Publica (o retira) un registro en la página web: solo puede haber uno activo. */
+    public function activar(Minkarikuy $minkarikuy)
+    {
+        if ($minkarikuy->activo) {
+            $minkarikuy->update(['activo' => false]);
+
+            return back()->with('success', "\"{$minkarikuy->nombre}\" ya no se muestra en la página web.");
+        }
+
+        Minkarikuy::where('activo', true)->update(['activo' => false]);
+        $minkarikuy->update(['activo' => true]);
+
+        return back()->with('success', "\"{$minkarikuy->nombre}\" es ahora el Mink'arikuy publicado en la página web.");
+    }
+
+    /** Póster imprimible / descargable con el QR (mismo diseño que los QR de tutoría). */
+    public function qr(Request $request, Minkarikuy $minkarikuy)
+    {
+        abort_unless($minkarikuy->url, 404);
+
+        return view('admin.minkarikuy.qr', [
+            'minkarikuy'  => $minkarikuy,
+            'tipo'        => 'minkarikuy',
+            'titulo'      => $minkarikuy->nombre,
+            'descripcion' => 'Escanea este código con la cámara de tu celular para unirte. ¡Te esperamos!',
+            'url'         => $minkarikuy->url,
+            'contexto'    => $minkarikuy->cuando,
+        ]);
     }
 
     public function destroy(Minkarikuy $minkarikuy)
@@ -98,5 +92,23 @@ class MinkarikuyController extends Controller
 
         return redirect()->route('admin.minkarikuy.index')
             ->with('success', 'Registro eliminado.');
+    }
+
+    private function validar(Request $request): array
+    {
+        $data = $request->validate([
+            'nombre' => 'required|string|max:200',
+            'fecha'  => 'required|date',
+            'hora'   => 'required|date_format:H:i',
+            'url'    => 'required|url|max:500',
+            'activo' => 'nullable|boolean',
+        ], [
+            'url.required' => 'El enlace de redirección es obligatorio: con él se genera el código QR.',
+            'url.url'      => 'El enlace debe ser una dirección completa, por ejemplo https://meet.google.com/abc-defg-hij',
+        ]);
+
+        $data['activo'] = $request->boolean('activo');
+
+        return $data;
     }
 }

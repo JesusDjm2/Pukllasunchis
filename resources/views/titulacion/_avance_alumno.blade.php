@@ -1,5 +1,5 @@
 {{-- "Mi proceso de titulación": lo que ve el propio egresado/alumno (FID de
-     Ciclo VIII+ con proceso iniciado, o egresado). Solo lectura: línea de
+     Ciclo IX+ con proceso iniciado, o egresado). Solo lectura: línea de
      tiempo PTI → TI (Bachiller) → Tesis (Licenciatura) calculada de sus datos
      (AvanceTitulacion), su siguiente paso, la vigencia del PTI, su grupo, las
      guías por etapa (config/titulacion.php) y un aviso "algún dato no coincide"
@@ -41,7 +41,7 @@
     $nombreRd = \App\Models\Titulacion\Resolucion::TIPOS;
 
     // Dueño de la ficha (para la pestaña "Mi grupo").
-    $persona = $seguimiento->user()->with("seguimientoTitulacion.estadoTitulacion")->first(["id", "name", "apellidos", "email", "dni"]);
+    $persona = $seguimiento->user()->with("seguimientoTitulacion.estadoTitulacion")->first(["id", "name", "apellidos", "email", "dni", "telefono", "foto", "programa_id"]);
     $tabId = 'mt'.$seguimiento->id;
 @endphp
 
@@ -105,6 +105,9 @@
                 </div>
             </div>
         @endif
+
+        {{-- ── Qué hacer ahora: solo los trámites del tramo en curso ── --}}
+        @include('titulacion._tramites_ayuda', ['bloque' => \App\Services\Titulacion\GuiaTramites::actual($avance), 'clavePersona' => 's'.$seguimiento->id])
 
         {{-- ── Vigencia del PTI ── --}}
         @if ($mostrarVigencia)
@@ -225,7 +228,7 @@
                 </div>
                 <div>
                     <div class="mt-contacto__eti">Unidad de Investigación</div>
-                    <div><i class="fas fa-phone-alt fa-xs mr-1"></i>(84) 23 79 18 - 26 14 31</div>
+                    <div><i class="fab fa-whatsapp mr-1"></i><a href="https://wa.me/51972577170" target="_blank" rel="noopener" title="Escribir por WhatsApp">+51 972 577 170</a></div>
                     <div><i class="fas fa-map-marker-alt fa-xs mr-1"></i>Siete Diablitos 222, San Blas, Cusco</div>
                     <div><i class="fas fa-globe fa-xs mr-1"></i><a href="https://www.eesppukllasunchis.edu.pe" target="_blank" rel="noopener">www.eesppukllasunchis.edu.pe</a></div>
                 </div>

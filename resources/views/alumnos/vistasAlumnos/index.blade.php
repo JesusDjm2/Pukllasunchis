@@ -186,7 +186,7 @@
                 </div>
             </div>
 
-            {{-- ── Avance de titulación (solo si ya se inició su proceso, Ciclo VIII+) ── --}}
+            {{-- ── Avance de titulación (solo si ya se inició su proceso, Ciclo IX+) ── --}}
             @if (! empty($seguimientoTitulacion))
                 @include('titulacion._avance_alumno', ['seguimiento' => $seguimientoTitulacion])
             @elseif (! empty($guiaTitulacion))
@@ -208,8 +208,8 @@
                             <li>
                                 <span class="al-badge is-info">Tutoría</span>
                                 <div class="al-solicitud-texto">
-                                    <div>{{ \Illuminate\Support\Str::limit($t->motivo, 110) }}</div>
-                                    <small>{{ $t->created_at->format('d/m/Y') }} · Prioridad {{ mb_strtolower($t->urgencia) }}</small>
+                                    <div>{{ \Illuminate\Support\Str::limit($t->motivo ?: (\App\Models\Tutoria::OPCIONES[$t->urgencia][0] ?? ''), 110) }}</div>
+                                    <small>{{ $t->created_at->format('d/m/Y') }} · {{ $t->urgencia_texto }}</small>
                                     @if ($t->estado === 'atendida' && $t->notas_atencion)
                                         <div class="al-solicitud-respuesta"><i class="fas fa-reply"></i> {{ $t->notas_atencion }}</div>
                                     @endif
@@ -250,24 +250,14 @@
     </div>
 
     <style>
-        .al-cursos, .al-solicitudes { list-style: none; margin: 0; padding: 0; }
-        .al-curso { display: flex; align-items: center; gap: .85rem; padding: .8rem 1.25rem; border-bottom: 1px solid var(--al-borde); }
-        .al-curso:last-child { border-bottom: 0; }
-        .al-curso:hover { background: var(--al-fondo-2); }
-        .al-curso-num {
-            width: 30px; height: 30px; border-radius: 9px; flex: none; display: flex; align-items: center; justify-content: center;
-            font-size: .75rem; font-weight: 800; background: var(--al-fondo-2); color: var(--al-suave); border: 1px solid var(--al-borde);
-        }
-        .al-curso-texto { flex: 1; min-width: 0; }
-        .al-curso-nombre { font-weight: 700; color: var(--al-texto) !important; font-size: .9rem; text-decoration: none !important; }
-        .al-curso-nombre:hover { color: var(--al-oro-2) !important; }
-        .al-curso-meta { font-size: .74rem; color: var(--al-suave); margin-top: .1rem; }
+        /* .al-cursos / .al-curso viven en public/css/pk-ui.css (compartidos con la intranet PPD) */
+        .al-solicitudes { list-style: none; margin: 0; padding: 0; }
         .al-solicitudes li { display: flex; align-items: flex-start; gap: .85rem; padding: .85rem 1.25rem; border-bottom: 1px solid var(--al-borde); }
         .al-solicitudes li:last-child { border-bottom: 0; }
         .al-solicitud-texto { flex: 1; min-width: 0; font-size: .88rem; color: var(--al-texto); }
         .al-solicitud-texto small { color: var(--al-suave); }
         .al-solicitud-respuesta { margin-top: .35rem; font-size: .82rem; color: var(--al-ok); background: var(--al-ok-f); border-radius: 8px; padding: .35rem .6rem; }
-        @media (max-width: 575.98px) { .al-curso, .al-solicitudes li { flex-wrap: wrap; } }
+        @media (max-width: 575.98px) { .al-solicitudes li { flex-wrap: wrap; } }
     </style>
 @endsection
 

@@ -3,6 +3,7 @@
     <title>EESPP Pukllasunchis - Pedagógico Pukllasunchis</title>
     <meta name="description" content="Escuela de Educación Superior Pedagógica Pukllasunchis">
     <meta name="keywords" content="EESP Pukllasunchis, Pukllasunchis, Educación, Intercultural, EIB, Inicial, Primaria">
+    <link rel="stylesheet" href="{{ asset('css/home-informes.css') }}?v={{ @filemtime(public_path('css/home-informes.css')) }}">
 @endsection
 @section('contenido')
     <div class="slider_area">
@@ -1275,61 +1276,157 @@
             }
         });
     </script>
-    <section class="fondoLogo">
+    <section class="fondoLogo informes-seccion" id="solicitar-informes">
         <div class="container pt-4 pb-4">
             <div class="row pt-5 pb-5">
                 <div class="col-lg-12 text-center mb-4">
                     <h2>Solicitar informes</h2>
-                    <div class="linea-medio mb-4"></div>
+                    <div class="linea-medio mb-3"></div>
+                    <p class="informes-intro">
+                        ¿Tienes dudas sobre la admisión o nuestros programas? Déjanos tus datos y te
+                        responderemos a la brevedad por correo o WhatsApp.
+                    </p>
                 </div>
-                <div class="col-lg-6">
-                    <form method="POST" action="#">
-                        <div class="row">
-                            <div class="form-group col-md-6">
-                                <input type="text" class="form-control" id="name"
-                                    placeholder="Ingrese su nombre:*" required>
+                <div class="col-lg-6 mb-4 mb-lg-0">
+                    <div class="informes-card">
+                        @if (session('informes_ok'))
+                            <div class="informes-alerta informes-alerta--ok" role="status">
+                                <i class="fa fa-check-circle"></i>
+                                <div>
+                                    <strong>¡Mensaje enviado!</strong><br>
+                                    Gracias por escribirnos. Pronto nos pondremos en contacto contigo.
+                                </div>
                             </div>
-                            <div class="form-group col-md-6">
-                                <input type="email" class="form-control" id="email"
-                                    placeholder="Escriba su email:*" required>
+                        @endif
+                        @if (session('informes_error'))
+                            <div class="informes-alerta informes-alerta--error" role="alert">
+                                <i class="fa fa-exclamation-circle"></i>
+                                <div>{{ session('informes_error') }}</div>
                             </div>
-                            <div class="form-group col-md-6">
-                                <input type="number" class="form-control" id="phone"
-                                    placeholder="Número WhatsApp:*" required>
-                            </div>
-                            <div class="form-group col-md-6">
-                                <select class="form-control" id="program">
-                                    <option value="" disabled selected>Seleccione un programa</option>
-                                    <option value="AdmisionOrdinario">Admisión Ordinario</option>
-                                    <option value="AdmisionTraslado">Admisión Traslado</option>
-                                    <option value="AdmisionBeca">Admisión Beca</option>
-                                    <option value="ProfesionalizacionDocente">Profesionalización Docente</option>
-                                </select>
-                            </div>
-                            <div class="form-group col-lg-12">
-                                <textarea name="mensaje" id="mensaje" class="form-control" placeholder="Escriba acá su consulta..."></textarea>
-                            </div>
-                            <div class="col-lg-12">
-                                <small class="text-danger">Los campos con * son obligatorios.</small>
-                            </div>
-                            <div class="col-md-12 text-center mb-5">
-                                {{-- <button type="submit" class="btn-puklla">Enviar</button> --}}
-                                <button class="btn-puklla">
-                                    Enviar
-                                    <div class="puklla__horizontal"></div>
-                                    <div class="puklla__vertical"></div>
-                                </button>
-                            </div>
-                        </div>
-                    </form>
+                        @endif
 
+                        <form method="POST" action="{{ route('informes.enviar') }}" id="formInformes" novalidate>
+                            @csrf
+                            {{-- Campo trampa para bots: debe quedar vacío --}}
+                            <div class="informes-hp" aria-hidden="true">
+                                <label for="sitio_web">No llenar</label>
+                                <input type="text" name="sitio_web" id="sitio_web" tabindex="-1" autocomplete="off">
+                            </div>
+
+                            <div class="row">
+                                <div class="form-group col-md-6">
+                                    <label for="inf_nombre" class="informes-label">Nombre <span>*</span></label>
+                                    <input type="text" name="nombre" id="inf_nombre" maxlength="120"
+                                        class="form-control @error('nombre') is-invalid @enderror"
+                                        value="{{ old('nombre') }}" placeholder="Nombres y apellidos"
+                                        autocomplete="name" required>
+                                    @error('nombre')
+                                        <small class="informes-error">{{ $message }}</small>
+                                    @enderror
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="inf_email" class="informes-label">Correo electrónico <span>*</span></label>
+                                    <input type="email" name="email" id="inf_email" maxlength="150"
+                                        class="form-control @error('email') is-invalid @enderror"
+                                        value="{{ old('email') }}" placeholder="correo@ejemplo.com"
+                                        autocomplete="email" required>
+                                    @error('email')
+                                        <small class="informes-error">{{ $message }}</small>
+                                    @enderror
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="inf_telefono" class="informes-label">WhatsApp <span>*</span></label>
+                                    <input type="tel" name="telefono" id="inf_telefono" maxlength="16"
+                                        class="form-control @error('telefono') is-invalid @enderror"
+                                        value="{{ old('telefono') }}" placeholder="987 654 321"
+                                        inputmode="tel" autocomplete="tel" pattern="\+?[0-9\s]{7,15}" required>
+                                    @error('telefono')
+                                        <small class="informes-error">{{ $message }}</small>
+                                    @enderror
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="inf_programa" class="informes-label">Programa de interés <span>*</span></label>
+                                    <select name="programa" id="inf_programa"
+                                        class="form-control @error('programa') is-invalid @enderror" required>
+                                        <option value="" disabled {{ old('programa') ? '' : 'selected' }}>Seleccione un programa</option>
+                                        @foreach (\App\Http\Controllers\InformesController::PROGRAMAS as $valor => $texto)
+                                            <option value="{{ $valor }}" {{ old('programa') === $valor ? 'selected' : '' }}>{{ $texto }}</option>
+                                        @endforeach
+                                    </select>
+                                    @error('programa')
+                                        <small class="informes-error">{{ $message }}</small>
+                                    @enderror
+                                </div>
+                                <div class="form-group col-lg-12">
+                                    <label for="inf_mensaje" class="informes-label">Consulta</label>
+                                    <textarea name="mensaje" id="inf_mensaje" rows="4" maxlength="2000"
+                                        class="form-control @error('mensaje') is-invalid @enderror"
+                                        placeholder="Escriba acá su consulta...">{{ old('mensaje') }}</textarea>
+                                    <small class="informes-contador"><span id="inf_contador">{{ strlen(old('mensaje', '')) }}</span>/2000</small>
+                                    @error('mensaje')
+                                        <small class="informes-error">{{ $message }}</small>
+                                    @enderror
+                                </div>
+                                <div class="form-group col-lg-12 mb-2">
+                                    <div class="informes-check">
+                                        <input type="checkbox" name="terminos" id="inf_terminos" value="1"
+                                            {{ old('terminos') ? 'checked' : '' }} required>
+                                        <label for="inf_terminos">
+                                            He leído y acepto el
+                                            <a href="https://heyzine.com/flip-book/7964b0937c.html" target="_blank" rel="noopener">Reglamento de Protección de Datos Personales</a>.
+                                            <span>*</span>
+                                        </label>
+                                    </div>
+                                    @error('terminos')
+                                        <small class="informes-error">{{ $message }}</small>
+                                    @enderror
+                                </div>
+                                <div class="col-lg-12">
+                                    <small class="informes-nota">Los campos con <span>*</span> son obligatorios.</small>
+                                </div>
+                                <div class="col-md-12 informes-acciones">
+                                    <button type="submit" class="btn-puklla" id="inf_enviar">
+                                        <span class="informes-btn-texto">Enviar</span>
+                                        <div class="puklla__horizontal"></div>
+                                        <div class="puklla__vertical"></div>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
                 </div>
                 <div class="col-lg-6">
-                    <iframe
-                        src="https://www.google.com/maps/d/u/0/embed?mid=1LlYZJvOMKBdFofhf2HrIfrFAy9l8r2c&ehbc=2E312F&noprof=1"
-                        width="100%" height="280"></iframe>
+                    <div class="informes-mapa">
+                        <iframe
+                            src="https://www.google.com/maps/d/u/0/embed?mid=1LlYZJvOMKBdFofhf2HrIfrFAy9l8r2c&ehbc=2E312F&noprof=1"
+                            title="Ubicación de la EESP Pukllasunchis" loading="lazy"></iframe>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var form = document.getElementById('formInformes');
+            if (!form) return;
+            var mensaje = document.getElementById('inf_mensaje');
+            var contador = document.getElementById('inf_contador');
+            mensaje.addEventListener('input', function() {
+                contador.textContent = mensaje.value.length;
+            });
+            form.addEventListener('submit', function(e) {
+                if (!form.checkValidity()) {
+                    e.preventDefault();
+                    form.classList.add('informes-validado');
+                    var primero = form.querySelector(':invalid');
+                    if (primero) primero.focus();
+                    return;
+                }
+                var btn = document.getElementById('inf_enviar');
+                btn.disabled = true;
+                btn.querySelector('.informes-btn-texto').textContent = 'Enviando…';
+            });
+        });
+    </script>
 @endsection

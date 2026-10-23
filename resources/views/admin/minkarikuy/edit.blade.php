@@ -1,108 +1,27 @@
-﻿@php $layout = auth()->user()?->hasRole('super-admin') ? 'layouts.superadmin' : 'layouts.admin'; @endphp
+@php $layout = auth()->user()?->hasRole('super-admin') ? 'layouts.superadmin' : 'layouts.admin'; @endphp
 @extends($layout)
 @section('titulo', 'Editar Mink\'arikuy')
 @section('contenido')
-<div class="container-fluid">
-    <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3">
-        <div>
-            <h4 class="mb-0 font-weight-bold" style="color:#1e293b;"><i class="fas fa-qrcode mr-2" style="color:#4e73df;"></i>Editar Mink'arikuy</h4>
-            <small class="text-muted">Modifica los datos del registro de asistencia seleccionado</small>
-        </div>
-        <a href="{{ route('admin.minkarikuy.index') }}" class="btn btn-sm btn-secondary shadow-sm">
-            <i class="fas fa-arrow-left fa-sm mr-1"></i> Volver
-        </a>
+    @include('alumnos.partials.ui')
+    @include('admin.minkarikuy._estilos')
+
+    <div class="container-fluid al-ui">
+        <section class="al-hero">
+            <div class="al-hero-fila">
+                <div class="al-hero-texto">
+                    <div class="al-kicker"><i class="fas fa-people-carry"></i> Gestión interna · Mink'arikuy</div>
+                    <h1>Editar Mink'arikuy</h1>
+                    <p class="al-hero-sub">{{ $minkarikuy->nombre }}</p>
+                </div>
+                <div class="al-hero-acciones">
+                    <a href="{{ route('admin.minkarikuy.index') }}" class="al-btn al-btn-claro"><i class="fas fa-arrow-left"></i> Volver</a>
+                </div>
+            </div>
+        </section>
+
+        @include('admin.curso.silabos.proyectos._alertas')
+        @include('admin.minkarikuy._form')
     </div>
 
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <form action="{{ route('admin.minkarikuy.update', $minkarikuy) }}" method="POST"
-                enctype="multipart/form-data">
-                @csrf
-                @method('PUT')
-
-                <div class="form-group">
-                    <label for="nombre">Nombre <span class="text-danger">*</span></label>
-                    <input type="text" id="nombre" name="nombre"
-                        class="form-control @error('nombre') is-invalid @enderror"
-                        value="{{ old('nombre', $minkarikuy->nombre) }}" required maxlength="200">
-                    @error('nombre')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="fecha">Fecha <span class="text-danger">*</span></label>
-                            <input type="date" id="fecha" name="fecha"
-                                class="form-control @error('fecha') is-invalid @enderror"
-                                value="{{ old('fecha', $minkarikuy->fecha->format('Y-m-d')) }}" required>
-                            @error('fecha')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="hora">Hora <span class="text-danger">*</span></label>
-                            <input type="time" id="hora" name="hora"
-                                class="form-control @error('hora') is-invalid @enderror"
-                                value="{{ old('hora', \Carbon\Carbon::createFromFormat('H:i:s', $minkarikuy->hora)->format('H:i')) }}"
-                                required>
-                            @error('hora')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="url">Enlace de redirección</label>
-                    <input type="url" id="url" name="url"
-                        class="form-control @error('url') is-invalid @enderror"
-                        value="{{ old('url', $minkarikuy->url) }}"
-                        placeholder="https://ejemplo.com/reunion">
-                    <small class="text-muted">Opcional. URL a donde se redirige al hacer clic en el popup.</small>
-                    @error('url')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="form-group">
-                    <label for="imagen">Imagen / QR</label>
-                    @if ($minkarikuy->imagen)
-                        <div class="mb-2">
-                            <img src="{{ asset('img/minkarikuy/'.$minkarikuy->imagen) }}"
-                                alt="QR actual" height="100" class="rounded border">
-                            <small class="d-block text-muted mt-1">Imagen actual. Sube una nueva para reemplazarla.</small>
-                        </div>
-                    @endif
-                    <input type="file" id="imagen" name="imagen"
-                        class="form-control-file @error('imagen') is-invalid @enderror"
-                        accept="image/*">
-                    <small class="text-muted">Opcional. Máx. 4 MB.</small>
-                    @error('imagen')
-                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="form-group">
-                    <div class="custom-control custom-switch">
-                        <input type="checkbox" class="custom-control-input" id="activo" name="activo"
-                            value="1" {{ old('activo', $minkarikuy->activo) ? 'checked' : '' }}>
-                        <label class="custom-control-label" for="activo">
-                            Activo (visible en la página pública)
-                        </label>
-                    </div>
-                    <small class="text-muted">Solo puede haber un registro activo a la vez.</small>
-                </div>
-
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save mr-1"></i> Actualizar
-                </button>
-                <a href="{{ route('admin.minkarikuy.index') }}" class="btn btn-secondary ml-2">Cancelar</a>
-            </form>
-        </div>
-    </div>
-</div>
+    @include('admin.minkarikuy._scripts')
 @endsection

@@ -1,6 +1,7 @@
 ﻿@php $layout = auth()->user()?->hasRole('super-admin') ? 'layouts.superadmin' : 'layouts.admin'; @endphp
 @extends($layout)
 @section('contenido')
+    @include('alumnos.partials.ui') {{-- pk-ui.css: «Rendimiento por curso» --}}
     <style>
         /* ══ Lista de docentes: pestañas FID/PPD + tarjetas ═════════════════ */
         .dl {
@@ -1060,8 +1061,9 @@
                                             : ($curso->silabo ? asset('docentes/silabo/' . $curso->silabo) : null);
                                         $faltaElegirComp = $curso->competenciasSeleccionadas->isEmpty() && $curso->competencias->count() > 3;
                                         $avance = $avanceCursos[$curso->id] ?? ($esPPD ? 0 : [1 => 0, 2 => 0, 3 => 0]);
+                                        $rend = $rendimientoCursos[$curso->id] ?? null;
                                     @endphp
-                                    <div class="dl-course">
+                                    <div class="dl-course dl-con-rend">
                                         <div>
                                             <div class="dl-course-name">{{ $curso->nombre }}</div>
                                             <div class="dl-course-meta">
@@ -1082,6 +1084,30 @@
                                                     </a>
                                                 @endif
                                             </div>
+                                        </div>
+
+                                        {{-- Rendimiento del período (RendimientoCursos; estilos en pk-ui.css «Rendimiento por curso») --}}
+                                        <div class="dl-rend" aria-label="Rendimiento del período">
+                                            @if ($rend)
+                                                <span class="dl-rend-prom {{ $rend->promedio < \App\Services\HistorialAcademico::NOTA_MINIMA ? 'is-mal' : 'is-ok' }}" title="Promedio de las notas registradas">
+                                                    {{ rtrim(rtrim(number_format($rend->promedio, 1), '0'), '.') }}<small>prom.</small>
+                                                </span>
+                                                <span class="dl-rend-datos">
+                                                    @if ($rend->desaprobados)
+                                                        <span class="is-mal" title="Alumnos con nota menor a 11"><i class="fas fa-user-times"></i>{{ $rend->desaprobados }} desaprob. · {{ $rend->porcentaje }}%</span>
+                                                    @else
+                                                        <span class="is-ok"><i class="fas fa-check"></i>Sin desaprobados</span>
+                                                    @endif
+                                                    <span><i class="fas fa-users"></i>{{ $rend->con_nota }} con nota</span>
+                                                    @if ($rend->sospechosa)
+                                                        <span class="dl-rend-alerta" title="{{ $rend->sospechosa[0] }} de {{ $rend->sospechosa[1] }} notas están entre 1 y 5: puede ser la valoración (1–4) cargada como nota de 1 a 20, o un valor por defecto. Conviene revisarlo con el docente.">
+                                                            <i class="fas fa-exclamation-triangle"></i>Revisar carga
+                                                        </span>
+                                                    @endif
+                                                </span>
+                                            @else
+                                                <span class="dl-rend-vacio">Sin notas aún</span>
+                                            @endif
                                         </div>
 
                                         <div class="dl-bars">
@@ -1121,7 +1147,24 @@
                                                             {{ $faltaElegirComp ? 'Elegir competencias (máx. 3)' : 'Editar competencias a calificar' }}
                                                         </a>
                                                     @endif
+                                                    @php
+                                                        $notasCurso = $esPPD
+                                                            ? ['ppd' => (int) ($notasPorCurso['ppd'][$curso->id] ?? 0)]
+                                                            : collect([1, 2, 3])->mapWithKeys(fn ($n) => [$n => (int) ($notasPorCurso[$n][$curso->id] ?? 0)])->all();
+                                                        $totalNotasCurso = array_sum($notasCurso);
+                                                    @endphp
                                                     <div class="dropdown-divider"></div>
+                                                    {{-- Delicado: confirmación con «ELIMINAR» y respaldo previo (script js-vaciar-curso al final) --}}
+                                                    <button type="button" class="dropdown-item text-danger js-vaciar-curso" @disabled($totalNotasCurso === 0)
+                                                        data-url="{{ route('curso.calificaciones.vaciar', $curso->id) }}"
+                                                        data-curso="{{ $curso->nombre }}"
+                                                        data-ppd="{{ $esPPD ? 1 : 0 }}"
+                                                        data-notas='@json($notasCurso)'
+                                                        data-docentes="{{ (int) ($docentesPorCurso[$curso->id] ?? 1) }}"
+                                                        title="{{ $totalNotasCurso ? 'Deja en blanco las calificaciones de este curso' : 'Este curso no tiene calificaciones' }}">
+                                                        <i class="fas fa-eraser"></i> Borrar calificaciones del curso
+                                                        @if ($totalNotasCurso) <small class="text-muted">({{ $totalNotasCurso }})</small> @endif
+                                                    </button>
                                                     <form action="{{ route('docente.curso.eliminar', [$docente->id, $curso->id]) }}" method="POST"
                                                         onsubmit="return confirm('¿Quitar «{{ addslashes($curso->nombre) }}» de {{ addslashes($docente->nombre) }}?')">
                                                         @csrf
@@ -1322,5 +1365,75 @@
                 t.remove();
             }
         }, true);
+    </script>
+
+    {{-- «Borrar calificaciones del curso» (menú ⋯ de cada curso). Acción delicada: elegir qué borrar,
+         escribir ELIMINAR y enviar. El servidor guarda un respaldo antes de borrar. --}}
+    <form id="formVaciarCurso" method="POST" class="d-none">
+        @csrf
+        @method('DELETE')
+        <div data-partes></div>
+    </form>
+    <script>
+        document.addEventListener('click', function (e) {
+            var btn = e.target.closest('.js-vaciar-curso');
+            if (!btn || btn.disabled || !window.Swal) return;
+            e.preventDefault();
+
+            var esc = function (s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; };
+            var esPpd = btn.dataset.ppd === '1';
+            var notas = JSON.parse(btn.dataset.notas || '{}');
+            var docentes = parseInt(btn.dataset.docentes || '1', 10);
+            var nombres = { 1: 'Parcial 1', 2: 'Parcial 2', 3: 'Desempeño' };
+
+            var opciones = esPpd
+                ? '<p class="mb-1">Se borrarán las <strong>' + (notas.ppd || 0) + '</strong> calificaciones PPD del curso.</p>'
+                : '<div class="mb-1 font-weight-bold">¿Qué quieres borrar?</div>' + [1, 2, 3].map(function (n) {
+                    var cant = notas[n] || 0;
+                    return '<label class="d-flex align-items-center mb-1' + (cant ? '' : ' text-muted') + '">' +
+                        '<input type="checkbox" class="js-parte mr-2" value="' + n + '"' + (cant ? ' checked' : ' disabled') + '>' +
+                        nombres[n] + '<small class="text-muted ml-1">(' + cant + ' notas)</small></label>';
+                }).join('');
+
+            Swal.fire({
+                title: '¿Borrar calificaciones de este curso?',
+                icon: 'warning',
+                html: '<div class="text-left small">' +
+                    '<p>Curso: <strong>' + esc(btn.dataset.curso) + '</strong></p>' +
+                    (docentes > 1 ? '<p class="text-danger mb-2"><i class="fas fa-users"></i> Este curso lo comparten <strong>' + docentes + ' docentes</strong>: se borra para todos.</p>' : '') +
+                    opciones +
+                    '<p class="small text-muted mt-2 mb-2">Las notas quedarán en blanco para volver a calificar. Antes de borrar se guarda un respaldo en el servidor.</p>' +
+                    '<p class="mb-0">Esta acción no se puede deshacer desde el sistema. Escribe <strong>ELIMINAR</strong> para confirmar:</p></div>',
+                input: 'text',
+                inputPlaceholder: 'ELIMINAR',
+                inputAttributes: { autocapitalize: 'off', autocorrect: 'off' },
+                showCancelButton: true,
+                focusCancel: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="fas fa-eraser"></i> Sí, borrar calificaciones',
+                cancelButtonText: 'Cancelar',
+                preConfirm: function (valor) {
+                    if (valor !== 'ELIMINAR') {
+                        Swal.showValidationMessage('Escribe ELIMINAR (en mayúsculas) para confirmar');
+                        return false;
+                    }
+                    var partes = Array.prototype.map.call(Swal.getHtmlContainer().querySelectorAll('.js-parte:checked'), function (c) { return c.value; });
+                    if (!esPpd && !partes.length) {
+                        Swal.showValidationMessage('Marca al menos un parcial');
+                        return false;
+                    }
+                    return partes;
+                }
+            }).then(function (r) {
+                if (!r.isConfirmed) return;
+                var form = document.getElementById('formVaciarCurso');
+                form.action = btn.dataset.url;
+                form.querySelector('[data-partes]').innerHTML = r.value.map(function (p) {
+                    return '<input type="hidden" name="partes[]" value="' + p + '">';
+                }).join('');
+                form.submit();
+            });
+        });
     </script>
 @endsection

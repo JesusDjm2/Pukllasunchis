@@ -91,7 +91,7 @@ class TitulacionImportarCommand extends Command
                     'rd_pti' => ['Rd PTI'],
                     'link_iti' => ['Link ITI'],
                     'fecha_exposicion' => ['Fecha Exp. TI'],
-                    'jurado_exposicion' => ['Jurado-Exp. TI'],
+                    'jurado_exposicion' => ['Jurado-Exp. TI', 'Jurado - Exp. TI'],
                     'grado_bachiller' => ['Grado Bachiller'],
                     'url_ti_repositorio' => ['URL TI Repositorio'],
                     'grupo_exposicion' => ['Grupo de Exposición TI'],
@@ -155,7 +155,9 @@ class TitulacionImportarCommand extends Command
                 'match_por' => 'nombre',
                 'modelo' => null, // mezcla FID/PPD por fila (columna "k"), se busca en ambas tablas
                 'campos' => [
-                    'tipo_k' => ['k'],
+                    // "EXPO FID", "TESIS PPD"…: en la hoja vieja la columna se llamaba "k";
+                    // en la actual la primera columna no tiene título ('').
+                    'tipo_k' => ['k', ''],
                     'ingreso' => ['INGRESO'],
                     'fecha_acta' => ['fecha de exposicion / sustentacion'],
                     'expediente' => ['EXPEDIENTE'],
@@ -252,6 +254,19 @@ class TitulacionImportarCommand extends Command
         }
 
         $indicesPorCampo = $this->resolverIndices($headers, $config['campos']);
+        // Hojas con una fila de títulos agrupadores arriba ("Grado de Bachiller | Título de
+        // Licenciatura"): el encabezado real es la primera fila que trae la columna del nombre.
+        if (! isset($indicesPorCampo['nombre_estudiante'])) {
+            foreach (array_slice($filasDatos, 0, 5) as $i => $fila) {
+                $candidato = array_map(fn ($h) => trim((string) $h), $fila);
+                if (isset($this->resolverIndices($candidato, $config['campos'])['nombre_estudiante'])) {
+                    $headers = $candidato;
+                    $filasDatos = array_slice($filasDatos, $i + 1);
+                    $indicesPorCampo = $this->resolverIndices($headers, $config['campos']);
+                    break;
+                }
+            }
+        }
         $this->reportarColumnasNoMapeadas($headers, $indicesPorCampo);
 
         // Columnas sin título (o repetidas) compartían la misma clave en

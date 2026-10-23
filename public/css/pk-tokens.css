@@ -41,7 +41,6 @@
 /* ── Variación por rol ── */
 .pk-rol-docente {
     --pk-acento: var(--pk-oro-2);
-    --pk-sb-fondo: var(--pk-marron);
 }
 
 .pk-rol-admin {
@@ -63,4 +62,15 @@ body.dim-mode {
     --pk-sb-fondo: var(--lm-bg-hondo, #1d151d);
     --pk-sb-marca: var(--lm-acento, #f49ac1);
     --pk-sb-resalte: var(--lm-acento-claro, #f9c2da);
+}
+
+/* Docente: el menú lateral SIEMPRE con los colores del modo oscuro, sea cual sea el tema
+   (claro, oscuro o tenue). El cambio de tema solo afecta al contenido. Esta regla tiene más
+   especificidad que body.dim-mode, así que gana también en tenue. */
+body.pk-rol-docente,
+body.pk-rol-docente.dark-mode,
+body.pk-rol-docente.dim-mode {
+    --pk-sb-fondo: #161b22;
+    --pk-sb-marca: var(--pk-oro);
+    --pk-sb-resalte: var(--pk-crema);
 }

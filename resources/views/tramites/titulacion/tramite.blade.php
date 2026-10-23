@@ -160,7 +160,7 @@
                                     </p>
                                     <h5>Documentos externos a presentar en la Institución: </h5>
                                     <ul class="listanueva">
-                                        <li>Una fotocopia de DNI ampliado y legalizado. </li>
+                                        <li>Dos fotocopias de DNI ampliado y legalizado. </li>
                                         <li>Partida de nacimiento original.</li>
                                         <li>Certificado de estudios de secundaria original.
 
@@ -267,7 +267,7 @@
                                 <div class="row">
                                     <h5>Documentos externos a presentar en la Institución: </h5>
                                     <ul class="listanueva">
-                                        <li>Una fotocopia de DNI ampliado y legalizado. </li>
+                                        <li>Dos fotocopias de DNI ampliado y legalizado. </li>
                                         <li>Cuatro (4) Fotos tamaño pasaporte fondo blanco, con terno y en papel mate,
                                             medidas: 4cm x 5cm.</li>
                                         <li>Documento que acredite conocimiento de idioma A2/ lengua originaria primaria EIB.

@@ -239,7 +239,11 @@
     {{-- ── Cabecera ── --}}
     <div class="ex-card ex-head mt-2">
         @if ($u->foto)
-            <img src="{{ asset('img/estudiantes/' . $u->foto) }}" alt="" class="ex-avatar">
+            @include('partials.foto-visor')
+            <button type="button" data-foto="{{ asset('img/estudiantes/' . $u->foto) }}" data-foto-titulo="{{ $u->apellidos }}, {{ $u->name }}"
+                data-foto-sub="DNI {{ $u->dni ?: '—' }}" title="Ver foto">
+                <img src="{{ asset('img/estudiantes/' . $u->foto) }}" alt="Foto de {{ $u->name }} {{ $u->apellidos }}" class="ex-avatar">
+            </button>
         @else
             <div class="ex-avatar">{{ $iniciales }}</div>
         @endif
@@ -295,6 +299,34 @@
 
     {{-- ── Indicadores ── --}}
     <div class="ex-kpis">
+        @if ($cursosPpd->isNotEmpty())
+        {{-- PPD (programa de un año): avance del plan y promedio por ciclo, contando también las notas del año en curso --}}
+        @php
+            $todosPpd = $cursosPpd->flatMap(fn ($b) => $b->cursos);
+            $conNotaPpd = $todosPpd->filter(fn ($c) => $c->nota !== null);
+            $desapPpd = $todosPpd->where('desaprobado', true)->count();
+            $pctPlan = $todosPpd->count() ? round($conNotaPpd->count() / $todosPpd->count() * 100) : 0;
+        @endphp
+        <div class="ex-card ex-kpi">
+            <div class="ex-kpi-label">Avance del plan</div>
+            <div class="ex-kpi-val">{{ $conNotaPpd->count() }} <small>/ {{ $todosPpd->count() }} cursos</small></div>
+            <div class="ex-bar"><div style="width: {{ $pctPlan }}%;"></div></div>
+            <div class="ex-kpi-sub">{{ $pctPlan }}% con nota</div>
+        </div>
+        @foreach ($cursosPpd->take(2) as $bloque)
+            @php $notasCiclo = $bloque->cursos->pluck('nota')->filter(fn ($n) => $n !== null); $promCiclo = $notasCiclo->isNotEmpty() ? $notasCiclo->avg() : null; @endphp
+            <div class="ex-card ex-kpi">
+                <div class="ex-kpi-label">Promedio {{ $ciclo($bloque->ciclo) }}</div>
+                <div class="ex-kpi-val {{ $promCiclo !== null && $promCiclo < 11 ? 'is-bad' : '' }}">{{ $promCiclo !== null ? number_format($promCiclo, 2) : '—' }}</div>
+                <div class="ex-kpi-sub">{{ $notasCiclo->count() }} de {{ $bloque->cursos->count() }} cursos con nota</div>
+            </div>
+        @endforeach
+        <div class="ex-card ex-kpi">
+            <div class="ex-kpi-label">Desaprobados</div>
+            <div class="ex-kpi-val {{ $desapPpd ? 'is-bad' : '' }}">{{ $desapPpd }}</div>
+            <div class="ex-kpi-sub">nota menor a 11 · incluye el año en curso</div>
+        </div>
+        @else
         <div class="ex-card ex-kpi">
             <div class="ex-kpi-label">Promedio acumulado</div>
             <div class="ex-kpi-val {{ $r['promedio'] !== null && $r['promedio'] < 11 ? 'is-bad' : '' }}">{{ $r['promedio'] !== null ? number_format($r['promedio'], 2) : '—' }}</div>
@@ -315,6 +347,7 @@
             <div class="ex-kpi-val {{ $r['repitencias']->isNotEmpty() ? 'is-bad' : '' }}">{{ $r['repitencias']->count() }}</div>
             <div class="ex-kpi-sub">{{ $r['repitencias']->isNotEmpty() ? $r['repitencias']->map(fn ($p) => $ciclo($p->ciclo))->unique()->implode(', ') : 'ningún ciclo repetido' }}</div>
         </div>
+        @endif
         <div class="ex-card ex-kpi">
             <div class="ex-kpi-label">Licencia acumulada</div>
             <div class="ex-kpi-val {{ $licencia['agotada'] ? 'is-bad' : '' }}">{{ $licencia['dias'] }} <small>/ {{ $licencia['limite'] }} días</small></div>
@@ -340,7 +373,7 @@
     <div class="mt-3">
         <div class="ex-tabs" role="tablist">
             <button type="button" class="ex-tab is-active" data-tab="trayectoria" role="tab"><i class="fas fa-stream fa-xs"></i> Trayectoria</button>
-            <button type="button" class="ex-tab" data-tab="notas" role="tab"><i class="fas fa-book-open fa-xs"></i> Notas por periodo</button>
+            <button type="button" class="ex-tab" data-tab="notas" role="tab"><i class="fas fa-book-open fa-xs"></i> {{ $cursosPpd->isNotEmpty() ? 'Cursos por ciclo' : 'Notas por periodo' }}</button>
             @if ($puedeGestionar)
             <button type="button" class="ex-tab" data-tab="seguimiento" role="tab">
                 <i class="fas fa-hands-helping fa-xs"></i> Seguimiento
@@ -385,7 +418,8 @@
                                     <div class="ex-tl-detail">
                                         {{ $p->ciclo->programa->nombre ?? '' }}
                                         @if ($p->condicion) · condición <strong>{{ $p->condicion }}</strong> @endif
-                                        @if ($p->cursos->isNotEmpty())
+                                        {{-- PPD: cursos y notas ya están en «Cursos por ciclo»; aquí solo el hecho de la matrícula --}}
+                                        @if ($p->cursos->isNotEmpty() && $cursosPpd->isEmpty())
                                             · {{ $p->cursos->count() }} cursos · promedio <strong>{{ $p->promedio ?? '—' }}</strong>
                                             @if ($p->desaprobados) · <strong style="color:var(--c-red)">{{ $p->desaprobados }} desaprobado(s)</strong> @endif
                                         @endif
@@ -467,6 +501,63 @@
 
         {{-- Notas por periodo --}}
         <section data-pane="notas" hidden>
+            @if ($cursosPpd->isNotEmpty())
+            {{-- PPD: el programa dura un año → plan completo del programa por ciclo, en orden alfabético --}}
+            @php $fmtNota = fn ($n) => rtrim(rtrim(number_format($n, 2), '0'), '.'); @endphp
+            @foreach ($cursosPpd as $bloque)
+                @php
+                    $conNota = $bloque->cursos->pluck('nota')->filter(fn ($n) => $n !== null);
+                    $desap = $bloque->cursos->where('desaprobado', true)->count();
+                @endphp
+                <div class="ex-card ex-per is-open">
+                    <button type="button" class="ex-per-head">
+                        <i class="fas fa-chevron-right ex-chev"></i>
+                        <span class="ex-per-title">{{ $ciclo($bloque->ciclo) }}</span>
+                        @if ($u->ciclo_id === $bloque->ciclo->id)
+                            <span class="chip is-blue">ciclo actual</span>
+                        @endif
+                        <span class="ex-per-stats">
+                            <span>Cursos <strong>{{ $bloque->cursos->count() }}</strong></span>
+                            <span>Con nota <strong>{{ $conNota->count() }}</strong></span>
+                            <span>Promedio <strong>{{ $conNota->isNotEmpty() ? number_format($conNota->avg(), 2) : '—' }}</strong></span>
+                            <span class="{{ $desap ? 'is-bad' : '' }}">Desaprobados <strong>{{ $desap }}</strong></span>
+                        </span>
+                    </button>
+                    <div class="ex-per-body">
+                        @if ($bloque->cursos->isEmpty())
+                            <div class="ex-empty" style="padding:1.2rem;">Este ciclo no tiene cursos registrados.</div>
+                        @else
+                            <div class="table-responsive">
+                                <table class="ex-table">
+                                    <thead><tr>
+                                        <th style="width:2.5rem;">#</th><th>Curso</th><th>Docente</th>
+                                        <th>Logro</th><th class="text-right">Nota</th>
+                                    </tr></thead>
+                                    <tbody>
+                                        @foreach ($bloque->cursos as $c)
+                                            <tr class="{{ $c->desaprobado && ! $c->en_curso ? 'is-bad' : '' }}">
+                                                <td class="text-muted">{{ $loop->iteration }}</td>
+                                                <td>{{ $c->curso->nombre }}</td>
+                                                <td>{{ $c->docentes ?: '—' }}</td>
+                                                <td>{{ $c->logro ?? '—' }}</td>
+                                                <td class="text-right">
+                                                    @if ($c->nota !== null)
+                                                        <span class="ex-nota {{ $c->desaprobado ? 'is-bad' : '' }}">{{ $fmtNota($c->nota) }}</span>
+                                                        @if ($c->periodo)<div class="text-muted" style="font-size:.7rem;">{{ $c->periodo }}</div>@endif
+                                                    @else
+                                                        <span class="chip is-slate">{{ $c->en_curso ? 'pendiente' : 'sin nota' }}</span>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            @endforeach
+            @else
             @forelse ($historial['periodos']->reverse() as $i => $p)
                 <div class="ex-card ex-per {{ $loop->first ? 'is-open' : '' }}">
                     <button type="button" class="ex-per-head">
@@ -573,6 +664,7 @@
                     </div>
                 </details>
             @endif
+            @endif
         </section>
 
         @if ($puedeGestionar)
@@ -656,14 +748,14 @@
                         <div class="ex-acc-head">
                             <span class="ex-acc-fecha">{{ $tut->created_at?->format('d/m/Y') }}</span>
                             <span class="ex-acc-tipo">Solicitud de tutoría</span>
-                            @if ($tut->urgencia)<span class="chip is-amber">{{ $tut->urgencia }}</span>@endif
+                            @if ($tut->urgencia)<span class="chip is-amber">{{ $tut->urgencia_texto }}{{ $tut->pideOtroDocente() && $tut->docente_solicitado_nombre ? ': '.$tut->docente_solicitado_nombre : '' }}</span>@endif
                             @if ($tut->estado === 'atendida')
                                 <span class="chip is-green"><i class="fas fa-check"></i> Atendida{{ $tut->atendido_at ? ' el '.$tut->atendido_at->format('d/m/Y') : '' }}</span>
                             @else
                                 <span class="chip is-amber">Pendiente de atender</span>
                             @endif
                         </div>
-                        <div class="ex-acc-body"><div class="ex-acc-text">{{ $tut->motivo }}</div>
+                        <div class="ex-acc-body"><div class="ex-acc-text">{{ $tut->motivo ?: 'Sin mensaje adicional.' }}</div>
                             @if ($tut->notas_atencion)<div class="ex-acc-label">Atención</div><div class="ex-acc-text">{{ $tut->notas_atencion }}</div>@endif
                         </div>
                     </div>

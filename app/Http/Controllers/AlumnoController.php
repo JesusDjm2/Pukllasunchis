@@ -58,11 +58,11 @@ class AlumnoController extends Controller
             $misSugerencias = Sugerencia::where('alumno_id', $alumno->id)->latest()->get();
 
             // Avance de titulación: solo existe si a este alumno (FID, Ciclo
-            // VIII+) ya se le inició el proceso desde el panel de gestores.
+            // IX+) ya se le inició el proceso desde el panel de gestores.
             $seguimientoTitulacion = $usuario?->seguimientoTitulacion()
                 ->with('estadoTitulacion', 'pti.asesor', 'tesis.asesor', 'actas', 'resoluciones')
                 ->first();
-            // Sin proceso todavía pero ya en edad de iniciarlo (Ciclo VIII+): se le muestra la guía.
+            // Sin proceso todavía pero ya en edad de iniciarlo (Ciclo IX+): se le muestra la guía.
             $guiaTitulacion = ! $seguimientoTitulacion && $usuario && \App\Http\Controllers\Titulacion\TitulacionController::puedeIniciar($usuario);
 
             return view('alumnos.vistasAlumnos.index', compact(

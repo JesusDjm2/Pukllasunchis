@@ -82,11 +82,13 @@
 
         .per-estado-abierto { background: #dcfce7; color: #15803d; }
         .per-estado-proximo { background: #dbeafe; color: #1d4ed8; }
+        .per-estado-publicado { background: #fef3c7; color: #b45309; }
         .per-estado-cerrado { background: #fee2e2; color: #b91c1c; }
         .per-estado-libre   { background: #f1f5f9; color: #64748b; }
 
         .dark-mode .per-estado-abierto, .dim-mode .per-estado-abierto { background: rgba(34, 197, 94, .18); color: #86efac; }
         .dark-mode .per-estado-proximo, .dim-mode .per-estado-proximo { background: rgba(59, 130, 246, .2); color: #93c5fd; }
+        .dark-mode .per-estado-publicado, .dim-mode .per-estado-publicado { background: rgba(245, 158, 11, .18); color: #fcd34d; }
         .dark-mode .per-estado-cerrado, .dim-mode .per-estado-cerrado { background: rgba(239, 68, 68, .18); color: #fca5a5; }
         .dark-mode .per-estado-libre,   .dim-mode .per-estado-libre   { background: rgba(255, 255, 255, .08); color: #cbd5e1; }
 
@@ -327,7 +329,7 @@
                                                 <div class="per-cal-item">
                                                     <div class="per-cal-head">
                                                         <span class="per-cal-label">{{ $etiqueta }}</span>
-                                                        <span class="per-estado per-estado-{{ $estado }}">{{ ['libre' => 'Sin fechas', 'proximo' => 'Próximo', 'abierto' => 'Abierto', 'cerrado' => 'Cerrado'][$estado] }}</span>
+                                                        <span class="per-estado per-estado-{{ $estado }}">{{ ['libre' => 'Sin fechas', 'proximo' => 'Próximo', 'abierto' => 'Abierto', 'publicado' => 'Publicado · editable', 'cerrado' => 'Cerrado'][$estado] }}</span>
                                                     </div>
                                                     @include('admin.periodos._rango-fechas', [
                                                         'inicio' => $p->{"calificaciones_parcial{$n}_inicio"},

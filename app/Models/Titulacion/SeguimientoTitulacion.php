@@ -16,7 +16,7 @@ class SeguimientoTitulacion extends Model
     protected $table = 'seguimiento_titulacion';
 
     protected $fillable = [
-        'user_id', 'estado_titulacion_id', 'numero_expediente', 'periodo_estudios', 'fecha_inicio', 'fecha_fin', 'observaciones',
+        'user_id', 'estado_titulacion_id', 'numero_expediente', 'grupo_id', 'periodo_estudios', 'fecha_inicio', 'fecha_fin', 'observaciones',
     ];
 
     protected $casts = [
@@ -69,6 +69,18 @@ class SeguimientoTitulacion extends Model
     public function avisosPti()
     {
         return $this->hasMany(AvisoPti::class, 'seguimiento_id')->latest();
+    }
+
+    /** Asesores y jurado del TI y la Tesis (ver Participante). */
+    public function participantes()
+    {
+        return $this->hasMany(Participante::class, 'seguimiento_id')->orderBy('id');
+    }
+
+    /** Integrantes que iniciaron juntos el PTI (mismo grupo_id), sin esta persona. */
+    public function companerosDeGrupo()
+    {
+        return $this->hasMany(self::class, 'grupo_id', 'grupo_id')->where('id', '!=', $this->id);
     }
 
     /**

@@ -195,53 +195,5 @@
         @endif
     </div>
 
-    <style>
-        .cal-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(420px, 100%), 1fr)); gap: 0 1.25rem; }
-        @media (max-width: 575.98px) { .cal-grid { grid-template-columns: 1fr; } }
-        .cal-curso .al-card-cab h2 { font-size: .95rem; }
-        .cal-final {
-            flex: none; width: 58px; height: 58px; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            background: var(--al-fondo-2); border: 1px solid var(--al-borde);
-        }
-        .cal-final b { font-size: 1.35rem; font-weight: 800; line-height: 1; color: var(--al-suave); }
-        .cal-final small { font-size: .6rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--al-suave); }
-        .cal-final.is-ok { background: var(--al-ok-f); border-color: transparent; } .cal-final.is-ok b { color: var(--al-ok); }
-        .cal-final.is-mal { background: var(--al-mal-f); border-color: transparent; } .cal-final.is-mal b { color: var(--al-mal); }
-
-        .cal-filas { padding: .35rem 0; }
-        .cal-fila { display: grid; grid-template-columns: 1.1fr 1.2fr .8fr .7fr; align-items: center; gap: .5rem; padding: .55rem 1.25rem; font-size: .86rem; color: var(--al-texto); }
-        .cal-fila + .cal-fila { border-top: 1px dashed var(--al-borde); }
-        .cal-fila-cab { font-size: .64rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--al-suave); padding-top: .2rem; padding-bottom: .2rem; }
-        .cal-fila.is-final { background: var(--al-fondo-2); }
-        .cal-etiqueta { font-weight: 700; }
-        .cal-fila.is-final .cal-etiqueta { color: var(--al-oro-2); }
-        .cal-nivel { font-weight: 600; }
-        .cal-valor { color: var(--al-suave); font-variant-numeric: tabular-nums; }
-        .cal-espera { grid-column: 2 / -1; color: var(--al-suave); font-size: .8rem; font-style: italic; }
-        .cal-nota {
-            display: inline-flex; align-items: center; justify-content: center; min-width: 2.3rem; padding: .18rem .5rem; border-radius: 8px;
-            font-weight: 800; font-variant-numeric: tabular-nums; background: var(--al-fondo-2); color: var(--al-suave);
-        }
-        .cal-nota.is-ok { background: var(--al-ok-f); color: var(--al-ok); }
-        .cal-nota.is-mal { background: var(--al-mal-f); color: var(--al-mal); }
-        .cal-obs { display: flex; gap: .5rem; font-size: .82rem; color: var(--al-texto); padding: .7rem 1.25rem; border-top: 1px solid var(--al-borde); background: rgba(205, 146, 68, .07); }
-        .cal-obs i { color: var(--al-oro); margin-top: .2rem; }
-
-        .cal-tabs { display: flex; flex-wrap: wrap; gap: .4rem; padding: .9rem 1.25rem 0; }
-        .cal-tab {
-            border: 1px solid var(--al-borde); background: var(--al-fondo); color: var(--al-suave); font-weight: 700; font-size: .8rem;
-            padding: .35rem .9rem; border-radius: 999px; cursor: pointer; transition: all .15s ease;
-        }
-        .cal-tab:hover { border-color: var(--al-oro); color: var(--al-texto); }
-        .cal-tab.is-activa { background: var(--al-petroleo); border-color: var(--al-petroleo); color: #fff; }
-        .cal-hist-resumen { display: flex; flex-wrap: wrap; gap: .4rem 1.25rem; align-items: center; padding: .9rem 1.25rem .5rem; font-size: .82rem; color: var(--al-suave); font-weight: 600; }
-        .cal-hist-resumen i { color: var(--al-oro); }
-        .cal-tabla { width: 100%; border-collapse: collapse; font-size: .86rem; color: var(--al-texto); }
-        .cal-tabla th { font-size: .64rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--al-suave); padding: .55rem 1.25rem; border-bottom: 1px solid var(--al-borde); text-align: left; }
-        .cal-tabla td { padding: .6rem 1.25rem; border-bottom: 1px solid var(--al-borde); vertical-align: middle; }
-        .cal-tabla tr:last-child td { border-bottom: 0; }
-        .cal-tabla th:not(:first-child), .cal-tabla td:not(:first-child) { text-align: center; }
-        .cal-hist-curso { font-weight: 700; }
-        .cal-tabla small { color: var(--al-suave); }
-    </style>
+    {{-- Estilos .cal-* en public/css/pk-ui.css (compartidos con calificaciones PPD) --}}
 @endsection

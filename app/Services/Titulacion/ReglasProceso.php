@@ -9,7 +9,7 @@ use App\Models\Titulacion\Tesis;
  * Orden obligatorio del proceso de titulación: nada se registra antes de que esté logrado
  * el paso anterior (no se puede subir la RD de la Tesis si recién se inscribió el PTI).
  *
- *   PTI inscrito → PTI aprobado (RD) → TI expuesto → TI aprobado (RD) → Bachiller (SUNEDU)
+ *   PTI inscrito → PTI aprobado (RD) → TI expuesto → TI aprobado (RD) → TI en Repositorio → Bachiller (SUNEDU)
  *   → Tesis sustentada → Tesis aprobada (RD) → Licenciado (SUNEDU)
  *
  * Lo ya registrado se puede corregir siempre (los datos importados de secretaría tienen
@@ -37,8 +37,9 @@ class ReglasProceso
     public const REQUISITO_CAMPO = [
         'fecha_exposicion' => 'pti_aprobado',
         'rd_ti' => 'ti_expuesto',
-        'fecha_bachiller_sunedu' => 'ti_aprobado',
-        'bachiller_sunedu' => 'ti_aprobado',
+        'url_repositorio_ti' => 'ti_aprobado',
+        'fecha_bachiller_sunedu' => 'ti_repositorio',
+        'bachiller_sunedu' => 'ti_repositorio',
         'fecha_sustentacion' => 'bachiller',
         'rd_extension' => 'bachiller',
         'fecha_extension' => 'bachiller',
@@ -46,12 +47,16 @@ class ReglasProceso
         'url_repositorio' => 'tesis_sustentada',
         'fecha_titulo_sunedu' => 'tesis_aprobada',
         'titulo_sunedu' => 'tesis_aprobada',
+        'link_tesis' => 'bachiller',
+        'licenciatura_escuela' => 'tesis_aprobada',
+        'fecha_licenciatura_escuela' => 'tesis_aprobada',
     ];
 
     /** Nombre de cada dato, para el mensaje. */
     private const NOMBRE_CAMPO = [
         'fecha_exposicion' => 'la fecha de exposición del TI',
         'rd_ti' => 'la RD de aprobación del TI',
+        'url_repositorio_ti' => 'el enlace del TI en el Repositorio Institucional',
         'fecha_bachiller_sunedu' => 'el Bachiller (SUNEDU)',
         'bachiller_sunedu' => 'el Bachiller (SUNEDU)',
         'fecha_sustentacion' => 'la fecha de sustentación',
@@ -61,6 +66,9 @@ class ReglasProceso
         'url_repositorio' => 'el enlace del repositorio',
         'fecha_titulo_sunedu' => 'la Licenciatura (SUNEDU)',
         'titulo_sunedu' => 'la Licenciatura (SUNEDU)',
+        'link_tesis' => 'el enlace de la tesis',
+        'licenciatura_escuela' => 'la Licenciatura aceptada por la Escuela',
+        'fecha_licenciatura_escuela' => 'la Licenciatura aceptada por la Escuela',
     ];
 
     /**

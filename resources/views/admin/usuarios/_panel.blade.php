@@ -3,6 +3,7 @@
     superadmin/dashboard (rol super-admin). Datos desde AdminController@index:
     $listas (por rol), $gruposEstudiantes (Programa → Ciclo), $esSuperAdmin.
 --}}
+@include('partials.foto-visor')
 @php
     $tabs = [
         'estudiantes' => [
@@ -434,6 +435,9 @@
     .dim-mode div.up-avatar { background: rgba(255, 255, 255, .08); color: var(--up-text); }
 
     .up-id { flex: 1 1 auto; min-width: 0; }
+    .up-avatar-btn { flex-shrink: 0; border-radius: 10px; transition: transform .12s ease, box-shadow .12s ease; }
+    .up-avatar-btn:hover { transform: scale(1.08); box-shadow: 0 2px 8px rgba(15, 23, 42, .25); }
+    .up-ref { max-width: 22ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
     .up-name {
         display: flex;

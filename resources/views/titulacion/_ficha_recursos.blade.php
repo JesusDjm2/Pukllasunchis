@@ -1,6 +1,103 @@
 {{-- Recursos de la ficha de titulación que van UNA vez por página (ver _show_contenido).
      Espera $docentes y $asesores. --}}
 @once
+    {{-- Diseño de la ficha (cabecera, línea de tiempo y panel del paso): hoja propia del módulo. --}}
+    <link rel="stylesheet" href="{{ asset('css/pk-titulacion.css') }}?v={{ filemtime(public_path('css/pk-titulacion.css')) }}">
+    <script>
+        // Línea de tiempo de la ficha: al elegir un paso se muestra solo su panel. Delegado en el
+        // documento para que funcione también en las fichas que llegan por AJAX.
+        document.addEventListener('click', function (e) {
+            var boton = e.target.closest('[data-tp-ir]');
+            if (!boton) return;
+            var tp = boton.closest('[data-tp]');
+            if (!tp) return;
+            var clave = boton.dataset.tpIr;
+            tp.querySelectorAll('[data-tp-ir]').forEach(function (b) { b.classList.toggle('is-visible', b.dataset.tpIr === clave); });
+            var panel = null;
+            tp.querySelectorAll('[data-tp-det]').forEach(function (d) {
+                var es = d.dataset.tpDet === clave;
+                d.hidden = !es;
+                if (es) panel = d;
+            });
+            if (panel) {
+                panel.classList.remove('tp-entra'); void panel.offsetWidth; panel.classList.add('tp-entra');
+                // Llevar el panel a la vista si quedó fuera: en pantallas angostas está debajo de la
+                // línea, y en escritorio arriba (p. ej. al elegir un acceso del pie habiendo bajado).
+                var caja = panel.closest('.tl-panel__cuerpo');
+                var arriba = caja ? caja.getBoundingClientRect().top : 0;
+                var r = panel.getBoundingClientRect();
+                if (window.matchMedia('(max-width: 991.98px)').matches || r.top < arriba || r.top > window.innerHeight * 0.6) {
+                    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+        });
+        // Tesis › Enlaces de los dictaminantes: agregar otra fila o quitar una (la última se vacía, no se borra).
+        document.addEventListener('click', function (e) {
+            var agregar = e.target.closest('[data-tp-enlace-agregar]');
+            var quitar = e.target.closest('[data-tp-enlace-quitar]');
+            if (!agregar && !quitar) return;
+            var caja = (agregar ? agregar.parentElement : quitar.closest('form')).querySelector('[data-tp-enlaces]');
+            var renumerar = function () {
+                caja.querySelectorAll('.tp-enlaces__n').forEach(function (n, i) { n.textContent = i + 1; });
+            };
+            if (agregar) {
+                var fila = caja.lastElementChild.cloneNode(true);
+                fila.querySelector('input').value = '';
+                var ir = fila.querySelector('.tp-enlaces__ir');
+                if (ir) ir.remove();
+                caja.appendChild(fila);
+                renumerar();
+                fila.querySelector('input').focus();
+                return;
+            }
+            var filaQuitar = quitar.closest('.tp-enlaces__fila');
+            if (caja.children.length > 1) filaQuitar.remove(); else filaQuitar.querySelector('input').value = '';
+            renumerar();
+        });
+
+        // Buscador de docentes (asesores/jurado): filtra el select siguiente mientras se escribe;
+        // la lista se carga del <template> como al enfocar el select. Enter elige el primero.
+        document.addEventListener('input', function (e) {
+            var buscar = e.target.closest('[data-tp-buscar]');
+            if (!buscar) return;
+            var sel = buscar.parentElement.querySelector('select.js-docentes');
+            if (!sel) return;
+            if (!sel.dataset.cargado) sel.dispatchEvent(new Event('focusin', { bubbles: true }));
+            var q = buscar.value.trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+            var primero = null, visibles = 0;
+            sel.querySelectorAll('option').forEach(function (op) {
+                if (!op.value) { op.hidden = q !== ''; return; }
+                var texto = op.textContent.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+                var ok = q.split(/\s+/).every(function (p) { return texto.indexOf(p) !== -1; });
+                op.hidden = !ok;
+                if (ok) { visibles++; if (!primero) primero = op; }
+            });
+            sel.size = q ? Math.min(Math.max(visibles, 2), 7) : 0;
+            if (primero && q) sel.value = primero.value;
+        });
+        document.addEventListener('keydown', function (e) {
+            var buscar = e.target.closest && e.target.closest('[data-tp-buscar]');
+            if (!buscar || e.key !== 'Enter') return;
+            e.preventDefault();
+            var sel = buscar.parentElement.querySelector('select.js-docentes');
+            if (sel && sel.value) { sel.size = 0; buscar.value = sel.options[sel.selectedIndex].textContent.trim(); }
+        });
+        document.addEventListener('change', function (e) {
+            if (!e.target.matches || !e.target.matches('select.js-docentes')) return;
+            var buscar = e.target.parentElement.querySelector('[data-tp-buscar]');
+            if (!buscar || !e.target.size) return;
+            e.target.size = 0;
+            buscar.value = e.target.options[e.target.selectedIndex]?.textContent.trim() || '';
+        });
+        // Al guardar desde un panel, volver a ese mismo paso.
+        document.addEventListener('submit', function (e) {
+            var det = e.target.closest('[data-tp-det]');
+            if (!det || e.target.querySelector('input[name=volver_paso]')) return;
+            var campo = document.createElement('input');
+            campo.type = 'hidden'; campo.name = 'volver_paso'; campo.value = det.dataset.tpDet;
+            e.target.appendChild(campo);
+        }, true);
+    </script>
     {{-- Lista completa de docentes: UNA copia por página; cada select .js-docentes
          la carga al enfocarlo (antes se repetía ~5 veces por fila × 30 filas). --}}
     <template id="tpl-docentes">
@@ -110,6 +207,23 @@
         .dark-mode .ft-etapa--bloqueada .ft-etapa__n, .dim-mode .ft-etapa--bloqueada .ft-etapa__n { background: rgba(255, 255, 255, .08); }
         .ft-etapa__n { width: 1.55rem; height: 1.55rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: .72rem; font-weight: 700; background: #eef2ff; color: #4e73df; flex-shrink: 0; }
         .ft-etapa--completo .ft-etapa__n { background: #1cc88a; color: #fff; }
+        /* Pasos numerados del TI (informe, exposición, asesores, RD, jurado, repositorio, SUNEDU) */
+        .ft-ti-paso { display: flex; gap: .65rem; padding: .55rem 0; border-top: 1px dashed #e3e6f0; }
+        .ft-ti-paso:first-of-type { border-top: 0; }
+        .ft-ti-paso__n { width: 1.35rem; height: 1.35rem; border-radius: 50%; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;
+            font-size: .68rem; font-weight: 700; background: #eef2ff; color: #4e73df; margin-top: .1rem; }
+        .ft-ti-paso.is-hecho .ft-ti-paso__n { background: #1cc88a; color: #fff; }
+        .ft-ti-paso__cuerpo { flex: 1; min-width: 0; }
+        .ft-ti-paso__cuerpo > .ft-desplegable:first-child, .ft-ti-paso__cuerpo > .ft-paso-bloqueado:first-child { margin-top: 0 !important; }
+        .ft-ti-paso__titulo { font-size: .84rem; font-weight: 700; color: #1e293b; }
+        .ft-espera { font-size: .82rem; padding: .5rem .75rem; border-radius: .5rem; background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+        .ft-participantes { list-style: none; padding: 0; margin: .3rem 0 0; }
+        .ft-participantes li { display: flex; align-items: center; gap: .45rem; font-size: .82rem; padding: .2rem 0; }
+        .dark-mode .ft-ti-paso, .dim-mode .ft-ti-paso { border-color: rgba(255, 255, 255, .12); }
+        .dark-mode .ft-ti-paso__n, .dim-mode .ft-ti-paso__n { background: rgba(255, 255, 255, .08); color: inherit; }
+        .dark-mode .ft-ti-paso.is-hecho .ft-ti-paso__n, .dim-mode .ft-ti-paso.is-hecho .ft-ti-paso__n { background: #1cc88a; color: #fff; }
+        .dark-mode .ft-ti-paso__titulo, .dim-mode .ft-ti-paso__titulo { color: inherit; }
+        .dark-mode .ft-espera, .dim-mode .ft-espera { background: rgba(59, 130, 246, .12); border-color: rgba(59, 130, 246, .35); color: #93c5fd; }
         .ft-etapa__titulo { font-weight: 700; font-size: .92rem; color: #1e293b; }
         .ft-etapa__meta { font-size: .74rem; color: #8892a6; }
         .ft-etapa__datos { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: .25rem 1rem; margin: 0 0 .5rem; font-size: .84rem; }
@@ -155,6 +269,20 @@
         </div>
     </div>
     <script>
+        // Cabecera de la ficha: DNI, celular y correo se copian con un clic (✓ verde un momento).
+        // Delegado en document: la ficha también llega por AJAX al abrir la fila.
+        document.addEventListener('click', function (e) {
+            var boton = e.target.closest('.js-tc-copiar');
+            if (!boton || !boton.dataset.copiar || !navigator.clipboard) return;
+            navigator.clipboard.writeText(boton.dataset.copiar).then(function () {
+                var icono = boton.querySelector('i');
+                var antes = icono.className;
+                boton.classList.add('is-copiado');
+                icono.className = 'fas fa-check';
+                setTimeout(function () { boton.classList.remove('is-copiado'); icono.className = antes; }, 1600);
+            });
+        });
+
         document.addEventListener('click', function (e) {
             var enlace = e.target.closest('.js-vista-aviso');
             if (!enlace || !window.jQuery || !jQuery.fn.modal) return;
@@ -194,6 +322,33 @@
             setTimeout(function () { destino.classList.remove('ft-resaltado'); }, 1600);
             var campo = destino.querySelector('input:not([type=hidden]), select, textarea');
             if (campo) setTimeout(function () { campo.focus({ preventScroll: true }); }, 350);
+        });
+        // Historial: el lápiz / "Registrar" / "Nueva…" abre su formulario dentro de la misma
+        // tarjeta; un segundo clic (o Cancelar) lo cierra. Todos los botones que apuntan al mismo
+        // panel quedan sincronizados (aria-expanded) para lectores de pantalla.
+        document.addEventListener('click', function (e) {
+            var boton = e.target.closest('[data-ft-toggle]');
+            if (!boton) return;
+            var panel = document.getElementById(boton.dataset.ftToggle);
+            if (!panel) return;
+            e.preventDefault();
+            var abrir = panel.hidden;
+            panel.hidden = !abrir;
+            document.querySelectorAll('[data-ft-toggle="' + panel.id + '"]').forEach(function (b) {
+                if (b.hasAttribute('aria-expanded')) b.setAttribute('aria-expanded', abrir ? 'true' : 'false');
+                b.classList.toggle('is-activo', abrir);
+            });
+            var tarjeta = panel.closest('.ft-rd-linea__cuerpo, .ft-acta');
+            if (tarjeta) tarjeta.classList.toggle('is-editando', abrir);
+            if (abrir) {
+                var campo = panel.querySelector('input:not([type=hidden]):not([type=file]), select, textarea');
+                if (campo) campo.focus({ preventScroll: true });
+                panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            } else if (!boton.hasAttribute('aria-expanded')) {
+                // Cancelar: el foco vuelve al botón que lo abrió.
+                var origen = document.querySelector('[data-ft-toggle="' + panel.id + '"][aria-expanded]');
+                if (origen) origen.focus();
+            }
         });
         // "Guardado" como aviso pequeño en la esquina (si las alertas del sistema están cargadas).
         document.addEventListener('DOMContentLoaded', function () {

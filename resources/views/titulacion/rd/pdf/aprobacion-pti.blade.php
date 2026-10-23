@@ -7,7 +7,6 @@
 
 @php
     $quien = $g['art'].' '.$g['estudiante'];
-    $esAsesora = $asesorCargo === 'Asesora';
 @endphp
 
 @section('cuerpo')
@@ -36,26 +35,22 @@
     </p>
 
     <div class="seccion">SE RESUELVE:</div>
+    {{-- Desde el 20/10 el asesor se designa en el TI (primer paso), no en esta RD: se quitó el
+         artículo "SEGUNDO: DESIGNACIÓN" del modelo y se renumeraron los siguientes. --}}
     <p>
         <strong>PRIMERO: APROBAR</strong> el Plan de Trabajo de Investigación denominado
         <strong><em>“{{ $titulo }}”</em></strong> presentado por {{ $quien }} <strong>{{ $nombres }}</strong>.
-    </p>
-    <p>
-        <strong>SEGUNDO: DESIGNACIÓN</strong> como {{ $asesorCargo }} para trabajo de investigación
-        {{ $esAsesora ? 'a la' : 'al' }} <strong>{{ $asesorNombre }}</strong>; quien brindará orientación
-        académica y metodológica durante el desarrollo del trabajo de investigación hasta su culminación.
         @if ($textoAdicional !== '') {{ $textoAdicional }} @endif
     </p>
     <p>
-        <strong>TERCERO:</strong> ESTABLECER que la presente Resolución tiene una vigencia de dos (2) años a
+        <strong>SEGUNDO:</strong> ESTABLECER que la presente Resolución tiene una vigencia de dos (2) años a
         partir de la fecha de su aprobación. Durante dicho período, {{ $quien }} deberá{{ $g['n'] }}
         culminar el desarrollo del Trabajo de Investigación para la obtención del grado de Bachiller y de la
         Tesis para la obtención del Título de Licenciatura. Vencido dicho plazo, el Plan de Trabajo perderá
         vigencia automáticamente.
     </p>
     <p>
-        <strong>CUARTO: DISPONER,</strong> que la Jefatura de la Unidad de Investigación dé a conocer
-        {{ $esAsesora ? 'a la docente asesora' : 'al docente asesor' }} y {{ $g['a_art'] }} {{ $g['estudiante'] }} para que den
-        cumplimiento a la presente resolución.
+        <strong>TERCERO: DISPONER,</strong> que la Jefatura de la Unidad de Investigación dé a conocer
+        la presente resolución {{ $g['a_art'] }} {{ $g['estudiante'] }} para su cumplimiento.
     </p>
 @endsection

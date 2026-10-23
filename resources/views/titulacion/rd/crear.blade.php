@@ -11,47 +11,7 @@
     $anio = (int) substr($v('fecha') ?: now()->toDateString(), 0, 4);
     $rdPrevia = fn ($u) => $u->seguimientoTitulacion?->resoluciones?->firstWhere('tipo', $def['tipo'])?->numero_rd;
 @endphp
-<style>
-    .rdg { --rdg-card:#fff; --rdg-border:#e5e7eb; --rdg-text:#1e293b; --rdg-muted:#64748b; --rdg-soft:#f8fafc; color:var(--rdg-text); max-width:1100px; }
-    .dark-mode .rdg { --rdg-card:#161b22; --rdg-border:rgba(255,255,255,.1); --rdg-text:#e6edf3; --rdg-muted:#8b949e; --rdg-soft:rgba(255,255,255,.04); }
-    .dim-mode .rdg { --rdg-card:var(--lm-superficie); --rdg-border:var(--lm-borde); --rdg-text:var(--lm-texto); --rdg-muted:var(--lm-suave); --rdg-soft:rgba(255,255,255,.04); }
-    .rdg-card { background:var(--rdg-card); border:1px solid var(--rdg-border); border-radius:14px; padding:1rem 1.15rem; margin-bottom:1rem; }
-    .rdg-h { font-size:.78rem; font-weight:800; text-transform:uppercase; letter-spacing:.04em; color:var(--rdg-muted); margin-bottom:.75rem; display:flex; align-items:center; gap:.5rem; }
-    .rdg-h .n { width:22px; height:22px; border-radius:50%; background:#4e73df; color:#fff; display:inline-flex; align-items:center; justify-content:center; font-size:.7rem; }
-    .rdg label { font-size:.76rem; font-weight:700; margin-bottom:.2rem; color:var(--rdg-text); }
-    .rdg .form-control { background:var(--rdg-card); color:var(--rdg-text); border-color:var(--rdg-border); }
-    .rdg-ayuda { font-size:.72rem; color:var(--rdg-muted); }
-    .rdg-lista { max-height:270px; overflow-y:auto; border:1px solid var(--rdg-border); border-radius:10px; }
-    .rdg-persona { display:flex; align-items:center; gap:.6rem; padding:.45rem .7rem; border-bottom:1px solid var(--rdg-border); margin:0; cursor:pointer; font-weight:400; }
-    .rdg-persona:last-child { border-bottom:0; }
-    .rdg-persona:hover { background:var(--rdg-soft); }
-    .rdg-persona input { width:16px; height:16px; flex-shrink:0; }
-    .rdg-persona small { color:var(--rdg-muted); }
-    .rdg-persona .rdg-aviso { margin-left:auto; font-size:.68rem; font-weight:700; color:#b45309; white-space:nowrap; }
-    .rdg-elegidos { display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:.5rem; margin-bottom:.75rem; }
-    .rdg-chip { display:flex; align-items:flex-start; gap:.55rem; padding:.55rem .65rem; border:1px solid var(--rdg-border); border-radius:10px; background:var(--rdg-soft); }
-    .rdg-chip.is-titular { border-color:#4f46e5; box-shadow:inset 3px 0 0 #4f46e5; }
-    .rdg-chip-ini { width:30px; height:30px; border-radius:8px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:.75rem; font-weight:800; color:#4338ca; background:#e0e7ff; }
-    .rdg-chip-txt { flex:1; min-width:0; font-size:.82rem; line-height:1.3; }
-    .rdg-chip-txt small { display:block; color:var(--rdg-muted); font-size:.7rem; }
-    .rdg-chip-txt .rdg-aviso, .rdg-res .rdg-aviso { display:inline-block; margin-top:.2rem; font-size:.68rem; font-weight:700; color:#b45309; }
-    .rdg-chip button { border:0; background:transparent; width:24px; height:24px; border-radius:50%; font-size:1.1rem; line-height:1; color:var(--rdg-muted); cursor:pointer; flex-shrink:0; }
-    .rdg-chip button:hover { background:rgba(220,38,38,.1); color:#dc2626; }
-    .rdg-chip-lock { color:var(--rdg-muted); font-size:.75rem; margin-top:.3rem; }
-    .rdg-agregar { position:relative; max-width:560px; }
-    .rdg-resultados { position:absolute; z-index:20; left:0; right:0; top:100%; margin-top:.25rem; background:var(--rdg-card); border:1px solid var(--rdg-border); border-radius:10px; box-shadow:0 10px 30px rgba(15,23,42,.15); overflow:hidden; }
-    .rdg-res { display:block; width:100%; text-align:left; border:0; border-bottom:1px solid var(--rdg-border); background:transparent; padding:.5rem .7rem; font-size:.82rem; color:var(--rdg-text); cursor:pointer; }
-    .rdg-res:last-child { border-bottom:0; }
-    .rdg-res:hover:not(:disabled) { background:var(--rdg-soft); }
-    .rdg-res small { color:var(--rdg-muted); }
-    .rdg-res.is-bloqueado { opacity:.6; cursor:not-allowed; }
-    .rdg-res-falta { display:block; font-size:.7rem; color:#b91c1c; margin-top:.15rem; }
-    .rdg-res-vacio { padding:.6rem .75rem; font-size:.8rem; color:var(--rdg-muted); }
-    .dark-mode .rdg-chip-ini, .dim-mode .rdg-chip-ini { background:rgba(165,180,252,.15); color:#c7d2fe; }
-    .rdg-numero { display:flex; align-items:center; gap:.35rem; }
-    .rdg-numero span { font-size:.82rem; color:var(--rdg-muted); white-space:nowrap; }
-    .rdg-acciones { position:sticky; bottom:0; display:flex; flex-wrap:wrap; gap:.5rem; align-items:center; padding:.8rem 1.15rem; background:var(--rdg-card); border:1px solid var(--rdg-border); border-radius:14px; box-shadow:0 -6px 20px rgba(15,23,42,.08); }
-</style>
+@include('titulacion._rdg_estilos')
 
 <div class="container-fluid py-3 rdg">
     <a href="{{ $volver }}" class="small text-muted"><i class="fas fa-arrow-left fa-xs mr-1"></i> Volver a la ficha</a>
@@ -79,6 +39,7 @@
                     'dni' => $u->dni ?: '—',
                     'meta' => trim(($u->condicion === 'Egresado' ? 'Egresado(a)' : '').($u->seguimientoTitulacion?->numero_expediente ? ' · Exp. '.$u->seguimientoTitulacion->numero_expediente : ''), ' ·'),
                     'previa' => $rdPrevia($u),
+                    'exp' => $u->seguimientoTitulacion?->numero_expediente,
                     'falta' => \App\Services\Titulacion\ReglasProceso::faltaIntegrante($u->seguimientoTitulacion, $def['tipo']),
                     'buscar' => \Illuminate\Support\Str::lower(\Illuminate\Support\Str::ascii($u->apellidos.' '.$u->name.' '.$u->dni)),
                 ])->keyBy('id');
@@ -118,7 +79,7 @@
                 </div>
                 <div class="form-group col-md-3">
                     <label for="fecha">Fecha de la RD</label>
-                    <input type="date" name="fecha" id="fecha" class="form-control form-control-sm" value="{{ $v('fecha') }}" required>
+                    <input type="text" name="fecha" id="fecha" class="form-control form-control-sm js-rdg-fecha" value="{{ $v('fecha') ?: now()->toDateString() }}" required>
                 </div>
                 <div class="form-group col-md-6">
                     <label for="genero">Integrantes (para concordar la RD)</label>
@@ -154,7 +115,7 @@
                 @foreach ($campos as $campo => [$etiqueta, $tipo, $obligatorio])
                     @if ($tipo === 'asesor')
                         <div class="form-group col-md-5">
-                            <label for="asesor">Asesor(a)</label>
+                            <label for="asesor">{{ $etiqueta }}</label>
                             <select name="asesor" id="asesor" class="form-control form-control-sm">
                                 <option value="">— Elegir —</option>
                                 <optgroup label="Docentes">
@@ -170,7 +131,7 @@
                                     </optgroup>
                                 @endif
                             </select>
-                            <div class="rdg-ayuda">Al emitir, queda como asesor(a) del PTI de cada integrante.</div>
+                            <div class="rdg-ayuda">{{ $plantilla === 'cambio_asesor' ? 'Al emitir, reemplaza al asesor(a) del TI de cada integrante.' : 'Al emitir, queda como asesor(a) del PTI de cada integrante.' }}</div>
                         </div>
                         <div class="form-group col-md-5">
                             <label for="asesor_nombre">Nombre como irá en la RD</label>
@@ -186,23 +147,37 @@
                         </div>
                         @continue
                     @endif
-                    <div class="form-group {{ $tipo === 'area' ? 'col-12' : 'col-md-4' }}">
+                    <div class="form-group {{ $tipo === 'area' ? 'col-12' : ($tipo === 'cargo' ? 'col-md-2' : 'col-md-4') }}">
                         <label for="{{ $campo }}">{{ $etiqueta }}</label>
                         @switch($tipo)
+                            @case('cargo')
+                                <select name="{{ $campo }}" id="{{ $campo }}" class="form-control form-control-sm">
+                                    @foreach (['Asesor', 'Asesora'] as $c)
+                                        <option value="{{ $c }}" @selected($v($campo) === $c)>{{ $c }}</option>
+                                    @endforeach
+                                </select>
+                                @break
                             @case('area')
                                 <textarea name="{{ $campo }}" id="{{ $campo }}" class="form-control form-control-sm" rows="{{ $campo === 'jurado' ? 3 : 2 }}" @required($obligatorio)>{{ $v($campo) }}</textarea>
                                 @break
                             @case('fecha')
-                                <input type="date" name="{{ $campo }}" id="{{ $campo }}" class="form-control form-control-sm" value="{{ $v($campo) }}" @required($obligatorio)>
+                                {{-- Sin dato registrado, hoy (editable). El calendario lo pone flatpickr (más abajo). --}}
+                                <input type="text" name="{{ $campo }}" id="{{ $campo }}" class="form-control form-control-sm js-rdg-fecha" value="{{ $v($campo) ?: now()->toDateString() }}" @required($obligatorio)>
                                 @break
                             @case('hora')
                                 <input type="time" name="{{ $campo }}" id="{{ $campo }}" class="form-control form-control-sm" value="{{ $v($campo) }}" @required($obligatorio)>
                                 @break
                             @default
+                                @if ($campo === 'expedientes')
+                                    {{-- Como el programa: no se edita. Sale del expediente de cada integrante (se arma al agregar o quitar). --}}
+                                    <input type="text" name="expedientes" id="expedientes" class="form-control form-control-sm" value="{{ $v('expedientes') }}" readonly
+                                           title="Expediente de cada integrante: no se puede cambiar aquí" style="background-color:var(--rdg-soft, #f1f5f9); cursor:not-allowed;">
+                                    <div class="rdg-ayuda"><i class="fas fa-lock fa-xs mr-1"></i>Es el N° de expediente de cada integrante; se corrige en su ficha (Datos y grupo).</div>
+                                    @break
+                                @endif
                                 <input type="text" name="{{ $campo }}" id="{{ $campo }}" class="form-control form-control-sm" value="{{ $v($campo) }}"
                                        @if ($tipo === 'numero') inputmode="numeric" placeholder="Ej.: 12" @endif
                                        @if ($campo === 'rd_referida') placeholder="Ej.: 045-2025" @endif
-                                       @if ($campo === 'expedientes') placeholder="0001-T/PUK, 0002-T/PUK" @endif
                                        @required($obligatorio)>
                         @endswitch
                         @if ($campo === 'rd_referida')
@@ -226,6 +201,10 @@
     </form>
 </div>
 
+{{-- Calendario de las fechas (flatpickr, en español). --}}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/l10n/es.js"></script>
 <script>
 (function () {
     var form = document.getElementById('rdgForm');
@@ -253,6 +232,14 @@
         }).join('');
         cajaInputs.innerHTML = elegidos.map(function (id) { return '<input type="hidden" name="integrantes[]" value="' + id + '">'; }).join('');
         document.getElementById('rdgCuenta').textContent = elegidos.length;
+        // Expediente(s): los de los integrantes, en el orden de sus nombres en la RD (igual lo arma el servidor).
+        var exp = document.getElementById('expedientes');
+        if (exp) {
+            exp.value = elegidos.map(function (id) { return C[id] || {}; })
+                .sort(function (a, b) { return String(a.nombre || '').localeCompare(String(b.nombre || ''), 'es'); })
+                .map(function (c) { return c.exp; })
+                .filter(function (e, i, todos) { return e && todos.indexOf(e) === i; }).join(', ');
+        }
     }
     cajaElegidos.addEventListener('click', function (e) {
         var b = e.target.closest('[data-quitar]');
@@ -292,6 +279,30 @@
     });
     pintar();
 
+    // Fechas: calendario en español (mes y año navegables, botón «Hoy»). Se guarda AAAA-MM-DD y se
+    // muestra «22 de octubre de 2026»; también se puede escribir. Sin la librería, queda el campo de texto.
+    if (window.flatpickr) {
+        document.querySelectorAll('.js-rdg-fecha').forEach(function (campo) {
+            flatpickr(campo, {
+                locale: flatpickr.l10ns.es, dateFormat: 'Y-m-d', altInput: true, altFormat: 'larga',
+                // «22 de octubre de 2026»: el mes en minúscula, como en la RD.
+                formatDate: function (d, formato, loc) {
+                    return formato === 'larga'
+                        ? d.getDate() + ' de ' + loc.months.longhand[d.getMonth()].toLowerCase() + ' de ' + d.getFullYear()
+                        : flatpickr.formatDate(d, formato, loc);
+                },
+                allowInput: true, monthSelectorType: 'dropdown', disableMobile: true,
+                onReady: function (s, t, fp) {
+                    fp.altInput.classList.add('rdg-fecha-visible');
+                    var hoy = document.createElement('button');
+                    hoy.type = 'button'; hoy.className = 'rdg-fp-hoy'; hoy.textContent = 'Hoy';
+                    hoy.addEventListener('click', function () { fp.setDate(new Date(), true); fp.close(); });
+                    fp.calendarContainer.appendChild(hoy);
+                },
+                onChange: function (s, t, fp) { fp.input.dispatchEvent(new Event('change')); },
+            });
+        });
+    }
     document.getElementById('fecha').addEventListener('change', function () {
         if (this.value) document.getElementById('rdgAnio').textContent = this.value.slice(0, 4);
     });

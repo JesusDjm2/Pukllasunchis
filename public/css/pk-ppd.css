@@ -1,0 +1,40 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Intranet PPD — capa de compatibilidad sobre el diseño compartido.
+   El layout PPD usa el mismo armazón que el del alumno FID (body.alumno-app:
+   menú petróleo, temas claro/tenue/oscuro). Las vistas PPD que aún usan las
+   clases antiguas (.ppd-page-header, .ppd-section-band, .btn-ppd-volver…) toman
+   aquí la paleta institucional (petróleo + dorado) a través de variables, sin
+   tocar cada vista. Lo nuevo se construye con .al-ui (pk-ui.css).
+   ═══════════════════════════════════════════════════════════════════════════ */
+body.alumno-ppd {
+    --ppd-accent: #33445a;
+    --ppd-accent-dark: #253449;
+    --ppd-accent-soft: #f5f7fa;
+    --ppd-ink: #1e293b;
+    --ppd-oro: #cd9244;
+}
+body.alumno-ppd.dark-mode { --ppd-accent-soft: #0d1117; --ppd-ink: #e6e8ef; }
+body.alumno-ppd.dim-mode { --ppd-accent-soft: var(--lm-superficie-2); --ppd-ink: var(--lm-texto); }
+
+.ppd-page-header {
+    display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between;
+    padding-bottom: 1rem; margin-bottom: 1.5rem; border-bottom: 2px solid rgba(205, 146, 68, .35);
+}
+.ppd-eyebrow {
+    display: block; font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--ppd-oro); margin-bottom: .25rem;
+}
+.ppd-page-title { margin: 0; font-weight: 800; color: var(--ppd-ink); letter-spacing: -.01em; }
+.ppd-page-subtitle { margin: .25rem 0 0; color: #64748b; font-size: .875rem; }
+.ppd-page-actions { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
+.ppd-section-band { background: linear-gradient(120deg, var(--ppd-accent), var(--ppd-accent-dark)) !important; color: #fff !important; }
+.btn-ppd-volver {
+    display: inline-flex; align-items: center; gap: .4rem; border: 1px solid rgba(15, 23, 42, .12);
+    color: var(--ppd-ink); background: transparent; font-weight: 700; border-radius: 10px;
+}
+.btn-ppd-volver:hover { border-color: var(--ppd-oro); color: var(--ppd-ink); }
+body.alumno-ppd .card { border-radius: 14px; }
+@media (max-width: 575.98px) {
+    .ppd-page-header { align-items: flex-start; }
+    .ppd-page-title { font-size: 1.15rem; }
+}

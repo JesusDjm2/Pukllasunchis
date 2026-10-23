@@ -1964,3 +1964,48 @@ body.dim-mode .text-info { color: var(--lm-lavanda) !important; }
 body.dim-mode .text-success { color: var(--lm-menta) !important; }
 body.dim-mode .text-warning { color: var(--lm-durazno) !important; }
 body.dim-mode .text-danger { color: var(--lm-coral) !important; }
+
+/* ════════════════════════════════════════════════════════════
+   FORMULARIO DE USUARIO (crear / editar «Cuenta y roles», también dentro del panel lateral del
+   directorio) — .reg-*, .role-pill — admin/usuarios/_form_estilos. Las tarjetas quedaban blancas
+   y las etiquetas, los roles y el resumen (en gris claro) no se leían.
+   ════════════════════════════════════════════════════════════ */
+body.dark-mode .reg-card { background: #161b22 !important; border-color: #30363d !important; box-shadow: none !important; }
+body.dim-mode .reg-card { background: var(--lm-superficie) !important; border-color: var(--lm-borde) !important; box-shadow: none !important; }
+body.dark-mode .reg-card-head { background: #1c2128 !important; border-bottom-color: #30363d !important; color: #8b949e !important; }
+body.dim-mode .reg-card-head { background: var(--lm-superficie-2) !important; border-bottom-color: var(--lm-borde) !important; color: var(--lm-suave) !important; }
+
+body.dark-mode .reg-label { color: #c9d1d9 !important; }
+body.dim-mode .reg-label { color: var(--lm-texto) !important; }
+body.dark-mode .reg-hint, body.dark-mode .reg-resumen-sub, body.dark-mode .reg-resumen-dato span:first-child { color: #8b949e !important; }
+body.dim-mode .reg-hint, body.dim-mode .reg-resumen-sub, body.dim-mode .reg-resumen-dato span:first-child { color: var(--lm-suave) !important; }
+body.dark-mode .reg-input-wrap .input-group-text { background: #1c2128 !important; border-color: #30363d !important; color: #8b949e !important; }
+body.dim-mode .reg-input-wrap .input-group-text { background: var(--lm-superficie-2) !important; border-color: var(--lm-borde) !important; color: var(--lm-suave) !important; }
+body.dark-mode .reg-input-solo, body.dark-mode .reg-input-wrap .form-control { border-color: #30363d !important; }
+body.dim-mode .reg-input-solo, body.dim-mode .reg-input-wrap .form-control { border-color: var(--lm-borde) !important; }
+
+/* Roles: sin marcar, pastilla neutra legible; marcado, el color del rol sobre fondo translúcido. */
+body.dark-mode .role-pill label { background: #1c2128 !important; border-color: #30363d !important; color: #c9d1d9 !important; }
+body.dim-mode .role-pill label { background: var(--lm-superficie-2) !important; border-color: var(--lm-borde) !important; color: var(--lm-texto) !important; }
+body.dark-mode .role-pill label:hover { border-color: #6e7681 !important; background: #22272e !important; }
+body.dim-mode .role-pill label:hover { border-color: var(--lm-borde-fuerte) !important; background: var(--lm-superficie-3) !important; }
+body.dark-mode .role-pill input:checked + label,
+body.dim-mode .role-pill input:checked + label { background: rgba(var(--rr), .2) !important; border-color: var(--rc) !important; color: #fff !important; }
+
+/* Sección «Datos académicos» / bolsa (recuadro lavanda) */
+body.dark-mode .reg-reveal, body.dark-mode .reg-reveal-blue { background: rgba(99, 102, 241, .08) !important; border-color: rgba(165, 180, 252, .3) !important; }
+body.dim-mode .reg-reveal, body.dim-mode .reg-reveal-blue { background: var(--lm-lavanda-fondo) !important; border-color: var(--lm-borde) !important; }
+body.dark-mode .reg-reveal .sec-title, body.dark-mode .reg-reveal-blue .sec-title { color: #a5b4fc !important; border-color: rgba(165, 180, 252, .25) !important; }
+body.dim-mode .reg-reveal .sec-title, body.dim-mode .reg-reveal-blue .sec-title { color: var(--lm-lavanda-claro) !important; border-color: var(--lm-borde) !important; }
+
+/* Resumen del usuario (barra lateral de editar) */
+body.dark-mode .reg-resumen-nombre, body.dark-mode .reg-resumen-dato span:last-child { color: #e6edf3 !important; }
+body.dim-mode .reg-resumen-nombre, body.dim-mode .reg-resumen-dato span:last-child { color: var(--lm-texto) !important; }
+body.dark-mode .reg-resumen-dato { border-top-color: #30363d !important; }
+body.dim-mode .reg-resumen-dato { border-top-color: var(--lm-borde) !important; }
+body.dark-mode .reg-rol-mini { background: #22272e !important; color: #c9d1d9 !important; }
+body.dim-mode .reg-rol-mini { background: var(--lm-superficie-3) !important; color: var(--lm-texto) !important; }
+body.dark-mode .reg-foto { background: rgba(99, 102, 241, .18) !important; color: #a5b4fc !important; border-color: #30363d !important; }
+body.dim-mode .reg-foto { background: var(--lm-lavanda-fondo) !important; color: var(--lm-lavanda-claro) !important; border-color: var(--lm-borde) !important; }
+body.dark-mode .reg-foto-btn { background: rgba(99, 102, 241, .12) !important; border-color: rgba(165, 180, 252, .35) !important; color: #a5b4fc !important; }
+body.dim-mode .reg-foto-btn { background: var(--lm-lavanda-fondo) !important; border-color: var(--lm-borde-fuerte) !important; color: var(--lm-lavanda-claro) !important; }

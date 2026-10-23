@@ -52,17 +52,26 @@ class PeriodoActual extends Model
     }
 
     /**
-     * Ventanas de fecha para que el docente registre calificaciones. Un campo
-     * en null no restringe ese lado de la ventana (fail-open).
+     * El docente registra cada parcial desde el inicio de su ventana hasta el CIERRE DEL
+     * PERÍODO: el cierre de la ventana ya no lo bloquea, solo marca cuándo se publican las
+     * notas al alumno (fechaNotasVisibles). Un campo en null no restringe ese lado (fail-open).
      */
     public function parcial1Habilitado(): bool
     {
-        return $this->dentroDeVentana($this->calificaciones_parcial1_inicio, $this->calificaciones_parcial1_cierre);
+        return $this->dentroDeVentana($this->calificaciones_parcial1_inicio, $this->fecha_cierre);
     }
 
     public function parcial2DesempenoHabilitado(): bool
     {
-        return $this->dentroDeVentana($this->calificaciones_parcial2_inicio, $this->calificaciones_parcial2_cierre);
+        return $this->dentroDeVentana($this->calificaciones_parcial2_inicio, $this->fecha_cierre);
+    }
+
+    /** Ya pasó el cierre de la ventana: las notas del parcial están publicadas al alumno. */
+    public function notasPublicadas(int $parcial): bool
+    {
+        $desde = $this->fechaNotasVisibles($parcial);
+
+        return $desde !== null && now()->greaterThanOrEqualTo($desde);
     }
 
     /**
@@ -95,8 +104,9 @@ class PeriodoActual extends Model
     }
 
     /**
-     * Estado de una ventana de calificación para mostrarlo en listados:
-     * 'libre' (sin fechas), 'proximo', 'abierto' o 'cerrado'. Misma regla que dentroDeVentana().
+     * Estado de una ventana de calificación para mostrarlo en listados: 'libre' (sin fechas),
+     * 'proximo', 'abierto', 'publicado' (notas visibles al alumno, el docente aún corrige)
+     * o 'cerrado' (cerró el período). Misma regla que parcial1Habilitado().
      */
     public function estadoVentanaCalificacion(int $parcial): string
     {
@@ -111,7 +121,11 @@ class PeriodoActual extends Model
             return 'proximo';
         }
 
-        return $this->dentroDeVentana($inicio, $cierre) ? 'abierto' : 'cerrado';
+        if (! $this->dentroDeVentana($inicio, $this->fecha_cierre)) {
+            return 'cerrado';
+        }
+
+        return $this->notasPublicadas($parcial) ? 'publicado' : 'abierto';
     }
 
     private function dentroDeVentana(?\Carbon\Carbon $inicio, ?\Carbon\Carbon $cierre): bool

@@ -5,4 +5,5 @@
 --}}
 @once
     <link rel="stylesheet" href="{{ asset('css/pk-ui.css') }}?v={{ filemtime(public_path('css/pk-ui.css')) }}">
+    <script src="{{ asset('js/pk-tabs.js') }}?v={{ filemtime(public_path('js/pk-tabs.js')) }}" defer></script>
 @endonce

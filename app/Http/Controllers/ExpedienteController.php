@@ -118,6 +118,7 @@ class ExpedienteController extends Controller
             'titulacion' => $titulacion,
             'asignaciones' => $asignaciones,
             'periodoActualFid' => $periodoActualFid,
+            'cursosPpd' => HistorialAcademico::cursosPpdPorCiclo($user),
             'layout' => $this->layout($puedeGestionar),
         ]);
     }
@@ -341,8 +342,10 @@ class ExpedienteController extends Controller
         if ($licencia['sin_fecha'] > 0) {
             $alertas[] = ['info', 'fa-calendar-plus', 'Tiene ' . $licencia['sin_fecha'] . ' licencia(s) sin fecha de inicio: complétala(s) en la trayectoria para poder controlar el máximo de 2 años.'];
         }
-        if ($historial['resumen']['repitencias']->isNotEmpty()) {
-            $ciclos = $historial['resumen']['repitencias']->map(fn ($p) => ($p->ciclo->nombre ?? '?') . ' en ' . $p->periodo)->implode(', ');
+        // Repitencia solo en FID: PPD es un programa de un año (Ciclo I y II) y sus "repeticiones" salen de periodos borrados.
+        $repitenciasFid = $historial['resumen']['repitencias']->where('modalidad', 'FID');
+        if ($repitenciasFid->isNotEmpty()) {
+            $ciclos = $repitenciasFid->map(fn ($p) => ($p->ciclo->nombre ?? '?') . ' en ' . $p->periodo)->implode(', ');
             $alertas[] = ['warning', 'fa-redo', "Repitió ciclo: {$ciclos}."];
         }
         $ultimo = $historial['periodos']->filter(fn ($p) => $p->cursos->isNotEmpty())->last();

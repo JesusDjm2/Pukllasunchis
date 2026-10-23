@@ -19,13 +19,25 @@ class Tesis extends Model
     protected $table = 'titulacion_tesis';
 
     protected $fillable = [
-        'seguimiento_id', 'titulo', 'asesor_id', 'asesor_externo_id', 'fecha_exposicion', 'rd_ti',
+        'seguimiento_id', 'titulo', 'asesor_id', 'asesor_externo_id', 'fecha_exposicion', 'rd_ti', 'url_repositorio_ti',
         'bachiller_sunedu', 'fecha_bachiller_sunedu', 'rd_extension', 'fecha_extension', 'fecha_sustentacion', 'rd_tesis',
         'titulo_sunedu', 'fecha_titulo_sunedu',
         'url_repositorio', 'estado',
+        'enlaces_dictamen', 'link_tesis', 'licenciatura_escuela', 'fecha_licenciatura_escuela',
+    ];
+
+    /** Situación de la tesis (columna `estado`). 'aprobado' queda solo para registros antiguos. */
+    public const SITUACIONES = [
+        'en_repositorio' => 'En repositorio',
+        'pendiente' => 'Pendiente',
+        'no_solicito' => 'No solicitó',
+        'no_se_presenta' => 'No se presenta',
     ];
 
     protected $casts = [
+        'enlaces_dictamen' => 'array',
+        'licenciatura_escuela' => 'boolean',
+        'fecha_licenciatura_escuela' => 'date',
         'fecha_exposicion' => 'date',
         'fecha_extension' => 'date',
         'fecha_sustentacion' => 'date',

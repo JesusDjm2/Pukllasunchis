@@ -9,9 +9,10 @@ use App\Models\User;
 use Illuminate\Support\Collection;
 
 /**
- * Compañeros de grupo de titulación. No hay tabla de grupos: en los datos
- * reales, quienes presentaron juntos comparten el mismo N° de acta o la misma
- * RD de PTI/TI/Tesis (un solo documento para todo el grupo).
+ * Compañeros de grupo de titulación. Desde el 19/10 quienes inician juntos el PTI quedan
+ * con el mismo seguimiento_titulacion.grupo_id. En los datos anteriores no hay grupo
+ * guardado: quienes presentaron juntos comparten el mismo N° de acta o la misma RD de
+ * PTI/TI/Tesis (un solo documento para todo el grupo). Se suman ambas fuentes.
  */
 class GrupoTitulacion
 {
@@ -44,10 +45,19 @@ class GrupoTitulacion
             ->filter(fn ($r) => $misRds->contains($r->tipo.'|'.self::claveRd($r->numero_rd)))
             ->pluck('seguimiento_id');
 
-        $ids = $porActa->merge($porRd)->unique();
+        $porGrupo = $seguimiento->grupo_id
+            ? SeguimientoTitulacion::where('grupo_id', $seguimiento->grupo_id)->where('id', '!=', $seguimiento->id)->pluck('id')
+            : collect();
+
+        $ids = $porGrupo->merge($porActa)->merge($porRd)->unique();
 
         return $ids->isEmpty() ? collect() : User::whereHas('seguimientoTitulacion', fn ($q) => $q->whereIn('id', $ids))
-            ->with('seguimientoTitulacion.estadoTitulacion')
-            ->orderBy('apellidos')->get(['id', 'name', 'apellidos', 'email']);
+            ->with([
+                'seguimientoTitulacion.estadoTitulacion',
+                // Contacto para la pestaña "Mi grupo" (celular de la ficha FID o PPD).
+                'alumno:id,user_id,numero,numero_referencia', 'alumnoB:id,user_id,numero,numero_referencia',
+                'programa:id,nombre',
+            ])
+            ->orderBy('apellidos')->get(['id', 'name', 'apellidos', 'email', 'dni', 'telefono', 'foto', 'programa_id']);
     }
 }

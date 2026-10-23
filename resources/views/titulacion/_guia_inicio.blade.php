@@ -1,4 +1,4 @@
-{{-- "Tu proceso de titulación" para el alumno que YA puede iniciar (FID desde el Ciclo VIII,
+{{-- "Tu proceso de titulación" para el alumno que YA puede iniciar (FID desde el Ciclo IX,
      PPD vigente) pero todavía no tiene proceso registrado: qué etapas tiene y en qué orden
      (los mismos pasos que AvanceTitulacion usa para calcular el avance), y a quién acudir.
      Cuando el gestor inicia su proceso, la intranet muestra en su lugar _avance_alumno. --}}
@@ -25,6 +25,7 @@
     <div class="tg-guia__inicio">
         <i class="fas fa-flag mr-1"></i><strong>Tu primer paso:</strong> inscribir tu Plan de Trabajo de Investigación (PTI) en la Unidad de Investigación.
     </div>
+    @include('titulacion._tramites_ayuda', ['bloque' => \App\Services\Titulacion\GuiaTramites::bloque('pti'), 'clavePersona' => 'u'.auth()->id()])
     <ol class="tg-guia__etapas">
         @foreach ($etapasGuia as $clave => $etapa)
             <li class="tg-guia__etapa">
@@ -42,7 +43,7 @@
     </ol>
     <div class="tg-guia__contacto">
         <i class="fas fa-hands-helping mr-1"></i><strong>Unidad de Investigación</strong>
-        · <i class="fas fa-phone-alt fa-xs mr-1"></i>(84) 23 79 18 - 26 14 31
+        · <i class="fab fa-whatsapp mr-1"></i><a href="https://wa.me/51972577170" target="_blank" rel="noopener" title="Escribir por WhatsApp">+51 972 577 170</a>
         · <i class="fas fa-map-marker-alt fa-xs mr-1"></i>Siete Diablitos 222, San Blas, Cusco
     </div>
 </div>

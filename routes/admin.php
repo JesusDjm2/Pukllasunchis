@@ -306,6 +306,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/publicar-periodo-uno', [CalificacionController::class, 'publicarPeriodoUno'])->name('publicar.periodo.uno')->middleware('role:admin|super-admin');
     Route::post('/periodouno/storeBloque', [CalificacionController::class, 'storePeriodoEnBloque'])->name('periodouno.storeBloque')->middleware('role:docente|admin|super-admin');
     Route::delete('/eliminar-periodo-uno', [CalificacionController::class, 'eliminarPeriodoUno'])->name('periodouno.eliminar')->middleware('role:admin|super-admin');
+    // Deja en blanco las calificaciones de UN curso (con respaldo JSON previo).
+    Route::delete('/cursos/{curso}/calificaciones', [CalificacionController::class, 'vaciarCurso'])->name('curso.calificaciones.vaciar')->middleware('role:admin|super-admin');
     Route::post('/periododos/storeBloque', [CalificacionController::class, 'storePeriodoDos'])->name('storePeriodoDos')->middleware('role:admin|super-admin');
     Route::delete('/eliminar-periodo-dos', [CalificacionController::class, 'eliminarPeriodoDos'])->name('periododos.eliminar')->middleware('role:admin|super-admin');
     Route::post('/periodotres/storeBloque', [CalificacionController::class, 'storePeriodoTres'])->name('storePeriodoTres')->middleware('role:admin|super-admin');
@@ -390,6 +392,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/', [App\Http\Controllers\MinkarikuyController::class, 'store'])->name('store');
         Route::get('/{minkarikuy}/edit', [App\Http\Controllers\MinkarikuyController::class, 'edit'])->name('edit');
         Route::put('/{minkarikuy}', [App\Http\Controllers\MinkarikuyController::class, 'update'])->name('update');
+        Route::post('/{minkarikuy}/activar', [App\Http\Controllers\MinkarikuyController::class, 'activar'])->name('activar');
+        Route::get('/{minkarikuy}/qr', [App\Http\Controllers\MinkarikuyController::class, 'qr'])->name('qr');
         Route::delete('/{minkarikuy}', [App\Http\Controllers\MinkarikuyController::class, 'destroy'])->name('destroy');
     });
 
@@ -600,6 +604,10 @@ Route::middleware('auth')->group(function () {
             Route::get('/', [App\Http\Controllers\Titulacion\TitulacionController::class, 'index'])->name('index');
             Route::get('/crear-cuentas-masivo', [App\Http\Controllers\Titulacion\TitulacionController::class, 'crearCuentasMasivoPreview'])->name('crear-cuentas-masivo.preview');
             Route::post('/crear-cuentas-masivo', [App\Http\Controllers\Titulacion\TitulacionController::class, 'crearCuentasMasivoEjecutar'])->name('crear-cuentas-masivo.ejecutar');
+            // Sincronizar la planilla de expedientes (EXP. PPD / EXP. FID): vista previa exacta y confirmación
+            Route::get('/sincronizar', [App\Http\Controllers\Titulacion\SincronizacionController::class, 'form'])->name('sincronizar.form');
+            Route::post('/sincronizar/vista-previa', [App\Http\Controllers\Titulacion\SincronizacionController::class, 'previsualizar'])->name('sincronizar.previa');
+            Route::post('/sincronizar/aplicar', [App\Http\Controllers\Titulacion\SincronizacionController::class, 'aplicar'])->name('sincronizar.aplicar');
             Route::get('/importaciones/{importacion}/crear-cuenta', [App\Http\Controllers\Titulacion\TitulacionController::class, 'importacionCrearCuentaForm'])->name('importaciones.crear-cuenta.form');
             Route::post('/importaciones/{importacion}/crear-cuenta', [App\Http\Controllers\Titulacion\TitulacionController::class, 'importacionCrearCuentaGuardar'])->name('importaciones.crear-cuenta.guardar');
             Route::get('/importaciones/{importacion}/completar-ficha', [App\Http\Controllers\Titulacion\TitulacionController::class, 'importacionCompletarFichaForm'])->name('importaciones.completar-ficha.form');
@@ -607,6 +615,14 @@ Route::middleware('auth')->group(function () {
             Route::get('/egresados/{egresado}', [App\Http\Controllers\Titulacion\TitulacionController::class, 'show'])->name('show');
             Route::get('/egresados/{egresado}/ficha', [App\Http\Controllers\Titulacion\TitulacionController::class, 'ficha'])->name('ficha');
             Route::post('/activos/{alumno}/iniciar', [App\Http\Controllers\Titulacion\TitulacionController::class, 'iniciarSeguimiento'])->name('iniciar');
+            // Iniciar el proceso: datos del PTI + expediente correlativo + integrantes del grupo
+            Route::get('/iniciar/buscar', [App\Http\Controllers\Titulacion\InicioProcesoController::class, 'buscar'])->name('inicio.buscar');
+            Route::get('/iniciar/{persona}', [App\Http\Controllers\Titulacion\InicioProcesoController::class, 'crear'])->name('inicio.crear');
+            Route::post('/iniciar/{persona}', [App\Http\Controllers\Titulacion\InicioProcesoController::class, 'guardar'])->name('inicio.guardar');
+            // Etapa TI: informe ITI del asesor, asesores y jurado (1 o más, cargo opcional)
+            Route::post('/egresados/{egresado}/informe-iti', [App\Http\Controllers\Titulacion\EtapaTiController::class, 'informe'])->name('ti.informe');
+            Route::post('/egresados/{egresado}/participantes', [App\Http\Controllers\Titulacion\EtapaTiController::class, 'participanteGuardar'])->name('participantes.guardar');
+            Route::delete('/participantes/{participante}', [App\Http\Controllers\Titulacion\EtapaTiController::class, 'participanteEliminar'])->name('participantes.eliminar');
             Route::put('/egresados/{egresado}/estado', [App\Http\Controllers\Titulacion\TitulacionController::class, 'actualizarEstado'])->name('estado.actualizar');
             Route::post('/egresados/{egresado}/pti', [App\Http\Controllers\Titulacion\TitulacionController::class, 'ptiGuardar'])->name('pti.guardar');
             Route::post('/egresados/{egresado}/pti/nuevo', [App\Http\Controllers\Titulacion\TitulacionController::class, 'ptiNuevo'])->name('pti.nuevo');

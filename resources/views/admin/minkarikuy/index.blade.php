@@ -2,87 +2,71 @@
 @extends($layout)
 @section('titulo', 'Mink\'arikuy')
 @section('contenido')
-<div class="container-fluid bg-white">
-    <div class="d-sm-flex align-items-center justify-content-between mb-4 pt-3">
-        <div>
-            <h4 class="mb-0 font-weight-bold" style="color:#1e293b;"><i class="fas fa-qrcode mr-2" style="color:#4e73df;"></i>Mink'arikuy</h4>
-            <small class="text-muted">Registros de asistencia y participación mediante código QR</small>
-        </div>
-        <a href="{{ route('admin.minkarikuy.create') }}"
-            class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
-            <i class="fas fa-plus fa-sm mr-1"></i> Nuevo registro
-        </a>
+    @include('alumnos.partials.ui')
+    @include('admin.minkarikuy._estilos')
+
+    @php
+        $publicado = $registros->firstWhere('activo', true);
+        $otros = $registros->reject(fn ($r) => $publicado && $r->id === $publicado->id);
+    @endphp
+
+    <div class="container-fluid al-ui">
+        <section class="al-hero">
+            <div class="al-hero-fila">
+                <div class="al-hero-texto">
+                    <div class="al-kicker"><i class="fas fa-people-carry"></i> Gestión interna · Comunicación</div>
+                    <h1>Mink'arikuy</h1>
+                    <p class="al-hero-sub">Encuentros y conversatorios con su enlace. El sistema genera el código QR a partir del enlace: descárgalo para publicarlo o imprime el afiche. El registro publicado aparece en la página web.</p>
+                </div>
+                <div class="al-hero-acciones">
+                    <a href="{{ route('admin.minkarikuy.create') }}" class="al-btn al-btn-oro"><i class="fas fa-plus"></i> Nuevo Mink'arikuy</a>
+                </div>
+            </div>
+        </section>
+
+        @include('admin.curso.silabos.proyectos._alertas')
+
+        {{-- ── Publicado en la página web ── --}}
+        @if ($publicado)
+            <article class="al-card">
+                <div class="mk-publicado">
+                    @include('admin.minkarikuy._qr', ['item' => $publicado, 'tamano' => 260])
+                    <div style="min-width:0;">
+                        <span class="mk-etiqueta">Publicado en la página web</span>
+                        <h2>{{ $publicado->nombre }}</h2>
+                        <div class="mk-cuando"><i class="far fa-calendar-alt mr-1"></i>{{ $publicado->cuando }}</div>
+                        @include('admin.minkarikuy._enlace', ['item' => $publicado])
+                        @include('admin.minkarikuy._acciones', ['item' => $publicado, 'grande' => true])
+                    </div>
+                </div>
+            </article>
+        @elseif ($registros->isNotEmpty())
+            <div class="al-aviso is-warn"><i class="fas fa-eye-slash"></i>
+                <div><strong>Ningún Mink'arikuy está publicado.</strong> La página web no muestra la opción Mink'arikuy hasta que publiques uno (botón <i class="fas fa-globe-americas"></i> de cada tarjeta).</div>
+            </div>
+        @endif
+
+        {{-- ── Los demás ── --}}
+        @if ($otros->isNotEmpty())
+            <div class="mk-seccion">{{ $publicado ? 'Anteriores y próximos' : 'Registros' }} · {{ $otros->count() }}</div>
+            <div class="mk-grid">
+                @foreach ($otros as $item)
+                    <article class="al-card mk-item">
+                        @include('admin.minkarikuy._qr', ['item' => $item, 'tamano' => 160])
+                        <div class="mk-item-cuerpo">
+                            <h3>{{ $item->nombre }}</h3>
+                            <div class="mk-cuando"><i class="far fa-calendar-alt mr-1"></i>{{ $item->cuando }}</div>
+                            @include('admin.minkarikuy._acciones', ['item' => $item, 'grande' => false])
+                        </div>
+                    </article>
+                @endforeach
+            </div>
+        @endif
+
+        @if ($registros->isEmpty())
+            <div class="al-card"><div class="al-vacio"><i class="fas fa-people-carry"></i>Todavía no hay Mink'arikuy. Crea el primero con "Nuevo Mink'arikuy": solo necesitas el nombre, la fecha, la hora y el enlace.</div></div>
+        @endif
     </div>
 
-    @if (session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('success') }}
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-    @endif
-
-    <div class="table-responsive">
-        <table class="table table-bordered table-hover table-sm">
-            <thead class="thead-dark">
-                <tr>
-                    <th>#</th>
-                    <th>Nombre</th>
-                    <th>Fecha</th>
-                    <th>Hora</th>
-                    <th>Imagen</th>
-                    <th>Activo</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($registros as $item)
-                    <tr>
-                        <td>{{ $loop->iteration }}</td>
-                        <td>{{ $item->nombre }}</td>
-                        <td>{{ $item->fecha->format('d/m/Y') }}</td>
-                        <td>{{ \Carbon\Carbon::createFromFormat('H:i:s', $item->hora)->format('H:i') }}</td>
-                        <td>
-                            @if ($item->imagen)
-                                <a href="{{ asset('img/minkarikuy/'.$item->imagen) }}" target="_blank">
-                                    <img src="{{ asset('img/minkarikuy/'.$item->imagen) }}"
-                                        alt="QR" height="60" class="rounded">
-                                </a>
-                            @else
-                                <span class="text-muted">Sin imagen</span>
-                            @endif
-                        </td>
-                        <td class="text-center">
-                            @if ($item->activo)
-                                <span class="badge badge-success"><i class="fas fa-check mr-1"></i>Activo</span>
-                            @else
-                                <span class="badge badge-secondary">Inactivo</span>
-                            @endif
-                        </td>
-                        <td>
-                            <a href="{{ route('admin.minkarikuy.edit', $item) }}"
-                                class="btn btn-sm btn-warning" title="Editar">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <form action="{{ route('admin.minkarikuy.destroy', $item) }}"
-                                method="POST" class="d-inline"
-                                onsubmit="return confirm('¿Eliminar este registro?')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-danger" title="Eliminar">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="7" class="text-center text-muted py-4">No hay registros.</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-</div>
+    @include('admin.minkarikuy._scripts')
 @endsection

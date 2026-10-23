@@ -1,446 +1,279 @@
 @extends('layouts.profesionalizacion')
+@section('titulo', 'Ficha técnica')
 @section('contenido')
-    <div class="container-fluid pt-2">
-        <div class="ppd-page-header">
-            <div>
-                <span class="ppd-eyebrow"><i class="fa fa-graduation-cap mr-1"></i>Profesionalización Docente</span>
-                <h3 class="ppd-page-title"><i class="fa fa-file-text mr-2"></i>Ficha Técnica</h3>
-            </div>
-            <div class="ppd-page-actions">
-                @if ($alumno && $formularioHabilitado && $periodoActualPpd)
-                    @if ($matriculaActual)
-                        <span class="badge badge-success px-3 py-2" style="font-size:13px;border-radius:6px;">
-                            <i class="fa fa-check-circle mr-1"></i>Matriculado · {{ $periodoActualPpd->nombre }}
-                        </span>
+    @include('alumnos.partials.ui')
+    @php
+        $matriculaAbierta = $alumno && $formularioHabilitado && $periodoActualPpd && ! $matriculaActual;
+    @endphp
+
+    <div class="al-ui">
+        @if (Session::has('success'))
+            <div class="al-aviso is-info" role="status"><i class="fas fa-check-circle"></i><div>{{ Session::get('success') }}</div></div>
+        @endif
+
+        @if ($alumno)
+            @php
+                $usuario = $alumno->user;
+                $programa = $usuario?->programa;
+                $iniciales = mb_strtoupper(mb_substr(trim((string) $alumno->nombres), 0, 1) . mb_substr(trim((string) $alumno->apellidos), 0, 1));
+
+                // Sílabo de cada curso: se rige por el periodo FID (único "periodo actual" del sistema de sílabos).
+                $silabosVisibles = ! $periodoActual || $periodoActual->silabosVisibles();
+                $estadoSilabo = $cursos->mapWithKeys(function ($curso) use ($periodoActual, $silabosVisibles) {
+                    $estructurado = $curso->silabos->firstWhere('periodo_actual_id', $periodoActual->id ?? null)
+                        ?? $curso->silabos->firstWhere('periodo', $periodoActual->nombre ?? null);
+                    $pdf = $curso->silabosPdf->firstWhere('periodo_actual_id', $periodoActual->id ?? null);
+                    $url = $estructurado ? route('silabo.pdf', $estructurado->id)
+                        : ($pdf ? asset('docentes/silabo/' . $pdf->pdf)
+                        : ($curso->silabo ? asset('docentes/silabo/' . $curso->silabo) : null));
+                    if (! $url) {
+                        return [$curso->id => ['tipo' => 'sin', 'texto' => 'Sin sílabo']];
+                    }
+
+                    return [$curso->id => $silabosVisibles ? ['tipo' => 'ok', 'url' => $url] : ['tipo' => 'pronto', 'texto' => 'Disponible pronto']];
+                });
+                $silabosListos = $estadoSilabo->where('tipo', 'ok')->count();
+
+                // Plan del programa por ciclo (I, II…), cursos en orden alfabético; los sin ciclo al final.
+                $porCiclo = $cursos->filter->ciclo->groupBy('ciclo_id')
+                    ->sortBy(fn ($grupo) => $grupo->first()->ciclo->ordenCiclo())
+                    ->map(fn ($grupo) => $grupo->sortBy('nombre', SORT_NATURAL | SORT_FLAG_CASE)->values());
+                $sinCiclo = $cursos->reject->ciclo->sortBy('nombre')->values();
+
+                $pendientesCurso = $usuario ? collect($usuario->cursosPendientes()) : collect();
+                $tieneCalificaciones = $alumno->calificaciones()->exists();
+                $hayTitulacion = ! empty($seguimientoTitulacion) || ! empty($guiaTitulacion);
+                $estadoTitulacion = ! empty($seguimientoTitulacion) ? $seguimientoTitulacion->avance()->estadoNombre() : null;
+                $nombreCiclo = fn ($c) => $c ? (preg_match('/^ciclo\s/i', $c->nombre) ? $c->nombre : 'Ciclo ' . $c->nombre) : null;
+            @endphp
+
+            {{-- ── Hero: identidad + estado de matrícula ── --}}
+            <section class="al-hero">
+                <div class="al-hero-fila">
+                    @if ($usuario && $usuario->foto)
+                        <img src="{{ asset('img/estudiantes/' . $usuario->foto) }}" alt="Foto de {{ $alumno->nombres }}" class="al-hero-foto">
                     @else
-                        <a href="{{ route('ppd.edit', $alumno->id) }}" class="btn btn-sm btn-warning shadow-sm">
-                            <i class="fa fa-graduation-cap mr-1"></i> Completar matrícula
-                        </a>
+                        <div class="al-hero-foto al-hero-foto-vacia" aria-hidden="true">{{ $iniciales }}</div>
                     @endif
-                @endif
-            </div>
-        </div>
-
-        <!-- Alertas con mejor presentación -->
-        <div class="row">
-            <div class="col-12">
-                @if (Session::has('success'))
-                    <div class="alert alert-success alert-dismissible fade show text-center shadow-sm" role="alert">
-                        <i class="fa fa-check-circle mr-2"></i>
-                        {{ Session::get('success') }}
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
+                    <div class="al-hero-texto">
+                        <div class="al-kicker">Profesionalización docente · Ficha técnica</div>
+                        <h1>{{ $alumno->nombres }} {{ $alumno->apellidos }}</h1>
+                        <div class="al-chips">
+                            @if ($programa)
+                                <span class="al-chip"><i class="fas fa-graduation-cap"></i>{{ $programa->nombre }}</span>
+                            @endif
+                            @if ($alumno->ciclo)
+                                <span class="al-chip"><i class="fas fa-layer-group"></i>{{ $nombreCiclo($alumno->ciclo) }}</span>
+                            @endif
+                            <span class="al-chip"><i class="fas fa-id-card"></i>DNI {{ $alumno->dni }}</span>
+                            @if ($matriculaActual)
+                                <span class="al-chip is-ok"><i class="fas fa-check-circle"></i>Matriculado · {{ $periodoActualPpd->nombre }}</span>
+                            @elseif ($matriculaAbierta)
+                                <span class="al-chip is-warn"><i class="fas fa-exclamation-circle"></i>Matrícula pendiente</span>
+                            @endif
+                        </div>
                     </div>
-                @endif
-            </div>
-        </div>
+                    <div class="al-hero-acciones">
+                        @if ($matriculaAbierta)
+                            <a class="al-btn al-btn-oro" href="{{ route('ppd.edit', $alumno->id) }}"><i class="fas fa-graduation-cap"></i> Completar matrícula</a>
+                        @endif
+                        @if ($tieneCalificaciones)
+                            <a class="al-btn al-btn-claro" href="{{ route('calificacionesppd', $alumno->id) }}"><i class="fas fa-clipboard-list"></i> Calificaciones</a>
+                        @endif
+                    </div>
+                </div>
+            </section>
 
-        @if ($alumno && $formularioHabilitado && $periodoActualPpd && ! $matriculaActual)
-            <div class="alert alert-warning d-flex align-items-center shadow-sm mb-4 py-2 border-0">
-                <i class="fa fa-exclamation-circle fa-lg mr-3 flex-shrink-0"></i>
-                <span>El período <strong>{{ $periodoActualPpd->nombre }}</strong> está abierto.
-                    Actualiza tus datos generales para completar tu matrícula usando el botón del encabezado.
-                    No es necesario volver a llenar toda la ficha técnica.</span>
-            </div>
-        @endif
-
-        @if (isset($periodoActual) && $periodoActual && !$periodoActual->silabosVisibles())
-            <div class="alert alert-info d-flex align-items-center shadow-sm mb-4 py-2 border-0">
-                <i class="fa fa-info-circle fa-lg mr-3 flex-shrink-0"></i>
-                <span>Los sílabos de <strong>{{ $periodoActual->nombre }}</strong> estarán disponibles a partir del
-                    <strong>{{ $periodoActual->fechaSilabosVisibles()->format('d/m/Y') }}</strong>. Los docentes
-                    están trabajando en ellos.</span>
-            </div>
-        @endif
-
-        @if (session('mostrar_popup_matricula'))
-            <script>
-                document.addEventListener('DOMContentLoaded', function () {
-                    Swal.fire({
-                        icon: 'success',
-                        title: '¡Formulario enviado!',
-                        html: 'Tu formulario fue llenado con éxito.<br>El área de cobranzas verificará tu pago para poder enviarte tu ficha de matrícula.',
-                        confirmButtonColor: '#4e73df',
-                        confirmButtonText: 'Entendido',
-                    });
-                });
-            </script>
-        @endif
-
-        @if ($alumno && $formularioHabilitado && $periodoActualPpd && ! $matriculaActual)
-            <script>
-                document.addEventListener('DOMContentLoaded', function () {
-                    if (sessionStorage.getItem('matriculaAlertVista')) return;
-
-                    Swal.fire({
-                        icon: 'warning',
-                        title: '¡Aún no te has matriculado!',
-                        html: 'El período <strong>{{ $periodoActualPpd->nombre }}</strong> ya está abierto. Completa tu matrícula lo antes posible.',
-                        showCancelButton: true,
-                        confirmButtonText: 'Completar matrícula ahora',
-                        cancelButtonText: 'Recordarme después',
-                        confirmButtonColor: '#4e73df',
-                        cancelButtonColor: '#858796',
-                        reverseButtons: true,
-                    }).then(function (resultado) {
-                        sessionStorage.setItem('matriculaAlertVista', '1');
-                        if (resultado.isConfirmed) {
-                            window.location.href = '{{ route('ppd.edit', $alumno->id) }}';
-                        }
-                    });
-                });
-            </script>
-        @endif
-
-        {{-- Proceso de titulación (avance, o guía de pasos si ya puede iniciarlo) --}}
-        @if (! empty($seguimientoTitulacion))
-            <div class="mb-3">@include('titulacion._avance_alumno', ['seguimiento' => $seguimientoTitulacion])</div>
-        @elseif (! empty($guiaTitulacion))
-            @include('titulacion._guia_inicio')
-        @endif
-
-        <div class="row" id="contenido-alumno">
-            @if (auth()->user()->alumnoB)
-                <div class="col-lg-12">
-                    <!-- Tarjeta de información principal -->
-                    <div class="card shadow-sm border-0">
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table table-hover mb-0">
-                                    <tbody>
-                                        <!-- Encabezado de sección con gradiente -->
-                                        <tr class="ppd-section-band">
-                                            <td colspan="4" class="font-weight-bold py-3">
-                                                <i class="fa fa-graduation-cap mr-2"></i>Información del Programa
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td class="font-weight-bold bg-light" width="20%">Programa:</td>
-                                            <td colspan="3">
-                                                <span class="badge badge-primary badge-pill px-3 py-2">
-                                                    {{ $alumno->user->programa->nombre }}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td class="font-weight-bold bg-light align-middle">Cursos del Programa:</td>
-                                            <td colspan="3" class="p-3">
-                                                @php
-                                                    $ciclosOrdenados = $cursos
-                                                        ->pluck('ciclo')
-                                                        ->filter()
-                                                        ->unique('id')
-                                                        ->sortBy(function ($ciclo) {
-                                                            return (int) $ciclo->numero;
-                                                        });
-
-                                                    $cursosPorCiclo = $cursos->groupBy('ciclo_id');
-                                                @endphp
-
-                                                <!-- Lista de ciclos y cursos -->
-                                                <div class="list-group list-group-flush">
-                                                    @foreach ($ciclosOrdenados as $ciclo)
-                                                        @if ($cursosPorCiclo->has($ciclo->id))
-                                                            <div class="list-group-item font-weight-bold py-3 mt-2 rounded border-left border-primary border-width-4"
-                                                                style="background: linear-gradient(to right, #f8f9fa, #ffffff);">
-                                                                <div class="d-flex align-items-center">
-                                                                    <span
-                                                                        class="badge badge-primary mr-3 px-3 py-2">{{ $ciclo->numero }}</span>
-                                                                    <span class="text-dark">{{ $ciclo->nombre }}</span>
-                                                                    <span
-                                                                        class="badge badge-light ml-auto px-3">{{ $cursosPorCiclo[$ciclo->id]->count() }}
-                                                                        cursos</span>
-                                                                </div>
-                                                            </div>
-
-                                                            <!-- Cursos del Ciclo -->
-                                                            @foreach ($cursosPorCiclo[$ciclo->id] as $curso)
-                                                                <div class="list-group-item curso-item py-3 border-bottom"
-                                                                    style="padding-left: 4rem !important;">
-                                                                    <div
-                                                                        class="d-flex flex-column flex-md-row align-items-md-center justify-content-between">
-                                                                        <div class="flex-grow-1 mb-2 mb-md-0">
-                                                                            <div class="d-flex align-items-center">
-                                                                                <i class="fa fa-circle text-primary mr-2"
-                                                                                    style="font-size: 8px;"></i>
-                                                                                <a href="{{ route('curso.show', $curso->id) }}"
-                                                                                    class="font-weight-bold text-decoration-none text-dark hover-primary">
-                                                                                    {{ $curso->nombre }}
-                                                                                </a>
-                                                                            </div>
-
-                                                                            @if ($curso->docentes->count())
-                                                                                <small class="text-muted d-block mt-1 ml-3">
-                                                                                    <i
-                                                                                        class="fa fa-user mr-1 text-info"></i>
-                                                                                    <span
-                                                                                        class="font-weight-bold">Docente(s):</span>
-                                                                                    <span
-                                                                                        class="text-primary">{{ $curso->docentes->pluck('nombre')->join(', ') }}</span>
-                                                                                </small>
-                                                                            @else
-                                                                                <small class="text-muted d-block mt-1 ml-3">
-                                                                                    <i
-                                                                                        class="fa fa-user mr-1 text-warning"></i>
-                                                                                    <span
-                                                                                        class="font-weight-bold">Docente(s):</span>
-                                                                                    <span
-                                                                                        class="text-warning font-weight-bold">No
-                                                                                        asignado</span>
-                                                                                </small>
-                                                                            @endif
-                                                                        </div>
-
-                                                                        <div class="d-flex align-items-center ml-md-3">
-                                                                            @php
-                                                                                $periodoActualSilaboV = \App\Models\PeriodoActual::where('actual', true)->first();
-                                                                                $silaboEstructuradoV = $curso->silabos->firstWhere('periodo_actual_id', $periodoActualSilaboV->id ?? null)
-                                                                                    ?? $curso->silabos->firstWhere('periodo', $periodoActualSilaboV->nombre ?? null);
-                                                                                $silaboPdfV = $curso->silabosPdf->where('periodo_actual_id', $periodoActualSilaboV->id ?? null)->first();
-                                                                                $silabosVisiblesV = ! $periodoActualSilaboV || $periodoActualSilaboV->silabosVisibles();
-                                                                            @endphp
-                                                                            @if (! $silabosVisiblesV && ($silaboEstructuradoV || $silaboPdfV || $curso->silabo))
-                                                                                <span class="text-muted small">Disponible pronto</span>
-                                                                            @elseif ($silaboEstructuradoV)
-                                                                                <a class="btn btn-outline-success btn-sm rounded-pill px-3 d-inline-flex align-items-center"
-                                                                                    href="{{ route('silabo.pdf', $silaboEstructuradoV->id) }}"
-                                                                                    target="_blank" title="Ver Sílabo">
-                                                                                    <i class="fa fa-file-pdf-o mr-2"></i>
-                                                                                    Sílabo
-                                                                                </a>
-                                                                            @elseif ($silaboPdfV)
-                                                                                <a class="btn btn-outline-success btn-sm rounded-pill px-3 d-inline-flex align-items-center"
-                                                                                    href="{{ asset('docentes/silabo/' . $silaboPdfV->pdf) }}"
-                                                                                    target="_blank" title="Ver Sílabo">
-                                                                                    <i class="fa fa-file-pdf-o mr-2"></i>
-                                                                                    Sílabo
-                                                                                </a>
-                                                                            @elseif ($curso->silabo)
-                                                                                <a class="btn btn-outline-success btn-sm rounded-pill px-3 d-inline-flex align-items-center"
-                                                                                    href="{{ asset('docentes/silabo/' . $curso->silabo) }}"
-                                                                                    target="_blank" title="Ver Sílabo">
-                                                                                    <i class="fa fa-file-pdf-o mr-2"></i>
-                                                                                    Sílabo
-                                                                                </a>
-                                                                            @endif
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            @endforeach
-                                                        @endif
-                                                    @endforeach
-
-                                                    <!-- Cursos sin ciclo asignado -->
-                                                    @php
-                                                        $cursosSinCiclo = $cursos->filter(function ($curso) {
-                                                            return !$curso->ciclo;
-                                                        });
-                                                    @endphp
-
-                                                    @if ($cursosSinCiclo->count() > 0)
-                                                        <div class="list-group-item font-weight-bold py-3 mt-3 rounded border-left border-secondary border-width-4"
-                                                            style="background: linear-gradient(to right, #f8f9fa, #ffffff);">
-                                                            <div class="d-flex align-items-center">
-                                                                <i
-                                                                    class="fa fa-exclamation-triangle text-warning mr-3 fa-lg"></i>
-                                                                <span>CURSOS SIN CICLO ASIGNADO</span>
-                                                                <span
-                                                                    class="badge badge-secondary ml-auto px-3">{{ $cursosSinCiclo->count() }}
-                                                                    cursos</span>
-                                                            </div>
-                                                        </div>
-
-                                                        @foreach ($cursosSinCiclo as $curso)
-                                                            <div class="list-group-item curso-item py-3 border-bottom"
-                                                                style="padding-left: 4rem !important;">
-                                                                <div
-                                                                    class="d-flex flex-column flex-md-row align-items-md-center justify-content-between">
-                                                                    <div class="flex-grow-1 mb-2 mb-md-0">
-                                                                        <div class="d-flex align-items-center">
-                                                                            <i class="fa fa-circle text-secondary mr-2"
-                                                                                style="font-size: 8px;"></i>
-                                                                            <a href="{{ route('curso.show', $curso->id) }}"
-                                                                                class="font-weight-bold text-decoration-none text-dark hover-primary">
-                                                                                {{ $curso->nombre }}
-                                                                            </a>
-                                                                        </div>
-
-                                                                        @if ($curso->docentes->count())
-                                                                            <small class="text-muted d-block mt-1 ml-3">
-                                                                                <i class="fa fa-user mr-1 text-info"></i>
-                                                                                <span
-                                                                                    class="font-weight-bold">Docente(s):</span>
-                                                                                <span
-                                                                                    class="text-primary">{{ $curso->docentes->pluck('nombre')->join(', ') }}</span>
-                                                                            </small>
-                                                                        @else
-                                                                            <small class="text-muted d-block mt-1 ml-3">
-                                                                                <i class="fa fa-user mr-1 text-warning"></i>
-                                                                                <span
-                                                                                    class="font-weight-bold">Docente(s):</span>
-                                                                                <span
-                                                                                    class="text-warning font-weight-bold">No
-                                                                                    asignado</span>
-                                                                            </small>
-                                                                        @endif
-                                                                    </div>
-
-                                                                    <div class="d-flex align-items-center ml-md-3">
-                                                                        @php
-                                                                            $periodoActualSilaboV = \App\Models\PeriodoActual::where('actual', true)->first();
-                                                                            $silaboEstructuradoV = $curso->silabos->firstWhere('periodo_actual_id', $periodoActualSilaboV->id ?? null)
-                                                                                ?? $curso->silabos->firstWhere('periodo', $periodoActualSilaboV->nombre ?? null);
-                                                                            $silaboPdfV = $curso->silabosPdf->where('periodo_actual_id', $periodoActualSilaboV->id ?? null)->first();
-                                                                            $silabosVisiblesV = ! $periodoActualSilaboV || $periodoActualSilaboV->silabosVisibles();
-                                                                        @endphp
-                                                                        @if (! $silabosVisiblesV && ($silaboEstructuradoV || $silaboPdfV || $curso->silabo))
-                                                                            <span class="text-muted small">Disponible pronto</span>
-                                                                        @elseif ($silaboEstructuradoV)
-                                                                            <a class="btn btn-outline-success btn-sm rounded-pill px-3 d-inline-flex align-items-center"
-                                                                                href="{{ route('silabo.pdf', $silaboEstructuradoV->id) }}"
-                                                                                target="_blank" title="Ver Sílabo">
-                                                                                <i class="fa fa-file-pdf-o mr-2"></i>
-                                                                                Sílabo
-                                                                            </a>
-                                                                        @elseif ($silaboPdfV)
-                                                                            <a class="btn btn-outline-success btn-sm rounded-pill px-3 d-inline-flex align-items-center"
-                                                                                href="{{ asset('docentes/silabo/' . $silaboPdfV->pdf) }}"
-                                                                                target="_blank" title="Ver Sílabo">
-                                                                                <i class="fa fa-file-pdf-o mr-2"></i>
-                                                                                Sílabo
-                                                                            </a>
-                                                                        @elseif ($curso->silabo)
-                                                                            <a class="btn btn-outline-success btn-sm rounded-pill px-3 d-inline-flex align-items-center"
-                                                                                href="{{ asset('docentes/silabo/' . $curso->silabo) }}"
-                                                                                target="_blank" title="Ver Sílabo">
-                                                                                <i class="fa fa-file-pdf-o mr-2"></i>
-                                                                                Sílabo
-                                                                            </a>
-                                                                        @endif
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        @endforeach
-                                                    @endif
-                                                </div>
-                                            </td>
-                                        </tr>
-
-                                        <!-- Cursos Pendientes (si existen) -->
-                                        @if ($alumno->user && $alumno->user->cursosPendientes())
-                                            <tr class="bg-warning bg-gradient">
-                                                <td colspan="4" class="font-weight-bold text-white py-3">
-                                                    <i class="fa fa-exclamation-triangle mr-2"></i>Cursos Pendientes
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td colspan="4" class="p-3">
-                                                    <small class="text-muted d-block mb-2">
-                                                        <i class="fa fa-info-circle mr-1"></i>
-                                                        *Es responsabilidad del estudiante solicitar la subsanación de
-                                                        cursos pendientes.
-                                                    </small>
-                                                    <div class="row">
-                                                        @php
-                                                            $cursosPendientes = $alumno->user->cursosPendientes();
-                                                        @endphp
-                                                        @foreach ($cursosPendientes as $curso)
-                                                            <div class="col-md-6 mb-2">
-                                                                <div
-                                                                    class="d-flex align-items-center p-2 bg-light rounded">
-                                                                    <i class="fa fa-clock-o text-warning mr-2"></i>
-                                                                    <span>{{ trim($curso) }}</span>
-                                                                </div>
-                                                            </div>
-                                                        @endforeach
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        @endif
-                                        
-                                        <tr class="ppd-section-band">
-                                            <td colspan="4" class="font-weight-bold py-3">
-                                                <i class="fa fa-user mr-2"></i>Datos Personales
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td class="font-weight-bold bg-light" width="20%">Nombre Completo:</td>
-                                            <td width="30%">{{ $alumno->nombres }} {{ $alumno->apellidos }}</td>
-                                            <td class="font-weight-bold bg-light" width="20%">DNI:</td>
-                                            <td width="30%">{{ $alumno->dni }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="font-weight-bold bg-light">Correo:</td>
-                                            <td>{{ $alumno->email }}</td>
-                                            <td class="font-weight-bold bg-light">Número:</td>
-                                            <td>{{ $alumno->numero }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="font-weight-bold bg-light">Núm. Referencia:</td>
-                                            <td>{{ $alumno->numero_referencia }}</td>
-                                            <td class="font-weight-bold bg-light">Domicilio:</td>
-                                            <td>{{ $alumno->departamento }} - {{ $alumno->provincia }} -
-                                                {{ $alumno->distrito }}, {{ $alumno->direccion }}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+            {{-- ── Avisos (lo urgente arriba, antes de las pestañas) ── --}}
+            @if ($matriculaAbierta)
+                <div class="al-aviso is-warn"><i class="fas fa-exclamation-circle"></i>
+                    <div>El período <strong>{{ $periodoActualPpd->nombre }}</strong> está abierto. Actualiza tus datos con
+                        <strong>Completar matrícula</strong>; no es necesario volver a llenar toda la ficha.</div>
+                </div>
+            @endif
+            @if (! $silabosVisibles)
+                <div class="al-aviso is-info"><i class="fas fa-info-circle"></i>
+                    <div>Los sílabos de <strong>{{ $periodoActual->nombre }}</strong> estarán disponibles a partir del
+                        <strong>{{ $periodoActual->fechaSilabosVisibles()->format('d/m/Y') }}</strong>. Los docentes están trabajando en ellos.</div>
+                </div>
+            @endif
+            @if ($pendientesCurso->isNotEmpty())
+                <div class="al-aviso is-mal">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div>
+                        <strong>Tienes {{ $pendientesCurso->count() === 1 ? 'un curso' : $pendientesCurso->count() . ' cursos' }} a cargo</strong>
+                        <div class="small mb-1">Es responsabilidad del estudiante solicitar la subsanación de los cursos pendientes.</div>
+                        <div class="d-flex flex-wrap" style="gap:.35rem;">
+                            @foreach ($pendientesCurso as $cp)
+                                <span class="al-badge is-mal">{{ trim($cp) }}</span>
+                            @endforeach
                         </div>
                     </div>
                 </div>
-            @else
-                <div class="col-lg-12">
-                    <div class="alert text-center py-4 shadow-sm" role="alert">
-                        <i class="fa fa-edit fa-3x mb-3 d-block"></i>
-                        <h5 class="mb-3">Complete su formulario de registro de matrícula</h5>
-                        <a href="{{ route('formPPD') }}" class="btn btn-primary px-4">
-                            <i class="fa fa-arrow-right mr-2"></i>Ir al Formulario
-                        </a>
+            @endif
+
+            {{-- ── Indicadores ── --}}
+            <div class="al-stats">
+                <div class="al-stat">
+                    <span class="al-stat-icono"><i class="fas fa-book-open"></i></span>
+                    <div><div class="al-stat-valor">{{ $cursos->count() }}</div><div class="al-stat-etiqueta">Cursos del programa</div></div>
+                </div>
+                <div class="al-stat">
+                    <span class="al-stat-icono is-oro"><i class="fas fa-file-alt"></i></span>
+                    <div><div class="al-stat-valor">{{ $silabosListos }}</div><div class="al-stat-etiqueta">Sílabos disponibles</div></div>
+                </div>
+                <div class="al-stat">
+                    <span class="al-stat-icono {{ $pendientesCurso->isNotEmpty() ? 'is-mal' : 'is-ok' }}"><i class="fas {{ $pendientesCurso->isNotEmpty() ? 'fa-exclamation-triangle' : 'fa-check' }}"></i></span>
+                    <div><div class="al-stat-valor">{{ $pendientesCurso->count() }}</div><div class="al-stat-etiqueta">Cursos a cargo</div></div>
+                </div>
+                @if ($hayTitulacion)
+                    <a class="al-stat text-decoration-none" href="#titulacion" data-al-ir>
+                        <span class="al-stat-icono is-info"><i class="fas fa-user-graduate"></i></span>
+                        <div><div class="al-stat-valor" style="font-size:.95rem;">{{ $estadoTitulacion ?? 'Puedes iniciar' }}</div><div class="al-stat-etiqueta">Titulación</div></div>
+                    </a>
+                @endif
+            </div>
+
+            {{-- ── Pestañas: cada bloque largo en su sección ── --}}
+            <div>
+                <div class="al-tabs" role="tablist" aria-label="Secciones de la ficha" data-al-tabs>
+                    <button type="button" class="al-tab is-activa" role="tab" data-panel="cursos" aria-selected="true">
+                        <i class="fas fa-book-open"></i> Mis cursos <span class="al-badge is-muted">{{ $cursos->count() }}</span>
+                    </button>
+                    @if ($hayTitulacion)
+                        <button type="button" class="al-tab" role="tab" data-panel="titulacion" aria-selected="false" tabindex="-1">
+                            <i class="fas fa-user-graduate"></i> Titulación
+                            @if (! empty($guiaTitulacion))<span class="al-tab-marca">Nuevo</span>@endif
+                        </button>
+                    @endif
+                    <button type="button" class="al-tab" role="tab" data-panel="datos" aria-selected="false" tabindex="-1">
+                        <i class="fas fa-user"></i> Mis datos
+                    </button>
+                </div>
+
+                {{-- Mis cursos: plan completo del programa por ciclo --}}
+                <section class="al-panel" role="tabpanel" data-panel="cursos">
+                    <div class="al-card">
+                        <div class="al-card-cab">
+                            <span class="al-card-cab-icono"><i class="fas fa-book-open"></i></span>
+                            <div><h2>Cursos del programa</h2><p>{{ $programa->nombre ?? 'Programa PPD' }} · plan de un año, por ciclo</p></div>
+                        </div>
+                        @forelse ($porCiclo as $grupo)
+                            @php $cicloG = $grupo->first()->ciclo; @endphp
+                            <div class="al-grupo">
+                                <i class="fas fa-layer-group"></i> {{ $nombreCiclo($cicloG) }}
+                                @if ($alumno->ciclo_id === $cicloG->id)<span class="al-badge is-info">Tu ciclo</span>@endif
+                                <span class="al-badge is-muted">{{ $grupo->count() }} {{ $grupo->count() === 1 ? 'curso' : 'cursos' }}</span>
+                            </div>
+                            <ul class="al-cursos">
+                                @foreach ($grupo as $curso)
+                                    @include('alumnos.ppd._curso', ['curso' => $curso, 'es' => $estadoSilabo[$curso->id]])
+                                @endforeach
+                            </ul>
+                        @empty
+                            @if ($sinCiclo->isEmpty())
+                                <div class="al-vacio"><i class="fas fa-info-circle"></i>Aún no hay cursos registrados para tu programa.</div>
+                            @endif
+                        @endforelse
+                        @if ($sinCiclo->isNotEmpty())
+                            <div class="al-grupo"><i class="fas fa-exclamation-triangle"></i> Sin ciclo asignado
+                                <span class="al-badge is-muted">{{ $sinCiclo->count() }}</span></div>
+                            <ul class="al-cursos">
+                                @foreach ($sinCiclo as $curso)
+                                    @include('alumnos.ppd._curso', ['curso' => $curso, 'es' => $estadoSilabo[$curso->id]])
+                                @endforeach
+                            </ul>
+                        @endif
+                    </div>
+                </section>
+
+                {{-- Titulación: avance del proceso o guía para iniciarlo (parciales compartidos con FID) --}}
+                @if ($hayTitulacion)
+                    <section class="al-panel" role="tabpanel" data-panel="titulacion" hidden>
+                        @if (! empty($seguimientoTitulacion))
+                            @include('titulacion._avance_alumno', ['seguimiento' => $seguimientoTitulacion])
+                        @else
+                            @include('titulacion._guia_inicio')
+                        @endif
+                    </section>
+                @endif
+
+                {{-- Mis datos --}}
+                <section class="al-panel" role="tabpanel" data-panel="datos" hidden>
+                    <div class="al-card">
+                        <div class="al-card-cab">
+                            <span class="al-card-cab-icono"><i class="fas fa-user"></i></span>
+                            <div><h2>Datos personales</h2><p>Si algo está mal, avisa a Secretaría Académica.</p></div>
+                        </div>
+                        <div class="al-card-cuerpo pt-1">
+                            <dl class="al-datos">
+                                <div class="al-dato"><dt>Nombre completo</dt><dd>{{ $alumno->nombres }} {{ $alumno->apellidos }}</dd></div>
+                                <div class="al-dato"><dt>DNI</dt><dd>{{ $alumno->dni }}</dd></div>
+                                <div class="al-dato"><dt>Correo</dt><dd><a href="mailto:{{ $alumno->email }}">{{ $alumno->email }}</a></dd></div>
+                                <div class="al-dato"><dt>Teléfono</dt><dd>{{ $alumno->numero ?: '—' }}</dd></div>
+                                <div class="al-dato"><dt>Núm. de referencia</dt><dd>{{ $alumno->numero_referencia ?: '—' }}</dd></div>
+                                <div class="al-dato" style="grid-column: 1 / -1;"><dt>Domicilio</dt>
+                                    <dd>{{ $alumno->direccion ?: '—' }}<br><small class="text-muted">{{ collect([$alumno->distrito, $alumno->provincia, $alumno->departamento])->filter()->implode(' · ') }}</small></dd>
+                                </div>
+                            </dl>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        @else
+            <section class="al-hero">
+                <div class="al-hero-fila">
+                    <div class="al-hero-texto">
+                        <div class="al-kicker">Profesionalización docente · Ficha técnica</div>
+                        <h1>Completa tu ficha de estudiante</h1>
+                        <p class="al-hero-sub">Aún no tienes ficha PPD registrada en el sistema. Llénala para ver tus cursos, sílabos y calificaciones.</p>
+                    </div>
+                    <div class="al-hero-acciones">
+                        <a class="al-btn al-btn-oro" href="{{ route('formPPD') }}"><i class="fas fa-edit"></i> Ir al formulario</a>
                     </div>
                 </div>
-            @endif
-        </div>
+            </section>
+        @endif
     </div>
-
-    <style>
-        .curso-item {
-            transition: all 0.3s ease;
-        }
-
-        .curso-item:hover {
-            background-color: var(--ppd-accent-soft) !important;
-            transform: translateX(5px);
-        }
-
-        .hover-primary:hover {
-            color: var(--ppd-accent) !important;
-        }
-
-        .border-width-4 {
-            border-width: 4px !important;
-        }
-
-        .bg-warning.bg-gradient {
-            background: linear-gradient(45deg, #ffc107, #e0a800) !important;
-        }
-
-        .table td {
-            vertical-align: middle;
-        }
-
-        .list-group-item {
-            border: none;
-            border-radius: 0 !important;
-        }
-
-        .badge {
-            font-weight: 500;
-        }
-
-        .rounded-pill {
-            border-radius: 50px !important;
-        }
-    </style>
-
 @endsection
+
+@push('scripts')
+    @if (session('mostrar_popup_matricula'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Formulario enviado!',
+                    html: 'Tu formulario fue llenado con éxito.<br>El área de cobranzas verificará tu pago para poder enviarte tu ficha de matrícula.',
+                    confirmButtonColor: '#33445a',
+                    confirmButtonText: 'Entendido',
+                });
+            });
+        </script>
+    @endif
+
+    @if ($alumno && $formularioHabilitado && $periodoActualPpd && ! $matriculaActual)
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                if (sessionStorage.getItem('matriculaAlertVista')) return;
+
+                Swal.fire({
+                    icon: 'warning',
+                    title: '¡Aún no te has matriculado!',
+                    html: 'El período <strong>{{ $periodoActualPpd->nombre }}</strong> ya está abierto. Completa tu matrícula lo antes posible.',
+                    showCancelButton: true,
+                    confirmButtonText: 'Completar matrícula ahora',
+                    cancelButtonText: 'Recordarme después',
+                    confirmButtonColor: '#cd9244',
+                    cancelButtonColor: '#64748b',
+                    reverseButtons: true,
+                }).then(function (resultado) {
+                    sessionStorage.setItem('matriculaAlertVista', '1');
+                    if (resultado.isConfirmed) {
+                        window.location.href = '{{ route('ppd.edit', $alumno->id) }}';
+                    }
+                });
+            });
+        </script>
+    @endif
+@endpush

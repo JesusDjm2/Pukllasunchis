@@ -1,0 +1,212 @@
+/* Formulario "Solicitar informes" — página de inicio (welcome.blade.php) */
+
+.informes-seccion .informes-intro {
+  max-width: 620px;
+  margin: 0 auto;
+  color: #555;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.informes-card {
+  background: rgba(255, 255, 255, 0.92);
+  border-top: 3px solid #cd9244;
+  border-radius: 4px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  padding: 28px 24px 8px;
+}
+
+.informes-label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #3d3d3d;
+  letter-spacing: 0.02em;
+}
+
+.informes-label span,
+.informes-check span,
+.informes-nota span {
+  color: #cd9244;
+}
+
+/* Bootstrap 5 ya no da margen a .form-group: sin esto las etiquetas quedan pegadas a la fila de arriba */
+.informes-seccion .form-group {
+  margin-bottom: 1.15rem;
+}
+
+.informes-seccion .form-control {
+  height: 38px;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid #e3ddd4;
+  border-radius: 3px;
+  background-color: #fdfcfa;
+  font-size: 0.9rem;
+  color: #3d3d3d;
+  box-shadow: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.informes-seccion .form-control::placeholder {
+  color: #b5aea4;
+}
+
+.informes-seccion .form-control:focus {
+  border-color: #cd9244;
+  background-color: #fff;
+  box-shadow: 0 0 0 3px rgba(205, 146, 68, 0.12);
+}
+
+.informes-seccion .form-control.is-invalid,
+.informes-validado .form-control:invalid {
+  border-color: #c0392b;
+}
+
+.informes-seccion textarea.form-control {
+  height: auto;
+  min-height: 96px;
+  padding-top: 0.5rem;
+  resize: vertical;
+}
+
+.informes-contador {
+  display: block;
+  text-align: right;
+  font-size: 0.75rem;
+  color: #999;
+  margin-top: 0.25rem;
+}
+
+.informes-error {
+  display: block;
+  margin-top: 0.3rem;
+  color: #c0392b;
+  font-size: 0.8rem;
+}
+
+.informes-nota {
+  color: #777;
+  font-size: 0.8rem;
+}
+
+/* Casilla de términos */
+.informes-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+
+.informes-check input[type="checkbox"] {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: #cd9244;
+  cursor: pointer;
+}
+
+.informes-check label {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #3d3d3d;
+  cursor: pointer;
+}
+
+.informes-check a {
+  color: #cd9244;
+  border-bottom: 1px dashed #cd9244;
+  text-decoration: none;
+}
+
+.informes-check a:hover {
+  color: #b07d2e;
+}
+
+.informes-validado .informes-check input:invalid + label {
+  color: #c0392b;
+}
+
+/* Botones */
+.informes-acciones {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.informes-acciones .btn-puklla {
+  margin-left: 0;
+  margin-right: 0;
+  text-decoration: none;
+}
+
+.informes-acciones .btn-puklla:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+/* Alertas */
+.informes-alerta {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  margin-bottom: 1.25rem;
+  border-radius: 3px;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.informes-alerta i {
+  font-size: 1.3rem;
+  margin-top: 1px;
+}
+
+.informes-alerta--ok {
+  background: rgba(205, 146, 68, 0.1);
+  border-left: 4px solid #cd9244;
+  color: #6b4a1b;
+}
+
+.informes-alerta--ok i {
+  color: #cd9244;
+}
+
+.informes-alerta--error {
+  background: #fdecea;
+  border-left: 4px solid #c0392b;
+  color: #8a2a1f;
+}
+
+/* Honeypot */
+.informes-hp {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* Mapa */
+.informes-mapa {
+  height: 100%;
+  min-height: 320px;
+  border-top: 3px solid #cd9244;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.informes-mapa iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+  border: 0;
+}
+
+@media (max-width: 575.98px) {
+  .informes-card {
+    padding: 22px 16px 4px;
+  }
+}

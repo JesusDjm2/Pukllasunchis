@@ -18,7 +18,7 @@
         'mgAcademico' => ['programa.*', 'ciclo.*', 'curso.*', 'periodoactual.*', 'periodos.*', 'competencias.*', 'capacidades.*', 'estandares.*', 'enfoques.*', 'proyectos.*'],
         'mgSeguimiento' => ['expediente.panel*', 'admin.seguimiento*', 'alumnos.demograficos', 'titulacion.*'],
         'mgAdmision' => ['admin-fids.*', 'regulares.*', 'postulantes.ppd.*'],
-        'mgComunicacion' => ['bolsa-trabajo.*', 'admin.comunicados.*', 'admin.minkarikuy.*', 'trabajo.*', 'listaPostulantes'],
+        'mgComunicacion' => ['bolsa-trabajo.*', 'admin.comunicados.*', 'admin.minkarikuy.*', 'trabajo.*', 'listaPostulantes', 'bitacora.*', 'admin.taqe.*'],
     ];
     $abierto = fn (string $id) => request()->routeIs(...$grupos[$id]);
     $activo = fn (...$patrones) => request()->routeIs(...$patrones) ? 'active' : '';
@@ -114,17 +114,18 @@
 @endif
 
 @if ($esAdmin || $esAdminB)
-    {{-- ══ COMUNICACIÓN ══ --}}
-    <div class="pk-sb-titulo">Comunicación</div>
+    {{-- ══ GESTIÓN INTERNA ══ (comunicación institucional + control del sistema) --}}
+    <div class="pk-sb-titulo">Gestión interna</div>
 
     <li class="nav-item">
         <a class="nav-link pk-sb-link {{ $abierto('mgComunicacion') ? 'is-activo' : 'collapsed' }}" href="#" data-toggle="collapse" data-target="#mgComunicacion"
-           aria-expanded="{{ $abierto('mgComunicacion') ? 'true' : 'false' }}" aria-controls="mgComunicacion" title="Comunicados y bolsa">
-            <span class="pk-sb-icono"><i class="fas fa-bullhorn"></i></span><span class="pk-sb-texto">Comunicados y bolsa</span>
+           aria-expanded="{{ $abierto('mgComunicacion') ? 'true' : 'false' }}" aria-controls="mgComunicacion" title="Gestión interna">
+            <span class="pk-sb-icono"><i class="fas fa-briefcase"></i></span><span class="pk-sb-texto">Gestión interna</span>
         </a>
         <div id="mgComunicacion" class="collapse {{ $abierto('mgComunicacion') ? 'show' : '' }}" data-parent="#accordionSidebar">
             <div class="py-2 collapse-inner rounded">
                 @if ($esAdmin)
+                    <h6 class="collapse-header">Comunicación</h6>
                     <a class="collapse-item {{ $activo('admin.comunicados.*') }}" href="{{ route('admin.comunicados.index') }}">Comunicados</a>
                     <a class="collapse-item {{ $activo('bolsa-trabajo.*') }}" href="{{ route('bolsa-trabajo.ofertas.index') }}">Bolsa de trabajo</a>
                     <a class="collapse-item {{ $activo('admin.minkarikuy.*') }}" href="{{ route('admin.minkarikuy.index') }}">Mink'arikuy</a>
@@ -135,25 +136,15 @@
                     <a class="collapse-item {{ $activo('trabajo.create') }}" href="{{ route('trabajo.create') }}">Registrar nuevo</a>
                     <a class="collapse-item {{ $activo('listaPostulantes') }}" href="{{ route('listaPostulantes') }}">Postulantes</a>
                 @endif
+                @if ($esSA)
+                    {{-- Solo super admin: sus rutas exigen role:super-admin --}}
+                    <h6 class="collapse-header mt-2">Control del sistema</h6>
+                    <a class="collapse-item {{ $activo('bitacora.*') }}" href="{{ route('bitacora.index') }}">Bitácora de accesos</a>
+                    @if (Route::has('admin.taqe.index'))
+                        <a class="collapse-item {{ $activo('admin.taqe.*') }}" href="{{ route('admin.taqe.index') }}">Taq'e — Gestión</a>
+                    @endif
+                @endif
             </div>
         </div>
     </li>
-@endif
-
-@if ($esSA)
-    {{-- ══ SISTEMA ══ --}}
-    <div class="pk-sb-titulo">Sistema</div>
-
-    <li class="nav-item">
-        <a class="nav-link pk-sb-link {{ $linkActivo('bitacora.*') }}" href="{{ route('bitacora.index') }}" title="Bitácora de accesos">
-            <span class="pk-sb-icono"><i class="fas fa-user-clock"></i></span><span class="pk-sb-texto">Bitácora de accesos</span>
-        </a>
-    </li>
-    @if (Route::has('admin.taqe.index'))
-        <li class="nav-item">
-            <a class="nav-link pk-sb-link {{ $linkActivo('admin.taqe.*') }}" href="{{ route('admin.taqe.index') }}" title="Taq'e — Gestión">
-                <span class="pk-sb-icono"><i class="fas fa-flask"></i></span><span class="pk-sb-texto">Taq'e — Gestión</span>
-            </a>
-        </li>
-    @endif
 @endif

@@ -1,0 +1,29 @@
+/* Visor de fotos compartido (pk-foto.js): Directorio, expediente y cualquier vista con [data-foto]. */
+[data-foto] { cursor: zoom-in; }
+button[data-foto] { padding: 0; border: 0; background: none; line-height: 0; }
+button[data-foto]:focus-visible { outline: 2px solid #cd9244; outline-offset: 2px; border-radius: 10px; }
+
+.pk-foto {
+    position: fixed; inset: 0; z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 1rem;
+    background: rgba(15, 23, 42, .78); backdrop-filter: blur(3px); animation: pk-foto-in .15s ease-out;
+}
+.pk-foto[hidden] { display: none; }
+.pk-foto__caja {
+    position: relative; max-width: min(520px, 100%); width: 100%; background: #fff; border-radius: 16px; overflow: hidden;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, .35);
+}
+.pk-foto__img { display: block; width: 100%; max-height: 72vh; object-fit: contain; background: #0f172a; }
+.pk-foto__cerrar {
+    position: absolute; top: .55rem; right: .55rem; z-index: 1; width: 2.2rem; height: 2.2rem; border: 0; border-radius: 50%;
+    background: rgba(15, 23, 42, .65); color: #fff; font-size: 1.4rem; line-height: 1; cursor: pointer;
+}
+.pk-foto__cerrar:hover { background: #c0392b; }
+.pk-foto__pie { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .75rem 1rem; }
+.pk-foto__titulo { font-weight: 800; font-size: .95rem; color: #1e293b; }
+.pk-foto__sub { font-size: .78rem; color: #64748b; }
+.pk-foto__abrir { flex: none; font-size: .8rem; font-weight: 700; color: #33445a; white-space: nowrap; }
+body.pk-foto-abierto { overflow: hidden; }
+body.dark-mode .pk-foto__caja, body.dim-mode .pk-foto__caja { background: #1f2937; }
+body.dark-mode .pk-foto__titulo, body.dim-mode .pk-foto__titulo { color: #e5e7eb; }
+body.dark-mode .pk-foto__abrir, body.dim-mode .pk-foto__abrir { color: #f2c88e; }
+@keyframes pk-foto-in { from { opacity: 0; } to { opacity: 1; } }

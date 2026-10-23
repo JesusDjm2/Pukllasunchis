@@ -13,6 +13,8 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 Route::get('/', function () {
     return view('welcome');
 })->name('index');
+Route::post('solicitar-informes', [App\Http\Controllers\InformesController::class, 'enviar'])
+    ->name('informes.enviar')->middleware('throttle:5,1');
 
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 

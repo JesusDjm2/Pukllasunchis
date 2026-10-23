@@ -45,6 +45,12 @@ class DocenteCOntroller extends Controller
         // más de un docente). FID: [1 => P1, 2 => P2, 3 => Desempeño]; PPD: % de casillas llenas.
         $avanceCursos = $docentes->pluck('cursos')->flatten()->unique('id')
             ->mapWithKeys(fn ($c) => [$c->id => $c->esPpd() ? $c->porcentajePPD() : $c->porcentajesFid()]);
+        // Rendimiento por curso (promedio, desaprobados, carga sospechosa): una consulta por tabla.
+        $rendimientoCursos = \App\Services\RendimientoCursos::de($avanceCursos->keys());
+        // Para «Borrar calificaciones del curso»: notas por parte y docentes que comparten el curso.
+        $notasPorCurso = collect([1 => 'periodouno', 2 => 'periodo_dos', 3 => 'periodo_tres', 'ppd' => 'calificacionesppds'])
+            ->map(fn ($tabla) => \DB::table($tabla)->selectRaw('curso_id, count(*) as n')->groupBy('curso_id')->pluck('n', 'curso_id'));
+        $docentesPorCurso = \DB::table('curso_docente')->selectRaw('curso_id, count(*) as n')->groupBy('curso_id')->pluck('n', 'curso_id');
         $totalDocentes = $docentes->count();
         $totalIncidencias = $docentes->sum(fn($d) => $d->incidencias->count());
         $totalSilabos = Silabo::count();
@@ -64,7 +70,7 @@ class DocenteCOntroller extends Controller
                 ->count(),
         ];
 
-        return view('docentes.index', compact('docentes', 'totalDocentes', 'totalIncidencias', 'totalSilabos', 'periodoActual', 'ciclos', 'conteosZonaRiesgo', 'avanceCursos'));
+        return view('docentes.index', compact('docentes', 'totalDocentes', 'totalIncidencias', 'totalSilabos', 'periodoActual', 'ciclos', 'conteosZonaRiesgo', 'avanceCursos', 'rendimientoCursos', 'notasPorCurso', 'docentesPorCurso'));
     }
 
     public function vistaDocente($docenteId)

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Titulacion;
 use App\Http\Controllers\Controller;
 use App\Models\Titulacion\Asesor;
 use App\Models\Titulacion\EstadoTitulacion;
+use App\Models\Titulacion\Participante;
 use App\Models\Titulacion\Pti;
 use App\Models\Titulacion\Resolucion;
 use App\Models\Titulacion\SeguimientoTitulacion;
@@ -33,7 +34,7 @@ class ResolucionDirectoralController extends Controller
         }
 
         $seguimiento = $this->seguimiento($egresado);
-        $seguimiento->load(['pti.asesor', 'pti.asesorExterno', 'tesis', 'resoluciones', 'actas.jurados.docente', 'actas.jurados.asesorExterno']);
+        $seguimiento->load(['pti.asesor', 'pti.asesorExterno', 'tesis', 'resoluciones', 'actas.jurados.docente', 'actas.jurados.asesorExterno', 'participantes']);
         if ($motivo = \App\Services\Titulacion\ReglasProceso::validarRd($seguimiento, PlantillasRd::PLANTILLAS[$plantilla]['tipo'])) {
             return redirect()->route('titulacion.index', ['ver' => $egresado->id, 'tab' => 'proceso'])->with('error', $motivo);
         }
@@ -100,6 +101,7 @@ class ResolucionDirectoralController extends Controller
                 'numero' => [$base, 'regex:/^\d{1,4}$/'],
                 'fecha' => "$base|date",
                 'hora' => "$base|date_format:H:i",
+                'cargo' => "$base|in:Asesor,Asesora",
                 'area' => "$base|string|max:1500",
                 default => "$base|string|max:500",
             };
@@ -127,7 +129,11 @@ class ResolucionDirectoralController extends Controller
         // El Programa de Estudios no se edita: es el del alumno (si tiene uno), aunque se altere el formulario.
         $data['programa'] = PlantillasRd::programaOficial($egresado->programa) ?: $data['programa'];
 
-        $integrantes = User::with('programa')->whereIn('id', $data['integrantes'])->orderBy('apellidos')->orderBy('name')->get();
+        $integrantes = User::with(['programa', 'seguimientoTitulacion'])->whereIn('id', $data['integrantes'])->orderBy('apellidos')->orderBy('name')->get();
+        // El expediente tampoco se edita: es el de cada integrante, en el mismo orden que sus nombres en la RD.
+        if (array_key_exists('expedientes', $campos)) {
+            $data['expedientes'] = $integrantes->map(fn (User $u) => $u->seguimientoTitulacion?->numero_expediente)->filter()->unique()->implode(', ');
+        }
         $fecha = Carbon::parse($data['fecha']);
         $numero = str_pad($data['numero_rd'], 3, '0', STR_PAD_LEFT);
         $numeroRd = $numero.'-'.$fecha->year;
@@ -218,6 +224,14 @@ class ResolucionDirectoralController extends Controller
             ->sortByDesc(fn ($r) => $r->fecha?->format('Y-m-d') ?? '0000')->first()?->numero_rd;
         $esTesis = in_array($plantilla, ['aprobacion_exposicion', 'fecha_sustentacion', 'aprobacion_sustentacion'], true);
 
+        // Asesor(a) vigente del trabajo: el 1.º del TI; si no hay, el del TI/Tesis o el del PTI (datos importados).
+        $asesorActual = $seguimiento->participantes->where('etapa', 'ti')->where('funcion', 'asesor')->sortBy('id')->first()?->asesorNombre()
+            ?? $tesis?->asesorNombre() ?? $pti?->asesorNombre();
+        $rdPti = $this->soloNumeroRd($pti?->rd_pti ?? $rd('PTI'));
+        $fechaRdPti = $seguimiento->resoluciones->where('tipo', 'PTI')
+            ->first(fn ($r) => $rdPti !== '' && GrupoTitulacion::claveRd($r->numero_rd) === GrupoTitulacion::claveRd($rdPti))?->fecha
+            ?? $pti?->fecha_pti;
+
         $jurado = $actaTesis?->jurados->map(fn ($j) => [
             'presidente' => 'Presidente(a)', 'jurado1' => 'Primer Dictaminante', 'jurado2' => 'Primer Replicante y secretario', 'jurado3' => 'Jurado',
         ][$j->rol] ?? ucfirst((string) $j->rol))->values();
@@ -227,9 +241,14 @@ class ResolucionDirectoralController extends Controller
             'numero_informe' => '',
             'titulo' => ($esTesis ? ($tesis?->titulo ?: $pti?->titulo) : $pti?->titulo) ?? '',
             'titulo_nuevo' => '',
-            'asesor' => $pti?->asesorValor(),
-            'asesor_nombre' => $this->nombrePropio($pti?->asesorNombre()),
+            // En el cambio de asesor, el nuevo se elige; el vigente pasa a «anterior».
+            'asesor' => $plantilla === 'cambio_asesor' ? null : $pti?->asesorValor(),
+            'asesor_nombre' => $plantilla === 'cambio_asesor' ? '' : $this->nombrePropio($pti?->asesorNombre()),
             'asesor_cargo' => 'Asesor',
+            'asesor_anterior' => $this->nombrePropio($asesorActual),
+            'asesor_anterior_cargo' => 'Asesor',
+            'fecha_rd_referida' => $fechaRdPti ? Carbon::parse($fechaRdPti)->toDateString() : '',
+            'acompanante' => '',
             'texto_adicional' => '',
             // Solo "NNN-AAAA": los registros históricos traen nombres de archivo ("RD- 106 PTI …pdf").
             'rd_referida' => $this->soloNumeroRd(match ($plantilla) {
@@ -257,6 +276,7 @@ class ResolucionDirectoralController extends Controller
             'PTI' => ' · Informe N° '.str_pad($data['numero_informe'], 3, '0', STR_PAD_LEFT).'-'.$fecha->year.'-CI',
             'AnulacionPti' => ' · Deja sin efecto la RD '.$data['rd_referida'],
             'CambioTema' => ' · Nuevo título: '.\Illuminate\Support\Str::limit($data['titulo_nuevo'], 200),
+            'CambioAsesor' => ' · Nuevo(a) asesor(a): '.$data['asesor_nombre'].' (antes: '.$data['asesor_anterior'].')',
             'FechaSustentacion' => ' · Sustentación: '.Carbon::parse($data['fecha_acto'])->format('d/m/Y').' '.$data['hora'],
             default => '',
         };
@@ -288,6 +308,19 @@ class ResolucionDirectoralController extends Controller
 
         if ($tipo === 'CambioTema' && ($pti = $seguimiento->pti()->first())) {
             $pti->update(['titulo' => $data['titulo_nuevo']]);
+
+            return;
+        }
+
+        // El nuevo asesor reemplaza a los asesores del TI (uno por uno, para que quede en la auditoría) y
+        // pasa a ser el asesor principal del trabajo. Si se escribió un nombre sin elegirlo de la lista,
+        // solo queda la RD: el asesor se agrega a mano en el TI.
+        if ($tipo === 'CambioAsesor' && filled($data['asesor'] ?? null)) {
+            $seguimiento->participantes()->where('etapa', 'ti')->where('funcion', 'asesor')->get()->each->delete();
+            $seguimiento->participantes()->create(Participante::columnasAsesor($data['asesor'], 'docente_id') + [
+                'etapa' => 'ti', 'funcion' => 'asesor', 'cargo' => null,
+            ]);
+            Tesis::updateOrCreate(['seguimiento_id' => $seguimiento->id], Tesis::columnasAsesor($data['asesor']));
 
             return;
         }
@@ -325,6 +358,10 @@ class ResolucionDirectoralController extends Controller
             'asesorNombre' => $data['asesor_nombre'] ?? '',
             'textoAdicional' => trim((string) ($data['texto_adicional'] ?? '')),
             'rdReferida' => trim((string) ($data['rd_referida'] ?? '')),
+            'fechaRdReferida' => filled($data['fecha_rd_referida'] ?? null) ? Carbon::parse($data['fecha_rd_referida']) : null,
+            'asesorAnterior' => trim((string) ($data['asesor_anterior'] ?? '')),
+            'asesorAnteriorCargo' => $data['asesor_anterior_cargo'] ?? 'Asesor',
+            'acompanante' => trim((string) ($data['acompanante'] ?? ''), " ;.\t"),
             'acta' => trim((string) ($data['acta'] ?? '')),
             'fechaActo' => filled($data['fecha_acto'] ?? null) ? Carbon::parse($data['fecha_acto']) : null,
             'hora' => $data['hora'] ?? '',

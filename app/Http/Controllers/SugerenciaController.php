@@ -121,6 +121,8 @@ class SugerenciaController extends Controller
             'titulo'      => 'Buzón de Sugerencias de Tutoría',
             'descripcion' => $descripcion,
             'contexto'    => $ciclo ? (optional($ciclo->programa)->nombre ?? '') . ' · Ciclo ' . $ciclo->nombre : null,
+            'cicloNombre' => $ciclo ? 'Ciclo ' . $ciclo->nombre : null,
+            'programaNombre' => $ciclo ? optional($ciclo->programa)->nombre : null,
             'tutor'       => $ciclo ? $ciclo->tutores->map->nombreCorto()->filter()->join(', ') : null,
         ];
 
@@ -183,10 +185,11 @@ class SugerenciaController extends Controller
             }
         }
 
-        // Alerta en el sistema (campanita) para todo admin/super-admin: siempre,
+        // Alerta en el sistema (campanita) solo para los super-admin (decisión 23/10: a las cuentas admin
+        // —Cobranzas, Titulación…— no les corresponde): siempre,
         // de todos los tutores/ciclos — el correo ya se cubrió arriba, aquí solo
         // se genera la notificación in-app (via() la deja sin canal de mail).
-        foreach (User::role(['admin', 'super-admin'])->get() as $adminUser) {
+        foreach (User::role('super-admin')->get() as $adminUser) {
             try {
                 $adminUser->notify(new SugerenciaCreada($sugerencia));
             } catch (\Throwable $e) {

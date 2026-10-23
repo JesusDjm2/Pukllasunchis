@@ -22,6 +22,8 @@
         'descripcion' => $descripcion,
         'url'         => $url,
         'contexto'    => $contexto ?? null,
+        'cicloNombre' => $cicloNombre ?? null,
+        'programaNombre' => $programaNombre ?? null,
         'tutor'       => $tutor ?? null,
     ])
 </div>

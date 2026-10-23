@@ -32,7 +32,7 @@ class TutoriaAtendida extends Notification
             'tutoria_id' => $tutoria->id,
             'ciclo_id' => $tutoria->ciclo_id,
             'atendido_por' => optional($tutoria->atendidoPor)->name,
-            'resumen' => Str::limit($tutoria->motivo, 120),
+            'resumen' => Str::limit((string) $tutoria->motivo, 120),
             'notas_atencion' => $tutoria->notas_atencion,
             'url' => route('alumnos.index', ['tab' => 'solicitudes']),
         ];

@@ -1,0 +1,97 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Mink'arikuy (admin) — sobre el sistema .al-ui de pk-ui.css: usa sus variables, así que
+   funciona en claro, oscuro y tenue. El QR va siempre sobre blanco para que se pueda escanear.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── QR ── */
+.mk-qr {
+    background: #fff; border-radius: 14px; padding: .65rem; flex-shrink: 0;
+    border: 1px solid var(--al-borde); line-height: 0;
+}
+.mk-qr svg { display: block; width: 100%; height: auto; }
+.mk-qr-vacio {
+    display: flex; align-items: center; justify-content: center; flex-direction: column; gap: .35rem;
+    background: var(--al-fondo-2); border: 1px dashed var(--al-borde); border-radius: 14px;
+    color: var(--al-suave); font-size: .74rem; text-align: center; padding: 1rem; line-height: 1.3;
+}
+.mk-qr-vacio i { font-size: 1.6rem; opacity: .6; }
+
+/* ── Publicado en la web (destacado) ── */
+.mk-publicado {
+    display: grid; grid-template-columns: 210px 1fr; gap: 1.5rem; align-items: center;
+    padding: 1.35rem 1.5rem;
+}
+.mk-publicado .mk-qr { width: 210px; }
+.mk-etiqueta {
+    font-size: .68rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--al-ok);
+    display: inline-flex; align-items: center; gap: .4rem;
+}
+.mk-etiqueta::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: currentColor; box-shadow: 0 0 0 4px var(--al-ok-f); }
+.mk-publicado h2 { font-size: 1.3rem; font-weight: 800; color: var(--al-texto); margin: .35rem 0 .3rem; line-height: 1.25; }
+.mk-cuando { font-size: .88rem; color: var(--al-suave); font-weight: 600; }
+.mk-cuando i { color: var(--al-oro); }
+.mk-enlace {
+    display: flex; align-items: center; gap: .5rem; margin: .85rem 0 1rem;
+    background: var(--al-fondo-2); border: 1px solid var(--al-borde); border-radius: 10px;
+    padding: .45rem .5rem .45rem .75rem; font-size: .8rem; min-width: 0;
+}
+.mk-enlace a { color: var(--al-texto); overflow: hidden; display: block; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; }
+.mk-enlace i { color: var(--al-suave); }
+.mk-acciones { display: flex; flex-wrap: wrap; gap: .4rem; }
+.mk-acciones form { display: inline; margin: 0; }
+
+/* ── Lista (anteriores) ── */
+.mk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr)); gap: 1rem; }
+.mk-item { display: flex; gap: .9rem; padding: 1rem; height: 100%; margin: 0; }
+.mk-item .mk-qr { width: 84px; padding: .35rem; border-radius: 10px; align-self: flex-start; }
+.mk-item .mk-qr-vacio { width: 84px; height: 84px; padding: .35rem; border-radius: 10px; align-self: flex-start; }
+.mk-item-cuerpo { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.mk-item h3 { font-size: .92rem; font-weight: 800; color: var(--al-texto); margin: 0 0 .2rem; line-height: 1.3; }
+.mk-item .mk-cuando { font-size: .76rem; }
+.mk-item .mk-acciones { margin-top: auto; padding-top: .6rem; gap: .3rem; flex-wrap: nowrap; }
+.mk-btn-icono { width: 1.9rem; height: 1.9rem; padding: 0 !important; justify-content: center; flex-shrink: 0; }
+.mk-eliminar { background: transparent; color: var(--al-mal) !important; border: 1px solid rgba(192, 57, 43, .3); }
+.mk-eliminar:hover { background: var(--al-mal-f); }
+.mk-seccion {
+    font-size: .7rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--al-suave);
+    margin: 1.6rem 0 .75rem;
+}
+
+/* ── Formulario ── */
+.mk-form { display: grid; grid-template-columns: 1fr 280px; gap: 1.25rem; align-items: start; }
+.mk-campo { margin-bottom: 1.1rem; }
+.mk-campo > label {
+    font-size: .7rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--al-suave); margin-bottom: .35rem; display: block;
+}
+.mk-campo .form-control { border-radius: 10px; border-color: var(--al-borde); background: var(--al-fondo); color: var(--al-texto); }
+.mk-campo .form-control:focus { border-color: var(--al-oro); box-shadow: 0 0 0 .18rem rgba(205, 146, 68, .18); }
+.mk-campo small { color: var(--al-suave); }
+.mk-campo .is-invalid { border-color: var(--al-mal) !important; }
+.mk-campo .invalid-feedback { display: block; }
+.mk-publicar {
+    display: flex; align-items: flex-start; gap: .75rem; cursor: pointer; margin: 0;
+    border: 1px solid var(--al-borde); border-radius: 12px; padding: .8rem .9rem; background: var(--al-fondo-2);
+}
+.mk-publicar input { margin-top: .2rem; width: 1.05rem; height: 1.05rem; accent-color: var(--al-oro); flex-shrink: 0; }
+.mk-publicar strong { display: block; font-size: .86rem; color: var(--al-texto); }
+.mk-publicar small { color: var(--al-suave); font-size: .76rem; }
+.mk-vista { position: sticky; top: 1rem; text-align: center; }
+.mk-vista .mk-qr { width: 100%; max-width: 240px; margin: 0 auto .75rem; }
+.mk-vista .mk-qr-vacio { aspect-ratio: 1; max-width: 240px; margin: 0 auto .75rem; }
+.mk-vista p { font-size: .78rem; color: var(--al-suave); margin: 0; }
+.mk-barra { display: flex; justify-content: flex-end; gap: .5rem; padding-top: 1rem; border-top: 1px solid var(--al-borde); }
+
+@media (max-width: 767.98px) {
+    .mk-publicado { grid-template-columns: 1fr; text-align: center; }
+    .mk-publicado .mk-qr { margin: 0 auto; width: 190px; }
+    .mk-enlace { text-align: left; }
+    .mk-publicado .mk-acciones { justify-content: center; }
+    .mk-form { grid-template-columns: 1fr; }
+    .mk-vista { position: static; }
+}
+
+@media (max-width: 400px) {
+    .mk-grid { grid-template-columns: 1fr; }
+    .mk-item .mk-acciones { flex-wrap: wrap; }
+}

@@ -137,10 +137,11 @@ class IncidenciaController extends Controller
             }
         }
 
-        // Alerta en el sistema (campanita) para todo admin/super-admin: siempre,
+        // Alerta en el sistema (campanita) solo para los super-admin (decisión 23/10: a las cuentas admin
+        // —Cobranzas, Titulación…— no les corresponde): siempre,
         // de todos los tutores/ciclos — el correo ya se cubrió arriba, aquí solo
         // se genera la notificación in-app (via() la deja sin canal de mail).
-        foreach (User::role(['admin', 'super-admin'])->get() as $adminUser) {
+        foreach (User::role('super-admin')->get() as $adminUser) {
             try {
                 $adminUser->notify(new IncidenciaCreada($incidencia));
             } catch (\Throwable $e) {

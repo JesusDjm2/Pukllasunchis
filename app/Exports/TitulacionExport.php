@@ -31,7 +31,7 @@ class TitulacionExport implements FromCollection, WithHeadings, WithMapping, Wit
     public function headings(): array
     {
         return ['N° expediente', 'Apellidos y nombres', 'DNI', 'Modalidad', 'Programa', 'Promoción / ciclo',
-            'Estado', 'Siguiente paso', 'Vencimiento del PTI', 'Asesor(a) del PTI', 'Correo'];
+            'Estado', 'Siguiente paso', 'Vencimiento del PTI', 'Asesor(a) del PTI', 'Celular', 'Correo'];
     }
 
     public function map($item): array
@@ -50,7 +50,8 @@ class TitulacionExport implements FromCollection, WithHeadings, WithMapping, Wit
             $item->siguiente ?? '',
             $vigencia?->conocida() ? $vigencia->vencimiento->format('d/m/Y').($vigencia->vencido() ? ' (vencido)' : '') : '',
             $pti?->asesorNombre() ?? '',
-            ($item->user ?? null)?->email ?? '',
+            $item->telefono ?? '',
+            $item->email ?? '',
         ];
     }
 

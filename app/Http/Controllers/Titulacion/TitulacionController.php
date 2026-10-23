@@ -38,11 +38,11 @@ class TitulacionController extends Controller
     /**
      * Ciclo (número romano → entero, ver Ciclo::ordenCiclo()) desde el cual un alumno ACTIVO
      * ya puede arrancar su proceso de titulación, según la política de la institución:
-     *  - FID: desde el Ciclo VIII.
+     *  - FID: desde el Ciclo IX.
      *  - PPD: todo alumno vigente, desde el Ciclo I — el programa dura un año y los
      *    Ciclos I y II se cursan en paralelo (no es secuencial como FID).
      */
-    private const CICLO_MINIMO_TITULACION = 8;
+    private const CICLO_MINIMO_TITULACION = 9;
 
     private const CICLO_MINIMO_TITULACION_PPD = 1;
 
@@ -77,7 +77,7 @@ class TitulacionController extends Controller
      */
     /** Resumen "Por atender" de la lista: clave => [etiqueta, ícono, ayuda]. */
     public const TAREAS = [
-        'sin_asesor' => ['PTI sin asesor(a)', 'fa-user-slash', 'Tiene PTI pero ningún asesor(a) asignado(a).'],
+        'sin_asesor' => ['TI sin asesor(a)', 'fa-user-slash', 'Con el PTI aprobado y todavía ningún asesor(a) asignado(a) (se asigna en el TI).'],
         'rd_sin_pdf' => ['RD sin PDF', 'fa-file-pdf', 'Resoluciones registradas que todavía no tienen su PDF.'],
         'sin_expediente' => ['Sin N° de expediente', 'fa-folder-open', 'Personas en proceso sin número de expediente.'],
         'proximas' => ['Exposiciones y sustentaciones (30 días)', 'fa-calendar-alt', 'Con fecha de exposición o sustentación en los próximos 30 días.'],
@@ -91,10 +91,101 @@ class TitulacionController extends Controller
         'sin_fecha' => ['Sin fecha', ['sin_fecha']],
     ];
 
+    /** Filtro por grado registrado en SUNEDU (solo personas con proceso): clave => etiqueta. */
+    public const FILTROS_GRADO = [
+        'licenciado' => 'Licenciado(a)',
+        'bachiller' => 'Solo Bachiller',
+        'sin_grado' => 'Sin grado registrado',
+    ];
+
+    /**
+     * Retiro de la institución (deserción) según las hojas de expedientes: lo anotan en la columna
+     * del expediente ("Retirada"), del correo o del PTI ("2025-II sale"). Misma regla en la
+     * sincronización (no crea su cuenta) y en el panel (filtro «Retirados»).
+     */
+    public static function marcadoRetirado(array $d): bool
+    {
+        $texto = mb_strtolower(implode(' ', [$d['num_expediente'] ?? '', $d['correo'] ?? '', $d['fecha_pti'] ?? '', $d['rd_pti'] ?? '']));
+
+        return (bool) preg_match('/retirad[oa]|reirada|\bsale\b/u', $texto);
+    }
+
+    /** Grado ya registrado en SUNEDU: 'licenciado', 'bachiller' o null. */
+    private static function gradoDe(?Tesis $tesis): ?string
+    {
+        return match (true) {
+            (bool) ($tesis?->fecha_titulo_sunedu || filled($tesis?->titulo_sunedu)) => 'licenciado',
+            (bool) ($tesis?->fecha_bachiller_sunedu || filled($tesis?->bachiller_sunedu)) => 'bachiller',
+            default => null,
+        };
+    }
+
     /**
      * Texto de la columna Promoción/ciclo: "IX" → "Ciclo IX"; "Egresados 2020- I al 2026- II"
      * → "Egresados 2020-I al 2026-II" (los archivos importados traen espacios sueltos).
      */
+    /**
+     * Promoción de una fila a partir de su ciclo. FID nombra por semestre ("Egresados 2024-I") y PPD
+     * por año ("Egresados 2024"); las planillas traen el periodo ("2017-I al 2022-II": egresó en 2022-II).
+     * Devuelve ['anio' => 2024, 'semestre' => '2024-I'|null] o, si aún estudia, ['ciclo' => 'IX'].
+     */
+    public static function promocionDe(?string $anio): array
+    {
+        $anio = trim(preg_replace('/\s+/', ' ', (string) $anio));
+        if (preg_match('/^(?:Ciclo )?([IVX]+)$/i', $anio, $m)) {
+            return ['ciclo' => strtoupper($m[1])];
+        }
+        if (preg_match_all('/(\d{4})(?:\s*-\s*(I{1,2})\b)?/', $anio, $m, PREG_SET_ORDER)) {
+            $ultimo = end($m);
+
+            return ['anio' => (int) $ultimo[1], 'semestre' => ($ultimo[2] ?? '') !== '' ? $ultimo[1].'-'.$ultimo[2] : null];
+        }
+
+        return [];
+    }
+
+    /** Filtro Promoción: 'e2024' = egresó en 2024 (cualquier semestre), 'e2024-I' = ese semestre, 'cIX' = cursa el ciclo IX. */
+    private static function enPromocion(object $item, string $clave): bool
+    {
+        $p = self::promocionDe($item->anio ?? null);
+
+        return match (true) {
+            str_starts_with($clave, 'c') => ($p['ciclo'] ?? null) === substr($clave, 1),
+            str_contains($clave, '-') => ($p['semestre'] ?? null) === substr($clave, 1),
+            default => isset($p['anio']) && (string) $p['anio'] === substr($clave, 1),
+        };
+    }
+
+    /**
+     * Opciones del filtro Promoción con su cantidad: años de egreso (del más reciente) y, si el año se
+     * divide en semestres, cada semestre debajo; luego los ciclos de quienes aún estudian (I → X).
+     *
+     * @return array{egresados: array<string, array{0: string, 1: int, 2: bool}>, ciclos: array<string, array{0: string, 1: int}>}
+     */
+    private static function opcionesPromocion(\Illuminate\Support\Collection $items): array
+    {
+        $promos = $items->map(fn ($i) => self::promocionDe($i->anio ?? null))->filter();
+        $opciones = ['egresados' => [], 'ciclos' => []];
+
+        foreach ($promos->whereNotNull('anio')->groupBy('anio')->sortKeysDesc() as $anio => $grupo) {
+            $opciones['egresados']['e'.$anio] = ['Egresados '.$anio, $grupo->count(), false];
+            $semestres = $grupo->pluck('semestre')->filter()->countBy()->sortKeys();
+            // Solo si aporta: más de un semestre, o semestres mezclados con quienes solo tienen el año.
+            if ($semestres->count() > 1 || ($semestres->isNotEmpty() && $semestres->sum() < $grupo->count())) {
+                foreach ($semestres as $semestre => $n) {
+                    $opciones['egresados']['e'.$semestre] = [$semestre, $n, true];
+                }
+            }
+        }
+
+        $orden = array_flip(['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X']);
+        foreach ($promos->whereNotNull('ciclo')->countBy('ciclo')->sortBy(fn ($n, $c) => $orden[$c] ?? 99) as $ciclo => $n) {
+            $opciones['ciclos']['c'.$ciclo] = ['Ciclo '.$ciclo, $n];
+        }
+
+        return $opciones;
+    }
+
     public static function etiquetaAnio(?string $anio): ?string
     {
         if (blank($anio)) {
@@ -119,7 +210,9 @@ class TitulacionController extends Controller
         $enRango = fn ($fecha) => $fecha && $fecha->between(now()->startOfDay(), now()->addDays(30)->endOfDay());
 
         return array_keys(array_filter([
-            'sin_asesor' => $pti && ! $pti->asesor_id && ! $pti->asesor_externo_id,
+            // El asesor se asigna en el TI: solo falta si el PTI ya está aprobado y no hay asesor ni en el PTI ni en el TI.
+            'sin_asesor' => $pti && in_array($seguimiento->estadoTitulacion?->clave, ['pti_aprobado', 'ti_aprobado'], true)
+                && ! $pti->asesor_id && ! $pti->asesor_externo_id && ! $tesis?->asesor_id && ! $tesis?->asesor_externo_id,
             'rd_sin_pdf' => $seguimiento->resoluciones->contains(fn ($r) => filled($r->numero_rd) && blank($r->archivo)),
             'sin_expediente' => blank($seguimiento->numero_expediente),
             'proximas' => $enRango($tesis?->fecha_exposicion) || $enRango($tesis?->fecha_sustentacion)
@@ -183,7 +276,37 @@ class TitulacionController extends Controller
                 return $mapa;
             }, []);
 
-        // "Registrado" ya no es solo condicion=Egresado: un alumno activo (FID desde Ciclo VIII,
+        // Grupos armados al iniciar el proceso (seguimiento_titulacion.grupo_id, desde el 19/10).
+        $companerosPorGrupo = SeguimientoTitulacion::whereNotNull('grupo_id')
+            ->with('user:id,name,apellidos')->get(['id', 'user_id', 'grupo_id'])
+            ->groupBy('grupo_id')
+            ->reduce(function ($mapa, $segs) {
+                foreach ($segs as $seg) {
+                    $mapa[$seg->id] = $segs->pluck('user')->filter();
+                }
+                return $mapa;
+            }, []);
+
+        // Retiro (deserción): el perfil «Retirado» de la cuenta, o la marca en las hojas de
+        // expedientes cuando todavía no se registró en su expediente ('planilla').
+        // La BD descarta de entrada las ~7.000 filas sin esas palabras; marcadoRetirado() confirma.
+        $retiroPlanilla = Importacion::where(fn ($q) => $q->where('datos_normalizados', 'like', '%etirad%')
+                ->orWhere('datos_normalizados', 'like', '%eirada%')->orWhere('datos_normalizados', 'like', '%sale%'))
+            ->get(['user_id', 'dni', 'datos_normalizados'])
+            ->filter(fn (Importacion $i) => self::marcadoRetirado($i->datos_normalizados ?? []));
+        $retiroUserIds = $retiroPlanilla->pluck('user_id')->filter()->unique();
+        $retiroDnis = $retiroPlanilla->pluck('dni')->filter()->unique();
+        // Un perfil «Retirado» en alguien que ya egresó es un dato viejo (se reincorporó y egresó), no un retiro.
+        $retiroDe = fn (User $u) => $u->perfil === 'Retirado' && $u->condicion !== 'Egresado' ? 'perfil'
+            : ($retiroUserIds->contains($u->id) || ($u->dni && $retiroDnis->contains($u->dni)) ? 'planilla' : null);
+
+        // Contacto de la fila: celular de la ficha (FID o PPD) o, si no tiene, el de la cuenta; correo de la cuenta.
+        $contacto = fn (User $u) => [
+            'telefono' => ($u->alumno ?? $u->alumnoB)?->numero ?: $u->telefono,
+            'email' => $u->email,
+        ];
+
+        // "Registrado" ya no es solo condicion=Egresado: un alumno activo (FID desde Ciclo IX,
         // PPD desde Ciclo I) puede arrancar su PTI antes de egresar (así
         // funciona en la institución) — una vez que alguien tiene fila en
         // seguimiento_titulacion, cuenta como registrado sin importar su
@@ -203,10 +326,10 @@ class TitulacionController extends Controller
                 'seguimientoTitulacion.pti.asesor',
                 'seguimientoTitulacion.tesis.asesor',
                 'seguimientoTitulacion.avisosPti.creadoPor',
-                'programa', 'ciclo',
+                'programa', 'ciclo', 'alumno', 'alumnoB',
             ])
             ->get()
-            ->map(function (User $user) use ($gruposPorActa, $companerosPorRd) {
+            ->map(function (User $user) use ($gruposPorActa, $companerosPorRd, $companerosPorGrupo, $retiroDe, $contacto) {
                 // El detalle completo (PTI/Tesis/Actas/RDs/Documentos) ahora se
                 // muestra directo en el acordeón de cada fila (ver
                 // titulacion/index.blade.php), así que todo registrado necesita
@@ -220,6 +343,7 @@ class TitulacionController extends Controller
                 $acta = $seguimiento->actas?->first();
                 $integrantes = ($acta && $acta->numero_acta ? ($gruposPorActa[$acta->numero_acta] ?? collect()) : collect())
                     ->merge($companerosPorRd[$seguimiento->id] ?? collect())
+                    ->merge($companerosPorGrupo[$seguimiento->id] ?? collect())
                     ->unique('id')
                     ->reject(fn ($u) => $u->id === $user->id)
                     ->values();
@@ -245,10 +369,15 @@ class TitulacionController extends Controller
                     'acta' => $acta,
                     'rds' => $seguimiento->resoluciones ?? collect(),
                     'integrantes_grupo' => $integrantes,
-                    'siguiente' => $seguimiento->avance()->siguientePaso()['falta'] ?? null,
+                    'siguiente' => ($avanceFila = $seguimiento->avance())->siguientePaso()['falta'] ?? null,
+                    // Mini barra PTI | TI | Tesis de la columna Estado.
+                    'etapas' => $avanceFila->etapas(),
                     'tareas' => self::tareasDe($seguimiento),
                     'vigencia' => $vigencia = new VigenciaPti($seguimiento->pti),
                     'vigencia_grupo' => self::grupoVigencia($vigencia, $seguimiento->estadoTitulacion?->clave),
+                    'grado' => self::gradoDe($seguimiento->tesis),
+                    'retiro' => $retiroDe($user),
+                    ...$contacto($user),
                 ];
             });
 
@@ -264,13 +393,15 @@ class TitulacionController extends Controller
                 'programa_id' => $user->programa_id,
                 'modalidad' => $user->programa?->modalidad?->value,
                 'anio' => $user->ciclo?->nombre,
-                // Con la modalidad a la vista: PPD de Ciclo II es normal (programa de un año); FID, desde el VIII.
+                // Con la modalidad a la vista: PPD de Ciclo II es normal (programa de un año); FID, desde el IX.
                 'estado_label' => 'Activo '.($user->ciclo?->programa?->esPpd() ? 'PPD' : 'FID').' — Ciclo '.$user->ciclo?->numeroRomano.' (puede iniciar)',
                 'estado_badge' => 'primary',
-                'accion_url' => route('titulacion.iniciar', $user->id),
+                'accion_url' => route('titulacion.inicio.crear', $user->id),
                 'accion_label' => 'Iniciar proceso',
                 'accion_clase' => 'btn-primary',
                 'es_form' => true,
+                'retiro' => $retiroDe($user),
+                ...$contacto($user),
             ]);
 
         $programasPorId = Programa::all()->keyBy('id');
@@ -278,8 +409,9 @@ class TitulacionController extends Controller
             ->map(function ($grupo) use ($programasPorId) {
                 $programaReconocido = $grupo['programa_id'] ? $programasPorId->get($grupo['programa_id']) : null;
                 $esCompletarFicha = (bool) $grupo['user_id'];
+                $retirado = $grupo['retirado'] && ! $esCompletarFicha;
                 return (object) [
-                    'tipo' => $esCompletarFicha ? 'pendiente_ficha' : 'pendiente_cuenta',
+                    'tipo' => $retirado ? 'retirado' : ($esCompletarFicha ? 'pendiente_ficha' : 'pendiente_cuenta'),
                     'row_id' => 'pend'.$grupo['importacion_id'],
                     'sort_key' => $grupo['nombre'] ?? '',
                     'nombre' => $grupo['nombre'] ?: '—',
@@ -294,22 +426,56 @@ class TitulacionController extends Controller
                     'modalidad' => $programaReconocido?->modalidad?->value
                         ?? ($grupo['tipo'] ? strtoupper($grupo['tipo']) : null),
                     'anio' => $grupo['anio_ingreso'] ? 'Egresados '.$grupo['anio_ingreso'] : null,
-                    'estado_label' => $esCompletarFicha ? 'Ya tiene cuenta — falta ficha' : 'Sin cuenta en el sistema',
-                    'estado_badge' => 'warning',
-                    'accion_url' => $esCompletarFicha
-                        ? route('titulacion.importaciones.completar-ficha.form', $grupo['importacion_id'])
-                        : route('titulacion.importaciones.crear-cuenta.form', $grupo['importacion_id']),
+                    'estado_label' => $retirado ? 'Retirado(a) según la planilla — sin cuenta'
+                        : ($esCompletarFicha ? 'Ya tiene cuenta — falta ficha' : 'Sin cuenta en el sistema'),
+                    'estado_badge' => $retirado ? 'danger' : 'warning',
+                    // A quien se retiró de la institución no se le crea cuenta (igual que en la sincronización).
+                    'accion_url' => match (true) {
+                        $retirado => null,
+                        $esCompletarFicha => route('titulacion.importaciones.completar-ficha.form', $grupo['importacion_id']),
+                        default => route('titulacion.importaciones.crear-cuenta.form', $grupo['importacion_id']),
+                    },
                     'accion_label' => $esCompletarFicha ? 'Completar ficha' : 'Crear cuenta',
                     'accion_clase' => 'btn-warning',
                     'filas_origen' => $grupo['filas'],
                     'user_id_importado' => $grupo['user_id'],
+                    // Sin cuenta todavía: lo que traen las planillas (a veces el "correo" dice "Retirado").
+                    'email' => str_contains((string) $grupo['email'], '@') ? $grupo['email'] : null,
+                    'telefono' => collect($grupo['filas'])->pluck('datos.celular')->first(fn ($v) => filled($v)),
                 ];
             });
 
         // Filas importadas de alguien que YA está en la lista (con proceso iniciado o
         // activo que puede iniciar): no son otra persona. Se quitan de "pendientes" y
         // sus datos de origen se muestran dentro de la ficha de esa persona.
-        $presentes = $registrados->concat($activosElegibles);
+        // Cuentas que la planilla marca como retiradas y que no están en la lista (no egresaron ni
+        // iniciaron proceso): se muestran en «Retirados» para registrar el retiro en su expediente.
+        $idsEnLista = $registrados->concat($activosElegibles)->pluck('user_id');
+        $retiradosConCuenta = User::where(fn ($q) => $q->whereIn('id', $retiroUserIds)->orWhereIn('dni', $retiroDnis))
+            ->whereNotIn('id', $idsEnLista)
+            ->with(['programa', 'ciclo', 'alumno', 'alumnoB'])
+            ->get()
+            ->map(fn (User $user) => (object) [
+                'tipo' => 'retirado',
+                'row_id' => 'ret'.$user->id,
+                'user_id' => $user->id,
+                'sort_key' => $user->apellidos.' '.$user->name,
+                'nombre' => $user->apellidos.', '.$user->name,
+                'dni' => $user->dni,
+                'programa' => $user->programa->nombre ?? '—',
+                'programa_id' => $user->programa_id,
+                'modalidad' => $user->programa?->modalidad?->value,
+                'anio' => $user->ciclo?->nombre,
+                'estado_label' => $user->perfil === 'Retirado' ? 'Retirado(a)' : 'Retirado(a) según la planilla',
+                'estado_badge' => 'danger',
+                'retiro' => $retiroDe($user),
+                'accion_url' => route('expediente.show', $user->id),
+                'accion_label' => 'Ver expediente',
+                'accion_clase' => 'btn-outline-secondary',
+                ...$contacto($user),
+            ]);
+
+        $presentes = $registrados->concat($activosElegibles)->concat($retiradosConCuenta);
         $porUserId = $presentes->keyBy('user_id');
         $porDni = $presentes->filter(fn ($i) => filled($i->dni))->keyBy('dni');
         $pendientes = $pendientes->reject(function ($p) use ($porUserId, $porDni) {
@@ -323,14 +489,32 @@ class TitulacionController extends Controller
             return true;
         })->values();
 
-        $todos = $registrados->concat($pendientes)->concat($activosElegibles);
+        $todos = $registrados->concat($pendientes)->concat($activosElegibles)->concat($retiradosConCuenta);
+        $totalRetirados = $todos->filter(fn ($item) => $item->tipo === 'retirado' || ($item->retiro ?? null))->count();
+
+        // Quien se retiró sin cuenta ni proceso no es trabajo pendiente: solo sale en «Retirados» o al buscarlo.
+        if ($request->input('estado') !== 'retirados' && ! $request->filled('search')) {
+            $todos = $todos->reject(fn ($item) => $item->tipo === 'retirado');
+        }
+
+        // Un DNI o un N° de expediente identifica a UNA persona: se busca en toda la lista, sin los filtros
+        // (siguen elegidos, en pausa). Un nombre se busca dentro de los filtros; si ahí no hay nadie, se
+        // avisa cuántos hay en toda la lista.
+        $textoBuscado = trim((string) $request->input('search'));
+        $expedienteBuscado = Expediente::normalizar($textoBuscado);
+        $busquedaGlobal = $expedienteBuscado !== null || preg_match('/^\d{7,12}$/', preg_replace('/\s+/', '', $textoBuscado));
+        $soloBusqueda = $todos;
 
         if ($request->filled('search')) {
             // Sin distinguir tildes, ñ ni mayúsculas: "titulacion" encuentra "Titulación".
             $normalizar = fn ($texto) => mb_strtolower(\Illuminate\Support\Str::ascii((string) $texto));
-            $term = $normalizar(trim((string) $request->input('search')));
-            $todos = $todos->filter(function ($item) use ($term, $normalizar) {
-                if (str_contains($normalizar($item->nombre), $term) || str_contains((string) $item->dni, $term)
+            $term = $normalizar($expedienteBuscado ? $textoBuscado : preg_replace('/\s+/', ' ', $textoBuscado));
+            $todos = $todos->filter(function ($item) use ($term, $normalizar, $expedienteBuscado) {
+                // "N°54-T/PUK", "0054-t/puk"… encuentran 0054-T/PUK (como se guarda).
+                if ($expedienteBuscado !== null) {
+                    return ($item->expediente ?? null) === $expedienteBuscado;
+                }
+                if (str_contains($normalizar($item->nombre), $term) || str_contains((string) $item->dni, str_replace(' ', '', $term))
                     || str_contains($normalizar($item->expediente ?? ''), $term)) {
                     return true;
                 }
@@ -346,12 +530,15 @@ class TitulacionController extends Controller
                 }
                 return false;
             });
+            $soloBusqueda = $todos;
         }
 
         if ($request->input('estado') === 'pendientes') {
             $todos = $todos->whereIn('tipo', ['pendiente_cuenta', 'pendiente_ficha']);
         } elseif ($request->input('estado') === 'activos') {
             $todos = $todos->where('tipo', 'activo_elegible');
+        } elseif ($request->input('estado') === 'retirados') {
+            $todos = $todos->filter(fn ($item) => $item->tipo === 'retirado' || ($item->retiro ?? null));
         } elseif ($request->filled('estado_titulacion_id')) {
             // Filtro por estado de titulación real solo aplica a los ya registrados.
             $estadoNombre = EstadoTitulacion::find((int) $request->input('estado_titulacion_id'))?->nombre;
@@ -369,20 +556,37 @@ class TitulacionController extends Controller
             $todos = $todos->filter(fn ($item) => in_array($filtroTarea, $item->tareas ?? [], true));
         }
 
+        // Grado en SUNEDU: solo aplica a quien tiene proceso (registrados).
+        $filtroGrado = array_key_exists((string) $request->input('grado'), self::FILTROS_GRADO) ? $request->input('grado') : null;
+        if ($filtroGrado) {
+            $todos = $todos->filter(fn ($item) => $item->tipo === 'registrado'
+                && ($item->grado ?? 'sin_grado') === $filtroGrado);
+        }
+
         if (in_array($request->input('modalidad'), ['FID', 'PPD'], true)) {
             $todos = $todos->filter(fn ($item) => ($item->modalidad ?? null) === $request->input('modalidad'));
         }
 
+        // Las listas Programa y Promoción solo ofrecen lo que hay con los demás filtros (con su cantidad).
+        $conteoPrograma = $todos->countBy(fn ($item) => $item->programa_id ?? 0);
         if ($request->filled('programa_id')) {
             $todos = $todos->filter(fn ($item) => ($item->programa_id ?? null) === (int) $request->input('programa_id'));
         }
 
+        $opcionesPromocion = self::opcionesPromocion($todos);
         if ($request->filled('anio')) {
-            $todos = $todos->filter(fn ($item) => ($item->anio ?? null) === $request->input('anio'));
+            $todos = $todos->filter(fn ($item) => self::enPromocion($item, (string) $request->input('anio')));
+        }
+
+        $coincidenciasFuera = 0;
+        if ($busquedaGlobal) {
+            $todos = $soloBusqueda;
+        } elseif ($request->filled('search') && $todos->isEmpty()) {
+            $coincidenciasFuera = $soloBusqueda->count();
         }
 
         // Con filtro de vigencia, primero el que vence (o venció) antes.
-        $todos = $filtroVigencia && $filtroVigencia !== 'sin_fecha'
+        $todos = $filtroVigencia && $filtroVigencia !== 'sin_fecha' && ! $busquedaGlobal
             ? $todos->sortBy(fn ($item) => $item->vigencia->vencimiento->format('Ymd').$item->sort_key)->values()
             : $todos->sortBy('sort_key')->values();
 
@@ -403,7 +607,7 @@ class TitulacionController extends Controller
             $todos->count(),
             $perPage,
             $page,
-            ['path' => $request->url(), 'query' => $request->except('ver', 'tab')]
+            ['path' => $request->url(), 'query' => $request->except('ver', 'tab', 'paso')]
         );
 
         // Pestaña "Grupo": correo y estado de cada integrante, en una sola
@@ -437,9 +641,8 @@ class TitulacionController extends Controller
             ->pluck('total', 'estado_titulacion_id');
 
         $totalEgresados = $registrados->count();
-        $totalPendientes = $pendientes->count();
+        $totalPendientes = $pendientes->whereIn('tipo', ['pendiente_cuenta', 'pendiente_ficha'])->count();
         $totalActivosElegibles = $activosElegibles->count();
-        $totalConSeguimiento = SeguimientoTitulacion::count();
         $conteoTareas = collect(self::TAREAS)->map(fn ($t, $clave) => $registrados->filter(fn ($i) => in_array($clave, $i->tareas, true))->count());
         $conteoVigencia = collect(self::FILTROS_VIGENCIA)->map(fn ($f) => $registrados->whereIn('vigencia_grupo', $f[1])->count());
 
@@ -453,12 +656,14 @@ class TitulacionController extends Controller
                 ->values()
             : collect();
 
-        $programasFiltro = Programa::orderBy('modalidad')->orderBy('nombre')->get();
-        $aniosFiltro = $todos->pluck('anio')->filter()->unique()->sort()->values();
+        // Solo los programas que tienen personas con los filtros de arriba (y el elegido, aunque quede en 0).
+        $programasFiltro = Programa::orderBy('modalidad')->orderBy('nombre')->get()
+            ->filter(fn ($p) => ($conteoPrograma[$p->id] ?? 0) > 0 || (int) $request->input('programa_id') === $p->id);
 
         return view('titulacion.index', compact(
-            'egresados', 'estados', 'docentes', 'asesores', 'conteoPorEstado', 'totalEgresados', 'totalPendientes', 'totalActivosElegibles', 'totalConSeguimiento',
-            'programasFiltro', 'aniosFiltro', 'reportesDeDatos', 'conteoVigencia', 'filtroVigencia', 'conteoTareas', 'filtroTarea'
+            'egresados', 'estados', 'docentes', 'asesores', 'conteoPorEstado', 'totalEgresados', 'totalPendientes', 'totalActivosElegibles',
+            'programasFiltro', 'conteoPrograma', 'opcionesPromocion', 'reportesDeDatos', 'conteoVigencia', 'filtroVigencia', 'conteoTareas', 'filtroTarea',
+            'totalRetirados', 'filtroGrado', 'busquedaGlobal', 'coincidenciasFuera'
         ));
     }
 
@@ -471,13 +676,140 @@ class TitulacionController extends Controller
      *
      * @return \Illuminate\Support\Collection<int, array{importacion_id:int,dni:?string,nombre:?string,programa:?string,user_id:?int}>
      */
+    /**
+     * Las hojas sin DNI (actas EXPO-SUST, archivos generales de Investigación) escriben el nombre a su
+     * manera ("Nombres Apellidos"), así que agrupar por nombre las dejaba como OTRA persona pendiente,
+     * "sin correo", aunque la hoja de expedientes ya la trae con DNI y correo. Un grupo sin DNI se une
+     * al grupo con DNI de la misma persona: misma cuenta vinculada, o el nombre coincide con UNO solo.
+     */
+    private function unirFilasSinDni($grupos)
+    {
+        $conDni = $grupos->filter(fn ($g) => filled($g->first()->dni));
+        $palabras = fn ($t) => array_filter(explode(' ', preg_replace('/[^A-Z]+/', ' ', strtoupper(\Illuminate\Support\Str::ascii((string) $t)))), fn ($p) => strlen($p) >= 4);
+
+        // Índice palabra -> grupos con DNI que la tienen, para no comparar contra todos.
+        $indice = [];
+        foreach ($conDni as $clave => $g) {
+            foreach ($g as $fila) {
+                foreach ($palabras($fila->nombre_estudiante) as $p) {
+                    $indice[$p][$clave] = true;
+                }
+            }
+        }
+        $porUsuario = $conDni->mapWithKeys(fn ($g, $clave) => [$g->firstWhere('user_id', '!=', null)?->user_id ?? '' => $clave])->forget('');
+
+        foreach ($grupos->filter(fn ($g) => blank($g->first()->dni)) as $clave => $g) {
+            $destino = ($u = $g->firstWhere('user_id', '!=', null)?->user_id) ? ($porUsuario[$u] ?? null) : null;
+            if (! $destino) {
+                $nombre = (string) $g->first()->nombre_estudiante;
+                $candidatos = collect($palabras($nombre))->flatMap(fn ($p) => array_keys($indice[$p] ?? []))->unique()
+                    ->filter(fn ($c) => $conDni[$c]->contains(fn ($fila) => NombresImportados::mismaPersona($nombre, (string) $fila->nombre_estudiante)));
+                $destino = $candidatos->count() === 1 ? $candidatos->first() : null;
+            }
+            if ($destino) {
+                $grupos[$destino] = $grupos[$destino]->merge($g);
+                $grupos->forget($clave);
+            }
+        }
+
+        return $grupos;
+    }
+
+    /**
+     * Lo que sigue sin DNI tras unirFilasSinDni casi siempre es alguien que YA está registrado y cuyo
+     * nombre el acta o el archivo general escribe a su manera y con erratas ("Judith Pila Zerceda" por
+     * "Pila Zerceda, Yudith"). Se compara palabra por palabra tolerando UNA letra distinta en las de 5+
+     * letras, y solo se une si coincide con UNA sola persona: primero con una cuenta (se vincula, solo
+     * en memoria), si no con un pendiente que sí trae DNI (se juntan). Las filas de grupo ("Ana Pérez
+     * y Luis Soto") se quitan si cada integrante tiene cuenta; si no, siguen pendientes para revisar.
+     */
+    private function vincularSinDniACuentas($grupos)
+    {
+        $sinCuenta = $grupos->filter(fn ($g) => blank($g->first()->dni) && ! $g->firstWhere('user_id', '!=', null));
+        if ($sinCuenta->isEmpty()) {
+            return $grupos;
+        }
+
+        $palabras = fn ($t) => array_values(array_unique(array_filter(
+            explode(' ', preg_replace('/[^A-Z]+/', ' ', strtoupper(\Illuminate\Support\Str::ascii((string) $t)))),
+            fn ($p) => strlen($p) > 2 && ! in_array($p, ['DEL', 'LOS', 'LAS'], true)
+        )));
+        $parecida = fn ($a, $b) => $a === $b || (strlen($a) >= 5 && strlen($b) >= 5 && levenshtein($a, $b) <= 1);
+        // Misma regla que NombresImportados::mismaPersona (todas las palabras del nombre más corto), con erratas.
+        $mismaPersona = function (array $pa, array $pb) use ($parecida) {
+            [$corto, $largo] = count($pa) <= count($pb) ? [$pa, $pb] : [$pb, $pa];
+            $iguales = count(array_filter($corto, fn ($w) => collect($largo)->contains(fn ($x) => $parecida($w, $x))));
+
+            return $iguales >= 2 && $iguales === count($corto);
+        };
+        $unica = function (string $nombre, array $indice, array $palabrasDe) use ($palabras, $mismaPersona) {
+            $pn = $palabras($nombre);
+            $candidatas = collect($pn)->flatMap(fn ($p) => array_keys($indice[$p] ?? []))->unique()
+                ->filter(fn ($id) => $mismaPersona($pn, $palabrasDe[$id]));
+
+            return $candidatas->count() === 1 ? $candidatas->first() : null;
+        };
+
+        $cuentasIndice = [];
+        $cuentasPalabras = [];
+        foreach (User::whereNotNull('dni')->where('dni', '!=', '')->get(['id', 'name', 'apellidos']) as $u) {
+            $cuentasPalabras[$u->id] = $palabras($u->apellidos.' '.$u->name);
+            foreach ($cuentasPalabras[$u->id] as $p) {
+                $cuentasIndice[$p][$u->id] = true;
+            }
+        }
+        $gruposIndice = [];
+        $gruposPalabras = [];
+        foreach ($grupos->filter(fn ($g) => filled($g->first()->dni)) as $clave => $g) {
+            $gruposPalabras[$clave] = $palabras($g->first()->nombre_estudiante);
+            foreach ($gruposPalabras[$clave] as $p) {
+                $gruposIndice[$p][$clave] = true;
+            }
+        }
+        $cuentaDe = fn (string $nombre) => $unica($nombre, $cuentasIndice, $cuentasPalabras);
+
+        foreach ($sinCuenta as $clave => $g) {
+            $nombre = (string) $g->first()->nombre_estudiante;
+            if ($userId = $cuentaDe($nombre)) {
+                $g->each(fn (Importacion $fila) => $fila->user_id = $userId);
+                continue;
+            }
+            if (($destino = $unica($nombre, $gruposIndice, $gruposPalabras)) !== null) {
+                $grupos[$destino] = $grupos[$destino]->merge($g);
+                $grupos->forget($clave);
+                continue;
+            }
+            $integrantes = array_values(array_filter(array_map('trim', preg_split('/\R+|\s+y\s+|;|,/iu', $nombre))));
+            if (count($integrantes) > 1 && collect($integrantes)->every(fn ($n) => $cuentaDe($n))) {
+                $grupos->forget($clave);
+            }
+        }
+
+        return $grupos;
+    }
+
+    /**
+     * Agrupar ~7.000 filas importadas toma unos segundos y solo cambia al sincronizar una planilla o al
+     * crear/editar cuentas: se guarda en caché con una huella de esas tablas (cantidad, último id y última
+     * modificación). Cualquier cambio da otra huella y se recalcula; nunca se muestra algo desactualizado.
+     */
     private function pendientesAgrupados()
+    {
+        $huella = collect([Importacion::query(), User::query(), Programa::query()])
+            ->map(fn ($q) => implode('.', (array) $q->toBase()->selectRaw('COUNT(*) c, MAX(id) i, MAX(updated_at) u')->first()))
+            ->implode('|');
+
+        return cache()->remember('titulacion.pendientes.'.md5($huella), now()->addDay(), fn () => $this->calcularPendientesAgrupados());
+    }
+
+    private function calcularPendientesAgrupados()
     {
         // DNI que ya tienen cuenta: crear otra con el mismo DNI fallaría (ver crearCuentasMasivo).
         $cuentaPorDni = User::whereNotNull('dni')->where('dni', '!=', '')->pluck('id', 'dni');
 
+        // Sin datos_originales (~6 MB de JSON que aquí no se usa).
         return Importacion::whereIn('estado_match', ['sin_match', 'vinculado'])
-            ->get()
+            ->get(['id', 'origen', 'archivo_nombre', 'dni', 'nombre_estudiante', 'nombre_normalizado', 'user_id', 'estado_match', 'datos_normalizados', 'created_at'])
             // Sin DNI ni nombre no hay a quién identificar: son las filas en
             // blanco de la hoja de secretaría ("BLANCOO"). Agrupadas por clave
             // vacía aparecían como una sola "persona" pendiente fantasma.
@@ -486,6 +818,8 @@ class TitulacionController extends Controller
             // ("2016-I al 2021-II" en la columna de nombre): no son personas.
             ->reject(fn (Importacion $imp) => NombresImportados::esFilaDeEncabezado($imp->nombre_estudiante, $imp->dni))
             ->groupBy(fn (Importacion $imp) => $imp->dni ?: $imp->nombre_normalizado)
+            ->pipe(fn ($grupos) => $this->unirFilasSinDni($grupos))
+            ->pipe(fn ($grupos) => $this->vincularSinDniACuentas($grupos))
             ->map(function ($grupo) use ($cuentaPorDni) {
                 $vinculado = $grupo->first(fn (Importacion $i) => $i->user_id);
                 $conProgramaOPeriodo = $grupo->first(fn (Importacion $i) => ! empty($i->datos_normalizados['programa'] ?? null));
@@ -521,7 +855,12 @@ class TitulacionController extends Controller
                         ->first(fn ($v) => filled($v) && trim($v) !== '-');
                 $programaId = $programaTexto ? $this->resolverProgramaId($programaTexto, $tipo) : null;
 
+                $retirado = $grupo->contains(fn (Importacion $i) => self::marcadoRetirado($i->datos_normalizados ?? []));
+
                 $motivos = [];
+                if ($retirado) {
+                    $motivos[] = 'retirado(a) de la institución según la planilla';
+                }
                 if (! $email) {
                     $motivos[] = 'sin correo';
                 }
@@ -552,6 +891,7 @@ class TitulacionController extends Controller
                     'user_id' => $vinculado?->user_id,
                     'cuenta_por_dni' => $grupo->first()->dni ? ($cuentaPorDni[$grupo->first()->dni] ?? null) : null,
                     'elegible_masivo' => empty($motivos),
+                    'retirado' => $retirado,
                     'motivos_no_elegible' => $motivos,
                     // Detalle crudo de cada archivo del que salió esta persona — para
                     // no necesitar una pantalla aparte de "Importaciones": se muestra
@@ -567,12 +907,13 @@ class TitulacionController extends Controller
                     ])->values(),
                 ];
             })
-            ->filter(function ($grupo) {
-                if (! $grupo['user_id']) {
-                    return true; // sin cuenta todavía -> sigue pendiente
-                }
-                $user = User::find($grupo['user_id']);
-                return ! $user || $user->condicion !== 'Egresado'; // tiene cuenta pero le falta la ficha
+            ->pipe(function ($grupos) {
+                // Condición de todas las cuentas vinculadas en una sola consulta (antes, una por persona).
+                $condicion = User::whereIn('id', $grupos->pluck('user_id')->filter()->unique())->pluck('condicion', 'id');
+
+                return $grupos->filter(fn ($grupo) => ! $grupo['user_id'] // sin cuenta todavía -> sigue pendiente
+                    || ! $condicion->has($grupo['user_id'])
+                    || $condicion[$grupo['user_id']] !== 'Egresado'); // tiene cuenta pero le falta la ficha
             })
             ->values();
     }
@@ -584,7 +925,17 @@ class TitulacionController extends Controller
      * dejarlo pendiente de revisión manual que asignar el programa
      * equivocado a alguien).
      */
-    private function resolverProgramaId(string $texto, ?string $tipo): ?int
+    protected function resolverProgramaId(string $texto, ?string $tipo): ?int
+    {
+        // Cientos de filas repiten los mismos textos ("Educación Inicial", "inicial "…): se resuelve una vez.
+        static $resueltos = [];
+
+        return array_key_exists($clave = $tipo.'|'.$texto, $resueltos)
+            ? $resueltos[$clave]
+            : $resueltos[$clave] = $this->buscarProgramaId($texto, $tipo);
+    }
+
+    private function buscarProgramaId(string $texto, ?string $tipo): ?int
     {
         $t = \Illuminate\Support\Str::ascii(strtolower($texto));
         // "Educación Primaria Intercultural Bilingüe" es EIB escrito completo.
@@ -621,22 +972,23 @@ class TitulacionController extends Controller
 
     /**
      * Alumnos activos (todavía NO egresados) que ya pueden arrancar su proceso de titulación:
-     * FID desde el Ciclo VIII y PPD desde el Ciclo I (todo vigente). Se excluye a quien ya tiene
+     * FID desde el Ciclo IX y PPD desde el Ciclo I (todo vigente). Se excluye a quien ya tiene
      * seguimiento_titulacion (ya inició, ya cuenta como "registrado" en index()).
      */
     private function activosElegiblesParaTitulacion(): \Illuminate\Support\Collection
     {
         return User::role(['alumno', 'alumnoB'])
             ->where(fn ($q) => $q->whereNull('condicion')->orWhere('condicion', '!=', 'Egresado'))
+            ->where(fn ($q) => $q->whereNull('perfil')->orWhere('perfil', '!=', 'Retirado'))
             ->whereDoesntHave('seguimientoTitulacion')
             ->whereNotNull('ciclo_id')
-            ->with(['ciclo.programa', 'programa', 'roles'])
+            ->with(['ciclo.programa', 'programa', 'roles', 'alumno', 'alumnoB'])
             ->get()
             ->filter(fn (User $user) => $this->puedeIniciarTitulacion($user))
             ->values();
     }
 
-    /** FID desde el Ciclo VIII; PPD desde el Ciclo I (cualquier alumno vigente). */
+    /** FID desde el Ciclo IX; PPD desde el Ciclo I (cualquier alumno vigente). */
     private function puedeIniciarTitulacion(User $user): bool
     {
         return self::puedeIniciar($user);
@@ -650,7 +1002,7 @@ class TitulacionController extends Controller
             return false; // sin ciclo, o "Egresados <año>" (esos ya se gestionan como egresados)
         }
         // La modalidad sale del ciclo en que está: un usuario con programa PPD mal cargado pero en
-        // un ciclo FID (p. ej. Ciclo III de Inicial) se rige por la regla FID (desde el Ciclo VIII).
+        // un ciclo FID (p. ej. Ciclo III de Inicial) se rige por la regla FID (desde el Ciclo IX).
         $esPpd = $user->ciclo->programa?->esPpd() ?? $user->programa?->esPpd() ?? $user->hasRole('alumnoB');
 
         return $user->ciclo->ordenCiclo() >= ($esPpd ? self::CICLO_MINIMO_TITULACION_PPD : self::CICLO_MINIMO_TITULACION);
@@ -668,7 +1020,7 @@ class TitulacionController extends Controller
     {
         abort_if($alumno->condicion === 'Egresado', 404, 'Ya es egresado — se gestiona igual que cualquier egresado.');
         abort_if($alumno->seguimientoTitulacion, 404, 'Ya tiene un seguimiento de titulación iniciado.');
-        abort_unless($alumno->hasAnyRole(['alumno', 'alumnoB']) && $this->puedeIniciarTitulacion($alumno), 404, 'Aún no puede iniciar su titulación: FID desde el Ciclo VIII.');
+        abort_unless($alumno->hasAnyRole(['alumno', 'alumnoB']) && $this->puedeIniciarTitulacion($alumno), 404, 'Aún no puede iniciar su titulación: FID desde el Ciclo IX.');
 
         // El estado se calcula de los datos: arranca "Sin PTI" y avanza solo
         // cuando se registre su PTI.
@@ -689,7 +1041,7 @@ class TitulacionController extends Controller
     public function show(User $egresado)
     {
         // Egresado real, o alumno activo que ya inició su PTI desde Ciclo
-        // VIII+ (ver iniciarSeguimiento()) — cualquiera de los dos cuenta.
+        // IX+ (ver iniciarSeguimiento()) — cualquiera de los dos cuenta.
         abort_unless($egresado->condicion === 'Egresado' || $egresado->seguimientoTitulacion, 404);
 
         $seguimiento = SeguimientoTitulacion::firstOrCreate(
@@ -701,7 +1053,7 @@ class TitulacionController extends Controller
             'pti.asesor', 'pti.asesorExterno', 'ptis.asesor', 'ptis.asesorExterno',
             'tesis.asesor', 'tesis.asesorExterno', 'actas.asesor', 'actas.asesorExterno',
             'actas.jurados.docente', 'actas.jurados.asesorExterno',
-            'resoluciones', 'documentos', 'estadoTitulacion', 'avisosPti.creadoPor',
+            'resoluciones', 'documentos', 'estadoTitulacion', 'avisosPti.creadoPor', 'participantes.docente', 'participantes.asesorExterno',
         ]);
 
         $estados = EstadoTitulacion::orderBy('orden')->get();
@@ -795,7 +1147,7 @@ class TitulacionController extends Controller
             'pti.asesor', 'pti.asesorExterno', 'ptis.asesor', 'ptis.asesorExterno',
             'tesis.asesor', 'tesis.asesorExterno', 'actas.asesor', 'actas.asesorExterno',
             'actas.jurados.docente', 'actas.jurados.asesorExterno',
-            'resoluciones', 'documentos', 'estadoTitulacion', 'avisosPti.creadoPor', 'actualizadoPor',
+            'resoluciones', 'documentos', 'estadoTitulacion', 'avisosPti.creadoPor', 'actualizadoPor', 'participantes.docente', 'participantes.asesorExterno',
         ]);
         $egresado->load(['programa', 'ciclo']);
 
@@ -894,6 +1246,13 @@ class TitulacionController extends Controller
         $pti = $ptiId
             ? $seguimiento->ptis()->findOrFail($ptiId)
             : ($seguimiento->pti ?? new Pti(['seguimiento_id' => $seguimiento->id, 'numero' => 1]));
+        // PTI aprobado (con RD): sus datos ya no se editan (el título cambia con la RD de cambio de
+        // tema y el asesor con la de cambio de asesor). Solo se registra su ampliación o se marca vencido.
+        $aprobado = $pti->exists && (filled($pti->rd_pti)
+            || ($pti->id === $seguimiento->pti?->id && $seguimiento->avance()->hitos['pti_aprobado']['logrado']));
+        if ($aprobado) {
+            $data = array_intersect_key($data, array_flip(['estado', 'rd_ampliacion', 'fecha_ampliacion', 'vencimiento_ampliado']));
+        }
         $pti->fill($data)->save();
         $this->registrarRdAmpliacionPti($seguimiento, $pti);
 
@@ -954,9 +1313,9 @@ class TitulacionController extends Controller
     }
 
     /** Valor de un select de asesor/jurado: id de docente ("12") o del catálogo ("a5"). */
-    private const REGLA_ASESOR = ['nullable', 'regex:/^a?\d+$/'];
+    protected const REGLA_ASESOR = ['nullable', 'regex:/^a?\d+$/'];
 
-    private function verificarAsesorExterno(?int $id): void
+    protected function verificarAsesorExterno(?int $id): void
     {
         abort_if($id && ! Asesor::whereKey($id)->exists(), 422, 'El asesor elegido ya no existe.');
     }
@@ -977,8 +1336,39 @@ class TitulacionController extends Controller
             'titulo_sunedu' => 'nullable|string|max:50',
             'fecha_titulo_sunedu' => 'nullable|date',
             'url_repositorio' => 'nullable|string|max:500',
-            'estado' => 'nullable|in:pendiente,en_repositorio,aprobado',
+            'url_repositorio_ti' => 'nullable|string|max:500',
+            // 'aprobado' solo lo traen registros antiguos.
+            'estado' => 'nullable|in:'.implode(',', array_keys(Tesis::SITUACIONES)).',aprobado',
+            'enlaces_dictamen' => 'nullable|array|max:10',
+            'enlaces_dictamen.*' => 'nullable|string|max:500',
+            'link_tesis' => 'nullable|string|max:500',
+            'licenciatura_escuela' => 'nullable|boolean',
+            'fecha_licenciatura_escuela' => 'nullable|date',
+            'licenciado_sunedu' => 'nullable|in:si,pendiente',
         ]);
+
+        // Pasos de la Tesis con reglas propias (ver _proceso):
+        // enlaces de los dictámenes (uno o más; el formulario puede quedar vacío para quitarlos todos),
+        if ($request->boolean('enlaces_dictamen_form')) {
+            $enlaces = collect($data['enlaces_dictamen'] ?? [])->map(fn ($e) => trim((string) $e))->filter()->unique()->values()->all();
+            $data['enlaces_dictamen'] = $enlaces ?: null;
+        }
+        // la casilla «aceptada por la Escuela» (sin fecha, hoy; al desmarcarla se borra la fecha)
+        if ($request->exists('licenciatura_escuela')) {
+            $data['licenciatura_escuela'] = $request->boolean('licenciatura_escuela');
+            $data['fecha_licenciatura_escuela'] = $data['licenciatura_escuela'] ? ($data['fecha_licenciatura_escuela'] ?? now()->toDateString()) : null;
+        }
+        // y «Licenciado en SUNEDU: Sí / Pendiente» (Sí sin N° de registro queda como «Sí»).
+        if (array_key_exists('licenciado_sunedu', $data)) {
+            $actualSunedu = SeguimientoTitulacion::where('user_id', $egresado->id)->first()?->tesis?->titulo_sunedu;
+            if ($data['licenciado_sunedu'] === 'pendiente') {
+                $data['titulo_sunedu'] = null;
+                $data['fecha_titulo_sunedu'] = null;
+            } elseif ($data['licenciado_sunedu'] === 'si') {
+                $data['titulo_sunedu'] = filled($data['titulo_sunedu'] ?? null) ? $data['titulo_sunedu'] : ($actualSunedu ?: 'Sí');
+            }
+            unset($data['licenciado_sunedu']);
+        }
         // Las acciones cortas de cada etapa ("Registrar exposición", "Registrar Bachiller"…)
         // mandan solo sus campos: se actualiza lo enviado y el asesor solo si vino en el form.
         if ($request->exists('asesor_id')) {
@@ -988,12 +1378,56 @@ class TitulacionController extends Controller
 
         $seguimiento = SeguimientoTitulacion::where('user_id', $egresado->id)->firstOrFail();
         // Orden del proceso: no se registra un paso antes que el anterior (ver ReglasProceso).
-        if ($motivo = \App\Services\Titulacion\ReglasProceso::validarTesis($seguimiento, $data)) {
+        // Lo que se quita (casilla desmarcada, enlaces vacíos) no pide requisitos.
+        $paraValidar = collect($data)->except(array_merge(['enlaces_dictamen'], empty($data['licenciatura_escuela']) ? ['licenciatura_escuela', 'fecha_licenciatura_escuela'] : []))->all();
+        $motivo = \App\Services\Titulacion\ReglasProceso::validarTesis($seguimiento, $paraValidar);
+        if (! $motivo && ! empty($data['enlaces_dictamen']) && ($falta = \App\Services\Titulacion\ReglasProceso::falta($seguimiento->avance(), 'bachiller'))) {
+            $motivo = 'Todavía no se pueden registrar los dictámenes: primero debe estar registrado «'.$falta.'».';
+        }
+        if ($motivo) {
             return $this->volverAlAcordeon($egresado->id, $motivo, 'proceso', 'error');
         }
         Tesis::updateOrCreate(['seguimiento_id' => $seguimiento->id], $data);
 
-        return $this->volverAlAcordeon($egresado->id, $request->input('mensaje_ok') === 'paso' ? 'Paso registrado.' : 'TI/Tesis guardado.', 'tesis');
+        // "Aplicar también al grupo" (acciones cortas): el mismo paso a cada integrante que esté en
+        // condiciones; a quien le falte un paso anterior se le omite y se avisa.
+        [$aplicados, $omitidos] = [0, []];
+        foreach ($this->companerosDestino($seguimiento, $request) as $otro) {
+            if ($motivoOtro = \App\Services\Titulacion\ReglasProceso::validarTesis($otro, $paraValidar)) {
+                $omitidos[] = $otro->user?->apellidos.' ('.$motivoOtro.')';
+                continue;
+            }
+            Tesis::updateOrCreate(['seguimiento_id' => $otro->id], $data);
+            $aplicados++;
+        }
+
+        $mensaje = $request->input('mensaje_ok') === 'paso' ? 'Paso registrado' : 'TI/Tesis guardado';
+
+        return $this->volverAlAcordeon($egresado->id, $mensaje.$this->textoGrupo($aplicados, $omitidos), 'tesis', $omitidos ? 'warning' : 'success');
+    }
+
+    /** Seguimientos de los compañeros de grupo si el formulario pidió "aplicar también al grupo". */
+    protected function companerosDestino(SeguimientoTitulacion $seguimiento, Request $request): \Illuminate\Support\Collection
+    {
+        if (! $request->boolean('aplicar_grupo')) {
+            return collect();
+        }
+        $seguimiento->loadMissing('actas', 'resoluciones');
+        $ids = GrupoTitulacion::companeros($seguimiento)->pluck('id');
+
+        return SeguimientoTitulacion::with(['user', 'pti', 'ptis', 'tesis', 'actas', 'resoluciones', 'participantes'])
+            ->whereIn('user_id', $ids)->get();
+    }
+
+    /** ", también para 2 integrantes del grupo" (+ a quiénes se omitió). */
+    protected function textoGrupo(int $aplicados, array $omitidos): string
+    {
+        $texto = $aplicados ? ', también para '.$aplicados.' integrante'.($aplicados > 1 ? 's' : '').' del grupo' : '';
+        if ($omitidos) {
+            $texto .= '. No se aplicó a: '.implode('; ', $omitidos);
+        }
+
+        return $texto.'.';
     }
 
     public function actaGuardar(Request $request, User $egresado)
@@ -1272,7 +1706,7 @@ class TitulacionController extends Controller
      * donde se trabajaba (?tab=), conservando los filtros que tenía el listado.
      * La página la elige index() (la que contiene a la persona).
      */
-    private function volverAlAcordeon(int $userId, string $mensaje, string $tab = 'resumen', string $flash = 'success')
+    protected function volverAlAcordeon(int $userId, string $mensaje, string $tab = 'resumen', string $flash = 'success')
     {
         // Solo si se venía del listado (se compara por nombre de ruta, no por
         // path, para no depender de la base de la URL: /Puklla2026/public/…).
@@ -1285,7 +1719,11 @@ class TitulacionController extends Controller
         } catch (\Throwable) {
             // URL previa que no es de esta app: se vuelve sin filtros
         }
-        unset($filtros['page'], $filtros['ver'], $filtros['tab']);
+        unset($filtros['page'], $filtros['ver'], $filtros['tab'], $filtros['paso']);
+        // Paso de la línea de tiempo desde el que se guardó (ver _proceso): se vuelve a él.
+        if (preg_match('/^[a-z_]{3,30}$/', (string) request('volver_paso'))) {
+            $filtros['paso'] = request('volver_paso');
+        }
 
         return redirect()->route('titulacion.index', $filtros + ['ver' => $userId, 'tab' => $tab])->with($flash, $mensaje);
     }
@@ -1450,10 +1888,50 @@ class TitulacionController extends Controller
         $apellidosPrefill = $datos['apellidos'] ?? $user->apellidos;
 
         $programas = Programa::orderBy('nombre')->get();
+        $tipo = str_contains($importacion->origen, 'ppd') ? 'ppd' : 'fid';
+        $programaSugerido = filled($datos['programa'] ?? null) ? $this->resolverProgramaId($datos['programa'], $tipo) : null;
+        // Cuenta de trabajo (personal de la escuela, sin rol de estudiante): se ofrece crearle aparte su cuenta de egresado(a).
+        $esCuentaDeTrabajo = self::esCuentaDeTrabajo($user);
+        $correoSugerido = $esCuentaDeTrabajo
+            ? self::correoInstitucional($nombresPrefill, $apellidosPrefill, $programas->firstWhere('id', $programaSugerido), $tipo, $datos['anio_ingreso'] ?? $datos['periodo'] ?? null)
+            : null;
+
+        // ¿Correo del puesto («cobranzas.eesp@») o personal («sofiakancha.iesp@»)? Si no lleva su nombre ni
+        // su primer apellido, se recomienda la cuenta propia; si los lleva, completar en la misma.
+        $local = strtolower(\Illuminate\Support\Str::ascii(strstr((string) $user->email, '@', true) ?: ''));
+        $palabras = collect(preg_split('/\s+/', strtolower(\Illuminate\Support\Str::ascii($nombresPrefill.' '.$apellidosPrefill))))->filter(fn ($p) => strlen($p) >= 4);
+        $modoSugerido = $esCuentaDeTrabajo && $palabras->every(fn ($p) => ! str_contains($local, $p)) ? 'cuenta_propia' : 'misma';
 
         return view('titulacion.importaciones-completar-ficha', compact(
-            'importacion', 'user', 'nombresPrefill', 'apellidosPrefill', 'programas'
+            'importacion', 'user', 'nombresPrefill', 'apellidosPrefill', 'programas', 'tipo', 'programaSugerido', 'esCuentaDeTrabajo', 'correoSugerido', 'modoSugerido'
         ));
+    }
+
+    /** Personal de la escuela (admin, docente, tutor…) cuya cuenta no es de estudiante. */
+    private static function esCuentaDeTrabajo(User $user): bool
+    {
+        return ! $user->hasAnyRole(['alumno', 'alumnoB'])
+            && $user->hasAnyRole(['super-admin', 'admin', 'adminB', 'docente', 'tutor', 'gestor-titulacion', 'investigador']);
+    }
+
+    /**
+     * Correo institucional con la regla de la escuela: FID = primer apellido + primer nombre +
+     * «.ini|.eib» + año de ingreso; PPD = primer nombre + primer apellido + «.ppdini|.ppdpri|.ppdeib».
+     */
+    private static function correoInstitucional(string $nombres, string $apellidos, ?Programa $programa, string $tipo, ?string $periodo): string
+    {
+        $limpio = fn ($s) => preg_replace('/[^a-z]/', '', strtolower(\Illuminate\Support\Str::ascii((string) $s)));
+        $nombre = $limpio(strtok(trim($nombres), ' '));
+        $apellido = $limpio(strtok(trim($apellidos), ' '));
+        $nivel = $programa?->nivel?->value;
+        if ($tipo === 'ppd') {
+            $sufijo = 'ppd'.($programa?->eib ? 'eib' : ($nivel === NivelPrograma::INICIAL->value ? 'ini' : 'pri'));
+
+            return "{$nombre}{$apellido}.{$sufijo}@pukllavirtual.edu.pe";
+        }
+        $anio = preg_match('/(\d{4})/', (string) $periodo, $m) ? $m[1] : '';
+
+        return "{$apellido}{$nombre}.".($programa?->eib ? 'eib' : 'ini')."{$anio}@pukllavirtual.edu.pe";
     }
 
     public function importacionCompletarFichaGuardar(Request $request, Importacion $importacion)
@@ -1475,6 +1953,10 @@ class TitulacionController extends Controller
         // (si no calza, es la fila equivocada — no se fuerza).
         abort_unless($data['dni'] === $user->dni, 422, 'El DNI no coincide con el de la cuenta vinculada.');
 
+        if ($request->input('modo') === 'cuenta_propia') {
+            return $this->crearCuentaPropia($request, $importacion, $user, $data);
+        }
+
         $user->condicion = 'Egresado';
         $user->save();
 
@@ -1487,12 +1969,51 @@ class TitulacionController extends Controller
     }
 
     /**
+     * Personal de la escuela con cuenta de trabajo (p. ej. cobranzas.eesp@): en vez de volver egresada
+     * esa cuenta del puesto, se le crea su cuenta propia. El DNI real pasa a la cuenta nueva (en el
+     * sistema un DNI es de una sola cuenta); la de trabajo queda con «OFICINA-{id}» y sigue igual en
+     * todo lo demás: correo, contraseña y roles. Las filas de las planillas pasan a la cuenta nueva.
+     */
+    private function crearCuentaPropia(Request $request, Importacion $importacion, User $trabajo, array $data)
+    {
+        abort_unless(self::esCuentaDeTrabajo($trabajo), 422, 'Solo para cuentas de trabajo del personal (sin rol de estudiante).');
+        $data += $request->validate(
+            ['email' => 'required|email|max:255|unique:users,email'],
+            ['email.unique' => 'Ese correo ya es de otra cuenta.'],
+            ['email' => 'correo de la cuenta propia']
+        );
+
+        $nueva = DB::transaction(function () use ($trabajo, $data) {
+            $dni = $trabajo->dni;
+            $trabajo->update(['dni' => 'OFICINA-'.$trabajo->id]);
+
+            $nueva = User::create([
+                'name' => $data['nombres'],
+                'apellidos' => $data['apellidos'],
+                'dni' => $dni,
+                'email' => $data['email'],
+                'condicion' => 'Egresado',
+                'password' => Hash::make($dni),
+            ]);
+            $this->crearFichaEgresado($nueva, $data);
+            Importacion::where('user_id', $trabajo->id)->orWhere('dni', $dni)
+                ->update(['user_id' => $nueva->id, 'estado_match' => 'vinculado']);
+
+            return $nueva;
+        });
+
+        return redirect()->route('titulacion.index', ['ver' => $nueva->id])
+            ->with('success', 'Cuenta propia creada para '.$nueva->apellidos.', '.$nueva->name.' ('.$nueva->email.'; contraseña inicial: su DNI). '
+                .'Su cuenta de trabajo '.$trabajo->email.' no cambió.');
+    }
+
+    /**
      * Crea el ciclo "Egresados {año}" (si no existe) y la ficha ppds/alumno
      * para un User ya creado/existente, más su seguimiento_titulacion
      * inicial. Compartido entre "crear cuenta" (persona nueva) y
      * "completar ficha" (persona que ya tenía cuenta por otro motivo).
      */
-    private function crearFichaEgresado(User $user, array $data): void
+    protected function crearFichaEgresado(User $user, array $data): void
     {
         $anio = $data['anio_ingreso'] ?: (string) now()->year;
 
@@ -1558,12 +2079,24 @@ class TitulacionController extends Controller
      * como texto a seguimiento_titulacion.observaciones. Se puede llamar
      * más de una vez para la misma persona sin duplicar PTI/Tesis (hasOne,
      * updateOrCreate) ni Resoluciones/Actas (dedupe por campo único).
+     *
+     * $soloVacios (sincronización de planillas): el archivo solo llena lo que
+     * está vacío en el sistema; lo que ya tiene otro valor NO se toca y se
+     * devuelve como diferencia para revisarlo a mano. $lotePrioritario: las
+     * filas de ese lote (la planilla recién subida) mandan sobre las de
+     * importaciones anteriores del mismo DNI.
+     *
+     * @return string[] diferencias "campo: sistema «x» · planilla «y»" (solo con $soloVacios)
      */
-    public function aplicarDatosTitulacionDesdeCsv(SeguimientoTitulacion $seguimiento, string $dni): void
+    public function aplicarDatosTitulacionDesdeCsv(SeguimientoTitulacion $seguimiento, string $dni, bool $soloVacios = false, ?string $lotePrioritario = null): array
     {
-        $filas = Importacion::where('dni', $dni)->get();
+        $diferencias = [];
+        $filas = Importacion::where('dni', $dni)
+            ->when($lotePrioritario, fn ($q) => $q->orderByRaw('lote_importacion = ? desc', [$lotePrioritario]))
+            ->orderBy('id')
+            ->get();
         if ($filas->isEmpty()) {
-            return;
+            return $diferencias;
         }
 
         $buscar = function (array $claves) use ($filas) {
@@ -1626,10 +2159,16 @@ class TitulacionController extends Controller
 
         // Solo si nadie más lo tiene ya (pudo asignarse a mano mientras esta
         // persona seguía pendiente); si choca, queda vacío para revisarlo.
-        if (blank($seguimiento->numero_expediente)
-            && ($expediente = $this->expedienteDeFilas($filas, $seguimiento->user ? $seguimiento->user->apellidos.' '.$seguimiento->user->name : null))
-            && ! SeguimientoTitulacion::where('numero_expediente', $expediente)->exists()) {
-            $seguimiento->update(['numero_expediente' => $expediente]);
+        $expediente = $this->expedienteDeFilas($filas, $seguimiento->user ? $seguimiento->user->apellidos.' '.$seguimiento->user->name : null);
+        if (blank($seguimiento->numero_expediente) && $expediente) {
+            $duenio = SeguimientoTitulacion::with('user')->where('numero_expediente', $expediente)->first();
+            if (! $duenio) {
+                $seguimiento->update(['numero_expediente' => $expediente]);
+            } elseif ($soloVacios) {
+                $diferencias[] = "Expediente {$expediente}: ya lo tiene ".trim(($duenio->user->apellidos ?? '').', '.($duenio->user->name ?? ''), ', ').' — no se asignó';
+            }
+        } elseif ($soloVacios && $expediente && $seguimiento->numero_expediente !== $expediente) {
+            $diferencias[] = "Expediente: sistema «{$seguimiento->numero_expediente}» · planilla «{$expediente}»";
         }
 
         // Periodo de la promoción: "2018- I al 2023- II" -> "2018-I al 2023-II".
@@ -1648,8 +2187,7 @@ class TitulacionController extends Controller
         $vencimientoPti = self::fechaDeVencimiento($textoCompleto);
 
         if ($tituloPti || $rdPti || $fechaPti || $vencimientoPti || $estadoPti) {
-            Pti::updateOrCreate(
-                ['seguimiento_id' => $seguimiento->id],
+            $this->guardarDatosImportados(Pti::class, $seguimiento->id, 'PTI', $soloVacios, $diferencias,
                 array_filter([
                     'titulo' => $tituloPti,
                     'asesor_id' => $asesorPtiNombre ? $this->resolverDocentePorNombre($asesorPtiNombre) : null,
@@ -1674,6 +2212,11 @@ class TitulacionController extends Controller
         $rdTesis = $buscarRd(['rd_tesis'], 'RD Tesis', 'Tesis');
         $bachillerSunedu = $buscar(['bachiller_sunedu']);
         $rdExtension = $buscarRd(['rd_extension'], 'Extensión', 'Extension');
+        // La hoja a veces repite en "RD EXTENSION" la RD de sustentación/tesis: no es una extensión.
+        if ($rdExtension && preg_match('/sustentaci[oó]n|\btesis\b/iu', $rdExtension) && ! preg_match('/exten[sc]i[oó]n|ampliaci[oó]n|plazo/iu', $rdExtension)) {
+            $notasRd[] = 'La columna de extensión traía otra RD (no se tomó como extensión): '.$rdExtension;
+            $rdExtension = null;
+        }
         // "extension 19/12/24", "extencion 17/12/2024", "ext. 17/12/24"
         $fechaExtension = preg_match('/\bext(?:ensi[oó]n|enci[oó]n|\.)\s*(\d{1,2})\/(\d{1,2})\/(\d{2,4})/iu', $textoCompleto, $mExt)
             && checkdate((int) $mExt[2], (int) $mExt[1], strlen($mExt[3]) === 2 ? 2000 + (int) $mExt[3] : (int) $mExt[3])
@@ -1697,8 +2240,7 @@ class TitulacionController extends Controller
         $estadoTesisTexto = $buscar(['estado_tesis', 'situacion_tesis']);
 
         if ($tituloTesis || $rdTesis || $rdTi || $fechaSustentacion || $rdExtension || $fechaExtension) {
-            Tesis::updateOrCreate(
-                ['seguimiento_id' => $seguimiento->id],
+            $this->guardarDatosImportados(Tesis::class, $seguimiento->id, 'TI/Tesis', $soloVacios, $diferencias,
                 array_filter([
                     'titulo' => $tituloTesis,
                     'asesor_id' => $asesorTesisNombre ? $this->resolverDocentePorNombre($asesorTesisNombre) : null,
@@ -1803,6 +2345,40 @@ class TitulacionController extends Controller
 
         if (! empty($notasExtra) && blank($seguimiento->observaciones)) {
             $seguimiento->update(['observaciones' => implode(' | ', $notasExtra)]);
+        }
+
+        return $diferencias;
+    }
+
+    /**
+     * PTI/Tesis (uno por seguimiento) con los datos de una planilla. Normal: los
+     * datos del archivo reemplazan (updateOrCreate, como siempre). $soloVacios:
+     * solo se llenan los campos vacíos; un valor distinto ya cargado se respeta
+     * y se anota en $diferencias.
+     */
+    private function guardarDatosImportados(string $modelo, int $seguimientoId, string $etiqueta, bool $soloVacios, array &$diferencias, array $datos): void
+    {
+        if (! $soloVacios) {
+            $modelo::updateOrCreate(['seguimiento_id' => $seguimientoId], $datos);
+
+            return;
+        }
+
+        $registro = $modelo::firstOrNew(['seguimiento_id' => $seguimientoId]);
+        $comparable = fn ($v) => $v instanceof \DateTimeInterface ? $v->format('Y-m-d')
+            : mb_strtolower(preg_replace('/\s+/u', ' ', trim((string) $v)));
+        foreach ($datos as $campo => $valor) {
+            $actual = $registro->{$campo};
+            if (blank($actual)) {
+                $registro->{$campo} = $valor;
+            } elseif ($comparable($actual) !== $comparable($valor)) {
+                $mostrar = fn ($v) => $v instanceof \DateTimeInterface ? $v->format('d/m/Y')
+                    : (preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $v) ? \Illuminate\Support\Carbon::parse($v)->format('d/m/Y') : \Illuminate\Support\Str::limit((string) $v, 70));
+                $diferencias[] = "{$etiqueta} · ".str_replace('_', ' ', $campo).": sistema «{$mostrar($actual)}» · planilla «{$mostrar($valor)}»";
+            }
+        }
+        if (! $registro->exists || $registro->isDirty()) {
+            $registro->save();
         }
     }
 

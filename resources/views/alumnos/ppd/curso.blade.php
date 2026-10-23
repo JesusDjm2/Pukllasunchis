@@ -114,7 +114,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <td class="font-weight-bold">Alumnos regissstrados:</td>
+                        <td class="font-weight-bold">Alumnos registrados:</td>
                         <td>{{ $cantidadAlumnos }}</td>
                     </tr>
                     <tr>

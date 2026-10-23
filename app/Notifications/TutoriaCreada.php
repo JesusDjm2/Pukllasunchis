@@ -54,8 +54,8 @@ class TutoriaCreada extends Notification
             'tutoria_id' => $tutoria->id,
             'ciclo_id' => $tutoria->ciclo_id,
             'alumno_nombre' => $alumno ? $alumno->apellidos.', '.$alumno->nombres : $tutoria->nombre_alumno,
-            'urgencia' => $tutoria->urgencia,
-            'resumen' => Str::limit($tutoria->motivo, 120),
+            'urgencia' => $tutoria->urgencia_texto,
+            'resumen' => Str::limit((string) $tutoria->motivo, 120) ?: $tutoria->urgencia_texto,
             'url' => $url,
         ];
     }

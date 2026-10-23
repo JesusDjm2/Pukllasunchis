@@ -55,7 +55,7 @@ class PpdController extends Controller
                 ? Curso::whereHas('ciclo', function ($query) use ($programa) {
                     $query->where('programa_id', $programa->id);
                 })
-                    ->with(['ciclo', 'docentes' => fn ($q) => $q->orderBy('nombre')])
+                    ->with(['ciclo', 'docentes' => fn ($q) => $q->orderBy('nombre'), 'silabos', 'silabosPdf'])
                     ->orderBy('ciclo_id')
                     ->orderBy('nombre')
                     ->get()

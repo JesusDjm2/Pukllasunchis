@@ -7,165 +7,88 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="author" content="David Jesús Miranda">
-    @yield('titulo')
+    <title>@yield('titulo', 'Intranet PPD') — EESPP Pukllasunchis</title>
     <link rel="shortcut icon" type="image/x-icon" href="{{ asset('img/logoiesp.ico') }}">
-    <link rel="stylesheet" href="{{ asset('css/estilos.css') }}">
     <link href="{{ asset('admin/vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" type="text/css">
     <link
         href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
         rel="stylesheet">
     <link href="{{ asset('admin/css/sb-admin-2.min.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('admin/css/estilos.css') }}">
+    <link rel="stylesheet" href="{{ asset('admin/css/darkmode.css') }}?v={{ filemtime(public_path('admin/css/darkmode.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/alumno-area.css') }}?v={{ filemtime(public_path('css/alumno-area.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/pk-ppd.css') }}?v={{ filemtime(public_path('css/pk-ppd.css')) }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <link rel="stylesheet" href="{{ asset('css/puklla-alert.css') }}">
-    <style>
-        :root {
-            --ppd-accent: #4e73df;
-            --ppd-accent-dark: #224abe;
-            --ppd-accent-soft: #eef1fc;
-            --ppd-ink: #2c2f36;
-        }
-
-        .ppd-page-header {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            align-items: center;
-            justify-content: space-between;
-            padding-bottom: 1rem;
-            margin-bottom: 1.5rem;
-            border-bottom: 2px solid rgba(78, 115, 223, .2);
-        }
-
-        .ppd-eyebrow {
-            display: block;
-            font-size: .72rem;
-            font-weight: 700;
-            letter-spacing: .08em;
-            text-transform: uppercase;
-            color: var(--ppd-accent);
-            margin-bottom: .25rem;
-        }
-
-        .ppd-page-title {
-            margin: 0;
-            font-weight: 800;
-            color: var(--ppd-ink);
-        }
-
-        .ppd-page-subtitle {
-            margin: .25rem 0 0;
-            color: #858796;
-            font-size: .875rem;
-        }
-
-        .ppd-page-actions {
-            display: flex;
-            gap: .5rem;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .ppd-section-band {
-            background: linear-gradient(120deg, var(--ppd-accent), var(--ppd-accent-dark)) !important;
-            color: #fff !important;
-        }
-
-        .btn-ppd-volver {
-            display: inline-flex;
-            align-items: center;
-            gap: .4rem;
-            border: 1px solid #d7dae0;
-            color: #5a5c69;
-            background: #fff;
-            font-weight: 600;
-            border-radius: .5rem;
-        }
-
-        .btn-ppd-volver:hover {
-            background: #f4f6f9;
-            color: var(--ppd-ink);
-        }
-
-        .card {
-            border-radius: .85rem;
-        }
-
-        @media (max-width: 575.98px) {
-            .ppd-page-header {
-                align-items: flex-start;
-            }
-
-            .ppd-page-title {
-                font-size: 1.15rem;
-            }
-        }
-    </style>
     @stack('styles')
 </head>
 
-<body id="page-top">
+{{-- Mismo armazón que la intranet FID (layouts/alumno): body.alumno-app da el menú, la barra y los temas;
+     .alumno-ppd solo adapta las clases antiguas de las vistas PPD (pk-ppd.css). --}}
+<body id="page-top" class="alumno-app alumno-ppd">
+<script>
+    var _pt = localStorage.getItem('puklla-theme');
+    if (_pt === 'dark') document.body.classList.add('dark-mode');
+    else if (_pt === 'dim') document.body.classList.add('dim-mode');
+</script>
     <div id="wrapper">
-        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
-            <a class="sidebar-brand d-flex align-items-center justify-content-center mb-4" href="{{ route('index') }}">
+        <ul class="navbar-nav bg-gradient-info sidebar sidebar-dark accordion" id="accordionSidebar">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center mb-3" href="{{ route('index') }}">
                 <div class="sidebar-brand-icon">
-                    <img class="pt-4" src="{{ asset('admin/img/Logo-Pukllasunchis-blanco.png') }}"
+                    <img class="pt-3" src="{{ asset('admin/img/Logo-Pukllasunchis-blanco.png') }}"
                         alt="Logo Pukllasunchis" width="100%">
                 </div>
-                <div class="sidebar-brand-text mx-3">
-                </div>
+                <div class="sidebar-brand-text mx-3"></div>
             </a>
-
-            <li class="nav-item">
+            @php $esEgresado = auth()->user()?->condicion === 'Egresado'; @endphp
+            <hr class="sidebar-divider">
+            <div class="sidebar-heading">
+                {{ $esEgresado ? 'Egresado(a) · PPD' : 'Profesionalización Docente' }}
+            </div>
+            @if ($esEgresado)
+                {{-- Egresado: su intranet (/egresado) reúne historial de estudios y titulación; no hay matrícula ni notas del año en curso. --}}
+                <li class="nav-item {{ request()->routeIs('egresado.intranet') ? 'active' : '' }}">
+                    <a class="nav-link collapsed" href="{{ route('egresado.intranet') }}">
+                        <i class="fas fa-fw fa-user-graduate"></i>
+                        <span>Mi cuenta de egresado</span>
+                    </a>
+                </li>
+            @else
+            <li class="nav-item {{ request()->routeIs('ppd.index', 'ppd.edit') ? 'active' : '' }}">
                 <a class="nav-link collapsed" href="{{ route('ppd.index') }}">
-                    <i class="fas fa-cog"></i>
-                    <span>Ficha Técnica</span>
+                    <i class="fas fa-fw fa-id-card"></i>
+                    <span>Ficha técnica</span>
                 </a>
             </li>
-
-
-            {{-- 
-            <hr class="sidebar-divider d-none d-md-block">
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="{{ route('calificacionesppd', $alumno->id) }}">
-                    <i class="fas fa-fw fa-book"></i>
-                    <span>Calificaciones</span>
-                </a>
-            </li> --}}
-            @if (isset($alumno) && $alumno)
-                @if ($alumno->calificaciones()->exists())
-                    <li class="nav-item">
-                        <a class="nav-link collapsed" href="{{ route('calificacionesppd', $alumno->id) }}">
-                            <i class="fas fa-fw fa-book"></i>
-                            <span>Calificaciones</span>
-                        </a>
-                    </li>
-                @endif
+            @endif
+            @if (! $esEgresado && isset($alumno) && $alumno && $alumno->calificaciones()->exists())
+                <li class="nav-item {{ request()->routeIs('calificacionesppd') ? 'active' : '' }}">
+                    <a class="nav-link collapsed" href="{{ route('calificacionesppd', $alumno->id) }}">
+                        <i class="fas fa-fw fa-clipboard-list"></i>
+                        <span>Calificaciones</span>
+                    </a>
+                </li>
             @endif
             <hr class="sidebar-divider d-none d-md-block">
-            <li class="nav-item">
+            <li class="nav-item {{ request()->routeIs('ppd.formatos') ? 'active' : '' }}">
                 <a class="nav-link collapsed" href="{{ route('ppd.formatos') }}">
                     <i class="fas fa-book-open"></i>
                     <span>Guías de TI y Tesis</span>
                 </a>
             </li>
-            <hr class="sidebar-divider d-none d-md-block">
             <li class="nav-item">
-                <a class="nav-link collapsed" target="_blank"
+                <a class="nav-link collapsed" target="_blank" rel="noopener noreferrer"
                     href="https://sites.google.com/pukllavirtual.edu.pe/bibliotecaeesppuklla/inicio">
-                    <i class="fas fa-book-open"></i>
+                    <i class="fas fa-fw fa-university"></i>
                     <span>Biblioteca</span>
                 </a>
             </li>
-
-            <hr class="sidebar-divider d-none d-md-block">
             <li class="nav-item">
                 <a class="nav-link collapsed" href="{{ route('index') }}">
-                    <i class="fas fa-fw fa-book"></i>
-                    <span>Volver a la página</span>
+                    <i class="fas fa-fw fa-graduation-cap"></i>
+                    <span>Regresar a la página</span>
                 </a>
             </li>
-            <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block">
             <div class="text-center d-none d-md-inline">
                 <button class="rounded-circle border-0" id="sidebarToggle"></button>
@@ -174,39 +97,45 @@
         <div id="content-wrapper" class="d-flex flex-column">
             <div id="content">
                 <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
-
-                    <h5 class="text-primary font-weight-bold d-none d-md-block">
-                        Programa de PPD Presencial y Semipresencial {{ date('Y') }}
-                    </h5>
-                    @if (isset($periodoActualPpd) && $periodoActualPpd->calendario)
-                        <div class="flex-grow-1 d-flex justify-content-center">
-                            <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal"
-                                data-bs-target="#modalHorarioPpd">
-                                Calendario PPD {{ $periodoActualPpd->nombre }}
-                            </button>
-                        </div>
-                    @else
-                        <div class="flex-grow-1 d-flex justify-content-center">
-                            <span class="text-muted small">Sin calendario asignado</span>
-                        </div>
-                    @endif
                     <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
                         <i class="fa fa-bars"></i>
                     </button>
+                    <span class="font-weight-bold text-gray-700 d-none d-lg-inline ml-md-3 mr-3">
+                        {{ $esEgresado ? 'Egresados · Profesionalización Docente' : 'PPD Presencial y Semipresencial ' . date('Y') }}
+                    </span>
+                    @if (isset($periodoActualPpd) && $periodoActualPpd && $periodoActualPpd->calendario)
+                        <div class="d-flex align-items-center flex-grow-1 flex-wrap">
+                            <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#modalCalendarioPpd">
+                                <i class="fas fa-calendar-alt mr-1"></i> Calendario {{ $periodoActualPpd->nombre }}
+                            </button>
+                        </div>
+                    @endif
                     <ul class="navbar-nav ml-auto align-items-center">
+                        <li class="nav-item d-flex align-items-center">
+                            <button id="darkModeToggle" type="button" title="Cambiar a modo tenue"
+                                aria-label="Cambiar tema claro/tenue/oscuro">
+                                <i class="fas fa-moon" id="darkModeIcon"></i>
+                            </button>
+                        </li>
                         @include('docentes.partials.notificaciones-dropdown')
                         <div class="topbar-divider d-none d-sm-block"></div>
                         <li class="nav-item dropdown no-arrow">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center py-2" href="#" id="userDropdown"
+                                role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 @if (Auth::check() && Auth::user())
-                                    {{ Auth::user()->name }} {{ Auth::user()->apellidos }}
+                                    @php
+                                        $u = Auth::user();
+                                        $ni = strtoupper(mb_substr($u->name ?? '?', 0, 1) . mb_substr($u->apellidos ?? '', 0, 1));
+                                    @endphp
+                                    <span class="alumno-user-chip">
+                                        <span class="alumno-user-avatar" aria-hidden="true">{{ $ni ?: '?' }}</span>
+                                        <span class="d-none d-sm-inline font-weight-bold text-gray-700">{{ $u->name }} {{ $u->apellidos }}</span>
+                                    </span>
                                 @endif
                             </a>
-                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
                                 <a class="dropdown-item" href="{{ route('logout') }}"
-                                    onclick="event.preventDefault();
-                                                    document.getElementById('logout-form').submit();">
+                                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                                     {{ __('Logout') }}
                                 </a>
                                 <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
@@ -216,7 +145,31 @@
                         </li>
                     </ul>
                 </nav>
-                @yield('contenido')
+
+                {{-- Fuera del <nav>: la barra es sticky y atraparía el modal detrás del fondo. --}}
+                @if (isset($periodoActualPpd) && $periodoActualPpd && $periodoActualPpd->calendario)
+                    <div class="modal fade" id="modalCalendarioPpd" tabindex="-1" role="dialog"
+                        aria-labelledby="modalCalendarioPpdLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+                            <div class="modal-content">
+                                <div class="modal-body text-center bg-light position-relative pt-5">
+                                    <button type="button" class="btn btn-danger position-absolute"
+                                        style="top: 0.5rem; right: 0.5rem; z-index: 2;" data-dismiss="modal" aria-label="Cerrar">✕</button>
+                                    <img src="{{ asset($periodoActualPpd->calendario) }}" id="modalCalendarioPpdLabel"
+                                        alt="Calendario {{ $periodoActualPpd->nombre }}" class="img-fluid rounded shadow">
+                                </div>
+                                <div class="modal-footer justify-content-center">
+                                    <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cerrar</button>
+                                    <a href="{{ asset($periodoActualPpd->calendario) }}" target="_blank" class="btn btn-primary btn-sm">Ver en nueva pestaña</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                <main class="alumno-main container-fluid px-3 px-lg-4">
+                    @yield('contenido')
+                </main>
             </div>
             @include('layouts.partials.pie-intranet', ['area' => 'Intranet PPD'])
         </div>
@@ -229,15 +182,12 @@
     <script src="{{ asset('admin/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('admin/vendor/jquery-easing/jquery.easing.min.js') }}"></script>
     <script src="{{ asset('admin/js/sb-admin-2.min.js') }}"></script>
-    <script src="{{ asset('admin/vendor/chart.js/Chart.min.js') }}"></script>
-    <script src="{{ asset('admin/js/demo/chart-area-demo.js') }}"></script>
-    <script src="{{ asset('admin/js/demo/chart-pie-demo.js') }}"></script>
     <script src="{{ asset('admin/js/djm.js') }}?v={{ filemtime(public_path('admin/js/djm.js')) }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>window.PK_BRAND_COLOR = '#4e73df';</script>
+    <script>window.PK_BRAND_COLOR = '#33445a';</script>
     <script src="{{ asset('js/puklla-alert.js') }}"></script>
     @stack('scripts')
-
+    @include('layouts.partials.tema-toggle')
 </body>
 
 </html>

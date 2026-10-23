@@ -29,29 +29,14 @@
     {{-- Menú de gestión (admin, super-admin, adminB): mismas opciones en ambos layouts --}}
     @include('layouts.partials.menu-gestion')
 
-    {{-- ── Titulación (gestor-titulacion) ── --}}
+    {{-- ── Titulación (gestor-titulacion): un solo enlace; asesores, PTI por vencer y datos
+         demográficos ya están en los botones e indicadores de la cabecera del módulo ── --}}
     @if ($esTitulacionSb)
         <div class="pk-sb-titulo">Titulación</div>
         <li class="nav-item">
-            <a class="nav-link pk-sb-link {{ request()->routeIs('titulacion.*') && ! request()->routeIs('titulacion.asesores.*', 'titulacion.demograficos') && ! request()->filled('vigencia') ? 'is-activo' : '' }}"
+            <a class="nav-link pk-sb-link {{ request()->routeIs('titulacion.*') ? 'is-activo' : '' }}"
                 href="{{ route('titulacion.index') }}" title="Proceso de titulación">
                 <span class="pk-sb-icono"><i class="fas fa-user-graduate"></i></span><span class="pk-sb-texto">Proceso de titulación</span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link pk-sb-link {{ request()->routeIs('titulacion.index') && request('vigencia') === 'por_vencer' ? 'is-activo' : '' }}"
-                href="{{ route('titulacion.index', ['vigencia' => 'por_vencer']) }}" title="PTI por vencer">
-                <span class="pk-sb-icono"><i class="fas fa-hourglass-half"></i></span><span class="pk-sb-texto">PTI por vencer</span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link pk-sb-link {{ request()->routeIs('titulacion.asesores.*') ? 'is-activo' : '' }}" href="{{ route('titulacion.asesores.index') }}" title="Asesores">
-                <span class="pk-sb-icono"><i class="fas fa-chalkboard-teacher"></i></span><span class="pk-sb-texto">Asesores</span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link pk-sb-link {{ request()->routeIs('titulacion.demograficos') ? 'is-activo' : '' }}" href="{{ route('titulacion.demograficos') }}" title="Datos demográficos">
-                <span class="pk-sb-icono"><i class="fas fa-chart-pie"></i></span><span class="pk-sb-texto">Datos demográficos</span>
             </a>
         </li>
     @endif
@@ -66,12 +51,19 @@
         </li>
     @endif
 
-    {{-- ── Recursos ── --}}
+    {{-- ── Recursos (mismos enlaces que el menú docente) ── --}}
     <div class="pk-sb-titulo">Recursos</div>
     <li class="nav-item">
         <a class="nav-link pk-sb-link" target="_blank" rel="noopener" href="https://pukllavirtual.eesppukllasunchis.edu.pe/" title="Biblioteca virtual (abre en otra pestaña)">
             <span class="pk-sb-icono"><i class="fas fa-book-reader"></i></span>
-            <span class="pk-sb-texto">Biblioteca virtual</span>
+            <span class="pk-sb-texto">Biblioteca virtual <small>Nueva</small></span>
+            <i class="fas fa-external-link-alt pk-sb-externo"></i>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link pk-sb-link" target="_blank" rel="noopener" href="https://sites.google.com/pukllavirtual.edu.pe/bibliotecaeesppuklla/inicio" title="Biblioteca anterior en Google Sites (abre en otra pestaña)">
+            <span class="pk-sb-icono"><i class="fas fa-book-open"></i></span>
+            <span class="pk-sb-texto">Biblioteca <small>Google Sites</small></span>
             <i class="fas fa-external-link-alt pk-sb-externo"></i>
         </a>
     </li>

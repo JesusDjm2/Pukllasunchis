@@ -631,6 +631,52 @@ class CalificacionController extends Controller
         }
     }
 
+    /**
+     * Deja en blanco las calificaciones de UN curso (admin › Docentes, menú del curso), p. ej. cuando
+     * se cargaron mal. FID: los parciales elegidos (1 = Parcial 1, 2 = Parcial 2, 3 = Desempeño);
+     * PPD: las notas del curso. Afecta a todos los docentes del curso. Antes de borrar guarda un
+     * respaldo JSON en storage/app/respaldos/calificaciones (para recuperar si fue un error).
+     */
+    public function vaciarCurso(Request $request, Curso $curso)
+    {
+        $tablasFid = [1 => 'periodouno', 2 => 'periodo_dos', 3 => 'periodo_tres'];
+        $nombres = [1 => 'Parcial 1', 2 => 'Parcial 2', 3 => 'Desempeño', 'ppd' => 'notas PPD'];
+
+        if ($curso->esPpd()) {
+            $partes = ['ppd' => 'calificacionesppds'];
+        } else {
+            $elegidas = $request->validate(['partes' => 'required|array|min:1', 'partes.*' => 'in:1,2,3'], [
+                'partes.required' => 'Elige al menos un parcial para borrar.',
+            ])['partes'];
+            $partes = collect($tablasFid)->only(array_map('intval', $elegidas))->all();
+        }
+
+        $respaldo = collect($partes)->map(fn ($tabla) => \DB::table($tabla)->where('curso_id', $curso->id)->get());
+        $total = $respaldo->sum(fn ($filas) => $filas->count());
+        if ($total === 0) {
+            return back()->with('error', "«{$curso->nombre}» no tiene calificaciones en lo elegido: no se borró nada.");
+        }
+
+        $archivo = 'respaldos/calificaciones/'.now()->format('Y-m-d_His')."_curso{$curso->id}.json";
+        \Storage::put($archivo, json_encode([
+            'curso' => ['id' => $curso->id, 'nombre' => $curso->nombre],
+            'borrado_por' => ['id' => auth()->id(), 'nombre' => trim(auth()->user()->name.' '.auth()->user()->apellidos)],
+            'fecha' => now()->toDateTimeString(),
+            'tablas' => $respaldo->mapWithKeys(fn ($filas, $parte) => [$partes[$parte] => $filas]),
+        ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+
+        \DB::transaction(function () use ($partes, $curso) {
+            foreach ($partes as $tabla) {
+                \DB::table($tabla)->where('curso_id', $curso->id)->delete();
+            }
+        });
+        \Log::info('Calificaciones de curso vaciadas', ['curso_id' => $curso->id, 'partes' => array_keys($partes), 'filas' => $total, 'usuario' => auth()->id(), 'respaldo' => $archivo]);
+
+        $detalle = collect(array_keys($partes))->map(fn ($p) => $nombres[$p])->implode(', ');
+
+        return back()->with('success', "Se borraron {$total} calificaciones de «{$curso->nombre}» ({$detalle}). Quedó un respaldo por si hiciera falta recuperarlas.");
+    }
+
     public function eliminarPeriodoUno()
     {
         // Antes de vaciar, Parcial 1 queda archivado en periodo_parciales (expediente del alumno).

@@ -1,0 +1,109 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Ayuda paso a paso de titulación (titulacion/_tramites_ayuda)
+   Se ve en la intranet del alumno FID/PPD y en /egresado: colores propios con
+   variables, para claro, oscuro (body.dark-mode) y tenue (body.dim-mode).
+   ═══════════════════════════════════════════════════════════════════════════ */
+.tr-ayuda {
+    --tr-fondo: #fff; --tr-fondo-2: #f6f8fb; --tr-borde: #e3e6f0; --tr-texto: #1e293b; --tr-suave: #64748b;
+    --tr-acento: #4e73df; --tr-acento-f: #eef2ff; --tr-ok: #0e9467; --tr-ok-f: #e3f6ee;
+    --tr-oro: #a76d00; --tr-oro-f: #fff4dc;
+    margin: 0 0 1rem; padding: 1rem 1.1rem; border: 1px solid #c7d2fe; border-radius: .8rem; background: var(--tr-fondo); color: var(--tr-texto);
+}
+body.dark-mode .tr-ayuda {
+    --tr-fondo: #161b22; --tr-fondo-2: #0d1117; --tr-borde: #30363d; --tr-texto: #e6edf3; --tr-suave: #9aa3b5;
+    --tr-acento: #79a6ff; --tr-acento-f: rgba(88, 166, 255, .12); --tr-ok: #4fd1a1; --tr-ok-f: rgba(14, 148, 103, .16);
+    --tr-oro: #f0b955; --tr-oro-f: rgba(205, 146, 68, .16);
+    border-color: rgba(88, 166, 255, .35);
+}
+body.dim-mode .tr-ayuda {
+    --tr-fondo: var(--lm-superficie, #2a2129); --tr-fondo-2: var(--lm-superficie-2, #231b22); --tr-borde: var(--lm-borde, #4a3a48);
+    --tr-texto: var(--lm-texto, #f3e7ef); --tr-suave: var(--lm-suave, #c9b4c2);
+    --tr-acento: var(--lm-lavanda, #c8a2e8); --tr-acento-f: var(--lm-lavanda-fondo, #352a40); --tr-ok: #6ee7b7; --tr-ok-f: rgba(28, 200, 138, .12);
+    --tr-oro: var(--lm-durazno, #f5c590); --tr-oro-f: var(--lm-durazno-fondo, #3d2a26);
+    border-color: rgba(200, 162, 232, .4);
+}
+
+/* Cabecera */
+.tr-ayuda__cab { display: flex; align-items: flex-start; gap: .8rem; margin-bottom: .85rem; }
+.tr-ayuda__icono { width: 2.4rem; height: 2.4rem; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: var(--tr-acento); color: #fff; }
+body.dim-mode .tr-ayuda__icono { color: #241a24; }
+.tr-ayuda__textos { flex: 1; min-width: 0; }
+.tr-ayuda__kicker { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--tr-acento); }
+.tr-ayuda__titulo { margin: .05rem 0 .2rem; font-size: 1.05rem; font-weight: 800; color: var(--tr-texto); }
+.tr-ayuda__sub { margin: 0; font-size: .82rem; color: var(--tr-suave); }
+.tr-ayuda__progreso { flex-shrink: 0; align-self: center; padding: .2rem .6rem; border-radius: 999px; background: var(--tr-ok-f); color: var(--tr-ok); font-size: .74rem; font-weight: 700; }
+
+/* Trámites (acordeón) */
+.tr-lista { display: grid; gap: .5rem; }
+.tr-tramite { border: 1px solid var(--tr-borde); border-radius: .65rem; background: var(--tr-fondo); }
+.tr-tramite[open] { border-color: var(--tr-acento); box-shadow: 0 0 0 3px var(--tr-acento-f); }
+.tr-tramite__cab { display: flex; align-items: center; gap: .65rem; padding: .65rem .8rem; cursor: pointer; list-style: none; border-radius: .65rem; }
+.tr-tramite__cab::-webkit-details-marker { display: none; }
+.tr-tramite__cab:focus-visible { outline: 2px solid var(--tr-acento); outline-offset: 2px; }
+.tr-tramite__n { width: 1.7rem; height: 1.7rem; border-radius: 50%; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;
+    background: var(--tr-acento-f); color: var(--tr-acento); font-size: .78rem; font-weight: 800; }
+.tr-tramite__n .fa-check { display: none; }
+.tr-tramite__titulo { flex: 1; min-width: 0; font-size: .9rem; font-weight: 700; line-height: 1.3; }
+.tr-tramite__chips { display: flex; flex-wrap: wrap; gap: .3rem; justify-content: flex-end; }
+.tr-tramite__chev { color: var(--tr-suave); font-size: .75rem; transition: transform .2s; }
+.tr-tramite[open] .tr-tramite__chev { transform: rotate(180deg); }
+.tr-hecho-texto { display: none; font-weight: 600; color: var(--tr-ok); }
+/* Marcado "Ya lo hice": verde y atenuado, sin desaparecer (por si quiere volver a verlo). */
+.tr-tramite.is-hecho:not([open]) { background: var(--tr-fondo-2); }
+.tr-tramite.is-hecho .tr-tramite__n { background: var(--tr-ok); color: #fff; }
+.tr-tramite.is-hecho .tr-tramite__n span { display: none; }
+.tr-tramite.is-hecho .tr-tramite__n .fa-check { display: inline; }
+.tr-tramite.is-hecho .tr-hecho-texto { display: inline; }
+.tr-tramite.is-hecho:not([open]) .tr-tramite__titulo { color: var(--tr-suave); }
+
+.tr-chip { display: inline-flex; align-items: center; gap: .3rem; padding: .1rem .5rem; border-radius: 999px; background: var(--tr-oro-f); color: var(--tr-oro);
+    font-size: .72rem; font-weight: 700; white-space: nowrap; vertical-align: middle; }
+.tr-chip--suave { background: var(--tr-fondo-2); color: var(--tr-suave); border: 1px solid var(--tr-borde); font-weight: 600; }
+
+.tr-tramite__cuerpo { padding: .1rem .9rem .85rem 3.15rem; font-size: .86rem; }
+
+/* Pago */
+.tr-pago { margin-bottom: .75rem; padding: .6rem .75rem; border: 1px dashed var(--tr-oro); border-radius: .55rem; background: var(--tr-oro-f); }
+.tr-pago__eti { display: flex; align-items: center; gap: .4rem; font-size: .78rem; font-weight: 700; color: var(--tr-oro); margin-bottom: .35rem; }
+.tr-pago__eti span { font-weight: 500; }
+.tr-pago__datos { display: flex; flex-wrap: wrap; gap: .35rem 1.25rem; margin: 0; }
+.tr-pago__datos dt { font-size: .66rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--tr-suave); }
+.tr-pago__datos dd { margin: 0; font-weight: 700; color: var(--tr-texto); display: flex; align-items: center; gap: .3rem; }
+.tr-pago__concepto { flex: 1 1 12rem; }
+.tr-copiar { display: inline-flex; align-items: center; justify-content: center; width: 1.7rem; height: 1.7rem; padding: 0; border: 1px solid transparent; border-radius: .4rem;
+    background: transparent; color: var(--tr-suave); cursor: pointer; }
+.tr-copiar:hover, .tr-copiar:focus-visible { background: var(--tr-fondo); border-color: var(--tr-borde); color: var(--tr-acento); }
+.tr-copiar.is-copiado { color: var(--tr-ok); }
+
+/* Pasos, acciones, adjuntos, resultado */
+.tr-pasos { margin: 0 0 .75rem; padding-left: 1.1rem; }
+.tr-pasos li { margin-bottom: .25rem; }
+.tr-acciones { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .75rem; }
+.tr-sub { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--tr-suave); margin-bottom: .25rem; }
+.tr-adjuntar { margin-bottom: .75rem; }
+.tr-adjuntar ul { list-style: none; margin: 0; padding: 0; display: grid; gap: .2rem; }
+.tr-adjuntar li { display: flex; gap: .45rem; align-items: baseline; }
+.tr-adjuntar i { color: var(--tr-suave); font-size: .75rem; }
+.tr-resultado { display: flex; gap: .55rem; margin: 0 0 .6rem; padding: .55rem .7rem; border-radius: .5rem; background: var(--tr-acento-f); color: var(--tr-texto); }
+.tr-resultado > i { color: var(--tr-acento); margin-top: .15rem; }
+.tr-nota { display: flex; gap: .5rem; align-items: baseline; margin: 0 0 .6rem; font-size: .8rem; color: var(--tr-oro); }
+.tr-nota--info { color: var(--tr-acento); }
+.tr-marcar { display: inline-flex; align-items: center; gap: .45rem; margin: .15rem 0 0; padding: .35rem .7rem; border: 1px solid var(--tr-borde); border-radius: 999px;
+    font-size: .8rem; font-weight: 600; color: var(--tr-texto); cursor: pointer; user-select: none; }
+.tr-marcar input { width: 1rem; height: 1rem; accent-color: var(--tr-ok); cursor: pointer; }
+.tr-marcar:hover { border-color: var(--tr-ok); }
+
+/* Pie */
+.tr-ayuda__pie { display: flex; flex-wrap: wrap; gap: .4rem 1.25rem; margin-top: .85rem; padding-top: .7rem; border-top: 1px solid var(--tr-borde); font-size: .8rem; }
+.tr-ayuda__pie a { display: inline-flex; align-items: center; gap: .4rem; color: var(--tr-acento); }
+
+@media (max-width: 575.98px) {
+    .tr-ayuda { padding: .85rem .8rem; }
+    .tr-tramite__cab { flex-wrap: wrap; }
+    .tr-tramite__chips { order: 5; flex-basis: 100%; justify-content: flex-start; padding-left: 2.35rem; }
+    .tr-tramite__cuerpo { padding-left: .9rem; }
+    .tr-acciones .btn { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .tr-tramite__chev { transition: none; }
+}

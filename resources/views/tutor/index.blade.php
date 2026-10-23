@@ -37,10 +37,11 @@
     .seg-pill-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
     .seg-pill-ok { background: #e3f9ec; color: #17a673; }
     .seg-pill-pendiente { background: #f4f6f9; color: #858796; }
-    .seg-pill-urg-Baja { background: #f4f6f9; color: #858796; }
-    .seg-pill-urg-Media { background: #e6f8fb; color: #2596a6; }
-    .seg-pill-urg-Alta { background: #fef6e3; color: #c69107; }
-    .seg-pill-urg-Urgente { background: #fbeaea; color: #e0342a; }
+    .seg-pill-urg-slate { background: #f4f6f9; color: #858796; }
+    .seg-pill-urg-cyan { background: #e6f8fb; color: #2596a6; }
+    .seg-pill-urg-amber { background: #fef6e3; color: #c69107; }
+    .seg-pill-urg-red { background: #fbeaea; color: #e0342a; }
+    .seg-pill-urg-green { background: #e3f9ec; color: #17a673; }
     .seg-pill-warning { background: #fef1d9; color: #c07f06; }
     .seg-pill-anon { background: #f4f6f9; color: #858796; }
 
@@ -127,45 +128,84 @@
                     </div>
                 </div>
             @else
-                <div class="row">
+                {{-- Tarjeta por ciclo (sistema compartido .al-ui, public/css/pk-ui.css): cabecera con el
+                     estado académico, los dos formularios para los alumnos (QR · copiar · abrir) y el acceso
+                     al seguimiento. Los botones conservan .qrp-ver-btn y .tut-copiar-enlace (scripts de abajo). --}}
+                @include('alumnos.partials.ui')
+                <div class="row al-ui">
                     @foreach ($ciclos as $ciclo)
-                        <div class="col-sm-6 col-lg-4 mb-3">
-                            <div class="card border-0 shadow-sm h-100"
-                                 style="transition:box-shadow .15s,transform .15s;"
-                                 onmouseover="this.style.boxShadow='0 4px 18px rgba(0,0,0,.12)';this.style.transform='translateY(-2px)'"
-                                 onmouseout="this.style.boxShadow='';this.style.transform=''">
-                                <a href="{{ route('tutor.ciclo', $ciclo->id) }}" class="text-decoration-none">
-                                    <div class="card-body d-flex align-items-center pb-2">
-                                        <div class="rounded-circle d-flex align-items-center justify-content-center mr-3 flex-shrink-0"
-                                             style="width:48px;height:48px;background:linear-gradient(135deg,#4e73df,#224abe);">
-                                            <i class="fas fa-users text-white"></i>
-                                        </div>
-                                        <div>
-                                            <div class="font-weight-bold text-gray-800" style="font-size:.95rem;">
-                                                Ciclo {{ $ciclo->nombre }}
-                                            </div>
-                                            <div class="text-muted small">
-                                                {{ optional($ciclo->programa)->nombre ?? '—' }}
-                                            </div>
-                                        </div>
-                                        <i class="fas fa-chevron-right text-gray-400 ml-auto"></i>
+                        @php
+                            $resumen = $resumenCiclos[$ciclo->id] ?? null;
+                            $formularios = [
+                                [
+                                    'titulo' => 'Solicitud de tutoría', 'ayuda' => 'Piden conversar contigo', 'icono' => 'fa-hands-helping', 'tono' => 'is-mal',
+                                    'url' => route('tutorias.public.create', ['ciclo' => $ciclo->id]),
+                                    'qr' => 'tutor.qr.tutoria', 'qrTitulo' => 'QR Tutoría — Ciclo '.$ciclo->nombre,
+                                ],
+                                [
+                                    'titulo' => 'Buzón de sugerencias', 'ayuda' => 'Envían ideas o inquietudes', 'icono' => 'fa-inbox', 'tono' => 'is-ok',
+                                    'url' => route('sugerencias.public.create', ['ciclo' => $ciclo->id]),
+                                    'qr' => 'tutor.qr.sugerencia', 'qrTitulo' => 'QR Sugerencias — Ciclo '.$ciclo->nombre,
+                                ],
+                            ];
+                        @endphp
+                        <div class="col-lg-6 col-xl-4 mb-3">
+                            <div class="al-card h-100 mb-0 d-flex flex-column">
+                                <a href="{{ route('tutor.ciclo', $ciclo->id) }}" class="al-card-cab text-decoration-none" title="Abrir el ciclo">
+                                    <span class="al-card-cab-icono"><i class="fas fa-users"></i></span>
+                                    <div>
+                                        <h2>Ciclo {{ $ciclo->nombre }}</h2>
+                                        <p class="text-truncate">{{ optional($ciclo->programa)->nombre ?? '—' }}</p>
                                     </div>
+                                    <span class="al-card-cab-extra">
+                                        @if ($resumen && $resumen['con_notas'])
+                                            @if ($resumen['en_riesgo'])
+                                                <span class="al-badge is-mal" title="Alumnos desaprobando algún curso en el período"><i class="fas fa-exclamation-triangle"></i> {{ $resumen['en_riesgo'] }}</span>
+                                            @else
+                                                <span class="al-badge is-ok" title="Nadie desaprueba por ahora"><i class="fas fa-check"></i></span>
+                                            @endif
+                                        @endif
+                                        <i class="fas fa-chevron-right text-muted"></i>
+                                    </span>
                                 </a>
-                                <div class="px-3 pb-3 pt-1 d-flex" style="gap:.5rem;">
-                                    <button type="button" class="btn btn-outline-danger btn-sm flex-fill qrp-ver-btn" style="font-size:.72rem;"
-                                       title="Código QR — Solicitud de tutoría individual"
-                                       data-panel-url="{{ route('tutor.qr.tutoria', ['ciclo' => $ciclo->id, 'panel' => 1]) }}"
-                                       data-print-url="{{ route('tutor.qr.tutoria', ['ciclo' => $ciclo->id, 'print' => 1]) }}"
-                                       data-titulo="QR Tutoría — Ciclo {{ $ciclo->nombre }}">
-                                        <i class="fas fa-qrcode mr-1"></i> QR Tutoría
-                                    </button>
-                                    <button type="button" class="btn btn-outline-success btn-sm flex-fill qrp-ver-btn" style="font-size:.72rem;"
-                                       title="Código QR — Buzón de sugerencias"
-                                       data-panel-url="{{ route('tutor.qr.sugerencia', ['ciclo' => $ciclo->id, 'panel' => 1]) }}"
-                                       data-print-url="{{ route('tutor.qr.sugerencia', ['ciclo' => $ciclo->id, 'print' => 1]) }}"
-                                       data-titulo="QR Sugerencias — Ciclo {{ $ciclo->nombre }}">
-                                        <i class="fas fa-qrcode mr-1"></i> QR Sugerencias
-                                    </button>
+
+                                @if ($resumen && $resumen['con_notas'])
+                                    <div class="al-grupo">
+                                        <span>{{ $resumen['en_riesgo'] ? $resumen['en_riesgo'].' desaprobando' : 'Sin desaprobados' }}</span>
+                                        @if ($resumen['promedio']) <span class="al-badge is-muted">Promedio {{ $resumen['promedio'] }}</span> @endif
+                                    </div>
+                                @endif
+
+                                <ul class="al-cursos">
+                                    @foreach ($formularios as $f)
+                                        <li class="al-curso flex-wrap">
+                                            <span class="al-curso-num {{ $f['tono'] }}"><i class="fas {{ $f['icono'] }}"></i></span>
+                                            <div class="al-curso-texto">
+                                                <div class="al-curso-nombre">{{ $f['titulo'] }}</div>
+                                                <div class="al-curso-meta">{{ $f['ayuda'] }}</div>
+                                            </div>
+                                            <div class="al-curso-accion w-100 pl-5">
+                                                <button type="button" class="al-btn al-btn-sm al-btn-borde qrp-ver-btn" title="Ver e imprimir el código QR"
+                                                    data-panel-url="{{ route($f['qr'], ['ciclo' => $ciclo->id, 'panel' => 1]) }}"
+                                                    data-print-url="{{ route($f['qr'], ['ciclo' => $ciclo->id, 'print' => 1]) }}"
+                                                    data-titulo="{{ $f['qrTitulo'] }}" aria-label="Código QR: {{ $f['titulo'] }}">
+                                                    <i class="fas fa-qrcode"></i>
+                                                </button>
+                                                <button type="button" class="al-btn al-btn-sm al-btn-borde tut-copiar-enlace" data-url="{{ $f['url'] }}" title="Copiar el enlace para compartir por WhatsApp o correo">
+                                                    <i class="far fa-copy"></i> <span>Copiar</span>
+                                                </button>
+                                                <a href="{{ $f['url'] }}" target="_blank" rel="noopener" class="al-btn al-btn-sm al-btn-borde" title="Abrir el formulario en otra pestaña" aria-label="Abrir: {{ $f['titulo'] }}">
+                                                    <i class="fas fa-external-link-alt"></i>
+                                                </a>
+                                            </div>
+                                        </li>
+                                    @endforeach
+                                </ul>
+
+                                <div class="mt-auto p-3">
+                                    <a href="{{ route('tutor.ciclo', $ciclo->id) }}#seguimiento" class="al-btn al-btn-petroleo w-100 justify-content-center">
+                                        <i class="fas fa-chart-line"></i> Seguimiento académico
+                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -252,7 +292,6 @@
                 <div class="d-flex flex-column" style="gap:.85rem;">
                     @foreach ($tutorias as $tut)
                         @php
-                            $badgeUrg = ['Baja' => 'secondary', 'Media' => 'info', 'Alta' => 'warning', 'Urgente' => 'danger'][$tut->urgencia] ?? 'secondary';
                             $noEsDeEsteCiclo = $tut->alumno && $tut->ciclo && $tut->alumno->ciclo_id !== $tut->ciclo_id;
                         @endphp
                         <div class="card border-0 shadow-sm" id="tutoria-{{ $tut->id }}"
@@ -278,7 +317,13 @@
                                         </div>
                                     </div>
                                 @endif
-                                <span class="seg-pill seg-pill-urg-{{ $tut->urgencia }}"><span class="seg-pill-dot"></span>{{ $tut->urgencia }}</span>
+                                <span class="seg-pill seg-pill-urg-{{ $tut->urgencia_color }}" title="{{ \App\Models\Tutoria::OPCIONES[$tut->urgencia][0] ?? 'Prioridad' }}"><span class="seg-pill-dot"></span>{{ $tut->urgencia_texto }}</span>
+                                @if ($tut->pideOtroDocente() && $tut->docente_solicitado_nombre)
+                                    <span class="seg-pill {{ $tut->docente_id == auth()->id() ? 'seg-pill-warning' : 'seg-pill-pendiente' }}" title="Docente con quien desea hablar">
+                                        <i class="fas fa-chalkboard-teacher"></i>
+                                        {{ $tut->docente_id == auth()->id() ? 'Pidió hablar contigo' : 'Pide hablar con '.$tut->docente_solicitado_nombre }}
+                                    </span>
+                                @endif
                                 @if ($tut->ciclo)
                                     <span class="seg-ciclo-pill">Ciclo {{ $tut->ciclo->nombre }}</span>
                                 @endif
@@ -303,7 +348,11 @@
                                         @endif
                                     </div>
                                 @endif
-                                <p class="inc-reporte mb-3">{{ $tut->motivo }}</p>
+                                @if (filled($tut->motivo))
+                                    <p class="inc-reporte mb-3">{{ $tut->motivo }}</p>
+                                @else
+                                    <p class="inc-reporte text-muted font-italic mb-3">{{ \App\Models\Tutoria::OPCIONES[$tut->urgencia][0] ?? '' }} Sin mensaje adicional.</p>
+                                @endif
                                 <form action="{{ route('tutor.tutorias.estado', $tut->id) }}" method="POST">
                                     @csrf
                                     @if ($tut->estado === 'atendida')
@@ -546,6 +595,39 @@ document.addEventListener('keydown', function(e){ if(e.key==='Escape') closePhot
                 descargarBtn.disabled = false;
                 descargarBtn.innerHTML = original;
             });
+    });
+})();
+
+// Copiar el enlace del formulario (tutoría / sugerencias) al portapapeles
+(function () {
+    function copiar(texto) {
+        if (navigator.clipboard && window.isSecureContext) {
+            return navigator.clipboard.writeText(texto);
+        }
+        // Respaldo para http (sin HTTPS no existe navigator.clipboard)
+        return new Promise(function (resolve, reject) {
+            var area = document.createElement('textarea');
+            area.value = texto;
+            area.setAttribute('readonly', '');
+            area.style.position = 'fixed';
+            area.style.opacity = '0';
+            document.body.appendChild(area);
+            area.select();
+            try { document.execCommand('copy') ? resolve() : reject(); } catch (e) { reject(e); }
+            document.body.removeChild(area);
+        });
+    }
+
+    document.querySelectorAll('.tut-copiar-enlace').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var etiqueta = btn.querySelector('span');
+            copiar(btn.dataset.url)
+                .then(function () { etiqueta.textContent = '¡Copiado!'; btn.classList.add('text-success'); })
+                .catch(function () { window.prompt('Copia este enlace:', btn.dataset.url); })
+                .finally(function () {
+                    setTimeout(function () { etiqueta.textContent = 'Copiar'; btn.classList.remove('text-success'); }, 1800);
+                });
+        });
     });
 })();
 </script>

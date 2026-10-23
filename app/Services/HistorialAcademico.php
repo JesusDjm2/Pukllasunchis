@@ -50,6 +50,71 @@ class HistorialAcademico
         ];
     }
 
+    /**
+     * PPD: el programa dura un año (Ciclo I y Ciclo II), así que se muestra el plan completo
+     * del programa con la nota de cada curso, en vez de ir periodo por periodo.
+     * Nota: la del periodo en curso (calificacionesppds) o, si no hay, la última archivada (periodo_ppds).
+     * Devuelve [ciclo, cursos[]] por ciclo I–II, cursos en orden alfabético.
+     */
+    public static function cursosPpdPorCiclo(User $user): Collection
+    {
+        $ppd = $user->alumnoB;
+        $programa = $user->programa?->esPpd() ? $user->programa : ($ppd?->programa?->esPpd() ? $ppd->programa : null);
+        if (! $ppd || ! $programa) {
+            return collect();
+        }
+
+        $ciclos = Ciclo::where('programa_id', $programa->id)
+            ->with(['cursos' => fn ($q) => $q->with('docentes')->orderBy('nombre')])
+            ->get()
+            ->filter(fn ($c) => $c->ordenCiclo() < 999) // fuera "Egresados 2025" y similares
+            ->sortBy(fn ($c) => $c->ordenCiclo())
+            ->values();
+
+        $enCurso = DB::table('calificacionesppds')->where('ppd_id', $ppd->id)
+            ->get(['curso_id', 'calificacion_sistema', 'calificacion_curso', 'nivel_desempeno'])->keyBy('curso_id');
+        // Solo periodos que existen: hay notas apuntando a un periodo PPD borrado (#12) que,
+        // con un leftJoin, pisaban a las oficiales del periodo real.
+        $archivadas = DB::table('periodo_ppds as p')
+            ->join('periodo_actual_ppds as pa', 'pa.id', '=', 'p.periodo_actual_ppd_id')
+            ->where('p.alumno_id', $ppd->id)
+            ->orderBy('p.periodo_actual_ppd_id')
+            ->get(['p.curso_id', 'p.calificacion_sistema', 'p.calificacion_curso', 'pa.nombre as periodo'])
+            ->keyBy('curso_id'); // queda la del periodo más reciente
+        // Egresado: manda la nota oficial archivada; lo de calificacionesppds es un resto de su año.
+        $archivoPrimero = $user->condicion === 'Egresado';
+
+        return $ciclos->map(fn ($ciclo) => (object) [
+            'ciclo' => $ciclo,
+            'cursos' => $ciclo->cursos->map(function ($curso) use ($enCurso, $archivadas, $archivoPrimero) {
+                $vivo = $enCurso->get($curso->id);
+                $arch = $archivadas->get($curso->id);
+                $fuentes = $archivoPrimero ? [$arch, $vivo] : [$vivo, $arch];
+                $nota = null;
+                $fila = null;
+                foreach ($fuentes as $f) {
+                    if ($f && ($n = self::numero($f->calificacion_sistema)) !== null) {
+                        [$nota, $fila] = [$n, $f];
+                        break;
+                    }
+                }
+                $logro = $fila->calificacion_curso ?? null;
+
+                return (object) [
+                    'curso' => $curso,
+                    'docentes' => $curso->docentes->pluck('nombre')->filter()->join(', '),
+                    'nota' => $nota,
+                    'logro' => in_array($logro, ['', '0', '-', null], true) ? null : $logro,
+                    'nivel' => $vivo->nivel_desempeno ?? null,
+                    'periodo' => $fila === $arch ? ($arch->periodo ?? null) : null,
+                    // En curso: lo está llevando ahora (con o sin nota aún) y no se muestra una nota archivada.
+                    'en_curso' => ! $archivoPrimero && $vivo !== null && ($fila === null || $fila === $vivo),
+                    'desaprobado' => $nota !== null && $nota < self::NOTA_MINIMA,
+                ];
+            })->values(),
+        ]);
+    }
+
     private static function periodosFid(int $alumnoId): Collection
     {
         $notas = DB::table('periodos as p')

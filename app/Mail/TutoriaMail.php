@@ -18,7 +18,7 @@ class TutoriaMail extends Mailable
     {
         $alumno = $this->tutoria->alumno;
         return new Envelope(
-            subject: '['.$this->tutoria->urgencia.'] Nueva solicitud de tutoría — '
+            subject: '['.$this->tutoria->urgencia_texto.'] Nueva solicitud de tutoría — '
                 .($alumno ? $alumno->apellidos.', '.$alumno->nombres : 'Alumno'),
         );
     }

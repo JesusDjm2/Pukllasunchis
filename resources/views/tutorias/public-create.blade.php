@@ -9,7 +9,7 @@
            <label> sueltos (eso era Bootstrap 4) — sin esto, los campos quedan
            pegados unos a otros. */
         #tutPublicForm .form-group {
-            margin-bottom: 1.35rem;
+            margin-bottom: 1rem;
         }
 
         #tutPublicForm .form-group.mb-0 {
@@ -46,20 +46,20 @@
 @endpush
 
 @section('content')
-    <main class="d-flex justify-content-center align-items-start py-4 py-md-5 px-2 fondoLogin2" style="min-height:100vh;">
+    <main class="d-flex justify-content-center align-items-start py-3 px-2 fondoLogin2" style="min-height:100vh;">
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-12 col-sm-11 col-md-9 col-lg-7 col-xl-6">
 
-                    <div class="text-center mb-3">
-                        <img src="{{ asset('img/logo-iesp-pukllasunchis.png') }}" alt="Pukllasunchis" style="max-width:150px;">
+                    <div class="text-center mb-2">
+                        <img src="{{ asset('img/logo-iesp-pukllasunchis.png') }}" alt="Pukllasunchis" style="max-width:110px;">
                     </div>
 
                     <div class="card border-0 shadow-lg" style="border-radius:1rem;overflow:hidden;">
                         {{-- Franja superior de color --}}
                         <div style="height:6px;background:linear-gradient(90deg,#4e73df 0%,#e74a3b 100%);"></div>
 
-                        <div class="card-body p-4 p-md-5">
+                        <div class="card-body p-4">
 
                             {{-- Alertas --}}
                             @if (session('error'))
@@ -83,9 +83,9 @@
                             @endif
 
                             <h5 class="font-weight-bold mb-1">Solicitud de Tutoría Individual</h5>
-                            <p class="text-muted mb-4" style="font-size:.875rem;">
-                                Solicita una atención personalizada con el tutor de tu ciclo. Indica el motivo y el
-                                nivel de prioridad; el tutor será notificado de inmediato.
+                            <p class="text-muted mb-3" style="font-size:.875rem;">
+                                Solicita una atención personalizada con el tutor de tu ciclo; será notificado de
+                                inmediato.
                             </p>
 
                             <form action="{{ route('tutorias.public.store') }}" method="POST" id="tutPublicForm">
@@ -97,7 +97,7 @@
                                 </div>
 
                                 {{-- ── Ciclo ── --}}
-                                <div class="mb-4">
+                                <div class="mb-3">
                                     <div class="text-uppercase font-weight-bold text-muted mb-3"
                                         style="font-size:.68rem;letter-spacing:.1em;border-bottom:2px solid #eaecf4;padding-bottom:.35rem;">
                                         <i class="fas fa-layer-group mr-1"></i> Ciclo
@@ -167,7 +167,7 @@
                                 </div>
 
                                 {{-- ── Detalle de la solicitud ── --}}
-                                <div class="mb-4">
+                                <div class="mb-3">
                                     <div class="text-uppercase font-weight-bold text-muted mb-3"
                                         style="font-size:.68rem;letter-spacing:.1em;border-bottom:2px solid #eaecf4;padding-bottom:.35rem;">
                                         <i class="fas fa-hands-helping mr-1"></i> Detalle de la solicitud
@@ -186,40 +186,11 @@
                                         @enderror
                                     </div>
 
-                                    <div class="form-group">
-                                        <label class="font-weight-bold small">
-                                            Nivel de prioridad <span class="text-danger">*</span>
-                                        </label>
-                                        <select name="urgencia"
-                                            class="form-control @error('urgencia') is-invalid @enderror">
-                                            <option value="">— Seleccione un nivel de prioridad —</option>
-                                            @foreach (['Alta', 'Media', 'Baja'] as $nivel)
-                                                <option value="{{ $nivel }}" {{ old('urgencia') == $nivel ? 'selected' : '' }}>
-                                                    {{ $nivel }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                        @error('urgencia')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label class="font-weight-bold small">
-                                            Motivo de la solicitud <span class="text-danger">*</span>
-                                        </label>
-                                        <textarea name="motivo" rows="5"
-                                            class="form-control @error('motivo') is-invalid @enderror"
-                                            placeholder="Cuéntanos qué necesitas conversar o qué tipo de apoyo estás buscando…">{{ old('motivo') }}</textarea>
-                                        @error('motivo')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                        <small class="text-muted">Mínimo 10 caracteres.</small>
-                                    </div>
+                                    @include('tutorias._conversar', ['docentesElegibles' => $docentesElegibles, 'idForm' => 'tutPub'])
                                 </div>
 
                                 {{-- Botón enviar --}}
-                                <div class="text-center mt-4">
+                                <div class="text-center mt-3">
                                     <button type="submit" id="btnEnviarTutoria" class="btn btn-primary btn-lg btn-block px-5"
                                         style="border-radius:2rem;font-weight:600;">
                                         <i class="fas fa-paper-plane mr-2"></i> Enviar solicitud
@@ -229,7 +200,7 @@
                         </div>
                     </div>
 
-                    <p class="text-center text-white-50 mt-3" style="font-size:.78rem;">
+                    <p class="text-center text-white-50 mt-2" style="font-size:.78rem;">
                         © {{ date('Y') }} Escuela de Educación Superior Pedagógica Pukllasunchis
                     </p>
                 </div>

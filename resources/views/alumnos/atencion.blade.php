@@ -42,18 +42,10 @@
         .at-label { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--alumno-muted); }
         .at-card textarea { border-radius: var(--alumno-radius-sm); resize: vertical; }
 
-        .at-prioridad { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; }
-        .at-prioridad input { position: absolute; opacity: 0; pointer-events: none; }
-        .at-prioridad label {
             display: block; margin: 0; cursor: pointer; text-align: center;
             border: 1.5px solid var(--alumno-border); border-radius: var(--alumno-radius-sm);
             padding: .55rem .4rem; transition: border-color .15s ease, background-color .15s ease;
         }
-        .at-prioridad label strong { display: block; font-size: .88rem; }
-        .at-prioridad label small { color: var(--alumno-muted); font-size: .72rem; line-height: 1.2; display: block; }
-        .at-prioridad input:checked + label { border-color: var(--p-color); background: var(--p-fondo); }
-        .at-prioridad input:checked + label strong { color: var(--p-color); }
-        .at-prioridad input:focus-visible + label { box-shadow: 0 0 0 3px rgba(51, 68, 90, .25); }
 
         .at-btn {
             border-radius: var(--alumno-radius-sm); font-weight: 700; padding: .55rem 1.2rem;
@@ -123,33 +115,14 @@
                         <div class="at-card-icono"><i class="fas fa-hands-helping"></i></div>
                         <h2>Solicitar tutoría individual</h2>
                     </div>
-                    <p class="at-card-desc">Cuéntale a tu tutor(a) en qué necesitas apoyo. Lo recibe al instante y se comunicará contigo.</p>
+                    <p class="at-card-desc">Tu tutor(a) lo recibe al instante y se comunicará contigo.</p>
 
-                    <div class="form-group">
-                        <label for="motivo" class="at-label">¿Qué necesitas?</label>
-                        <textarea name="motivo" id="motivo" rows="5" class="form-control" required minlength="10" maxlength="3000"
-                            placeholder="Ej.: Tengo dificultades para organizar mi tiempo entre las prácticas y los trabajos…">{{ old('motivo') }}</textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <span class="at-label d-block mb-2">Prioridad</span>
-                        @php
-                            $prioridades = [
-                                'Baja' => ['Puede esperar', '#0b7a43', '#e6f4ec'],
-                                'Media' => ['Esta semana', '#9a6700', '#fff4d6'],
-                                'Alta' => ['Lo antes posible', '#c0392b', '#fdecea'],
-                            ];
-                            $elegida = old('urgencia', 'Media');
-                        @endphp
-                        <div class="at-prioridad" role="radiogroup" aria-label="Prioridad">
-                            @foreach ($prioridades as $valor => [$texto, $color, $fondo])
-                                <div style="--p-color: {{ $color }}; --p-fondo: {{ $fondo }}; position: relative;">
-                                    <input type="radio" name="urgencia" id="urg-{{ $valor }}" value="{{ $valor }}" @checked($elegida === $valor)>
-                                    <label for="urg-{{ $valor }}"><strong>{{ $valor }}</strong><small>{{ $texto }}</small></label>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
+                    @include('tutorias._conversar', [
+                        'docentesElegibles' => $docentesElegibles,
+                        'idForm' => 'tutAl',
+                        'labelClass' => 'at-label',
+                        'filasMotivo' => 4,
+                    ])
 
                     <button type="submit" class="btn at-btn"><i class="fas fa-paper-plane mr-1"></i> Enviar solicitud</button>
                 </form>
@@ -180,9 +153,9 @@
         {{-- Historial --}}
         @php
             $historial = $tutorias->map(fn ($t) => (object) [
-                    'tipo' => 'tutoria', 'etiqueta' => 'Tutoría', 'texto' => $t->motivo, 'fecha' => $t->created_at,
+                    'tipo' => 'tutoria', 'etiqueta' => 'Tutoría', 'texto' => $t->motivo ?: (\App\Models\Tutoria::OPCIONES[$t->urgencia][0] ?? ''), 'fecha' => $t->created_at,
                     'listo' => $t->estado === 'atendida', 'estado' => $t->estado === 'atendida' ? 'Atendida' : 'Pendiente',
-                    'extra' => 'Prioridad '.mb_strtolower($t->urgencia ?? ''),
+                    'extra' => $t->urgencia_texto.($t->pideOtroDocente() && $t->docente_solicitado_nombre ? ': '.$t->docente_solicitado_nombre : ''),
                 ])
                 ->concat($sugerencias->map(fn ($s) => (object) [
                     'tipo' => 'sugerencia', 'etiqueta' => 'Sugerencia', 'texto' => $s->mensaje, 'fecha' => $s->created_at,

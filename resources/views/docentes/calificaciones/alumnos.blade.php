@@ -228,13 +228,22 @@
                     <div class="alert alert-warning shadow-sm">
                         <i class="fas fa-lock mr-1"></i>
                         El registro de <strong>Parcial 1</strong> no está habilitado en este momento.
-                        @if ($periodoActual?->calificaciones_parcial1_inicio || $periodoActual?->calificaciones_parcial1_cierre)
-                            Estará disponible
-                            @if ($periodoActual->calificaciones_parcial1_inicio) del {{ $periodoActual->calificaciones_parcial1_inicio->format('d/m/Y') }} @endif
-                            @if ($periodoActual->calificaciones_parcial1_cierre) al {{ $periodoActual->calificaciones_parcial1_cierre->format('d/m/Y') }} @endif.
+                        @if ($periodoActual?->fecha_cierre && now()->gt($periodoActual->fecha_cierre->copy()->endOfDay()))
+                            El período cerró el {{ $periodoActual->fecha_cierre->format('d/m/Y') }}.
+                        @elseif ($periodoActual?->calificaciones_parcial1_inicio)
+                            Estará disponible desde el {{ $periodoActual->calificaciones_parcial1_inicio->format('d/m/Y') }}
+                            @if ($periodoActual->fecha_cierre) hasta el cierre del período ({{ $periodoActual->fecha_cierre->format('d/m/Y') }}) @endif.
                         @endif
                     </div>
                 @else
+                @if ($periodoActual?->notasPublicadas(1))
+                    <div class="alert alert-info shadow-sm">
+                        <i class="fas fa-eye mr-1"></i>
+                        Las notas del <strong>Parcial 1</strong> ya están publicadas para los alumnos. Aún puedes corregirlas
+                        @if ($periodoActual->fecha_cierre) hasta el cierre del período ({{ $periodoActual->fecha_cierre->format('d/m/Y') }}) @endif;
+                        los cambios se verán al instante.
+                    </div>
+                @endif
                 <form action="{{ route('periodouno.storeBloque') }}" method="POST">
                     @csrf
                     <input type="hidden" name="curso_id" value="{{ $curso->id }}">
@@ -410,13 +419,22 @@
                     <div class="alert alert-warning shadow-sm">
                         <i class="fas fa-lock mr-1"></i>
                         El registro de <strong>Parcial 2 / Desempeño</strong> no está habilitado en este momento.
-                        @if ($periodoActual?->calificaciones_parcial2_inicio || $periodoActual?->calificaciones_parcial2_cierre)
-                            Estará disponible
-                            @if ($periodoActual->calificaciones_parcial2_inicio) del {{ $periodoActual->calificaciones_parcial2_inicio->format('d/m/Y') }} @endif
-                            @if ($periodoActual->calificaciones_parcial2_cierre) al {{ $periodoActual->calificaciones_parcial2_cierre->format('d/m/Y') }} @endif.
+                        @if ($periodoActual?->fecha_cierre && now()->gt($periodoActual->fecha_cierre->copy()->endOfDay()))
+                            El período cerró el {{ $periodoActual->fecha_cierre->format('d/m/Y') }}.
+                        @elseif ($periodoActual?->calificaciones_parcial2_inicio)
+                            Estará disponible desde el {{ $periodoActual->calificaciones_parcial2_inicio->format('d/m/Y') }}
+                            @if ($periodoActual->fecha_cierre) hasta el cierre del período ({{ $periodoActual->fecha_cierre->format('d/m/Y') }}) @endif.
                         @endif
                     </div>
                 @else
+                @if ($periodoActual?->notasPublicadas(2))
+                    <div class="alert alert-info shadow-sm">
+                        <i class="fas fa-eye mr-1"></i>
+                        Las notas del <strong>Parcial 2 / Desempeño</strong> ya están publicadas para los alumnos. Aún puedes corregirlas
+                        @if ($periodoActual->fecha_cierre) hasta el cierre del período ({{ $periodoActual->fecha_cierre->format('d/m/Y') }}) @endif;
+                        los cambios se verán al instante.
+                    </div>
+                @endif
                 <form action="{{ route('guardarPeriodo2yDesempenoEnBloque') }}" method="POST">
                     @csrf
                     <input type="hidden" name="curso_id" value="{{ $curso->id }}">

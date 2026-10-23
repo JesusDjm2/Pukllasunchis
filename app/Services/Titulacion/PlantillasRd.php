@@ -24,7 +24,7 @@ class PlantillasRd
     public const PLANTILLAS = [
         'aprobacion_pti' => [
             'titulo' => 'Aprobación de PTI', 'tipo' => 'PTI', 'etapa' => 'pti', 'vista' => 'titulacion.rd.pdf.aprobacion-pti',
-            'campos' => ['expedientes', 'numero_informe', 'titulo', 'asesor', 'texto_adicional'],
+            'campos' => ['expedientes', 'numero_informe', 'titulo', 'texto_adicional'], // sin asesor: se designa en el TI
             'iniciales' => self::INICIALES_INVESTIGACION, 'cierre' => 'formal',
         ],
         'anulacion_pti' => [
@@ -53,8 +53,10 @@ class PlantillasRd
             'iniciales' => self::INICIALES_INVESTIGACION, 'cierre' => 'simple',
         ],
         'cambio_asesor' => [
-            'titulo' => 'Cambio de asesor', 'tipo' => 'CambioAsesor', 'etapa' => 'otros', 'vista' => null,
-            'campos' => [], 'iniciales' => self::INICIALES_INVESTIGACION, 'cierre' => 'formal',
+            'titulo' => 'Cambio de asesor', 'tipo' => 'CambioAsesor', 'etapa' => 'otros', 'vista' => 'titulacion.rd.pdf.cambio-asesor',
+            'campos' => ['expedientes', 'rd_referida' => 'RD que aprobó el PTI (se modifica)', 'fecha_rd_referida', 'titulo',
+                'asesor_anterior', 'asesor_anterior_cargo', 'asesor' => 'Nuevo asesor(a)', 'acompanante'],
+            'iniciales' => self::INICIALES_INVESTIGACION, 'cierre' => 'simple',
         ],
     ];
 
@@ -65,8 +67,12 @@ class PlantillasRd
         'titulo' => ['Título del trabajo de investigación', 'area', true],
         'titulo_nuevo' => ['Nuevo título (lo aprueba esta RD)', 'area', true],
         'asesor' => ['Asesor(a)', 'asesor', true],
-        'texto_adicional' => ['Texto adicional en el artículo SEGUNDO (opcional)', 'area', false],
+        'texto_adicional' => ['Texto adicional en el artículo PRIMERO (opcional)', 'area', false],
         'rd_referida' => ['RD referida', 'texto', true],
+        'fecha_rd_referida' => ['Fecha de esa RD', 'fecha', true],
+        'asesor_anterior' => ['Asesor(a) anterior (como irá en la RD)', 'texto', true],
+        'asesor_anterior_cargo' => ['Era', 'cargo', true],
+        'acompanante' => ['Asesor(a) acompañante (opcional: va al final del artículo SEGUNDO)', 'texto', false],
         'acta' => ['N° de página del acta', 'texto', true],
         'fecha_acto' => ['Fecha', 'fecha', true],
         'hora' => ['Hora', 'hora', true],

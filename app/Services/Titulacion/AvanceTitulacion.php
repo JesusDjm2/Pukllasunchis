@@ -108,6 +108,12 @@ class AvanceTitulacion
                 filled($tesis?->rd_ti) || $rdTi,
                 $rdTi?->fecha, $tesis?->rd_ti ?: $rdTi?->numero_rd,
                 'Obtener la RD que aprueba el TI.'),
+            // Desde el 19/10: el TI aprobado se sube al Repositorio Institucional antes de
+            // inscribir el Bachiller en SUNEDU.
+            $this->hito('ti_repositorio', 'ti', 'TI en Repositorio Institucional',
+                filled($tesis?->url_repositorio_ti),
+                null, null,
+                'Subir el TI al Repositorio Institucional y registrar su enlace.'),
             $this->hito('bachiller', 'ti', 'Bachiller (SUNEDU)',
                 (bool) ($tesis?->fecha_bachiller_sunedu || filled($tesis?->bachiller_sunedu)),
                 $tesis?->fecha_bachiller_sunedu, $tesis?->bachiller_sunedu,
@@ -127,7 +133,7 @@ class AvanceTitulacion
         ];
 
         // Enlace al PDF de la RD (titulacion_resoluciones.archivo), si se tiene.
-        $enlaces = ['pti_aprobado' => $rdPti?->archivo, 'ti_aprobado' => $rdTi?->archivo, 'tesis_aprobada' => $rdTesis?->archivo];
+        $enlaces = ['pti_aprobado' => $rdPti?->archivo, 'ti_aprobado' => $rdTi?->archivo, 'ti_repositorio' => $tesis?->url_repositorio_ti, 'tesis_aprobada' => $rdTesis?->archivo];
 
         $this->hitos = collect($hitos)
             ->map(fn ($h) => $h + ['enlace' => filled($enlaces[$h['clave']] ?? null) ? $enlaces[$h['clave']] : null])

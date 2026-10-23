@@ -44,7 +44,7 @@
     @include('docentes.partials.ui-header', [
         'kicker'    => 'Tutor · ' . (optional($ciclo->programa)->nombre ?? ''),
         'title'     => 'Ciclo ' . $ciclo->nombre,
-        'subtitle'  => 'Alumnos del ciclo que tutoreas: escríbeles por correo o WhatsApp y revisa su ficha.',
+        'subtitle'  => 'Cómo van tus alumnos en sus cursos, quién está desaprobando, y su contacto y ficha.',
         'backUrl'   => route('tutor.dashboard'),
         'backLabel' => 'Mis ciclos',
     ])
@@ -64,6 +64,24 @@
         </div>
     @endif
 
+    @include('alumnos.partials.ui')
+    @php $enRiesgo = $seguimiento['resumen']['en_riesgo']; @endphp
+    <div>
+    <div class="al-ui al-tabs" role="tablist" aria-label="Secciones del ciclo" data-al-tabs>
+        <button type="button" class="al-tab is-activa" role="tab" data-panel="seguimiento">
+            <i class="fas fa-chart-line"></i> Seguimiento<span class="d-none d-sm-inline"> académico</span>
+            @if ($enRiesgo) <span class="al-badge is-mal" title="Alumnos desaprobando algún curso">{{ $enRiesgo }}</span> @endif
+        </button>
+        <button type="button" class="al-tab" role="tab" data-panel="alumnos">
+            <i class="fas fa-users"></i> Alumnos<span class="d-none d-sm-inline"> y contacto</span> <span class="al-badge is-muted">{{ $alumnos->count() }}</span>
+        </button>
+    </div>
+
+    <section class="al-ui al-panel" role="tabpanel" data-panel="seguimiento">
+        @include('tutor.partials.seguimiento')
+    </section>
+
+    <section class="al-panel" role="tabpanel" data-panel="alumnos" hidden>
     @include('docentes.alumnos.partials.lista-panel', [
         'contactos' => $contactos->values(),
         'detalles'  => $alumnos->mapWithKeys(fn ($a) => ['fid-'.$a->id => $a])->all(),
@@ -78,6 +96,8 @@
         'visible'   => true,
         'panelId'   => 'pkAlCiclo'.$ciclo->id,
     ])
+    </section>
+    </div>{{-- /pestañas --}}
 </div>
 
 @include('docentes.alumnos.partials.modal-mensaje', [

@@ -274,8 +274,10 @@
                     <div class="sg-lado">
                         <div class="sg-pills">
                             @if ($k === 'tutorias' && $r->urgencia)
-                                @php $colorUrg = ['Baja' => 'slate', 'Media' => 'cyan', 'Alta' => 'amber', 'Urgente' => 'red'][$r->urgencia] ?? 'slate'; @endphp
-                                <span class="sg-pill is-{{ $colorUrg }}" title="Prioridad"><span class="sg-pill-dot"></span>{{ $r->urgencia }}</span>
+                                <span class="sg-pill is-{{ $r->urgencia_color }}" title="¿Cómo quiere conversar?"><span class="sg-pill-dot"></span>{{ $r->urgencia_texto }}</span>
+                                @if ($r->pideOtroDocente() && $r->docente_solicitado_nombre)
+                                    <span class="sg-pill is-slate" title="Docente con quien desea hablar"><i class="fas fa-chalkboard-teacher"></i> {{ $r->docente_solicitado_nombre }}</span>
+                                @endif
                             @endif
                             <span class="sg-pill is-{{ $hecho ? 'green' : 'slate' }}"><span class="sg-pill-dot"></span>{{ $hecho ? $etiquetaHecho : 'Pendiente' }}</span>
                         </div>
