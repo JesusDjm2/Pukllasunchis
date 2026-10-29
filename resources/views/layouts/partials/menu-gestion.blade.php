@@ -83,6 +83,7 @@
                 <a class="collapse-item {{ $activo('admin.seguimiento*') }}" href="{{ route('admin.seguimiento') }}"
                    title="Incidencias reportadas, solicitudes de tutoría y sugerencias del buzón QR">Incidencias y tutorías</a>
                 <a class="collapse-item {{ $activo('alumnos.demograficos') }}" href="{{ route('alumnos.demograficos') }}">Datos demográficos</a>
+                <a class="collapse-item {{ $activo('seguimiento-egresados.*') }}" href="{{ route('seguimiento-egresados.index') }}" title="Seguimiento de egresados">Seguimiento de egresados</a>
                 @if ($esSA && Route::has('titulacion.index'))
                     <a class="collapse-item {{ $activo('titulacion.*') }}" href="{{ route('titulacion.index') }}">Titulación</a>
                 @endif

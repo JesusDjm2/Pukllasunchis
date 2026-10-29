@@ -147,3 +147,22 @@ Route::post('/alumno-login-inline', [App\Http\Controllers\AlumnoAuthController::
     ->middleware('throttle:10,1')
     ->name('alumno.login.inline');
 
+// ══════════════════════════════════════════════════════════════════
+// SEGUIMIENTO DE EGRESADOS (Sistema Sostenible EESP Pukllasunchis)
+// ══════════════════════════════════════════════════════════════════
+Route::get('/seguimiento-egresados', [App\Http\Controllers\SeguimientoEgresadoController::class, 'index'])
+    ->name('seguimiento-egresados.index');
+Route::post('/seguimiento-egresados/actualizar', [App\Http\Controllers\SeguimientoEgresadoController::class, 'guardarActualizacion'])
+    ->name('seguimiento-egresados.actualizar');
+Route::post('/seguimiento-egresados/accion', [App\Http\Controllers\SeguimientoEgresadoController::class, 'guardarAccion'])
+    ->name('seguimiento-egresados.accion');
+Route::post('/seguimiento-egresados/avanzar-accion/{id}', [App\Http\Controllers\SeguimientoEgresadoController::class, 'avanzarAccion'])
+    ->name('seguimiento-egresados.avanzar-accion');
+Route::post('/seguimiento-egresados/llamada', [App\Http\Controllers\SeguimientoEgresadoController::class, 'guardarLlamada'])
+    ->name('seguimiento-egresados.llamada');
+Route::post('/seguimiento-egresados/auditar-contacto', [App\Http\Controllers\SeguimientoEgresadoController::class, 'auditarContacto'])
+    ->name('seguimiento-egresados.auditar-contacto');
+Route::get('/seguimiento-egresados/campana-publica', [App\Http\Controllers\SeguimientoEgresadoController::class, 'campanaPublica'])
+    ->name('seguimiento-egresados.campana-publica');
+
+
