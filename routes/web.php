@@ -164,5 +164,11 @@ Route::post('/seguimiento-egresados/auditar-contacto', [App\Http\Controllers\Seg
     ->name('seguimiento-egresados.auditar-contacto');
 Route::get('/seguimiento-egresados/campana-publica', [App\Http\Controllers\SeguimientoEgresadoController::class, 'campanaPublica'])
     ->name('seguimiento-egresados.campana-publica');
+Route::post('/seguimiento-egresados/grupos', [App\Http\Controllers\SeguimientoEgresadoController::class, 'guardarGrupo'])
+    ->name('seguimiento-egresados.grupos.guardar');
+Route::delete('/seguimiento-egresados/grupos/{id}', [App\Http\Controllers\SeguimientoEgresadoController::class, 'eliminarGrupo'])
+    ->name('seguimiento-egresados.grupos.eliminar');
+Route::get('/seguimiento-egresados/enlace-whatsapp', [App\Http\Controllers\SeguimientoEgresadoController::class, 'generarEnlaceWhatsapp'])
+    ->name('seguimiento-egresados.enlace-whatsapp');
 
 

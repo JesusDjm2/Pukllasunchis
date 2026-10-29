@@ -246,9 +246,75 @@
             filter: brightness(0.98);
         }
 
+        /* Botón Tomar Lista: índigo institucional vibrante con animación */
+        .docente-btn-asistencia {
+            order: 2;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.34rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+            background: #4f46e5;
+            border: 1px solid #4f46e5;
+            color: #fff !important;
+            text-decoration: none !important;
+            box-shadow: 0 2px 6px rgba(79, 70, 229, 0.28);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.28s ease, filter 0.28s ease;
+        }
+
+        .docente-btn-asistencia::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -75%;
+            width: 45%;
+            height: 100%;
+            background: linear-gradient(115deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+            transform: skewX(-20deg);
+            transition: left 0.6s ease;
+            pointer-events: none;
+        }
+
+        .docente-btn-asistencia i {
+            display: inline-block;
+            color: #fff !important;
+            transition: transform 0.3s ease;
+        }
+
+        .docente-btn-asistencia:hover {
+            color: #fff !important;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -4px rgba(79, 70, 229, 0.42);
+            filter: brightness(1.05);
+        }
+
+        .docente-btn-asistencia:hover::after {
+            left: 125%;
+        }
+
+        .docente-btn-asistencia:hover i {
+            transform: rotate(-10deg) scale(1.15);
+        }
+
+        .docente-btn-asistencia:active {
+            transform: translateY(0);
+            filter: brightness(0.98);
+        }
+
+        body.dark-mode .docente-btn-asistencia,
+        body.dim-mode .docente-btn-asistencia {
+            background: #4f46e5;
+            color: #fff !important;
+        }
+
         /* Descargar notas: verde Excel sólido */
         .docente-btn-descargar {
-            order: 2;
+            order: 3;
             display: inline-flex;
             align-items: center;
             gap: 0.4rem;
@@ -840,6 +906,41 @@
                 </div>
             </div>
         @endif
+
+        {{-- Sistema de Seguimiento de Egresados (Acceso rápido / Coordinación) --}}
+        @if (Route::has('seguimiento-egresados.index'))
+            <div class="card docente-ui-card mb-3 mb-md-4" style="border-left: 4px solid #10b981; background: linear-gradient(to right, #f0fdf4, #ffffff);">
+                <div class="card-body p-3 p-md-4">
+                    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between" style="gap: 1rem;">
+                        <div class="d-flex align-items-center" style="gap: 1rem;">
+                            <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(16, 185, 129, 0.15); display: flex; align-items: center; justify-content: center; color: #059669; font-size: 1.4rem;">
+                                <i class="fas fa-user-graduate"></i>
+                            </div>
+                            <div>
+                                <div class="d-flex align-items-center" style="gap: 0.5rem;">
+                                    <h5 class="mb-0 font-weight-bold" style="color: #065f46;">Sistema de seguimiento de egresados</h5>
+                                    <span class="badge" style="background: #d1fae5; color: #047857; font-size: 0.75rem; font-weight: 600;">Institucional EESP</span>
+                                </div>
+                                <p class="mb-0 text-muted small mt-1">
+                                    Panel de coordinación: gestión de egresados institucionales, grupos de entrevistadores y campañas semestrales vía WhatsApp.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="d-flex flex-wrap align-items-center" style="gap: .5rem;">
+                            <a href="{{ route('seguimiento-egresados.index') }}" class="btn btn-sm" style="background: #059669; color: #fff; font-weight: 600; border-radius: 8px; padding: 0.45rem 0.9rem;">
+                                <i class="fas fa-external-link-alt mr-1"></i> Abrir módulo
+                            </a>
+                            <a href="{{ route('seguimiento-egresados.index') }}#grupos" class="btn btn-sm btn-outline-success" style="font-weight: 600; border-radius: 8px; padding: 0.45rem 0.9rem;">
+                                <i class="fas fa-users mr-1"></i> Grupos de entrevistadores
+                            </a>
+                            <a href="{{ route('seguimiento-egresados.index') }}#whatsapp" class="btn btn-sm btn-outline-secondary" style="font-weight: 600; border-radius: 8px; padding: 0.45rem 0.9rem;">
+                                <i class="fab fa-whatsapp text-success mr-1"></i> Link de WhatsApp
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
         
 
         <div class="row pb-5">
@@ -953,6 +1054,11 @@
                                                 @endif
                                             @endif
                                         @endif
+                                        {{-- Tomar lista: registro de asistencia --}}
+                                        <a href="{{ route('docente.asistencia.tomar', ['docente' => $docente->id, 'curso' => $curso->id]) }}"
+                                            class="docente-btn-asistencia" title="Tomar lista y registrar asistencia de este curso">
+                                            <i class="fas fa-clipboard-check mr-1"></i> Tomar lista
+                                        </a>
                                         {{-- Descarga del curso: debajo de Calificar, con la extensión visible para que se entienda que es un archivo. --}}
                                         <a href="{{ route('docente.curso.excel', ['docente' => $docente->id, 'curso' => $curso->id]) }}"
                                             class="docente-btn-descargar" title="Descargar las calificaciones de este curso en Excel">
@@ -968,6 +1074,8 @@
                                     <span class="docente-curso-stat"><i class="fas fa-tag"></i> {{ $curso->cc }}</span>
                                     <a href="{{ route('docente.alumnos', ['docente' => $docente->id, 'curso' => $curso->id]) }}" class="docente-curso-stat docente-curso-stat-link" title="Ver la lista de alumnos y contactarlos">
                                         <i class="fas fa-user-graduate"></i> Alumnos</a>
+                                    <a href="{{ route('docente.asistencia.historial', ['docente' => $docente->id, 'curso' => $curso->id]) }}" class="docente-curso-stat docente-curso-stat-link" style="background:#4338ca;border-color:#4338ca;" title="Ver sesiones e historial de asistencia">
+                                        <i class="fas fa-calendar-check"></i> Asistencias</a>
                                     {{-- Taq'e --}}
                                     @php $nTaqe = $curso->taqeGrupos()->count(); @endphp
                                     @if ($nTaqe > 0)
@@ -1331,6 +1439,11 @@
                                                 @endif
                                             @endif
                                         @endif
+                                        {{-- Tomar lista: registro de asistencia --}}
+                                        <a href="{{ route('docente.asistencia.tomar', ['docente' => $docente->id, 'curso' => $curso->id]) }}"
+                                            class="docente-btn-asistencia" title="Tomar lista y registrar asistencia de este curso">
+                                            <i class="fas fa-clipboard-check mr-1"></i> Tomar lista
+                                        </a>
                                         {{-- Descarga del curso: debajo de Calificar, con la extensión visible para que se entienda que es un archivo. --}}
                                         <a href="{{ route('docente.curso.excel', ['docente' => $docente->id, 'curso' => $curso->id]) }}"
                                             class="docente-btn-descargar" title="Descargar las calificaciones de este curso en Excel">
@@ -1346,6 +1459,8 @@
                                     <span class="docente-curso-stat"><i class="fas fa-tag"></i> {{ $curso->cc }}</span>
                                     <a href="{{ route('docente.alumnos', ['docente' => $docente->id, 'curso' => $curso->id]) }}" class="docente-curso-stat docente-curso-stat-link" title="Ver la lista de alumnos y contactarlos">
                                         <i class="fas fa-user-graduate"></i> Alumnos</a>
+                                    <a href="{{ route('docente.asistencia.historial', ['docente' => $docente->id, 'curso' => $curso->id]) }}" class="docente-curso-stat docente-curso-stat-link" style="background:#4338ca;border-color:#4338ca;" title="Ver sesiones e historial de asistencia">
+                                        <i class="fas fa-calendar-check"></i> Asistencias</a>
                                     {{-- Taq'e --}}
                                     @php $nTaqe = $curso->taqeGrupos()->count(); @endphp
                                     @if ($nTaqe > 0)

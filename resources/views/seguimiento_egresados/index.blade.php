@@ -309,6 +309,8 @@
     const CASOS_DB = @json($casosDb);
     const LLAMADAS_DB = @json($llamadasDb);
     const ACCESOS_DB = @json($accesosContactoDb);
+    const GRUPOS_DB = @json($gruposDb ?? []);
+    const ENTREVISTADORES_DISPONIBLES = @json($entrevistadoresDisponibles ?? []);
 
     const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     const ROUTES = {
@@ -316,7 +318,11 @@
         accion: "{{ route('seguimiento-egresados.accion') }}",
         avanzarAccion: "{{ url('/seguimiento-egresados/avanzar-accion') }}",
         llamada: "{{ route('seguimiento-egresados.llamada') }}",
-        auditarContacto: "{{ route('seguimiento-egresados.auditar-contacto') }}"
+        auditarContacto: "{{ route('seguimiento-egresados.auditar-contacto') }}",
+        gruposGuardar: "{{ route('seguimiento-egresados.grupos.guardar') }}",
+        gruposEliminar: "{{ url('/seguimiento-egresados/grupos') }}",
+        enlaceWhatsapp: "{{ route('seguimiento-egresados.enlace-whatsapp') }}",
+        campanaPublica: "{{ route('seguimiento-egresados.campana-publica') }}"
     };
 
     const ROSTER_SEVEN_V8 = {
@@ -359,12 +365,12 @@
 const $=s=>document.querySelector(s);
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const roles={coordinacion:'Coordinación de Bienestar y Empleabilidad',encuestador:'Entrevistador telefónico',egresado:'Vista de egresado/a',direccion:'Dirección',administrador:'Administración'};
-const pages={panel:'Panel de seguimiento',padron:'Padrón y respuestas',padron7:'Padrón · 7 listas',agil:'Actualización breve',acciones:'Acompañamiento y acciones',campanas:'Campañas semestrales',llamadas:'Llamadas y entrevistas',cuestionario:'Cuestionario común',territorio:'Observatorio territorial',inteligencia:'Inteligencia institucional',formacion:'Formación continua',contactos:'Directorio de contactos',permisos:'Seguridad y funciones',ficha:'Mi ficha'};
-const allowed={coordinacion:['panel','padron','campanas','llamadas','cuestionario','territorio','inteligencia','formacion','contactos','padron7','agil','acciones'],encuestador:['llamadas','padron','cuestionario','contactos','agil','padron7'],egresado:['ficha','cuestionario','agil'],direccion:['panel','inteligencia','territorio','formacion','contactos','padron7','acciones'],administrador:['permisos','panel']};
+const pages={panel:'Panel de seguimiento',padron:'Padrón y respuestas',padron7:'Padrón · 7 listas',grupos:'Grupos de entrevistadores',agil:'Actualización breve',acciones:'Acompañamiento y acciones',campanas:'Campañas semestrales',llamadas:'Llamadas y entrevistas',cuestionario:'Cuestionario común',territorio:'Observatorio territorial',inteligencia:'Inteligencia institucional',formacion:'Formación continua',contactos:'Directorio de contactos',permisos:'Seguridad y funciones',ficha:'Mi ficha'};
+const allowed={coordinacion:['panel','padron','grupos','campanas','llamadas','cuestionario','territorio','inteligencia','formacion','contactos','padron7','agil','acciones'],encuestador:['llamadas','padron','cuestionario','contactos','agil','padron7'],egresado:['ficha','cuestionario','agil'],direccion:['panel','grupos','inteligencia','territorio','formacion','contactos','padron7','acciones'],administrador:['permisos','panel','grupos']};
 
 const state={
     role:'coordinacion',
-    page:'panel',
+    page: window.location.hash === '#grupos' ? 'grupos' : (window.location.hash === '#whatsapp' ? 'campanas' : 'panel'),
     selected:'ENC-001',
     sourceTab:'encuesta',
     search:'',
@@ -376,6 +382,7 @@ const state={
     jobEpisodes:[],
     actions:[],
     contactLog:[],
+    grupos: Array.isArray(GRUPOS_DB) ? GRUPOS_DB : [],
     formMode:'auto',
     geo:'trabajo',
     grants:true,
@@ -506,6 +513,7 @@ function nav(){
         ['SEGUIMIENTO DE EGRESADOS', [
             ['panel','▦'],
             ['padron7','▤'],
+            ['grupos','👥'],
             ['agil','✎'],
             ['acciones','♥'],
             ['padron','♟'],
@@ -526,6 +534,7 @@ function nav(){
             <button class="navitem ${state.page===id?'active':''}" data-page="${id}">
                 <span class="ico">${ico}</span><span>${pages[id]}</span>
                 ${id==='llamadas'?'<em>LLAMADAS</em>':''}
+                ${id==='grupos'?'<em style="background:#059669;">EQUIPOS</em>':''}
             </button>`).join('') : '';
     }).join('');
     document.querySelectorAll('[data-page]').forEach(x => x.addEventListener('click', () => goto(x.dataset.page)));
@@ -835,6 +844,285 @@ async function saveQuick(ev){
             </div>
         `;
     }
+}
+
+// ---------------- GRUPOS DE ENTREVISTADORES ----------------
+function gruposView(){
+    const egresadosTotal = ROSTER.length;
+    const gruposList = state.grupos || [];
+    const entCount = Array.isArray(ENTREVISTADORES_DISPONIBLES) ? ENTREVISTADORES_DISPONIBLES.length : 0;
+
+    return hero('COORDINACIÓN DE SEGUIMIENTO', 'Grupos y Equipos de Entrevistadores', 'Organiza docentes y personal para acompañar cohortes de egresados y llamadas semestrales.') +
+    `<div class="cards">
+        ${stat('Equipos creados', gruposList.length, 'Comisiones registradas', 'c1')}
+        ${stat('Entrevistadores disponibles', entCount, 'Docentes / Personal', 'c2')}
+        ${stat('Egresados en universo', egresadosTotal, 'Disponibles para asignación', 'c3')}
+        ${stat('Actualizaciones en BD', state.history.length, 'Respuestas guardadas', 'c4')}
+    </div>
+
+    <!-- Panel de creación de grupo -->
+    <div class="panel" style="border-top: 4px solid #10b981;">
+        <div class="section-top" style="margin-bottom: 12px;">
+            <div>
+                <h2 style="margin:0;color:#064e3b;"><i class="fas fa-users-cog" style="color:#10b981;margin-right:8px;"></i> Crear nuevo equipo de entrevistadores</h2>
+                <p style="margin:4px 0 0;font-size:12px;color:#64748b;">Asigna a docentes o personal institucional un lote de egresados por programa o cohorte.</p>
+            </div>
+            <span class="chip ok">Función Coordinador</span>
+        </div>
+
+        <form id="form-crear-grupo" onsubmit="event.preventDefault(); APP.saveGrupo(this);" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <div style="grid-column:1/-1;">
+                <label style="font-weight:700;font-size:12px;color:#334155;display:block;margin-bottom:4px;">Nombre del Equipo / Comisión *</label>
+                <input name="nombre" required placeholder="Ej. Equipo de Seguimiento Inicial 2024-2025" style="width:100%;padding:9px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;">
+            </div>
+
+            <div>
+                <label style="font-weight:700;font-size:12px;color:#334155;display:block;margin-bottom:4px;">Programa objetivo</label>
+                <select name="programa" id="grupo-sel-prog" onchange="APP.updateGrupoPreview()" style="width:100%;padding:9px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;background:white;">
+                    <option value="">Todos los programas</option>
+                    <option value="Inicial">Educación Inicial</option>
+                    <option value="Primaria EIB">Educación Primaria EIB</option>
+                    <option value="Primaria">Educación Primaria</option>
+                </select>
+            </div>
+
+            <div>
+                <label style="font-weight:700;font-size:12px;color:#334155;display:block;margin-bottom:4px;">Cohorte de egreso</label>
+                <select name="cohorte" id="grupo-sel-cohorte" onchange="APP.updateGrupoPreview()" style="width:100%;padding:9px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;background:white;">
+                    <option value="">Todas las cohortes</option>
+                    <option value="2025-II">2025-II</option>
+                    <option value="2025-I">2025-I</option>
+                    <option value="2024-I">2024-I</option>
+                    <option value="2023-II">2023-II</option>
+                    <option value="2023-I">2023-I</option>
+                    <option value="2022-II">2022-II</option>
+                    <option value="2021-II">2021-II</option>
+                </select>
+            </div>
+
+            <div style="grid-column:1/-1;">
+                <label style="font-weight:700;font-size:12px;color:#334155;display:block;margin-bottom:4px;">
+                    Seleccionar entrevistadores docentes asignados (${entCount} disponibles)
+                </label>
+                <div style="max-height:140px;overflow-y:auto;border:1px solid #cbd5e1;border-radius:8px;padding:8px 12px;background:#f8fafc;display:grid;grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));gap:6px;">
+                    ${(ENTREVISTADORES_DISPONIBLES || []).map(u => `
+                        <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer;padding:3px;background:white;border-radius:6px;border:1px solid #e2e8f0;">
+                            <input type="checkbox" name="entrevistador_id" value="${u.id}" data-name="${esc(u.name)}" data-email="${esc(u.email || '')}">
+                            <span><b>${esc(u.name)}</b> <small style="color:#64748b;">(${esc(u.email || 'Docente')})</small></span>
+                        </label>
+                    `).join('') || '<span style="color:#64748b;font-size:12px;">No hay otros usuarios registrados con rol docente.</span>'}
+                </div>
+            </div>
+
+            <div style="grid-column:1/-1;">
+                <label style="font-weight:700;font-size:12px;color:#334155;display:block;margin-bottom:4px;">Instrucciones / Observaciones para el equipo</label>
+                <textarea name="observaciones" rows="2" placeholder="Ej. Realizar 3 intentos de llamada por egresado y registrar el resultado de inserción laboral..." style="width:100%;padding:8px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:12px;"></textarea>
+            </div>
+
+            <div style="grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:6px;padding-top:10px;border-top:1px solid #e2e8f0;">
+                <div id="grupo-preview-egresados" style="font-size:12px;color:#065f46;background:#d1fae5;padding:6px 12px;border-radius:8px;font-weight:600;">
+                    <i class="fas fa-users mr-1"></i> Egresados que integrarán este grupo: <b>${ROSTER.length}</b> seleccionables
+                </div>
+                <button type="submit" class="btn green" style="padding:9px 18px;font-weight:700;display:flex;align-items:center;gap:6px;">
+                    <i class="fas fa-save"></i> Guardar y Crear Grupo
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Panel de Equipos Existentes -->
+    <div class="panel">
+        <div class="section-top" style="margin-bottom: 12px;">
+            <h2><i class="fas fa-users" style="color:#0284c7;margin-right:8px;"></i> Equipos de entrevistadores activos (${gruposList.length})</h2>
+            <button class="btn sm outline" onclick="APP.goto('llamadas')"><i class="fas fa-phone mr-1"></i> Ir a panel de llamadas</button>
+        </div>
+
+        ${gruposList.length === 0 ? `
+            <div style="text-align:center;padding:35px 20px;color:#64748b;">
+                <i class="fas fa-user-friends fa-2x" style="opacity:0.4;margin-bottom:10px;display:block;"></i>
+                <p style="font-weight:600;margin-bottom:4px;">Aún no se han configurado grupos de entrevistadores</p>
+                <small>Usa el formulario superior para crear la primera comisión de seguimiento por programa o cohorte.</small>
+            </div>
+        ` : `
+            <div class="tablewrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nombre del Grupo</th>
+                            <th>Filtro de Asignación</th>
+                            <th>Entrevistadores Asignados</th>
+                            <th>Egresados</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${gruposList.map(g => {
+                            const entArr = Array.isArray(g.entrevistadores) ? g.entrevistadores : [];
+                            const egrArr = Array.isArray(g.egresados_ids) ? g.egresados_ids : [];
+                            return `
+                                <tr>
+                                    <td>
+                                        <b style="color:#0f172a;font-size:13px;">${esc(g.nombre)}</b>
+                                        ${g.observaciones ? `<div style="font-size:11px;color:#64748b;margin-top:2px;">${esc(g.observaciones)}</div>` : ''}
+                                    </td>
+                                    <td>
+                                        <span class="chip">${esc(g.programa || 'Todos los programas')}</span>
+                                        <span class="chip purple">${esc(g.cohorte || 'Todas las cohortes')}</span>
+                                    </td>
+                                    <td>
+                                        ${entArr.length ? entArr.map(e => `
+                                            <span style="display:inline-block;background:#f1f5f9;color:#334155;padding:2px 7px;border-radius:6px;font-size:11px;margin:2px;border:1px solid #e2e8f0;">
+                                                <i class="fas fa-user fa-xs mr-1" style="color:#0284c7;"></i>${esc(typeof e === 'object' ? (e.name || e.nombre || 'Entrevistador') : e)}
+                                            </span>
+                                        `).join('') : '<span style="color:#94a3b8;font-size:11px;">Sin entrevistadores asignados</span>'}
+                                    </td>
+                                    <td>
+                                        <b style="font-size:13px;color:#059669;">${egrArr.length || ROSTER.length}</b> <span style="font-size:11px;color:#64748b;">egresados</span>
+                                    </td>
+                                    <td>
+                                        <span class="chip ok">${esc(g.estado || 'activo')}</span>
+                                    </td>
+                                    <td>
+                                        <div style="display:flex;gap:5px;">
+                                            <button class="btn sm outline" title="Abrir llamadas para este lote" onclick="APP.gotoLlamadasConFiltro('${esc(g.programa || '')}')">
+                                                <i class="fas fa-phone-alt"></i> Llamadas
+                                            </button>
+                                            <button class="btn sm" style="background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5;" title="Eliminar grupo" onclick="APP.deleteGrupo(${g.id})">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `}
+    </div>`;
+}
+
+async function saveGrupo(form){
+    const nombre = form.nombre.value.trim();
+    const programa = form.programa.value;
+    const cohorte = form.cohorte.value;
+    const observaciones = form.observaciones.value.trim();
+
+    const checkedBoxes = Array.from(form.querySelectorAll('input[name="entrevistador_id"]:checked'));
+    const entrevistadores = checkedBoxes.map(cb => ({
+        id: cb.value,
+        name: cb.dataset.name || 'Entrevistador',
+        email: cb.dataset.email || ''
+    }));
+
+    let matchingEgresados = ROSTER;
+    if (programa) {
+        matchingEgresados = matchingEgresados.filter(p => (p.programa || '').toLowerCase().includes(programa.toLowerCase()));
+    }
+    if (cohorte) {
+        matchingEgresados = matchingEgresados.filter(p => (p.egreso || '').includes(cohorte));
+    }
+    const egresados_ids = matchingEgresados.map(p => p.id);
+
+    const payload = {
+        nombre,
+        programa,
+        cohorte,
+        observaciones,
+        entrevistadores,
+        egresados_ids
+    };
+
+    try {
+        const resp = await fetch(ROUTES.gruposGuardar, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': CSRF_TOKEN,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+        const data = await resp.json();
+        if (resp.ok && data.success) {
+            state.grupos.unshift(data.grupo);
+            alert('¡Equipo de entrevistadores "' + nombre + '" guardado exitosamente en la base de datos!');
+            render();
+        } else {
+            alert('Error al guardar grupo: ' + (data.message || 'Error del servidor'));
+        }
+    } catch(err) {
+        console.error(err);
+        alert('No se pudo conectar con el servidor.');
+    }
+}
+
+async function deleteGrupo(id){
+    if (!confirm('¿Confirma que desea eliminar este grupo de entrevistadores?')) return;
+    try {
+        const resp = await fetch(ROUTES.gruposEliminar + '/' + id, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': CSRF_TOKEN,
+                'Accept': 'application/json'
+            }
+        });
+        const data = await resp.json();
+        if (resp.ok && data.success) {
+            state.grupos = state.grupos.filter(g => g.id !== id);
+            render();
+        } else {
+            alert('No se pudo eliminar el grupo.');
+        }
+    } catch(err) {
+        console.error(err);
+        alert('Error de conexión al eliminar.');
+    }
+}
+
+function updateGrupoPreview(){
+    const prog = document.getElementById('grupo-sel-prog')?.value || '';
+    const cohorte = document.getElementById('grupo-sel-cohorte')?.value || '';
+    let filtered = ROSTER;
+    if (prog) {
+        filtered = filtered.filter(p => (p.programa || '').toLowerCase().includes(prog.toLowerCase()));
+    }
+    if (cohorte) {
+        filtered = filtered.filter(p => (p.egreso || '').includes(cohorte));
+    }
+    const box = document.getElementById('grupo-preview-egresados');
+    if (box) {
+        box.innerHTML = `<i class="fas fa-users mr-1"></i> Egresados que integrarán este grupo: <b>${filtered.length}</b> seleccionables`;
+    }
+}
+
+function gotoLlamadasConFiltro(programa){
+    state.program = programa || 'todos';
+    goto('llamadas');
+}
+
+function copyWhatsappMessage(){
+    const text = document.getElementById('wa-msg-text')?.value || '';
+    navigator.clipboard.writeText(text).then(() => {
+        const btnText = document.getElementById('wa-copy-btn-text');
+        if (btnText) {
+            btnText.innerHTML = '<i class="fas fa-check"></i> ¡Mensaje copiado!';
+            setTimeout(() => {
+                btnText.textContent = 'Copiar mensaje completo';
+            }, 2500);
+        }
+    }).catch(err => {
+        prompt('Copia el siguiente mensaje para WhatsApp:', text);
+    });
+}
+
+function copyUrlOnly(url){
+    navigator.clipboard.writeText(url).then(() => {
+        alert('Enlace copiado al portapapeles:\n' + url);
+    }).catch(() => {
+        prompt('Copia el siguiente enlace:', url);
+    });
 }
 
 // ---------------- ACCIONES Y ACOMPAÑAMIENTO ----------------
@@ -1227,6 +1515,104 @@ function ficha(){
     </div>`;
 }
 
+// ---------------- CAMPAÑAS SEMESTRALES Y WHATSAPP ----------------
+function campanasView(){
+    const campanaActual = '2026-II';
+    const publicUrl = ROUTES.campanaPublica || (window.location.origin + '/seguimiento-egresados/campana-publica');
+    const msgDefault = `¡Hola! 🎓 La EESP Pukllasunchis te invita a participar en la Campaña de Actualización de Egresados (${campanaActual}).\n\nTe tomará solo 3 minutos confirmar tus datos y contarnos sobre tu práctica profesional y necesidades de formación continua:\n👉 ${publicUrl}\n\n¡Gracias por formar parte de nuestra comunidad educativa!`;
+    const waUrl = 'https://api.whatsapp.com/send?text=' + encodeURIComponent(msgDefault);
+
+    return hero('CAMPAÑAS SEMESTRALES', 'Campañas de actualización de egresados', 'Planifica y ejecuta las fases de autorespuesta y difusión vía WhatsApp de egresados.') +
+    `<div class="cards">
+        ${stat('Campaña activa', campanaActual, 'Segundo semestre', 'c1')}
+        ${stat('Población elegible', ROSTER.length, 'Egresados en padrón', 'c2')}
+        ${stat('Actualizaciones', state.history.length, 'Respuestas guardadas', 'c3')}
+        ${stat('Casos de apoyo', state.actions.length, 'Compromisos abiertos', 'c4')}
+    </div>
+
+    <!-- Generador de Link de Campaña para WhatsApp -->
+    <div class="panel" id="seccion-whatsapp" style="border-left: 4px solid #25d366; background: linear-gradient(to right, #f0fdf4, #ffffff);">
+        <div class="section-top" style="margin-bottom:12px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:40px;height:40px;border-radius:10px;background:#25d366;display:flex;align-items:center;justify-content:center;color:white;font-size:1.4rem;">
+                    <i class="fab fa-whatsapp"></i>
+                </div>
+                <div>
+                    <h2 style="margin:0;color:#064e3b;">Generador de Enlace para WhatsApp (Campaña ${campanaActual})</h2>
+                    <p style="margin:2px 0 0;font-size:12px;color:#64748b;">Genera y comparte el enlace institucional con el mensaje oficial para los grupos de WhatsApp de egresados.</p>
+                </div>
+            </div>
+            <span class="chip ok" style="background:#25d366;color:white;"><i class="fab fa-whatsapp mr-1"></i> WhatsApp Oficial</span>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1.2fr 0.8fr;gap:16px;">
+            <div>
+                <label style="font-weight:700;font-size:12px;color:#334155;display:block;margin-bottom:5px;">
+                    Mensaje preformateado para WhatsApp:
+                </label>
+                <textarea id="wa-msg-text" rows="6" style="width:100%;padding:10px 12px;border:1.5px solid #86efac;border-radius:10px;font-size:13px;line-height:1.4;background:white;color:#1e293b;">${esc(msgDefault)}</textarea>
+                
+                <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;">
+                    <button class="btn green" onclick="APP.copyWhatsappMessage()" style="background:#059669;padding:9px 15px;display:flex;align-items:center;gap:6px;">
+                        <i class="fas fa-copy"></i> <span id="wa-copy-btn-text">Copiar mensaje completo</span>
+                    </button>
+                    <a id="wa-share-link" href="${waUrl}" target="_blank" class="btn" style="background:#25d366;color:white;padding:9px 15px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;font-weight:700;">
+                        <i class="fab fa-whatsapp"></i> Abrir en WhatsApp
+                    </a>
+                    <button class="btn outline sm" onclick="APP.copyUrlOnly('${esc(publicUrl)}')" style="padding:9px 13px;">
+                        <i class="fas fa-link mr-1"></i> Copiar solo URL
+                    </button>
+                </div>
+            </div>
+
+            <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:12px;padding:14px;display:flex;flex-direction:column;justify-content:space-between;">
+                <div>
+                    <span style="font-size:11px;font-weight:800;letter-spacing:0.05em;color:#059669;text-transform:uppercase;display:block;margin-bottom:6px;">
+                        <i class="fas fa-globe mr-1"></i> Destino del enlace
+                    </span>
+                    <b style="font-size:12px;color:#0f172a;word-break:break-all;display:block;margin-bottom:8px;padding:6px;background:#f8fafc;border-radius:6px;border:1px dashed #cbd5e1;">
+                        ${esc(publicUrl)}
+                    </b>
+                    <p style="font-size:11.5px;color:#64748b;margin:0;">
+                        Los egresados acceden desde su teléfono móvil sin necesidad de clave. Al enviar sus respuestas, se guardan instantáneamente en la base de datos institucional.
+                    </p>
+                </div>
+                <div style="margin-top:12px;padding-top:10px;border-top:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;">
+                    <span style="font-size:11px;color:#94a3b8;"><i class="fas fa-mobile-alt mr-1"></i> Formato móvil optimizado</span>
+                    <a href="${esc(publicUrl)}" target="_blank" class="btn sm" style="background:#f1f5f9;color:#0f172a;font-weight:600;">
+                        <i class="fas fa-external-link-alt mr-1"></i> Ver vista pública
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Opciones de difusión -->
+    <div class="panel">
+        <h2>Canales de difusión institucional</h2>
+        <div class="opgrid">
+            <div class="opbox">
+                <span class="chip ok">1. WhatsApp / Magic Link</span>
+                <strong>Campaña Semestral</strong>
+                <p>Enlace público de autoregistro para enviar a delegados y grupos de WhatsApp.</p>
+                <button class="btn sm" onclick="document.getElementById('seccion-whatsapp').scrollIntoView({behavior:'smooth'})" style="margin-top:10px;">Ver mensaje de WhatsApp</button>
+            </div>
+            <div class="opbox">
+                <span class="chip purple">2. Equipos de Entrevistadores</span>
+                <strong>Llamadas telefónicas</strong>
+                <p>Comisiones docentes para llamar a egresados que no contestaron la encuesta.</p>
+                <button class="btn sm outline" onclick="APP.goto('grupos')" style="margin-top:10px;">Gestionar equipos</button>
+            </div>
+            <div class="opbox">
+                <span class="chip">3. Intranet Docente</span>
+                <strong>Permanente</strong>
+                <p>Acceso desde el panel docente en 'Mis funciones' de la EESP Pukllasunchis.</p>
+                <button class="btn sm outline" onclick="APP.goto('agil')" style="margin-top:10px;">Abrir ficha</button>
+            </div>
+        </div>
+    </div>`;
+}
+
 // ---------------- RENDER GLOBAL ----------------
 function render(){
     nav();
@@ -1259,38 +1645,10 @@ function render(){
                     </table>
                 </div>
             </div>`,
+        grupos: gruposView,
         agil: actualizacionAgil,
         acciones,
-        campanas: () => hero('CAMPAÑAS SEMESTRALES', 'Campañas de actualización de egresados', 'Planifica y ejecuta las fases de autorespuesta y recuperación telefónica.') +
-            `<div class="cards">
-                ${stat('Campaña activa', '2026-II', 'Segundo semestre', 'c1')}
-                ${stat('Población elegible', ROSTER.length, 'Egresados registrados', 'c2')}
-                ${stat('Actualizaciones', state.history.length, 'Respuestas guardadas', 'c3')}
-                ${stat('Casos de apoyo', state.actions.length, 'Compromisos abiertos', 'c4')}
-            </div>
-            <div class="panel">
-                <h2>Opciones de difusión y enlace</h2>
-                <div class="opgrid">
-                    <div class="opbox">
-                        <span class="chip ok">1. Magic Link</span>
-                        <strong>WhatsApp / SMS</strong>
-                        <p>Enlace firmado de acceso directo al portal de actualización autónoma.</p>
-                        <button class="btn sm" onclick="window.CampaignPortal.open()" style="margin-top:10px;">Probar enlace</button>
-                    </div>
-                    <div class="opbox">
-                        <span class="chip">2. Telefónica</span>
-                        <strong>Encuestadores</strong>
-                        <p>Llamadas directas para egresados sin respuesta tras el plazo inicial.</p>
-                        <button class="btn sm outline" onclick="APP.goto('llamadas')" style="margin-top:10px;">Ir a llamadas</button>
-                    </div>
-                    <div class="opbox">
-                        <span class="chip">3. Intranet</span>
-                        <strong>Permanente</strong>
-                        <p>Acceso continuo con credencial institucional @pukllavirtual.edu.pe.</p>
-                        <button class="btn sm outline" onclick="APP.goto('agil')" style="margin-top:10px;">Abrir ficha</button>
-                    </div>
-                </div>
-            </div>`,
+        campanas: campanasView,
         llamadas,
         cuestionario: actualizacionAgil,
         territorio: territory,
@@ -1401,6 +1759,12 @@ window.APP = {
     closeModal,
     advanceAction,
     filterSearch,
+    saveGrupo,
+    deleteGrupo,
+    updateGrupoPreview,
+    gotoLlamadasConFiltro,
+    copyWhatsappMessage,
+    copyUrlOnly,
     render
 };
 

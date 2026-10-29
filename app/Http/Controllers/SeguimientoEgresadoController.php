@@ -11,6 +11,7 @@ use App\Models\SeguimientoEgresado\Actualizacion;
 use App\Models\SeguimientoEgresado\Campana;
 use App\Models\SeguimientoEgresado\Caso;
 use App\Models\SeguimientoEgresado\EpisodioLaboral;
+use App\Models\SeguimientoEgresado\GrupoEntrevistador;
 use App\Models\SeguimientoEgresado\Llamada;
 use App\Models\Titulacion\SeguimientoTitulacion;
 use App\Models\User;
@@ -83,7 +84,17 @@ class SeguimientoEgresadoController extends Controller
         // 5. Obtener bitácora de auditoría de contactos
         $accesosContactoDb = AccesoContacto::latest()->limit(50)->get();
 
-        // 6. Catálogo de departamentos, provincias y distritos principales
+        // 6. Obtener grupos de entrevistadores para seguimiento
+        $gruposDb = GrupoEntrevistador::latest()->get();
+
+        // 7. Entrevistadores disponibles (docentes, tutores, alumnos o admins)
+        $entrevistadoresDisponibles = User::whereHas('roles', fn ($q) => $q->whereIn('name', ['docente', 'tutor', 'admin', 'alumno']))
+            ->orderBy('apellidos')
+            ->limit(150)
+            ->get()
+            ->map(fn ($u) => ['id' => $u->id, 'nombre' => trim($u->name . ' ' . $u->apellidos), 'email' => $u->email]);
+
+        // 8. Catálogo de departamentos, provincias y distritos principales
         $departamentos = Departamento::orderBy('nombre')->pluck('nombre');
         $provinciasCusco = Provincia::whereHas('departamento', function ($q) {
             $q->where('nombre', 'like', '%Cusco%');
@@ -98,6 +109,8 @@ class SeguimientoEgresadoController extends Controller
             'casosDb',
             'llamadasDb',
             'accesosContactoDb',
+            'gruposDb',
+            'entrevistadoresDisponibles',
             'departamentos',
             'provinciasCusco',
             'distritosCusco'
@@ -319,6 +332,67 @@ class SeguimientoEgresadoController extends Controller
         return response()->json([
             'success' => true,
             'log_id' => $log->id
+        ]);
+    }
+
+    /**
+     * Crear o actualizar un grupo de entrevistadores para seguimiento.
+     */
+    public function guardarGrupo(Request $request)
+    {
+        $grupo = GrupoEntrevistador::create([
+            'nombre' => $request->input('nombre', 'Equipo de Entrevistadores'),
+            'programa' => $request->input('programa'),
+            'cohorte' => $request->input('cohorte'),
+            'coordinador_id' => auth()->id(),
+            'entrevistadores' => $request->input('entrevistadores', []),
+            'egresados_ids' => $request->input('egresados_ids', []),
+            'estado' => 'activo',
+            'observaciones' => $request->input('observaciones', '')
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Grupo de entrevistadores creado exitosamente.',
+            'grupo' => $grupo
+        ]);
+    }
+
+    /**
+     * Eliminar un grupo de entrevistadores.
+     */
+    public function eliminarGrupo($id)
+    {
+        $grupo = GrupoEntrevistador::findOrFail($id);
+        $grupo->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Grupo eliminado correctamente.'
+        ]);
+    }
+
+    /**
+     * Generar datos y enlace directo para compartir por WhatsApp.
+     */
+    public function generarEnlaceWhatsapp(Request $request)
+    {
+        $campana = $request->input('campana', '2026-II');
+        $urlCampana = route('seguimiento-egresados.campana-publica');
+        
+        $mensajeDefault = "¡Hola! 🎓 La EESP Pukllasunchis te invita a participar en la Campaña de Actualización de Egresados ({$campana}). \n\n"
+            . "Te tomará solo 3 minutos confirmar tus datos y contarnos sobre tu práctica profesional y necesidades de formación continua:\n"
+            . "👉 {$urlCampana}\n\n"
+            . "¡Gracias por formar parte de nuestra comunidad educativa!";
+
+        $whatsappUrl = 'https://api.whatsapp.com/send?text=' . urlencode($mensajeDefault);
+
+        return response()->json([
+            'success' => true,
+            'campana' => $campana,
+            'url' => $urlCampana,
+            'mensaje' => $mensajeDefault,
+            'whatsapp_url' => $whatsappUrl
         ]);
     }
 

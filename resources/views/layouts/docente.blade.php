@@ -333,7 +333,8 @@
             $esInvestigadorSb = $usuarioSb?->hasRole('investigador') && Route::has('taqe.investigador.index');
             $esTitulacionSb = $usuarioSb?->hasRole('gestor-titulacion') && Route::has('titulacion.index');
             $esBolsaSb = $usuarioSb?->hasRole('adminB');
-            $tieneFuncionesSb = $esTutorSb || $esInvestigadorSb || $esTitulacionSb || $esBolsaSb || $proyectosSb->isNotEmpty();
+            $esSeguimientoSb = Route::has('seguimiento-egresados.index');
+            $tieneFuncionesSb = $esTutorSb || $esInvestigadorSb || $esTitulacionSb || $esBolsaSb || $esSeguimientoSb || $proyectosSb->isNotEmpty();
         @endphp
         <ul class="navbar-nav sidebar sidebar-dark accordion pk-sb" id="accordionSidebar">
             <a class="pk-sb-marca" href="{{ route('index') }}" title="Ir a la página principal">
@@ -353,9 +354,10 @@
             @endif
 
             {{-- ── Docencia ── --}}
+            @if ($docente)
             <div class="pk-sb-titulo">Docencia</div>
             <li class="nav-item">
-                <a class="nav-link pk-sb-link {{ request()->routeIs('vistaDocente', 'competencias.calificar*', 'docente.curso.*', 'calificaciones.*') ? 'is-activo' : '' }}"
+                <a class="nav-link pk-sb-link {{ request()->routeIs('vistaDocente', 'competencias.calificar*', 'docente.curso.*', 'calificaciones.*', 'docente.asistencia.*') ? 'is-activo' : '' }}"
                     href="{{ route('vistaDocente', ['docente' => $docente->id]) }}" title="Mis cursos">
                     <span class="pk-sb-icono"><i class="fas fa-book"></i></span>
                     <span class="pk-sb-texto">Mis cursos</span>
@@ -387,6 +389,7 @@
                     <span class="pk-sb-texto">Repositorio de sílabos</span>
                 </a>
             </li>
+            @endif
 
             {{-- ── Funciones adicionales según los roles de la cuenta ── --}}
             @if ($tieneFuncionesSb)
@@ -445,6 +448,14 @@
                                 </a>
                             </div>
                         </div>
+                    </li>
+                @endif
+                @if ($esSeguimientoSb)
+                    <li class="nav-item">
+                        <a class="nav-link pk-sb-link {{ request()->routeIs('seguimiento-egresados.*') ? 'is-activo' : '' }}" href="{{ route('seguimiento-egresados.index') }}" title="Sistema de seguimiento de egresados">
+                            <span class="pk-sb-icono"><i class="fas fa-user-graduate"></i></span>
+                            <span class="pk-sb-texto">Sistema de seguimiento de egresados</span>
+                        </a>
                     </li>
                 @endif
             @endif
@@ -540,9 +551,11 @@
                             </a>
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
                                 aria-labelledby="userDropdown">
-                                <a class="dropdown-item" href="{{ route('docente.show', $docente->id) }}">
-                                    <i class="fas fa-id-card fa-sm fa-fw mr-2 text-gray-400"></i> Mi perfil
-                                </a>
+                                @if ($docente)
+                                    <a class="dropdown-item" href="{{ route('docente.show', $docente->id) }}">
+                                        <i class="fas fa-id-card fa-sm fa-fw mr-2 text-gray-400"></i> Mi perfil
+                                    </a>
+                                @endif
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item" href="{{ route('logout') }}"
                                     onclick="event.preventDefault(); document.getElementById('logout-form-docente').submit();">
