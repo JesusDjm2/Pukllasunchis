@@ -3,7 +3,7 @@
 
 **Fecha de auditoría:** 30 de octubre de 2026  
 **Auditor:** Antigravity (Pair Programming / Arquitectura de Software)  
-**Rama activa:** `seguimientoesp`  
+**Rama activa:** `sistemadeseguimientodeegresados`  
 **Repositorio:** `JesusDjm2/Pukllasunchis`  
 **Estado del árbol de trabajo:** No destructivo, entorno local operativo con MySQL y Laravel activos.
 
@@ -13,9 +13,10 @@
 
 | Atributo | Valor confirmado | Detalle técnico |
 |---|---|---|
-| **Rama actual** | `seguimientoesp` | Alineada con `sistemadeseguimientodeegresados` en commit `f51f5fa`. |
-| **HEAD commit** | `f51f5fa` | `feat(seguimiento-egresados): incorporar visualizador interactivo y ruta de acceso rápido` |
-| **Historial reciente** | `cac0bcc` | `feat(seguimiento-egresados): integracion en panel docente, gestion de grupos de entrevistadores y generador whatsapp` |
+| **Rama actual** | `sistemadeseguimientodeegresados` | Rama activa de desarrollo consolidada para Pull Request. |
+| **HEAD commit** | `455d693` | `docs(seguimiento-egresados): especificacion maestra v3.0 y entregables de Fase 0` |
+| **Historial reciente** | `f51f5fa` | `feat(seguimiento-egresados): incorporar visualizador interactivo y ruta de acceso rápido` |
+| | `cac0bcc` | `feat(seguimiento-egresados): integracion en panel docente, gestion de grupos de entrevistadores y generador whatsapp` |
 | | `b1abe43` | `Implementar módulo ejecutable de Seguimiento de Egresados V8 con persistencia en BD institucional` |
 | | `bd0f46f` | `Propuesta y sistematización de requerimientos: Seguimiento de Egresados` |
 | | `93aa96e` | `(origin/main, origin/HEAD, main) veirnes a github` |
