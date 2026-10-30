@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Simulador de Diseño · EESP Pukllasunchis</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; }
+    .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: rgba(150, 150, 150, 0.3); border-radius: 4px; }
+  </style>
+</head>
+<body class="bg-transparent text-[var(--foreground)] antialiased p-3 sm:p-5">
+
+  <div class="max-w-6xl mx-auto space-y-4">
+    <!-- Header / Switcher Bar -->
+    <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-white font-bold text-lg shadow-sm">
+          🎓
+        </div>
+        <div>
+          <h1 class="text-base font-bold text-[var(--foreground)]">EESP Pukllasunchis · Vista Previa del Diseño</h1>
+          <p class="text-xs text-[var(--muted-foreground)]">Explora cómo han quedado integradas las vistas en la intranet y en el módulo de egresados.</p>
+        </div>
+      </div>
+
+      <!-- Selector de pantalla -->
+      <div class="flex flex-wrap gap-1.5 p-1 bg-[var(--background)] border border-[var(--border)] rounded-xl">
+        <button onclick="setView('docente')" id="btn-docente" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all bg-emerald-600 text-white shadow-sm">
+          1. Panel Docente (Intranet)
+        </button>
+        <button onclick="setView('grupos')" id="btn-grupos" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
+          2. Grupos de Entrevistadores
+        </button>
+        <button onclick="setView('whatsapp')" id="btn-whatsapp" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
+          3. Generador WhatsApp
+        </button>
+        <button onclick="setView('publica')" id="btn-publica" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
+          4. Landing Egresado (Móvil)
+        </button>
+      </div>
+    </div>
+
+    <!-- PANTALLA 1: PANEL DOCENTE -->
+    <div id="view-docente" class="space-y-4">
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+        <!-- Sidebar lateral simulada -->
+        <div class="md:col-span-3 bg-[#242b35] text-slate-200 rounded-2xl p-4 text-xs space-y-4 shadow-sm">
+          <div class="flex items-center gap-2 pb-3 border-b border-slate-700/60">
+            <span class="w-7 h-7 rounded-lg bg-emerald-600/30 text-emerald-400 flex items-center justify-center font-bold">P</span>
+            <div>
+              <strong class="block text-white text-xs">ÁREA DOCENTE</strong>
+              <span class="text-[11px] text-slate-400">EESP Pukllasunchis</span>
+            </div>
+          </div>
+
+          <div>
+            <div class="text-[11px] uppercase tracking-wider text-slate-400 font-bold mb-2">Docencia</div>
+            <div class="space-y-1">
+              <div class="px-2.5 py-1.5 rounded-lg bg-slate-800 text-white font-medium flex items-center justify-between">
+                <span>📚 Mis cursos</span>
+                <span class="bg-slate-700 text-[11px] px-1.5 py-0.5 rounded-full">4</span>
+              </div>
+              <div class="px-2.5 py-1.5 rounded-lg text-slate-400 hover:text-white font-medium flex items-center gap-2">
+                <span>👥 Mis alumnos</span>
+              </div>
+              <div class="px-2.5 py-1.5 rounded-lg text-slate-400 hover:text-white font-medium flex items-center gap-2">
+                <span>📄 Repositorio de sílabos</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="text-[11px] uppercase tracking-wider text-amber-400 font-bold mb-2 flex items-center gap-1.5">
+              <span>★</span> Mis funciones
+            </div>
+            <div class="space-y-1">
+              <div class="px-2.5 py-1.5 rounded-lg text-slate-300 hover:text-white font-medium flex items-center gap-2">
+                <span>🌱 Tutoría</span>
+              </div>
+              <div class="px-2.5 py-1.5 rounded-lg text-slate-300 hover:text-white font-medium flex items-center gap-2">
+                <span>🔬 Taq'e — Seguimiento</span>
+              </div>
+              <!-- BOTÓN INTEGRADO SOLICITADO -->
+              <div onclick="setView('grupos')" class="cursor-pointer px-2.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 text-white font-bold flex items-center justify-between shadow-md ring-1 ring-emerald-400/50">
+                <span class="flex items-center gap-2">
+                  <span>🎓</span> Sistema de seguimiento
+                </span>
+                <span class="text-[10px] bg-white/20 px-1.5 py-0.5 rounded font-extrabold uppercase tracking-wide">NUEVO</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Área principal de trabajo del docente -->
+        <div class="md:col-span-9 space-y-4">
+          <!-- Banner Hero del Docente -->
+          <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-sm">
+            <span class="text-xs uppercase font-extrabold text-emerald-600 tracking-wider">ÁREA DOCENTE</span>
+            <h2 class="text-xl font-extrabold text-[var(--foreground)] mt-1">Hola, Ricardo 👋</h2>
+            <p class="text-xs text-[var(--muted-foreground)] mt-0.5">Aquí gestionas tus cursos, sílabos y funciones directivas de la EESP Pukllasunchis.</p>
+          </div>
+
+          <!-- TARJETA DESTACADA COORDINACIÓN DE SEGUIMIENTO (AÑADIDA) -->
+          <div class="bg-gradient-to-r from-emerald-500/10 via-teal-500/5 to-transparent border-l-4 border-l-emerald-600 border border-[var(--border)] rounded-2xl p-5 shadow-sm space-y-3">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div class="flex items-start gap-3">
+                <div class="w-11 h-11 rounded-xl bg-emerald-600/20 text-emerald-700 dark:text-emerald-400 flex items-center justify-center text-xl shrink-0">
+                  🎓
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h3 class="text-sm font-bold text-emerald-900 dark:text-emerald-300">Sistema de seguimiento de egresados</h3>
+                    <span class="text-[11px] bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 px-2 py-0.5 rounded-full font-semibold">Institucional EESP</span>
+                  </div>
+                  <p class="text-xs text-[var(--muted-foreground)] mt-1">
+                    Panel de coordinación: gestión de 400+ egresados, comisiones de entrevistadores docentes y campañas semestrales vía WhatsApp.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Botones de acción rápida -->
+            <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-emerald-600/15">
+              <button onclick="setView('grupos')" class="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs flex items-center gap-1.5 shadow-sm">
+                <span>🔗</span> Abrir módulo completo
+              </button>
+              <button onclick="setView('grupos')" class="px-3.5 py-1.5 rounded-lg bg-[var(--card)] hover:bg-[var(--background)] border border-emerald-600/40 text-emerald-700 dark:text-emerald-400 font-semibold text-xs flex items-center gap-1.5">
+                <span>👥</span> Grupos de entrevistadores
+              </button>
+              <button onclick="setView('whatsapp')" class="px-3.5 py-1.5 rounded-lg bg-[var(--card)] hover:bg-[var(--background)] border border-slate-300 dark:border-slate-700 text-[var(--foreground)] font-semibold text-xs flex items-center gap-1.5">
+                <span class="text-emerald-600">📱</span> Link de WhatsApp
+              </button>
+            </div>
+          </div>
+
+          <!-- Cursos FID regulares del docente -->
+          <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-sm space-y-3">
+            <div class="flex items-center justify-between">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-[var(--muted-foreground)]">Cursos asignados (Periodo 2026-II)</h3>
+              <span class="text-xs text-emerald-600 font-medium">4 cursos FID activos</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)] space-y-1">
+                <span class="text-[11px] font-bold text-emerald-600 uppercase">Inicial · Ciclo VI</span>
+                <h4 class="text-xs font-bold text-[var(--foreground)]">Didáctica de la Matemática</h4>
+                <p class="text-[11px] text-[var(--muted-foreground)]">28 estudiantes matriculados</p>
+              </div>
+              <div class="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--background)] space-y-1">
+                <span class="text-[11px] font-bold text-purple-600 uppercase">Primaria EIB · Ciclo VIII</span>
+                <h4 class="text-xs font-bold text-[var(--foreground)]">Investigación Aplicada II</h4>
+                <p class="text-[11px] text-[var(--muted-foreground)]">24 estudiantes matriculados</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANTALLA 2: GRUPOS DE ENTREVISTADORES -->
+    <div id="view-grupos" class="hidden space-y-4">
+      <!-- Estadísticas rápidas -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-3.5 shadow-sm">
+          <div class="text-[11px] text-[var(--muted-foreground)] font-medium">Equipos activos</div>
+          <div class="text-xl font-extrabold text-emerald-600 mt-0.5">3 grupos</div>
+          <div class="text-[11px] text-[var(--muted-foreground)] mt-1">Comisiones creadas</div>
+        </div>
+        <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-3.5 shadow-sm">
+          <div class="text-[11px] text-[var(--muted-foreground)] font-medium">Docentes entrevistadores</div>
+          <div class="text-xl font-extrabold text-blue-600 mt-0.5">14 docentes</div>
+          <div class="text-[11px] text-[var(--muted-foreground)] mt-1">Disponibles en el padrón</div>
+        </div>
+        <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-3.5 shadow-sm">
+          <div class="text-[11px] text-[var(--muted-foreground)] font-medium">Egresados en universo</div>
+          <div class="text-xl font-extrabold text-purple-600 mt-0.5">401 registros</div>
+          <div class="text-[11px] text-[var(--muted-foreground)] mt-1">Base MySQL institucional</div>
+        </div>
+        <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-3.5 shadow-sm">
+          <div class="text-[11px] text-[var(--muted-foreground)] font-medium">Tasa de respuesta</div>
+          <div class="text-xl font-extrabold text-amber-600 mt-0.5">68.4%</div>
+          <div class="text-[11px] text-[var(--muted-foreground)] mt-1">Campañas semestrales</div>
+        </div>
+      </div>
+
+      <!-- Formulario para crear grupo -->
+      <div class="bg-[var(--card)] border border-[var(--border)] border-t-4 border-t-emerald-600 rounded-2xl p-5 shadow-sm space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-sm font-bold text-emerald-950 dark:text-emerald-300 flex items-center gap-2">
+              <span>👥</span> Crear nuevo equipo de entrevistadores
+            </h3>
+            <p class="text-xs text-[var(--muted-foreground)] mt-0.5">Asigna a docentes o tutores un lote de egresados para llamadas telefónicas de seguimiento.</p>
+          </div>
+          <span class="text-[11px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 px-2.5 py-1 rounded-full">Función Coordinador</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+          <div class="sm:col-span-2 space-y-1">
+            <label class="font-bold text-[var(--foreground)]">Nombre del Equipo / Comisión *</label>
+            <input type="text" id="demo-nombre-grupo" value="Comisión de Seguimiento Inicial 2024-2025" class="w-full p-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)]">
+          </div>
+          <div class="space-y-1">
+            <label class="font-bold text-[var(--foreground)]">Programa objetivo</label>
+            <select id="demo-prog-select" onchange="actualizarEgresadosCount()" class="w-full p-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)]">
+              <option value="todos">Todos los programas (401 egresados)</option>
+              <option value="inicial" selected>Educación Inicial (186 egresados)</option>
+              <option value="eib">Educación Primaria EIB (168 egresados)</option>
+              <option value="primaria">Educación Primaria (47 egresados)</option>
+            </select>
+          </div>
+          <div class="space-y-1">
+            <label class="font-bold text-[var(--foreground)]">Cohorte de egreso</label>
+            <select class="w-full p-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)]">
+              <option>Todas las cohortes</option>
+              <option selected>2025-II</option>
+              <option>2025-I</option>
+              <option>2024-I</option>
+              <option>2023-II</option>
+            </select>
+          </div>
+          <div class="sm:col-span-2 space-y-1">
+            <label class="font-bold text-[var(--foreground)]">Docentes asignados al equipo</label>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 p-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] max-h-28 overflow-y-auto custom-scroll">
+              <label class="flex items-center gap-2 p-1.5 rounded bg-[var(--card)] border border-[var(--border)] cursor-pointer">
+                <input type="checkbox" checked class="accent-emerald-600">
+                <span class="font-medium">Ricardo Castillo Avila</span>
+              </label>
+              <label class="flex items-center gap-2 p-1.5 rounded bg-[var(--card)] border border-[var(--border)] cursor-pointer">
+                <input type="checkbox" checked class="accent-emerald-600">
+                <span class="font-medium">Prof. Carmen Rosa Huamán</span>
+              </label>
+              <label class="flex items-center gap-2 p-1.5 rounded bg-[var(--card)] border border-[var(--border)] cursor-pointer">
+                <input type="checkbox" class="accent-emerald-600">
+                <span class="font-medium">Prof. Edwin Quispe</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between pt-3 border-t border-[var(--border)]">
+          <div class="text-xs text-emerald-700 dark:text-emerald-400 font-semibold" id="label-egresados-count">
+            ✓ Egresados asignados a este lote: <b>186 egresados</b>
+          </div>
+          <button onclick="simularGuardarGrupo()" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm">
+            <span>💾</span> Guardar y Activar Grupo
+          </button>
+        </div>
+      </div>
+
+      <!-- Tabla de grupos existentes -->
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-sm space-y-3">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-[var(--muted-foreground)]">Equipos de entrevistadores registrados</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs text-left border-collapse">
+            <thead>
+              <tr class="border-b border-[var(--border)] text-[var(--muted-foreground)]">
+                <th class="py-2.5 font-bold">Equipo</th>
+                <th class="py-2.5 font-bold">Programa / Cohorte</th>
+                <th class="py-2.5 font-bold">Entrevistadores</th>
+                <th class="py-2.5 font-bold">Egresados</th>
+                <th class="py-2.5 font-bold">Estado</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[var(--border)]" id="tabla-grupos-body">
+              <tr>
+                <td class="py-3 font-bold text-[var(--foreground)]">Comisión Seguimiento Inicial 2024-2025</td>
+                <td class="py-3"><span class="bg-emerald-100 text-emerald-800 text-[11px] px-2 py-0.5 rounded font-semibold">Inicial</span></td>
+                <td class="py-3 text-[var(--muted-foreground)]">Ricardo Castillo, Carmen Rosa Huamán</td>
+                <td class="py-3 font-bold text-emerald-600">186 egresados</td>
+                <td class="py-3"><span class="text-xs font-bold text-emerald-600">● Activo</span></td>
+              </tr>
+              <tr>
+                <td class="py-3 font-bold text-[var(--foreground)]">Equipo de Recuperación Telefónica EIB</td>
+                <td class="py-3"><span class="bg-purple-100 text-purple-800 text-[11px] px-2 py-0.5 rounded font-semibold">Primaria EIB</span></td>
+                <td class="py-3 text-[var(--muted-foreground)]">Edwin Quispe, Coordinación Bienestar</td>
+                <td class="py-3 font-bold text-purple-600">168 egresados</td>
+                <td class="py-3"><span class="text-xs font-bold text-emerald-600">● Activo</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANTALLA 3: GENERADOR WHATSAPP -->
+    <div id="view-whatsapp" class="hidden space-y-4">
+      <div class="bg-[var(--card)] border border-[var(--border)] border-l-4 border-l-green-500 rounded-2xl p-5 shadow-sm space-y-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-green-500/20 text-green-600 dark:text-green-400 flex items-center justify-center text-xl">
+              📱
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-[var(--foreground)]">Generador de Enlace para WhatsApp (Campaña Semestral 2026-II)</h3>
+              <p class="text-xs text-[var(--muted-foreground)] mt-0.5">Copia y comparte el mensaje oficial con el enlace directo en los grupos de WhatsApp de egresados.</p>
+            </div>
+          </div>
+          <span class="text-[11px] font-bold bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300 px-2.5 py-1 rounded-full">WhatsApp Oficial</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+          <div class="md:col-span-8 space-y-2">
+            <label class="text-xs font-bold text-[var(--foreground)]">Plantilla del mensaje:</label>
+            <textarea id="texto-whatsapp" rows="6" class="w-full p-3 rounded-xl border border-green-300 dark:border-green-800 bg-[var(--background)] text-xs text-[var(--foreground)] leading-relaxed font-mono">¡Hola! 🎓 La EESP Pukllasunchis te invita a participar en la Campaña de Actualización de Egresados (2026-II).
+
+Te tomará solo 3 minutos confirmar tus datos y contarnos sobre tu práctica profesional y necesidades de formación continua:
+👉 http://127.0.0.1:8000/seguimiento-egresados/campana-publica
+
+¡Gracias por formar parte de nuestra comunidad educativa!</textarea>
+
+            <div class="flex flex-wrap gap-2 pt-1">
+              <button onclick="copiarMensajeWA()" id="btn-copiar-wa" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm">
+                <span>📋</span> Copiar mensaje completo
+              </button>
+              <a href="https://api.whatsapp.com/send?text=%C2%A1Hola!%20%F0%9F%8E%93%20La%20EESP%20Pukllasunchis%20te%20invita%20a%20participar%20en%20la%20Campa%C3%B1a%20de%20Actualizaci%C3%B3n%20de%20Egresados%20(2026-II).%0A%0A%F0%9F%91%89%20http://127.0.0.1:8000/seguimiento-egresados/campana-publica" target="_blank" class="px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm">
+                <span>💬</span> Abrir en WhatsApp
+              </a>
+              <button onclick="setView('publica')" class="px-3.5 py-2 rounded-xl bg-[var(--card)] border border-[var(--border)] text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--background)]">
+                👁 Ver qué ve el egresado
+              </button>
+            </div>
+          </div>
+
+          <div class="md:col-span-4 bg-[var(--background)] border border-[var(--border)] rounded-xl p-4 flex flex-col justify-between text-xs space-y-3">
+            <div>
+              <span class="font-bold uppercase tracking-wider text-emerald-600 text-[11px] block mb-1">Destino del enlace:</span>
+              <code class="block p-2 rounded bg-[var(--card)] border border-[var(--border)] text-[11px] font-mono break-all text-slate-700 dark:text-slate-300">
+                http://127.0.0.1:8000/seguimiento-egresados/campana-publica
+              </code>
+              <p class="text-[11px] text-[var(--muted-foreground)] mt-2">
+                Los egresados responden desde su teléfono celular sin requerir contraseña previa. Sus respuestas se guardan directamente en MySQL en tiempo real.
+              </p>
+            </div>
+            <div class="pt-2 border-t border-[var(--border)] text-[11px] text-[var(--muted-foreground)]">
+              📱 Formato optimizado para navegación táctil y 4G/WiFi.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANTALLA 4: LANDING EGRESADO (MÓVIL) -->
+    <div id="view-publica" class="hidden space-y-4">
+      <div class="max-w-md mx-auto bg-white text-slate-800 rounded-3xl border border-slate-200 overflow-hidden shadow-xl">
+        <!-- Header estilo móvil -->
+        <div class="bg-gradient-to-br from-teal-900 to-emerald-950 p-6 text-white text-center space-y-2">
+          <span class="inline-block bg-white/20 text-emerald-100 text-[11px] px-3 py-1 rounded-full font-bold uppercase tracking-wide">
+            Campaña Semestral 2026-II
+          </span>
+          <h3 class="text-base font-extrabold leading-snug">Actualización de Trayectoria Profesional</h3>
+          <p class="text-xs text-slate-300">EESP Pukllasunchis · Cusco</p>
+        </div>
+
+        <!-- Formulario móvil interactivo -->
+        <div class="p-5 space-y-4 text-xs">
+          <div class="space-y-1">
+            <label class="font-bold text-slate-700">DNI / Documento</label>
+            <input type="text" value="70891234" class="w-full p-2.5 rounded-xl border border-slate-300 bg-slate-50 text-slate-800">
+          </div>
+          <div class="space-y-1">
+            <label class="font-bold text-slate-700">Nombres y Apellidos</label>
+            <input type="text" value="Lucía Quispe Huamán" class="w-full p-2.5 rounded-xl border border-slate-300 bg-slate-50 text-slate-800">
+          </div>
+          <div class="space-y-1">
+            <label class="font-bold text-slate-700">¿Trabajas actualmente en educación?</label>
+            <div class="grid grid-cols-2 gap-2">
+              <label class="p-2 rounded-lg border-2 border-emerald-500 bg-emerald-50 font-bold text-emerald-800 text-center cursor-pointer">
+                ✓ Sí, en docencia
+              </label>
+              <label class="p-2 rounded-lg border border-slate-200 text-slate-600 text-center cursor-pointer">
+                No actualmente
+              </label>
+            </div>
+          </div>
+          <div class="space-y-1">
+            <label class="font-bold text-slate-700">Institución Educativa o Empleador</label>
+            <input type="text" value="I.E. 50012 San Jerónimo" class="w-full p-2.5 rounded-xl border border-slate-300 bg-slate-50 text-slate-800">
+          </div>
+          <div class="space-y-1">
+            <label class="font-bold text-slate-700">¿Requieres apoyo en titulación?</label>
+            <select class="w-full p-2.5 rounded-xl border border-slate-300 bg-slate-50 text-slate-800">
+              <option>Sí, asesoría para tesis de licenciatura</option>
+              <option>Sí, orientación en trámites</option>
+              <option>Ya cuento con título pedagógico</option>
+            </select>
+          </div>
+          <button onclick="alert('¡Excelente! Este formulario guarda las respuestas directamente en la tabla egresado_actualizaciones de MySQL.')" class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md">
+            Enviar actualización (Tarda 3 min)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function setView(viewId) {
+      const views = ['docente', 'grupos', 'whatsapp', 'publica'];
+      views.forEach(v => {
+        document.getElementById('view-' + v).classList.add('hidden');
+        const btn = document.getElementById('btn-' + v);
+        btn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold transition-all text-[var(--muted-foreground)] hover:text-[var(--foreground)]";
+      });
+      document.getElementById('view-' + viewId).classList.remove('hidden');
+      const activeBtn = document.getElementById('btn-' + viewId);
+      activeBtn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold transition-all bg-emerald-600 text-white shadow-sm";
+    }
+
+    function actualizarEgresadosCount() {
+      const sel = document.getElementById('demo-prog-select').value;
+      const countLabel = document.getElementById('label-egresados-count');
+      if (sel === 'todos') countLabel.innerHTML = '✓ Egresados asignados a este lote: <b>401 egresados</b>';
+      else if (sel === 'inicial') countLabel.innerHTML = '✓ Egresados asignados a este lote: <b>186 egresados</b>';
+      else if (sel === 'eib') countLabel.innerHTML = '✓ Egresados asignados a este lote: <b>168 egresados</b>';
+      else countLabel.innerHTML = '✓ Egresados asignados a este lote: <b>47 egresados</b>';
+    }
+
+    function simularGuardarGrupo() {
+      const nom = document.getElementById('demo-nombre-grupo').value;
+      alert('¡Grupo "' + nom + '" guardado exitosamente en la base de datos!');
+    }
+
+    function copiarMensajeWA() {
+      const txt = document.getElementById('texto-whatsapp').value;
+      navigator.clipboard.writeText(txt).then(() => {
+        const btn = document.getElementById('btn-copiar-wa');
+        btn.innerHTML = '<span>✓</span> ¡Mensaje Copiado!';
+        setTimeout(() => {
+          btn.innerHTML = '<span>📋</span> Copiar mensaje completo';
+        }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>

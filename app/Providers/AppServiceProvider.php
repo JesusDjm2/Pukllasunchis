@@ -33,7 +33,11 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Paginator::useBootstrap();
-        $periodoActual = PeriodoActual::actual();
+        try {
+            $periodoActual = PeriodoActual::actual();
+        } catch (\Throwable) {
+            $periodoActual = null;
+        }
 
         View::composer('layouts.docente', function ($view) use ($periodoActual) {
             if (auth()->check()) {
