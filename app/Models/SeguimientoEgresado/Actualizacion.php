@@ -19,6 +19,8 @@ class Actualizacion extends Model
         'fecha_lic' => 'date',
         'inicio_empleo' => 'date',
         'fin_empleo' => 'date',
+        'fecha_ultima_confirmacion' => 'datetime',
+        'es_confirmacion_sin_cambios' => 'boolean',
         'datos_extra' => 'array',
     ];
 
@@ -35,5 +37,10 @@ class Actualizacion extends Model
     public function episodiosLaborales()
     {
         return $this->hasMany(EpisodioLaboral::class, 'user_id', 'user_id');
+    }
+
+    public function episodiosActivos()
+    {
+        return $this->hasMany(EpisodioLaboral::class, 'user_id', 'user_id')->where('es_actual', true);
     }
 }

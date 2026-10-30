@@ -170,6 +170,10 @@ Route::delete('/seguimiento-egresados/grupos/{id}', [App\Http\Controllers\Seguim
     ->name('seguimiento-egresados.grupos.eliminar');
 Route::get('/seguimiento-egresados/enlace-whatsapp', [App\Http\Controllers\SeguimientoEgresadoController::class, 'generarEnlaceWhatsapp'])
     ->name('seguimiento-egresados.enlace-whatsapp');
+Route::get('/seguimiento-egresados/episodios/{userId}', [App\Http\Controllers\SeguimientoEgresadoController::class, 'obtenerEpisodios'])
+    ->name('seguimiento-egresados.episodios');
+Route::post('/seguimiento-egresados/episodios/{id}/cerrar', [App\Http\Controllers\SeguimientoEgresadoController::class, 'cerrarEpisodio'])
+    ->name('seguimiento-egresados.episodios.cerrar');
 Route::get('/seguimiento-egresados/visualizador', function () {
     return response()->file(public_path('visualizador_diseno_puklla.html'));
 })->name('seguimiento-egresados.visualizador');

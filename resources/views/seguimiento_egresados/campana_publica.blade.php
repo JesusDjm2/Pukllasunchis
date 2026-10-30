@@ -306,6 +306,14 @@
 
     <main class="pk-main">
         <div class="pk-card">
+            <!-- Confirmación Rápida R02 para egresados que ya participaron -->
+            <div style="background:#f0fdf4; border:1px solid #86efac; border-radius:12px; padding:12px 14px; margin-bottom:1.5rem; display:flex; align-items:center; gap:10px;">
+                <input type="checkbox" id="sin_cambios_public" name="sin_cambios" value="1" style="width:18px; height:18px; accent-color:#10b981; cursor:pointer;">
+                <label for="sin_cambios_public" style="font-size:0.86rem; color:#065f46; cursor:pointer; font-weight:600; margin:0;">
+                    ⚡ <strong>Mi situación sigue vigente:</strong> Reconfirmar mis datos laborales y académicos sin cambios para este semestre.
+                </label>
+            </div>
+
             <!-- Formulario -->
             <form id="camp-form">
                 <!-- Paso 1: Datos Personales -->
@@ -532,10 +540,13 @@
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Guardando datos...';
 
+            const isSinCambios = document.getElementById('sin_cambios_public')?.checked || false;
             const payload = {
                 id: 'CAMP-' + (document.getElementById('dni').value.trim() || 'PUBLIC'),
                 nombre: document.getElementById('nombre').value.trim(),
                 dni: document.getElementById('dni').value.trim(),
+                sin_cambios: isSinCambios,
+                cambio_empleo: isSinCambios ? 'Sin cambios' : 'Primer empleo',
                 canal: 'campana_whatsapp_publica',
                 telefono: document.getElementById('telefono').value.trim(),
                 whatsapp: document.getElementById('telefono').value.trim(),

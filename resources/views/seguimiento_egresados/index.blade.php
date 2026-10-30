@@ -311,6 +311,7 @@
     const ACCESOS_DB = @json($accesosContactoDb);
     const GRUPOS_DB = @json($gruposDb ?? []);
     const ENTREVISTADORES_DISPONIBLES = @json($entrevistadoresDisponibles ?? []);
+    const EPISODIOS_DB = @json($episodiosDb ?? []);
 
     const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     const ROUTES = {
@@ -322,7 +323,8 @@
         gruposGuardar: "{{ route('seguimiento-egresados.grupos.guardar') }}",
         gruposEliminar: "{{ url('/seguimiento-egresados/grupos') }}",
         enlaceWhatsapp: "{{ route('seguimiento-egresados.enlace-whatsapp') }}",
-        campanaPublica: "{{ route('seguimiento-egresados.campana-publica') }}"
+        campanaPublica: "{{ route('seguimiento-egresados.campana-publica') }}",
+        cerrarEpisodio: "{{ url('/seguimiento-egresados/episodios') }}"
     };
 
     const ROSTER_SEVEN_V8 = {
@@ -379,7 +381,7 @@ const state={
     edits:{},
     history:[],
     calls:[],
-    jobEpisodes:[],
+    jobEpisodes: Array.isArray(EPISODIOS_DB) ? EPISODIOS_DB : [],
     actions:[],
     contactLog:[],
     grupos: Array.isArray(GRUPOS_DB) ? GRUPOS_DB : [],
@@ -698,6 +700,13 @@ function actualizacionAgil(){
     const isTel = state.formMode === 'telefono';
     const hasJob = v.trabaja === 'Trabaja';
 
+    // Resolver episodios laborales del egresado
+    const pIdStr = String(p.id || '');
+    const numId = pIdStr.startsWith('REAL-') ? parseInt(pIdStr.replace('REAL-', '')) : (Number.isInteger(Number(pIdStr)) ? Number(pIdStr) : null);
+    const myEpisodes = (state.jobEpisodes || []).filter(e => numId ? e.user_id == numId : e.identificador_temporal == p.id);
+    const activeEpisodes = myEpisodes.filter(e => e.es_actual);
+    const pastEpisodes = myEpisodes.filter(e => !e.es_actual);
+
     return hero(isTel ? 'ENTREVISTA TELEFÓNICA' : 'ACTUALIZACIÓN SEMESTRAL', 'Actualizar solo lo que haya cambiado', 'Formulario ágil de confirmación en 3 bloques. Se sincroniza con la base de datos MySQL institucional.') +
     `<div class="panel">
         <div class="section-top">
@@ -714,6 +723,24 @@ function actualizacionAgil(){
         </div>
         <p class="sub">Confirma los datos vigentes. Cuando el egresado declara un cambio de empleo o solicita apoyo, se registran los nuevos eventos sin sobreescribir la historia.</p>
     </div>
+
+    <!-- Confirmación rápida R02 -->
+    <div class="panel" style="background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border: 1.5px solid #86efac; border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <div>
+                <h3 style="color:#065f46; font-size:15px; margin:0; display:flex; align-items:center; gap:8px;">
+                    <i class="fas fa-bolt" style="color:#10b981;"></i> Confirmación Rápida Semestral «Sin cambios» (R02)
+                </h3>
+                <p style="margin:4px 0 0; font-size:12px; color:#047857;">
+                    Si la trayectoria laboral y de contacto se mantiene vigente, confírmala con 1 solo clic. No se duplican empleos y se registra la fecha semestral.
+                </p>
+            </div>
+            <button class="btn green" type="button" onclick="APP.confirmarSinCambios()" style="font-weight:700; box-shadow:0 4px 12px rgba(16,185,129,0.25);">
+                ⚡ Confirmar situación vigente sin cambios
+            </button>
+        </div>
+    </div>
+
     <form id="v8-fast-form" class="panel">
         <div class="v8-head">01 · Contacto y titulación</div>
         <div class="v8-two">
@@ -726,6 +753,45 @@ function actualizacionAgil(){
         </div>
 
         <div class="v8-head">02 · Trabajo y condiciones profesionales</div>
+
+        <!-- Panel de trayectoria laboral persistida (R03) -->
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; margin-bottom:14px; border-radius:10px; padding:12px 14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <h4 style="margin:0; font-size:13px; color:#1e293b;"><i class="fas fa-briefcase" style="color:#3b82f6; margin-right:6px;"></i> Trayectoria laboral registrada (Historial longitudinal)</h4>
+                <span class="chip ${activeEpisodes.length ? 'ok' : ''}">${activeEpisodes.length} activo(s)</span>
+            </div>
+            ${activeEpisodes.length > 0 ? `
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    ${activeEpisodes.map(ep => `
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:white; padding:10px 12px; border-radius:8px; border:1px solid #cbd5e1;">
+                            <div>
+                                <strong style="color:#0f172a; font-size:13px;">${esc(ep.institucion)}</strong> — <span style="color:#475569;">${esc(ep.cargo)}</span>
+                                <div style="font-size:11px; color:#64748b; margin-top:2px;">
+                                    Desde: <b>${esc(ep.fecha_inicio)}</b> · Contrato: ${esc(ep.contrato || 'No especificado')} · ${ep.es_docencia_directa ? '👨‍🏫 Docencia directa' : 'Gestión/Otro'} · Ubicación: ${esc(ep.trab_distrito || 'No declarada')}
+                                </div>
+                            </div>
+                            <button type="button" class="btn sm danger" onclick="APP.cerrarEpisodioModal(${ep.id})" title="Marcar como empleo concluido">
+                                <i class="fas fa-stop-circle mr-1"></i> Cerrar empleo
+                            </button>
+                        </div>
+                    `).join('')}
+                </div>
+            ` : '<p style="font-size:12px; color:#94a3b8; margin:0;">No hay episodios laborales activos registrados para este perfil.</p>'}
+            
+            ${pastEpisodes.length > 0 ? `
+                <details style="margin-top:10px;">
+                    <summary style="font-size:12px; color:#64748b; cursor:pointer; font-weight:600;">Ver historial de empleos anteriores concluidos (${pastEpisodes.length})</summary>
+                    <div style="display:flex; flex-direction:column; gap:6px; margin-top:8px;">
+                        ${pastEpisodes.map(ep => `
+                            <div style="background:#f1f5f9; padding:8px 10px; border-radius:6px; font-size:12px; color:#475569;">
+                                <strong>${esc(ep.institucion)}</strong> (${esc(ep.cargo)}) · <em>${esc(ep.fecha_inicio)}</em> a <em>${esc(ep.fecha_fin || 'No precisada')}</em> ${ep.motivo_cambio ? `· Motivo: ${esc(ep.motivo_cambio)}` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                </details>
+            ` : ''}
+        </div>
+
         <div class="v8-two">
             ${shortField('trabaja', '¿Actualmente trabajas?', 'select', ['Trabaja', 'No trabaja', 'Prefiere no responder'])}
             ${shortField('cambio_empleo', '¿Cambió tu situación laboral?', 'select', ['Sin cambios', 'Primer empleo', 'Nuevo empleo o puesto', 'Terminó un empleo', 'Primera actualización'])}
@@ -843,6 +909,112 @@ async function saveQuick(ev){
                 <strong>✓ Guardado en memoria local:</strong> ${changed.length} campos actualizados.
             </div>
         `;
+    }
+}
+
+async function confirmarSinCambios() {
+    const p = locate(state.selected) || ROSTER[0];
+    if (!p) return;
+
+    const noticeEl = $('#v8-fast-notice');
+    if (noticeEl) {
+        noticeEl.innerHTML = '<div class="notice" style="margin-top:14px;background:#f0fdf4;color:#047857;border:1px solid #86efac;padding:12px;border-radius:8px;"><i class="fas fa-spinner fa-spin mr-1"></i> Confirmando situación semestral en la base institucional...</div>';
+    }
+
+    const f = $('#v8-fast-form');
+    const sat = f?.querySelector('select[name="satisfaccion"]')?.value || '4 - Satisfecho/a';
+    const temas = f?.querySelector('select[name="temas"]')?.value || '';
+    const nec = f?.querySelector('select[name="necesidad_prioritaria"]')?.value || 'No por ahora';
+    const compartir = f?.querySelector('textarea[name="puedo_compartir"]')?.value || '';
+
+    const payload = {
+        id: p.id,
+        nombre: p.nombre,
+        sin_cambios: true,
+        cambio_empleo: 'Sin cambios',
+        satisfaccion: sat,
+        temas: temas,
+        necesidad_prioritaria: nec,
+        puedo_compartir: compartir,
+        canal: state.formMode === 'telefono' ? 'entrevista_telefonica' : 'intranet',
+        campana: '2026-II'
+    };
+
+    try {
+        const res = await fetch(ROUTES.actualizar, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': CSRF_TOKEN,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+        const json = await res.json();
+        if (json.success) {
+            state.history.unshift({
+                id: keyOf(p),
+                name: p.nombre,
+                source: 'Confirmación sin cambios (R02)',
+                changed: ['Confirmación semestral de vigencia'],
+                at: new Date().toLocaleString('es-PE'),
+                snapshot: {...(state.edits[keyOf(p)] || {})}
+            });
+
+            if (noticeEl) {
+                noticeEl.innerHTML = `
+                    <div class="notice" style="margin-top:14px;background:#e9f9f0;color:#126c36;border:1px solid #c2eccd;border-radius:8px;padding:14px;">
+                        <strong>✓ Situación confirmada con éxito (R02):</strong> ${esc(json.message)}
+                        <br><small style="color:#065f46;">Fecha de verificación: ${esc(json.fecha_confirmacion)} · Empleos activos vigentes: ${json.episodios_activos ?? 1} · Sin duplicar registros.</small>
+                    </div>
+                `;
+            }
+        } else {
+            alert('Error al confirmar: ' + (json.error || 'Verifique sus permisos.'));
+        }
+    } catch (err) {
+        console.error('Error en confirmarSinCambios', err);
+        alert('Error al conectar con el servidor institucional.');
+    }
+}
+
+async function cerrarEpisodioModal(epId) {
+    const ep = (state.jobEpisodes || []).find(x => x.id == epId);
+    const nombreEp = ep ? `${ep.institucion} (${ep.cargo})` : `Episodio #${epId}`;
+    
+    const fechaFin = prompt(`Cerrar empleo: ${nombreEp}\n\nIngresa la fecha de finalización (AAAA-MM-DD):\n(Si la fecha exacta no se conoce, déjalo en blanco para conservar fecha desconocida)`, new Date().toISOString().slice(0, 10));
+    if (fechaFin === null) return;
+
+    const motivo = prompt("Motivo del término de este empleo (opcional):", "Término de contrato");
+
+    try {
+        const res = await fetch(`${ROUTES.cerrarEpisodio}/${epId}/cerrar`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': CSRF_TOKEN,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                fecha_fin: fechaFin.trim() || null,
+                motivo_cambio: motivo || 'Fin de periodo'
+            })
+        });
+        const json = await res.json();
+        if (json.success) {
+            alert('✓ Empleo concluido exitosamente. El historial longitudinal se ha conservado.');
+            if (ep) {
+                ep.es_actual = false;
+                ep.fecha_fin = json.fecha_fin;
+                ep.motivo_cambio = motivo;
+            }
+            render();
+        } else {
+            alert('Error al cerrar empleo: ' + (json.error || 'No autorizado'));
+        }
+    } catch (err) {
+        console.error('Error cerrando episodio', err);
+        alert('Error conectando con el servidor institucional.');
     }
 }
 
@@ -1485,6 +1657,10 @@ function ficha(){
     const v = formValues(p);
     const hist = state.history.filter(x => x.id === keyOf(p));
 
+    const pIdStr = String(p.id || '');
+    const numId = pIdStr.startsWith('REAL-') ? parseInt(pIdStr.replace('REAL-', '')) : (Number.isInteger(Number(pIdStr)) ? Number(pIdStr) : null);
+    const myEpisodes = (state.jobEpisodes || []).filter(e => numId ? e.user_id == numId : e.identificador_temporal == p.id);
+
     return hero('PORTAL DE EGRESADOS', 'Mi ficha de seguimiento', 'Consulta tu información académica y laboral registrada en la escuela.', `<button class="btn" onclick="APP.selectQuick('${p.id}')">✎ Actualizar mi ficha</button>`) +
     `<div class="two">
         <div class="panel">
@@ -1504,6 +1680,27 @@ function ficha(){
             </table>
         </div>
         <div class="panel">
+            <h2>Trayectoria laboral histórica (R03)</h2>
+            ${myEpisodes.length > 0 ? `
+                <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:16px;">
+                    ${myEpisodes.map(ep => `
+                        <div style="border-left: 3px solid ${ep.es_actual ? '#10b981' : '#94a3b8'}; padding: 8px 12px; background: #f8fafc; border-radius: 0 8px 8px 0;">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <strong style="font-size:13px; color:#0f172a;">${esc(ep.institucion)}</strong>
+                                <span class="chip ${ep.es_actual ? 'ok' : ''}">${ep.es_actual ? 'Activo' : 'Concluido'}</span>
+                            </div>
+                            <div style="font-size:12px; color:#475569; margin-top:2px;">
+                                ${esc(ep.cargo)} · ${ep.es_docencia_directa ? '👨‍🏫 Docencia directa' : 'Gestión/Otro'} · ${esc(ep.contrato || 'Contrato')}
+                            </div>
+                            <div style="font-size:11px; color:#64748b; margin-top:3px;">
+                                Periodo: <b>${esc(ep.fecha_inicio)}</b> al <b>${esc(ep.fecha_fin || (ep.es_actual ? 'Presente' : 'Fecha no especificada'))}</b>
+                                ${ep.motivo_cambio ? ` · Motivo: ${esc(ep.motivo_cambio)}` : ''}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            ` : '<div class="notice" style="margin-bottom:16px;">No se registran episodios laborales para este egresado.</div>'}
+
             <h2>Historial de actualizaciones</h2>
             ${hist.map(h => `
                 <div class="history">
@@ -1752,6 +1949,8 @@ window.APP = {
     goto,
     setRole,
     selectQuick,
+    confirmarSinCambios,
+    cerrarEpisodioModal,
     openCall,
     registerCall,
     requestContact,
