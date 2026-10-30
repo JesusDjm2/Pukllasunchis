@@ -9,8 +9,8 @@ use App\Models\Titulacion\Tesis;
  * Orden obligatorio del proceso de titulación: nada se registra antes de que esté logrado
  * el paso anterior (no se puede subir la RD de la Tesis si recién se inscribió el PTI).
  *
- *   PTI inscrito → PTI aprobado (RD) → TI expuesto → TI aprobado (RD) → TI en Repositorio → Bachiller (SUNEDU)
- *   → Tesis sustentada → Tesis aprobada (RD) → Licenciado (SUNEDU)
+ *   PTI inscrito → PTI aprobado (RD) → Enlace del TI aprobado → TI expuesto → TI aprobado (RD) → TI en Repositorio → Bachiller (SUNEDU)
+ *   → Tesis sustentada → Enlace de la Tesis aprobado → Tesis aprobada (RD) → Licenciado (SUNEDU)
  *
  * Lo ya registrado se puede corregir siempre (los datos importados de secretaría tienen
  * huecos): la regla solo frena registrar algo NUEVO fuera de orden. La usan la ficha del
@@ -27,27 +27,35 @@ class ReglasProceso
         'CambioTema' => 'pti_inscrito',
         'CambioAsesor' => 'pti_inscrito',
         'CambioGrupo' => 'pti_inscrito',
-        'Exposicion' => 'ti_expuesto',
+        'RetiroGrupo' => 'pti_aprobado',
+        'IncorporacionGrupo' => 'pti_aprobado',
+        // La RD de aprobación de cada etapa también exige el enlace aprobado por el asesor (29/10).
+        'Exposicion' => ['ti_expuesto', 'ti_enlace'],
         'FechaSustentacion' => 'bachiller',
         'Extension' => 'bachiller',
-        'Tesis' => 'tesis_sustentada',
+        // La de la Tesis, además, el pago del trámite de aprobación de sustentación (30/10).
+        'Tesis' => ['tesis_sustentada', 'tesis_enlace', 'tesis_tramite'],
     ];
 
     /** Hito que debe estar logrado para registrar cada dato de TI/Tesis. */
     public const REQUISITO_CAMPO = [
         'fecha_exposicion' => 'pti_aprobado',
-        'rd_ti' => 'ti_expuesto',
+        'rd_ti' => ['ti_expuesto', 'ti_enlace'],
         'url_repositorio_ti' => 'ti_aprobado',
         'fecha_bachiller_sunedu' => 'ti_repositorio',
         'bachiller_sunedu' => 'ti_repositorio',
         'fecha_sustentacion' => 'bachiller',
         'rd_extension' => 'bachiller',
         'fecha_extension' => 'bachiller',
-        'rd_tesis' => 'tesis_sustentada',
+        'rd_tesis' => ['tesis_sustentada', 'tesis_enlace', 'tesis_tramite'],
+        'tramite_sust_pagado_en' => 'tesis_enlace',
         'url_repositorio' => 'tesis_sustentada',
         'fecha_titulo_sunedu' => 'tesis_aprobada',
         'titulo_sunedu' => 'tesis_aprobada',
         'link_tesis' => 'bachiller',
+        'link_tesis_estado' => 'bachiller',
+        'link_ti' => 'pti_aprobado',
+        'link_ti_estado' => 'pti_aprobado',
         'licenciatura_escuela' => 'tesis_aprobada',
         'fecha_licenciatura_escuela' => 'tesis_aprobada',
     ];
@@ -63,10 +71,14 @@ class ReglasProceso
         'rd_extension' => 'la ampliación de sustentación',
         'fecha_extension' => 'la ampliación de sustentación',
         'rd_tesis' => 'la RD de aprobación de la Tesis',
+        'tramite_sust_pagado_en' => 'el pago del trámite de aprobación de sustentación',
         'url_repositorio' => 'el enlace del repositorio',
         'fecha_titulo_sunedu' => 'la Licenciatura (SUNEDU)',
         'titulo_sunedu' => 'la Licenciatura (SUNEDU)',
         'link_tesis' => 'el enlace de la tesis',
+        'link_tesis_estado' => 'el estado del enlace de la tesis',
+        'link_ti' => 'el enlace del TI',
+        'link_ti_estado' => 'el estado del enlace del TI',
         'licenciatura_escuela' => 'la Licenciatura aceptada por la Escuela',
         'fecha_licenciatura_escuela' => 'la Licenciatura aceptada por la Escuela',
     ];
@@ -93,14 +105,19 @@ class ReglasProceso
     /** Actas: exposición del TI / sustentación de la Tesis. */
     public const REQUISITO_ACTA = ['expo' => 'pti_aprobado', 'tesis' => 'bachiller'];
 
-    /** null si el hito está logrado; si no, el texto "PTI aprobado (RD)" de lo que falta. */
-    public static function falta(AvanceTitulacion $avance, ?string $hito): ?string
+    /**
+     * null si el hito (o todos los hitos de la lista) está logrado; si no, el texto
+     * "PTI aprobado (RD)" del primero que falta.
+     */
+    public static function falta(AvanceTitulacion $avance, string|array|null $hito): ?string
     {
-        if (! $hito || ($avance->hitos[$hito]['logrado'] ?? false)) {
-            return null;
+        foreach ((array) $hito as $uno) {
+            if ($uno && ! ($avance->hitos[$uno]['logrado'] ?? false)) {
+                return $avance->hitos[$uno]['label'] ?? $uno;
+            }
         }
 
-        return $avance->hitos[$hito]['label'] ?? $hito;
+        return null;
     }
 
     /** Mensaje si no se puede registrar una RD de este tipo todavía. */

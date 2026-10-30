@@ -48,7 +48,7 @@
                         onchange="pkAlMostrarCurso(this.value)">
                         @foreach ($cursos as $item)
                             <option value="{{ $item->curso->id }}" @selected($item->curso->id === $cursoSeleccionado->curso->id)>
-                                {{ $item->curso->nombre }} — Ciclo {{ $item->curso->ciclo->nombre }} ({{ $item->alumnos->count() }})
+                                [{{ $item->curso->ciclo->programa->nombre ?? 'Sin programa' }}] {{ $item->curso->nombre }} — Ciclo {{ $item->curso->ciclo->nombre }} ({{ $item->alumnos->count() }})
                             </option>
                         @endforeach
                     </select>

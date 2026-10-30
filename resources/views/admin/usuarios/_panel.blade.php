@@ -689,7 +689,7 @@
                     @endforeach
                 </select>
                 <div class="up-matchips" role="group" aria-label="Estado de matrícula">
-                    <button type="button" class="up-fchip js-f-mat" data-mat="">Todos</button>
+                    <button type="button" class="up-fchip js-f-mat" data-mat="">Todos <span class="up-count">{{ $listas[$tabKey]->count() }}</span></button>
                     <button type="button" class="up-fchip is-green js-f-mat" data-mat="matriculado"><i class="fas fa-check fa-xs"></i> Matriculados <span class="up-count">{{ $cm['matriculado'] }}</span></button>
                     <button type="button" class="up-fchip is-red js-f-mat" data-mat="falta" title="Sin matrícula en el periodo, incluidos quienes no llenaron la ficha"><i class="fas fa-user-clock fa-xs"></i> Faltan matricularse <span class="up-count">{{ $cm['sin_matricula'] + $cm['sin_ficha'] }}</span></button>
                     <button type="button" class="up-fchip is-amber js-f-mat" data-mat="por_verificar"><i class="fas fa-receipt fa-xs"></i> Voucher por verificar <span class="up-count">{{ $cm['por_verificar'] }}</span></button>
@@ -697,7 +697,7 @@
                     <button type="button" class="up-fchip is-red js-f-mat" data-mat="sin_ficha" title="No llenaron la ficha de matrícula: no pueden matricularse"><i class="fas fa-file-excel fa-xs"></i> Sin ficha <span class="up-count">{{ $cm['sin_ficha'] }}</span></button>
                 </div>
                 <div class="up-matbar-end">
-                    <label class="up-selall"><input type="checkbox" class="up-check js-sel-todos"> Seleccionar visibles</label>
+                    <label class="up-selall"><input type="checkbox" class="up-check js-sel-todos"> Seleccionar visibles <span class="up-count js-selvis-n">{{ $listas[$tabKey]->count() }}</span></label>
                     <span class="up-selcount js-selcount" hidden></span>
                     <button type="button" class="up-btn-primary js-exportar"><i class="fas fa-file-excel"></i> Exportar</button>
                 </div>
@@ -723,10 +723,10 @@
 
                 @if ($tabKey === 'fid')
                     <span class="up-fsep"></span>
-                    <button type="button" class="up-fchip js-f-chip" data-chip="beca"><i class="fas fa-award fa-xs"></i> Con beca</button>
+                    <button type="button" class="up-fchip js-f-chip" data-chip="beca"><i class="fas fa-award fa-xs"></i> Con beca <span class="up-count">{{ $listas[$tabKey]->where('beca', 1)->count() }}</span></button>
                 @endif
                 @if (in_array($tabKey, ['fid', 'inhabilitados'], true))
-                    <button type="button" class="up-fchip js-f-chip" data-chip="pend"><i class="fas fa-hourglass-half fa-xs"></i> Con pendientes</button>
+                    <button type="button" class="up-fchip js-f-chip" data-chip="pend"><i class="fas fa-hourglass-half fa-xs"></i> Con pendientes <span class="up-count">{{ $listas[$tabKey]->filter(fn ($u) => count($u->cursosPendientes()) > 0)->count() }}</span></button>
                 @endif
                 @if (in_array($tabKey, ['fid', 'ppd'], true) && $listas[$tabKey]->contains('condicion', 'Egresado'))
                     <button type="button" class="up-fchip js-f-chip" data-chip="sinegr"><i class="fas fa-eye-slash fa-xs"></i> Ocultar egresados</button>
@@ -851,6 +851,7 @@
     <form method="POST" action="{{ route('admin.estudiantes.exportar') }}" id="upFormExportar">
         @csrf
         <input type="hidden" name="tab" id="upExpTab">
+        <input type="hidden" name="contexto" id="upExpCtx">
         <input type="hidden" name="periodo" value="{{ $periodoFid?->id }}">
         <input type="hidden" name="periodo_ppd" value="{{ $periodoPpd?->id }}">
         <input type="hidden" name="semestre_ppd" value="{{ $semestrePpd }}">
@@ -866,9 +867,9 @@
 
             <div class="up-exp-label mt-3">Qué columnas</div>
             @foreach ([
-                'basico' => ['Básico', 'Nombre, DNI, programa, ciclo, N°, condición, perfil y beca.'],
-                'matricula' => ['Matrícula', 'Estado en el periodo, N° de voucher, verificación, ficha enviada y fecha.'],
-                'contacto' => ['Contacto', 'Correo y teléfono.'],
+                'basico' => ['Básico', 'Nombre, DNI, programa, ciclo, género, condición, perfil, beca, cursos pendientes, celular y correo.'],
+                'matricula' => ['Matrícula', 'Estado en el periodo, N° de voucher, verificación, ficha enviada, fecha y celular.'],
+                'contacto' => ['Contacto', 'Correo, celular (con enlace a WhatsApp) y n.º de referencia.'],
                 'ficha' => ['Ficha completa', 'Todos los datos de la ficha (socioeconómicos, vivienda, salud…). Solo estudiantes con ficha.'],
             ] as $k => [$titulo, $desc])
                 <label class="up-exp-opt"><input type="radio" name="preset" value="{{ $k }}" @checked($k === 'matricula')>
@@ -1036,12 +1037,14 @@
             var sin = p.querySelector('.js-sin-resultados');
             if (sin) sin.hidden = visibles > 0 || !p.querySelector('.up-row');
 
+            // Con búsqueda o con filtros en la pestaña activa, el badge cuenta lo que queda visible.
+            var filtrada = terminos.length > 0 || (activa && hayFiltros());
             var badge = root.querySelector('[data-count-tab="' + tab + '"]');
-            var n = terminos.length ? visibles : +badge.dataset.total;
-            if (activa && !terminos.length) n = +badge.dataset.total;
+            var n = filtrada ? visibles : +badge.dataset.total;
             badge.textContent = n;
-            badge.classList.toggle('is-hit', terminos.length > 0 && n > 0);
-            badge.closest('.up-tab').classList.toggle('is-empty', terminos.length > 0 && n === 0);
+            badge.classList.toggle('is-hit', filtrada && n > 0);
+            badge.closest('.up-tab').classList.toggle('is-empty', filtrada && n === 0);
+            if (activa) recontarChips(p, terminos);
             totalGrupo[GRUPO_DE[tab]] = (totalGrupo[GRUPO_DE[tab]] || 0) + n;
 
             p.hidden = !activa;
@@ -1055,6 +1058,29 @@
 
         pintarNavegacion();
         guardarEstado();
+    }
+
+    function hayFiltros() {
+        return !!(estado.programa || estado.ciclo || estado.beca || estado.pend || estado.sinegr || estado.inhab || estado.motivo || estado.mat);
+    }
+
+    // Número de cada chip: cuántos quedarían con ese chip activo y el resto de filtros
+    // (programa, ciclo, búsqueda y los demás chips) tal como están.
+    function recontarChips(p, terminos) {
+        var filas = Array.prototype.map.call(p.querySelectorAll('.up-row'), function (r) {
+            var g = r.closest('.up-group');
+            var okGrupo = !g || ((!estado.programa || g.dataset.programa === estado.programa) && (!estado.ciclo || g.dataset.ciclo === estado.ciclo));
+            return okGrupo ? r : null;
+        }).filter(Boolean);
+        p.querySelectorAll('.js-f-mat, .js-f-chip, .js-f-motivo').forEach(function (c) {
+            var cnt = c.querySelector('.up-count');
+            if (!cnt) return;
+            var f = Object.assign({}, estado);
+            if (c.classList.contains('js-f-mat')) f.mat = c.dataset.mat;
+            else if (c.classList.contains('js-f-motivo')) f.motivo = c.dataset.motivo;
+            else f[c.dataset.chip] = true;
+            cnt.textContent = filas.filter(function (r) { return coincideFila(r, terminos, f, true); }).length;
+        });
     }
 
     function pintarNavegacion() {
@@ -1508,18 +1534,24 @@
             return !r.hidden && !(r.closest('.up-group') || {}).hidden;
         });
     }
+    // Seleccionados que siguen a la vista: los que un filtro ocultó no cuentan ni se exportan
+    // (siguen marcados y vuelven a contar al quitar el filtro).
+    function seleccionVisible(p) {
+        return filasVisibles(p).filter(function (r) { var cb = r.querySelector('.js-sel'); return cb && cb.checked; });
+    }
     function actualizarSeleccion() {
         var p = pane(estado.tab);
         if (!p) return;
-        var marcadas = p.querySelectorAll('.js-sel:checked').length;
+        var vis = filasVisibles(p);
+        var marcadas = seleccionVisible(p).length;
         var cont = p.querySelector('.js-selcount');
         if (cont) { cont.hidden = !marcadas; cont.textContent = marcadas + (marcadas === 1 ? ' seleccionado' : ' seleccionados'); }
+        var nVis = p.querySelector('.js-selvis-n');
+        if (nVis) nVis.textContent = vis.length;
         var todos = p.querySelector('.js-sel-todos');
         if (todos) {
-            var vis = filasVisibles(p);
-            var marcadasVis = vis.filter(function (r) { return r.querySelector('.js-sel').checked; }).length;
-            todos.checked = vis.length > 0 && marcadasVis === vis.length;
-            todos.indeterminate = marcadasVis > 0 && marcadasVis < vis.length;
+            todos.checked = vis.length > 0 && marcadas === vis.length;
+            todos.indeterminate = marcadas > 0 && marcadas < vis.length;
         }
     }
     root.addEventListener('change', function (e) {
@@ -1537,12 +1569,32 @@
         }
     });
 
+    // Filtros activos con su texto en pantalla, para la ficha del Excel ("Programa Inicial · Ciclo IV"…).
+    function contextoExport(p, soloSel) {
+        function texto(el) {
+            var c = el.cloneNode(true);
+            c.querySelectorAll('.up-count').forEach(function (n) { n.remove(); });
+            return c.textContent.replace(/\s+/g, ' ').trim();
+        }
+        var selP = p.querySelector('.js-f-programa'), selC = p.querySelector('.js-f-ciclo');
+        var mat = p.querySelector('.js-f-mat.is-active:not([data-mat=""])');
+        return {
+            programa: selP && selP.value ? selP.selectedOptions[0].textContent.trim() : '',
+            // La opción de ciclo dice "Programa · Ciclo"; el programa ya va aparte.
+            ciclo: selC && selC.value ? selC.selectedOptions[0].textContent.replace(/\s+/g, ' ').trim().split(' · ').pop() : '',
+            estado: mat ? texto(mat) : '',
+            chips: Array.prototype.map.call(p.querySelectorAll('.js-f-chip.is-active, .js-f-motivo.is-active'), texto),
+            busqueda: (estado.q || '').trim(),
+            alcance: soloSel ? 'seleccionados' : 'visibles',
+        };
+    }
+
     var dlgExp = document.getElementById('upDlgExportar');
     var formExp = document.getElementById('upFormExportar');
     root.addEventListener('click', function (e) {
         if (!e.target.closest('.js-exportar')) return;
         var p = pane(estado.tab);
-        var vis = filasVisibles(p).length, sel = p.querySelectorAll('.js-sel:checked').length;
+        var vis = filasVisibles(p).length, sel = seleccionVisible(p).length;
         document.getElementById('upExpVisibles').textContent = '(' + vis + ')';
         document.getElementById('upExpSeleccionados').textContent = '(' + sel + ')';
         document.getElementById('upExpOptSel').hidden = sel === 0;
@@ -1553,8 +1605,9 @@
     formExp.addEventListener('submit', function (e) {
         var p = pane(estado.tab);
         var soloSel = formExp.querySelector('[name="_alcance"]:checked').value === 'seleccionados';
-        var filas = soloSel ? Array.prototype.map.call(p.querySelectorAll('.js-sel:checked'), function (c) { return c.closest('.up-row'); }) : filasVisibles(p);
+        var filas = soloSel ? seleccionVisible(p) : filasVisibles(p);
         if (!filas.length) { e.preventDefault(); avisar('No hay estudiantes para exportar con los filtros actuales.', true); return; }
+        document.getElementById('upExpCtx').value = JSON.stringify(contextoExport(p, soloSel));
         var cont = document.getElementById('upExpIds');
         cont.innerHTML = '';
         filas.forEach(function (r) {

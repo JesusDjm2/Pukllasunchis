@@ -9,7 +9,7 @@
     $nombreSb = trim(($usuarioSb->name ?? '').' '.($usuarioSb->apellidos ?? '')) ?: 'Usuario';
     $inicialesSb = collect(preg_split('/\s+/', $nombreSb))->filter()->take(2)
         ->map(fn ($p) => mb_strtoupper(mb_substr($p, 0, 1)))->implode('') ?: 'U';
-    $esTitulacionSb = $usuarioSb?->hasRole('gestor-titulacion') && Route::has('titulacion.index');
+    $esTitulacionSb = $usuarioSb?->hasAnyRole(['gestor-titulacion', 'secretaria']) && Route::has('titulacion.index');
     $esTutorSb = $usuarioSb?->hasRole('tutor') && Route::has('tutor.dashboard');
 @endphp
 <ul class="navbar-nav sidebar sidebar-dark accordion pk-sb" id="accordionSidebar">

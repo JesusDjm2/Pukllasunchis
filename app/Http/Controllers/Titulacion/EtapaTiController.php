@@ -20,10 +20,11 @@ class EtapaTiController extends TitulacionController
     /** Hito que debe estar logrado para registrar asesores/jurado de cada etapa. */
     private const REQUISITO_ETAPA = ['ti' => 'pti_aprobado', 'tesis' => 'bachiller'];
 
-    /** Informe ITI del asesor: enlace externo (Drive, etc.). Se guarda en el PTI vigente (link_iti). */
+    /** Informe ITI del asesor: enlace externo (Drive, etc.) y el día en que lo compartió (plazo de
+     * 8 días hábiles, ver PasosProceso::plazoInforme). Se guarda en el PTI vigente (link_iti, fecha_iti). */
     public function informe(Request $request, User $egresado)
     {
-        $data = $request->validate(['link_iti' => 'nullable|url|max:500'], [
+        $data = $request->validate(['link_iti' => 'nullable|url|max:500', 'fecha_iti' => 'nullable|date'], [
             'link_iti.url' => 'El informe debe ser un enlace completo, por ejemplo https://drive.google.com/…',
         ]);
         $seguimiento = SeguimientoTitulacion::with('pti')->where('user_id', $egresado->id)->firstOrFail();
@@ -31,7 +32,7 @@ class EtapaTiController extends TitulacionController
             return $this->volverAlAcordeon($egresado->id, $motivo, 'proceso', 'error');
         }
         abort_unless($seguimiento->pti, 404);
-        $seguimiento->pti->update(['link_iti' => $data['link_iti'] ?? null]);
+        $seguimiento->pti->update($this->datosInforme($seguimiento->pti, $data));
 
         [$aplicados, $omitidos] = [0, []];
         foreach ($this->companerosDestino($seguimiento, $request) as $otro) {
@@ -39,11 +40,71 @@ class EtapaTiController extends TitulacionController
                 $omitidos[] = $otro->user?->apellidos.' ('.($motivo ?? 'sin PTI').')';
                 continue;
             }
-            $otro->pti->update(['link_iti' => $data['link_iti'] ?? null]);
+            $otro->pti->update($this->datosInforme($otro->pti, $data));
             $aplicados++;
         }
 
         return $this->volverAlAcordeon($egresado->id, 'Informe ITI guardado'.$this->textoGrupo($aplicados, $omitidos), 'proceso', $omitidos ? 'warning' : 'success');
+    }
+
+    /** Enlace del informe y su fecha: la indicada, la que ya tenía o la de hoy; sin enlace, sin fecha. */
+    private function datosInforme(\App\Models\Titulacion\Pti $pti, array $data): array
+    {
+        $link = $data['link_iti'] ?? null;
+
+        return [
+            'link_iti' => $link,
+            'fecha_iti' => $link ? ($data['fecha_iti'] ?? $pti->fecha_iti?->toDateString() ?? now()->toDateString()) : null,
+        ];
+    }
+
+    /**
+     * Correo al jurado (exposición del TI, o dictaminantes / jurado de la sustentación de la Tesis):
+     * uno por destinatario elegido, con el asunto y el
+     * mensaje que escribe el gestor (la ficha propone uno con grupo, título, fecha y enlaces).
+     */
+    public function correoJurado(Request $request, User $egresado)
+    {
+        $data = $request->validate([
+            'destinatarios' => 'required|array|min:1',
+            'destinatarios.*' => 'integer',
+            'asunto' => 'required|string|max:200',
+            'mensaje' => 'required|string|max:5000',
+            'etapa' => 'nullable|in:ti,tesis',
+        ], [
+            'destinatarios.required' => 'Elija al menos un integrante del jurado.',
+            'asunto.required' => 'Escriba el asunto del correo.',
+            'mensaje.required' => 'Escriba el mensaje.',
+        ]);
+        $seguimiento = SeguimientoTitulacion::where('user_id', $egresado->id)->firstOrFail();
+        $jurado = Participante::with(['docente', 'asesorExterno'])
+            ->where('seguimiento_id', $seguimiento->id)->where('etapa', $data['etapa'] ?? 'ti')->where('funcion', 'jurado')
+            ->whereIn('id', $data['destinatarios'])->get();
+
+        [$enviados, $fallidos] = [[], []];
+        foreach ($jurado as $p) {
+            $nombre = (string) $p->asesorNombre();
+            if (! ($correo = $p->correo())) {
+                $fallidos[] = $nombre.' (sin correo registrado)';
+                continue;
+            }
+            try {
+                \Illuminate\Support\Facades\Mail::mailer(\App\Mail\Titulacion\Remitente::mailer('investigacion'))->to($correo)->send(new \App\Mail\Titulacion\CorreoJuradoMail(
+                    $data['asunto'], $data['mensaje'], $nombre
+                ));
+                $enviados[] = $nombre;
+            } catch (\Throwable $e) {
+                report($e);
+                $fallidos[] = $nombre.' (no se pudo enviar)';
+            }
+        }
+
+        $texto = $enviados ? 'Correo enviado a '.implode(', ', $enviados).'.' : 'No se envió ningún correo.';
+        if ($fallidos) {
+            $texto .= ' Sin enviar: '.implode('; ', $fallidos).'.';
+        }
+
+        return $this->volverAlAcordeon($egresado->id, $texto, 'proceso', $fallidos ? ($enviados ? 'warning' : 'error') : 'success');
     }
 
     /** Agrega un asesor o un integrante del jurado (docente o del catálogo), con cargo opcional. */

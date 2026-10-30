@@ -24,11 +24,12 @@ class Pti extends Model
 
     protected $fillable = [
         'seguimiento_id', 'numero', 'etapa', 'titulo', 'asesor_id', 'asesor_externo_id', 'fecha_pti', 'rd_pti',
-        'link_iti', 'estado', 'fecha_vencimiento', 'rd_ampliacion', 'fecha_ampliacion', 'vencimiento_ampliado',
+        'link_iti', 'fecha_iti', 'estado', 'fecha_vencimiento', 'rd_ampliacion', 'fecha_ampliacion', 'vencimiento_ampliado',
     ];
 
     protected $casts = [
         'fecha_pti' => 'date',
+        'fecha_iti' => 'date',
         'fecha_vencimiento' => 'date',
         'fecha_ampliacion' => 'date',
         'vencimiento_ampliado' => 'date',

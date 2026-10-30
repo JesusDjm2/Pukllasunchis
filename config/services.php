@@ -66,5 +66,9 @@ return [
         // egresados a los avisos de vencimiento del PTI llegan aquí
         // (Reply-To). Sin él, responderían a MAIL_FROM_ADDRESS.
         'correo_unidad' => env('TITULACION_CORREO_UNIDAD'),
+        // Secretaría: remitente de los correos de las RD y destino de sus respuestas.
+        'correo_secretaria' => env('TITULACION_CORREO_SECRETARIA', 'eespp@pukllasunchis.org'),
+        // Área de Investigación: remitente de sus correos y destino de sus respuestas.
+        'correo_investigacion' => env('TITULACION_CORREO_INVESTIGACION', 'u.investigacion.eesp@pukllavirtual.edu.pe'),
     ],
 ];

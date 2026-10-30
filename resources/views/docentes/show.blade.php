@@ -3,12 +3,21 @@
 @section('contenido')
     @php
         $primerNombre = explode(' ', trim($docente->nombre))[0];
+        $ordenCiclos = ['I' => 1, 'II' => 2, 'III' => 3, 'IV' => 4, 'V' => 5, 'VI' => 6, 'VII' => 7, 'VIII' => 8, 'IX' => 9, 'X' => 10];
         $cursosPPD = $docente->cursos->filter(
             fn($curso) => $curso->esPpd(),
-        );
+        )->sortBy([
+            fn($a, $b) => ($a->ciclo?->programa_id ?? 99) <=> ($b->ciclo?->programa_id ?? 99),
+            fn($a, $b) => ($ordenCiclos[$a->ciclo?->nombre ?? ''] ?? 99) <=> ($ordenCiclos[$b->ciclo?->nombre ?? ''] ?? 99),
+            fn($a, $b) => strcasecmp($a->nombre, $b->nombre),
+        ])->values();
         $otrosCursos = $docente->cursos->filter(
             fn($curso) => !$curso->esPpd(),
-        );
+        )->sortBy([
+            fn($a, $b) => ($a->ciclo?->programa_id ?? 99) <=> ($b->ciclo?->programa_id ?? 99),
+            fn($a, $b) => ($ordenCiclos[$a->ciclo?->nombre ?? ''] ?? 99) <=> ($ordenCiclos[$b->ciclo?->nombre ?? ''] ?? 99),
+            fn($a, $b) => strcasecmp($a->nombre, $b->nombre),
+        ])->values();
         $cursosPPDCount = $cursosPPD->count();
         $cursosFidCount = $otrosCursos->count();
     @endphp
@@ -139,13 +148,30 @@
             font-weight: 800;
             font-size: 0.85rem;
             flex-shrink: 0;
+            margin-top: 0.1rem;
+        }
+
+        .docente-curso-titulo-fila {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.35rem 0.65rem;
+            min-width: 0;
         }
 
         .docente-curso-nombre {
             font-size: 1.05rem;
             font-weight: 700;
             color: #2e3448;
-            margin: 0 0 0.15rem;
+            margin: 0;
+            line-height: 1.3;
+        }
+
+        .docente-curso-badges {
+            display: inline-flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.35rem;
         }
 
         .docente-curso-meta {
@@ -784,6 +810,167 @@
             margin-bottom: .75rem;
             display: block;
         }
+
+        /* ── Diferenciador visual por programa para evitar confusiones al calificar ── */
+        .docente-curso-card.is-card-inicial {
+            border-left: 6px solid #4f46e5 !important;
+        }
+
+        .docente-curso-card.is-card-primaria {
+            border-left: 6px solid #059669 !important;
+        }
+
+        .docente-curso-card.is-card-default {
+            border-left: 6px solid #6b7280 !important;
+        }
+
+        .docente-prog-badge {
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.67rem;
+            font-weight: 700;
+            padding: 0.16rem 0.52rem;
+            border-radius: 999px;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+            line-height: 1.2;
+            white-space: nowrap;
+        }
+
+        .docente-prog-badge i {
+            font-size: 0.65rem;
+        }
+
+        .docente-prog-badge.is-inicial {
+            background: #e0e7ff;
+            color: #3730a3;
+            border: 1px solid #c7d2fe;
+        }
+
+        .docente-prog-badge.is-primaria {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .docente-prog-badge.is-default {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #e5e7eb;
+        }
+
+        .docente-ciclo-chip {
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.67rem;
+            font-weight: 600;
+            padding: 0.16rem 0.48rem;
+            border-radius: 4px;
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+            line-height: 1.2;
+            white-space: nowrap;
+        }
+
+        /* Botones de filtro de programa */
+        .docente-filtros-programa {
+            background: #fff;
+            padding: 0.6rem 0.9rem;
+            border-radius: 0.65rem;
+            border: 1px solid #e3e6f0;
+            box-shadow: 0 0.1rem 0.35rem rgba(0, 0, 0, 0.03);
+        }
+
+        .docente-filtro-btn {
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 0.78rem;
+            padding: 0.28rem 0.75rem;
+            border: 1px solid #d1d5db;
+            background: #f9fafb;
+            color: #4b5563;
+            transition: all 0.2s ease;
+        }
+
+        .docente-filtro-btn:hover {
+            background: #f3f4f6;
+            color: #111827;
+        }
+
+        .docente-filtro-btn.is-active {
+            background: #1f2937;
+            color: #fff;
+            border-color: #1f2937;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.12);
+        }
+
+        .docente-filtro-btn.btn-filtro-inicial.is-active {
+            background: #4338ca;
+            color: #fff;
+            border-color: #4338ca;
+        }
+
+        .docente-filtro-btn.btn-filtro-primaria.is-active {
+            background: #047857;
+            color: #fff;
+            border-color: #047857;
+        }
+
+        body.dark-mode .docente-prog-badge.is-inicial,
+        body.dim-mode .docente-prog-badge.is-inicial {
+            background: rgba(79, 70, 229, 0.25) !important;
+            color: #c7d2fe !important;
+            border-color: rgba(99, 102, 241, 0.4) !important;
+        }
+
+        body.dark-mode .docente-prog-badge.is-primaria,
+        body.dim-mode .docente-prog-badge.is-primaria {
+            background: rgba(16, 185, 129, 0.25) !important;
+            color: #a7f3d0 !important;
+            border-color: rgba(16, 185, 129, 0.4) !important;
+        }
+
+        body.dark-mode .docente-ciclo-chip,
+        body.dim-mode .docente-ciclo-chip {
+            background: rgba(255, 255, 255, 0.08) !important;
+            color: #cbd5e1 !important;
+            border-color: rgba(255, 255, 255, 0.15) !important;
+        }
+
+        body.dark-mode .docente-filtros-programa,
+        body.dim-mode .docente-filtros-programa {
+            background: #1e293b !important;
+            border-color: #334155 !important;
+        }
+
+        body.dark-mode .docente-filtro-btn,
+        body.dim-mode .docente-filtro-btn {
+            background: #0f172a !important;
+            border-color: #334155 !important;
+            color: #94a3b8 !important;
+        }
+
+        /* ── Responsivo para tablets y celulares ── */
+        @media (max-width: 991.98px) {
+            .docente-curso-titulo-fila {
+                gap: 0.3rem 0.5rem;
+            }
+            .docente-curso-nombre {
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .docente-curso-titulo-fila {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.25rem;
+            }
+            .docente-curso-nombre {
+                font-size: 0.98rem;
+            }
+        }
     </style>
 
     <div class="container-fluid docente-ui-page docente-cursos-page px-2 px-md-3 pb-5">
@@ -854,7 +1041,28 @@
                         </div>
                     </div>
                 @else
-                    @php $contador = 0; @endphp
+                    @php
+                        $contador = 0;
+                        $programasFid = $otrosCursos->groupBy(fn($c) => $c->ciclo?->programa_id ?? 0);
+                    @endphp
+                    @if ($programasFid->count() > 1)
+                        <div class="docente-filtros-programa mb-3 d-flex flex-wrap align-items-center" style="gap: 0.5rem;">
+                            <span class="text-muted small font-weight-bold mr-1"><i class="fas fa-filter mr-1"></i>Filtrar programa:</span>
+                            <button type="button" class="btn btn-sm docente-filtro-btn is-active" data-filtro-target="tablafid" data-filtro-prog="todos" onclick="docenteFiltrarPrograma('tablafid', 'todos', this)">
+                                Todos <span class="badge badge-light ml-1">{{ $otrosCursos->count() }}</span>
+                            </button>
+                            @foreach ($programasFid as $pId => $cursosDelProg)
+                                @php
+                                    $progObj = $cursosDelProg->first()->ciclo?->programa;
+                                    $pNombre = $progObj->nombre ?? 'Sin programa';
+                                    $esIni = stripos($pNombre, 'Inicial') !== false;
+                                @endphp
+                                <button type="button" class="btn btn-sm docente-filtro-btn {{ $esIni ? 'btn-filtro-inicial' : 'btn-filtro-primaria' }}" data-filtro-target="tablafid" data-filtro-prog="{{ $pId }}" onclick="docenteFiltrarPrograma('tablafid', '{{ $pId }}', this)">
+                                    <i class="fas {{ $esIni ? 'fa-shapes' : 'fa-book-reader' }} mr-1"></i>{{ $pNombre }} <span class="badge badge-light ml-1">{{ $cursosDelProg->count() }}</span>
+                                </button>
+                            @endforeach
+                        </div>
+                    @endif
                     @foreach ($otrosCursos->values() as $index => $curso)
                         @php
                             $contador++;
@@ -878,18 +1086,32 @@
                                 'curso' => $curso->id,
                                 'competencias' => $idsACalificar,
                             ]);
+
+                            $progNombre = $curso->ciclo?->programa?->nombre ?? '';
+                            $progId = $curso->ciclo?->programa_id ?? 0;
+                            $esInicial = stripos($progNombre, 'Inicial') !== false;
+                            $esPrimaria = stripos($progNombre, 'Primaria') !== false;
+                            $cardClase = $esInicial ? 'is-card-inicial' : ($esPrimaria ? 'is-card-primaria' : 'is-card-default');
+                            $badgeClase = $esInicial ? 'is-inicial' : ($esPrimaria ? 'is-primaria' : 'is-default');
+                            $iconoProg = $esInicial ? 'fa-shapes' : ($esPrimaria ? 'fa-book-reader' : 'fa-graduation-cap');
                         @endphp
-                        <div class="card docente-ui-card docente-curso-card mb-3">
+                        <div class="card docente-ui-card docente-curso-card {{ $cardClase }} mb-3" data-programa-id="{{ $progId }}">
                             <div class="card-body p-3 p-md-4">
                                 <div class="docente-curso-cabecera">
                                     <div class="d-flex align-items-start docente-curso-cabecera-info" style="gap:0.65rem;">
                                         <span class="docente-curso-index">{{ $contador }}</span>
-                                        <div>
-                                            <h3 class="docente-curso-nombre">{{ $curso->nombre }}</h3>
-                                            <p class="docente-curso-meta">
-                                                {{ $curso->ciclo->programa->nombre ?? 'Sin programa asignado' }}
-                                                — {{ $curso->ciclo ? $curso->ciclo->nombre : 'Sin ciclo asignado' }}
-                                            </p>
+                                        <div class="min-w-0 flex-grow-1">
+                                            <div class="docente-curso-titulo-fila">
+                                                <h3 class="docente-curso-nombre">{{ $curso->nombre }}</h3>
+                                                <div class="docente-curso-badges">
+                                                    <span class="docente-prog-badge {{ $badgeClase }}">
+                                                        <i class="fas {{ $iconoProg }} mr-1"></i>{{ $progNombre ?: 'Sin programa asignado' }}
+                                                    </span>
+                                                    <span class="docente-ciclo-chip">
+                                                        Ciclo {{ $curso->ciclo ? $curso->ciclo->nombre : 'Sin ciclo asignado' }}
+                                                    </span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -1253,7 +1475,28 @@
                         </div>
                     </div>
                 @else
-                    @php $contador = 0; @endphp
+                    @php
+                        $contador = 0;
+                        $programasPpd = $cursosPPD->groupBy(fn($c) => $c->ciclo?->programa_id ?? 0);
+                    @endphp
+                    @if ($programasPpd->count() > 1)
+                        <div class="docente-filtros-programa mb-3 d-flex flex-wrap align-items-center" style="gap: 0.5rem;">
+                            <span class="text-muted small font-weight-bold mr-1"><i class="fas fa-filter mr-1"></i>Filtrar programa:</span>
+                            <button type="button" class="btn btn-sm docente-filtro-btn is-active" data-filtro-target="tablappd" data-filtro-prog="todos" onclick="docenteFiltrarPrograma('tablappd', 'todos', this)">
+                                Todos <span class="badge badge-light ml-1">{{ $cursosPPD->count() }}</span>
+                            </button>
+                            @foreach ($programasPpd as $pId => $cursosDelProg)
+                                @php
+                                    $progObj = $cursosDelProg->first()->ciclo?->programa;
+                                    $pNombre = $progObj->nombre ?? 'Sin programa';
+                                    $esIni = stripos($pNombre, 'Inicial') !== false;
+                                @endphp
+                                <button type="button" class="btn btn-sm docente-filtro-btn {{ $esIni ? 'btn-filtro-inicial' : 'btn-filtro-primaria' }}" data-filtro-target="tablappd" data-filtro-prog="{{ $pId }}" onclick="docenteFiltrarPrograma('tablappd', '{{ $pId }}', this)">
+                                    <i class="fas {{ $esIni ? 'fa-shapes' : 'fa-book-reader' }} mr-1"></i>{{ $pNombre }} <span class="badge badge-light ml-1">{{ $cursosDelProg->count() }}</span>
+                                </button>
+                            @endforeach
+                        </div>
+                    @endif
                     @foreach ($cursosPPD->values() as $index => $curso)
                         @php
                             $contador++;
@@ -1274,18 +1517,32 @@
                                 'curso' => $curso->id,
                                 'competencias' => $idsACalificar,
                             ]);
+
+                            $progNombre = $curso->ciclo?->programa?->nombre ?? '';
+                            $progId = $curso->ciclo?->programa_id ?? 0;
+                            $esInicial = stripos($progNombre, 'Inicial') !== false;
+                            $esPrimaria = stripos($progNombre, 'Primaria') !== false;
+                            $cardClase = $esInicial ? 'is-card-inicial' : ($esPrimaria ? 'is-card-primaria' : 'is-card-default');
+                            $badgeClase = $esInicial ? 'is-inicial' : ($esPrimaria ? 'is-primaria' : 'is-default');
+                            $iconoProg = $esInicial ? 'fa-shapes' : ($esPrimaria ? 'fa-book-reader' : 'fa-graduation-cap');
                         @endphp
-                        <div class="card docente-ui-card docente-curso-card mb-3">
+                        <div class="card docente-ui-card docente-curso-card {{ $cardClase }} mb-3" data-programa-id="{{ $progId }}">
                             <div class="card-body p-3 p-md-4">
                                 <div class="docente-curso-cabecera">
                                     <div class="d-flex align-items-start docente-curso-cabecera-info" style="gap:0.65rem;">
                                         <span class="docente-curso-index">{{ $contador }}</span>
-                                        <div>
-                                            <h3 class="docente-curso-nombre">{{ $curso->nombre }}</h3>
-                                            <p class="docente-curso-meta">
-                                                {{ $curso->ciclo->programa->nombre ?? 'Sin programa asignado' }}
-                                                — {{ $curso->ciclo ? $curso->ciclo->nombre : 'Sin ciclo asignado' }}
-                                            </p>
+                                        <div class="min-w-0 flex-grow-1">
+                                            <div class="docente-curso-titulo-fila">
+                                                <h3 class="docente-curso-nombre">{{ $curso->nombre }}</h3>
+                                                <div class="docente-curso-badges">
+                                                    <span class="docente-prog-badge {{ $badgeClase }}">
+                                                        <i class="fas {{ $iconoProg }} mr-1"></i>{{ $progNombre ?: 'Sin programa asignado' }}
+                                                    </span>
+                                                    <span class="docente-ciclo-chip">
+                                                        Ciclo {{ $curso->ciclo ? $curso->ciclo->nombre : 'Sin ciclo asignado' }}
+                                                    </span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -1918,6 +2175,28 @@
                 btnFid.setAttribute('aria-pressed', 'true');
                 btnPpd.setAttribute('aria-pressed', 'false');
             }
+        }
+
+        function docenteFiltrarPrograma(tablaId, progId, btn) {
+            var container = document.getElementById(tablaId);
+            if (!container) return;
+
+            var bar = btn.closest('.docente-filtros-programa');
+            if (bar) {
+                bar.querySelectorAll('.docente-filtro-btn').forEach(function(b) {
+                    b.classList.remove('is-active');
+                });
+                btn.classList.add('is-active');
+            }
+
+            var cards = container.querySelectorAll('.docente-curso-card');
+            cards.forEach(function(card) {
+                if (progId === 'todos' || card.getAttribute('data-programa-id') === String(progId)) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
         }
 
         $(document).ready(function() {

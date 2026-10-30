@@ -1,11 +1,12 @@
-{{-- Formulario de UN PTI (el vigente o uno del historial). La ampliación
-     extiende este mismo PTI: RD + nuevo vencimiento (ver VigenciaPti).
+{{-- Formulario de UN PTI (el vigente o uno del historial). Las ampliaciones son RD nuevas y se
+     registran aparte, en el paso «PTI y RD de aprobación» (ruta titulacion.pti.ampliacion).
      PTI aprobado (con RD): sus datos ya no se editan (el título cambia con la RD de cambio de
-     tema y el asesor con la de cambio de asesor); solo se registra la ampliación o se marca vencido.
+     tema y el asesor con la de cambio de asesor); solo se marca vencido.
      El informe ITI del asesor se registra en la etapa de TI.
      Espera $p (Pti|null), $egresado, $selectDocente; opcional $aprobadoPorRd. --}}
 @php $aprobadoPorRd = $aprobadoPorRd ?? filled($p?->rd_pti); @endphp
 <form method="POST" action="{{ route('titulacion.pti.guardar', $egresado->id) }}">
+<fieldset class="ft-area" @disabled(! \App\Services\Titulacion\AreasTitulacion::puedeRuta('titulacion.pti.guardar'))>
     @csrf
     @if ($p) <input type="hidden" name="pti_id" value="{{ $p->id }}"> @endif
     @if ($aprobadoPorRd && $p)
@@ -17,7 +18,7 @@
                 <div><dt>Vencimiento</dt><dd>{{ $p->fecha_vencimiento?->format('d/m/Y') ?? '—' }}@if ($p->vencimiento_ampliado) · ampliado al {{ $p->vencimiento_ampliado->format('d/m/Y') }}@endif</dd></div>
                 <div><dt>RD PTI</dt><dd>{{ $p->rd_pti ?: '—' }}</dd></div>
             </dl>
-            <div class="small text-muted mt-1">Para cambiar el título o el asesor se emite la RD correspondiente en «Otros trámites».</div>
+            <div class="small text-muted mt-1">Para cambiar el título o el asesor se emite la RD correspondiente en «Trámites extraordinarios».</div>
         </div>
         <div class="form-row">
             <div class="form-group col-md-6">
@@ -68,28 +69,11 @@
         </div>
         <div class="form-group col-md-4">
             <label class="small font-weight-bold">RD PTI</label>
-            <input type="text" name="rd_pti" class="form-control form-control-sm" value="{{ $p?->rd_pti ?? '' }}">
+            <input type="text" name="rd_pti" @disabled(! \App\Services\Titulacion\AreasTitulacion::puede('secretaria')) class="form-control form-control-sm" value="{{ $p?->rd_pti ?? '' }}">
         </div>
     </div>
     @endif
 
-    <div class="ft-subcaja">
-        <div class="ft-subcaja__titulo"><i class="fas fa-hourglass-half mr-1"></i>Ampliación del PTI <span class="text-muted font-weight-normal">— si se otorgó con RD, extiende este mismo PTI</span></div>
-        <div class="form-row mb-0">
-            <div class="form-group col-md-4 mb-2">
-                <label class="small font-weight-bold">RD de ampliación</label>
-                <input type="text" name="rd_ampliacion" class="form-control form-control-sm" value="{{ $p?->rd_ampliacion ?? '' }}">
-            </div>
-            <div class="form-group col-md-4 mb-2">
-                <label class="small font-weight-bold">Fecha de la RD</label>
-                <input type="date" name="fecha_ampliacion" class="form-control form-control-sm" value="{{ $p?->fecha_ampliacion?->format('Y-m-d') }}">
-            </div>
-            <div class="form-group col-md-4 mb-2">
-                <label class="small font-weight-bold">Nuevo vencimiento</label>
-                <input type="date" name="vencimiento_ampliado" class="form-control form-control-sm" value="{{ $p?->vencimiento_ampliado?->format('Y-m-d') }}">
-            </div>
-        </div>
-    </div>
-
-    <button type="submit" class="btn btn-sm btn-primary">{{ $aprobadoPorRd && $p ? 'Guardar ampliación / estado' : 'Guardar PTI' }}{{ $p ? ' N° '.$p->numero : '' }}</button>
+    <button type="submit" class="btn btn-sm btn-primary">{{ $aprobadoPorRd && $p ? 'Guardar estado' : 'Guardar PTI' }}{{ $p ? ' N° '.$p->numero : '' }}</button>
+</fieldset>
 </form>

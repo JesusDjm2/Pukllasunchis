@@ -26,6 +26,43 @@ class NombresImportados
     }
 
     /**
+     * El archivo general a veces pone al grupo en una sola línea ("Ana Ccolque Cusi, Kely Huanca
+     * Mamani y Luz Puma"). Solo se separa si hay un « y »: una coma sola puede ser
+     * "Apellidos, Nombres" o una coma colgada al final.
+     *
+     * @return string[]
+     */
+    public static function integrantesEnLinea(?string $celda): array
+    {
+        $personas = [];
+        foreach (self::integrantes($celda) as $linea) {
+            $partes = preg_match('/\s+y\s+/iu', $linea) ? preg_split('/\s+y\s+|,/iu', $linea) : [$linea];
+            foreach ($partes as $parte) {
+                if (($parte = trim($parte, " \t,")) !== '') {
+                    $personas[] = $parte;
+                }
+            }
+        }
+
+        return $personas;
+    }
+
+    /**
+     * Como mismaPersona(), tolerando una letra de diferencia en palabras de 5+ letras
+     * ("Carillo" / "Carrillo"). Quien lo use debe exigir además que el candidato sea único.
+     */
+    public static function mismaPersonaConErratas(string $a, string $b): bool
+    {
+        $pa = self::palabras($a);
+        $pb = self::palabras($b);
+        [$corto, $largo] = count($pa) <= count($pb) ? [$pa, $pb] : [$pb, $pa];
+        $parecida = fn ($x, $y) => $x === $y || (strlen($x) >= 5 && strlen($y) >= 5 && levenshtein($x, $y) <= 1);
+        $iguales = count(array_filter($corto, fn ($x) => array_filter($largo, fn ($y) => $parecida($x, $y)) !== []));
+
+        return $iguales >= 2 && $iguales === count($corto);
+    }
+
+    /**
      * Filas que no son personas: los expedientes separan cada promoción con
      * una fila cuyo "nombre" es el periodo ("2016-I al 2021-II") y a veces
      * repiten la fila de títulos ("APELLIDOS Y NOMBRES" / "DNI"). Nunca

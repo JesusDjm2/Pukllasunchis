@@ -32,8 +32,8 @@ class AvisoVencimientoPtiMail extends Mailable
         $vence = VigenciaPti::mesAnio($this->vigencia->vencimiento);
 
         return new Envelope(
-            from: new Address(config('mail.from.address'), self::REMITENTE),
-            replyTo: array_filter([config('services.titulacion.correo_unidad')]),
+            from: new Address(Remitente::direccion('investigacion'), self::REMITENTE),
+            replyTo: [Remitente::direccion('investigacion')],
             subject: $this->tipo === 'urgente'
                 ? "URGENTE: su Plan de Trabajo de Investigación (PTI) vence a finales de {$vence}"
                 : 'Recordatorio: vigencia de su Plan de Trabajo de Investigación (PTI)',

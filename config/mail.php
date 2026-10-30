@@ -46,6 +46,29 @@ return [
             'local_domain' => env('MAIL_EHLO_DOMAIN'),
         ],
 
+        // Cuenta de Secretaría: los correos de las RD salen con ella (ver App\Mail\Titulacion\Remitente).
+        'secretaria' => [
+            'transport' => 'smtp',
+            'host' => env('MAIL_SECRETARIA_HOST'),
+            'port' => env('MAIL_SECRETARIA_PORT', 587),
+            'encryption' => env('MAIL_SECRETARIA_ENCRYPTION', 'tls'),
+            'username' => env('MAIL_SECRETARIA_USERNAME', 'eespp@pukllasunchis.org'),
+            'password' => env('MAIL_SECRETARIA_PASSWORD'),
+            'timeout' => 20,
+        ],
+
+        // Cuenta del Área de Investigación: avisos del PTI y correos al jurado (ver App\Mail\Titulacion\Remitente).
+        // Es de Google: la contraseña es una «contraseña de aplicación», no la de inicio de sesión.
+        'investigacion' => [
+            'transport' => 'smtp',
+            'host' => env('MAIL_INVESTIGACION_HOST', 'smtp.gmail.com'),
+            'port' => env('MAIL_INVESTIGACION_PORT', 587),
+            'encryption' => env('MAIL_INVESTIGACION_ENCRYPTION', 'tls'),
+            'username' => env('MAIL_INVESTIGACION_USERNAME', 'u.investigacion.eesp@pukllavirtual.edu.pe'),
+            'password' => env('MAIL_INVESTIGACION_PASSWORD'),
+            'timeout' => 20,
+        ],
+
         'ses' => [
             'transport' => 'ses',
         ],
@@ -106,6 +129,10 @@ return [
     | used globally for all e-mails that are sent by your application.
     |
     */
+
+    // Solo para pruebas en local (la base tiene correos reales de estudiantes): con MAIL_PRUEBA_DESTINO
+    // en .env, TODOS los correos llegan a esa dirección. En producción esa variable no debe existir.
+    'to' => env('MAIL_PRUEBA_DESTINO') ? ['address' => env('MAIL_PRUEBA_DESTINO'), 'name' => 'Prueba local'] : null,
 
     'from' => [
         'address' => env('MAIL_FROM_ADDRESS', 'no-reply@eesp-pukllasunchis.edu.pe'),

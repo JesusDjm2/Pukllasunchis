@@ -40,4 +40,12 @@ class Participante extends Model
     {
         return $this->belongsTo(User::class, 'docente_id');
     }
+
+    /** Correo para escribirle: el del docente o, si es del catálogo, el registrado ahí. */
+    public function correo(): ?string
+    {
+        $correo = $this->docente_id ? $this->docente?->email : $this->asesorExterno?->email;
+
+        return filled($correo) && filter_var($correo, FILTER_VALIDATE_EMAIL) ? trim($correo) : null;
+    }
 }

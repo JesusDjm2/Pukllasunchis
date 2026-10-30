@@ -18,7 +18,7 @@
         'mgAcademico' => ['programa.*', 'ciclo.*', 'curso.*', 'periodoactual.*', 'periodos.*', 'competencias.*', 'capacidades.*', 'estandares.*', 'enfoques.*', 'proyectos.*'],
         'mgSeguimiento' => ['expediente.panel*', 'admin.seguimiento*', 'alumnos.demograficos', 'titulacion.*'],
         'mgAdmision' => ['admin-fids.*', 'regulares.*', 'postulantes.ppd.*'],
-        'mgComunicacion' => ['bolsa-trabajo.*', 'admin.comunicados.*', 'admin.minkarikuy.*', 'trabajo.*', 'listaPostulantes', 'bitacora.*', 'admin.taqe.*'],
+        'mgComunicacion' => ['bolsa-trabajo.*', 'admin.comunicados.*', 'admin.minkarikuy.*', 'trabajo.*', 'listaPostulantes', 'bitacora.*', 'admin.taqe.*', 'admin.reclamos.*'],
     ];
     $abierto = fn (string $id) => request()->routeIs(...$grupos[$id]);
     $activo = fn (...$patrones) => request()->routeIs(...$patrones) ? 'active' : '';
@@ -90,8 +90,8 @@
         </div>
     </li>
 
-    {{-- ══ ADMISIÓN Y ATENCIÓN ══ --}}
-    <div class="pk-sb-titulo">Admisión y atención</div>
+    {{-- ══ ADMISIÓN ══ --}}
+    <div class="pk-sb-titulo">Admisión</div>
 
     <li class="nav-item">
         <a class="nav-link pk-sb-link {{ $abierto('mgAdmision') ? 'is-activo' : 'collapsed' }}" href="#" data-toggle="collapse" data-target="#mgAdmision"
@@ -106,9 +106,14 @@
             </div>
         </div>
     </li>
+
+    {{-- ══ ACERVO HISTÓRICO: IESP RICARDO PALMA ══ --}}
+    <div class="pk-sb-titulo">Histórico</div>
+
+    {{-- Un solo enlace: las secciones (actas, estudiantes, carreras, carga) son pestañas dentro del módulo --}}
     <li class="nav-item">
-        <a class="nav-link pk-sb-link {{ $linkActivo('admin.reclamos.*') }}" href="{{ route('admin.reclamos.todas') }}" title="Libro de reclamaciones">
-            <span class="pk-sb-icono"><i class="fas fa-file-signature"></i></span><span class="pk-sb-texto">Libro de reclamaciones</span>
+        <a class="nav-link pk-sb-link {{ $linkActivo('rp.*') }}" href="{{ route('rp.dashboard') }}" title="IESP Ricardo Palma (1995-2015)">
+            <span class="pk-sb-icono"><i class="fas fa-archive"></i></span><span class="pk-sb-texto">Ricardo Palma</span>
         </a>
     </li>
 @endif
@@ -129,6 +134,7 @@
                     <a class="collapse-item {{ $activo('admin.comunicados.*') }}" href="{{ route('admin.comunicados.index') }}">Comunicados</a>
                     <a class="collapse-item {{ $activo('bolsa-trabajo.*') }}" href="{{ route('bolsa-trabajo.ofertas.index') }}">Bolsa de trabajo</a>
                     <a class="collapse-item {{ $activo('admin.minkarikuy.*') }}" href="{{ route('admin.minkarikuy.index') }}">Mink'arikuy</a>
+                    <a class="collapse-item {{ $activo('admin.reclamos.*') }}" href="{{ route('admin.reclamos.todas') }}">Libro de reclamaciones</a>
                 @endif
                 @if ($esAdminB)
                     <h6 class="collapse-header {{ $esAdmin ? 'mt-2' : '' }}">Bolsa (registros)</h6>

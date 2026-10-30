@@ -86,6 +86,8 @@ class ResolucionDirectoralController extends Controller
             'programa' => 'required|string|max:150',
             'lema' => 'required|string|max:200',
             'accion' => 'required|in:previa,emitir',
+            'genero_aparte' => 'nullable|in:f,m',
+            'genero_resto' => 'nullable|in:f,m',
         ];
         $nombres = ['numero_rd' => 'N° de RD'];
         foreach ($campos as $campo => [$etiqueta, $tipo, $obligatorio]) {
@@ -134,11 +136,20 @@ class ResolucionDirectoralController extends Controller
         if (array_key_exists('expedientes', $campos)) {
             $data['expedientes'] = $integrantes->map(fn (User $u) => $u->seguimientoTitulacion?->numero_expediente)->filter()->unique()->implode(', ');
         }
+        // Retiro / incorporación: quién sale o entra y quién forma el grupo.
+        $cambioGrupo = in_array($plantilla, PlantillasRd::CAMBIAN_GRUPO, true) ? $this->cambioDeGrupo($def['tipo'], $egresado, $integrantes) : null;
+        if (is_string($cambioGrupo)) {
+            return back()->withInput()->withErrors(['integrantes' => $cambioGrupo]);
+        }
+        if ($cambioGrupo) {
+            $data['afectados'] = PlantillasRd::listaApellidos($cambioGrupo['aparte']->map(fn ($u) => $this->apellidosNombre($u)));
+        }
+
         $fecha = Carbon::parse($data['fecha']);
         $numero = str_pad($data['numero_rd'], 3, '0', STR_PAD_LEFT);
         $numeroRd = $numero.'-'.$fecha->year;
 
-        $pdf = Pdf::loadView($def['vista'], $this->datosPdf($def, $data, $integrantes, $fecha, $numero))->setPaper('a4');
+        $pdf = Pdf::loadView($def['vista'], $this->datosPdf($def, $data, $integrantes, $fecha, $numero, $cambioGrupo))->setPaper('a4');
         $nombreDescarga = 'RD '.$numeroRd.' '.$def['titulo'].'.pdf';
 
         if ($data['accion'] === 'previa') {
@@ -146,7 +157,7 @@ class ResolucionDirectoralController extends Controller
         }
 
         $url = ArchivosRd::guardarContenido($pdf->output());
-        DB::transaction(function () use ($integrantes, $def, $numeroRd, $fecha, $url, $data) {
+        DB::transaction(function () use ($integrantes, $def, $numeroRd, $fecha, $url, $data, $cambioGrupo, $egresado) {
             foreach ($integrantes as $u) {
                 $seguimiento = $this->seguimiento($u);
                 $seguimiento->resoluciones()->create([
@@ -158,6 +169,9 @@ class ResolucionDirectoralController extends Controller
                 ]);
                 $this->registrarEnEtapa($def['tipo'], $seguimiento, $numeroRd, $fecha, $data);
             }
+            if ($cambioGrupo) {
+                $this->aplicarCambioDeGrupo($def['tipo'], $cambioGrupo, $egresado);
+            }
         });
 
         return redirect()->route('titulacion.index', ['ver' => $egresado->id, 'tab' => 'proceso'])
@@ -165,16 +179,23 @@ class ResolucionDirectoralController extends Controller
             ->with('rd_pdf', $url);
     }
 
-    /** Sube la versión firmada de una RD: reemplaza el PDF de esa RD en todo el grupo. */
+    /**
+     * Sube la versión firmada de una RD (PDF) o registra su enlace (Drive u otro): cambia el archivo
+     * de esa RD en todo el grupo. La RD en sí (número y fecha) se conserva.
+     */
     public function subir(Request $request, Resolucion $resolucion)
     {
-        $request->validate(['pdf' => 'required|file|mimes:pdf|max:10240'], [
-            'pdf.required' => 'Seleccione el PDF de la resolución.',
+        $request->validate([
+            'pdf' => 'required_without:archivo|nullable|file|mimes:pdf|max:10240',
+            'archivo' => 'nullable|url|max:500',
+        ], [
+            'pdf.required_without' => 'Seleccione el PDF de la resolución o pegue su enlace.',
             'pdf.mimes' => 'El archivo debe ser un PDF.',
             'pdf.max' => 'El PDF no debe pesar más de 10 MB.',
+            'archivo.url' => 'El enlace debe ser completo, por ejemplo https://drive.google.com/…',
         ]);
 
-        $url = ArchivosRd::guardarSubido($request->file('pdf'));
+        $url = $request->hasFile('pdf') ? ArchivosRd::guardarSubido($request->file('pdf')) : $request->input('archivo');
         $clave = GrupoTitulacion::claveRd($resolucion->numero_rd);
         $mismas = Resolucion::where('tipo', $resolucion->tipo)->whereNotNull('numero_rd')->get()
             ->filter(fn ($r) => $r->id === $resolucion->id || ($clave !== '' && GrupoTitulacion::claveRd($r->numero_rd) === $clave));
@@ -185,7 +206,7 @@ class ResolucionDirectoralController extends Controller
         $userId = $resolucion->seguimiento->user_id;
 
         return redirect()->route('titulacion.index', ['ver' => $userId, 'tab' => $request->input('tab', 'proceso')])
-            ->with('success', 'PDF de la RD '.$resolucion->numero_rd.' subido'.($mismas->count() > 1 ? ' para los '.$mismas->count().' integrantes del grupo.' : '.'));
+            ->with('success', ($request->hasFile('pdf') ? 'PDF' : 'Enlace').' de la RD '.$resolucion->numero_rd.' guardado'.($mismas->count() > 1 ? ' para los '.$mismas->count().' integrantes del grupo.' : '.'));
     }
 
     /** Abre un PDF guardado: gestores y super-admin, o el propio estudiante si la RD es suya. */
@@ -195,7 +216,7 @@ class ResolucionDirectoralController extends Controller
         abort_unless((bool) $ruta, 404);
 
         $user = auth()->user();
-        $autorizado = $user->hasAnyRole(['super-admin', 'admin', 'gestor-titulacion'])
+        $autorizado = $user->hasAnyRole(['super-admin', 'admin', 'gestor-titulacion', 'secretaria'])
             || Resolucion::where('archivo', 'like', '%'.$nombre)
                 ->whereHas('seguimiento', fn ($q) => $q->where('user_id', $user->id))->exists();
         abort_unless($autorizado, 403);
@@ -204,6 +225,98 @@ class ResolucionDirectoralController extends Controller
     }
 
     // ── Auxiliares ──────────────────────────────────────────────────────
+
+    /**
+     * Quién sale o entra en una RD de retiro / incorporación ('aparte') y quién forma el resto del
+     * grupo ('resto'), o el motivo por el que no se puede emitir.
+     *  - Retiro: se genera desde la ficha de quien se retira; los demás marcados continúan.
+     *  - Incorporación: se genera desde la ficha de un integrante del grupo que recibe; quien no
+     *    pertenecía a ese grupo (se agregó con el buscador) es quien se incorpora.
+     */
+    private function cambioDeGrupo(string $tipo, User $titular, $integrantes): array|string
+    {
+        $seguimiento = $this->seguimiento($titular)->load(['actas', 'resoluciones']);
+
+        if ($tipo === 'RetiroGrupo') {
+            $resto = $integrantes->reject(fn (User $u) => $u->id === $titular->id)->values();
+            if ($resto->isEmpty()) {
+                return 'Marque a los integrantes que continúan: esta RD se genera desde la ficha de quien se retira.';
+            }
+            if ($seguimiento->actas->contains(fn ($a) => filled($a->numero_acta))) {
+                return $titular->apellidos.', '.$titular->name.' ya tiene un acta registrada con su grupo: esta RD corresponde a la etapa del PTI.';
+            }
+
+            return ['aparte' => $integrantes->where('id', $titular->id)->values(), 'resto' => $resto];
+        }
+
+        $equipo = GrupoTitulacion::companeros($seguimiento)->pluck('id')->push($titular->id);
+        $entran = $integrantes->whereNotIn('id', $equipo)->values();
+        if ($entran->isEmpty()) {
+            return 'Agregue con el buscador a quien se incorpora: esta RD se genera desde la ficha de un integrante del grupo que lo recibe.';
+        }
+        $conGrupo = $entran->filter(fn (User $u) => $u->seguimientoTitulacion
+            && GrupoTitulacion::companeros($u->seguimientoTitulacion->load(['actas', 'resoluciones']))->isNotEmpty());
+        if ($conGrupo->isNotEmpty()) {
+            return 'Todavía pertenece a otro grupo: '.$conGrupo->map(fn (User $u) => $u->apellidos.', '.$u->name)->implode('; ').'. Primero emita su RD de retiro desde su ficha.';
+        }
+
+        return ['aparte' => $entran, 'resto' => $integrantes->whereIn('id', $equipo)->values()];
+    }
+
+    /** Lo que la RD cambia en el grupo. Ninguna RD se elimina: las de quien se retira dejan de agrupar. */
+    private function aplicarCambioDeGrupo(string $tipo, array $cambio, User $titular): void
+    {
+        if ($tipo === 'RetiroGrupo') {
+            $seguimiento = $this->seguimiento($titular);
+            $seguimiento->resoluciones()->whereIn('tipo', GrupoTitulacion::TIPOS_RD_GRUPALES)->update(['agrupa' => false]);
+            $seguimiento->update(['grupo_id' => null]);
+            // Renunció a este PTI: queda en su historial; sigue con un PTI nuevo o al incorporarse a otro grupo.
+            $seguimiento->pti()->first()?->update(['estado' => 'vencido']);
+
+            return;
+        }
+
+        $origen = $this->seguimiento($titular);
+        $ptiGrupo = $origen->pti()->first();
+        $rdGrupo = $origen->resoluciones()->where('tipo', 'PTI')->whereNotNull('numero_rd')->get()
+            ->sortByDesc(fn ($r) => GrupoTitulacion::claveRd($r->numero_rd) === GrupoTitulacion::claveRd($ptiGrupo?->rd_pti))->first();
+        $grupoId = $origen->grupo_id ?: $origen->id;
+        foreach ($cambio['resto'] as $u) {
+            $this->seguimiento($u)->update(['grupo_id' => $grupoId]);
+        }
+
+        foreach ($cambio['aparte'] as $u) {
+            $seguimiento = $this->seguimiento($u);
+            $seguimiento->resoluciones()->whereIn('tipo', GrupoTitulacion::TIPOS_RD_GRUPALES)->update(['agrupa' => false]);
+            $seguimiento->grupo_id = $grupoId;
+            if (blank($seguimiento->numero_expediente)) {
+                $seguimiento->numero_expediente = \App\Services\Titulacion\Expediente::siguiente((bool) $u->programa?->esPpd());
+            }
+            $seguimiento->save();
+
+            $anterior = $seguimiento->pti()->first();
+            if ($anterior && $anterior->estado !== 'vencido') {
+                $anterior->update(['estado' => 'vencido']);
+            }
+            // Entra al PTI del grupo: mismo título, RD, asesor y cómputo de la vigencia.
+            $seguimiento->ptis()->create([
+                'numero' => (int) $seguimiento->ptis()->withTrashed()->max('numero') + 1,
+                'estado' => 'pendiente',
+            ] + ($ptiGrupo?->only(['etapa', 'titulo', 'fecha_pti', 'fecha_vencimiento', 'rd_pti', 'asesor_id', 'asesor_externo_id', 'rd_ampliacion', 'fecha_ampliacion', 'vencimiento_ampliado']) ?? []));
+            if ($rdGrupo) {
+                $seguimiento->resoluciones()->create([
+                    'tipo' => 'PTI', 'numero_rd' => $rdGrupo->numero_rd, 'fecha' => $rdGrupo->fecha, 'archivo' => $rdGrupo->archivo,
+                    'detalle' => 'RD del PTI del grupo al que se incorporó',
+                ]);
+            }
+        }
+    }
+
+    /** "Illatupa Díaz, Lali" */
+    private function apellidosNombre(User $u): string
+    {
+        return $this->nombrePropio(trim($u->apellidos.', '.$u->name, ' ,'));
+    }
 
     private function seguimiento(User $user): SeguimientoTitulacion
     {
@@ -249,6 +362,8 @@ class ResolucionDirectoralController extends Controller
             'asesor_anterior_cargo' => 'Asesor',
             'fecha_rd_referida' => $fechaRdPti ? Carbon::parse($fechaRdPti)->toDateString() : '',
             'acompanante' => '',
+            'asesor_designado' => $this->nombrePropio($asesorActual),
+            'rd_reglamento' => '129-2026-DG/EESP-PUKLLASUNCHIS',
             'texto_adicional' => '',
             // Solo "NNN-AAAA": los registros históricos traen nombres de archivo ("RD- 106 PTI …pdf").
             'rd_referida' => $this->soloNumeroRd(match ($plantilla) {
@@ -277,6 +392,8 @@ class ResolucionDirectoralController extends Controller
             'AnulacionPti' => ' · Deja sin efecto la RD '.$data['rd_referida'],
             'CambioTema' => ' · Nuevo título: '.\Illuminate\Support\Str::limit($data['titulo_nuevo'], 200),
             'CambioAsesor' => ' · Nuevo(a) asesor(a): '.$data['asesor_nombre'].' (antes: '.$data['asesor_anterior'].')',
+            'RetiroGrupo' => ' · Se retira: '.$data['afectados'].' · Modifica la RD '.$data['rd_referida'],
+            'IncorporacionGrupo' => ' · Se incorpora: '.$data['afectados'].' · Modifica la RD '.$data['rd_referida'],
             'FechaSustentacion' => ' · Sustentación: '.Carbon::parse($data['fecha_acto'])->format('d/m/Y').' '.$data['hora'],
             default => '',
         };
@@ -338,11 +455,41 @@ class ResolucionDirectoralController extends Controller
         }
     }
 
-    private function datosPdf(array $def, array $data, $integrantes, Carbon $fecha, string $numero): array
+    private function datosPdf(array $def, array $data, $integrantes, Carbon $fecha, string $numero, ?array $cambioGrupo = null): array
     {
         $expedientes = trim((string) ($data['expedientes'] ?? ''));
 
-        return [
+        // Retiro / incorporación: cada grupo de personas concuerda según su propia ficha.
+        $grupoPdf = [];
+        if ($cambioGrupo) {
+            $lista = fn ($personas) => PlantillasRd::listaApellidos($personas->map(fn ($u) => $this->apellidosNombre($u)));
+            // Género: el que se corrigió en el formulario o, si no, el de la ficha de cada persona.
+            $letra = fn ($personas, ?string $elegido) => $elegido ?: PlantillasRd::generoSugerido($personas)[0];
+            $letraAparte = $letra($cambioGrupo['aparte'], $data['genero_aparte'] ?? null);
+            $letraResto = $letra($cambioGrupo['resto'], $data['genero_resto'] ?? null);
+            $parte = fn ($personas, string $g) => [
+                'nombres' => $lista($personas),
+                'mayus' => PlantillasRd::listaApellidos($personas->map(fn ($u) => mb_strtoupper($this->apellidosNombre($u)))),
+                'g' => PlantillasRd::gramatica($g.($personas->count() > 1 ? 'p' : '1')),
+                'varios' => $personas->count() > 1,
+            ];
+            $letraTodos = $letraAparte === 'f' && $letraResto === 'f' ? 'f' : 'm';
+            $esPpd = (bool) $integrantes->first()?->programa?->esPpd();
+            $grupoPdf = [
+                'aparte' => $parte($cambioGrupo['aparte'], $letraAparte),
+                'resto' => $parte($cambioGrupo['resto'], $letraResto),
+                // Como en los modelos: quien se retira va primero; quien se incorpora, al final.
+                'todos' => $parte($def['tipo'] === 'RetiroGrupo'
+                    ? $cambioGrupo['aparte']->concat($cambioGrupo['resto'])
+                    : $cambioGrupo['resto']->concat($cambioGrupo['aparte']), $letraTodos),
+                'esPpd' => $esPpd,
+                'programaCompleto' => ($esPpd ? 'Profesionalización Docente en ' : '').$data['programa'],
+                'asesorDesignado' => trim((string) ($data['asesor_designado'] ?? '')),
+                'reglamento' => trim((string) ($data['rd_reglamento'] ?? '')),
+            ];
+        }
+
+        return $grupoPdf + [
             'numero' => $numero,
             'anio' => $fecha->year,
             'fechaLarga' => PlantillasRd::fechaLarga($fecha),

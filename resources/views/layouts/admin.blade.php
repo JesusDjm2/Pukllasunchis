@@ -36,7 +36,7 @@
             <div class="pl-dots"><span></span><span></span><span></span></div>
             <div class="pl-bar"></div>
         </div>
-        @hasanyrole('super-admin|admin|docente|adminB|tutor|gestor-titulacion')
+        @hasanyrole('super-admin|admin|docente|adminB|tutor|gestor-titulacion|secretaria')
             {{-- Menú lateral pk-sb compartido con layouts.superadmin (color por rol: pk-tokens.css) --}}
             @php
                 $uSb = auth()->user();
@@ -44,6 +44,7 @@
                     $uSb->hasRole('super-admin') => ['Super Admin', 'fa-crown'],
                     $uSb->hasRole('admin') => ['Administración', 'fa-shield-alt'],
                     $uSb->hasRole('gestor-titulacion') => ['Titulación', 'fa-user-graduate'],
+                    $uSb->hasRole('secretaria') => ['Secretaría', 'fa-stamp'],
                     $uSb->hasRole('adminB') => ['Bolsa de trabajo', 'fa-briefcase'],
                     $uSb->hasRole('tutor') => ['Tutoría', 'fa-chalkboard-teacher'],
                     default => ['Área docente', null],

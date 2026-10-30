@@ -54,6 +54,8 @@ class TitulacionImportarCommand extends Command
                     'asesor' => ['Asesor/a'],
                     'rd_pti' => ['RD PTI'],
                     'link_iti' => ['Link ITI'],
+                    // Opcional (30/10): enlace del TI que comparte el estudiante (no es el informe ITI del asesor).
+                    'link_ti' => ['Link TI', 'Enlace TI', 'Enlace del TI', 'Link del TI'],
                     'fecha_exposicion' => ['Fecha de Exp. TI'],
                     'jurado_exposicion' => ['Jurado-Exp. TI'],
                     'grupo_exposicion' => ['Grupo de Exposición de TI'],
@@ -90,6 +92,8 @@ class TitulacionImportarCommand extends Command
                     'observaciones' => ['Observaciones'],
                     'rd_pti' => ['Rd PTI'],
                     'link_iti' => ['Link ITI'],
+                    // Opcional (30/10): enlace del TI que comparte el estudiante (no es el informe ITI del asesor).
+                    'link_ti' => ['Link TI', 'Enlace TI', 'Enlace del TI', 'Link del TI'],
                     'fecha_exposicion' => ['Fecha Exp. TI'],
                     'jurado_exposicion' => ['Jurado-Exp. TI', 'Jurado - Exp. TI'],
                     'grado_bachiller' => ['Grado Bachiller'],
@@ -328,7 +332,7 @@ class TitulacionImportarCommand extends Command
 
             // Una fila de exposición grupal trae a varios integrantes en la
             // misma celda: se registra una fila de staging por persona.
-            foreach ($this->filasPorIntegrante($datosNormalizados) as $datosPersona) {
+            foreach ($this->filasPorIntegrante($datosNormalizados, in_array($origenKey, ['ppd-carlos', 'fid-carlos'], true)) as $datosPersona) {
                 $nombreCrudo = $datosPersona['nombre_estudiante'] ?? '';
                 $nombreNormalizado = $this->normalizarNombre($nombreCrudo);
 
@@ -472,9 +476,11 @@ class TitulacionImportarCommand extends Command
      *
      * @return array<int, array<string, mixed>>
      */
-    public function filasPorIntegrante(array $datos): array
+    public function filasPorIntegrante(array $datos, bool $tambienEnLinea = false): array
     {
-        $integrantes = NombresImportados::integrantes($datos['nombre_estudiante'] ?? '');
+        $integrantes = $tambienEnLinea
+            ? NombresImportados::integrantesEnLinea($datos['nombre_estudiante'] ?? '')
+            : NombresImportados::integrantes($datos['nombre_estudiante'] ?? '');
         if (count($integrantes) <= 1) {
             return [$this->conNombreSeparado($datos)];
         }

@@ -72,8 +72,8 @@
                                     @endforeach
                                 </div>
                                 <div class="form-group">
-                                    <label class="font-weight-bold small text-uppercase text-muted" for="archivo">Archivo CSV</label>
-                                    <input type="file" name="archivo" id="archivo" accept=".csv,text/csv" class="form-control-file" required>
+                                    <label class="font-weight-bold small text-uppercase text-muted" for="archivo">Archivo CSV (para «Enlaces de las RD», Excel .xlsx)</label>
+                                    <input type="file" name="archivo" id="archivo" accept=".csv,text/csv,.xlsx" class="form-control-file" required>
                                 </div>
                                 <button type="submit" class="al-btn al-btn-petroleo" data-cargando="Analizando la planilla…"><i class="fas fa-search"></i> Ver vista previa</button>
                             </div>
@@ -90,6 +90,7 @@
                                 <li><i class="fas fa-check"></i> <strong>Solo completa lo vacío</strong>: expediente, PTI, exposición, bachiller, tesis y sus RD. Lo ya cargado no se reemplaza; si difiere, te lo muestra.</li>
                                 <li><i class="fas fa-check"></i> Quien no tiene cuenta recibe una de egresado (contraseña: su DNI). Tú eliges a quién crear.</li>
                                 <li><i class="fas fa-check"></i> Retirados, DNI dudosos y correos repetidos quedan para revisión manual.</li>
+                                <li><i class="fas fa-check"></i> <strong>Enlaces de las RD:</strong> el CSV no trae los enlaces de Drive; descarga el cuadro como Excel (.xlsx) y elige esa opción. Solo llena las RD sin documento.</li>
                                 <li><i class="fas fa-check"></i> Se puede volver a subir la planilla actualizada cuantas veces quieras: no duplica nada.</li>
                             </ul>
                         </div>

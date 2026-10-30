@@ -13,17 +13,56 @@
         ['6–10', 'Inicio', '#dc3545'],
         ['1–5', 'Previo al inicio', '#dc3545'],
     ];
+    $progNombre = $curso->ciclo->programa->nombre ?? '';
+    $esInicial = stripos($progNombre, 'Inicial') !== false;
+    $esPrimaria = stripos($progNombre, 'Primaria') !== false;
+    $progClase = $esInicial ? 'is-prog-inicial' : ($esPrimaria ? 'is-prog-primaria' : 'is-prog-default');
+    $progIcono = $esInicial ? 'fa-shapes' : ($esPrimaria ? 'fa-book-reader' : 'fa-university');
 @endphp
+<style>
+    .cal-hero-sello.is-prog-inicial {
+        background: #e0e7ff;
+        color: #3730a3;
+        border: 1px solid #c7d2fe;
+    }
+    .cal-hero-sello.is-prog-primaria {
+        background: #d1fae5;
+        color: #065f46;
+        border: 1px solid #a7f3d0;
+    }
+    .cal-hero-sello.is-prog-default {
+        background: #f3f4f6;
+        color: #374151;
+        border: 1px solid #e5e7eb;
+    }
+    .cal-hero-chips .cal-hero-chip-prog.is-prog-inicial {
+        background: #eef2ff !important;
+        color: #3730a3 !important;
+        border: 1px solid #c7d2fe !important;
+        font-weight: 700 !important;
+    }
+    .cal-hero-chips .cal-hero-chip-prog.is-prog-primaria {
+        background: #ecfdf5 !important;
+        color: #065f46 !important;
+        border: 1px solid #a7f3d0 !important;
+        font-weight: 700 !important;
+    }
+</style>
 <section class="cal-hero mb-3 mb-md-4">
     <div class="cal-hero-fila">
         @include('docentes.partials.boton-volver', ['url' => route('vistaDocente', $docente->id), 'label' => 'Mis cursos'])
         <div class="cal-hero-titulo">
-            <span class="cal-hero-sello {{ $tipo === 'PPD' ? 'is-ppd' : 'is-fid' }}">
-                <i class="fas {{ $tipo === 'PPD' ? 'fa-chalkboard-teacher' : 'fa-graduation-cap' }}"></i> Calificaciones {{ $tipo }}
-            </span>
+            <div class="d-flex align-items-center flex-wrap mb-1" style="gap: 0.4rem;">
+                <span class="cal-hero-sello {{ $tipo === 'PPD' ? 'is-ppd' : 'is-fid' }}">
+                    <i class="fas {{ $tipo === 'PPD' ? 'fa-chalkboard-teacher' : 'fa-graduation-cap' }}"></i> Calificaciones {{ $tipo }}
+                </span>
+                <span class="cal-hero-sello {{ $progClase }}" style="font-weight: 700;">
+                    <i class="fas {{ $progIcono }}"></i> {{ $progNombre ?: 'Sin programa' }}
+                </span>
+            </div>
             <h1>{{ $curso->nombre }}</h1>
             <div class="cal-hero-chips">
-                <span><i class="fas fa-university"></i>{{ $curso->ciclo->programa->nombre ?? '—' }}</span>
+                <span class="cal-hero-chip-prog {{ $progClase }}"><i class="fas {{ $progIcono }}"></i>{{ $progNombre ?: '—' }}</span>
                 <span><i class="fas fa-layer-group"></i>Ciclo {{ trim(str_ireplace('Ciclo', '', $curso->ciclo->nombre ?? '—')) }}</span>
                 @if ($periodo)
                     <span><i class="far fa-calendar-alt"></i>Periodo {{ $periodo }}</span>

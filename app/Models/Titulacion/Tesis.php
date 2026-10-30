@@ -24,7 +24,29 @@ class Tesis extends Model
         'titulo_sunedu', 'fecha_titulo_sunedu',
         'url_repositorio', 'estado',
         'enlaces_dictamen', 'link_tesis', 'licenciatura_escuela', 'fecha_licenciatura_escuela',
+        'link_ti', 'link_ti_estado', 'link_ti_enviado_en', 'link_ti_aprobado_en',
+        'link_tesis_estado', 'link_tesis_enviado_en', 'link_tesis_aprobado_en',
+        'tramite_sust_pagado_en', 'tramite_sust_recibo', 'correo_rd_tesis_enviado_en',
     ];
+
+    /**
+     * Estados del enlace del TI (link_ti) y de la Tesis (link_tesis): el estudiante lo envía y el
+     * asesor lo aprueba. Un enlace sin estado (registros anteriores) cuenta como enviado.
+     */
+    public const ESTADOS_ENLACE = [
+        'enviado' => 'Enviado por el estudiante',
+        'aprobado' => 'Aprobado por el asesor',
+    ];
+
+    /** Estado efectivo del enlace de una etapa ('ti' | 'tesis'): null (sin enlace), 'enviado' o 'aprobado'. */
+    public function estadoEnlace(string $etapa): ?string
+    {
+        if (blank($this->{"link_{$etapa}"})) {
+            return null;
+        }
+
+        return $this->{"link_{$etapa}_estado"} === 'aprobado' ? 'aprobado' : 'enviado';
+    }
 
     /** Situación de la tesis (columna `estado`). 'aprobado' queda solo para registros antiguos. */
     public const SITUACIONES = [
@@ -43,6 +65,12 @@ class Tesis extends Model
         'fecha_sustentacion' => 'date',
         'fecha_bachiller_sunedu' => 'date',
         'fecha_titulo_sunedu' => 'date',
+        'link_ti_enviado_en' => 'date',
+        'link_ti_aprobado_en' => 'date',
+        'link_tesis_enviado_en' => 'date',
+        'link_tesis_aprobado_en' => 'date',
+        'tramite_sust_pagado_en' => 'date',
+        'correo_rd_tesis_enviado_en' => 'datetime',
     ];
 
     public function seguimiento()

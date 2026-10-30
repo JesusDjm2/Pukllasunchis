@@ -43,6 +43,16 @@ class ArchivosRd
         return $url && preg_match('~/titulacion/rd/archivo/([0-9a-f\-]{36}\.pdf)$~i', $url, $m) ? $m[1] : null;
     }
 
+    /** Texto del botón que abre el documento de una RD: «Ver PDF» (del sistema), «Ver en Drive» u «Ver enlace». */
+    public static function etiqueta(?string $url): string
+    {
+        return match (true) {
+            (bool) self::nombreDesdeUrl($url) => 'Ver PDF',
+            str_contains((string) parse_url((string) $url, PHP_URL_HOST), 'google.com') => 'Ver en Drive',
+            default => 'Ver enlace',
+        };
+    }
+
     public static function ruta(string $nombre): ?string
     {
         if (! preg_match('/^[0-9a-f\-]{36}\.pdf$/i', $nombre) || ! Storage::disk('local')->exists(self::CARPETA.'/'.$nombre)) {

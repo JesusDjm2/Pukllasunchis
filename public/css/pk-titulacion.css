@@ -199,6 +199,11 @@ body.dim-mode .ft-ficha, body.dim-mode .tc {
 .tp-aviso--espera > i { color: var(--t-ambar); }
 .tp-aviso--ok { background: var(--t-verde-f); border-color: rgba(14, 148, 103, .25); }
 .tp-aviso--ok > i { color: var(--t-verde); }
+.tp-aviso--plazo { background: var(--t-azul-f); border-color: rgba(37, 99, 235, .2); }
+.tp-aviso--plazo > i { color: var(--t-azul); }
+.tp-aviso--vencido { background: var(--t-rojo-f); border-color: rgba(220, 38, 38, .25); }
+.tp-aviso--vencido > i { color: var(--t-rojo); }
+.tp-chip--vencido { color: var(--t-rojo); background: var(--t-rojo-f); }
 
 .tp-vacio { text-align: center; padding: 1.5rem 1rem; color: var(--t-suave); }
 .tp-vacio > i { font-size: 1.8rem; opacity: .5; margin-bottom: .6rem; display: block; }
@@ -239,6 +244,17 @@ body.dark-mode .tp-btn { color: #0d1117 !important; box-shadow: none; }
 .tp-enlace > span { flex: 1; }
 .tp-enlace > i:last-child { color: var(--t-tenue); font-size: .75rem; }
 .tp-enlace:hover { border-color: var(--t-azul); background: var(--t-azul-f); }
+/* Enlace del TI / de la Tesis: estado (enviado por el estudiante → aprobado por el asesor) */
+.tp-enlace-estados { display: flex; flex-wrap: wrap; gap: .4rem; margin: -.4rem 0 1rem; }
+.tp-enlace-opciones { display: flex; flex-wrap: wrap; gap: .5rem; }
+.tp-enlace-opcion { margin: 0; cursor: pointer; }
+.tp-enlace-opcion input { position: absolute; opacity: 0; pointer-events: none; }
+.tp-enlace-opcion span {
+    display: inline-flex; align-items: center; gap: .4rem; padding: .45rem .85rem; border: 1px solid var(--t-borde); border-radius: 999px;
+    font-size: .82rem; font-weight: 700; color: var(--t-suave); background: var(--t-fondo); transition: border-color .15s, background-color .15s, color .15s;
+}
+.tp-enlace-opcion input:checked + span { border-color: var(--t-verde); background: var(--t-verde-f); color: var(--t-verde); }
+.tp-enlace-opcion input:focus-visible + span { outline: 2px solid var(--t-azul); outline-offset: 2px; }
 /* Tesis › Enlaces de los dictaminantes: una fila por dictamen (número, enlace, abrir, quitar) */
 .tp-enlaces { display: grid; gap: .45rem; margin-bottom: .35rem; }
 .tp-enlaces__fila { display: flex; align-items: center; gap: .45rem; }
@@ -802,3 +818,115 @@ body.tl-sin-scroll { overflow: hidden; }
 @media (prefers-reduced-motion: reduce) {
     .ft-accion, .ft-acta, .ft-rd-linea__cuerpo { transition: none; }
 }
+
+/* Documento de una RD en el Historial: botón con texto (el PDF es lo que más se busca).
+   PDF del sistema en rojo documento; enlace externo en azul. Mismo alto que las acciones (2rem). */
+.ft-doc { display: inline-flex; align-items: center; gap: .45rem; height: 2rem; padding: 0 .65rem 0 .3rem; margin-right: .25rem;
+    border: 1px solid var(--t-borde); border-radius: .55rem; background: var(--t-fondo); color: var(--t-texto);
+    font-size: .78rem; font-weight: 700; line-height: 1; white-space: nowrap; text-decoration: none;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, .05); transition: border-color .15s, background .15s, box-shadow .15s, transform .15s; }
+.ft-doc__icono { display: inline-flex; align-items: center; justify-content: center; width: 1.45rem; height: 1.45rem; border-radius: .4rem; font-size: .78rem; }
+.ft-doc__salida { font-size: .62rem; color: var(--t-tenue); transition: color .15s, transform .15s; }
+.ft-doc--pdf .ft-doc__icono { background: var(--t-rojo-f); color: var(--t-rojo); }
+.ft-doc--enlace .ft-doc__icono { background: var(--t-azul-f); color: var(--t-azul); }
+.ft-doc:hover, .ft-doc:focus-visible { color: var(--t-texto); text-decoration: none; border-color: currentColor; transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, .08); }
+.ft-doc--pdf:hover, .ft-doc--pdf:focus-visible { border-color: var(--t-rojo); background: var(--t-rojo-f); }
+.ft-doc--enlace:hover, .ft-doc--enlace:focus-visible { border-color: var(--t-azul); background: var(--t-azul-f); }
+.ft-doc:hover .ft-doc__salida, .ft-doc:focus-visible .ft-doc__salida { color: inherit; transform: translate(1px, -1px); }
+.ft-doc:focus-visible { outline: 2px solid var(--t-azul); outline-offset: 1px; }
+@media (max-width: 575.98px) {
+    .ft-doc { padding-right: .55rem; }
+    .ft-doc__salida { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .ft-doc, .ft-doc__salida { transition: none; }
+    .ft-doc:hover, .ft-doc:focus-visible { transform: none; }
+}
+
+/* ── Asesores (titulacion/asesores) ── */
+.tl button.as-stat { background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.tl .as-tabla td.as-c-persona { width: 42%; }
+.tl .as-c-inst { color: var(--t-suave); font-size: .84rem; min-width: 130px; }
+.tl .as-c-accion { width: 1%; white-space: nowrap; text-align: right; }
+.tl .as-part { display: block; font-size: .8rem; color: var(--t-texto); white-space: nowrap; line-height: 1.5; }
+.tl .as-falta { font-size: .76rem; color: var(--t-tenue); }
+.tl .as-fila.is-inactivo .tit-c-nombre, .tl .as-fila.is-inactivo .as-c-inst { color: var(--t-tenue); }
+.tl .as-editar { width: auto; padding: 0 .6rem; gap: .35rem; font-size: .8rem; font-weight: 700; background: transparent; cursor: pointer; }
+.tl .as-tabla tr[hidden] { display: none; }
+.tl .as-tabla .as-detalle > td { background-color: var(--t-fondo-2) !important; padding: 1rem 1.1rem 1.1rem; }
+.tl .as-campos { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr)); gap: .8rem 1rem; }
+.tl .as-campo label { display: block; margin-bottom: .3rem; font-size: .72rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--t-suave); }
+.tl .as-req { color: var(--t-rojo); }
+.tl .as-switch { margin-top: .9rem; }
+.tl .as-switch label { font-size: .86rem; color: var(--t-texto); }
+.tl .as-switch small { display: block; font-size: .76rem; color: var(--t-suave); }
+.tl .as-acciones { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
+.tl #as-alta[hidden] { display: none; }
+
+@media (max-width: 767.98px) {
+    .tl .as-tabla thead { display: none; }
+    .tl .as-tabla, .tl .as-tabla tbody { display: block; width: 100%; }
+    .tl .as-tabla tr.as-fila { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .75rem; padding: .85rem .9rem; border-top: 1px solid var(--t-borde); }
+    .tl .as-tabla tbody tr.as-fila:first-child { border-top: 0; }
+    .tl .as-tabla tr.as-fila[hidden] { display: none; }
+    .tl .as-tabla tr.as-fila > td { display: block; width: auto; min-width: 0; padding: 0; border: 0; background: transparent !important; }
+    .tl .as-tabla td.as-c-persona { flex: 1 1 100%; width: auto; }
+    .tl .as-tabla td.as-c-inst { flex: 1 1 100%; }
+    .tl .as-tabla td.as-c-inst.is-vacio { display: none; }
+    .tl .as-tabla td.as-c-part { flex: 1 1 auto; }
+    .tl .as-part { display: inline; white-space: normal; }
+    .tl .as-part + .as-part::before { content: " · "; }
+    .tl .tl-persona { min-width: 0; }
+    .tl .as-tabla tr.as-detalle { display: block; }
+    .tl .as-tabla tr.as-detalle[hidden] { display: none; }
+    .tl .as-tabla tr.as-detalle > td { display: block; }
+    .tl .as-acciones .al-btn { flex: 1 1 auto; justify-content: center; }
+}
+
+/* Editor del mensaje al enviar una RD (CKEditor sin iframe): el área de escritura usa los colores del tema */
+.cke_wysiwyg_div { padding: .6rem .8rem; font-size: .9rem; line-height: 1.5; background: var(--t-fondo, #fff); color: var(--t-texto, #1e293b); }
+.cke_wysiwyg_div p { margin: 0 0 .6rem; }
+.cke_wysiwyg_div ul, .cke_wysiwyg_div ol { margin: 0 0 .6rem; padding-left: 1.4rem; }
+.cke_wysiwyg_div a { color: var(--t-azul, #3b5bdb); }
+
+/* Áreas (Secretaría / Investigación): lo que no le corresponde se ve, pero no se modifica. display:contents: el fieldset no altera el diseño del formulario. */
+fieldset.ft-area { display: contents; }
+fieldset.ft-area:disabled button, fieldset.ft-area:disabled input[type="submit"], fieldset.ft-area:disabled input[type="file"] { display: none; }
+.ft-solo-editor:has(fieldset.ft-area:disabled) { display: none; }
+.tl-hero__btn[hidden], .ft-hist__nuevo[hidden], .ft-jurado[hidden], .tp-btn[hidden] { display: none !important; }
+
+/* Formulario de correo de la RD: qué documento se envía */
+.tp-adjunto { display: flex; gap: .7rem; align-items: flex-start; padding: .7rem .85rem; margin-bottom: .5rem; border-radius: 10px; border: 1px solid var(--t-borde); font-size: .84rem; color: var(--t-texto); }
+.tp-adjunto > i { font-size: 1.1rem; margin-top: .1rem; }
+.tp-adjunto strong, .tp-adjunto span { display: block; }
+.tp-adjunto span { font-size: .78rem; color: var(--t-suave); margin-top: .1rem; }
+.tp-adjunto a { font-weight: 700; color: var(--t-azul); }
+.tp-adjunto.is-pdf { background: var(--t-verde-f); }
+.tp-adjunto.is-pdf > i { color: var(--t-verde); }
+.tp-adjunto.is-enlace { background: var(--t-azul-f); }
+.tp-adjunto.is-enlace > i { color: var(--t-azul); }
+.tp-adjunto.is-falta { background: var(--t-ambar-f); }
+.tp-adjunto.is-falta > i { color: var(--t-ambar); }
+.tp-adjunto__subir { display: block; margin: .5rem 0 0; font-size: .78rem; font-weight: 700; color: var(--t-texto); }
+.tp-adjunto__subir input { margin-top: .25rem; font-weight: 400; }
+
+/* Asesores: a qué estudiantes acompaña cada uno */
+.tl .as-rel-boton { display: flex; flex-wrap: wrap; align-items: center; gap: .1rem .6rem; max-width: 24rem; padding: .3rem .55rem; border: 1px solid var(--t-borde); border-radius: 9px; background: var(--t-fondo); font-size: .78rem; color: var(--t-texto); text-align: left; cursor: pointer; transition: border-color .15s ease, background-color .15s ease; }
+.tl .as-rel-boton:hover, .tl .as-rel-boton:focus-visible { border-color: var(--t-azul); background: var(--t-azul-f); }
+.tl .as-rel-boton strong { color: var(--t-azul); font-variant-numeric: tabular-nums; }
+.tl .as-rel-boton > i { margin-left: auto; font-size: .62rem; color: var(--t-tenue); transition: transform .15s ease; }
+.tl .as-rel-boton[aria-expanded="true"] { border-color: var(--t-azul); }
+.tl .as-rel-boton[aria-expanded="true"] > i { transform: rotate(180deg); }
+.tl .as-rel { display: grid; gap: 1.1rem; }
+.tl .as-rel__titulo { display: flex; flex-wrap: wrap; align-items: baseline; gap: .15rem .6rem; margin: 0 0 .45rem; font-size: .84rem; font-weight: 800; color: var(--t-texto); }
+.tl .as-rel__titulo span { font-size: .74rem; font-weight: 600; color: var(--t-suave); }
+.tl .as-rel__lista { list-style: none; margin: 0; padding: 0; display: grid; gap: .45rem; }
+.tl .as-rel__trabajo { padding: .55rem .75rem; border: 1px solid var(--t-borde); border-radius: 10px; background: var(--t-fondo); }
+.tl .as-rel__nombre { font-size: .8rem; line-height: 1.35; color: var(--t-texto); margin-bottom: .3rem; overflow-wrap: anywhere; }
+.tl .as-rel__nombre.is-falta { color: var(--t-tenue); font-style: italic; }
+.tl .as-rel__personas { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .45rem; }
+.tl .as-rel__persona { display: inline-flex; align-items: center; gap: .3rem; font-size: .8rem; font-weight: 700; color: var(--t-azul) !important; }
+.tl .as-rel__persona:hover { text-decoration: underline; }
+.tl .as-rel__persona i { font-size: .6rem; opacity: .7; }
+.tl .as-rel__personas .tl-pill { margin-right: .45rem; font-size: .66rem; }

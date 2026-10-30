@@ -42,17 +42,28 @@ class SincronizacionController extends TitulacionController
         // celular y situación. Sin DNI (por nombre); los datos del grupo vienen en la fila del primero.
         'ppd-carlos' => ['etiqueta' => 'Archivo general de investigaciones PPD (hoja «PPD ARCHIVO GENERAL»)', 'tipo' => 'archivo', 'modalidad' => 'ppd'],
         'fid-carlos' => ['etiqueta' => 'Archivo general de investigaciones FID (hoja «FID ARCHIVO GENERAL»)', 'tipo' => 'archivo', 'modalidad' => 'fid'],
+        // Los nombres «RD … .pdf» de los cuadros son archivos enlazados: el CSV pierde el enlace, el .xlsx lo conserva.
+        'enlaces-rd' => ['etiqueta' => 'Enlaces de las RD (archivo Excel .xlsx «Cuadro de exposiciones», hojas EXP FID y EXP PPD)', 'tipo' => 'enlaces'],
     ];
 
     /** Archivo general: campos que la hoja escribe solo en la fila del primer integrante del grupo. */
     private const CAMPOS_DE_GRUPO = [
-        'titulo_tesis', 'titulo_ti', 'asesor', 'rd_pti', 'link_iti', 'fecha_exposicion', 'jurado_exposicion', 'url_ti_repositorio',
+        'titulo_tesis', 'titulo_ti', 'asesor', 'rd_pti', 'link_iti', 'link_ti', 'fecha_exposicion', 'jurado_exposicion', 'url_ti_repositorio',
         'dictaminante_1', 'link_dictamen_1', 'dictaminante_2', 'link_dictamen_2', 'fecha_sustentacion', 'url_repositorio',
-        'jurado_sustentacion', 'enlace_tesis', 'situacion_tesis',
+        'jurado_sustentacion', 'enlace_tesis', 'situacion_tesis', 'grupo_exposicion', 'grupo_sustentacion',
     ];
 
     /** Archivo general: datos del primer integrante que hereda cada fila de un grupo (por id de fila). */
     private array $herencia = [];
+
+    /** Archivo general: filas que heredaron solo por el orden de la hoja (id de fila => nombre del primer integrante). */
+    private array $heredadasPorOrden = [];
+
+    /** Archivo general: filas vinculadas a una cuenta con el nombre escrito con erratas (id de fila => nombre de la cuenta). */
+    private array $vinculadasConErratas = [];
+
+    /** Archivo general: enlaces que la hoja repite en trabajos con distinto título (uno de ellos está mal). */
+    private array $enlacesRepetidos = [];
 
     private const CARPETA = 'titulacion/sincronizaciones';
 
@@ -91,14 +102,21 @@ class SincronizacionController extends TitulacionController
     public function previsualizar(Request $request)
     {
         $data = $request->validate([
-            'archivo' => 'required|file|mimes:csv,txt|max:5120',
+            'archivo' => 'required|file|mimes:csv,txt,xlsx|max:10240',
             'origen' => 'required|in:' . implode(',', array_keys(self::ORIGENES)),
         ], [
-            'archivo.mimes' => 'Sube la hoja exportada como CSV (Archivo › Descargar › Valores separados por comas).',
+            'archivo.mimes' => 'Sube la hoja exportada como CSV (Archivo › Descargar › Valores separados por comas) o, para los enlaces de las RD, el Excel (.xlsx).',
         ]);
+        $esExcel = strtolower($request->file('archivo')->getClientOriginalExtension()) === 'xlsx';
+        $pideExcel = self::ORIGENES[$data['origen']]['tipo'] === 'enlaces';
+        if ($esExcel !== $pideExcel) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['archivo' => $pideExcel
+                ? 'Los enlaces de las RD se leen del Excel: en Google Sheets, Archivo › Descargar › Microsoft Excel (.xlsx).'
+                : 'Esta hoja se sube como CSV (Archivo › Descargar › Valores separados por comas). El Excel es solo para «Enlaces de las RD».']);
+        }
 
         $token = (string) Str::uuid();
-        $request->file('archivo')->storeAs(self::CARPETA, $token . '.csv', 'local');
+        $request->file('archivo')->storeAs(self::CARPETA, $token . ($esExcel ? '.xlsx' : '.csv'), 'local');
         session(["titulacion_sync.{$token}" => [
             'origen' => $data['origen'],
             'nombre' => $request->file('archivo')->getClientOriginalName(),
@@ -135,7 +153,142 @@ class SincronizacionController extends TitulacionController
 
     private function ruta(string $token): string
     {
-        return storage_path('app/' . self::CARPETA . '/' . $token . '.csv');
+        $base = storage_path('app/' . self::CARPETA . '/' . $token);
+
+        return is_file($base . '.xlsx') ? $base . '.xlsx' : $base . '.csv';
+    }
+
+    /**
+     * Enlaces de las RD desde el .xlsx de los cuadros: cada celda de una columna de RD con enlace se
+     * lleva a la RD de esa persona con el mismo número. Solo llena RD sin documento; una RD ya anotada en
+     * el PTI o la Tesis pero sin registro se registra. Si la celda lista varias RD no se sabe de cuál es
+     * el enlace y se avisa. Misma regla que el resto: en la vista previa todo se deshace.
+     */
+    private function sincronizarEnlaces(string $token, bool $simular): array
+    {
+        @set_time_limit(300);
+        try {
+            $libro = \PhpOffice\PhpSpreadsheet\IOFactory::createReader('Xlsx')->load($this->ruta($token));
+        } catch (\Throwable $e) {
+            report($e);
+            throw \Illuminate\Validation\ValidationException::withMessages(['archivo' => 'No se pudo leer el archivo Excel. Descárgalo de nuevo desde Google Sheets.']);
+        }
+        $hojas = array_filter($libro->getAllSheets(), fn ($h) => preg_match('/^EXP\b/i', trim($h->getTitle())));
+        if (! $hojas) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['archivo' => 'El Excel no tiene las hojas «EXP (FID)» ni «EXP. (PPD)».']);
+        }
+
+        // DNI (sin ceros a la izquierda) -> cuenta, por la ficha de la modalidad o, si no, por la cuenta.
+        $limpio = fn ($d) => ltrim(preg_replace('/\D/', '', (string) $d), '0');
+        $cuentas = [
+            'fid' => \App\Models\Alumno::whereNotNull('user_id')->pluck('user_id', 'dni')->mapWithKeys(fn ($u, $d) => [$limpio($d) => $u]),
+            'ppd' => \App\Models\ppd::whereNotNull('user_id')->pluck('user_id', 'dni')->mapWithKeys(fn ($u, $d) => [$limpio($d) => $u]),
+            'user' => User::whereNotNull('dni')->pluck('id', 'dni')->mapWithKeys(fn ($u, $d) => [$limpio($d) => $u]),
+        ];
+
+        $personas = [];
+        foreach ($hojas as $hoja) {
+            $modalidad = preg_match('/PPD/i', $hoja->getTitle()) ? 'ppd' : 'fid';
+            // Qué columna es cuál, por el título de la primera fila.
+            $columnas = [];
+            $colDni = $colNombre = null;
+            foreach ($hoja->getRowIterator(1, 1)->current()->getCellIterator() as $celda) {
+                $titulo = strtoupper(Str::ascii(trim((string) $celda->getValue())));
+                $letra = $celda->getColumn();
+                match (true) {
+                    $titulo === 'DNI' => $colDni = $letra,
+                    str_contains($titulo, 'APELLIDOS') => $colNombre = $letra,
+                    str_contains($titulo, 'PTI') && ! str_contains($titulo, 'FECHA') => $columnas[$letra] = 'PTI',
+                    $titulo === 'RD TI' => $columnas[$letra] = 'Exposicion',
+                    str_contains($titulo, 'CAMBIO DE ASESOR') => $columnas[$letra] = 'CambioAsesor',
+                    str_contains($titulo, 'EXTENSION') => $columnas[$letra] = 'Extension',
+                    str_contains($titulo, 'RD TESIS') => $columnas[$letra] = 'Tesis',
+                    default => null,
+                };
+            }
+            if (! $colDni) {
+                continue;
+            }
+            foreach ($hoja->getHyperlinkCollection() as $coordenada => $enlace) {
+                [$letra, $fila] = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::coordinateFromString($coordenada);
+                $url = trim((string) $enlace->getUrl());
+                if (! isset($columnas[$letra]) || ! preg_match('#^https?://#i', $url)) {
+                    continue;
+                }
+                $dni = trim((string) $hoja->getCell($colDni . $fila)->getValue());
+                $clave = $limpio($dni);
+                if ($clave === '') {
+                    continue;
+                }
+                $personas[$clave] ??= [
+                    'dni' => $dni, 'nombre' => trim((string) $hoja->getCell($colNombre . $fila)->getValue()),
+                    'user_id' => $cuentas[$modalidad][$clave] ?? $cuentas['user'][$clave] ?? null, 'enlaces' => [],
+                ];
+                $personas[$clave]['enlaces'][] = ['tipo' => $columnas[$letra], 'texto' => trim((string) $hoja->getCell($coordenada)->getValue()), 'url' => $url];
+            }
+        }
+
+        $items = [];
+        DB::beginTransaction();
+        try {
+            foreach ($personas as $p) {
+                $items[] = $this->aplicarEnlacesDePersona($p);
+            }
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
+        $simular ? DB::rollBack() : DB::commit();
+        $items = collect($items);
+
+        return [
+            'items' => $items, 'conteo' => $items->countBy('accion')->all(),
+            'con_diferencias' => $items->filter(fn ($i) => ! empty($i['diferencias']))->count(),
+            'faltantes' => [], 'asesores_creados' => [], 'simulado' => $simular,
+        ];
+    }
+
+    private function aplicarEnlacesDePersona(array $p): array
+    {
+        $item = ['nombre' => $p['nombre'] ?: '(sin nombre)', 'dni' => $p['dni'], 'periodo' => null, 'programa' => null, 'expediente' => null,
+            'user_id' => $p['user_id'], 'cambios' => [], 'diferencias' => [], 'motivos' => [], 'propuesta' => null];
+        $seguimiento = $p['user_id'] ? SeguimientoTitulacion::with(['user', 'resoluciones', 'ptis', 'tesis'])->where('user_id', $p['user_id'])->first() : null;
+        if (! $seguimiento) {
+            return array_merge($item, ['accion' => 'revisar', 'motivos' => [$p['user_id']
+                ? 'Tiene cuenta, pero aún no inició su proceso de titulación.'
+                : 'Ninguna cuenta tiene este DNI: primero sincroniza su hoja de expedientes (CSV).']]);
+        }
+        $item['nombre'] = trim($seguimiento->user->apellidos . ', ' . $seguimiento->user->name, ', ');
+        $item['expediente'] = $seguimiento->numero_expediente;
+        $clave = fn ($n) => \App\Services\Titulacion\GrupoTitulacion::claveRd($n);
+        $anotadas = collect([$seguimiento->tesis?->rd_ti, $seguimiento->tesis?->rd_extension, $seguimiento->tesis?->rd_tesis])
+            ->merge($seguimiento->ptis->flatMap(fn ($pti) => [$pti->rd_pti, $pti->rd_ampliacion]))->filter()->map($clave);
+
+        foreach ($p['enlaces'] as $e) {
+            $lineas = array_values(array_filter(array_map('trim', preg_split('/\R+/u', $e['texto'])), fn ($l) => self::pareceRd($l)));
+            if (count($lineas) !== 1) {
+                if ($lineas) {
+                    $item['diferencias'][] = 'Una celda lista ' . count($lineas) . ' RD con un solo enlace («' . Str::limit($lineas[0], 50) . '»…): no se sabe de cuál es; regístralo a mano. ' . $e['url'];
+                }
+                continue;
+            }
+            $numero = $lineas[0];
+            $rd = $seguimiento->resoluciones->first(fn ($r) => $clave($r->numero_rd) === $clave($numero));
+            if ($rd) {
+                if (blank($rd->archivo)) {
+                    $rd->update(['archivo' => $e['url']]);
+                    $item['cambios'][] = \App\Models\Titulacion\Resolucion::nombreTipo($rd->tipo) . ': enlace registrado (' . Str::limit($numero, 45) . ')';
+                }
+            } elseif ($anotadas->contains($clave($numero))) {
+                $nueva = Resolucion::create(['seguimiento_id' => $seguimiento->id, 'tipo' => self::tipoRdPorTexto($numero, $e['tipo']), 'numero_rd' => $numero, 'archivo' => $e['url']]);
+                $seguimiento->resoluciones->push($nueva);
+                $item['cambios'][] = Resolucion::nombreTipo($nueva->tipo) . ': registrada con su enlace (' . Str::limit($numero, 45) . ')';
+            } else {
+                $item['diferencias'][] = '«' . Str::limit($numero, 60) . '» tiene enlace, pero esa RD no está registrada en su proceso: sincroniza primero su hoja (CSV) o regístrala a mano. ' . $e['url'];
+            }
+        }
+
+        return $item + ['accion' => $item['cambios'] ? 'completa' : 'al_dia'];
     }
 
     /**
@@ -147,6 +300,9 @@ class SincronizacionController extends TitulacionController
     {
         @set_time_limit(300);
         $tipo = self::ORIGENES[$origen]['tipo'];
+        if ($tipo === 'enlaces') {
+            return $this->sincronizarEnlaces($token, $simular);
+        }
         $items = [];
         $creados = [];
 
@@ -211,22 +367,37 @@ class SincronizacionController extends TitulacionController
                 foreach ($filas->where('estado_match', '!=', 'vinculado') as $f) {
                     $coinciden = $cuentas->filter(fn ($u) => NombresImportados::mismaPersona((string) $f->nombre_estudiante, $u->apellidos . ' ' . $u->name));
                     $u = $coinciden->count() === 1 ? $coinciden->first() : null;
+                    // Sin coincidencia exacta, un nombre con una letra de diferencia ("Carillo"), si es único.
+                    if ($coinciden->isEmpty()) {
+                        $parecidas = $cuentas->filter(fn ($c) => NombresImportados::mismaPersonaConErratas((string) $f->nombre_estudiante, $c->apellidos . ' ' . $c->name));
+                        $u = $parecidas->count() === 1 ? $parecidas->first() : null;
+                        if ($u && ($modalidad === 'ppd' ? $u->alumnoB : $u->alumno)) {
+                            $this->vinculadasConErratas[$f->id] = trim($u->apellidos . ', ' . $u->name, ', ');
+                        }
+                    }
                     if ($u && ($modalidad === 'ppd' ? $u->alumnoB : $u->alumno)) {
                         $f->update(['user_id' => $u->id, 'estado_match' => 'vinculado']);
                     }
                 }
-                // Integrantes de un grupo: heredan los datos del primero si la RD del PTI de ese primero
-                // los nombra (la RD lista a todo el grupo); así no se mezcla a nadie por error.
+                $this->enlacesRepetidos = self::enlacesEnVariosTrabajos($filas);
+                // Integrantes de un grupo: heredan los datos del primero (la hoja combina esas celdas y al
+                // exportar solo la primera fila trae datos). Ver perteneceAlGrupo(): no se mezcla a nadie por error.
                 $primero = null;
+                $filaPrimero = null;
                 foreach ($filas->sortBy('fila_num') as $f) {
                     $d = $f->datos_normalizados ?? [];
                     $tieneDatos = collect(['titulo_tesis', 'titulo_ti', 'asesor', 'rd_pti'])->contains(fn ($c) => filled($d[$c] ?? null));
                     if ($tieneDatos) {
                         $primero = $d;
+                        $filaPrimero = $f;
                         continue;
                     }
-                    if ($primero && $this->nombradoEnRd((string) $f->nombre_estudiante, (string) ($primero['rd_pti'] ?? ''))) {
+                    $motivo = $primero ? $this->perteneceAlGrupo($f, $d, $filaPrimero, $primero) : null;
+                    if ($motivo) {
                         $this->herencia[$f->id] = array_intersect_key($primero, array_flip(self::CAMPOS_DE_GRUPO));
+                        if ($motivo === 'orden') {
+                            $this->heredadasPorOrden[$f->id] = (string) $filaPrimero->nombre_estudiante;
+                        }
                     }
                 }
                 $personas = $filas->groupBy(fn (Importacion $f) => $f->user_id ? 'u:' . $f->user_id : 'n:' . $f->nombre_normalizado);
@@ -591,31 +762,86 @@ class SincronizacionController extends TitulacionController
         return $t === null ? '' : preg_replace('/\s+/u', ' ', $t);
     }
 
-    /** true si al menos 2 palabras del nombre (4+ letras) aparecen en el texto de la RD del grupo. */
+    /** true si alguna palabra del nombre (4+ letras) aparece en el texto de la RD del grupo ("RD 52-2021 PTI- OLGA y JUDITH.pdf"). */
     private function nombradoEnRd(string $nombre, string $rd): bool
     {
-        if (! preg_match('/\bR\.?\s?D\b/i', $rd)) {
+        if (! self::esNombreDeRd($rd)) {
             return false; // un enlace de Drive no dice a quién nombra
         }
         $rd = ' ' . preg_replace('/[^A-Z]+/', ' ', strtoupper(Str::ascii($rd))) . ' ';
         $palabras = array_filter(explode(' ', preg_replace('/[^A-Z]+/', ' ', strtoupper(Str::ascii($nombre)))), fn ($p) => strlen($p) >= 4);
 
-        return count(array_filter($palabras, fn ($p) => str_contains($rd, " {$p} "))) >= 2;
+        return count(array_filter($palabras, fn ($p) => str_contains($rd, " {$p} "))) >= 1;
+    }
+
+    private static function esNombreDeRd(string $texto): bool
+    {
+        return ! preg_match('#^\s*https?://#i', $texto) && preg_match('/\bR\.?\s?D\b/i', $texto);
+    }
+
+    /**
+     * ¿Una fila sin datos propios es del grupo de la fila anterior que sí los trae? Null si no.
+     *  - 'rd': la RD del primero la nombra.
+     *  - 'sistema': el sistema ya los tiene juntos (misma RD, acta o grupo).
+     *  - 'orden': la RD no dice a quién nombra (es un enlace o no hay) y la fila parece una celda combinada:
+     *    sin celular propio, o sin año ni programa, y con la misma situación. Se avisa para verificarlo.
+     * Si la RD es un nombre de archivo y no la nombra, no es del grupo.
+     */
+    private function perteneceAlGrupo(Importacion $fila, array $d, Importacion $filaPrimero, array $primero): ?string
+    {
+        $rd = (string) ($primero['rd_pti'] ?? '');
+        if ($this->nombradoEnRd((string) $fila->nombre_estudiante, $rd)) {
+            return 'rd';
+        }
+        if ($fila->user_id && $filaPrimero->user_id && ($seg = SeguimientoTitulacion::with(['actas', 'resoluciones'])->where('user_id', $filaPrimero->user_id)->first())
+            && \App\Services\Titulacion\GrupoTitulacion::companeros($seg)->contains('id', $fila->user_id)) {
+            return 'sistema';
+        }
+        if (self::esNombreDeRd($rd)) {
+            return null;
+        }
+        $celdaCombinada = blank($d['celular'] ?? null) || (blank($d['anio_ingreso'] ?? null) && blank($d['programa'] ?? null));
+        $misma = blank($d['situacion'] ?? null) || blank($primero['situacion'] ?? null)
+            || mb_strtolower(trim($d['situacion'])) === mb_strtolower(trim($primero['situacion']));
+
+        return $celdaCombinada && $misma ? 'orden' : null;
+    }
+
+    /** Enlaces de RD/ITI que la hoja repite en filas con títulos distintos: son de otro trabajo. */
+    private static function enlacesEnVariosTrabajos($filas): array
+    {
+        $titulosPorEnlace = [];
+        foreach ($filas as $f) {
+            $d = $f->datos_normalizados ?? [];
+            $titulo = mb_strtolower(self::limpiarTitulo($d['titulo_ti'] ?? $d['titulo_tesis'] ?? ''));
+            foreach (['rd_pti', 'link_iti'] as $campo) {
+                $url = trim((string) ($d[$campo] ?? ''));
+                if ($titulo !== '' && preg_match('#^https?://\S+$#i', $url)) {
+                    $titulosPorEnlace[$url][$titulo] = true;
+                }
+            }
+        }
+
+        return array_keys(array_filter($titulosPorEnlace, fn ($t) => count($t) > 1));
     }
 
     /**
      * Fecha escrita de cualquier forma en el archivo general: "22/11/2024", "27/06/25", "vier 22/03/2024",
-     * "24 de abril de 2026". Null si no se entiende o es imposible (formato roto como "05/0372024").
+     * "24 de abril de 2026", y erratas sin barra ("05/042024", "05/0372024"). Sin año ("jue 07/03",
+     * "28 de agosto") usa $anioSiFalta. Null si no se entiende o es imposible.
      */
-    private static function fechaLibre(?string $texto): ?string
+    private static function fechaLibre(?string $texto, ?int $anioSiFalta = null): ?string
     {
         $t = trim((string) $texto);
-        if (preg_match('#\b(\d{1,2})/(\d{1,2})/(\d{4}|\d{2})\b#', $t, $m)) {
+        if (preg_match('#\b(\d{1,2})/(\d{1,2})/(\d{4}|\d{2})\b#', $t, $m) || preg_match('#\b(\d{1,2})/(\d{2})7?(20\d{2})\b#', $t, $m)) {
             $anio = strlen($m[3]) === 2 ? 2000 + (int) $m[3] : (int) $m[3];
 
             return checkdate((int) $m[2], (int) $m[1], $anio) ? sprintf('%04d-%02d-%02d', $anio, $m[2], $m[1]) : null;
         }
-        [$fecha] = self::fechaActa($t, null);
+        if (preg_match('#^(?:\p{L}+\.?\s+)?(\d{1,2})/(\d{1,2})$#u', $t, $m)) {
+            return $anioSiFalta && checkdate((int) $m[2], (int) $m[1], $anioSiFalta) ? sprintf('%04d-%02d-%02d', $anioSiFalta, $m[2], $m[1]) : null;
+        }
+        [$fecha] = self::fechaActa($t, $anioSiFalta);
 
         return $fecha;
     }
@@ -635,7 +861,9 @@ class SincronizacionController extends TitulacionController
      */
     private static function personasDeCelda(?string $texto): array
     {
-        $t = preg_replace(['/\bfirma\s*:[^\n]*/iu', '/\([^)]*\)?/u', '/,\s*aprueba.*$/imu'], '', (string) $texto);
+        // «firma Hilda…» a veces va sin dos puntos; «BacilioZea» es «Bacilio Zea» sin espacio.
+        $t = preg_replace(['/\bfirma\b\s*:?[^\n]*/iu', '/\([^)]*\)?/u', '/,\s*aprueba.*$/imu'], '', (string) $texto);
+        $t = preg_replace('/(\p{Ll})(\p{Lu})/u', '$1 $2', $t);
         $personas = [];
         foreach (preg_split('/\n|\/|,|;|\s+y\s+|\s-\s/u', $t) as $parte) {
             $parte = trim(preg_replace('/^\s*((bach|lic|mag|mg|dra?|prof|psic[oó]l|ing|doc)\.?\s*)+/iu', '', trim($parte)), " \t,.\"'?");
@@ -734,7 +962,16 @@ class SincronizacionController extends TitulacionController
         );
         $diferencias = [];
         $extras = [];
+        if ($grupo->count() > 1) {
+            $diferencias[] = "Aparece {$grupo->count()} veces en la hoja: manda la primera fila y las demás solo completan lo vacío. Revisa cuál es la vigente.";
+        }
         foreach ($grupo as $f) {
+            if (isset($this->vinculadasConErratas[$f->id])) {
+                $diferencias[] = "La hoja escribe «{$f->nombre_estudiante}» y se vinculó con la cuenta de {$this->vinculadasConErratas[$f->id]} (una letra de diferencia). Verifícalo.";
+            }
+            if (isset($this->heredadasPorOrden[$f->id])) {
+                $diferencias[] = "Tomó los datos de {$this->heredadasPorOrden[$f->id]} por estar en la fila anterior de la hoja (la RD no nombra al grupo). Verifica que sean del mismo grupo.";
+            }
             $this->aplicarFilaArchivo($seguimiento, $f, $user, $modalidad, $diferencias, $extras);
         }
 
@@ -779,15 +1016,20 @@ class SincronizacionController extends TitulacionController
             return $v;
         };
         $anioIngreso = preg_match('/(20\d\d)/', (string) ($d['anio_ingreso'] ?? ''), $m) ? (int) $m[1] : null;
-        $fechaValida = function (?string $texto, string $etiqueta) use ($anioIngreso, &$diferencias) {
+        // Una fecha sin año ("jue 07/03") toma el del grupo de esa etapa en la hoja ("2024-I").
+        $fechaValida = function (?string $texto, string $etiqueta, ?string $grupoHoja = null) use ($anioIngreso, &$diferencias) {
             if (blank($texto)) {
                 return null;
             }
-            $fecha = self::fechaLibre($texto);
+            $anioGrupo = preg_match('/(20\d\d)/', (string) $grupoHoja, $g) ? (int) $g[1] : null;
+            $fecha = self::fechaLibre($texto, $anioGrupo);
             if (! $fecha) {
                 $diferencias[] = "{$etiqueta}: no se entiende la fecha «{$texto}»: no se registró.";
 
                 return null;
+            }
+            if ($anioGrupo && self::fechaLibre($texto) === null && ! preg_match('/20\d\d/', $texto)) {
+                $diferencias[] = "{$etiqueta}: la fecha «{$texto}» no tiene año; se tomó {$anioGrupo} del grupo «{$grupoHoja}» de la hoja. Verifícalo.";
             }
             $anio = (int) substr($fecha, 0, 4);
             if (($anioIngreso && $anio < $anioIngreso) || $anio > (int) now()->year + 1) {
@@ -807,10 +1049,21 @@ class SincronizacionController extends TitulacionController
             $diferencias[] = "Asesor «{$asesorTexto}»: no está en el sistema (ni como docente ni en el catálogo de asesores).";
         }
         $rdPti = trim((string) ($d['rd_pti'] ?? ''));
+        // La celda puede traer una nota antes de la RD («SOLICITO LICENCIA…\nRD - 0250…»): solo la línea de la RD.
+        $rdPtiNombre = collect(preg_split('/\R+/u', $rdPti))->map(fn ($l) => trim($l))->first(fn ($l) => self::esNombreDeRd($l));
+        $rdPtiEnlace = $esUrl($rdPti) ? $rdPti : null;
+        $linkIti = $esUrl($d['link_iti'] ?? null) ? trim($d['link_iti']) : null;
+        foreach (array_filter([$rdPtiEnlace, $linkIti]) as $url) {
+            if (in_array($url, $this->enlacesRepetidos, true)) {
+                $diferencias[] = "El enlace {$url} se repite en la hoja con otro trabajo: no se registró en esta persona. Revisa cuál es el correcto.";
+            }
+        }
+        $rdPtiEnlace = in_array($rdPtiEnlace, $this->enlacesRepetidos, true) ? null : $rdPtiEnlace;
+        $linkIti = in_array($linkIti, $this->enlacesRepetidos, true) ? null : $linkIti;
         foreach ([
             'titulo' => $titulo($modalidad === 'fid' ? ($d['titulo_ti'] ?? null) : ($d['titulo_tesis'] ?? null)),
-            'link_iti' => $esUrl($d['link_iti'] ?? null) ? trim($d['link_iti']) : null,
-            'rd_pti' => preg_match('/\bR\.?\s?D\b/i', $rdPti) ? $rdPti : null,
+            'link_iti' => $linkIti,
+            'rd_pti' => $rdPtiNombre,
         ] as $campo => $valor) {
             if ($valor !== null && blank($pti->{$campo})) {
                 $pti->{$campo} = $valor;
@@ -822,7 +1075,9 @@ class SincronizacionController extends TitulacionController
             $pti->asesor_externo_id = $asesorExternoId;
         }
         // La secuencia del proceso muestra asesor y jurado del TI desde «Participantes».
-        $this->agregarParticipante($seguimiento, 'ti', 'asesor', $asesorTexto);
+        foreach (self::personasDeCelda($d['asesor'] ?? null) as $asesorTi) {
+            $this->agregarParticipante($seguimiento, 'ti', 'asesor', $asesorTi);
+        }
         foreach (self::personasDeCelda($d['jurado_exposicion'] ?? null) as $jurado) {
             $this->agregarParticipante($seguimiento, 'ti', 'jurado', $jurado);
         }
@@ -831,6 +1086,20 @@ class SincronizacionController extends TitulacionController
         }
         if ($pti->rd_pti && $pti->wasChanged('rd_pti') || ($pti->wasRecentlyCreated && $pti->rd_pti)) {
             Resolucion::firstOrCreate(['seguimiento_id' => $seguimiento->id, 'tipo' => 'PTI', 'numero_rd' => $pti->rd_pti]);
+        }
+        // La columna «RD PTI» a veces trae el enlace al documento en vez de su nombre: va a la RD que aún no lo tiene.
+        if ($rdPtiEnlace) {
+            $rdsPti = Resolucion::where(['seguimiento_id' => $seguimiento->id, 'tipo' => 'PTI'])->get();
+            // Con varias RD de PTI (incorporaciones) va a la del PTI; si alguna ya tiene documento, no se toca.
+            $sinDocumento = $rdsPti->every(fn ($r) => blank($r->archivo))
+                ? ($rdsPti->first(fn ($r) => filled($r->numero_rd) && trim($r->numero_rd) === trim((string) $pti->rd_pti)) ?? $rdsPti->first(fn ($r) => filled($r->numero_rd)))
+                : null;
+            if ($sinDocumento) {
+                $sinDocumento->update(['archivo' => $rdPtiEnlace]);
+                $extras[] = "RD del PTI {$sinDocumento->numero_rd}: se registró su enlace de Drive";
+            } elseif ($rdsPti->isEmpty()) {
+                $diferencias[] = "La hoja trae el enlace de la RD del PTI pero no su número ({$rdPtiEnlace}): regístrala a mano en «PTI y RD de aprobación».";
+            }
         }
 
         // Tesis: título (FID), fechas, repositorios y grados en SUNEDU.
@@ -841,11 +1110,13 @@ class SincronizacionController extends TitulacionController
         $licenciadoAceptado = ! $licenciado && preg_match('/^acept/i', trim((string) ($d['grado_licenciado'] ?? '')));
         foreach ([
             'titulo' => $modalidad === 'fid' ? $titulo($d['titulo_tesis'] ?? null) : null,
-            'fecha_exposicion' => $fechaValida($d['fecha_exposicion'] ?? null, 'Fecha de exposición del TI'),
-            'fecha_sustentacion' => $fechaValida($d['fecha_sustentacion'] ?? null, 'Fecha de sustentación de la tesis'),
+            'fecha_exposicion' => $fechaValida($d['fecha_exposicion'] ?? null, 'Fecha de exposición del TI', $d['grupo_exposicion'] ?? null),
+            'fecha_sustentacion' => $fechaValida($d['fecha_sustentacion'] ?? null, 'Fecha de sustentación de la tesis', $d['grupo_sustentacion'] ?? null),
             'url_repositorio_ti' => $esUrl($d['url_ti_repositorio'] ?? null) ? trim($d['url_ti_repositorio']) : null,
             'url_repositorio' => $esUrl($d['url_repositorio'] ?? null) ? trim($d['url_repositorio']) : null,
             'link_tesis' => $esUrl($d['enlace_tesis'] ?? null) ? trim($d['enlace_tesis']) : null,
+            // Columna opcional «Link TI»: el enlace del TI del estudiante (su estado se pone abajo).
+            'link_ti' => $esUrl($d['link_ti'] ?? null) ? trim($d['link_ti']) : null,
             // «Grado Bachiller: Aceptado» = su grado ya está en SUNEDU (puede iniciar la Licenciatura).
             'bachiller_sunedu' => $bachiller ? 'Aceptado (archivo general)' : null,
             'titulo_sunedu' => $licenciado ? 'Registrado en SUNEDU (archivo general)' : ($licenciadoAceptado ? 'Aceptado (archivo general)' : null),
@@ -853,6 +1124,15 @@ class SincronizacionController extends TitulacionController
             if ($valor !== null && blank($tesis->{$campo})) {
                 $tesis->{$campo} = $valor;
             }
+        }
+        // Enlace del TI de la planilla: aprobado si el TI ya expuso (la hoja solo guarda los que pasaron
+        // la revisión del asesor); si no, enviado por el estudiante, a la espera de su aprobación.
+        if ($tesis->isDirty('link_ti') && filled($tesis->link_ti) && blank($tesis->link_ti_estado)) {
+            $tesis->link_ti_estado = filled($tesis->fecha_exposicion) || filled($tesis->rd_ti) ? 'aprobado' : 'enviado';
+        }
+        // Igual el de la Tesis: también los que quedaron sin estado en una sincronización anterior.
+        if (filled($tesis->link_tesis) && blank($tesis->link_tesis_estado)) {
+            $tesis->link_tesis_estado = filled($tesis->fecha_sustentacion) || filled($tesis->rd_tesis) ? 'aprobado' : 'enviado';
         }
         // «Grado Licenciado: Aceptado» también es el paso «Licenciatura aceptada por la Escuela» (sin fecha en la hoja).
         if (preg_match('/^acept/i', trim((string) ($d['grado_licenciado'] ?? ''))) && ! $tesis->licenciatura_escuela) {
@@ -941,7 +1221,7 @@ class SincronizacionController extends TitulacionController
         return [
             'expediente' => $seg->numero_expediente,
             'pti' => $campos(Pti::where('seguimiento_id', $seg->id)->first(), ['fecha_pti', 'rd_pti', 'titulo', 'asesor_id', 'asesor_externo_id', 'link_iti', 'fecha_vencimiento', 'estado']),
-            'tesis' => ($t = Tesis::where('seguimiento_id', $seg->id)->first()) ? $campos($t, ['fecha_exposicion', 'rd_ti', 'url_repositorio_ti', 'bachiller_sunedu', 'rd_extension', 'fecha_sustentacion', 'titulo', 'rd_tesis', 'url_repositorio', 'titulo_sunedu', 'link_tesis']) + [
+            'tesis' => ($t = Tesis::where('seguimiento_id', $seg->id)->first()) ? $campos($t, ['fecha_exposicion', 'rd_ti', 'url_repositorio_ti', 'bachiller_sunedu', 'rd_extension', 'fecha_sustentacion', 'titulo', 'rd_tesis', 'url_repositorio', 'titulo_sunedu', 'link_tesis', 'link_ti']) + [
                 // Pasos nuevos de la Tesis, como texto (vacío = sin registrar) para que la vista previa los cuente.
                 'enlaces_dictamen' => $t->enlaces_dictamen ? count($t->enlaces_dictamen) . ' enlace(s)' : null,
                 'situacion' => $t->estado && $t->estado !== 'pendiente' ? (Tesis::SITUACIONES[$t->estado] ?? $t->estado) : null,
@@ -966,7 +1246,7 @@ class SincronizacionController extends TitulacionController
             'fecha_pti' => 'fecha del PTI', 'rd_pti' => 'RD del PTI', 'titulo' => 'título', 'fecha_vencimiento' => 'vencimiento del PTI',
             'estado' => 'estado', 'asesor_id' => 'asesor(a)', 'asesor_externo_id' => 'asesor(a) del catálogo', 'link_iti' => 'enlace al ITI', 'url_repositorio_ti' => 'TI en el repositorio', 'url_repositorio' => 'tesis en el repositorio', 'titulo_sunedu' => 'licenciado en SUNEDU', 'fecha_exposicion' => 'fecha de exposición', 'rd_ti' => 'RD de exposición (TI)',
             'bachiller_sunedu' => 'bachiller SUNEDU', 'rd_extension' => 'RD de extensión', 'fecha_sustentacion' => 'fecha de sustentación', 'rd_tesis' => 'RD de tesis',
-            'link_tesis' => 'enlace de la tesis', 'enlaces_dictamen' => 'enlaces de los dictaminantes', 'situacion' => 'situación de la tesis',
+            'link_tesis' => 'enlace de la tesis', 'link_ti' => 'enlace del TI', 'enlaces_dictamen' => 'enlaces de los dictaminantes', 'situacion' => 'situación de la tesis',
             'licenciatura_escuela' => 'Licenciatura aceptada por la Escuela',
         ];
         $lista = [];

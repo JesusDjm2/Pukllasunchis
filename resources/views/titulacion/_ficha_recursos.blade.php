@@ -1,6 +1,42 @@
 {{-- Recursos de la ficha de titulación que van UNA vez por página (ver _show_contenido).
      Espera $docentes y $asesores. --}}
 @once
+    <script>
+        // Mensaje con formato al enviar una RD (CKEditor, ya cargado en el layout). Cada ficha trae
+        // varios formularios ocultos y llega por AJAX: el editor nace cuando su campo se hace visible.
+        // divarea (sin iframe): la ficha se mueve entre la fila y el panel lateral, y un iframe se vaciaría.
+        (function () {
+            if (!window.IntersectionObserver) return;
+            var visible = new IntersectionObserver(function (entradas) {
+                entradas.forEach(function (e) {
+                    if (!e.isIntersecting || !window.CKEDITOR || e.target.dataset.editorListo) return;
+                    e.target.dataset.editorListo = '1';
+                    visible.unobserve(e.target);
+                    // CKEditor oculta el campo: con «required» el navegador bloquearía el envío. Lo valida el servidor.
+                    e.target.removeAttribute('required');
+                    CKEDITOR.replace(e.target, {
+                        language: 'es', height: 230, extraPlugins: 'divarea', removeButtons: '', removePlugins: 'elementspath,image,maximize,about', resize_enabled: false,
+                        toolbar: [['Bold', 'Italic', 'Underline'], ['NumberedList', 'BulletedList'], ['Link', 'Unlink'], ['RemoveFormat']],
+                        allowedContent: 'p br strong em u ul ol li; a[!href,target,rel]', linkShowAdvancedTab: false, linkShowTargetTab: false,
+                    });
+                });
+            });
+            function buscar() {
+                document.querySelectorAll('textarea.js-editor-rd:not([data-editor-listo])').forEach(function (t) { visible.observe(t); });
+            }
+            document.addEventListener('DOMContentLoaded', function () {
+                buscar();
+                new MutationObserver(buscar).observe(document.body, { childList: true, subtree: true });
+            });
+            document.addEventListener('submit', function (e) {
+                if (!window.CKEDITOR) return;
+                Object.keys(CKEDITOR.instances).forEach(function (n) {
+                    var inst = CKEDITOR.instances[n];
+                    if (e.target.contains(inst.element.$)) inst.updateElement();
+                });
+            }, true);
+        })();
+    </script>
     {{-- Diseño de la ficha (cabecera, línea de tiempo y panel del paso): hoja propia del módulo. --}}
     <link rel="stylesheet" href="{{ asset('css/pk-titulacion.css') }}?v={{ filemtime(public_path('css/pk-titulacion.css')) }}">
     <script>

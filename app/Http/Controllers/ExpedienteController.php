@@ -129,7 +129,7 @@ class ExpedienteController extends Controller
      */
     private function titulacion(User $user): ?array
     {
-        if (! auth()->user()->hasRole('gestor-titulacion')
+        if (! auth()->user()->hasAnyRole(['gestor-titulacion', 'secretaria'])
             || ! class_exists(\App\Models\Titulacion\SeguimientoTitulacion::class)
             || ! \Illuminate\Support\Facades\Schema::hasTable('seguimiento_titulacion')) {
             return null;

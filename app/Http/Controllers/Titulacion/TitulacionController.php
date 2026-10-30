@@ -262,7 +262,7 @@ class TitulacionController extends Controller
         // Misma regla que GrupoTitulacion::companeros() (lo que ve el alumno),
         // aquí en bloque para todas las filas a la vez.
         $claveRd = fn (?string $rd) => GrupoTitulacion::claveRd($rd);
-        $companerosPorRd = Resolucion::whereIn('tipo', GrupoTitulacion::TIPOS_RD_GRUPALES)
+        $companerosPorRd = Resolucion::whereIn('tipo', GrupoTitulacion::TIPOS_RD_GRUPALES)->where('agrupa', true)
             ->whereNotNull('numero_rd')->where('numero_rd', '!=', '')
             ->with('seguimiento.user:id,name,apellidos')
             ->get()
@@ -1232,6 +1232,7 @@ class TitulacionController extends Controller
         ], [
             'vencimiento_ampliado.required_with' => 'Indique el nuevo vencimiento que otorga la RD de ampliación.',
         ]);
+        $data = \App\Services\Titulacion\AreasTitulacion::sinCamposDeRd($data);
 
         // Aprobado = tiene RD (lo pone recalcularEstado al guardar); a mano
         // solo se puede marcar "vencido".
@@ -1275,6 +1276,7 @@ class TitulacionController extends Controller
             'rd_pti' => 'nullable|string|max:255',
             'fecha_vencimiento' => 'nullable|date',
         ]);
+        $data = \App\Services\Titulacion\AreasTitulacion::sinCamposDeRd($data);
         $data = array_merge($data, Pti::columnasAsesor($data['asesor_id'] ?? null));
         $this->verificarAsesorExterno($data['asesor_externo_id']);
 
@@ -1292,6 +1294,74 @@ class TitulacionController extends Controller
         });
 
         return $this->volverAlAcordeon($egresado->id, 'Nuevo PTI ('.Pti::ETAPAS[$data['etapa']].') registrado; el anterior queda en el historial.', 'pti');
+    }
+
+    /**
+     * Registra una ampliación del PTI vigente: es una RD NUEVA (no reemplaza la de aprobación ni las
+     * ampliaciones anteriores) y su vencimiento pasa a ser el del PTI. Con "aplicar al grupo", también
+     * para los compañeros (la misma RD y el mismo PDF).
+     */
+    public function ptiAmpliacion(Request $request, User $egresado)
+    {
+        $data = $request->validate([
+            'numero_rd' => 'required|string|max:255',
+            'fecha' => 'nullable|date',
+            'vencimiento_ampliado' => 'required|date',
+            'pdf' => 'nullable|file|mimes:pdf|max:10240',
+            'archivo' => 'nullable|url|max:500',
+        ], [
+            'vencimiento_ampliado.required' => 'Indique el nuevo vencimiento que otorga la RD de ampliación.',
+            'archivo.url' => 'El enlace debe ser completo, por ejemplo https://drive.google.com/…',
+        ], ['numero_rd' => 'N° de RD', 'pdf' => 'PDF de la RD']);
+
+        $seguimiento = SeguimientoTitulacion::with(['pti', 'resoluciones'])->where('user_id', $egresado->id)->firstOrFail();
+        abort_unless($seguimiento->pti, 404);
+        $archivo = $request->hasFile('pdf')
+            ? \App\Services\Titulacion\ArchivosRd::guardarSubido($request->file('pdf'))
+            : ($data['archivo'] ?? null);
+
+        $aplicados = 0;
+        $omitidos = [];
+        DB::transaction(function () use ($seguimiento, $request, $data, $archivo, &$aplicados, &$omitidos) {
+            $this->registrarAmpliacion($seguimiento, $data, $archivo);
+            foreach ($this->companerosDestino($seguimiento, $request) as $otro) {
+                if (! $otro->pti) {
+                    $omitidos[] = $otro->user?->apellidos.' (sin PTI)';
+                    continue;
+                }
+                $this->registrarAmpliacion($otro, $data, $archivo);
+                $aplicados++;
+            }
+        });
+
+        return $this->volverAlAcordeon($egresado->id, 'Ampliación del PTI (RD '.$data['numero_rd'].') registrada'.$this->textoGrupo($aplicados, $omitidos), 'pti');
+    }
+
+    /** Una ampliación en un seguimiento: RD nueva (si esa RD no estaba ya) + nuevo vencimiento del PTI. */
+    private function registrarAmpliacion(SeguimientoTitulacion $seguimiento, array $data, ?string $archivo): void
+    {
+        $pti = $seguimiento->pti;
+        $pti->update([
+            'rd_ampliacion' => $data['numero_rd'],
+            'fecha_ampliacion' => $data['fecha'] ?? null,
+            'vencimiento_ampliado' => $data['vencimiento_ampliado'],
+        ]);
+        $clave = GrupoTitulacion::claveRd($data['numero_rd']);
+        $existente = $seguimiento->resoluciones()->where('tipo', 'AmpliacionPti')->get()
+            ->first(fn ($r) => GrupoTitulacion::claveRd($r->numero_rd) === $clave);
+        $detalle = 'PTI N° '.$pti->numero.' ampliado hasta el '.\Carbon\Carbon::parse($data['vencimiento_ampliado'])->format('d/m/Y');
+        if ($existente) {
+            $existente->update(array_filter(['fecha' => $data['fecha'] ?? null, 'archivo' => $archivo, 'detalle' => $detalle]));
+
+            return;
+        }
+        $seguimiento->resoluciones()->create([
+            'tipo' => 'AmpliacionPti',
+            'numero_rd' => $data['numero_rd'],
+            'fecha' => $data['fecha'] ?? null,
+            'archivo' => $archivo,
+            'detalle' => $detalle,
+        ]);
     }
 
     /** La ampliación del PTI también figura como RD en la línea de tiempo. */
@@ -1342,10 +1412,20 @@ class TitulacionController extends Controller
             'enlaces_dictamen' => 'nullable|array|max:10',
             'enlaces_dictamen.*' => 'nullable|string|max:500',
             'link_tesis' => 'nullable|string|max:500',
+            'link_ti' => 'nullable|url|max:500',
+            'link_ti_estado' => 'nullable|in:'.implode(',', array_keys(Tesis::ESTADOS_ENLACE)),
+            'link_ti_enviado_en' => 'nullable|date',
+            'link_ti_aprobado_en' => 'nullable|date',
+            'link_tesis_estado' => 'nullable|in:'.implode(',', array_keys(Tesis::ESTADOS_ENLACE)),
+            'link_tesis_enviado_en' => 'nullable|date',
+            'link_tesis_aprobado_en' => 'nullable|date',
             'licenciatura_escuela' => 'nullable|boolean',
             'fecha_licenciatura_escuela' => 'nullable|date',
             'licenciado_sunedu' => 'nullable|in:si,pendiente',
+        ], [
+            'link_ti.url' => 'El enlace del TI debe ser un enlace completo, por ejemplo https://drive.google.com/…',
         ]);
+        $data = \App\Services\Titulacion\AreasTitulacion::sinCamposDeRd($data);
 
         // Pasos de la Tesis con reglas propias (ver _proceso):
         // enlaces de los dictámenes (uno o más; el formulario puede quedar vacío para quitarlos todos),
@@ -1368,6 +1448,26 @@ class TitulacionController extends Controller
                 $data['titulo_sunedu'] = filled($data['titulo_sunedu'] ?? null) ? $data['titulo_sunedu'] : ($actualSunedu ?: 'Sí');
             }
             unset($data['licenciado_sunedu']);
+        }
+        // Enlace del TI / de la Tesis (paso «Enlace»): el estudiante lo envía y el asesor lo aprueba.
+        // Las fechas se ponen solas (hoy) si no vienen; sin enlace se borran estado y fechas.
+        $tesisActual = SeguimientoTitulacion::where('user_id', $egresado->id)->first()?->tesis;
+        foreach (['ti', 'tesis'] as $et) {
+            if (! $request->exists("link_{$et}_estado")) {
+                continue;
+            }
+            $hoy = now()->toDateString();
+            if (blank($data["link_{$et}"] ?? null)) {
+                $data["link_{$et}"] = null;
+                $data["link_{$et}_estado"] = $data["link_{$et}_enviado_en"] = $data["link_{$et}_aprobado_en"] = null;
+                continue;
+            }
+            $aprobado = ($data["link_{$et}_estado"] ?? null) === 'aprobado';
+            $data["link_{$et}_estado"] = $aprobado ? 'aprobado' : 'enviado';
+            $data["link_{$et}_enviado_en"] = ($data["link_{$et}_enviado_en"] ?? null) ?: ($tesisActual?->{"link_{$et}_enviado_en"}?->toDateString() ?? $hoy);
+            $data["link_{$et}_aprobado_en"] = $aprobado
+                ? (($data["link_{$et}_aprobado_en"] ?? null) ?: ($tesisActual?->{"link_{$et}_aprobado_en"}?->toDateString() ?? $hoy))
+                : null;
         }
         // Las acciones cortas de cada etapa ("Registrar exposición", "Registrar Bachiller"…)
         // mandan solo sus campos: se actualiza lo enviado y el asesor solo si vino en el form.
@@ -1546,8 +1646,9 @@ class TitulacionController extends Controller
     public function asesoresIndex()
     {
         $asesores = Asesor::orderBy('apellidos')->orderBy('nombres')->get();
+        $participaciones = \App\Services\Titulacion\ParticipacionAsesores::porAsesor();
 
-        return view('titulacion.asesores', compact('asesores'));
+        return view('titulacion.asesores', compact('asesores', 'participaciones'));
     }
 
     /** Alta desde la página del catálogo o desde la ficha (vuelve a la pestaña). */
@@ -1584,11 +1685,11 @@ class TitulacionController extends Controller
         ];
     }
 
+    /** Las RD emitidas no vencen ni se eliminan (Unidad de Investigación, 30/10): solo se corrigen. */
     public function resolucionEliminar(Resolucion $resolucion)
     {
-        $userId = $resolucion->seguimiento->user_id;
-        $resolucion->delete();
-        return $this->volverAlAcordeon($userId, 'Resolución eliminada.', 'resoluciones');
+        return $this->volverAlAcordeon($resolucion->seguimiento->user_id,
+            'Las resoluciones no se eliminan: corrija su número, fecha o PDF desde «Editar».', 'resoluciones', 'error');
     }
 
     /**
@@ -1628,7 +1729,7 @@ class TitulacionController extends Controller
 
             $error = null;
             try {
-                Mail::to($persona->email)->send(new AvisoVencimientoPtiMail($persona, $vigencia, $data['tipo']));
+                Mail::mailer(\App\Mail\Titulacion\Remitente::mailer('investigacion'))->to($persona->email)->send(new AvisoVencimientoPtiMail($persona, $vigencia, $data['tipo']));
                 $enviados[] = $nombre;
             } catch (\Throwable $e) {
                 $error = $e->getMessage();
@@ -1911,7 +2012,7 @@ class TitulacionController extends Controller
     private static function esCuentaDeTrabajo(User $user): bool
     {
         return ! $user->hasAnyRole(['alumno', 'alumnoB'])
-            && $user->hasAnyRole(['super-admin', 'admin', 'adminB', 'docente', 'tutor', 'gestor-titulacion', 'investigador']);
+            && $user->hasAnyRole(['super-admin', 'admin', 'adminB', 'docente', 'tutor', 'gestor-titulacion', 'secretaria', 'investigador']);
     }
 
     /**
@@ -2135,10 +2236,13 @@ class TitulacionController extends Controller
                     $lineas = array_values(array_filter(array_map('trim', preg_split('/\R+/', (string) ($datos[$clave] ?? '')))));
                     $rds = array_values(array_filter($lineas, fn ($l) => self::pareceRd($l)));
                     if ($rds) {
-                        foreach (array_slice($rds, 1) as $extra) {
+                        // La celda puede listar varias RD («2. RD ANULACION / 1. RD PTI»): la principal es la de este
+                        // tipo (no una anulación o incorporación que vaya primero); las demás se registran aparte.
+                        $principal = collect($rds)->first(fn ($l) => self::tipoRdPorTexto($l, $tipoRd) === $tipoRd) ?? $rds[0];
+                        foreach (array_diff($rds, [$principal]) as $extra) {
                             $rdExtras[] = [self::tipoRdPorTexto($extra, $tipoRd), $extra];
                         }
-                        return $rds[0];
+                        return $principal;
                     }
                     // La columna de fecha solo se revisa por si trae la RD; si
                     // trae una fecha, no es un "texto de RD" que anotar.
@@ -2386,16 +2490,18 @@ class TitulacionController extends Controller
      * true si el texto de una celda "RD ..." es una resolución: menciona RD,
      * es un archivo/enlace, o es solo el número ("227", "177-24", "88-2024").
      */
-    private static function pareceRd(string $valor): bool
+    protected static function pareceRd(string $valor): bool
     {
         return (bool) preg_match('/\bR\.?\s?D\b|\.(pdf|docx?)\b|https?:\/\//i', $valor)
             || (bool) preg_match('/^\s*\d{1,4}(\s*-\s*\d{2,4})?\s*$/', $valor);
     }
 
     /** Tipo de una RD suelta según su texto; $porDefecto si no lo dice. */
-    private static function tipoRdPorTexto(string $texto, string $porDefecto): string
+    protected static function tipoRdPorTexto(string $texto, string $porDefecto): string
     {
         return match (true) {
+            (bool) preg_match('/anulaci[oó]n/iu', $texto) => 'AnulacionPti',
+            (bool) preg_match('/incorpora(ci[oó]n|r)/iu', $texto) => 'IncorporacionGrupo',
             (bool) preg_match('/asesor|modificaci[oó]n/iu', $texto) => 'CambioAsesor',
             (bool) preg_match('/extensi[oó]n|extenci[oó]n/iu', $texto) => 'Extension',
             (bool) preg_match('/sustentaci[oó]n|tesis/iu', $texto) && $porDefecto !== 'PTI' => 'Tesis',

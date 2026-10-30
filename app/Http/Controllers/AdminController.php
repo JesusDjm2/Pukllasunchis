@@ -84,7 +84,7 @@ class AdminController extends Controller
             'docentes' => $conRol('docente'),
             'tutores' => $conRol('tutor'),
             'admins' => $conRol('admin'),
-            'titulacion' => $conRol('gestor-titulacion'),
+            'titulacion' => $conRol('gestor-titulacion')->merge($conRol('secretaria'))->unique('id')->values(),
             'superadmins' => $esSuperAdmin ? $conRol('super-admin') : collect(),
             'bolsa' => $conRol('adminB'),
         ];
@@ -208,6 +208,7 @@ class AdminController extends Controller
             'periodo' => ['nullable', 'integer'],
             'periodo_ppd' => ['nullable', 'integer'],
             'semestre_ppd' => ['nullable', 'in:1,2'],
+            'contexto' => ['nullable', 'string', 'max:2000'],
         ], ['ids.required' => 'No hay estudiantes para exportar con los filtros actuales.']);
 
         $periodoFid = PeriodoActual::find($datos['periodo'] ?? null) ?? PeriodoActual::actual();
@@ -237,10 +238,20 @@ class AdminController extends Controller
             'alumnoB.matriculas' => fn ($q) => $q->where('periodo_actual_ppd_id', $periodoPpd?->id ?? 0)->where('semestre', $semestrePpd),
         ])->whereIn('id', $datos['ids'])->orderBy('apellidos')->orderBy('name')->get();
 
-        return Excel::download(
-            new \App\Exports\DirectorioEstudiantesExport($usuarios, $datos['preset'], $esPpd ? $periodoPpd?->nombre . ' · ' . ($semestrePpd === 2 ? '2.º' : '1.er') . ' semestre' : $periodoFid?->nombre),
-            'estudiantes_' . $datos['preset'] . '_' . $sufijo
+        // Filtros que estaban activos en pantalla (programa, ciclo, chips…), para la ficha del Excel.
+        $contexto = json_decode($datos['contexto'] ?? '', true);
+
+        $export = new \App\Exports\DirectorioEstudiantesExport(
+            $usuarios,
+            $datos['preset'],
+            $esPpd ? $periodoPpd?->nombre . ' · ' . ($semestrePpd === 2 ? '2.º' : '1.er') . ' semestre' : $periodoFid?->nombre,
+            $datos['tab'],
+            is_array($contexto) ? $contexto : [],
+            trim(auth()->user()->name . ' ' . auth()->user()->apellidos),
         );
+        $etiqueta = $export->etiquetaArchivo();
+
+        return Excel::download($export, 'estudiantes_' . $datos['preset'] . '_' . ($etiqueta ? $etiqueta . '_' : '') . $sufijo);
     }
 
     public function alumnos(Request $request)
@@ -742,7 +753,7 @@ class AdminController extends Controller
                     $fail('El rol Investigador requiere que también se asigne el rol Docente.');
                 }
             }],
-            'roles.*' => 'string|in:super-admin,admin,docente,alumno,adminB,alumnoB,inhabilitado,tutor,investigador,gestor-titulacion',
+            'roles.*' => 'string|in:super-admin,admin,docente,alumno,adminB,alumnoB,inhabilitado,tutor,investigador,gestor-titulacion,secretaria',
             'programa_id' => [\Illuminate\Validation\Rule::requiredIf(fn () => !empty(array_intersect($request->input('roles', []), ['alumno', 'alumnoB']))), 'nullable', 'exists:programas,id'],
             'ciclo_id' => [\Illuminate\Validation\Rule::requiredIf(fn () => !empty(array_intersect($request->input('roles', []), ['alumno', 'alumnoB']))), 'nullable', 'exists:ciclos,id'],
         ]);
@@ -802,7 +813,7 @@ class AdminController extends Controller
                     $fail('El rol Investigador requiere que también se asigne el rol Docente.');
                 }
             }],
-            'roles.*' => 'string|in:super-admin,admin,docente,alumno,adminB,alumnoB,inhabilitado,tutor,investigador,gestor-titulacion',
+            'roles.*' => 'string|in:super-admin,admin,docente,alumno,adminB,alumnoB,inhabilitado,tutor,investigador,gestor-titulacion,secretaria',
             'programa_id' => [\Illuminate\Validation\Rule::requiredIf(fn () => !empty(array_intersect($request->input('roles', []), ['alumno', 'alumnoB']))), 'nullable', 'exists:programas,id'],
             'ciclo_id' => [\Illuminate\Validation\Rule::requiredIf(fn () => !empty(array_intersect($request->input('roles', []), ['alumno', 'alumnoB']))), 'nullable', 'exists:ciclos,id'],
             'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',

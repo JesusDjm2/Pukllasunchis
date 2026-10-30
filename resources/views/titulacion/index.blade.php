@@ -16,10 +16,10 @@
                 <a href="{{ route('titulacion.demograficos') }}" class="tl-hero__btn" title="Perfil demográfico de quienes están en el proceso">
                     <i class="fas fa-chart-pie"></i>Datos demográficos
                 </a>
-                <a href="{{ route('titulacion.sincronizar.form') }}" class="tl-hero__btn" title="Completar el proceso de cada persona desde la planilla de expedientes (EXP. PPD / FID)">
+                <a href="{{ route('titulacion.sincronizar.form') }}" @unless (\App\Services\Titulacion\AreasTitulacion::puede('super-admin')) hidden @endunless class="tl-hero__btn" title="Completar el proceso de cada persona desde la planilla de expedientes (EXP. PPD / FID)">
                     <i class="fas fa-file-import"></i>Sincronizar planilla
                 </a>
-                @if ($totalPendientes > 0)
+                @if ($totalPendientes > 0 && \App\Services\Titulacion\AreasTitulacion::puedeRuta('crear-cuentas-masivo.preview'))
                     <a href="{{ route('titulacion.crear-cuentas-masivo.preview') }}" class="tl-hero__btn tl-hero__btn--oro">
                         <i class="fas fa-users"></i>Crear cuentas pendientes
                     </a>

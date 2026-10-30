@@ -2,9 +2,10 @@
      acceso) desde la ficha; al guardar vuelve a esta misma pestaña y el
      asesor ya aparece en todos los selects de asesor y jurado.
      Espera $egresado y $tab. --}}
-<details class="ft-desplegable mt-2">
+<details class="ft-desplegable mt-2 ft-solo-editor">
     <summary><i class="fas fa-user-plus mr-1"></i>¿El asesor/a no está en la lista? Agregarlo</summary>
     <form method="POST" action="{{ route('titulacion.asesores.guardar') }}" class="mt-2">
+<fieldset class="ft-area" @disabled(! \App\Services\Titulacion\AreasTitulacion::puedeRuta('titulacion.asesores.guardar'))>
         @csrf
         <input type="hidden" name="volver_a" value="{{ $egresado->id }}">
         <input type="hidden" name="tab" value="{{ $tab }}">
@@ -17,5 +18,6 @@
             <div class="form-group col-md-4 mb-2"><button type="submit" class="btn btn-sm btn-outline-primary btn-block">Agregar asesor/a</button></div>
         </div>
         <small class="text-muted">Después elíjalo en el campo "Asesor/a" o "Agregar jurado". El catálogo completo se gestiona en <a href="{{ route('titulacion.asesores.index') }}">Asesores</a>.</small>
-    </form>
+    </fieldset>
+</form>
 </details>

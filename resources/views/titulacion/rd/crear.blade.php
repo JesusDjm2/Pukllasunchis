@@ -45,8 +45,16 @@
                 ])->keyBy('id');
             @endphp
             <p class="rdg-ayuda mb-2">
-                {{ $preseleccion->count() > 1 ? 'Ya están puestos esta persona y su grupo (según las RD o actas que comparten).' : 'Está puesta esta persona.' }}
-                Si el grupo recién presenta su PTI, agréguelos con el buscador: desde esta RD quedarán agrupados.
+                @if ($plantilla === 'retiro_grupo')
+                    <strong>{{ $egresado->apellidos }}, {{ $egresado->name }}</strong> es quien se retira. Los demás integrantes son quienes continúan con el PTI.
+                    Al emitir, deja de figurar en este grupo y su PTI pasa a su historial; conserva sus RD.
+                @elseif ($plantilla === 'incorporacion_grupo')
+                    Ya están puestos los integrantes del grupo que recibe. <strong>Agregue con el buscador a quien se incorpora.</strong>
+                    Al emitir, entra al grupo con el mismo PTI (título, RD, asesor y vigencia). Si pertenece a otro grupo, primero emita su RD de retiro.
+                @else
+                    {{ $preseleccion->count() > 1 ? 'Ya están puestos esta persona y su grupo (según las RD o actas que comparten).' : 'Está puesta esta persona.' }}
+                    Si el grupo recién presenta su PTI, agréguelos con el buscador: desde esta RD quedarán agrupados.
+                @endif
             </p>
             <div class="rdg-elegidos" id="rdgElegidos" aria-live="polite"></div>
             <div id="rdgInputs"></div>
@@ -81,6 +89,21 @@
                     <label for="fecha">Fecha de la RD</label>
                     <input type="text" name="fecha" id="fecha" class="form-control form-control-sm js-rdg-fecha" value="{{ $v('fecha') ?: now()->toDateString() }}" required>
                 </div>
+                @if (in_array($plantilla, \App\Services\Titulacion\PlantillasRd::CAMBIAN_GRUPO, true))
+                    {{-- Quien sale o entra y el grupo concuerdan por separado. Sin elegir, según la ficha de cada persona. --}}
+                    <input type="hidden" name="genero" value="{{ $v('genero') }}">
+                    @foreach (['genero_aparte' => $plantilla === 'retiro_grupo' ? 'Quien se retira' : 'Quien se incorpora', 'genero_resto' => $plantilla === 'retiro_grupo' ? 'Quienes continúan' : 'El grupo que recibe'] as $campoG => $etiquetaG)
+                        <div class="form-group col-md-3">
+                            <label for="{{ $campoG }}">{{ $etiquetaG }} (para concordar)</label>
+                            <select name="{{ $campoG }}" id="{{ $campoG }}" class="form-control form-control-sm">
+                                <option value="">Según su ficha</option>
+                                <option value="f" @selected($v($campoG) === 'f')>Mujer o mujeres</option>
+                                <option value="m" @selected($v($campoG) === 'm')>Hombre, hombres o mixto</option>
+                            </select>
+                        </div>
+                    @endforeach
+                    <div class="form-group col-12 mb-0"><div class="rdg-ayuda">Revise «la/el/las/los» en la vista previa: si la ficha no indica el género, se asume masculino.</div></div>
+                @else
                 <div class="form-group col-md-6">
                     <label for="genero">Integrantes (para concordar la RD)</label>
                     <select name="genero" id="genero" class="form-control form-control-sm">
@@ -90,6 +113,7 @@
                     </select>
                     <div class="rdg-ayuda">Según el género de su ficha: decide «la/el/las/los», «egresada(s)», «APTA/APTOS», etc.</div>
                 </div>
+                @endif
                 <div class="form-group col-md-6">
                     <label for="programa">Programa de Estudios</label>
                     {{-- Es el programa del alumno: no se edita (el servidor usa siempre el oficial). Solo si no tiene programa se escribe. --}}

@@ -100,6 +100,12 @@ class AvanceTitulacion
                 filled($pti?->rd_pti) || $rdPti,
                 $rdPti?->fecha, $pti?->rd_pti ?: $rdPti?->numero_rd,
                 'Obtener la RD que aprueba el PTI.'),
+            // Enlace del TI que el estudiante comparte y el asesor aprueba (desde el 29/10). Un
+            // enlace sin estado de un TI que ya tiene su RD se da por aprobado (registros anteriores).
+            $this->hito('ti_enlace', 'ti', 'Enlace del TI aprobado por el asesor',
+                $tesis?->estadoEnlace('ti') === 'aprobado' || ($tesis?->estadoEnlace('ti') && (filled($tesis?->rd_ti) || $rdTi)),
+                $tesis?->link_ti_aprobado_en, null,
+                'Enviar el enlace del TI y que el asesor lo apruebe.'),
             $this->hito('ti_expuesto', 'ti', 'TI expuesto',
                 (bool) ($tesis?->fecha_exposicion || $actaExpo),
                 $tesis?->fecha_exposicion ?? $actaExpo?->fecha, $actaExpo?->numero_acta ? 'Acta '.$actaExpo->numero_acta : null,
@@ -122,6 +128,16 @@ class AvanceTitulacion
                 (bool) ($tesis?->fecha_sustentacion || $actaTesis),
                 $tesis?->fecha_sustentacion ?? $actaTesis?->fecha, $actaTesis?->numero_acta ? 'Acta '.$actaTesis->numero_acta : null,
                 'Sustentar la Tesis.'),
+            $this->hito('tesis_enlace', 'tesis', 'Enlace de la Tesis aprobado por el asesor',
+                $tesis?->estadoEnlace('tesis') === 'aprobado' || ($tesis?->estadoEnlace('tesis') && (filled($tesis?->rd_tesis) || $rdTesis)),
+                $tesis?->link_tesis_aprobado_en, null,
+                'Enviar el enlace de la Tesis y que el asesor lo apruebe.'),
+            // Desde el 30/10 el estudiante paga el trámite de aprobación de sustentación antes de la
+            // RD. Una Tesis que ya tiene su RD lo tuvo (registros anteriores).
+            $this->hito('tesis_tramite', 'tesis', 'Trámite de aprobación de sustentación pagado',
+                (bool) $tesis?->tramite_sust_pagado_en || filled($tesis?->rd_tesis) || $rdTesis,
+                $tesis?->tramite_sust_pagado_en, $tesis?->tramite_sust_recibo ? 'Recibo '.$tesis->tramite_sust_recibo : null,
+                'Pagar el trámite de aprobación de sustentación.'),
             $this->hito('tesis_aprobada', 'tesis', 'Tesis aprobada (RD)',
                 filled($tesis?->rd_tesis) || $rdTesis,
                 $rdTesis?->fecha, $tesis?->rd_tesis ?: $rdTesis?->numero_rd,

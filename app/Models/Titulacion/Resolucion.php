@@ -28,6 +28,8 @@ class Resolucion extends Model
         'Extension' => 'Ampliación (fecha de sustentación)',
         'CambioAsesor' => 'Cambio de asesor',
         'CambioGrupo' => 'Cambio de grupo',
+        'RetiroGrupo' => 'Retiro de integrante del grupo',
+        'IncorporacionGrupo' => 'Incorporación de integrante al grupo',
         'CambioTema' => 'Cambio de tema',
         'Otra' => 'Otra resolución',
     ];
@@ -43,6 +45,8 @@ class Resolucion extends Model
         'Extension' => ['fa-calendar-plus', 'warning'],
         'CambioAsesor' => ['fa-user-edit', 'secondary'],
         'CambioGrupo' => ['fa-users-cog', 'secondary'],
+        'RetiroGrupo' => ['fa-user-minus', 'secondary'],
+        'IncorporacionGrupo' => ['fa-user-plus', 'secondary'],
         'CambioTema' => ['fa-exchange-alt', 'secondary'],
         'Otra' => ['fa-gavel', 'dark'],
     ];
@@ -54,10 +58,12 @@ class Resolucion extends Model
 
     protected $table = 'titulacion_resoluciones';
 
-    protected $fillable = ['seguimiento_id', 'tipo', 'numero_rd', 'fecha', 'archivo', 'detalle'];
+    protected $fillable = ['seguimiento_id', 'tipo', 'numero_rd', 'fecha', 'archivo', 'detalle', 'agrupa', 'correo_enviado_en'];
 
     protected $casts = [
         'fecha' => 'date',
+        'agrupa' => 'boolean',
+        'correo_enviado_en' => 'datetime',
     ];
 
     public function seguimiento()

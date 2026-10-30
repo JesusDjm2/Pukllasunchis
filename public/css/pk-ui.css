@@ -182,6 +182,22 @@
         border: 1px solid var(--al-borde); background: var(--al-fondo); color: var(--al-texto);
     }
     .al-filtros select.al-campo { flex: 0 1 200px; }
+
+    /* ── Formularios de edición (etiqueta arriba, campo debajo; pie con acciones) ── */
+    .al-form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: .9rem 1.1rem; }
+    .al-form-grid label { display: flex; flex-direction: column; gap: .3rem; margin: 0; font-size: .74rem; font-weight: 700; color: var(--al-suave); }
+    .al-form-ancho { grid-column: 1 / -1; }
+    .al-form .al-campo {
+        width: 100%; min-height: 2.35rem; padding: .4rem .7rem; border-radius: 9px; font-size: .88rem; font-weight: 500;
+        border: 1px solid var(--al-borde); background: var(--al-fondo); color: var(--al-texto);
+    }
+    .al-form textarea.al-campo { resize: vertical; }
+    .al-form .al-campo:focus { outline: 0; border-color: var(--al-oro); box-shadow: 0 0 0 3px rgba(205, 146, 68, .18); }
+    .al-form-pie { display: flex; justify-content: flex-end; gap: .5rem; flex-wrap: wrap; padding: .9rem 1.25rem; border-top: 1px solid var(--al-borde); }
+    .al-form-peligro { border-color: rgba(192, 57, 43, .3); }
+    .al-form-peligro .al-card-cuerpo { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+    .al-form-peligro strong { color: var(--al-mal); }
+    .al-form-peligro .al-btn:hover { border-color: var(--al-mal); color: var(--al-mal) !important; }
     .al-filtros .al-campo:focus { outline: 0; border-color: var(--al-oro); box-shadow: 0 0 0 3px rgba(205, 146, 68, .18); }
 
     /* ── Lista de cursos (numerada, con acción a la derecha) ── */
@@ -432,3 +448,374 @@
     .dark-mode .dl-rend-alerta, .dim-mode .dl-rend-alerta { color: #fbbf24; }
     .dl-rend-vacio { font-size: .7rem; font-style: italic; color: var(--dl-muted, #64748b); }
     @media (max-width: 991.98px) { .dl-course.dl-con-rend { grid-template-columns: 1fr; } }
+
+    /* ══════════════════════════════════════════════════════════════════════════
+       MÓDULO IESP RICARDO PALMA (Actas Consolidadas Históricas)
+       Matriz de calificaciones, cabeceras fijas, sticky columns y compatibilidad
+       completa para los 3 temas (Claro, Oscuro 'dark-mode' y Tenue 'dim-mode').
+       ══════════════════════════════════════════════════════════════════════════ */
+    .rp-matriz-wrapper {
+        position: relative;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        border-radius: 14px;
+        border: 1px solid var(--al-borde);
+        background: var(--al-fondo);
+        box-shadow: var(--al-sombra);
+        margin-bottom: 1.5rem;
+    }
+    .rp-matriz {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: .84rem;
+        color: var(--al-texto);
+    }
+    .rp-matriz th,
+    .rp-matriz td {
+        padding: .5rem .65rem;
+        border-bottom: 1px solid var(--al-borde);
+        border-right: 1px solid var(--al-borde);
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+    .rp-matriz thead th {
+        background: var(--al-fondo-2);
+        color: var(--al-texto);
+        font-weight: 700;
+        text-align: center;
+        letter-spacing: .02em;
+    }
+    .rp-matriz thead tr:first-child th {
+        border-bottom: 1px solid var(--al-borde);
+    }
+    .rp-matriz thead .rp-th-sub {
+        font-size: .68rem;
+        font-weight: 700;
+        color: var(--al-suave);
+        text-transform: uppercase;
+        background: var(--al-fondo-2);
+    }
+
+    /* Columnas fijas a la izquierda (N°, Matrícula, Estudiante) */
+    .rp-matriz .rp-sticky-1 {
+        position: sticky;
+        left: 0;
+        z-index: 4;
+        background: var(--al-fondo);
+        width: 44px;
+        text-align: center;
+    }
+    .rp-matriz thead .rp-sticky-1 {
+        z-index: 6;
+        background: var(--al-fondo-2);
+    }
+    .rp-matriz .rp-sticky-2 {
+        position: sticky;
+        left: 44px;
+        z-index: 4;
+        background: var(--al-fondo);
+        width: 85px;
+        text-align: center;
+        font-family: inherit;
+    }
+    .rp-matriz thead .rp-sticky-2 {
+        z-index: 6;
+        background: var(--al-fondo-2);
+    }
+    .rp-matriz .rp-sticky-3 {
+        position: sticky;
+        left: 129px;
+        z-index: 4;
+        background: var(--al-fondo);
+        min-width: 220px;
+        box-shadow: 4px 0 8px -2px rgba(0, 0, 0, .07);
+    }
+    .rp-matriz thead .rp-sticky-3 {
+        z-index: 6;
+        background: var(--al-fondo-2);
+        box-shadow: 4px 0 8px -2px rgba(0, 0, 0, .07);
+    }
+
+    /* Efectos de fila y hover */
+    .rp-matriz tbody tr:hover td {
+        background-color: var(--al-fondo-2);
+    }
+    .rp-matriz tbody tr:hover .rp-sticky-1,
+    .rp-matriz tbody tr:hover .rp-sticky-2,
+    .rp-matriz tbody tr:hover .rp-sticky-3 {
+        background-color: var(--al-fondo-2);
+    }
+
+    /* Calificaciones y valores */
+    .rp-nota {
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        text-align: center;
+    }
+    .rp-nota.is-ok {
+        color: var(--al-ok);
+    }
+    .rp-nota.is-mal {
+        color: var(--al-mal);
+        background: var(--al-mal-f);
+        border-radius: 4px;
+        padding: .15rem .35rem;
+    }
+    .rp-pjt {
+        font-size: .75rem;
+        color: var(--al-suave);
+        text-align: center;
+    }
+    .rp-promedio {
+        font-weight: 800;
+        font-size: .88rem;
+        text-align: center;
+        padding: .25rem .5rem;
+        border-radius: 6px;
+    }
+    .rp-promedio.is-ok {
+        background: var(--al-ok-f);
+        color: var(--al-ok);
+    }
+    .rp-promedio.is-mal {
+        background: var(--al-mal-f);
+        color: var(--al-mal);
+    }
+
+    /* Swipe hint para móvil / tablet */
+    .rp-swipe-hint {
+        display: none;
+        align-items: center;
+        gap: .5rem;
+        padding: .5rem .85rem;
+        font-size: .76rem;
+        font-weight: 600;
+        color: var(--al-suave);
+        background: var(--al-fondo-2);
+        border-bottom: 1px solid var(--al-borde);
+    }
+    .rp-swipe-hint i {
+        color: var(--al-oro);
+        animation: rpHoriSwipe 2s infinite ease-in-out;
+    }
+    @keyframes rpHoriSwipe {
+        0%, 100% { transform: translateX(0); }
+        50% { transform: translateX(6px); }
+    }
+    @media (max-width: 991.98px) {
+        .rp-swipe-hint { display: flex; }
+    }
+    @media (max-width: 575.98px) {
+        .rp-matriz .rp-sticky-1 { width: 34px; padding: .4rem .2rem; font-size: .72rem; }
+        .rp-matriz .rp-sticky-2 { left: 34px; width: 66px; padding: .4rem .3rem; font-size: .72rem; }
+        .rp-matriz .rp-sticky-3 { left: 100px; min-width: 145px; max-width: 170px; padding: .4rem .5rem; font-size: .76rem; }
+        .rp-matriz th, .rp-matriz td { padding: .4rem .45rem; font-size: .75rem; }
+    }
+
+    .rp-col-resumen {
+        background: var(--al-fondo-2);
+        font-weight: 700;
+        text-align: center;
+    }
+    .rp-curso-badge {
+        display: inline-block;
+        font-size: .65rem;
+        font-weight: 700;
+        padding: .12rem .4rem;
+        border-radius: 999px;
+        background: rgba(205, 146, 68, .16);
+        color: var(--al-oro-2);
+        margin-top: .2rem;
+        letter-spacing: normal;
+    }
+    body.dark-mode .rp-curso-badge {
+        background: rgba(205, 146, 68, .25);
+        color: var(--al-oro);
+    }
+    body.dim-mode .rp-curso-badge {
+        background: var(--lm-durazno-fondo, rgba(245, 197, 144, .25));
+        color: var(--lm-durazno, #f5c590);
+    }
+
+    /* Observación del alumno en el acta (p. ej. «RETIRADA R.D. N°…») y cuadro estadístico */
+    .rp-obs-alumno { margin-top: .25rem; font-size: .66rem; font-weight: 700; color: var(--al-suave); text-transform: uppercase; line-height: 1.25; max-width: 170px; margin-left: auto; margin-right: auto; }
+    .rp-cuadro { max-width: 620px; }
+
+    /* Edición de notas del acta (actas/editar) */
+    .rp-editar-notas th, .rp-editar-notas td { padding: .45rem .5rem; }
+    .rp-editar-notas th small { display: block; font-weight: 600; text-transform: none; letter-spacing: 0; }
+    .rp-editar-curso { display: block; max-width: 110px; margin: 0 auto; white-space: normal; line-height: 1.2; }
+    .al-form .rp-campo-nota { width: 4.2rem; min-height: 2rem; padding: .25rem .35rem; text-align: center; font-weight: 700; }
+    .al-form .rp-campo-nota.is-mal { color: var(--al-mal); }
+    .al-form .rp-campo-obs { min-width: 15rem; min-height: 2rem; }
+    .rp-cuadro td, .rp-cuadro th { padding-top: .45rem; padding-bottom: .45rem; }
+
+    /* Resultado de la carga masiva (importar/_resultado): color según éxito, observaciones o fallo */
+    .rp-resultado { border-left: 4px solid var(--al-ok); }
+    .rp-resultado.is-warn { border-left-color: var(--al-warn); }
+    .rp-resultado.is-mal { border-left-color: var(--al-mal); }
+    .rp-resultado .al-card-cab-icono { background: var(--al-ok-f); color: var(--al-ok); }
+    .rp-resultado.is-warn .al-card-cab-icono { background: var(--al-warn-f); color: var(--al-warn); }
+    .rp-resultado.is-mal .al-card-cab-icono { background: var(--al-mal-f); color: var(--al-mal); }
+    .rp-resultado-titulo { font-size: .68rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--al-suave); margin-bottom: .5rem; }
+    .rp-resultado-actas { display: flex; flex-wrap: wrap; gap: .5rem; }
+    .rp-resultado-errores { margin-top: 1rem; padding: .75rem 1rem; border-radius: 10px; background: var(--al-mal-f); font-size: .85rem; color: var(--al-texto); }
+    .rp-resultado-errores summary { cursor: pointer; font-weight: 700; color: var(--al-mal); }
+    .rp-resultado-errores ul { margin: .6rem 0; padding-left: 1.2rem; max-height: 14rem; overflow-y: auto; }
+
+    .al-tabla a {
+        color: var(--al-texto);
+        text-decoration: none !important;
+        font-weight: 700;
+        transition: color .15s ease;
+    }
+    .al-tabla a:hover {
+        color: var(--al-oro);
+    }
+    body.dark-mode .al-tabla a:hover {
+        color: var(--al-oro);
+    }
+    body.dim-mode .al-tabla a:hover {
+        color: var(--lm-acento, #f49ac1);
+    }
+
+    /* Compatibilidad de selects en modo oscuro y tenue */
+    body.dark-mode select.al-campo option {
+        background-color: #161b22;
+        color: #e6edf3;
+    }
+    body.dim-mode select.al-campo option {
+        background-color: var(--lm-superficie, #2f2230);
+        color: var(--lm-texto, #f6e9f1);
+    }
+
+    /* ── MODO OSCURO (dark-mode) ── */
+    body.dark-mode .rp-matriz-wrapper {
+        background: #161b22;
+        border-color: #30363d;
+        box-shadow: none;
+    }
+    body.dark-mode .rp-matriz th,
+    body.dark-mode .rp-matriz td {
+        border-color: #30363d;
+    }
+    body.dark-mode .rp-matriz thead th,
+    body.dark-mode .rp-matriz thead .rp-th-sub {
+        background: #0d1117;
+        color: #e6edf3;
+    }
+    body.dark-mode .rp-matriz .rp-sticky-1,
+    body.dark-mode .rp-matriz .rp-sticky-2,
+    body.dark-mode .rp-matriz .rp-sticky-3 {
+        background: #161b22;
+        box-shadow: 4px 0 8px -2px rgba(0, 0, 0, .4);
+    }
+    body.dark-mode .rp-matriz thead .rp-sticky-1,
+    body.dark-mode .rp-matriz thead .rp-sticky-2,
+    body.dark-mode .rp-matriz thead .rp-sticky-3 {
+        background: #0d1117;
+        box-shadow: 4px 0 8px -2px rgba(0, 0, 0, .4);
+    }
+    body.dark-mode .rp-matriz tbody tr:hover td,
+    body.dark-mode .rp-matriz tbody tr:hover .rp-sticky-1,
+    body.dark-mode .rp-matriz tbody tr:hover .rp-sticky-2,
+    body.dark-mode .rp-matriz tbody tr:hover .rp-sticky-3 {
+        background-color: #1c2128;
+    }
+    body.dark-mode .rp-col-resumen {
+        background: #0d1117;
+    }
+
+    /* ── MODO TENUE (dim-mode) ── */
+    body.dim-mode .rp-matriz-wrapper {
+        background: var(--lm-superficie);
+        border-color: var(--lm-borde);
+        box-shadow: none;
+    }
+    body.dim-mode .rp-matriz th,
+    body.dim-mode .rp-matriz td {
+        border-color: var(--lm-borde);
+    }
+    body.dim-mode .rp-matriz thead th,
+    body.dim-mode .rp-matriz thead .rp-th-sub {
+        background: var(--lm-bg);
+        color: var(--lm-texto);
+    }
+    body.dim-mode .rp-matriz .rp-sticky-1,
+    body.dim-mode .rp-matriz .rp-sticky-2,
+    body.dim-mode .rp-matriz .rp-sticky-3 {
+        background: var(--lm-superficie);
+        box-shadow: 4px 0 8px -2px rgba(0, 0, 0, .15);
+    }
+    body.dim-mode .rp-matriz thead .rp-sticky-1,
+    body.dim-mode .rp-matriz thead .rp-sticky-2,
+    body.dim-mode .rp-matriz thead .rp-sticky-3 {
+        background: var(--lm-bg);
+        box-shadow: 4px 0 8px -2px rgba(0, 0, 0, .15);
+    }
+    body.dim-mode .rp-matriz tbody tr:hover td,
+    body.dim-mode .rp-matriz tbody tr:hover .rp-sticky-1,
+    body.dim-mode .rp-matriz tbody tr:hover .rp-sticky-2,
+    body.dim-mode .rp-matriz tbody tr:hover .rp-sticky-3 {
+        background-color: var(--lm-superficie-2);
+    }
+    body.dim-mode .rp-col-resumen {
+        background: var(--lm-superficie-2);
+    }
+
+    /* ── IMPRESIÓN OFICIAL (solo páginas del módulo: contenedor .rp-modulo) ──
+       Página horizontal con nombre propio para no cambiar la impresión del resto del sistema. */
+    @page rp-horizontal {
+        size: landscape;
+        margin: 8mm 6mm;
+    }
+    @media print {
+        .rp-modulo { page: rp-horizontal; }
+        body:has(.rp-modulo) #accordionSidebar, body:has(.rp-modulo) .topbar, body:has(.rp-modulo) footer,
+        .rp-modulo .al-hero-acciones, .rp-modulo .rp-swipe-hint, .rp-modulo .al-kicker, .rp-modulo .al-tabs {
+            display: none !important;
+        }
+        body:has(.rp-modulo) #content-wrapper, body:has(.rp-modulo) #content, .rp-modulo.container-fluid {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #fff !important;
+            color: #000 !important;
+        }
+        .rp-modulo .al-hero {
+            background: none !important;
+            color: #000 !important;
+            border: 1px solid #ccc !important;
+            box-shadow: none !important;
+            padding: .75rem !important;
+        }
+        .rp-modulo .al-hero h1 { color: #000 !important; font-size: 1.2rem !important; }
+        .rp-modulo .al-hero-sub { color: #333 !important; font-size: .8rem !important; }
+        .rp-modulo .al-chip {
+            background: #eee !important;
+            color: #333 !important;
+            border-color: #ccc !important;
+        }
+        .rp-matriz-wrapper {
+            border: 1px solid #000 !important;
+            box-shadow: none !important;
+            overflow: visible !important;
+        }
+        .rp-matriz {
+            font-size: .7rem !important;
+        }
+        .rp-matriz th, .rp-matriz td {
+            border-color: #000 !important;
+            padding: .25rem .35rem !important;
+            color: #000 !important;
+        }
+        .rp-matriz thead th, .rp-matriz thead .rp-th-sub {
+            background: #f0f0f0 !important;
+            color: #000 !important;
+        }
+        .rp-matriz .rp-sticky-1, .rp-matriz .rp-sticky-2, .rp-matriz .rp-sticky-3 {
+            position: static !important;
+            box-shadow: none !important;
+        }
+    }
+

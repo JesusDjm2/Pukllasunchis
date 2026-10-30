@@ -1,6 +1,7 @@
 {{-- Todos los datos de TI y Tesis en un solo formulario (titulacion.tesis.guardar), para corregir
      datos importados. Campos vacíos con el paso anterior pendiente quedan deshabilitados ($bloqCampo). --}}
 <form method="POST" action="{{ route('titulacion.tesis.guardar', $egresado->id) }}">
+<fieldset class="ft-area" @disabled(! \App\Services\Titulacion\AreasTitulacion::puedeRuta('titulacion.tesis.guardar'))>
     @csrf
     <div class="form-row">
         <div class="form-group col-md-8">
@@ -28,7 +29,7 @@
             </div>
             <div class="form-group col-md-3">
                 <label class="small font-weight-bold">RD TI</label>
-                <input type="text" name="rd_ti" {!! $bloqCampo('rd_ti') !!} class="form-control form-control-sm" value="{{ $tesis?->rd_ti ?? '' }}">
+                <input type="text" name="rd_ti" {!! $bloqCampo('rd_ti') !!} @disabled(! \App\Services\Titulacion\AreasTitulacion::puede('secretaria')) class="form-control form-control-sm" value="{{ $tesis?->rd_ti ?? '' }}">
             </div>
             <div class="form-group col-md-3">
                 <label class="small font-weight-bold">Bachiller: inscripción SUNEDU</label>
@@ -50,15 +51,15 @@
             </div>
             <div class="form-group col-md-3">
                 <label class="small font-weight-bold">RD Extensión</label>
-                <input type="text" name="rd_extension" {!! $bloqCampo('rd_extension') !!} class="form-control form-control-sm" value="{{ $tesis?->rd_extension ?? '' }}">
+                <input type="text" name="rd_extension" {!! $bloqCampo('rd_extension') !!} @disabled(! \App\Services\Titulacion\AreasTitulacion::puede('secretaria')) class="form-control form-control-sm" value="{{ $tesis?->rd_extension ?? '' }}">
             </div>
             <div class="form-group col-md-3">
                 <label class="small font-weight-bold">Extensión hasta</label>
-                <input type="date" name="fecha_extension" {!! $bloqCampo('fecha_extension') !!} class="form-control form-control-sm" value="{{ $tesis?->fecha_extension?->format('Y-m-d') }}">
+                <input type="date" name="fecha_extension" {!! $bloqCampo('fecha_extension') !!} @disabled(! \App\Services\Titulacion\AreasTitulacion::puede('secretaria')) class="form-control form-control-sm" value="{{ $tesis?->fecha_extension?->format('Y-m-d') }}">
             </div>
             <div class="form-group col-md-3">
                 <label class="small font-weight-bold">RD Tesis</label>
-                <input type="text" name="rd_tesis" {!! $bloqCampo('rd_tesis') !!} class="form-control form-control-sm" value="{{ $tesis?->rd_tesis ?? '' }}">
+                <input type="text" name="rd_tesis" {!! $bloqCampo('rd_tesis') !!} @disabled(! \App\Services\Titulacion\AreasTitulacion::puede('secretaria')) class="form-control form-control-sm" value="{{ $tesis?->rd_tesis ?? '' }}">
             </div>
         </div>
         <div class="form-row">
@@ -78,5 +79,6 @@
     </div>
 
     <button type="submit" class="btn btn-sm btn-primary">Guardar TI/Tesis</button>
+</fieldset>
 </form>
 @include('titulacion._agregar_asesor', ['tab' => 'tesis'])

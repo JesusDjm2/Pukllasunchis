@@ -10,6 +10,7 @@
     $tipoInicial = $res?->tipo ?? $tipoFijo ?? collect(array_keys(\App\Models\Titulacion\Resolucion::TIPOS))->first(fn ($t) => ! $faltaTipo($t));
 @endphp
 <form method="POST" action="{{ $res ? route('titulacion.resoluciones.actualizar', $res->id) : route('titulacion.resoluciones.guardar', $egresado->id) }}" enctype="multipart/form-data">
+<fieldset class="ft-area" @disabled(! \App\Services\Titulacion\AreasTitulacion::puedeRuta('titulacion.resoluciones.actualizar'))>
     @csrf
     @if ($res) @method('PUT') @endif
     <div class="form-row">
@@ -46,4 +47,5 @@
         </div>
     </div>
     <button type="submit" class="btn btn-sm {{ $res ? 'btn-primary' : 'btn-outline-primary' }}">{{ $res ? 'Guardar cambios' : 'Agregar resolución' }}</button>
+</fieldset>
 </form>

@@ -20,6 +20,7 @@
     </summary>
 @endunless
     <form method="POST" action="{{ route('titulacion.tesis.guardar', $egresado->id) }}" class="{{ $plano ? 'tp-form' : 'mt-2' }}" @if ($plano) id="{{ $id }}" @endif>
+<fieldset class="ft-area" @disabled(! \App\Services\Titulacion\AreasTitulacion::puedeRuta('titulacion.tesis.guardar'))>
         @csrf
         <input type="hidden" name="mensaje_ok" value="paso">
         <div class="form-row">
@@ -45,7 +46,8 @@
         @endisset
         @include('titulacion._aplicar_grupo', ['idCasilla' => $id.'-grupo'])
         <button type="submit" class="btn {{ $plano ? 'tp-btn' : 'btn-sm btn-primary' }}"><i class="fas fa-check mr-1"></i>{{ $plano ? ($hecho ? 'Guardar cambios' : 'Guardar') : 'Guardar' }}</button>
-    </form>
+    </fieldset>
+</form>
 @unless ($plano)
 </details>
 @endunless

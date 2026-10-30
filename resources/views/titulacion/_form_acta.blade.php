@@ -2,6 +2,7 @@
      Espera $egresado, $selectDocente; $acta (Acta|null). --}}
 @php $acta = $acta ?? null; @endphp
 <form method="POST" action="{{ $acta ? route('titulacion.actas.actualizar', $acta->id) : route('titulacion.actas.guardar', $egresado->id) }}">
+<fieldset class="ft-area" @disabled(! \App\Services\Titulacion\AreasTitulacion::puedeRuta('titulacion.actas.actualizar'))>
     @csrf
     @if ($acta) @method('PUT') @endif
     <div class="form-row">
@@ -39,4 +40,5 @@
         <input type="text" name="titulo_trabajo" class="form-control form-control-sm" value="{{ $acta?->titulo_trabajo }}">
     </div>
     <button type="submit" class="btn btn-sm btn-primary">{{ $acta ? 'Guardar cambios' : 'Agregar acta' }}</button>
+</fieldset>
 </form>

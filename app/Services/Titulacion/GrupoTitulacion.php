@@ -12,7 +12,8 @@ use Illuminate\Support\Collection;
  * Compañeros de grupo de titulación. Desde el 19/10 quienes inician juntos el PTI quedan
  * con el mismo seguimiento_titulacion.grupo_id. En los datos anteriores no hay grupo
  * guardado: quienes presentaron juntos comparten el mismo N° de acta o la misma RD de
- * PTI/TI/Tesis (un solo documento para todo el grupo). Se suman ambas fuentes.
+ * PTI/TI/Tesis (un solo documento para todo el grupo). Se suman ambas fuentes. Quien se retira
+ * conserva sus RD, pero con agrupa = false dejan de unirlo al grupo.
  */
 class GrupoTitulacion
 {
@@ -35,10 +36,11 @@ class GrupoTitulacion
 
         $misRds = $seguimiento->resoluciones
             ->whereIn('tipo', self::TIPOS_RD_GRUPALES)
+            ->filter(fn ($r) => $r->agrupa ?? true)
             ->filter(fn ($r) => filled($r->numero_rd))
             ->map(fn ($r) => $r->tipo.'|'.self::claveRd($r->numero_rd))
             ->unique();
-        $porRd = $misRds->isEmpty() ? collect() : Resolucion::whereIn('tipo', self::TIPOS_RD_GRUPALES)
+        $porRd = $misRds->isEmpty() ? collect() : Resolucion::whereIn('tipo', self::TIPOS_RD_GRUPALES)->where('agrupa', true)
             ->where('seguimiento_id', '!=', $seguimiento->id)
             ->whereNotNull('numero_rd')
             ->get(['seguimiento_id', 'tipo', 'numero_rd'])

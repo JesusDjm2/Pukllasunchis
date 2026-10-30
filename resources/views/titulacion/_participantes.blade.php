@@ -20,9 +20,11 @@
                 @if ($part->cargo && ! $cargoFijo) <span class="badge badge-light border">{{ $part->cargo }}</span> @endif
                 <form method="POST" action="{{ route('titulacion.participantes.eliminar', $part->id) }}" class="ml-auto"
                       data-confirm="Se quitará a {{ $part->asesorNombre() }} de la lista." data-confirm-titulo="¿Quitar?" data-confirm-boton="Sí, quitar">
+<fieldset class="ft-area" @disabled(! \App\Services\Titulacion\AreasTitulacion::puedeRuta('titulacion.participantes.eliminar'))>
                     @csrf @method('DELETE')
                     <button type="submit" class="btn btn-link btn-sm text-danger p-0" title="Quitar"><i class="fas fa-times"></i></button>
-                </form>
+                </fieldset>
+</form>
             </li>
         @endforeach
     </ul>
@@ -37,6 +39,7 @@
 <div class="tp-subtitulo" id="{{ $idP }}">Agregar {{ $nombreFuncion }}</div>
 @endunless
     <form method="POST" action="{{ route('titulacion.participantes.guardar', $egresado->id) }}" class="{{ $plano ? 'tp-form' : 'mt-2' }}">
+<fieldset class="ft-area" @disabled(! \App\Services\Titulacion\AreasTitulacion::puedeRuta('titulacion.participantes.guardar'))>
         @csrf
         <input type="hidden" name="etapa" value="{{ $etapaP }}">
         <input type="hidden" name="funcion" value="{{ $funcion }}">
@@ -67,7 +70,8 @@
         <div class="small text-muted mb-2">Agregue uno por vez; puede repetir para sumar más.</div>
         @include('titulacion._aplicar_grupo', ['idCasilla' => $idP.'-grupo'])
         <button type="submit" class="btn {{ $plano ? 'tp-btn' : 'btn-sm btn-primary' }}"><i class="fas fa-plus mr-1"></i>Agregar</button>
-    </form>
+    </fieldset>
+</form>
 @unless ($plano)
 </details>
 @endunless

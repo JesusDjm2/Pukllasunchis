@@ -12,10 +12,10 @@
         .membrete { position: fixed; top: -2.6cm; left: -0.4cm; }
         .membrete img { height: 2.05cm; }
 
-        /* Pie: la imagen (franja + árbol) es más ancha que la hoja y se ancla a la derecha:
-           el árbol queda en el borde y se pierde parte del lado izquierdo de la franja. */
-        .pie { position: fixed; right: -2.3cm; bottom: -3.45cm; width: 24cm; height: 5.37cm; }
-        .pie img { display: block; width: 24cm; height: 5.37cm; }
+        /* Pie: la imagen (franja + árbol) sobresale un poco de la hoja A4 para no dejar línea blanca en los bordes.
+           z-index -1: dompdf dibuja lo posicionado sobre el texto; así el texto queda delante del árbol. */
+        .pie { position: fixed; left: -2.7cm; bottom: -3.4cm; width: 21.2cm; height: 5.37cm; z-index: -1; }
+        .pie img { display: block; width: 21.2cm; height: 5.37cm; }
         .pie__datos { position: fixed; right: -0.25cm; bottom: -2.9cm; text-align: right; font-family: Helvetica, Arial, sans-serif; font-size: 8pt; line-height: 1.45; color: #fff; font-weight: bold; }
         .pie__datos img { width: 8pt; height: 8pt; margin-right: 3pt; vertical-align: -1pt; }
         .iniciales { position: fixed; left: 0; bottom: -0.95cm; font-family: Helvetica, Arial, sans-serif; font-size: 5.5pt; line-height: 1.15; color: #444; }

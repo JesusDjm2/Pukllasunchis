@@ -404,7 +404,7 @@ Route::middleware('auth')->group(function () {
     // Expediente del estudiante: admin y super-admin lo gestionan; el gestor de titulación lo
     // ve en solo lectura (con la pestaña Titulación). Las acciones siguen en el grupo de abajo.
     Route::get('/expediente/{user}', [\App\Http\Controllers\ExpedienteController::class, 'show'])
-        ->middleware('role:admin|super-admin|gestor-titulacion')->name('expediente.show');
+        ->middleware('role:admin|super-admin|gestor-titulacion|secretaria')->name('expediente.show');
 
     Route::middleware('role:admin|super-admin')->group(function () {
 
@@ -594,10 +594,10 @@ Route::middleware('auth')->group(function () {
 
     // ═══════════════════════════════════════════════════════════════
     // 🎓 TITULACIÓN — seguimiento de PTI/Tesis/Actas de egresados
-    // Mismo rol para Carlos y Marilyn (gestor-titulacion); super-admin ve
-    // y gestiona todo igual, como el resto de módulos del panel.
+    // Secretaría (rol secretaria) gestiona las RD; Investigación (gestor-titulacion), lo demás; las dos ven
+    // todo. Qué le corresponde a cada una: App\Services\Titulacion\AreasTitulacion. Super-admin, todo.
     // ═══════════════════════════════════════════════════════════════
-    Route::middleware('role:super-admin|gestor-titulacion')
+    Route::middleware(['role:super-admin|gestor-titulacion|secretaria', 'titulacion.area'])
         ->prefix('titulacion')
         ->name('titulacion.')
         ->group(function () {
@@ -622,10 +622,13 @@ Route::middleware('auth')->group(function () {
             // Etapa TI: informe ITI del asesor, asesores y jurado (1 o más, cargo opcional)
             Route::post('/egresados/{egresado}/informe-iti', [App\Http\Controllers\Titulacion\EtapaTiController::class, 'informe'])->name('ti.informe');
             Route::post('/egresados/{egresado}/participantes', [App\Http\Controllers\Titulacion\EtapaTiController::class, 'participanteGuardar'])->name('participantes.guardar');
+            Route::post('/egresados/{egresado}/correo-jurado', [App\Http\Controllers\Titulacion\EtapaTiController::class, 'correoJurado'])->name('ti.correo-jurado');
+            Route::post('/egresados/{egresado}/tramite-sustentacion', [App\Http\Controllers\Titulacion\EtapaTesisController::class, 'tramite'])->name('tesis.tramite');
             Route::delete('/participantes/{participante}', [App\Http\Controllers\Titulacion\EtapaTiController::class, 'participanteEliminar'])->name('participantes.eliminar');
             Route::put('/egresados/{egresado}/estado', [App\Http\Controllers\Titulacion\TitulacionController::class, 'actualizarEstado'])->name('estado.actualizar');
             Route::post('/egresados/{egresado}/pti', [App\Http\Controllers\Titulacion\TitulacionController::class, 'ptiGuardar'])->name('pti.guardar');
             Route::post('/egresados/{egresado}/pti/nuevo', [App\Http\Controllers\Titulacion\TitulacionController::class, 'ptiNuevo'])->name('pti.nuevo');
+            Route::post('/egresados/{egresado}/pti/ampliacion', [App\Http\Controllers\Titulacion\TitulacionController::class, 'ptiAmpliacion'])->name('pti.ampliacion');
             Route::post('/egresados/{egresado}/aviso-pti', [App\Http\Controllers\Titulacion\TitulacionController::class, 'avisoPtiEnviar'])->name('aviso-pti.enviar');
             Route::get('/egresados/{egresado}/aviso-pti/{tipo}', [App\Http\Controllers\Titulacion\TitulacionController::class, 'avisoPtiVista'])->name('aviso-pti.vista');
             Route::post('/egresados/{egresado}/tesis',[App\Http\Controllers\Titulacion\TitulacionController::class, 'tesisGuardar'])->name('tesis.guardar');
@@ -647,9 +650,37 @@ Route::middleware('auth')->group(function () {
             Route::get('/egresados/{egresado}/rd/{plantilla}', [App\Http\Controllers\Titulacion\ResolucionDirectoralController::class, 'crear'])->name('rd.crear');
             Route::post('/egresados/{egresado}/rd/{plantilla}', [App\Http\Controllers\Titulacion\ResolucionDirectoralController::class, 'emitir'])->name('rd.emitir');
             Route::post('/resoluciones/{resolucion}/pdf', [App\Http\Controllers\Titulacion\ResolucionDirectoralController::class, 'subir'])->name('rd.subir');
+            Route::post('/resoluciones/{resolucion}/correo', [App\Http\Controllers\Titulacion\CorreoRdController::class, 'enviar'])->name('rd.correo');
         });
 
     // PDF de una RD guardada por el sistema: el controlador verifica quién puede abrirlo.
     Route::get('/titulacion/rd/archivo/{nombre}', [App\Http\Controllers\Titulacion\ResolucionDirectoralController::class, 'archivo'])->name('titulacion.rd.archivo');
+
+    // =========================================================================
+    // IESP Ricardo Palma - Módulo Histórico (Actas Consolidadas 1995-2015)
+    // =========================================================================
+    Route::middleware('role:admin|super-admin')
+        ->prefix('admin/ricardo-palma')
+        ->name('rp.')
+        ->group(function () {
+            Route::get('/', [App\Http\Controllers\RicardoPalma\RpDashboardController::class, 'index'])->name('dashboard');
+            Route::get('/programas', [App\Http\Controllers\RicardoPalma\RpProgramaController::class, 'index'])->name('programas.index');
+            Route::get('/programas/{programa}', [App\Http\Controllers\RicardoPalma\RpProgramaController::class, 'show'])->name('programas.show');
+            Route::get('/estudiantes', [App\Http\Controllers\RicardoPalma\RpEstudianteController::class, 'index'])->name('estudiantes.index');
+            Route::get('/estudiantes/{estudiante}', [App\Http\Controllers\RicardoPalma\RpEstudianteController::class, 'show'])->name('estudiantes.show');
+            Route::get('/estudiantes/{estudiante}/editar', [App\Http\Controllers\RicardoPalma\RpEstudianteController::class, 'editar'])->name('estudiantes.editar');
+            Route::put('/estudiantes/{estudiante}', [App\Http\Controllers\RicardoPalma\RpEstudianteController::class, 'actualizar'])->name('estudiantes.actualizar');
+            Route::delete('/estudiantes/{estudiante}', [App\Http\Controllers\RicardoPalma\RpEstudianteController::class, 'eliminar'])->name('estudiantes.eliminar');
+            Route::get('/actas/{acta}/editar', [App\Http\Controllers\RicardoPalma\RpActaController::class, 'editar'])->name('actas.editar');
+            Route::put('/actas/{acta}', [App\Http\Controllers\RicardoPalma\RpActaController::class, 'actualizar'])->name('actas.actualizar');
+            Route::delete('/actas/{acta}', [App\Http\Controllers\RicardoPalma\RpActaController::class, 'eliminar'])->name('actas.eliminar');
+            Route::get('/actas', [App\Http\Controllers\RicardoPalma\RpActaController::class, 'index'])->name('actas.index');
+            Route::get('/actas/{acta}', [App\Http\Controllers\RicardoPalma\RpActaController::class, 'show'])->name('actas.show');
+            Route::get('/actas/{acta}/imprimir', [App\Http\Controllers\RicardoPalma\RpActaController::class, 'imprimir'])->name('actas.imprimir');
+            Route::get('/actas/{acta}/excel', [App\Http\Controllers\RicardoPalma\RpActaController::class, 'exportarExcel'])->name('actas.excel');
+            Route::get('/importar', [App\Http\Controllers\RicardoPalma\RpImportacionController::class, 'index'])->name('importar.index');
+            Route::post('/importar/acta', [App\Http\Controllers\RicardoPalma\RpImportacionController::class, 'importarActa'])->name('importar.acta');
+            Route::get('/importar/plantilla', [App\Http\Controllers\RicardoPalma\RpImportacionController::class, 'descargarPlantilla'])->name('importar.plantilla');
+        });
 
 }); // fin auth

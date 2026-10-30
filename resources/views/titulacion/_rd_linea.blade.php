@@ -32,6 +32,7 @@
     $items = $items->sortBy(fn ($i) => $i['fecha'] ? $i['fecha']->format('Y-m-d') : '9999-99-99')->values();
     $sinPdf = $items->filter(fn ($i) => $i['res'] && ! $i['archivo'])->count();
     $idNueva = $tabId.'-rd-nueva';
+    $puedeRdLinea = \App\Services\Titulacion\AreasTitulacion::puede('secretaria');
 @endphp
 
 <section class="ft-hist mb-4">
@@ -41,7 +42,7 @@
             {{ $items->count() }} RD
             @if ($sinPdf) · <span class="text-warning">{{ $sinPdf }} sin PDF</span> @endif
         </span>
-        <button type="button" class="btn btn-sm btn-primary ft-hist__nuevo" data-ft-toggle="{{ $idNueva }}" aria-expanded="false" aria-controls="{{ $idNueva }}">
+        <button type="button" class="btn btn-sm btn-primary ft-hist__nuevo" @unless ($puedeRdLinea) hidden @endunless data-ft-toggle="{{ $idNueva }}" aria-expanded="false" aria-controls="{{ $idNueva }}">
             <i class="fas fa-plus mr-1"></i>Registrar RD
         </button>
     </header>
@@ -71,7 +72,7 @@
                                     <span class="ft-rd-linea__fecha">{{ $i['fecha'] ? $i['fecha']->format('d/m/Y') : 'Sin fecha' }}</span>
                                     <span class="badge badge-{{ $color }}">{{ $nombre }}</span>
                                     @if ($res && ! $i['archivo'])
-                                        <button type="button" class="ft-chip-aviso" data-ft-toggle="{{ $idPanel }}" aria-controls="{{ $idPanel }}" title="Editar para adjuntar el PDF">
+                                        <button type="button" class="ft-chip-aviso" @if ($puedeRdLinea) data-ft-toggle="{{ $idPanel }}" aria-controls="{{ $idPanel }}" title="Editar para adjuntar el PDF" @else disabled @endif>
                                             <i class="fas fa-paperclip"></i>sin PDF
                                         </button>
                                     @endif
@@ -87,14 +88,27 @@
 
                             <div class="ft-acciones">
                                 @if ($i['archivo'])
-                                    <a href="{{ $i['archivo'] }}" target="_blank" rel="noopener" class="ft-accion" title="Ver PDF" aria-label="Ver PDF de {{ $nombre }}"><i class="fas fa-file-pdf"></i></a>
+                                    {{-- El documento es lo que más se busca en el historial: botón con texto, no solo ícono.
+                                         PDF guardado por el sistema o enlace externo (Drive u otro). --}}
+                                    @php
+                                        $esPdf = (bool) \App\Services\Titulacion\ArchivosRd::nombreDesdeUrl($i['archivo']);
+                                        $textoDoc = \App\Services\Titulacion\ArchivosRd::etiqueta($i['archivo']);
+                                    @endphp
+                                    <a href="{{ $i['archivo'] }}" target="_blank" rel="noopener" class="ft-doc {{ $esPdf ? 'ft-doc--pdf' : 'ft-doc--enlace' }}"
+                                       title="{{ $esPdf ? 'Abrir el PDF de la RD' : 'Abrir el enlace de la RD' }} en otra pestaña" aria-label="{{ $textoDoc }} de {{ $nombre }} {{ $i['numero'] }}">
+                                        <span class="ft-doc__icono"><i class="fas {{ $esPdf ? 'fa-file-pdf' : ($textoDoc === 'Ver en Drive' ? 'fa-cloud' : 'fa-link') }}"></i></span>
+                                        <span class="ft-doc__texto">{{ $textoDoc }}</span>
+                                        <i class="fas fa-external-link-alt ft-doc__salida" aria-hidden="true"></i>
+                                    </a>
                                 @endif
-                                @if ($res)
+                                @if (! $puedeRdLinea)
+                                @elseif ($res)
+                                    @if (filled($i['numero']))
+                                        <button type="button" class="ft-accion" data-ft-toggle="{{ $idPanel }}-correo" aria-expanded="false" aria-controls="{{ $idPanel }}-correo"
+                                            title="{{ $res->correo_enviado_en ? 'Enviada por correo el '.$res->correo_enviado_en->format('d/m/Y').'. Enviar de nuevo' : 'Enviar por correo' }}" aria-label="Enviar por correo {{ $nombre }}"><i class="{{ $res->correo_enviado_en ? 'fas' : 'far' }} fa-paper-plane"></i></button>
+                                    @endif
+                                    {{-- Las RD no vencen ni se eliminan: solo se corrigen sus datos o su PDF. --}}
                                     <button type="button" class="ft-accion" data-ft-toggle="{{ $idPanel }}" aria-expanded="false" aria-controls="{{ $idPanel }}" title="Editar" aria-label="Editar {{ $nombre }}"><i class="fas fa-pen"></i></button>
-                                    <form method="POST" action="{{ route('titulacion.resoluciones.eliminar', $res->id) }}" data-confirm="Se eliminará esta resolución del historial." data-confirm-danger data-confirm-titulo="¿Eliminar la resolución?">
-                                        @csrf @method('DELETE')
-                                        <button type="submit" class="ft-accion ft-accion--peligro" title="Eliminar" aria-label="Eliminar {{ $nombre }}"><i class="fas fa-trash-alt"></i></button>
-                                    </form>
                                 @else
                                     <button type="button" class="btn btn-sm btn-outline-primary ft-accion-texto" data-ft-toggle="{{ $idPanel }}" aria-expanded="false" aria-controls="{{ $idPanel }}">
                                         <i class="fas fa-plus mr-1"></i>Registrar
@@ -102,6 +116,14 @@
                                 @endif
                             </div>
                         </div>
+
+                        @if ($res && filled($i['numero']) && $puedeRdLinea)
+                            <div id="{{ $idPanel }}-correo" class="ft-hist__panel ft-hist__panel--dentro" hidden>
+                                <div class="ft-hist__panel-titulo">Enviar por correo</div>
+                                @include('titulacion._rd_correo', ['res' => $res, 'idC' => $idPanel.'-correo-f', 'tabVolver' => 'resoluciones'])
+                                <button type="button" class="btn btn-sm btn-link text-muted ft-hist__cancelar" data-ft-toggle="{{ $idPanel }}-correo">Cancelar</button>
+                            </div>
+                        @endif
 
                         <div id="{{ $idPanel }}" class="ft-hist__panel ft-hist__panel--dentro" hidden>
                             @if ($res)

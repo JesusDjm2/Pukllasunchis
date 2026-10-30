@@ -22,6 +22,8 @@
         }
 
         function applyToEditor(editor) {
+            // divarea no usa iframe: su documento es la página entera y el <style> la pintaría completa.
+            if (editor.plugins && editor.plugins.divarea) return;
             try {
                 var doc = editor.document;
                 if (!doc) return;

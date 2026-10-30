@@ -27,6 +27,7 @@
                         this.dataset.confirmTitulo = event.submitter && event.submitter.value === 'urgente' ? '¿Enviar el aviso urgente?' : '¿Enviar el recordatorio?';
                         this.dataset.confirm = 'Se enviará un correo a ' + n + (n === 1 ? ' persona.' : ' personas.');
                         return window.PkAlert ? true : confirm(this.dataset.confirmTitulo + '\n' + this.dataset.confirm);">
+<fieldset class="ft-area" @disabled(! \App\Services\Titulacion\AreasTitulacion::puedeRuta('titulacion.aviso-pti.enviar'))>
             @csrf
             <div class="mt-subtitulo">Destinatarios</div>
             <div class="small mb-2">
@@ -61,7 +62,8 @@
                     <a href="{{ route('titulacion.aviso-pti.vista', [$egresado->id, 'urgente']) }}" target="_blank" class="js-vista-aviso" data-titulo="Aviso urgente — {{ $egresado->apellidos }}, {{ $egresado->name }}">urgente</a>
                 </span>
             </div>
-        </form>
+        </fieldset>
+</form>
     @else
         <div class="small text-muted">
             <i class="fas fa-info-circle mr-1"></i>Los avisos son para <strong>antes</strong> del vencimiento, por eso ya no se muestran los botones de envío.

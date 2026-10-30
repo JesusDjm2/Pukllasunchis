@@ -58,7 +58,24 @@ class PlantillasRd
                 'asesor_anterior', 'asesor_anterior_cargo', 'asesor' => 'Nuevo asesor(a)', 'acompanante'],
             'iniciales' => self::INICIALES_INVESTIGACION, 'cierre' => 'simple',
         ],
+        // Se genera desde la ficha de quien se retira; los demás integrantes son quienes continúan.
+        'retiro_grupo' => [
+            'titulo' => 'Retiro de integrante del grupo', 'tipo' => 'RetiroGrupo', 'etapa' => 'otros', 'vista' => 'titulacion.rd.pdf.retiro-grupo',
+            'campos' => ['numero_informe', 'rd_referida' => 'RD que aprobó el PTI (se modifica)', 'fecha_rd_referida', 'titulo',
+                'asesor_designado', 'asesor_anterior_cargo' => 'Es', 'rd_reglamento'],
+            'iniciales' => self::INICIALES_INVESTIGACION, 'cierre' => 'simple',
+        ],
+        // Se genera desde la ficha de un integrante del grupo que recibe; quien se agrega con el buscador es quien se incorpora.
+        'incorporacion_grupo' => [
+            'titulo' => 'Incorporación de integrante al grupo', 'tipo' => 'IncorporacionGrupo', 'etapa' => 'otros', 'vista' => 'titulacion.rd.pdf.incorporacion-grupo',
+            'campos' => ['expedientes', 'numero_informe', 'rd_referida' => 'RD que aprobó el PTI (se modifica)', 'titulo',
+                'asesor_designado', 'asesor_anterior_cargo' => 'Es', 'rd_reglamento'],
+            'iniciales' => self::INICIALES_INVESTIGACION, 'cierre' => 'formal',
+        ],
     ];
+
+    /** Plantillas que cambian quién integra el grupo: la concordancia sale de la ficha de cada persona. */
+    public const CAMBIAN_GRUPO = ['retiro_grupo', 'incorporacion_grupo'];
 
     /** Campos que una plantilla puede pedir: [etiqueta, tipo, obligatorio]. */
     public const CAMPOS = [
@@ -73,6 +90,8 @@ class PlantillasRd
         'asesor_anterior' => ['Asesor(a) anterior (como irá en la RD)', 'texto', true],
         'asesor_anterior_cargo' => ['Era', 'cargo', true],
         'acompanante' => ['Asesor(a) acompañante (opcional: va al final del artículo SEGUNDO)', 'texto', false],
+        'asesor_designado' => ['Docente asesor(a) (opcional: si el PTI ya lo tiene)', 'texto', false],
+        'rd_reglamento' => ['RD del Reglamento de Investigación vigente', 'texto', true],
         'acta' => ['N° de página del acta', 'texto', true],
         'fecha_acto' => ['Fecha', 'fecha', true],
         'hora' => ['Hora', 'hora', true],
@@ -212,5 +231,18 @@ class PlantillasRd
         }
 
         return $nombres->slice(0, -1)->implode(', ').' y '.$nombres->last();
+    }
+
+    /** "Mora Gallegos, Sait Roeli; Pareja Medina, Yadira; e Illatupa Díaz, Lali" (apellidos primero). */
+    public static function listaApellidos(Collection $nombres): string
+    {
+        $nombres = $nombres->filter()->values();
+        if ($nombres->count() <= 1) {
+            return (string) $nombres->first();
+        }
+        $ultimo = (string) $nombres->last();
+        $y = preg_match('/^h?i(?!e)/iu', $ultimo) ? 'e' : 'y';
+
+        return $nombres->slice(0, -1)->implode('; ').($nombres->count() > 2 ? '; ' : ' ').$y.' '.$ultimo;
     }
 }

@@ -48,7 +48,7 @@ class LoginController extends Controller
             return redirect()->route('tutor.dashboard');
         } elseif ($user->hasRole('adminB')) {
             return redirect()->route('trabajo.index')->with('userData', $user);
-        } elseif ($user->hasRole('gestor-titulacion')) {
+        } elseif ($user->hasAnyRole(['gestor-titulacion', 'secretaria'])) {
             // Gestor puro (sin admin/docente): su único panel es Titulación.
             return redirect()->route('titulacion.index');
         } elseif ($user->condicion === 'Egresado') {

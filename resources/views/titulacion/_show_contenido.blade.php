@@ -115,6 +115,15 @@
     @endunless
 
     @include('titulacion._cabecera')
+    @unless (\App\Services\Titulacion\AreasTitulacion::puede('investigacion') && \App\Services\Titulacion\AreasTitulacion::puede('secretaria'))
+        <div class="tp-aviso tp-aviso--espera mb-3"><i class="fas fa-eye"></i><div>
+            @if (\App\Services\Titulacion\AreasTitulacion::puede('secretaria'))
+                <strong>Secretaría:</strong> usted gestiona las RD y el pago del trámite de sustentación. Lo demás lo gestiona el Área de Investigación y aquí se muestra en modo lectura.
+            @else
+                <strong>Área de Investigación:</strong> las RD y el pago del trámite de sustentación los gestiona Secretaría y aquí se muestran en modo lectura.
+            @endif
+        </div></div>
+    @endunless
 
     @if ($fichaActiva)
         @if (Session::has('success'))
@@ -170,7 +179,7 @@
                 @endif
             </label>
             <label for="{{ $tabId }}-tramites" class="mt-tabs__tab mt-tabs__tab--tramites" title="Cambio de tema, cambio de asesor, anulación de PTI y otras RD">
-                <i class="fas fa-folder-open mr-1"></i>Otros trámites
+                <i class="fas fa-folder-open mr-1"></i>Trámites extraordinarios
             </label>
         </div>
 
@@ -187,6 +196,7 @@
 
             <div class="ft-seccion mt-4"><i class="fas fa-folder-open"></i>Expediente</div>
             <form method="POST" action="{{ route('titulacion.estado.actualizar', $egresado->id) }}" class="form-row align-items-end">
+<fieldset class="ft-area" @disabled(! \App\Services\Titulacion\AreasTitulacion::puedeRuta('titulacion.estado.actualizar'))>
                 @csrf @method('PUT')
                 <div class="form-group col-md-3">
                     <label class="small font-weight-bold">N° expediente</label>
@@ -208,7 +218,8 @@
                         @if ($seguimiento->actualizadoPor) por {{ $seguimiento->actualizadoPor->name }} @endif
                     </small>
                 </div>
-            </form>
+            </fieldset>
+</form>
 
             <div class="ft-seccion mt-4">
                 <i class="fas fa-users"></i>Grupo
@@ -231,7 +242,7 @@
                 <header class="ft-hist__cab">
                     <h3 class="ft-hist__titulo"><i class="fas fa-file-signature"></i>Actas y jurados</h3>
                     <span class="ft-hist__meta">{{ $seguimiento->actas->count() }} acta(s)</span>
-                    <button type="button" class="btn btn-sm btn-primary ft-hist__nuevo" data-ft-toggle="{{ $tabId }}-acta-nueva" aria-expanded="false" aria-controls="{{ $tabId }}-acta-nueva">
+                    <button type="button" @unless (\App\Services\Titulacion\AreasTitulacion::puede('investigacion')) hidden @endunless class="btn btn-sm btn-primary ft-hist__nuevo" data-ft-toggle="{{ $tabId }}-acta-nueva" aria-expanded="false" aria-controls="{{ $tabId }}-acta-nueva">
                         <i class="fas fa-plus mr-1"></i>Nueva acta
                     </button>
                 </header>
@@ -262,9 +273,11 @@
                             <div class="ft-acciones">
                                 <button type="button" class="ft-accion" data-ft-toggle="{{ $idActa }}" aria-expanded="false" aria-controls="{{ $idActa }}" title="Editar acta" aria-label="Editar acta"><i class="fas fa-pen"></i></button>
                                 <form method="POST" action="{{ route('titulacion.actas.eliminar', $acta->id) }}" data-confirm="Se eliminará el acta junto con sus jurados." data-confirm-danger data-confirm-titulo="¿Eliminar el acta?">
+<fieldset class="ft-area" @disabled(! \App\Services\Titulacion\AreasTitulacion::puedeRuta('titulacion.actas.eliminar'))>
                                     @csrf @method('DELETE')
                                     <button type="submit" class="ft-accion ft-accion--peligro" title="Eliminar acta" aria-label="Eliminar acta"><i class="fas fa-trash-alt"></i></button>
-                                </form>
+                                </fieldset>
+</form>
                             </div>
                         </div>
 
@@ -279,18 +292,21 @@
                                 <span class="ft-jurado">
                                     <span class="ft-jurado__rol">{{ $jurado->rol }}</span>{{ $jurado->asesorNombre() ?? '—' }}
                                     <form method="POST" action="{{ route('titulacion.jurados.eliminar', $jurado->id) }}" class="d-inline" data-confirm="El jurado se quitará de esta acta." data-confirm-danger data-confirm-titulo="¿Quitar el jurado?" data-confirm-boton="Sí, quitar">
+<fieldset class="ft-area" @disabled(! \App\Services\Titulacion\AreasTitulacion::puedeRuta('titulacion.jurados.eliminar'))>
                                         @csrf @method('DELETE')
                                         <button type="submit" class="ft-jurado__quitar" title="Quitar" aria-label="Quitar a {{ $jurado->asesorNombre() }}"><i class="fas fa-times"></i></button>
-                                    </form>
+                                    </fieldset>
+</form>
                                 </span>
                             @empty
                                 <span class="text-muted small">Ninguno</span>
                             @endforelse
-                            <button type="button" class="ft-jurado ft-jurado--agregar" data-ft-toggle="{{ $idActa }}-jurado" aria-expanded="false" aria-controls="{{ $idActa }}-jurado">
+                            <button type="button" @unless (\App\Services\Titulacion\AreasTitulacion::puede('investigacion')) hidden @endunless class="ft-jurado ft-jurado--agregar" data-ft-toggle="{{ $idActa }}-jurado" aria-expanded="false" aria-controls="{{ $idActa }}-jurado">
                                 <i class="fas fa-plus"></i>Jurado
                             </button>
                         </div>
                         <form id="{{ $idActa }}-jurado" method="POST" action="{{ route('titulacion.jurados.guardar', $acta->id) }}" class="form-inline ft-hist__panel ft-hist__panel--dentro" hidden>
+<fieldset class="ft-area" @disabled(! \App\Services\Titulacion\AreasTitulacion::puedeRuta('titulacion.jurados.guardar'))>
                             @csrf
                             <div class="mr-1 mb-1">{!! $selectDocente('docente_id', null, 'Elegir docente...', true) !!}</div>
                             <select name="rol" class="form-control form-control-sm mr-1 mb-1" required aria-label="Función en el jurado">
@@ -300,7 +316,8 @@
                                 <option value="jurado3">Jurado 3</option>
                             </select>
                             <button type="submit" class="btn btn-sm btn-primary mb-1">Agregar</button>
-                        </form>
+                        </fieldset>
+</form>
                     </article>
                 @empty
                     <p class="ft-hist__vacio">Sin actas registradas.</p>
@@ -312,12 +329,13 @@
                 <header class="ft-hist__cab">
                     <h3 class="ft-hist__titulo"><i class="fas fa-paperclip"></i>Documentos</h3>
                     <span class="ft-hist__meta">{{ $seguimiento->documentos->count() }}</span>
-                    <button type="button" class="btn btn-sm btn-primary ft-hist__nuevo" data-ft-toggle="{{ $tabId }}-doc-nuevo" aria-expanded="false" aria-controls="{{ $tabId }}-doc-nuevo">
+                    <button type="button" @unless (\App\Services\Titulacion\AreasTitulacion::puede('investigacion')) hidden @endunless class="btn btn-sm btn-primary ft-hist__nuevo" data-ft-toggle="{{ $tabId }}-doc-nuevo" aria-expanded="false" aria-controls="{{ $tabId }}-doc-nuevo">
                         <i class="fas fa-plus mr-1"></i>Agregar documento
                     </button>
                 </header>
 
                 <form id="{{ $tabId }}-doc-nuevo" method="POST" action="{{ route('titulacion.documentos.guardar', $egresado->id) }}" enctype="multipart/form-data" class="ft-hist__panel mb-3" hidden>
+<fieldset class="ft-area" @disabled(! \App\Services\Titulacion\AreasTitulacion::puedeRuta('titulacion.documentos.guardar'))>
                     @csrf
                     <div class="form-row">
                         <div class="form-group col-sm-4 mb-2">
@@ -343,7 +361,8 @@
                     </div>
                     <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-check mr-1"></i>Agregar</button>
                     <button type="button" class="btn btn-sm btn-link text-muted" data-ft-toggle="{{ $tabId }}-doc-nuevo">Cancelar</button>
-                </form>
+                </fieldset>
+</form>
 
                 @if ($seguimiento->documentos->isEmpty())
                     <p class="ft-hist__vacio">Sin documentos registrados.</p>
@@ -362,9 +381,11 @@
                                         <a href="{{ $doc->url }}" target="_blank" rel="noopener" class="ft-accion" title="{{ $esPdf ? 'Ver PDF' : 'Abrir enlace' }}" aria-label="Abrir {{ $doc->tipo }}"><i class="fas fa-external-link-alt"></i></a>
                                     @endif
                                     <form method="POST" action="{{ route('titulacion.documentos.eliminar', $doc->id) }}" data-confirm="Se eliminará este documento." data-confirm-danger data-confirm-titulo="¿Eliminar el documento?">
+<fieldset class="ft-area" @disabled(! \App\Services\Titulacion\AreasTitulacion::puedeRuta('titulacion.documentos.eliminar'))>
                                         @csrf @method('DELETE')
                                         <button type="submit" class="ft-accion ft-accion--peligro" title="Eliminar" aria-label="Eliminar {{ $doc->tipo }}"><i class="fas fa-trash-alt"></i></button>
-                                    </form>
+                                    </fieldset>
+</form>
                                 </div>
                             </li>
                         @endforeach
@@ -381,12 +402,14 @@
             @endif
         </div>
 
-        {{-- ═══ Otros trámites: RD que no son de una etapa (antes al pie de Proceso) ═══ --}}
+        {{-- ═══ Trámites extraordinarios: RD que no son de una etapa (antes al pie de Proceso) ═══ --}}
         <div class="mt-tabs__panel mt-tabs__panel--tramites ft-tramites">
             <div class="ft-seccion"><i class="fas fa-folder-open"></i>Resoluciones que no son de una etapa</div>
-            @include('titulacion._rd_slot', ['etiqueta' => 'Cambio de tema de investigación', 'res' => $rdDe('CambioTema'), 'plantilla' => 'cambio_tema'])
-            @include('titulacion._rd_slot', ['etiqueta' => 'Cambio de asesor', 'res' => $rdDe('CambioAsesor'), 'plantilla' => 'cambio_asesor'])
-            @include('titulacion._rd_slot', ['etiqueta' => 'Anulación de PTI', 'res' => $rdDe('AnulacionPti'), 'plantilla' => 'anulacion_pti'])
+            @include('titulacion._rd_slot', ['etiqueta' => 'Cambio de tema de investigación', 'res' => $rdDe('CambioTema'), 'plantilla' => 'cambio_tema', 'tabVolver' => 'tramites'])
+            @include('titulacion._rd_slot', ['etiqueta' => 'Cambio de asesor', 'res' => $rdDe('CambioAsesor'), 'plantilla' => 'cambio_asesor', 'tabVolver' => 'tramites'])
+            @include('titulacion._rd_slot', ['etiqueta' => 'Retiro del grupo (de esta persona)', 'res' => $rdDe('RetiroGrupo'), 'plantilla' => 'retiro_grupo', 'tabVolver' => 'tramites'])
+            @include('titulacion._rd_slot', ['etiqueta' => 'Incorporación de un integrante a este grupo', 'res' => $rdDe('IncorporacionGrupo'), 'plantilla' => 'incorporacion_grupo', 'tabVolver' => 'tramites'])
+            @include('titulacion._rd_slot', ['etiqueta' => 'Anulación de PTI', 'res' => $rdDe('AnulacionPti'), 'plantilla' => 'anulacion_pti', 'tabVolver' => 'tramites'])
             <details class="tp-mas" id="rdemitida-{{ $egresado->id }}">
                 <summary>Registrar una RD ya emitida (de otro tipo)</summary>
                 <div class="mt-2">@include('titulacion._form_resolucion', ['res' => null])</div>

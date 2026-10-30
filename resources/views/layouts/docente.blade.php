@@ -331,7 +331,7 @@
                 : collect();
             $esTutorSb = $usuarioSb?->hasRole('tutor') && Route::has('tutor.dashboard');
             $esInvestigadorSb = $usuarioSb?->hasRole('investigador') && Route::has('taqe.investigador.index');
-            $esTitulacionSb = $usuarioSb?->hasRole('gestor-titulacion') && Route::has('titulacion.index');
+            $esTitulacionSb = $usuarioSb?->hasAnyRole(['gestor-titulacion', 'secretaria']) && Route::has('titulacion.index');
             $esBolsaSb = $usuarioSb?->hasRole('adminB');
             $tieneFuncionesSb = $esTutorSb || $esInvestigadorSb || $esTitulacionSb || $esBolsaSb || $proyectosSb->isNotEmpty();
         @endphp
