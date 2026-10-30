@@ -22,6 +22,10 @@ class Actualizacion extends Model
         'fecha_ultima_confirmacion' => 'datetime',
         'es_confirmacion_sin_cambios' => 'boolean',
         'datos_extra' => 'array',
+        'token_invitacion' => 'string',
+        'estado_verificacion' => 'string',
+        'tipo_registro' => 'string',
+        'procedencia' => 'string',
     ];
 
     public function user()
@@ -34,6 +38,11 @@ class Actualizacion extends Model
         return $this->belongsTo(Campana::class, 'campana_id');
     }
 
+    public function invitacion()
+    {
+        return $this->belongsTo(InvitacionCampana::class, 'token_invitacion', 'token');
+    }
+
     public function episodiosLaborales()
     {
         return $this->hasMany(EpisodioLaboral::class, 'user_id', 'user_id');
@@ -42,5 +51,30 @@ class Actualizacion extends Model
     public function episodiosActivos()
     {
         return $this->hasMany(EpisodioLaboral::class, 'user_id', 'user_id')->where('es_actual', true);
+    }
+
+    public function scopeVigente($query)
+    {
+        return $query->where('estado_verificacion', 'verificado');
+    }
+
+    public function scopePorCampana($query, string $campana)
+    {
+        return $query->where('periodo_campana', $campana);
+    }
+
+    public function scopeConfirmaciones($query)
+    {
+        return $query->where('es_confirmacion_sin_cambios', true);
+    }
+
+    public function scopePendientes($query)
+    {
+        return $query->where('estado_verificacion', 'pendiente_verificacion');
+    }
+
+    public function scopeVerificados($query)
+    {
+        return $query->where('estado_verificacion', 'verificado');
     }
 }

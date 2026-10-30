@@ -306,6 +306,17 @@
 
     <main class="pk-main">
         <div class="pk-card">
+            @if(isset($invitacion) && $invitacion && isset($egresado) && $egresado)
+            <!-- Verificación Segura por Invitación (Fase 1C) -->
+            <div style="background:#ecfdf5; border:1px solid #a7f3d0; border-radius:12px; padding:14px 16px; margin-bottom:1.2rem; display:flex; align-items:center; gap:12px;">
+                <i class="fas fa-shield-alt" style="color:#059669; font-size:1.6rem;"></i>
+                <div>
+                    <div style="font-weight:800; color:#065f46; font-size:0.96rem;">¡Hola, {{ explode(' ', trim($egresado->name))[0] }}! Bienvenida/o a tu ficha institucional.</div>
+                    <div style="font-size:0.82rem; color:#047857;">Enlace verificado de la Campaña 2026-II. Tus respuestas se sincronizan directamente con tu expediente.</div>
+                </div>
+            </div>
+            @endif
+
             <!-- Confirmación Rápida R02 para egresados que ya participaron -->
             <div style="background:#f0fdf4; border:1px solid #86efac; border-radius:12px; padding:12px 14px; margin-bottom:1.5rem; display:flex; align-items:center; gap:10px;">
                 <input type="checkbox" id="sin_cambios_public" name="sin_cambios" value="1" style="width:18px; height:18px; accent-color:#10b981; cursor:pointer;">
@@ -316,6 +327,8 @@
 
             <!-- Formulario -->
             <form id="camp-form">
+                <input type="hidden" id="token_invitacion" name="token_invitacion" value="{{ $token ?? '' }}">
+
                 <!-- Paso 1: Datos Personales -->
                 <div class="section-title">
                     <span class="step-badge">1</span>
@@ -325,12 +338,12 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="dni">DNI / Documento *</label>
-                        <input type="text" id="dni" name="dni" placeholder="Ej. 70891234" required maxlength="12">
+                        <input type="text" id="dni" name="dni" value="{{ isset($egresado) && $egresado->dni ? $egresado->dni : '' }}" placeholder="Ej. 70891234" required maxlength="12">
                     </div>
 
                     <div class="form-group">
                         <label for="nombre">Nombres y Apellidos completos *</label>
-                        <input type="text" id="nombre" name="nombre" placeholder="Ej. Lucía Quispe Huamán" required>
+                        <input type="text" id="nombre" name="nombre" value="{{ isset($egresado) ? trim($egresado->name . ' ' . $egresado->apellidos) : '' }}" placeholder="Ej. Lucía Quispe Huamán" required>
                     </div>
 
                     <div class="form-group">
@@ -541,13 +554,16 @@
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Guardando datos...';
 
             const isSinCambios = document.getElementById('sin_cambios_public')?.checked || false;
+            const tokenVal = document.getElementById('token_invitacion')?.value.trim() || null;
             const payload = {
                 id: 'CAMP-' + (document.getElementById('dni').value.trim() || 'PUBLIC'),
                 nombre: document.getElementById('nombre').value.trim(),
                 dni: document.getElementById('dni').value.trim(),
+                token_invitacion: tokenVal,
+                token: tokenVal,
                 sin_cambios: isSinCambios,
                 cambio_empleo: isSinCambios ? 'Sin cambios' : 'Primer empleo',
-                canal: 'campana_whatsapp_publica',
+                canal: tokenVal ? 'campana_whatsapp_invitacion' : 'campana_whatsapp_publica',
                 telefono: document.getElementById('telefono').value.trim(),
                 whatsapp: document.getElementById('telefono').value.trim(),
                 correo: document.getElementById('correo').value.trim(),

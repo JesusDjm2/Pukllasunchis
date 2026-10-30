@@ -148,35 +148,59 @@ Route::post('/alumno-login-inline', [App\Http\Controllers\AlumnoAuthController::
     ->name('alumno.login.inline');
 
 // ══════════════════════════════════════════════════════════════════
-// SEGUIMIENTO DE EGRESADOS (Sistema Sostenible EESP Pukllasunchis)
+// SEGUIMIENTO DE EGRESADOS (Sistema Sostenible EESP Pukllasunchis - Fase 1C)
 // ══════════════════════════════════════════════════════════════════
-Route::get('/seguimiento-egresados', [App\Http\Controllers\SeguimientoEgresadoController::class, 'index'])
-    ->name('seguimiento-egresados.index');
+
+// 1. Rutas públicas de campaña (WhatsApp / Magic Link / Acceso Abierto)
+Route::prefix('seguimiento-egresados')->group(function () {
+    Route::get('/campana-publica', [App\Http\Controllers\SeguimientoEgresadoController::class, 'campanaPublica'])
+        ->middleware('throttle:60,1')
+        ->name('seguimiento-egresados.campana-publica');
+
+    Route::post('/campana-publica/actualizar', [App\Http\Controllers\SeguimientoEgresadoController::class, 'guardarActualizacion'])
+        ->middleware('throttle:30,1')
+        ->name('seguimiento-egresados.campana-publica.actualizar');
+
+    Route::get('/visualizador', function () {
+        return response()->file(public_path('visualizador_diseno_puklla.html'));
+    })->name('seguimiento-egresados.visualizador');
+});
+
+// 2. Ruta híbrida de actualización (Autenticada con control de roles o pública con token/cuarentena)
 Route::post('/seguimiento-egresados/actualizar', [App\Http\Controllers\SeguimientoEgresadoController::class, 'guardarActualizacion'])
+    ->middleware('throttle:30,1')
     ->name('seguimiento-egresados.actualizar');
-Route::post('/seguimiento-egresados/accion', [App\Http\Controllers\SeguimientoEgresadoController::class, 'guardarAccion'])
-    ->name('seguimiento-egresados.accion');
-Route::post('/seguimiento-egresados/avanzar-accion/{id}', [App\Http\Controllers\SeguimientoEgresadoController::class, 'avanzarAccion'])
-    ->name('seguimiento-egresados.avanzar-accion');
-Route::post('/seguimiento-egresados/llamada', [App\Http\Controllers\SeguimientoEgresadoController::class, 'guardarLlamada'])
-    ->name('seguimiento-egresados.llamada');
-Route::post('/seguimiento-egresados/auditar-contacto', [App\Http\Controllers\SeguimientoEgresadoController::class, 'auditarContacto'])
-    ->name('seguimiento-egresados.auditar-contacto');
-Route::get('/seguimiento-egresados/campana-publica', [App\Http\Controllers\SeguimientoEgresadoController::class, 'campanaPublica'])
-    ->name('seguimiento-egresados.campana-publica');
-Route::post('/seguimiento-egresados/grupos', [App\Http\Controllers\SeguimientoEgresadoController::class, 'guardarGrupo'])
-    ->name('seguimiento-egresados.grupos.guardar');
-Route::delete('/seguimiento-egresados/grupos/{id}', [App\Http\Controllers\SeguimientoEgresadoController::class, 'eliminarGrupo'])
-    ->name('seguimiento-egresados.grupos.eliminar');
-Route::get('/seguimiento-egresados/enlace-whatsapp', [App\Http\Controllers\SeguimientoEgresadoController::class, 'generarEnlaceWhatsapp'])
-    ->name('seguimiento-egresados.enlace-whatsapp');
-Route::get('/seguimiento-egresados/episodios/{userId}', [App\Http\Controllers\SeguimientoEgresadoController::class, 'obtenerEpisodios'])
-    ->name('seguimiento-egresados.episodios');
-Route::post('/seguimiento-egresados/episodios/{id}/cerrar', [App\Http\Controllers\SeguimientoEgresadoController::class, 'cerrarEpisodio'])
-    ->name('seguimiento-egresados.episodios.cerrar');
-Route::get('/seguimiento-egresados/visualizador', function () {
-    return response()->file(public_path('visualizador_diseno_puklla.html'));
-})->name('seguimiento-egresados.visualizador');
+
+// 3. Rutas de intranet protegidas por autenticación obligatoria y control estricto de roles
+Route::middleware(['auth'])->prefix('seguimiento-egresados')->group(function () {
+    // Vista principal con control de alcances (egresado solo ve su ficha, encuestador sus asignados, admin todo)
+    Route::get('/', [App\Http\Controllers\SeguimientoEgresadoController::class, 'index'])
+        ->name('seguimiento-egresados.index');
+
+    // Episodios laborales (consulta y cierre con verificación en servidor de propiedad o asignación)
+    Route::get('/episodios/{userId}', [App\Http\Controllers\SeguimientoEgresadoController::class, 'obtenerEpisodios'])
+        ->name('seguimiento-egresados.episodios');
+    Route::post('/episodios/{id}/cerrar', [App\Http\Controllers\SeguimientoEgresadoController::class, 'cerrarEpisodio'])
+        ->name('seguimiento-egresados.episodios.cerrar');
+
+    // Gestión de contactos, llamadas e invitaciones seguras WhatsApp
+    Route::post('/llamada', [App\Http\Controllers\SeguimientoEgresadoController::class, 'guardarLlamada'])
+        ->name('seguimiento-egresados.llamada');
+    Route::post('/auditar-contacto', [App\Http\Controllers\SeguimientoEgresadoController::class, 'auditarContacto'])
+        ->name('seguimiento-egresados.auditar-contacto');
+    Route::get('/enlace-whatsapp', [App\Http\Controllers\SeguimientoEgresadoController::class, 'generarEnlaceWhatsapp'])
+        ->name('seguimiento-egresados.enlace-whatsapp');
+
+    // Coordinación y Administración: Grupos de entrevistadores y Casos institucionales de acompañamiento
+    Route::post('/accion', [App\Http\Controllers\SeguimientoEgresadoController::class, 'guardarAccion'])
+        ->name('seguimiento-egresados.accion');
+    Route::post('/avanzar-accion/{id}', [App\Http\Controllers\SeguimientoEgresadoController::class, 'avanzarAccion'])
+        ->name('seguimiento-egresados.avanzar-accion');
+    Route::post('/grupos', [App\Http\Controllers\SeguimientoEgresadoController::class, 'guardarGrupo'])
+        ->name('seguimiento-egresados.grupos.guardar');
+    Route::delete('/grupos/{id}', [App\Http\Controllers\SeguimientoEgresadoController::class, 'eliminarGrupo'])
+        ->name('seguimiento-egresados.grupos.eliminar');
+});
 
 if (app()->isLocal()) {
     Route::get('/dev/login-docente', function () {

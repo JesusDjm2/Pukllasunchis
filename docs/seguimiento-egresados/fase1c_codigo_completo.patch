@@ -1,0 +1,1182 @@
+diff --git a/app/Http/Controllers/SeguimientoEgresadoController.php b/app/Http/Controllers/SeguimientoEgresadoController.php
+index 91f828e..493825a 100644
+--- a/app/Http/Controllers/SeguimientoEgresadoController.php
++++ b/app/Http/Controllers/SeguimientoEgresadoController.php
+@@ -12,6 +12,7 @@
+ use App\Models\SeguimientoEgresado\Caso;
+ use App\Models\SeguimientoEgresado\EpisodioLaboral;
+ use App\Models\SeguimientoEgresado\GrupoEntrevistador;
++use App\Models\SeguimientoEgresado\InvitacionCampana;
+ use App\Models\SeguimientoEgresado\Llamada;
+ use App\Models\Titulacion\SeguimientoTitulacion;
+ use App\Models\User;
+@@ -22,80 +23,186 @@
+ class SeguimientoEgresadoController extends Controller
+ {
+     /**
+-     * Vista principal del módulo de Seguimiento de Egresados (Simulador V8 conectado a la BD institucional).
++     * Verifica si el usuario tiene rol directivo o de coordinación de empleabilidad.
++     */
++    protected function esPersonalGestion(?User $user = null): bool
++    {
++        $user = $user ?: auth()->user();
++        if (!$user) return false;
++        return $user->hasAnyRole(['admin', 'super-admin', 'coordinacion-empleabilidad', 'direccion']);
++    }
++
++    /**
++     * Verifica si el usuario pertenece al cuerpo docente o formativo.
++     */
++    protected function esEquipoDocente(?User $user = null): bool
++    {
++        $user = $user ?: auth()->user();
++        if (!$user) return false;
++        return $user->hasAnyRole(['docente', 'tutor', 'bienestar', 'formacion-continua', 'gestor-titulacion', 'investigador']);
++    }
++
++    /**
++     * Verifica si el usuario es encuestador de seguimiento.
++     */
++    protected function esEncuestador(?User $user = null): bool
++    {
++        $user = $user ?: auth()->user();
++        if (!$user) return false;
++        return $user->hasAnyRole(['encuestador-seguimiento', 'encuestador']);
++    }
++
++    /**
++     * Verifica si el usuario es egresado o alumno.
++     */
++    protected function esEgresadoOAlumno(?User $user = null): bool
++    {
++        $user = $user ?: auth()->user();
++        if (!$user) return false;
++        return $user->condicion === 'Egresado' || $user->hasAnyRole(['egresado', 'alumno', 'alumnoB']);
++    }
++
++    /**
++     * Comprueba autorización para consultar o mutar datos de un egresado específico.
++     */
++    protected function puedeAccederAEgresado(int $targetUserId, ?User $user = null): bool
++    {
++        $user = $user ?: auth()->user();
++        if (!$user) return false;
++
++        // Si es su propio expediente
++        if ((int)$user->id === (int)$targetUserId) {
++            return true;
++        }
++
++        // Si es personal directivo o coordinación
++        if ($this->esPersonalGestion($user)) {
++            return true;
++        }
++
++        // Si es cuerpo docente o formativo
++        if ($this->esEquipoDocente($user)) {
++            return true;
++        }
++
++        // Si es encuestador, verificar asignación obligatoria en grupos activos
++        if ($this->esEncuestador($user)) {
++            return GrupoEntrevistador::esEntrevistadorAsignado($user->id, $targetUserId);
++        }
++
++        return false;
++    }
++
++    /**
++     * Vista principal del módulo de Seguimiento de Egresados con alcances protegidos.
+      */
+     public function index(Request $request)
+     {
+-        // 1. Obtener egresados reales de la base de datos institucional
+-        $egresadosReales = User::query()
++        if (!auth()->check()) {
++            return redirect()->guest(route('login'));
++        }
++
++        $authUser = auth()->user();
++
++        // 1. Obtener egresados reales según alcance de autorización
++        $egresadosQuery = User::query()
+             ->where('condicion', 'Egresado')
+             ->with(['alumno.programa', 'seguimientoTitulacion.estadoTitulacion'])
+             ->orderBy('apellidos')
+-            ->orderBy('name')
+-            ->limit(300)
+-            ->get()
+-            ->map(function ($u) {
+-                $alumno = $u->alumno;
+-                $tit = $u->seguimientoTitulacion;
+-
+-                // Inferir o limpiar año de cohorte a partir de su correo o periodo de estudios
+-                $cohorte = 'Por verificar';
+-                if ($tit && $tit->periodo_estudios) {
+-                    $cohorte = $tit->periodo_estudios;
+-                } elseif (preg_match('/(20\d{2})/', $u->email, $m)) {
+-                    $cohorte = $m[1];
+-                }
++            ->orderBy('name');
+ 
+-                $progNombre = 'Programa por verificar';
+-                if ($alumno && $alumno->programa) {
+-                    $progNombre = str_replace('Programa ', '', $alumno->programa->nombre);
+-                }
++        // Si es egresado/alumno, restringir estrictamente a su propio expediente
++        if ($this->esEgresadoOAlumno($authUser)) {
++            $egresadosQuery->where('id', $authUser->id);
++        }
++        // Si es encuestador temporal, filtrar solo a los egresados asignados en sus grupos activos
++        elseif ($this->esEncuestador($authUser) && !$this->esPersonalGestion($authUser) && !$this->esEquipoDocente($authUser)) {
++            $gruposActivos = GrupoEntrevistador::where('estado', 'activo')->get();
++            $asignadosIds = $gruposActivos->filter(fn ($g) => in_array($authUser->id, (array)$g->entrevistadores))
++                ->flatMap(fn ($g) => (array)$g->egresados_ids)
++                ->unique()
++                ->toArray();
+ 
+-                return [
+-                    'id' => 'REAL-' . $u->id,
+-                    'user_id' => $u->id,
+-                    'nombre' => trim($u->name . ' ' . $u->apellidos),
+-                    'programa' => $progNombre,
+-                    'egreso' => $cohorte,
+-                    'periodo_referencia' => $cohorte,
+-                    'egreso_confirmado' => true,
+-                    'correo' => $u->email,
+-                    'telefono' => $alumno?->numero ?: '',
+-                    'telefono_alt' => $alumno?->numero_referencia ?: '',
+-                    'direccion_contacto' => $alumno?->direccion ?: '',
+-                    'res_departamento' => $alumno?->departamento ?: 'CUSCO',
+-                    'res_provincia' => $alumno?->provincia ?: 'CUSCO',
+-                    'res_distrito' => $alumno?->distrito ?: 'CUSCO',
+-                    'estado_academico' => $tit?->estadoTitulacion?->nombre ?: 'Egresado/a',
+-                    'origen' => 'Base institucional EESPP Pukllasunchis'
+-                ];
+-            });
++            $egresadosQuery->whereIn('id', $asignadosIds);
++        } else {
++            $egresadosQuery->limit(300);
++        }
+ 
+-        // 2. Obtener actualizaciones registradas en base de datos
+-        $actualizacionesDb = Actualizacion::latest()->get()->keyBy(function ($item) {
++        $egresadosReales = $egresadosQuery->get()->map(function ($u) {
++            $alumno = $u->alumno;
++            $tit = $u->seguimientoTitulacion;
++
++            $cohorte = 'Por verificar';
++            if ($tit && $tit->periodo_estudios) {
++                $cohorte = $tit->periodo_estudios;
++            } elseif (preg_match('/(20\d{2})/', $u->email, $m)) {
++                $cohorte = $m[1];
++            }
++
++            $progNombre = 'Programa por verificar';
++            if ($alumno && $alumno->programa) {
++                $progNombre = str_replace('Programa ', '', $alumno->programa->nombre);
++            }
++
++            return [
++                'id' => 'REAL-' . $u->id,
++                'user_id' => $u->id,
++                'nombre' => trim($u->name . ' ' . $u->apellidos),
++                'programa' => $progNombre,
++                'egreso' => $cohorte,
++                'periodo_referencia' => $cohorte,
++                'egreso_confirmado' => true,
++                'correo' => $u->email,
++                'telefono' => $alumno?->numero ?: '',
++                'telefono_alt' => $alumno?->numero_referencia ?: '',
++                'direccion_contacto' => $alumno?->direccion ?: '',
++                'res_departamento' => $alumno?->departamento ?: 'CUSCO',
++                'res_provincia' => $alumno?->provincia ?: 'CUSCO',
++                'res_distrito' => $alumno?->distrito ?: 'CUSCO',
++                'estado_academico' => $tit?->estadoTitulacion?->nombre ?: 'Egresado/a',
++                'origen' => 'Base institucional EESPP Pukllasunchis'
++            ];
++        });
++
++        // 2. Obtener actualizaciones según alcance
++        $actualizacionesQuery = Actualizacion::latest();
++        if ($this->esEgresadoOAlumno($authUser)) {
++            $actualizacionesQuery->where('user_id', $authUser->id);
++        }
++        $actualizacionesDb = $actualizacionesQuery->get()->keyBy(function ($item) {
+             return $item->identificador_temporal ?: ('REAL-' . $item->user_id);
+         });
+ 
+-        // 3. Obtener casos de acción institucional
+-        $casosDb = Caso::latest()->get();
++        // 3. Casos según alcance
++        $casosQuery = Caso::latest();
++        if ($this->esEgresadoOAlumno($authUser)) {
++            $casosQuery->where('user_id', $authUser->id);
++        }
++        $casosDb = $casosQuery->get();
+ 
+-        // 4. Obtener llamadas registradas
+-        $llamadasDb = Llamada::latest()->get();
++        // 4. Llamadas según alcance
++        $llamadasQuery = Llamada::latest();
++        if ($this->esEgresadoOAlumno($authUser)) {
++            $llamadasQuery->where('user_id', $authUser->id);
++        }
++        $llamadasDb = $llamadasQuery->get();
+ 
+-        // 5. Obtener bitácora de auditoría de contactos
+-        $accesosContactoDb = AccesoContacto::latest()->limit(50)->get();
++        // 5. Auditoría de contactos (oculta para egresados/alumnos)
++        $accesosContactoDb = $this->esEgresadoOAlumno($authUser) ? collect([]) : AccesoContacto::latest()->limit(50)->get();
+ 
+-        // 6. Obtener grupos de entrevistadores para seguimiento
+-        $gruposDb = GrupoEntrevistador::latest()->get();
++        // 6. Grupos de entrevistadores (oculta para egresados/alumnos)
++        $gruposDb = $this->esEgresadoOAlumno($authUser) ? collect([]) : GrupoEntrevistador::latest()->get();
+ 
+-        // 7. Entrevistadores disponibles (docentes, tutores, alumnos o admins)
+-        $entrevistadoresDisponibles = User::whereHas('roles', fn ($q) => $q->whereIn('name', ['docente', 'tutor', 'admin', 'alumno', 'encuestador-seguimiento']))
+-            ->orderBy('apellidos')
+-            ->limit(150)
+-            ->get()
+-            ->map(fn ($u) => ['id' => $u->id, 'nombre' => trim($u->name . ' ' . $u->apellidos), 'email' => $u->email]);
++        // 7. Entrevistadores disponibles (oculta para egresados/alumnos)
++        $entrevistadoresDisponibles = $this->esEgresadoOAlumno($authUser)
++            ? collect([])
++            : User::whereHas('roles', fn ($q) => $q->whereIn('name', ['docente', 'tutor', 'admin', 'alumno', 'encuestador-seguimiento']))
++                ->orderBy('apellidos')
++                ->limit(150)
++                ->get()
++                ->map(fn ($u) => ['id' => $u->id, 'nombre' => trim($u->name . ' ' . $u->apellidos), 'email' => $u->email]);
+ 
+-        // 8. Catálogo de departamentos, provincias y distritos principales
++        // 8. Catálogo geográfico
+         $departamentos = Departamento::orderBy('nombre')->pluck('nombre');
+         $provinciasCusco = Provincia::whereHas('departamento', function ($q) {
+             $q->where('nombre', 'like', '%Cusco%');
+@@ -104,8 +211,12 @@ public function index(Request $request)
+             $q->where('nombre', 'like', '%Cusco%');
+         })->orderBy('nombre')->pluck('nombre');
+ 
+-        // 9. Episodios laborales persistidos para el historial longitudinal
+-        $episodiosDb = EpisodioLaboral::latest()->get();
++        // 9. Episodios laborales según alcance
++        $episodiosQuery = EpisodioLaboral::latest();
++        if ($this->esEgresadoOAlumno($authUser)) {
++            $episodiosQuery->where('user_id', $authUser->id);
++        }
++        $episodiosDb = $episodiosQuery->get();
+ 
+         return view('seguimiento_egresados.index', compact(
+             'egresadosReales',
+@@ -124,17 +235,20 @@ public function index(Request $request)
+ 
+     /**
+      * Guardar actualización de ficha con resolución estricta de identidad (R01),
+-     * confirmación rápida «sin cambios» (R02) y persistencia longitudinal de episodios (R03).
++     * confirmación rápida «sin cambios» (R02), persistencia longitudinal (R03)
++     * e inmunidad anti-suplantación en accesos públicos sin token (Fase 1C).
+      */
+     public function guardarActualizacion(Request $request)
+     {
+         // -------------------------------------------------------------
+-        // 1. RESOLUCIÓN DE IDENTIDAD Y CONTROL DE PERMISOS (R01 / R04)
++        // 1. RESOLUCIÓN DE IDENTIDAD, TOKENS Y PERMISOS (R01 / R04 / Fase 1C)
+         // -------------------------------------------------------------
+         $rawId = $request->input('user_id') ?: $request->input('id');
+         $dni = $request->input('dni');
++        $tokenInput = $request->input('token_invitacion') ?: $request->input('token');
+         $targetUserId = null;
+         $idTemporal = null;
++        $invitacionValida = null;
+ 
+         if (is_numeric($rawId)) {
+             $targetUserId = (int) $rawId;
+@@ -146,24 +260,46 @@ public function guardarActualizacion(Request $request)
+             $idTemporal = is_string($rawId) ? $rawId : ($dni ? ('DNI-' . $dni) : null);
+         }
+ 
+-        // Control de permisos basado en sesión autenticada
+-        if (auth()->check()) {
++        $estadoVerificacion = 'verificado';
++        $procedencia = 'intranet';
++        $registradoPor = 'Sistema institucional';
++        $canal = $request->input('canal', 'intranet');
++        $esRegistroAislado = false;
++
++        // A. Si se proporciona un token criptográfico de invitación, resolverlo con máxima prioridad
++        if ($tokenInput) {
++            $invitacion = InvitacionCampana::validos()->where('token', $tokenInput)->first();
++            if (!$invitacion) {
++                return response()->json([
++                    'success' => false,
++                    'error' => 'El enlace de invitación no es válido o ha expirado.'
++                ], 422);
++            }
++            $targetUserId = (int)$invitacion->user_id;
++            $idTemporal = null;
++            $invitacionValida = $invitacion;
++            $estadoVerificacion = 'verificado';
++            $procedencia = 'publico_whatsapp_invitacion';
++            $registradoPor = auth()->check() ? auth()->user()->name : 'Autogestión por invitación WhatsApp';
++            $canal = 'campana_whatsapp_invitacion';
++        }
++        // B. Evaluación para usuarios autenticados sin token
++        elseif (auth()->check()) {
+             $authUser = auth()->user();
+ 
+-            // Si el usuario autenticado es egresado/alumno, solo puede modificar su propia ficha
+-            if ($authUser->condicion === 'Egresado' || $authUser->hasRole('egresado') || $authUser->hasRole('alumno')) {
++            if ($this->esEgresadoOAlumno($authUser)) {
+                 if ($targetUserId && (int)$targetUserId !== (int)$authUser->id) {
+                     return response()->json([
+                         'success' => false,
+                         'error' => 'No tienes autorización para modificar la ficha de otro egresado.'
+                     ], 403);
+                 }
+-                // Forzar identidad a la sesión institucional inequívoca
+                 $targetUserId = (int)$authUser->id;
+                 $idTemporal = null;
+-            }
+-            // Si el usuario autenticado es encuestador temporal, verificar asignación obligatoria en servidor
+-            elseif ($authUser->hasRole('encuestador-seguimiento') || $authUser->hasRole('encuestador')) {
++                $procedencia = 'intranet_autogestion';
++                $registradoPor = $authUser->name;
++                $canal = $request->input('canal', 'intranet');
++            } elseif ($this->esEncuestador($authUser)) {
+                 if ($targetUserId) {
+                     $asignado = GrupoEntrevistador::esEntrevistadorAsignado($authUser->id, $targetUserId);
+                     if (!$asignado) {
+@@ -173,9 +309,15 @@ public function guardarActualizacion(Request $request)
+                         ], 403);
+                     }
+                 }
++                $procedencia = 'intranet_entrevistador';
++                $registradoPor = $authUser->name;
++            } else {
++                $procedencia = 'intranet_gestion';
++                $registradoPor = $authUser->name;
+             }
+-        } else {
+-            // Solicitud pública / sin sesión: validar que si se indica user_id, realmente exista en BD
++        }
++        // C. Evaluación para solicitudes públicas / sin sesión y sin token (Prevenir suplantación IDOR)
++        else {
+             if ($targetUserId) {
+                 $userExists = User::where('id', $targetUserId)->exists();
+                 if (!$userExists) {
+@@ -184,49 +326,135 @@ public function guardarActualizacion(Request $request)
+                         'error' => 'El identificador de egresado especificado no existe en la base institucional.'
+                     ], 422);
+                 }
++                // REGLA ANTI-SUPLANTACIÓN (Fase 1C):
++                // Un acceso público sin token no puede modificar el perfil verificado ni cerrar episodios
++                $esRegistroAislado = true;
++                $estadoVerificacion = 'pendiente_verificacion';
++                $procedencia = 'publico_whatsapp_no_verificado';
++                $registradoPor = 'Público sin credencial';
++                $canal = 'publico_abierto';
+             } elseif (!$idTemporal) {
+                 return response()->json([
+                     'success' => false,
+                     'error' => 'Identificador de registro no proporcionado o inválido.'
+                 ], 422);
++            } else {
++                $esRegistroAislado = true;
++                $estadoVerificacion = 'pendiente_verificacion';
++                $procedencia = 'publico_whatsapp_no_verificado';
++                $registradoPor = 'Público sin credencial';
++                $canal = 'publico_abierto';
+             }
+         }
+ 
++        $campana = $request->input('campana', '2026-II');
++
++        // -------------------------------------------------------------
++        // 2. AISLAMIENTO SEGURO DE REGISTROS NO VERIFICADOS (Fase 1C)
++        // -------------------------------------------------------------
++        if ($esRegistroAislado) {
++            $tempKey = 'QUARANTINE-' . ($targetUserId ?: 'ANON') . '-' . time() . '-' . rand(10, 99);
++
++            $actualizacion = Actualizacion::create([
++                'user_id' => null, // Protegemos el perfil oficial: se aísla de la ficha del egresado
++                'identificador_temporal' => $tempKey,
++                'nombre_completo' => $request->input('nombre', 'Egresado/a'),
++                'periodo_campana' => $campana,
++                'tipo_registro' => 'solicitud_sin_token',
++                'estado_verificacion' => 'pendiente_verificacion',
++                'procedencia' => $procedencia,
++                'token_invitacion' => null,
++                'ip_registro' => $request->ip(),
++                'canal' => $canal,
++                'registrado_por' => $registradoPor,
++                'fecha_ultima_confirmacion' => now(),
++                'es_confirmacion_sin_cambios' => false,
++                'telefono' => $request->input('telefono'),
++                'whatsapp' => $request->input('whatsapp') ?: $request->input('telefono'),
++                'correo' => $request->input('correo'),
++                'direccion_contacto' => $request->input('direccion_contacto'),
++                'trabaja' => $request->input('trabaja'),
++                'institucion' => $request->input('institucion'),
++                'cargo' => $request->input('cargo'),
++                'datos_extra' => [
++                    'candidato_user_id' => $targetUserId,
++                    'dni_declarado' => $dni,
++                    'ip' => $request->ip(),
++                    'observacion' => 'Registro público recibido sin token criptográfico. Pendiente de verificación por llamada.'
++                ]
++            ]);
++
++            // Abrir caso de verificación para que el coordinador contacte y valide
++            Caso::create([
++                'codigo' => 'VERIF-' . time() . '-' . rand(10, 99),
++                'user_id' => $targetUserId,
++                'nombre_egresado' => $request->input('nombre', 'Egresado/a'),
++                'tema' => 'Verificación de actualización pública sin credencial',
++                'responsable' => 'Coordinación de Empleabilidad',
++                'fecha_gestion' => now()->addDays(3)->toDateString(),
++                'estado' => 'Por revisar',
++                'proposito' => 'Un usuario actualizó datos sin token criptográfico. Validar telefónicamente antes de sincronizar expediente.',
++                'origen' => 'Campaña pública abierta'
++            ]);
++
++            return response()->json([
++                'success' => true,
++                'tipo' => 'pendiente_verificacion',
++                'message' => 'Actualización recibida. Al ser un registro abierto, el equipo de seguimiento verificará tus datos antes de consolidarlos en tu expediente.',
++                'actualizacion_id' => $actualizacion->id
++            ]);
++        }
++
+         // Recuperar nombre oficial si existe en BD
+         $nombre = $request->input('nombre', 'Egresado/a');
+         if ($targetUserId && ($u = User::find($targetUserId))) {
+             $nombre = trim($u->name . ' ' . $u->apellidos);
+         }
+ 
+-        $canal = $request->input('canal', auth()->check() ? 'intranet' : 'autorespuesta');
+-        $registradoPor = auth()->check() ? auth()->user()->name : ($request->input('registrado_por') ?: 'Autogestión del egresado');
+-        $campana = $request->input('campana', '2026-II');
++        // Marcar token como consumido si vino de una invitación válida
++        if ($invitacionValida) {
++            $invitacionValida->marcarComoUsado($request->ip());
++        }
+ 
+         // -------------------------------------------------------------
+-        // 2. EJECUCIÓN TRANSACCIONAL PROTEGIDA (ACID / Rollback seguro)
++        // 3. EJECUCIÓN TRANSACCIONAL PROTEGIDA CON BLOQUEO PESIMISTA (ACID)
+         // -------------------------------------------------------------
+         try {
+             return DB::transaction(function () use (
+-                $request, $targetUserId, $idTemporal, $nombre, $canal, $registradoPor, $campana
++                $request, $targetUserId, $idTemporal, $nombre, $canal, $registradoPor,
++                $campana, $estadoVerificacion, $procedencia, $tokenInput
+             ) {
++                // Control de concurrencia: serializar escrituras sobre el mismo egresado
++                if ($targetUserId) {
++                    Actualizacion::where('user_id', $targetUserId)->lockForUpdate()->get();
++                    EpisodioLaboral::where('user_id', $targetUserId)->lockForUpdate()->get();
++                }
++
+                 $isSinCambios = $request->boolean('sin_cambios')
+                     || $request->input('cambio_empleo') === 'Sin cambios'
+                     || $request->boolean('confirmar_vigente');
+ 
+                 // ---------------------------------------------------------
+-                // 3. CAMINO RÁPIDO: CONFIRMACIÓN SIN CAMBIOS (R02)
++                // 3.1. CAMINO RÁPIDO: CONFIRMACIÓN SIN CAMBIOS (R02)
+                 // ---------------------------------------------------------
+                 if ($isSinCambios) {
++                    // Historial longitudinal por campaña: la clave de búsqueda incluye periodo_campana
+                     $actualizacion = Actualizacion::updateOrCreate(
+-                        ['user_id' => $targetUserId, 'identificador_temporal' => $idTemporal],
++                        [
++                            'user_id' => $targetUserId,
++                            'periodo_campana' => $campana,
++                        ],
+                         [
+                             'nombre_completo' => $nombre,
++                            'tipo_registro' => 'confirmacion_sin_cambios',
++                            'estado_verificacion' => $estadoVerificacion,
++                            'procedencia' => $procedencia,
++                            'token_invitacion' => $tokenInput,
++                            'ip_registro' => $request->ip(),
+                             'canal' => $canal,
+                             'registrado_por' => $registradoPor,
+                             'fecha_ultima_confirmacion' => now(),
+                             'es_confirmacion_sin_cambios' => true,
+-                            'periodo_campana' => $campana,
+-                            // Microchequeo opcional de bienestar y formación
+                             'satisfaccion' => $request->input('satisfaccion') ?: null,
+                             'temas_interes' => $request->input('temas') ?: $request->input('temas_interes'),
+                             'necesidades_apoyo' => $request->input('necesidades') ?: $request->input('necesidades_apoyo'),
+@@ -266,19 +494,26 @@ public function guardarActualizacion(Request $request)
+                 }
+ 
+                 // ---------------------------------------------------------
+-                // 4. ACTUALIZACIÓN COMPLETA O CAMBIO DE EMPLEO (R03)
++                // 3.2. ACTUALIZACIÓN COMPLETA O CAMBIO DE EMPLEO (R03)
+                 // ---------------------------------------------------------
+                 $actualizacion = Actualizacion::updateOrCreate(
+-                    ['user_id' => $targetUserId, 'identificador_temporal' => $idTemporal],
++                    [
++                        'user_id' => $targetUserId,
++                        'periodo_campana' => $campana,
++                    ],
+                     [
+                         'nombre_completo' => $nombre,
++                        'tipo_registro' => 'respuesta_campana',
++                        'estado_verificacion' => $estadoVerificacion,
++                        'procedencia' => $procedencia,
++                        'token_invitacion' => $tokenInput,
++                        'ip_registro' => $request->ip(),
+                         'programa' => $request->input('programa'),
+                         'cohorte_egreso' => $request->input('egreso') ?: $request->input('cohorte_egreso'),
+                         'canal' => $canal,
+                         'registrado_por' => $registradoPor,
+                         'fecha_ultima_confirmacion' => now(),
+                         'es_confirmacion_sin_cambios' => false,
+-                        'periodo_campana' => $campana,
+                         'telefono' => $request->input('telefono'),
+                         'whatsapp' => $request->input('whatsapp') ?: $request->input('telefono'),
+                         'telefono_alt' => $request->input('telefono_alt'),
+@@ -328,22 +563,49 @@ public function guardarActualizacion(Request $request)
+                 );
+ 
+                 // ---------------------------------------------------------
+-                // 5. GESTIÓN DE EPISODIOS LABORALES LONGITUDINALES (R03)
++                // 3.3. GESTIÓN DE EPISODIOS LABORALES LONGITUDINALES (R03 / Fase 1C)
+                 // ---------------------------------------------------------
+                 $trabaja = $request->input('trabaja', 'Trabaja');
+ 
+                 if ($trabaja === 'Trabaja' || str_starts_with(strtolower($trabaja), 'trabaja')) {
+                     $institucion = trim($request->input('institucion', ''));
+                     $cargo = trim($request->input('cargo', ''));
+-                    $fechaInicio = $request->input('inicio_empleo') ?: now()->toDateString();
++
++                    // INTEGRIDAD DE FECHA (Fase 1C):
++                    // Cero asignación automática de now() a fechas de inicio desconocidas
++                    $fechaInicio = $request->input('inicio_empleo') ?: null;
+                     $fechaFin = $request->input('fin_empleo') ?: null;
+ 
++                    // INTEGRIDAD DE CAMPOS Y NO INFERENCIA (Fase 1C):
++                    // Solo marcar como educativo o docencia directa si los datos lo señalan expresamente
++                    $campo = $request->input('campo');
++                    $esEducativo = false;
++                    if ($campo && in_array(trim($campo), ['En educación', 'Educativo', 'Sector educativo'])) {
++                        $esEducativo = true;
++                    } elseif ($request->has('es_empleo_educativo')) {
++                        $esEducativo = $request->boolean('es_empleo_educativo');
++                    }
++
++                    $tipoPractica = $request->input('tipo_practica');
++                    $esDocencia = false;
++                    if ($tipoPractica && in_array(trim($tipoPractica), ['Docencia directa', 'Docente de aula', 'Docente'])) {
++                        $esDocencia = true;
++                    } elseif ($request->has('es_docencia_directa')) {
++                        $esDocencia = $request->boolean('es_docencia_directa');
++                    }
++
+                     if ($institucion !== '') {
+                         // Idempotencia: Verificar si este mismo episodio ya existe para evitar duplicar por reenvío
+                         $episodioExistente = EpisodioLaboral::where('user_id', $targetUserId)
+                             ->where('institucion', $institucion)
+                             ->where('cargo', $cargo)
+-                            ->where('fecha_inicio', $fechaInicio)
++                            ->where(function ($q) use ($fechaInicio) {
++                                if ($fechaInicio) {
++                                    $q->where('fecha_inicio', $fechaInicio);
++                                } else {
++                                    $q->whereNull('fecha_inicio');
++                                }
++                            })
+                             ->first();
+ 
+                         if ($episodioExistente) {
+@@ -353,8 +615,8 @@ public function guardarActualizacion(Request $request)
+                                 'sector' => $request->input('sector') ?: $episodioExistente->sector,
+                                 'es_actual' => is_null($fechaFin) || $fechaFin >= now()->toDateString(),
+                                 'fecha_fin' => $fechaFin,
+-                                'es_empleo_educativo' => ($request->input('campo') === 'En educación' || $request->input('campo') === 'Educativo' || $request->boolean('es_empleo_educativo')),
+-                                'es_docencia_directa' => ($request->input('tipo_practica') === 'Docencia directa' || $request->boolean('es_docencia_directa')),
++                                'es_empleo_educativo' => $esEducativo,
++                                'es_docencia_directa' => $esDocencia,
+                                 'trab_departamento' => $request->input('trab_departamento') ?: $episodioExistente->trab_departamento,
+                                 'trab_provincia' => $request->input('trab_provincia') ?: $episodioExistente->trab_provincia,
+                                 'trab_distrito' => $request->input('trab_distrito') ?: $episodioExistente->trab_distrito,
+@@ -373,7 +635,7 @@ public function guardarActualizacion(Request $request)
+                                 }
+                             }
+ 
+-                            // Crear nuevo episodio laboral conservando los anteriores (soporta empleos simultáneos)
++                            // Crear nuevo episodio laboral conservando los existentes (soporta empleos simultáneos)
+                             EpisodioLaboral::create([
+                                 'user_id' => $targetUserId,
+                                 'identificador_temporal' => $idTemporal,
+@@ -384,8 +646,8 @@ public function guardarActualizacion(Request $request)
+                                 'contrato' => $request->input('contrato'),
+                                 'sector' => $request->input('sector'),
+                                 'es_actual' => is_null($fechaFin) || $fechaFin >= now()->toDateString(),
+-                                'es_empleo_educativo' => ($request->input('campo') === 'En educación' || $request->input('campo') === 'Educativo' || $request->boolean('es_empleo_educativo')),
+-                                'es_docencia_directa' => ($request->input('tipo_practica') === 'Docencia directa' || $request->boolean('es_docencia_directa')),
++                                'es_empleo_educativo' => $esEducativo,
++                                'es_docencia_directa' => $esDocencia,
+                                 'trab_departamento' => $request->input('trab_departamento'),
+                                 'trab_provincia' => $request->input('trab_provincia'),
+                                 'trab_distrito' => $request->input('trab_distrito'),
+@@ -408,7 +670,7 @@ public function guardarActualizacion(Request $request)
+                             );
+                         }
+                     } elseif ($request->boolean('cerrar_activos')) {
+-                        // Cerrar empleos activos registrando la fecha declarada (conservando NULL si es desconocida)
++                        // Cerrar selectivamente los episodios activos registrando la fecha fin declarada
+                         EpisodioLaboral::where('user_id', $targetUserId)
+                             ->where('es_actual', true)
+                             ->update([
+@@ -417,7 +679,7 @@ public function guardarActualizacion(Request $request)
+                                 'motivo_cambio' => $request->input('motivo_cambio') ?: 'Fin de empleo reportado en actualización'
+                             ]);
+                     }
+-                    // REGLA FUNDAMENTAL: Cero empleadores ficticios "Desempleado". No se crea episodio inventado.
++                    // REGLA FUNDAMENTAL: Cero empleadores ficticios "Desempleado".
+                 }
+ 
+                 // Si solicitó acompañamiento prioritario, abrir caso institucional
+@@ -459,18 +721,21 @@ public function guardarActualizacion(Request $request)
+     }
+ 
+     /**
+-     * Endpoint para cerrar un episodio laboral específico sin sobrescribir la fecha de inicio.
++     * Endpoint para cerrar un episodio laboral específico con verificación de propiedad/asignación.
+      */
+     public function cerrarEpisodio(Request $request, $id)
+     {
++        if (!auth()->check()) {
++            return response()->json(['success' => false, 'error' => 'No autenticado.'], 401);
++        }
++
+         $episodio = EpisodioLaboral::findOrFail($id);
+ 
+-        // Control de permisos
+-        if (auth()->check()) {
+-            $authUser = auth()->user();
+-            if ($authUser->condicion === 'Egresado' && (int)$episodio->user_id !== (int)$authUser->id) {
+-                return response()->json(['success' => false, 'error' => 'No autorizado'], 403);
+-            }
++        if (!$this->puedeAccederAEgresado((int)$episodio->user_id)) {
++            return response()->json([
++                'success' => false,
++                'error' => 'No tienes autorización para cerrar este episodio laboral.'
++            ], 403);
+         }
+ 
+         $episodio->cerrarEpisodio(
+@@ -486,10 +751,21 @@ public function cerrarEpisodio(Request $request, $id)
+     }
+ 
+     /**
+-     * Obtener episodios laborales de un egresado (activos e históricos).
++     * Obtener episodios laborales de un egresado (activos e históricos) con control de acceso.
+      */
+     public function obtenerEpisodios(Request $request, $userId)
+     {
++        if (!auth()->check()) {
++            return response()->json(['success' => false, 'error' => 'No autenticado.'], 401);
++        }
++
++        if (!$this->puedeAccederAEgresado((int)$userId)) {
++            return response()->json([
++                'success' => false,
++                'error' => 'No tienes autorización para consultar los episodios de este egresado.'
++            ], 403);
++        }
++
+         $episodios = EpisodioLaboral::where('user_id', $userId)
+             ->orderByDesc('es_actual')
+             ->orderByDesc('fecha_inicio')
+@@ -503,14 +779,27 @@ public function obtenerEpisodios(Request $request, $userId)
+     }
+ 
+     /**
+-     * Registrar nueva acción o caso de acompañamiento.
++     * Registrar nueva acción o caso de acompañamiento institucional.
+      */
+     public function guardarAccion(Request $request)
+     {
++        if (!auth()->check()) {
++            return response()->json(['success' => false, 'error' => 'No autenticado.'], 401);
++        }
++
++        if (!$this->esPersonalGestion() && !$this->esEquipoDocente()) {
++            return response()->json([
++                'success' => false,
++                'error' => 'No tienes autorización para crear casos de acompañamiento institucional.'
++            ], 403);
++        }
++
+         $idStr = $request->input('pid');
+         $userId = null;
+-        if (str_starts_with($idStr, 'REAL-')) {
++        if ($idStr && str_starts_with($idStr, 'REAL-')) {
+             $userId = (int) str_replace('REAL-', '', $idStr);
++        } elseif ($idStr && is_numeric($idStr)) {
++            $userId = (int) $idStr;
+         }
+ 
+         $caso = Caso::create([
+@@ -518,7 +807,7 @@ public function guardarAccion(Request $request)
+             'user_id' => $userId,
+             'nombre_egresado' => $request->input('nombre', 'Egresado/a'),
+             'tema' => $request->input('tema', 'Acompañamiento general'),
+-            'responsable' => $request->input('responsable', 'Coordinación'),
++            'responsable' => $request->input('responsable', auth()->user()->name),
+             'fecha_gestion' => $request->input('fecha') ?: now()->addDays(7)->toDateString(),
+             'estado' => 'Por revisar',
+             'proposito' => $request->input('nota', 'Respuesta institucional programada.'),
+@@ -537,6 +826,17 @@ public function guardarAccion(Request $request)
+      */
+     public function avanzarAccion(Request $request, $id)
+     {
++        if (!auth()->check()) {
++            return response()->json(['success' => false, 'error' => 'No autenticado.'], 401);
++        }
++
++        if (!$this->esPersonalGestion()) {
++            return response()->json([
++                'success' => false,
++                'error' => 'Solo la coordinación y administración pueden avanzar el estado de un caso.'
++            ], 403);
++        }
++
+         $caso = Caso::findOrFail($id);
+ 
+         $nuevoEstado = match ($caso->estado) {
+@@ -554,16 +854,37 @@ public function avanzarAccion(Request $request, $id)
+     }
+ 
+     /**
+-     * Registrar intento o entrevista telefónica.
++     * Registrar intento o entrevista telefónica con control de autorización.
+      */
+     public function guardarLlamada(Request $request)
+     {
++        if (!auth()->check()) {
++            return response()->json(['success' => false, 'error' => 'No autenticado.'], 401);
++        }
++
++        if ($this->esEgresadoOAlumno()) {
++            return response()->json([
++                'success' => false,
++                'error' => 'No tienes autorización para registrar llamadas.'
++            ], 403);
++        }
++
+         $idStr = $request->input('id');
+         $userId = null;
+         $idTemporal = $idStr;
+-        if (str_starts_with($idStr, 'REAL-')) {
++        if ($idStr && str_starts_with($idStr, 'REAL-')) {
+             $userId = (int) str_replace('REAL-', '', $idStr);
+             $idTemporal = null;
++        } elseif ($idStr && is_numeric($idStr)) {
++            $userId = (int) $idStr;
++            $idTemporal = null;
++        }
++
++        if ($userId && !$this->puedeAccederAEgresado($userId)) {
++            return response()->json([
++                'success' => false,
++                'error' => 'No tienes autorización para registrar llamadas a este egresado.'
++            ], 403);
+         }
+ 
+         $llamada = Llamada::create([
+@@ -571,7 +892,7 @@ public function guardarLlamada(Request $request)
+             'identificador_temporal' => $idTemporal,
+             'resultado' => $request->input('result', 'No contesta'),
+             'observaciones' => $request->input('comment', ''),
+-            'encuestador' => auth()->check() ? auth()->user()->name : 'Entrevistador institucional',
++            'encuestador' => auth()->user()->name,
+             'fecha_hora' => now()
+         ]);
+ 
+@@ -586,10 +907,30 @@ public function guardarLlamada(Request $request)
+      */
+     public function auditarContacto(Request $request)
+     {
++        if (!auth()->check()) {
++            return response()->json(['success' => false, 'error' => 'No autenticado.'], 401);
++        }
++
++        if ($this->esEgresadoOAlumno()) {
++            return response()->json([
++                'success' => false,
++                'error' => 'No tienes autorización para auditar contactos.'
++            ], 403);
++        }
++
+         $idStr = $request->input('id');
+         $userId = null;
+-        if (str_starts_with($idStr, 'REAL-')) {
++        if ($idStr && str_starts_with($idStr, 'REAL-')) {
+             $userId = (int) str_replace('REAL-', '', $idStr);
++        } elseif ($idStr && is_numeric($idStr)) {
++            $userId = (int) $idStr;
++        }
++
++        if ($userId && !$this->puedeAccederAEgresado($userId)) {
++            return response()->json([
++                'success' => false,
++                'error' => 'No tienes autorización para consultar los contactos de este egresado.'
++            ], 403);
+         }
+ 
+         $log = AccesoContacto::create([
+@@ -608,10 +949,21 @@ public function auditarContacto(Request $request)
+     }
+ 
+     /**
+-     * Crear o actualizar un grupo de entrevistadores para seguimiento.
++     * Crear un grupo de entrevistadores (exclusivo para coordinación y dirección).
+      */
+     public function guardarGrupo(Request $request)
+     {
++        if (!auth()->check()) {
++            return response()->json(['success' => false, 'error' => 'No autenticado.'], 401);
++        }
++
++        if (!$this->esPersonalGestion()) {
++            return response()->json([
++                'success' => false,
++                'error' => 'Solo la Coordinación de Empleabilidad y la Dirección pueden gestionar grupos de entrevistadores.'
++            ], 403);
++        }
++
+         $grupo = GrupoEntrevistador::create([
+             'nombre' => $request->input('nombre', 'Equipo de Entrevistadores'),
+             'programa' => $request->input('programa'),
+@@ -631,10 +983,21 @@ public function guardarGrupo(Request $request)
+     }
+ 
+     /**
+-     * Eliminar un grupo de entrevistadores.
++     * Eliminar un grupo de entrevistadores (exclusivo para coordinación y dirección).
+      */
+     public function eliminarGrupo($id)
+     {
++        if (!auth()->check()) {
++            return response()->json(['success' => false, 'error' => 'No autenticado.'], 401);
++        }
++
++        if (!$this->esPersonalGestion()) {
++            return response()->json([
++                'success' => false,
++                'error' => 'Solo la Coordinación de Empleabilidad y la Dirección pueden eliminar grupos de entrevistadores.'
++            ], 403);
++        }
++
+         $grupo = GrupoEntrevistador::findOrFail($id);
+         $grupo->delete();
+ 
+@@ -645,17 +1008,48 @@ public function eliminarGrupo($id)
+     }
+ 
+     /**
+-     * Generar datos y enlace directo para compartir por WhatsApp.
++     * Generar invitación segura sin PII en la URL para compartir por WhatsApp (Fase 1C).
+      */
+     public function generarEnlaceWhatsapp(Request $request)
+     {
++        if (!auth()->check()) {
++            return response()->json(['success' => false, 'error' => 'No autenticado.'], 401);
++        }
++
+         $campana = $request->input('campana', '2026-II');
+-        $urlCampana = route('seguimiento-egresados.campana-publica');
+-        
+-        $mensajeDefault = "¡Hola! 🎓 La EESP Pukllasunchis te invita a participar en la Campaña de Actualización de Egresados ({$campana}). \n\n"
+-            . "Te tomará solo 3 minutos confirmar tus datos y contarnos sobre tu práctica profesional y necesidades de formación continua:\n"
+-            . "👉 {$urlCampana}\n\n"
+-            . "¡Gracias por formar parte de nuestra comunidad educativa!";
++        $rawId = $request->input('user_id') ?: $request->input('id');
++        $userId = null;
++
++        if (is_numeric($rawId)) {
++            $userId = (int) $rawId;
++        } elseif (is_string($rawId) && str_starts_with($rawId, 'REAL-')) {
++            $userId = (int) str_replace('REAL-', '', $rawId);
++        }
++
++        if ($userId) {
++            if (!$this->puedeAccederAEgresado($userId)) {
++                return response()->json([
++                    'success' => false,
++                    'error' => 'No tienes autorización para generar enlaces de este egresado.'
++                ], 403);
++            }
++
++            $egresado = User::findOrFail($userId);
++            $invitacion = InvitacionCampana::crearInvitacion($egresado, auth()->id(), $campana, 'whatsapp');
++            $urlCampana = route('seguimiento-egresados.campana-publica', ['token' => $invitacion->token]);
++            $nombreCorto = explode(' ', trim($egresado->name))[0];
++
++            $mensajeDefault = "¡Hola {$nombreCorto}! 🎓 La EESP Pukllasunchis te invita a participar en la Campaña de Actualización de Egresados ({$campana}).\n\n"
++                . "Te tomará solo 2 minutos confirmar tus datos y contarnos sobre tu práctica pedagógica:\n"
++                . "👉 {$urlCampana}\n\n"
++                . "¡Gracias por formar parte de nuestra comunidad educativa!";
++        } else {
++            $urlCampana = route('seguimiento-egresados.campana-publica');
++            $mensajeDefault = "¡Hola! 🎓 La EESP Pukllasunchis te invita a participar en la Campaña de Actualización de Egresados ({$campana}).\n\n"
++                . "Te tomará solo 3 minutos confirmar tus datos:\n"
++                . "👉 {$urlCampana}\n\n"
++                . "¡Gracias por formar parte de nuestra comunidad!";
++        }
+ 
+         $whatsappUrl = 'https://api.whatsapp.com/send?text=' . urlencode($mensajeDefault);
+ 
+@@ -663,6 +1057,7 @@ public function generarEnlaceWhatsapp(Request $request)
+             'success' => true,
+             'campana' => $campana,
+             'url' => $urlCampana,
++            'token' => isset($invitacion) ? $invitacion->token : null,
+             'mensaje' => $mensajeDefault,
+             'whatsapp_url' => $whatsappUrl
+         ]);
+@@ -671,8 +1066,24 @@ public function generarEnlaceWhatsapp(Request $request)
+     /**
+      * Enlace público de campaña (para WhatsApp / Magic Link).
+      */
+-    public function campanaPublica()
++    public function campanaPublica(Request $request)
+     {
+-        return view('seguimiento_egresados.campana_publica');
++        $token = $request->query('token');
++        $invitacion = null;
++        $egresado = null;
++        $episodioActivo = null;
++
++        if ($token) {
++            $invitacion = InvitacionCampana::validos()->where('token', $token)->first();
++            if ($invitacion && $invitacion->user) {
++                $egresado = $invitacion->user;
++                $episodioActivo = EpisodioLaboral::where('user_id', $egresado->id)
++                    ->where('es_actual', true)
++                    ->latest()
++                    ->first();
++            }
++        }
++
++        return view('seguimiento_egresados.campana_publica', compact('token', 'invitacion', 'egresado', 'episodioActivo'));
+     }
+ }
+diff --git a/app/Models/SeguimientoEgresado/Actualizacion.php b/app/Models/SeguimientoEgresado/Actualizacion.php
+index 9e8ca0c..1688f52 100644
+--- a/app/Models/SeguimientoEgresado/Actualizacion.php
++++ b/app/Models/SeguimientoEgresado/Actualizacion.php
+@@ -22,6 +22,10 @@ class Actualizacion extends Model
+         'fecha_ultima_confirmacion' => 'datetime',
+         'es_confirmacion_sin_cambios' => 'boolean',
+         'datos_extra' => 'array',
++        'token_invitacion' => 'string',
++        'estado_verificacion' => 'string',
++        'tipo_registro' => 'string',
++        'procedencia' => 'string',
+     ];
+ 
+     public function user()
+@@ -34,6 +38,11 @@ public function campana()
+         return $this->belongsTo(Campana::class, 'campana_id');
+     }
+ 
++    public function invitacion()
++    {
++        return $this->belongsTo(InvitacionCampana::class, 'token_invitacion', 'token');
++    }
++
+     public function episodiosLaborales()
+     {
+         return $this->hasMany(EpisodioLaboral::class, 'user_id', 'user_id');
+@@ -43,4 +52,29 @@ public function episodiosActivos()
+     {
+         return $this->hasMany(EpisodioLaboral::class, 'user_id', 'user_id')->where('es_actual', true);
+     }
++
++    public function scopeVigente($query)
++    {
++        return $query->where('estado_verificacion', 'verificado');
++    }
++
++    public function scopePorCampana($query, string $campana)
++    {
++        return $query->where('periodo_campana', $campana);
++    }
++
++    public function scopeConfirmaciones($query)
++    {
++        return $query->where('es_confirmacion_sin_cambios', true);
++    }
++
++    public function scopePendientes($query)
++    {
++        return $query->where('estado_verificacion', 'pendiente_verificacion');
++    }
++
++    public function scopeVerificados($query)
++    {
++        return $query->where('estado_verificacion', 'verificado');
++    }
+ }
+diff --git a/resources/views/seguimiento_egresados/campana_publica.blade.php b/resources/views/seguimiento_egresados/campana_publica.blade.php
+index c13d081..636ec7f 100644
+--- a/resources/views/seguimiento_egresados/campana_publica.blade.php
++++ b/resources/views/seguimiento_egresados/campana_publica.blade.php
+@@ -306,6 +306,17 @@
+ 
+     <main class="pk-main">
+         <div class="pk-card">
++            @if(isset($invitacion) && $invitacion && isset($egresado) && $egresado)
++            <!-- Verificación Segura por Invitación (Fase 1C) -->
++            <div style="background:#ecfdf5; border:1px solid #a7f3d0; border-radius:12px; padding:14px 16px; margin-bottom:1.2rem; display:flex; align-items:center; gap:12px;">
++                <i class="fas fa-shield-alt" style="color:#059669; font-size:1.6rem;"></i>
++                <div>
++                    <div style="font-weight:800; color:#065f46; font-size:0.96rem;">¡Hola, {{ explode(' ', trim($egresado->name))[0] }}! Bienvenida/o a tu ficha institucional.</div>
++                    <div style="font-size:0.82rem; color:#047857;">Enlace verificado de la Campaña 2026-II. Tus respuestas se sincronizan directamente con tu expediente.</div>
++                </div>
++            </div>
++            @endif
++
+             <!-- Confirmación Rápida R02 para egresados que ya participaron -->
+             <div style="background:#f0fdf4; border:1px solid #86efac; border-radius:12px; padding:12px 14px; margin-bottom:1.5rem; display:flex; align-items:center; gap:10px;">
+                 <input type="checkbox" id="sin_cambios_public" name="sin_cambios" value="1" style="width:18px; height:18px; accent-color:#10b981; cursor:pointer;">
+@@ -316,6 +327,8 @@
+ 
+             <!-- Formulario -->
+             <form id="camp-form">
++                <input type="hidden" id="token_invitacion" name="token_invitacion" value="{{ $token ?? '' }}">
++
+                 <!-- Paso 1: Datos Personales -->
+                 <div class="section-title">
+                     <span class="step-badge">1</span>
+@@ -325,12 +338,12 @@
+                 <div class="form-grid">
+                     <div class="form-group">
+                         <label for="dni">DNI / Documento *</label>
+-                        <input type="text" id="dni" name="dni" placeholder="Ej. 70891234" required maxlength="12">
++                        <input type="text" id="dni" name="dni" value="{{ isset($egresado) && $egresado->dni ? $egresado->dni : '' }}" placeholder="Ej. 70891234" required maxlength="12">
+                     </div>
+ 
+                     <div class="form-group">
+                         <label for="nombre">Nombres y Apellidos completos *</label>
+-                        <input type="text" id="nombre" name="nombre" placeholder="Ej. Lucía Quispe Huamán" required>
++                        <input type="text" id="nombre" name="nombre" value="{{ isset($egresado) ? trim($egresado->name . ' ' . $egresado->apellidos) : '' }}" placeholder="Ej. Lucía Quispe Huamán" required>
+                     </div>
+ 
+                     <div class="form-group">
+@@ -541,13 +554,16 @@
+             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Guardando datos...';
+ 
+             const isSinCambios = document.getElementById('sin_cambios_public')?.checked || false;
++            const tokenVal = document.getElementById('token_invitacion')?.value.trim() || null;
+             const payload = {
+                 id: 'CAMP-' + (document.getElementById('dni').value.trim() || 'PUBLIC'),
+                 nombre: document.getElementById('nombre').value.trim(),
+                 dni: document.getElementById('dni').value.trim(),
++                token_invitacion: tokenVal,
++                token: tokenVal,
+                 sin_cambios: isSinCambios,
+                 cambio_empleo: isSinCambios ? 'Sin cambios' : 'Primer empleo',
+-                canal: 'campana_whatsapp_publica',
++                canal: tokenVal ? 'campana_whatsapp_invitacion' : 'campana_whatsapp_publica',
+                 telefono: document.getElementById('telefono').value.trim(),
+                 whatsapp: document.getElementById('telefono').value.trim(),
+                 correo: document.getElementById('correo').value.trim(),
+diff --git a/routes/web.php b/routes/web.php
+index 3cc672f..e4a7b2b 100644
+--- a/routes/web.php
++++ b/routes/web.php
+@@ -148,35 +148,59 @@
+     ->name('alumno.login.inline');
+ 
+ // ══════════════════════════════════════════════════════════════════
+-// SEGUIMIENTO DE EGRESADOS (Sistema Sostenible EESP Pukllasunchis)
++// SEGUIMIENTO DE EGRESADOS (Sistema Sostenible EESP Pukllasunchis - Fase 1C)
+ // ══════════════════════════════════════════════════════════════════
+-Route::get('/seguimiento-egresados', [App\Http\Controllers\SeguimientoEgresadoController::class, 'index'])
+-    ->name('seguimiento-egresados.index');
++
++// 1. Rutas públicas de campaña (WhatsApp / Magic Link / Acceso Abierto)
++Route::prefix('seguimiento-egresados')->group(function () {
++    Route::get('/campana-publica', [App\Http\Controllers\SeguimientoEgresadoController::class, 'campanaPublica'])
++        ->middleware('throttle:60,1')
++        ->name('seguimiento-egresados.campana-publica');
++
++    Route::post('/campana-publica/actualizar', [App\Http\Controllers\SeguimientoEgresadoController::class, 'guardarActualizacion'])
++        ->middleware('throttle:30,1')
++        ->name('seguimiento-egresados.campana-publica.actualizar');
++
++    Route::get('/visualizador', function () {
++        return response()->file(public_path('visualizador_diseno_puklla.html'));
++    })->name('seguimiento-egresados.visualizador');
++});
++
++// 2. Ruta híbrida de actualización (Autenticada con control de roles o pública con token/cuarentena)
+ Route::post('/seguimiento-egresados/actualizar', [App\Http\Controllers\SeguimientoEgresadoController::class, 'guardarActualizacion'])
++    ->middleware('throttle:30,1')
+     ->name('seguimiento-egresados.actualizar');
+-Route::post('/seguimiento-egresados/accion', [App\Http\Controllers\SeguimientoEgresadoController::class, 'guardarAccion'])
+-    ->name('seguimiento-egresados.accion');
+-Route::post('/seguimiento-egresados/avanzar-accion/{id}', [App\Http\Controllers\SeguimientoEgresadoController::class, 'avanzarAccion'])
+-    ->name('seguimiento-egresados.avanzar-accion');
+-Route::post('/seguimiento-egresados/llamada', [App\Http\Controllers\SeguimientoEgresadoController::class, 'guardarLlamada'])
+-    ->name('seguimiento-egresados.llamada');
+-Route::post('/seguimiento-egresados/auditar-contacto', [App\Http\Controllers\SeguimientoEgresadoController::class, 'auditarContacto'])
+-    ->name('seguimiento-egresados.auditar-contacto');
+-Route::get('/seguimiento-egresados/campana-publica', [App\Http\Controllers\SeguimientoEgresadoController::class, 'campanaPublica'])
+-    ->name('seguimiento-egresados.campana-publica');
+-Route::post('/seguimiento-egresados/grupos', [App\Http\Controllers\SeguimientoEgresadoController::class, 'guardarGrupo'])
+-    ->name('seguimiento-egresados.grupos.guardar');
+-Route::delete('/seguimiento-egresados/grupos/{id}', [App\Http\Controllers\SeguimientoEgresadoController::class, 'eliminarGrupo'])
+-    ->name('seguimiento-egresados.grupos.eliminar');
+-Route::get('/seguimiento-egresados/enlace-whatsapp', [App\Http\Controllers\SeguimientoEgresadoController::class, 'generarEnlaceWhatsapp'])
+-    ->name('seguimiento-egresados.enlace-whatsapp');
+-Route::get('/seguimiento-egresados/episodios/{userId}', [App\Http\Controllers\SeguimientoEgresadoController::class, 'obtenerEpisodios'])
+-    ->name('seguimiento-egresados.episodios');
+-Route::post('/seguimiento-egresados/episodios/{id}/cerrar', [App\Http\Controllers\SeguimientoEgresadoController::class, 'cerrarEpisodio'])
+-    ->name('seguimiento-egresados.episodios.cerrar');
+-Route::get('/seguimiento-egresados/visualizador', function () {
+-    return response()->file(public_path('visualizador_diseno_puklla.html'));
+-})->name('seguimiento-egresados.visualizador');
++
++// 3. Rutas de intranet protegidas por autenticación obligatoria y control estricto de roles
++Route::middleware(['auth'])->prefix('seguimiento-egresados')->group(function () {
++    // Vista principal con control de alcances (egresado solo ve su ficha, encuestador sus asignados, admin todo)
++    Route::get('/', [App\Http\Controllers\SeguimientoEgresadoController::class, 'index'])
++        ->name('seguimiento-egresados.index');
++
++    // Episodios laborales (consulta y cierre con verificación en servidor de propiedad o asignación)
++    Route::get('/episodios/{userId}', [App\Http\Controllers\SeguimientoEgresadoController::class, 'obtenerEpisodios'])
++        ->name('seguimiento-egresados.episodios');
++    Route::post('/episodios/{id}/cerrar', [App\Http\Controllers\SeguimientoEgresadoController::class, 'cerrarEpisodio'])
++        ->name('seguimiento-egresados.episodios.cerrar');
++
++    // Gestión de contactos, llamadas e invitaciones seguras WhatsApp
++    Route::post('/llamada', [App\Http\Controllers\SeguimientoEgresadoController::class, 'guardarLlamada'])
++        ->name('seguimiento-egresados.llamada');
++    Route::post('/auditar-contacto', [App\Http\Controllers\SeguimientoEgresadoController::class, 'auditarContacto'])
++        ->name('seguimiento-egresados.auditar-contacto');
++    Route::get('/enlace-whatsapp', [App\Http\Controllers\SeguimientoEgresadoController::class, 'generarEnlaceWhatsapp'])
++        ->name('seguimiento-egresados.enlace-whatsapp');
++
++    // Coordinación y Administración: Grupos de entrevistadores y Casos institucionales de acompañamiento
++    Route::post('/accion', [App\Http\Controllers\SeguimientoEgresadoController::class, 'guardarAccion'])
++        ->name('seguimiento-egresados.accion');
++    Route::post('/avanzar-accion/{id}', [App\Http\Controllers\SeguimientoEgresadoController::class, 'avanzarAccion'])
++        ->name('seguimiento-egresados.avanzar-accion');
++    Route::post('/grupos', [App\Http\Controllers\SeguimientoEgresadoController::class, 'guardarGrupo'])
++        ->name('seguimiento-egresados.grupos.guardar');
++    Route::delete('/grupos/{id}', [App\Http\Controllers\SeguimientoEgresadoController::class, 'eliminarGrupo'])
++        ->name('seguimiento-egresados.grupos.eliminar');
++});
+ 
+ if (app()->isLocal()) {
+     Route::get('/dev/login-docente', function () {
