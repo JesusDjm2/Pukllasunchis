@@ -33,6 +33,8 @@ class AuthUser {
   final int? alumnoId;
   final int? docenteId;
 
-  bool get isAlumno => alumnoId != null;
-  bool get isDocente => docenteId != null;
+  bool get isAlumno => alumnoId != null || roles.contains('alumno');
+  bool get isDocente => docenteId != null || roles.contains('docente');
+  bool get isTutor => roles.contains('tutor');
+  bool get isDocenteOTutor => isDocente || isTutor;
 }

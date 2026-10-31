@@ -5,6 +5,7 @@ import '../features/auth/application/auth_controller.dart';
 import '../features/auth/application/auth_state.dart';
 import '../features/auth/data/auth_user.dart';
 import '../features/auth/presentation/login_screen.dart';
+import '../features/bolsa_trabajo/presentation/bolsa_trabajo_screen.dart';
 import '../features/calificaciones/presentation/calificaciones_screen.dart';
 import '../features/comunicados/presentation/comunicados_screen.dart';
 import '../features/cursos_especiales/presentation/curso_especial_detalle_screen.dart';
@@ -13,12 +14,15 @@ import '../features/docente/presentation/docente_home_screen.dart';
 import '../features/docente/presentation/docente_incidencias_screen.dart';
 import '../features/home/presentation/home_screen.dart';
 import '../features/notificaciones/presentation/notificaciones_screen.dart';
+import '../features/perfil/presentation/ficha_tecnica_screen.dart';
 import '../features/perfil/presentation/matricula_form_screen.dart';
+import '../features/recursos/presentation/formatos_biblioteca_screen.dart';
+import '../features/taqe/presentation/taqe_screen.dart';
+import '../features/tutoria/presentation/tutoria_screen.dart';
 
-/// Un usuario con perfil docente y sin perfil de alumno no tiene nada que ver
-/// en la ficha técnica: aterriza en su propio panel.
+/// Un usuario con perfil docente o tutor y sin perfil de alumno aterriza en su panel.
 String inicioPara(AuthUser? user) =>
-    user != null && user.isDocente && !user.isAlumno ? '/docente' : '/home';
+    user != null && user.isDocenteOTutor && !user.isAlumno ? '/docente' : '/home';
 
 /// Reconstruir el GoRouter completo cuando cambia el estado de auth es
 /// aceptable para el tamaño de esta app; así el `redirect` de abajo siempre
@@ -55,6 +59,26 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/home',
         builder: (context, state) => const HomeScreen(),
+      ),
+      GoRoute(
+        path: '/ficha-tecnica',
+        builder: (context, state) => const FichaTecnicaScreen(),
+      ),
+      GoRoute(
+        path: '/bolsa-trabajo',
+        builder: (context, state) => const BolsaTrabajoScreen(),
+      ),
+      GoRoute(
+        path: '/taqe',
+        builder: (context, state) => const TaqeScreen(),
+      ),
+      GoRoute(
+        path: '/tutoria',
+        builder: (context, state) => const TutoriaScreen(),
+      ),
+      GoRoute(
+        path: '/recursos',
+        builder: (context, state) => const FormatosBibliotecaScreen(),
       ),
       GoRoute(
         path: '/cursos-especiales',

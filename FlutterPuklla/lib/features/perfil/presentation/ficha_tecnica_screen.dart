@@ -26,26 +26,31 @@ class FichaTecnicaScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final perfil = ref.watch(perfilProvider);
 
-    return RefreshIndicator(
-      onRefresh: () async {
-        ref.invalidate(perfilProvider);
-        ref.invalidate(periodoActualProvider);
-        ref.invalidate(cursosProvider);
-        ref.invalidate(yaMatriculadoProvider);
-        await ref.read(perfilProvider.future);
-      },
-      child: perfil.when(
-        data: (data) => _FichaBody(perfil: data),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => ListView(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: ErrorState(
-                message: error is ApiException ? error.message : 'No se pudo cargar tu ficha técnica.',
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Ficha técnica'),
+      ),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(perfilProvider);
+          ref.invalidate(periodoActualProvider);
+          ref.invalidate(cursosProvider);
+          ref.invalidate(yaMatriculadoProvider);
+          await ref.read(perfilProvider.future);
+        },
+        child: perfil.when(
+          data: (data) => _FichaBody(perfil: data),
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, _) => ListView(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: ErrorState(
+                  message: error is ApiException ? error.message : 'No se pudo cargar tu ficha técnica.',
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
