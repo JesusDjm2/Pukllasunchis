@@ -1066,7 +1066,7 @@ class SeguimientoEgresadoController extends Controller
      */
     public function campanaPublica(Request $request)
     {
-        $token = $request->query('token');
+        $token = $request->route('token') ?? $request->query('token');
         $invitacion = null;
         $egresado = null;
         $episodioActivo = null;

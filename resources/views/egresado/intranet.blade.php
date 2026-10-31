@@ -55,6 +55,30 @@
             </div>
         </div>
 
+        {{-- Puklla en Red — Seguimiento y Actualización de Egresados --}}
+        <div class="card shadow-sm mt-3" style="border-left: 4px solid #832128; background: #fffdfd;">
+            <div class="card-body p-3">
+                <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap: .75rem;">
+                    <div class="d-flex align-items-center" style="gap: .75rem;">
+                        <div style="width: 44px; height: 44px; border-radius: 10px; background: #fce8e9; color: #832128; display: grid; place-items: center; font-size: 1.2rem;">
+                            <i class="fas fa-network-wired"></i>
+                        </div>
+                        <div>
+                            <h6 class="font-weight-bold mb-0" style="color: #832128;">Puklla en Red — Seguimiento de Egresados</h6>
+                            <small class="text-muted d-block">
+                                Mantén al día tu historia laboral y formativa institucional.
+                            </small>
+                        </div>
+                    </div>
+                    <div>
+                        <a href="{{ route('seguimiento-egresados.index') }}" class="btn btn-sm text-white font-weight-bold" style="background: #832128; border-radius: 20px; padding: 0.35rem 1rem;">
+                            <i class="fas fa-edit mr-1"></i> Actualizar Ficha
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         @if ($seguimiento)
             <div class="mt-3">
                 @include('titulacion._avance_alumno')

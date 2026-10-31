@@ -157,6 +157,10 @@ Route::prefix('seguimiento-egresados')->group(function () {
         ->middleware('throttle:60,1')
         ->name('seguimiento-egresados.campana-publica');
 
+    Route::get('/campana/{token}', [App\Http\Controllers\SeguimientoEgresadoController::class, 'campanaPublica'])
+        ->middleware('throttle:60,1')
+        ->name('seguimiento-egresados.campana-token');
+
     Route::post('/campana-publica/actualizar', [App\Http\Controllers\SeguimientoEgresadoController::class, 'guardarActualizacion'])
         ->middleware('throttle:30,1')
         ->name('seguimiento-egresados.campana-publica.actualizar');

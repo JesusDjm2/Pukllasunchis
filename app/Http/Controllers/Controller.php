@@ -22,6 +22,10 @@ class Controller extends BaseController
     {
         if ($user->hasRole('super-admin') || $user->hasRole('admin')) {
             return redirect()->route('admin');
+        } elseif ($user->hasRole('coordinacion-empleabilidad')) {
+            return redirect()->route('seguimiento-egresados.index');
+        } elseif ($user->hasRole('direccion')) {
+            return redirect()->route('seguimiento.laboratorio');
         } elseif ($user->hasRole('docente')) {
             return redirect()->route('vistaDocente', ['docente' => $user->docente->id]);
         } elseif ($user->hasRole('tutor')) {
