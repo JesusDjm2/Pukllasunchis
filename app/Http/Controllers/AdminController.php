@@ -688,6 +688,11 @@ class AdminController extends Controller
     public function edit($id)
     {
         $admin = User::findOrFail($id);
+
+        if ($admin->hasRole('super-admin') && !auth()->user()?->hasRole('super-admin')) {
+            abort(403, 'No tienes autorización para editar una cuenta con privilegios de super-admin.');
+        }
+
         $programas = Programa::all();
         $ciclos = Ciclo::all();
         $currentProgramId = $admin->programa_id;
@@ -759,6 +764,12 @@ class AdminController extends Controller
             'password' => Hash::make($request->input('password')),
         ]);
         $roles = $request->input('roles', []);
+
+        // Protección contra elevación de privilegios: solo un super-admin puede otorgar super-admin
+        if (in_array('super-admin', $roles, true) && !auth()->user()?->hasRole('super-admin')) {
+            abort(403, 'Solo un super-admin puede asignar el rol super-admin.');
+        }
+
         $user->syncRoles($roles);
 
         if (in_array('docente', $roles)) {
@@ -846,6 +857,22 @@ class AdminController extends Controller
         }
 
         $roles = $request->input('roles', []);
+        $authUser = auth()->user();
+
+        // 1. Protección de cuentas privilegiadas existentes
+        if ($user->hasRole('super-admin') && !$authUser?->hasRole('super-admin')) {
+            abort(403, 'No tienes autorización para modificar una cuenta con privilegios de super-admin.');
+        }
+
+        // 2. Prevención de elevación de privilegios hacia super-admin
+        if (in_array('super-admin', $roles, true) && !$authUser?->hasRole('super-admin')) {
+            abort(403, 'Solo un super-admin puede asignar el rol super-admin.');
+        }
+
+        // 3. Prevención de auto-elevación indebida de privilegios
+        if ((int)$user->id === (int)$authUser?->id && in_array('super-admin', $roles, true) && !$authUser->hasRole('super-admin')) {
+            abort(403, 'No puedes elevar tus propios privilegios.');
+        }
 
         if (in_array('docente', $roles) || in_array('tutor', $roles)) {
             $user->telefono = $request->input('telefono');
@@ -987,6 +1014,11 @@ class AdminController extends Controller
     public function destroy($id)
     {
         $admin = User::findOrFail($id);
+
+        if ($admin->hasRole('super-admin') && !auth()->user()?->hasRole('super-admin')) {
+            abort(403, 'Solo un super-admin puede eliminar una cuenta de super-admin.');
+        }
+
         $hasAlumnoRole = $admin->hasRole('alumno');
         $userCount = User::whereHas('roles', function ($query) {
             $query->where('name', 'admin');

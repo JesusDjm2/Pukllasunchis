@@ -24,15 +24,35 @@ class GrupoEntrevistador extends Model
         return $this->belongsTo(User::class, 'coordinador_id');
     }
 
+    public function campana()
+    {
+        return $this->belongsTo(Campana::class, 'campana_id');
+    }
+
     /**
      * Verifica en el servidor si un encuestador tiene asignado a un egresado
-     * en al menos un grupo activo de seguimiento.
+     * en al menos un grupo activo de seguimiento y dentro de una campaña institucional vigente.
      */
     public static function esEntrevistadorAsignado(int $interviewerId, int $targetUserId): bool
     {
-        $grupos = self::where('estado', 'activo')->get();
+        $grupos = self::with('campana')->where('estado', 'activo')->get();
+        $hoy = now()->toDateString();
 
         foreach ($grupos as $grupo) {
+            // Si el grupo está asociado a una campaña institucional, verificar estado y vigencia
+            if ($grupo->campana_id && $grupo->campana) {
+                $campana = $grupo->campana;
+                if (!in_array(strtolower($campana->estado), ['activo', 'activa'], true)) {
+                    continue;
+                }
+                if ($campana->fecha_inicio && $campana->fecha_inicio > $hoy) {
+                    continue;
+                }
+                if ($campana->fecha_fin && $campana->fecha_fin < $hoy) {
+                    continue;
+                }
+            }
+
             $entrevistadores = $grupo->entrevistadores ?? [];
             $egresados = $grupo->egresados_ids ?? [];
 

@@ -83,6 +83,11 @@ class SeguimientoEgresadoController extends Controller
 
         $authUser = auth()->user();
 
+        // Control de acceso al módulo: personal de gestión, usuarios con rol seguimiento-egresados o egresados a su ficha
+        if (!$this->autorizacionService->puedeAccederDashboard($authUser) && !$this->esEgresadoOAlumno($authUser)) {
+            abort(403, 'No tienes autorización para acceder al módulo de seguimiento de egresados.');
+        }
+
         // 1. Obtener egresados reales según alcance de autorización
         $egresadosQuery = User::query()
             ->where('condicion', 'Egresado')
@@ -94,15 +99,26 @@ class SeguimientoEgresadoController extends Controller
         if ($this->esEgresadoOAlumno($authUser) && !$this->esPersonalGestion($authUser) && !$authUser->hasRole('seguimiento-egresados')) {
             $egresadosQuery->where('id', $authUser->id);
         }
-        // Si es encuestador o docente con rol seguimiento-egresados (sin rol directivo de gestión), filtrar SOLO a los egresados asignados en sus grupos activos
+        // Si es encuestador o docente con rol seguimiento-egresados (sin rol directivo de gestión), filtrar SOLO a los egresados asignados en sus grupos activos y campañas vigentes
         elseif (($authUser->hasRole('seguimiento-egresados') || $this->esEncuestador($authUser)) && !$this->esPersonalGestion($authUser)) {
-            $gruposActivos = GrupoEntrevistador::where('estado', 'activo')->get();
-            $asignadosIds = $gruposActivos->filter(fn ($g) => in_array($authUser->id, (array)$g->entrevistadores))
+            $gruposActivos = GrupoEntrevistador::with('campana')->where('estado', 'activo')->get();
+            $hoy = now()->toDateString();
+            $gruposVigentes = $gruposActivos->filter(function ($g) use ($hoy) {
+                if ($g->campana_id && $g->campana) {
+                    if (!in_array(strtolower($g->campana->estado), ['activo', 'activa'], true)) return false;
+                    if ($g->campana->fecha_inicio && $g->campana->fecha_inicio > $hoy) return false;
+                    if ($g->campana->fecha_fin && $g->campana->fecha_fin < $hoy) return false;
+                }
+                return true;
+            });
+
+            $asignadosIds = $gruposVigentes->filter(fn ($g) => in_array($authUser->id, (array)$g->entrevistadores))
                 ->flatMap(fn ($g) => (array)$g->egresados_ids)
+                ->map(fn ($id) => is_string($id) && str_starts_with($id, 'REAL-') ? (int)str_replace('REAL-', '', $id) : (int)$id)
                 ->unique()
                 ->toArray();
 
-            $egresadosQuery->whereIn('id', $asignadosIds);
+            $egresadosQuery->whereIn('id', $asignadosIds ?: [0]);
         } else {
             $egresadosQuery->limit(300);
         }

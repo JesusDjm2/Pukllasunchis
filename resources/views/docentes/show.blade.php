@@ -933,8 +933,8 @@
             </div>
         @endif
 
-        {{-- Sistema de Seguimiento de Egresados (Acceso rápido / Coordinación) --}}
-        @if (Route::has('seguimiento-egresados.index'))
+        {{-- Sistema de Seguimiento de Egresados (Acceso rápido exclusivo para Coordinación y Dirección) --}}
+        @if (auth()->user()?->hasAnyRole(['admin', 'super-admin', 'coordinacion-empleabilidad', 'direccion']) && Route::has('seguimiento-egresados.index'))
             <div class="card docente-ui-card mb-3 mb-md-4" style="border-left: 4px solid #10b981; background: linear-gradient(to right, #f0fdf4, #ffffff);">
                 <div class="card-body p-3 p-md-4">
                     <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between" style="gap: 1rem;">

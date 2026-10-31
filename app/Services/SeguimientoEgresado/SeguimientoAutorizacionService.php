@@ -185,7 +185,7 @@ class SeguimientoAutorizacionService
         $user = $user ?: auth()->user();
         if (!$user) return false;
 
-        return $user->hasAnyRole(['admin', 'super-admin', 'coordinacion-empleabilidad', 'direccion', 'seguimiento-egresados', 'docente', 'tutor', 'encuestador-seguimiento'])
+        return $user->hasAnyRole(['admin', 'super-admin', 'coordinacion-empleabilidad', 'direccion', 'seguimiento-egresados'])
             || $user->can('seguimiento-egresados.ver-dashboard');
     }
 }

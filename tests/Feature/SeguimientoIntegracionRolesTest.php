@@ -82,6 +82,19 @@ class SeguimientoIntegracionRolesTest extends TestCase
         return $user;
     }
 
+    protected function crearAdminSintetico(): User
+    {
+        $user = User::factory()->create([
+            'name' => 'Admin Test',
+            'apellidos' => 'Pukllasunchis',
+            'email' => 'admin_test_' . rand(1000, 9999) . '@puklla.test',
+            'dni' => (string) rand(20000000, 29999999),
+        ]);
+        $user->assignRole('admin');
+
+        return $user;
+    }
+
     protected function crearEgresadoSintetico(string $nombre = 'Egresado Test'): User
     {
         $user = User::factory()->create([
@@ -427,5 +440,110 @@ class SeguimientoIntegracionRolesTest extends TestCase
 
         $resDashboardFinal = $this->actingAs($docente)->get(route('vistaDocente', $docente->docente->id));
         $resDashboardFinal->assertDontSee('Seguimiento de Egresados — Puklla en Red');
+    }
+
+    /**
+     * Requisito 2: Comprobar que un admin ordinario NO puede otorgar super-admin,
+     * no puede auto-elevar privilegios ni puede editar/eliminar un super-admin existente.
+     */
+    public function test_admin_sin_privilegio_no_puede_asignar_superadmin_ni_modificar_cuentas_privilegiadas(): void
+    {
+        $superAdmin = $this->crearSuperAdminSintetico();
+        $admin = $this->crearAdminSintetico();
+        $otroDocente = $this->crearDocenteSintetico();
+
+        // 1. Admin intenta editar a un super-admin -> HTTP 403
+        $resEdit = $this->actingAs($admin)->get(route('adminEdit', $superAdmin->id));
+        $resEdit->assertStatus(403);
+
+        // 2. Admin intenta actualizar datos de un super-admin -> HTTP 403
+        $resUpdate = $this->actingAs($admin)->put(route('adminUpdate', $superAdmin->id), [
+            'name' => 'Intento Modificar SA',
+            'apellidos' => $superAdmin->apellidos,
+            'dni' => $superAdmin->dni,
+            'email' => $superAdmin->email,
+            'roles' => ['admin'],
+        ]);
+        $resUpdate->assertStatus(403);
+
+        // 3. Admin intenta otorgar rol super-admin a otro usuario -> HTTP 403
+        $resEscalar = $this->actingAs($admin)->put(route('adminUpdate', $otroDocente->id), [
+            'name' => $otroDocente->name,
+            'apellidos' => $otroDocente->apellidos,
+            'dni' => $otroDocente->dni,
+            'email' => $otroDocente->email,
+            'roles' => ['docente', 'super-admin'],
+        ]);
+        $resEscalar->assertStatus(403);
+
+        // 4. Admin intenta auto-elevarse a super-admin -> HTTP 403
+        $resAutoEscalar = $this->actingAs($admin)->put(route('adminUpdate', $admin->id), [
+            'name' => $admin->name,
+            'apellidos' => $admin->apellidos,
+            'dni' => $admin->dni,
+            'email' => $admin->email,
+            'roles' => ['admin', 'super-admin'],
+        ]);
+        $resAutoEscalar->assertStatus(403);
+
+        // 5. Admin intenta eliminar a un super-admin -> HTTP 403
+        $resDelete = $this->actingAs($admin)->get(route('adminDestroy', $superAdmin->id));
+        $resDelete->assertStatus(403);
+    }
+
+    /**
+     * Requisito 3: Comprobar que la asignación de expedientes solo es válida si la campaña está activa y vigente.
+     */
+    public function test_asignacion_expediente_requiere_campana_activa_y_vigente(): void
+    {
+        $docente = $this->crearDocenteSintetico();
+        $docente->assignRole('seguimiento-egresados');
+        $egresado = $this->crearEgresadoSintetico();
+
+        // Crear una campaña institucional vencida
+        $campanaVencida = \App\Models\SeguimientoEgresado\Campana::create([
+            'nombre' => 'Campaña Pasada 2024',
+            'codigo' => 'CAMP-2024-TEST',
+            'anio' => 2024,
+            'semestre' => 'I',
+            'fecha_inicio' => '2024-01-01',
+            'fecha_fin' => '2024-06-30',
+            'estado' => 'activa',
+        ]);
+
+        // Crear grupo asignado pero vinculado a la campaña vencida
+        $grupo = \App\Models\SeguimientoEgresado\GrupoEntrevistador::create([
+            'nombre' => 'Grupo Histórico Vencido',
+            'campana_id' => $campanaVencida->id,
+            'entrevistadores' => [$docente->id],
+            'egresados_ids' => [$egresado->id],
+            'estado' => 'activo',
+        ]);
+
+        // La asignación debe ser inválida porque la campaña ha expirado
+        $this->assertFalse(\App\Models\SeguimientoEgresado\GrupoEntrevistador::esEntrevistadorAsignado($docente->id, $egresado->id));
+
+        $resExpediente = $this->actingAs($docente)->get("/seguimiento-egresados/episodios/{$egresado->id}");
+        $resExpediente->assertStatus(403);
+
+        // Actualizar campaña a vigente
+        $campanaVencida->update([
+            'fecha_inicio' => now()->subDay()->toDateString(),
+            'fecha_fin' => now()->addMonth()->toDateString(),
+            'estado' => 'activa',
+        ]);
+
+        // Ahora la asignación es válida
+        $this->assertTrue(\App\Models\SeguimientoEgresado\GrupoEntrevistador::esEntrevistadorAsignado($docente->id, $egresado->id));
+
+        $resExpedienteValido = $this->actingAs($docente)->get("/seguimiento-egresados/episodios/{$egresado->id}");
+        $resExpedienteValido->assertStatus(200);
+
+        // Si la campaña pasa a estado inactiva/cerrada, vuelve a ser inválida
+        $campanaVencida->update(['estado' => 'cerrada']);
+        $this->assertFalse(\App\Models\SeguimientoEgresado\GrupoEntrevistador::esEntrevistadorAsignado($docente->id, $egresado->id));
+
+        $resExpedienteCerrado = $this->actingAs($docente)->get("/seguimiento-egresados/episodios/{$egresado->id}");
+        $resExpedienteCerrado->assertStatus(403);
     }
 }
