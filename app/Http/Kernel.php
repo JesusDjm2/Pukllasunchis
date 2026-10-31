@@ -68,5 +68,6 @@ class Kernel extends HttpKernel
         'titulacion.area' => \App\Http\Middleware\AreaTitulacion::class,
         'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
         'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
+        'docente.propio' => \App\Http\Middleware\EnsureDocenteOwnProfile::class,
     ];
 }

@@ -2,11 +2,14 @@
 
 namespace App\Models\CursosEspeciales;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 
 class CursoEspecial extends Model
 {
+    use HasFactory;
+
     protected $table = 'cursos_especiales';
 
     protected $fillable = ['nombre', 'descripcion', 'imagen', 'activo', 'orden', 'docente_id'];

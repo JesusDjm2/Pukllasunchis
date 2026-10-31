@@ -8,6 +8,10 @@ use App\Models\Alumno;
 use App\Models\Docente;
 use App\Models\PeriodoActual;
 use App\Models\PeriodoActualPpd;
+use App\Models\PeriodoDos;
+use App\Models\PeriodoTres;
+use App\Models\PeriodoUno;
+use App\Observers\NotaParcialObserver;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -33,9 +37,15 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Paginator::useBootstrap();
-        $periodoActual = PeriodoActual::actual();
 
-        View::composer('layouts.docente', function ($view) use ($periodoActual) {
+        // Notificación al alumno (ver app/Notifications/CalificacionRegistrada.php)
+        // sin importar cuál de los 8 flujos de CalificacionController haya
+        // creado/actualizado la nota.
+        PeriodoUno::observe(NotaParcialObserver::class);
+        PeriodoDos::observe(NotaParcialObserver::class);
+        PeriodoTres::observe(NotaParcialObserver::class);
+
+        View::composer('layouts.docente', function ($view) {
             if (auth()->check()) {
                 // Respeta el $docente que manda la vista (p. ej. un admin viendo el perfil de un docente):
                 // antes se pisaba siempre con el del usuario en sesión y, para un admin, quedaba null → error 500.
@@ -43,17 +53,17 @@ class AppServiceProvider extends ServiceProvider
                 $view->with([
 
                     'docente' => $docente,
-                    'periodoActual' => $periodoActual,
+                    'periodoActual' => PeriodoActual::actual(),
                 ]);
             }
         });
-        
-        View::composer('layouts.alumno', function ($view) use ($periodoActual) {
+
+        View::composer('layouts.alumno', function ($view) {
             if (auth()->check()) {
                 $alumno = Alumno::where('user_id', auth()->id())->first();
                 $view->with([
                     'alumno' => $alumno,
-                    'periodoActual' => $periodoActual,
+                    'periodoActual' => PeriodoActual::actual(),
                 ]);
             }
         });
@@ -62,9 +72,9 @@ class AppServiceProvider extends ServiceProvider
             $alumno = auth()->user()->alumnoB;
             $view->with('alumno', $alumno);
         });
-        
-        View::composer('layouts.admin', function ($view) use ($periodoActual) {
-            $view->with('periodoActual', $periodoActual);
+
+        View::composer('layouts.admin', function ($view) {
+            $view->with('periodoActual', PeriodoActual::actual());
         });
         
         View::composer('layouts.admin', function ($view) {

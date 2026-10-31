@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Mail\IncidenciaMail;
 use App\Models\Alumno;
 use App\Models\Ciclo;
+use App\Models\Docente;
 use App\Models\Incidencia;
 use App\Models\Programa;
 use App\Models\User;
@@ -83,6 +84,91 @@ class IncidenciaController extends Controller
         return redirect()
             ->route('docente.incidencias.index', $docente->id)
             ->with('success', 'Incidencia registrada correctamente.');
+    }
+
+    // ── Ficha del docente: detalle, edición y baja de sus incidencias ────────
+    // Las rutas cuelgan de /docente/{docente}/incidencias/{incidencia} y Laravel
+    // inyecta los parámetros de ruta por posición, así que ambas variables van en
+    // ese orden en la firma.
+
+    public function show(Docente $docente, Incidencia $incidencia)
+    {
+        $this->aseguraAcceso($docente, $incidencia);
+        $incidencia->load(['alumno', 'ciclo.programa', 'docente.user', 'programa', 'atendidoPor']);
+
+        return view('docentes.incidencias.show', [
+            'docente'    => $docente,
+            'incidencia' => $incidencia,
+        ]);
+    }
+
+    public function edit(Docente $docente, Incidencia $incidencia)
+    {
+        $this->aseguraAcceso($docente, $incidencia);
+        $incidencia->load(['alumno', 'ciclo.programa']);
+
+        return view('docentes.incidencias.edit', [
+            'docente'    => $docente,
+            'incidencia' => $incidencia,
+        ]);
+    }
+
+    public function update(Request $request, Docente $docente, Incidencia $incidencia)
+    {
+        $this->aseguraAcceso($docente, $incidencia);
+
+        $data = $request->validate([
+            'fecha'   => 'required|date',
+            'reporte' => 'required|string|min:10',
+            'imagen'  => 'nullable|image|max:3072',
+        ]);
+
+        if ($request->hasFile('imagen')) {
+            $this->eliminarImagen($incidencia);
+            $file = $request->file('imagen');
+            $name = Str::uuid() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('img/incidencias'), $name);
+            $data['imagen'] = $name;
+        } else {
+            unset($data['imagen']);
+        }
+
+        $incidencia->update($data);
+
+        return redirect()
+            ->route('docente.incidencias.show', [$docente->id, $incidencia->id])
+            ->with('success', 'Incidencia actualizada correctamente.');
+    }
+
+    public function destroyDocente(Docente $docente, Incidencia $incidencia)
+    {
+        $this->aseguraAcceso($docente, $incidencia);
+
+        $incidencia->delete();
+
+        return redirect()
+            ->route('docente.incidencias.index', $docente->id)
+            ->with('success', 'Incidencia eliminada correctamente.');
+    }
+
+    /**
+     * La incidencia tiene que pertenecer al docente de la URL (misma regla que
+     * CeContenidoController); que el solicitante pueda abrir esa ficha del docente
+     * —dueño o administración— ya lo decide el middleware docente.propio.
+     */
+    private function aseguraAcceso(Docente $docente, Incidencia $incidencia): void
+    {
+        abort_unless((int) $incidencia->docente_id === $docente->id, 403, 'No te corresponde esta incidencia.');
+    }
+
+    private function eliminarImagen(Incidencia $incidencia): void
+    {
+        if ($incidencia->imagen) {
+            $ruta = public_path('img/incidencias/' . $incidencia->imagen);
+            if (is_file($ruta)) {
+                unlink($ruta);
+            }
+        }
     }
 
     // ── Formulario público (sin login) ───────────────────────────────────────

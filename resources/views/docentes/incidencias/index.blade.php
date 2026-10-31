@@ -3,49 +3,7 @@
 @section('titulo', 'Mis Incidencias — Docente')
 
 @push('styles')
-<style>
-    .inc-card {
-        border: none;
-        border-radius: .75rem;
-        box-shadow: 0 2px 10px rgba(0,0,0,.07);
-        transition: box-shadow .15s;
-    }
-    .inc-card:hover { box-shadow: 0 4px 18px rgba(0,0,0,.12); }
-
-    .inc-alumno-name { font-weight: 700; font-size: .93rem; color: #3a3b45; }
-    .inc-meta        { font-size: .76rem; color: #858796; }
-    .inc-reporte     { font-size: .87rem; color: #444; white-space: pre-wrap; line-height: 1.55; }
-
-    .inc-ciclo-badge {
-        font-size: .68rem; font-weight: 700; letter-spacing: .04em;
-        background: #eef2ff; color: #4e73df;
-        border: 1px solid #c7d2fe;
-        border-radius: 20px; padding: 2px 9px;
-    }
-    .inc-prog-badge {
-        font-size: .68rem; font-weight: 600;
-        background: #f0fdf4; color: #16a34a;
-        border: 1px solid #bbf7d0;
-        border-radius: 20px; padding: 2px 9px;
-    }
-
-    .inc-img-thumb {
-        width: 72px; height: 72px; object-fit: cover;
-        border-radius: .45rem; border: 1px solid #dee2e6;
-        cursor: pointer; flex-shrink: 0;
-        transition: transform .15s, box-shadow .15s;
-    }
-    .inc-img-thumb:hover { transform: scale(1.05); box-shadow: 0 2px 8px rgba(0,0,0,.18); }
-
-    .inc-date-chip {
-        font-size: .72rem; font-weight: 700; color: #6c757d;
-        background: #f1f3f9; border-radius: 20px;
-        padding: 3px 10px; white-space: nowrap;
-    }
-
-    .empty-state { padding: 4rem 1rem; }
-    .empty-state i { font-size: 3rem; color: #dee2e6; display: block; margin-bottom: 1rem; }
-</style>
+    @include('docentes.incidencias.styles')
 @endpush
 
 @section('contenido')
@@ -128,7 +86,28 @@
                                 </div>
 
                                 {{-- Reporte --}}
-                                <p class="inc-reporte mb-0">{{ $inc->reporte }}</p>
+                                <p class="inc-reporte mb-2">{{ $inc->reporte }}</p>
+
+                                {{-- Acciones sobre la incidencia --}}
+                                <div class="d-flex flex-wrap justify-content-end" style="gap:.4rem;">
+                                    <a href="{{ route('docente.incidencias.show', [$docente->id, $inc->id]) }}"
+                                       class="btn btn-outline-secondary btn-sm">
+                                        <i class="fas fa-eye fa-xs mr-1"></i>Ver ficha
+                                    </a>
+                                    <a href="{{ route('docente.incidencias.edit', [$docente->id, $inc->id]) }}"
+                                       class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-pen fa-xs mr-1"></i>Editar
+                                    </a>
+                                    <form action="{{ route('docente.incidencias.destroy', [$docente->id, $inc->id]) }}"
+                                          method="POST" class="d-inline"
+                                          onsubmit="return confirm('¿Eliminar esta incidencia? No se puede deshacer.');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                                            <i class="fas fa-trash fa-xs mr-1"></i>Eliminar
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </div>

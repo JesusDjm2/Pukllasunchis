@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasColumn('matriculas', 'comprobante')) {
+            return;
+        }
+
         Schema::table('matriculas', function (Blueprint $table) {
             $table->string('comprobante')->nullable()->after('estado');
         });
@@ -18,6 +22,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (! Schema::hasColumn('matriculas', 'comprobante')) {
+            return;
+        }
+
         Schema::table('matriculas', function (Blueprint $table) {
             $table->dropColumn('comprobante');
         });
