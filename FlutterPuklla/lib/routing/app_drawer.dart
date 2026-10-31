@@ -165,7 +165,7 @@ class AppDrawer extends ConsumerWidget {
 
                   if (esDocenteOTutor) ...[
                     const SizedBox(height: 14),
-                    const _SectionTitle(title: 'ÁREA DOCENTE Y TUTORÍA'),
+                    const _SectionTitle(title: 'GESTIÓN DOCENTE'),
                     _DrawerItem(
                       icon: Icons.dashboard_customize_outlined,
                       label: 'Mi Panel Docente',
@@ -176,6 +176,30 @@ class AppDrawer extends ConsumerWidget {
                       icon: Icons.assignment_outlined,
                       label: 'Mis Incidencias',
                       route: '/docente/incidencias',
+                      currentLocation: location,
+                    ),
+                    _DrawerItem(
+                      icon: Icons.support_agent_outlined,
+                      label: 'Tutoría y Sugerencias',
+                      route: '/tutoria',
+                      currentLocation: location,
+                    ),
+                    _DrawerItem(
+                      icon: Icons.science_outlined,
+                      label: "Taq'e · Proyectos",
+                      route: '/taqe',
+                      currentLocation: location,
+                    ),
+                    _DrawerItem(
+                      icon: Icons.work_outline,
+                      label: 'Bolsa de Trabajo',
+                      route: '/bolsa-trabajo',
+                      currentLocation: location,
+                    ),
+                    _DrawerItem(
+                      icon: Icons.local_library_outlined,
+                      label: 'Biblioteca y Recursos',
+                      route: '/recursos',
                       currentLocation: location,
                     ),
                   ],

@@ -66,11 +66,12 @@ Route::prefix('v1')->group(function () {
 
         Route::get('/incidencias', [IncidenciaController::class, 'index']);
 
-        // Área docente: espejo resumido del panel web. GET /incidencias ya es de
-        // docente, así que aquí solo faltaban el resumen y los cursos asignados.
-        Route::middleware('role:docente|tutor|admin|super-admin')->prefix('docente')->group(function () {
+        // Área docente: espejo del panel web según roles (docente, tutor, investigador, titulación, etc.)
+        Route::middleware('role:docente|tutor|investigador|admin|super-admin|gestor-titulacion|secretaria')->prefix('docente')->group(function () {
             Route::get('/resumen', [DocenteController::class, 'resumen']);
             Route::get('/cursos', [DocenteController::class, 'cursos']);
+            Route::get('/alumnos', [DocenteController::class, 'alumnos']);
+            Route::get('/tutor', [DocenteController::class, 'tutorDashboard']);
         });
 
         Route::get('/notificaciones', [NotificacionController::class, 'index']);

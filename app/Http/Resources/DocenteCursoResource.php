@@ -29,6 +29,9 @@ class DocenteCursoResource extends JsonResource
             'area' => $this->area,
             'ciclo' => $this->ciclo?->nombre,
             'programa' => $this->ciclo?->programa?->nombre,
+            'creditos' => $this->creditos ?? 0,
+            'horas' => $this->horas ?? 0,
+            'alumnos_count' => $this->alumnosValidosIds()->count(),
             'silabo_listo' => $this->silaboListo,
             'progreso' => $this->area === 'ppd'
                 ? ['calificado' => round($this->porcentajePPD(), 1)]

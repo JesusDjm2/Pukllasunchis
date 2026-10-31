@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/network/dio_client.dart';
+import 'docente_alumno.dart';
 import 'docente_curso.dart';
 import 'docente_incidencia.dart';
 import 'docente_resumen.dart';
@@ -44,6 +45,17 @@ class DocenteRepository {
         queryParameters: {'page': page},
       );
       return DocenteIncidenciasPage.fromJson(response.data!);
+    } on DioException catch (e) {
+      throwApiException(e);
+    }
+  }
+
+  Future<List<DocenteCursoAlumnos>> fetchAlumnos() async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>('/docente/alumnos');
+      return (response.data!['data'] as List)
+          .map((item) => DocenteCursoAlumnos.fromJson(item as Map<String, dynamic>))
+          .toList();
     } on DioException catch (e) {
       throwApiException(e);
     }

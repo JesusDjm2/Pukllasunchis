@@ -6,21 +6,27 @@ class DocenteCurso {
     required this.id,
     required this.nombre,
     required this.area,
-    required this.ciclo,
-    required this.programa,
+    this.ciclo,
+    this.programa,
+    this.creditos = 0,
+    this.horas = 0,
+    this.alumnosCount = 0,
     required this.silaboListo,
     required this.progreso,
   });
 
   factory DocenteCurso.fromJson(Map<String, dynamic> json) {
     return DocenteCurso(
-      id: json['id'] as int,
-      nombre: json['nombre'] as String,
-      area: json['area'] as String,
+      id: json['id'] as int? ?? 0,
+      nombre: json['nombre'] as String? ?? '',
+      area: json['area'] as String? ?? 'fid',
       ciclo: json['ciclo'] as String?,
       programa: json['programa'] as String?,
-      silaboListo: json['silabo_listo'] as bool,
-      progreso: (json['progreso'] as Map).map(
+      creditos: json['creditos'] as int? ?? 0,
+      horas: json['horas'] as int? ?? 0,
+      alumnosCount: json['alumnos_count'] as int? ?? 0,
+      silaboListo: json['silabo_listo'] as bool? ?? false,
+      progreso: ((json['progreso'] as Map?) ?? {}).map(
         (clave, valor) => MapEntry(clave as String, (valor as num).toDouble()),
       ),
     );
@@ -33,6 +39,9 @@ class DocenteCurso {
   final String area;
   final String? ciclo;
   final String? programa;
+  final int creditos;
+  final int horas;
+  final int alumnosCount;
   final bool silaboListo;
   final Map<String, double> progreso;
 
