@@ -87,6 +87,15 @@ class AppTheme {
         backgroundColor: AppColors.gold,
         textColor: Colors.white,
       ),
+      tabBarTheme: TabBarThemeData(
+        labelColor: AppColors.gold,
+        unselectedLabelColor: Colors.white.withOpacity(0.70),
+        indicatorColor: AppColors.gold,
+        indicatorSize: TabBarIndicatorSize.tab,
+        dividerColor: Colors.transparent,
+        labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+        unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+      ),
       dividerTheme: const DividerThemeData(color: AppColors.border, space: 1),
       textTheme: const TextTheme(
         headlineMedium: TextStyle(color: AppColors.text, fontWeight: FontWeight.w700),

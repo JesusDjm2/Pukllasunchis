@@ -13,6 +13,8 @@ use App\Http\Controllers\Api\IncidenciaController;
 use App\Http\Controllers\Api\MatriculaController;
 use App\Http\Controllers\Api\NotificacionController;
 use App\Http\Controllers\Api\PeriodoActualController;
+use App\Http\Controllers\Api\TaqeController;
+use App\Http\Controllers\Api\TutoriaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -51,6 +53,16 @@ Route::prefix('v1')->group(function () {
         Route::post('/ejercicios/{ejercicio}/responder', [CursoEspecialController::class, 'responderEjercicio']);
 
         Route::get('/comunicados', [ComunicadoController::class, 'index']);
+
+        // Tutoría individual y buzón de sugerencias
+        Route::get('/tutoria', [TutoriaController::class, 'index']);
+        Route::post('/tutoria', [TutoriaController::class, 'storeTutoria']);
+        Route::post('/sugerencia', [TutoriaController::class, 'storeSugerencia']);
+
+        // Taq'e: proyectos integradores, grupos y entregables
+        Route::get('/taqe', [TaqeController::class, 'index']);
+        Route::post('/taqe/responder', [TaqeController::class, 'responder']);
+        Route::post('/taqe/solicitar-ayuda', [TaqeController::class, 'solicitarAyuda']);
 
         Route::get('/incidencias', [IncidenciaController::class, 'index']);
 

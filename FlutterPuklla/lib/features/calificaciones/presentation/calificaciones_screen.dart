@@ -25,6 +25,10 @@ class CalificacionesScreen extends StatelessWidget {
           title: const Text('Calificaciones y matrícula'),
           actions: const [NotificationBellAction()],
           bottom: const TabBar(
+            labelColor: AppColors.gold,
+            unselectedLabelColor: Colors.white70,
+            indicatorColor: AppColors.gold,
+            indicatorWeight: 3,
             tabs: [Tab(text: 'Calificaciones'), Tab(text: 'Matrícula')],
           ),
         ),
