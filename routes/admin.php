@@ -176,8 +176,11 @@ Route::middleware('auth')->group(function () {
 
     // ── Notificaciones (in-app) ──────────────────────────────
     Route::prefix('notificaciones')->name('notificaciones.')->group(function () {
+        Route::get('/', [App\Http\Controllers\NotificacionController::class, 'index'])->name('index');
         Route::get('/{id}/ir', [App\Http\Controllers\NotificacionController::class, 'ir'])->name('ir');
         Route::post('/marcar-todas-leidas', [App\Http\Controllers\NotificacionController::class, 'marcarTodasLeidas'])->name('marcarTodasLeidas');
+        Route::post('/{id}/leida', [App\Http\Controllers\NotificacionController::class, 'marcarLeida'])->name('marcarLeida');
+        Route::delete('/{id}', [App\Http\Controllers\NotificacionController::class, 'eliminar'])->name('eliminar');
     });
 
     Route::get('/admin/tutor/{user}/ciclos', [AdminController::class, 'tutorCiclosForm'])->name('admin.tutor.ciclos');
