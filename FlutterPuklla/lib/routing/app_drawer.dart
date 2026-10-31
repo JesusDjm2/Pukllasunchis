@@ -14,6 +14,56 @@ class AppDrawer extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final location = GoRouterState.of(context).matchedLocation;
+    final user = ref.watch(authControllerProvider).user;
+    final esSoloDocente = user != null && user.isDocente && !user.isAlumno;
+
+    final items = <Widget>[
+      if (esSoloDocente) ...[
+        _DrawerItem(
+          icon: Icons.dashboard_outlined,
+          label: 'Mi panel',
+          route: '/docente',
+          currentLocation: location,
+        ),
+        _DrawerItem(
+          icon: Icons.assignment_outlined,
+          label: 'Mis incidencias',
+          route: '/docente/incidencias',
+          currentLocation: location,
+        ),
+      ] else ...[
+        _DrawerItem(
+          icon: Icons.badge_outlined,
+          label: 'Ficha técnica',
+          route: '/home',
+          currentLocation: location,
+        ),
+        _DrawerItem(
+          icon: Icons.school_outlined,
+          label: 'Cursos especiales',
+          route: '/cursos-especiales',
+          currentLocation: location,
+        ),
+        _DrawerItem(
+          icon: Icons.grade_outlined,
+          label: 'Calificaciones y matrícula',
+          route: '/calificaciones',
+          currentLocation: location,
+        ),
+        _DrawerItem(
+          icon: Icons.campaign_outlined,
+          label: 'Comunicados',
+          route: '/comunicados',
+          currentLocation: location,
+        ),
+      ],
+      _DrawerItem(
+        icon: Icons.notifications_outlined,
+        label: 'Notificaciones',
+        route: '/notificaciones',
+        currentLocation: location,
+      ),
+    ];
 
     return Drawer(
       child: SafeArea(
@@ -26,36 +76,7 @@ class AppDrawer extends ConsumerWidget {
               child: Image.asset(AppAssets.logoBlanco, height: 56),
             ),
             const SizedBox(height: 8),
-            _DrawerItem(
-              icon: Icons.badge_outlined,
-              label: 'Ficha técnica',
-              route: '/home',
-              currentLocation: location,
-            ),
-            _DrawerItem(
-              icon: Icons.school_outlined,
-              label: 'Cursos especiales',
-              route: '/cursos-especiales',
-              currentLocation: location,
-            ),
-            _DrawerItem(
-              icon: Icons.grade_outlined,
-              label: 'Calificaciones y matrícula',
-              route: '/calificaciones',
-              currentLocation: location,
-            ),
-            _DrawerItem(
-              icon: Icons.campaign_outlined,
-              label: 'Comunicados',
-              route: '/comunicados',
-              currentLocation: location,
-            ),
-            _DrawerItem(
-              icon: Icons.notifications_outlined,
-              label: 'Notificaciones',
-              route: '/notificaciones',
-              currentLocation: location,
-            ),
+            ...items,
             const Spacer(),
             const Divider(height: 1),
             ListTile(

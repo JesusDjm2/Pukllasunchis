@@ -6,6 +6,7 @@ class Matricula {
     required this.periodoNombre,
     required this.estado,
     required this.comprobante,
+    required this.voucherVerificado,
     required this.fechaCompletado,
     required this.createdAt,
   });
@@ -17,6 +18,7 @@ class Matricula {
       periodoNombre: json['periodo_nombre'] as String?,
       estado: json['estado'] as String,
       comprobante: json['comprobante'] as String?,
+      voucherVerificado: json['voucher_verificado'] as bool? ?? false,
       fechaCompletado: json['fecha_completado'] == null
           ? null
           : DateTime.tryParse(json['fecha_completado'] as String),
@@ -29,6 +31,7 @@ class Matricula {
   final String? periodoNombre;
   final String estado;
   final String? comprobante;
+  final bool voucherVerificado;
   final DateTime? fechaCompletado;
   final DateTime createdAt;
 }

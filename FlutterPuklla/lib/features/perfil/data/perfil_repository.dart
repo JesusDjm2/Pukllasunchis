@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/network/dio_client.dart';
+import 'actualizar_perfil_resultado.dart';
 import 'alumno_perfil.dart';
 
 final perfilRepositoryProvider = Provider<PerfilRepository>((ref) {
@@ -20,6 +21,15 @@ class PerfilRepository {
     try {
       final response = await _dio.get<Map<String, dynamic>>('/alumno/perfil');
       return AlumnoPerfil.fromJson(response.data!['data'] as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throwApiException(e);
+    }
+  }
+
+  Future<ActualizarPerfilResultado> actualizarPerfil(Map<String, dynamic> payload) async {
+    try {
+      final response = await _dio.put<Map<String, dynamic>>('/alumno/perfil', data: payload);
+      return ActualizarPerfilResultado.fromJson(response.data!);
     } on DioException catch (e) {
       throwApiException(e);
     }

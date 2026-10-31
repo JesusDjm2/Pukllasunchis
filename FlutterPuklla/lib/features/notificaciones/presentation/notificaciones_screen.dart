@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/error_state.dart';
 import '../../../routing/app_drawer.dart';
 import '../application/notificaciones_controller.dart';
 import '../application/notificaciones_providers.dart';
@@ -30,7 +32,7 @@ class NotificacionesScreen extends ConsumerWidget {
       drawer: const AppDrawer(),
       body: pagina.when(
         data: (data) => data.items.isEmpty
-            ? const _EmptyState()
+            ? const EmptyState(icon: Icons.notifications_none, message: 'No tienes notificaciones todavía.')
             : Column(
                 children: [
                   Expanded(
@@ -46,8 +48,12 @@ class NotificacionesScreen extends ConsumerWidget {
                 ],
               ),
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(
-          child: Text(error is ApiException ? error.message : 'No se pudieron cargar las notificaciones.'),
+        error: (error, _) => Padding(
+          padding: const EdgeInsets.all(16),
+          child: ErrorState(
+            message: error is ApiException ? error.message : 'No se pudieron cargar las notificaciones.',
+            onRetry: () => ref.refresh(notificacionesProvider),
+          ),
         ),
       ),
     );
@@ -128,9 +134,17 @@ class _NotificacionTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
-      color: notificacion.leida ? null : AppColors.background,
+      color: notificacion.leida ? null : AppColors.gold.withValues(alpha: 0.05),
       child: ListTile(
-        leading: Icon(_icono, color: notificacion.leida ? AppColors.muted : AppColors.gold),
+        leading: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: (notificacion.leida ? AppColors.muted : AppColors.gold).withValues(alpha: 0.14),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(_icono, size: 19, color: notificacion.leida ? AppColors.muted : AppColors.gold),
+        ),
         title: Text(
           notificacion.mensaje,
           style: TextStyle(fontWeight: notificacion.leida ? FontWeight.normal : FontWeight.w700),
@@ -178,31 +192,6 @@ class _PaginadorBar extends ConsumerWidget {
             child: const Text('Siguiente'),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _EmptyState extends StatelessWidget {
-  const _EmptyState();
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.notifications_none, size: 48, color: AppColors.muted),
-            const SizedBox(height: 12),
-            Text(
-              'No tienes notificaciones todavía.',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.muted),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
       ),
     );
   }

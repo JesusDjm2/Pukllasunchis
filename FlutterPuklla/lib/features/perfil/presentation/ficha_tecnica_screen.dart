@@ -3,10 +3,13 @@ import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/error_state.dart';
+import '../../../core/widgets/section_header.dart';
 import '../../home/application/home_providers.dart';
 import '../../home/data/curso.dart';
 import '../application/perfil_providers.dart';
@@ -38,9 +41,8 @@ class FichaTecnicaScreen extends ConsumerWidget {
           children: [
             Padding(
               padding: const EdgeInsets.all(24),
-              child: Text(
-                error is ApiException ? error.message : 'No se pudo cargar tu ficha técnica.',
-                textAlign: TextAlign.center,
+              child: ErrorState(
+                message: error is ApiException ? error.message : 'No se pudo cargar tu ficha técnica.',
               ),
             ),
           ],
@@ -58,18 +60,83 @@ class _FichaBody extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.zero,
       children: [
-        _EstadoMatriculaBanner(perfil: perfil),
-        const SizedBox(height: 16),
-        _DatosPersonalesCard(perfil: perfil),
-        const SizedBox(height: 16),
-        _ProgramaCicloCard(perfil: perfil),
-        const SizedBox(height: 16),
-        Text('Cursos del semestre', style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 8),
-        const _CursosDelSemestre(),
+        _Hero(perfil: perfil),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _EstadoMatriculaBanner(perfil: perfil),
+              const SizedBox(height: 20),
+              const SectionHeader(icon: Icons.badge_outlined, title: 'Mis datos'),
+              _DatosPersonalesCard(perfil: perfil),
+              const SizedBox(height: 20),
+              const SectionHeader(icon: Icons.menu_book_outlined, title: 'Cursos del semestre'),
+              const _CursosDelSemestre(),
+            ],
+          ),
+        ),
       ],
+    );
+  }
+}
+
+class _Hero extends StatelessWidget {
+  const _Hero({required this.perfil});
+
+  final AlumnoPerfil perfil;
+
+  @override
+  Widget build(BuildContext context) {
+    final iniciales = [perfil.nombres, perfil.apellidos]
+        .where((s) => s.isNotEmpty)
+        .map((s) => s[0].toUpperCase())
+        .take(2)
+        .join();
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [AppColors.teal, AppColors.tealDark],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 26,
+            backgroundColor: Colors.white.withValues(alpha: 0.15),
+            child: Text(
+              iniciales,
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 18),
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  perfil.nombreCompleto,
+                  style: const TextStyle(color: Colors.white, fontSize: 19, fontWeight: FontWeight.w700),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  [perfil.programaNombre, perfil.cicloNombre].whereType<String>().join(' · '),
+                  style: TextStyle(color: Colors.white.withValues(alpha: 0.75), fontSize: 13),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -93,9 +160,15 @@ class _EstadoMatriculaBanner extends ConsumerWidget {
 
             return yaMatriculado.when(
               data: (matriculado) => matriculado
-                  ? _MatriculadoBadge(periodoNombre: periodo.nombre)
+                  ? Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: _MatriculadoBadge(periodoNombre: periodo.nombre),
+                    )
                   : (periodo.formularioHabilitado
-                      ? _MatriculaPendienteAviso(periodoNombre: periodo.nombre)
+                      ? Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: _MatriculaPendienteAviso(periodoNombre: periodo.nombre),
+                        )
                       : const SizedBox.shrink()),
               loading: () => const SizedBox.shrink(),
               error: (_, _) => const SizedBox.shrink(),
@@ -104,14 +177,24 @@ class _EstadoMatriculaBanner extends ConsumerWidget {
           loading: () => const SizedBox.shrink(),
           error: (_, _) => const SizedBox.shrink(),
         ),
-        const SizedBox(height: 12),
-        Align(
-          alignment: Alignment.centerRight,
-          child: OutlinedButton.icon(
-            onPressed: () => _descargarFicha(context, ref),
-            icon: const Icon(Icons.picture_as_pdf_outlined),
-            label: const Text('Descargar ficha (PDF)'),
-          ),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: () => context.push('/matricula/formulario'),
+                icon: const Icon(Icons.edit_note_outlined, size: 18),
+                label: const Text('Actualizar mis datos'),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: () => _descargarFicha(context, ref),
+                icon: const Icon(Icons.picture_as_pdf_outlined, size: 18),
+                label: const Text('Ficha (PDF)'),
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -149,17 +232,22 @@ class _MatriculadoBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: AppColors.successBg,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.check_circle, color: AppColors.success, size: 18),
-          const SizedBox(width: 8),
-          Text('Matriculado · $periodoNombre', style: const TextStyle(color: AppColors.success)),
+          const Icon(Icons.check_circle, color: AppColors.success, size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'Matriculado · $periodoNombre',
+              style: const TextStyle(color: AppColors.success, fontWeight: FontWeight.w600),
+            ),
+          ),
         ],
       ),
     );
@@ -174,10 +262,10 @@ class _MatriculaPendienteAviso extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.warningBg,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
         children: [
@@ -188,6 +276,11 @@ class _MatriculaPendienteAviso extends StatelessWidget {
               'El período $periodoNombre está abierto. Aún no completas tu ficha de matrícula.',
               style: const TextStyle(color: AppColors.warning),
             ),
+          ),
+          const SizedBox(width: 8),
+          FilledButton(
+            onPressed: () => context.push('/matricula/formulario'),
+            child: const Text('Completar'),
           ),
         ],
       ),
@@ -208,25 +301,11 @@ class _DatosPersonalesCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                const CircleAvatar(
-                  radius: 28,
-                  backgroundColor: AppColors.background,
-                  child: Icon(Icons.person_outline, color: AppColors.muted, size: 28),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Text(perfil.nombreCompleto, style: Theme.of(context).textTheme.titleLarge),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            _DatoRow(label: 'DNI', value: perfil.dni),
-            _DatoRow(label: 'Correo', value: perfil.email),
-            _DatoRow(label: 'Teléfono', value: perfil.numero),
-            _DatoRow(label: 'Núm. de referencia', value: perfil.numeroReferencia),
-            _DatoRow(label: 'Domicilio', value: perfil.domicilio),
+            _DatoRow(icon: Icons.badge_outlined, label: 'DNI', value: perfil.dni),
+            _DatoRow(icon: Icons.mail_outline, label: 'Correo', value: perfil.email),
+            _DatoRow(icon: Icons.phone_outlined, label: 'Teléfono', value: perfil.numero),
+            _DatoRow(icon: Icons.contact_phone_outlined, label: 'Emergencia', value: perfil.numeroReferencia),
+            _DatoRow(icon: Icons.home_outlined, label: 'Domicilio', value: perfil.domicilio, isLast: true),
           ],
         ),
       ),
@@ -235,62 +314,33 @@ class _DatosPersonalesCard extends StatelessWidget {
 }
 
 class _DatoRow extends StatelessWidget {
-  const _DatoRow({required this.label, required this.value});
+  const _DatoRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+    this.isLast = false,
+  });
 
+  final IconData icon;
   final String label;
   final String value;
+  final bool isLast;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: EdgeInsets.only(bottom: isLast ? 0 : 14),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Icon(icon, size: 18, color: AppColors.muted),
+          const SizedBox(width: 12),
           SizedBox(
-            width: 120,
-            child: Text(label, style: const TextStyle(color: AppColors.muted)),
+            width: 84,
+            child: Text(label, style: const TextStyle(color: AppColors.muted, fontSize: 13)),
           ),
-          Expanded(child: Text(value)),
+          Expanded(child: Text(value, style: const TextStyle(fontWeight: FontWeight.w500))),
         ],
-      ),
-    );
-  }
-}
-
-class _ProgramaCicloCard extends StatelessWidget {
-  const _ProgramaCicloCard({required this.perfil});
-
-  final AlumnoPerfil perfil;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Programa', style: TextStyle(color: AppColors.muted)),
-                  Text(perfil.programaNombre ?? '—', style: Theme.of(context).textTheme.titleMedium),
-                ],
-              ),
-            ),
-            if (perfil.cicloNombre != null)
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Ciclo', style: TextStyle(color: AppColors.muted)),
-                    Text(perfil.cicloNombre!, style: Theme.of(context).textTheme.titleMedium),
-                  ],
-                ),
-              ),
-          ],
-        ),
       ),
     );
   }
@@ -305,10 +355,16 @@ class _CursosDelSemestre extends ConsumerWidget {
 
     return cursos.when(
       data: (list) => list.isEmpty
-          ? const Text('No tienes cursos en el periodo actual.')
+          ? const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: Text('No tienes cursos en el periodo actual.', style: TextStyle(color: AppColors.muted)),
+            )
           : Column(children: [for (final curso in list) _CursoDelSemestreTile(curso: curso)]),
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, _) => Text(error is ApiException ? error.message : 'No se pudieron cargar los cursos.'),
+      error: (error, _) => ErrorState(
+        message: error is ApiException ? error.message : 'No se pudieron cargar los cursos.',
+        onRetry: () => ref.invalidate(cursosProvider),
+      ),
     );
   }
 }
@@ -321,9 +377,19 @@ class _CursoDelSemestreTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 8),
+      margin: const EdgeInsets.only(bottom: 10),
       child: ListTile(
-        title: Text(curso.nombre),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        leading: Container(
+          width: 38,
+          height: 38,
+          decoration: BoxDecoration(
+            color: AppColors.gold.withValues(alpha: 0.14),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(Icons.menu_book_outlined, size: 18, color: AppColors.gold),
+        ),
+        title: Text(curso.nombre, style: const TextStyle(fontWeight: FontWeight.w600)),
         subtitle: Text('${curso.cc} · ${curso.horas} h'),
         trailing: curso.classroom != null
             ? IconButton(

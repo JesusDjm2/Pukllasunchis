@@ -13,6 +13,7 @@ class IncidenciaResource extends JsonResource
             'id' => $this->id,
             'fecha' => $this->fecha,
             'reporte' => $this->reporte,
+            'estado' => $this->estado,
             'imagen_url' => $this->imagen ? asset('img/incidencias/'.$this->imagen) : null,
             'alumno' => $this->whenLoaded('alumno', fn () => [
                 'id' => $this->alumno->id,

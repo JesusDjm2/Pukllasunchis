@@ -15,6 +15,7 @@ class MatriculaResource extends JsonResource
             'periodo_nombre' => $this->periodoActual?->nombre,
             'estado' => $this->estado,
             'comprobante' => $this->comprobante,
+            'voucher_verificado' => (bool) $this->voucher_verificado,
             'fecha_completado' => $this->fecha_completado,
             'created_at' => $this->created_at,
         ];

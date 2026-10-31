@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/error_state.dart';
 import '../../../routing/app_drawer.dart';
 import '../../notificaciones/presentation/notification_bell_action.dart';
 import '../application/calificaciones_providers.dart';
@@ -64,7 +66,13 @@ class _CalificacionesTab extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => _ErrorMessage(error: error, fallback: 'No se pudieron cargar las calificaciones.'),
+        error: (error, _) => Padding(
+          padding: const EdgeInsets.all(16),
+          child: ErrorState(
+            message: error is ApiException ? error.message : 'No se pudieron cargar las calificaciones.',
+            onRetry: () => ref.invalidate(calificacionesProvider),
+          ),
+        ),
       ),
     );
   }
@@ -235,14 +243,20 @@ class _MatriculaTab extends ConsumerWidget {
       onRefresh: () => ref.refresh(matriculasProvider.future),
       child: matriculas.when(
         data: (list) => list.isEmpty
-            ? _EmptyMessage(text: 'No tienes matrículas registradas.')
+            ? const EmptyState(icon: Icons.assignment_outlined, message: 'No tienes matrículas registradas.')
             : ListView.builder(
                 padding: const EdgeInsets.all(16),
                 itemCount: list.length,
                 itemBuilder: (context, index) => _MatriculaCard(matricula: list[index]),
               ),
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => _ErrorMessage(error: error, fallback: 'No se pudieron cargar las matrículas.'),
+        error: (error, _) => Padding(
+          padding: const EdgeInsets.all(16),
+          child: ErrorState(
+            message: error is ApiException ? error.message : 'No se pudieron cargar las matrículas.',
+            onRetry: () => ref.invalidate(matriculasProvider),
+          ),
+        ),
       ),
     );
   }
@@ -255,47 +269,54 @@ class _MatriculaCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final completada = matricula.estado.toLowerCase() == 'matriculado';
+
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
-        title: Text(matricula.periodoNombre ?? 'Periodo #${matricula.periodoActualId}'),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        leading: Container(
+          width: 38,
+          height: 38,
+          decoration: BoxDecoration(
+            color: (completada ? AppColors.success : AppColors.muted).withValues(alpha: 0.14),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            completada ? Icons.check_circle_outline : Icons.hourglass_empty,
+            size: 18,
+            color: completada ? AppColors.success : AppColors.muted,
+          ),
+        ),
+        title: Text(
+          matricula.periodoNombre ?? 'Periodo #${matricula.periodoActualId}',
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
         subtitle: Text(
           matricula.fechaCompletado != null
               ? 'Completada el ${_formatDate(matricula.fechaCompletado!)}'
               : 'Registrada el ${_formatDate(matricula.createdAt)}',
         ),
-        trailing: Chip(label: Text(matricula.estado)),
+        trailing: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          decoration: BoxDecoration(
+            color: (completada ? AppColors.successBg : AppColors.background),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Text(
+            matricula.estado,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: completada ? AppColors.success : AppColors.muted,
+            ),
+          ),
+        ),
       ),
     );
   }
 }
 
-class _EmptyMessage extends StatelessWidget {
-  const _EmptyMessage({required this.text});
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      children: [
-        Padding(padding: const EdgeInsets.all(24), child: Text(text, textAlign: TextAlign.center)),
-      ],
-    );
-  }
-}
-
-class _ErrorMessage extends StatelessWidget {
-  const _ErrorMessage({required this.error, required this.fallback});
-
-  final Object error;
-  final String fallback;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(child: Text(error is ApiException ? (error as ApiException).message : fallback));
-  }
-}
 
 String _formatDate(DateTime date) {
   return '${date.day.toString().padLeft(2, '0')}/'

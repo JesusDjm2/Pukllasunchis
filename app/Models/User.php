@@ -124,6 +124,11 @@ class User extends Authenticatable
         return $this->hasOne(\App\Models\Titulacion\SeguimientoTitulacion::class);
     }
 
+    public function deviceTokens()
+    {
+        return $this->hasMany(DeviceToken::class);
+    }
+
     public function ciclo()
     {
         return $this->belongsTo(Ciclo::class);

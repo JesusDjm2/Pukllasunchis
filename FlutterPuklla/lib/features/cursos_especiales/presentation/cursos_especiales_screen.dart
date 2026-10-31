@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/network/api_exception.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/error_state.dart';
 import '../../../routing/app_drawer.dart';
 import '../../notificaciones/presentation/notification_bell_action.dart';
 import '../application/cursos_especiales_controller.dart';
@@ -28,21 +31,26 @@ class CursosEspecialesScreen extends ConsumerWidget {
           data: (cursos) => cursos.isEmpty
               ? ListView(
                   children: const [
-                    Padding(
-                      padding: EdgeInsets.all(24),
-                      child: Text('No hay cursos especiales disponibles por ahora.'),
+                    EmptyState(
+                      icon: Icons.school_outlined,
+                      message: 'No hay cursos especiales disponibles por ahora.',
                     ),
                   ],
                 )
               : ListView.builder(
                   padding: const EdgeInsets.all(16),
                   itemCount: cursos.length,
-                  itemBuilder: (context, index) => _CursoEspecialCard(curso: cursos[index]),
+                  itemBuilder: (context, index) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _CursoEspecialCard(curso: cursos[index]),
+                  ),
                 ),
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => Center(
-            child: Text(
-              error is ApiException ? error.message : 'No se pudo cargar el catálogo.',
+          error: (error, _) => Padding(
+            padding: const EdgeInsets.all(16),
+            child: ErrorState(
+              message: error is ApiException ? error.message : 'No se pudo cargar el catálogo.',
+              onRetry: () => ref.invalidate(cursosEspecialesProvider),
             ),
           ),
         ),
@@ -59,12 +67,28 @@ class _CursoEspecialCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
-        title: Text(curso.nombre),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        leading: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: (curso.inscrito ? AppColors.success : AppColors.gold).withValues(alpha: 0.14),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            curso.inscrito ? Icons.play_circle_outline : Icons.auto_stories_outlined,
+            size: 20,
+            color: curso.inscrito ? AppColors.success : AppColors.gold,
+          ),
+        ),
+        title: Text(curso.nombre, style: const TextStyle(fontWeight: FontWeight.w600)),
         subtitle: curso.descripcion != null ? Text(curso.descripcion!) : null,
         trailing: curso.inscrito
-            ? Text('${curso.porcentaje ?? 0}%')
+            ? Text(
+                '${curso.porcentaje ?? 0}%',
+                style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.success),
+              )
             : FilledButton(
                 onPressed: () async {
                   try {

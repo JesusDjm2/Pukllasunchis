@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/network/api_exception.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/error_state.dart';
 import '../../../routing/app_drawer.dart';
 import '../../notificaciones/presentation/notification_bell_action.dart';
 import '../application/comunicados_providers.dart';
@@ -24,7 +27,7 @@ class ComunicadosScreen extends ConsumerWidget {
       drawer: const AppDrawer(),
       body: pagina.when(
         data: (data) => data.items.isEmpty
-            ? const Center(child: Text('No hay comunicados publicados.'))
+            ? const EmptyState(icon: Icons.campaign_outlined, message: 'No hay comunicados publicados.')
             : Column(
                 children: [
                   Expanded(
@@ -41,8 +44,12 @@ class ComunicadosScreen extends ConsumerWidget {
                 ],
               ),
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(
-          child: Text(error is ApiException ? error.message : 'No se pudieron cargar los comunicados.'),
+        error: (error, _) => Padding(
+          padding: const EdgeInsets.all(16),
+          child: ErrorState(
+            message: error is ApiException ? error.message : 'No se pudieron cargar los comunicados.',
+            onRetry: () => ref.invalidate(comunicadosProvider),
+          ),
         ),
       ),
     );
@@ -72,11 +79,31 @@ class _ComunicadoCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(comunicado.titulo, style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 4),
-            Text(
-              _formatDate(comunicado.fechaPublicacion),
-              style: Theme.of(context).textTheme.bodySmall,
+            Row(
+              children: [
+                Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: AppColors.teal.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.campaign_outlined, size: 17, color: AppColors.teal),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(comunicado.titulo, style: Theme.of(context).textTheme.titleMedium),
+                      Text(
+                        _formatDate(comunicado.fechaPublicacion),
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
             if (comunicado.descripcion != null) ...[
               const SizedBox(height: 8),

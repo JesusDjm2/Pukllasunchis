@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Api;
 
+use App\Models\PeriodoActual;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateAlumnoPerfilRequest extends FormRequest
@@ -16,7 +17,7 @@ class UpdateAlumnoPerfilRequest extends FormRequest
         $alumno = $this->user()->alumno;
 
         $rules = [
-            'numero' => 'required|string|max:20',
+            'numero' => 'required|string|max:20|different:numero_referencia',
             'numero_referencia' => 'required|string|max:20',
             'direccion' => 'required|string|max:255',
             'departamento' => 'nullable|string|max:100',
@@ -62,6 +63,21 @@ class UpdateAlumnoPerfilRequest extends FormRequest
             $rules['genero'] = 'required|string';
         }
 
+        $periodoActual = PeriodoActual::actual();
+        $esBecado = (bool) $this->user()->beca;
+        $formularioHabilitado = $periodoActual?->formulario_habilitado ?? false;
+
+        if ($formularioHabilitado && ! $esBecado) {
+            $rules['comprobante'] = 'required|string|max:100';
+        }
+
         return $rules;
+    }
+
+    public function messages(): array
+    {
+        return [
+            'numero.different' => 'El celular y el celular de emergencia deben ser diferentes.',
+        ];
     }
 }

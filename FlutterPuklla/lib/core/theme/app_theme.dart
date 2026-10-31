@@ -27,20 +27,21 @@ class AppTheme {
         backgroundColor: AppColors.teal,
         foregroundColor: Colors.white,
         elevation: 0,
+        surfaceTintColor: Colors.transparent,
         centerTitle: false,
         titleTextStyle: TextStyle(
           color: Colors.white,
           fontSize: 20,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.1,
         ),
       ),
       cardTheme: CardThemeData(
         color: AppColors.surface,
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: const BorderSide(color: AppColors.border),
-        ),
+        elevation: 3,
+        shadowColor: AppColors.tealDark.withValues(alpha: 0.10),
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         margin: EdgeInsets.zero,
       ),
       filledButtonTheme: FilledButtonThemeData(
@@ -79,8 +80,12 @@ class AppTheme {
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.background,
         labelStyle: const TextStyle(color: AppColors.text, fontWeight: FontWeight.w500),
-        side: const BorderSide(color: AppColors.border),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        side: BorderSide.none,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+      badgeTheme: const BadgeThemeData(
+        backgroundColor: AppColors.gold,
+        textColor: Colors.white,
       ),
       dividerTheme: const DividerThemeData(color: AppColors.border, space: 1),
       textTheme: const TextTheme(

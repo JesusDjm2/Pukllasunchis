@@ -5,8 +5,13 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\UpdateAlumnoPerfilRequest;
 use App\Http\Resources\AlumnoResource;
+use App\Mail\NotificacionRegistro;
+use App\Models\Matricula;
+use App\Models\PeriodoActual;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 class AlumnoController extends Controller
@@ -24,13 +29,49 @@ class AlumnoController extends Controller
         return response()->json(['data' => new AlumnoResource($alumno)]);
     }
 
+    /**
+     * Mismo flujo que `AlumnoController@actualizarDatos` (web): actualiza los
+     * datos socioeconómicos del alumno y, si el periodo actual tiene el
+     * formulario de matrícula habilitado, completa/renueva su `Matricula` del
+     * periodo (con el comprobante si no es becado) y notifica por correo a la
+     * institución la primera vez que se matricula en ese periodo.
+     */
     public function actualizarPerfil(UpdateAlumnoPerfilRequest $request)
     {
         $alumno = $request->user()->alumno;
 
-        $alumno->update($request->validated());
+        $datos = $request->safe()->except('comprobante');
+        $datos['bienes_vivienda'] = $request->input('bienes_vivienda', []);
+        $datos['otros_servicios'] = $request->input('otros_servicios', []);
+        $alumno->update($datos);
 
-        return response()->json(['data' => new AlumnoResource($alumno->fresh())]);
+        $periodoActual = PeriodoActual::actual();
+        $matriculaCompletada = false;
+
+        if ($periodoActual && $periodoActual->formulario_habilitado) {
+            $yaEstabaMatriculado = $alumno->matriculaEnPeriodo($periodoActual->id) !== null;
+
+            $comprobante = $request->filled('comprobante') ? $request->comprobante : null;
+            Matricula::updateOrCreate(
+                ['alumno_id' => $alumno->id, 'periodo_actual_id' => $periodoActual->id],
+                array_filter(['fecha_completado' => now(), 'estado' => 'matriculado', 'comprobante' => $comprobante])
+            );
+            $matriculaCompletada = true;
+
+            if (! $yaEstabaMatriculado) {
+                try {
+                    Mail::to(config('services.notificaciones.emails'))
+                        ->send(new NotificacionRegistro($alumno, $periodoActual));
+                } catch (\Exception $e) {
+                    Log::error('Error enviando email de matrícula (API actualizarPerfil): '.$e->getMessage());
+                }
+            }
+        }
+
+        return response()->json([
+            'data' => new AlumnoResource($alumno->fresh()),
+            'matricula_completada' => $matriculaCompletada,
+        ]);
     }
 
     /**

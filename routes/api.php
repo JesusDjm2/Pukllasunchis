@@ -7,6 +7,8 @@ use App\Http\Controllers\Api\BolsaTrabajoOfertaController;
 use App\Http\Controllers\Api\CursoController;
 use App\Http\Controllers\Api\ComunicadoController;
 use App\Http\Controllers\Api\CursoEspecialController;
+use App\Http\Controllers\Api\DeviceTokenController;
+use App\Http\Controllers\Api\DocenteController;
 use App\Http\Controllers\Api\IncidenciaController;
 use App\Http\Controllers\Api\MatriculaController;
 use App\Http\Controllers\Api\NotificacionController;
@@ -52,9 +54,19 @@ Route::prefix('v1')->group(function () {
 
         Route::get('/incidencias', [IncidenciaController::class, 'index']);
 
+        // Área docente: espejo resumido del panel web. GET /incidencias ya es de
+        // docente, así que aquí solo faltaban el resumen y los cursos asignados.
+        Route::middleware('role:docente|tutor|admin|super-admin')->prefix('docente')->group(function () {
+            Route::get('/resumen', [DocenteController::class, 'resumen']);
+            Route::get('/cursos', [DocenteController::class, 'cursos']);
+        });
+
         Route::get('/notificaciones', [NotificacionController::class, 'index']);
         Route::get('/notificaciones/no-leidas-count', [NotificacionController::class, 'noLeidasCount']);
         Route::post('/notificaciones/{id}/leer', [NotificacionController::class, 'marcarLeida']);
         Route::post('/notificaciones/marcar-todas-leidas', [NotificacionController::class, 'marcarTodasLeidas']);
+
+        Route::post('/device-tokens', [DeviceTokenController::class, 'store']);
+        Route::delete('/device-tokens', [DeviceTokenController::class, 'destroy']);
     });
 });

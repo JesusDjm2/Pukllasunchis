@@ -6,6 +6,7 @@ class AuthUser {
     required this.apellidos,
     required this.email,
     required this.roles,
+    this.beca = false,
     required this.alumnoId,
     required this.docenteId,
   });
@@ -17,6 +18,7 @@ class AuthUser {
       apellidos: json['apellidos'] as String?,
       email: json['email'] as String,
       roles: List<String>.from(json['roles'] as List? ?? const []),
+      beca: json['beca'] as bool? ?? false,
       alumnoId: json['alumno_id'] as int?,
       docenteId: json['docente_id'] as int?,
     );
@@ -27,6 +29,7 @@ class AuthUser {
   final String? apellidos;
   final String email;
   final List<String> roles;
+  final bool beca;
   final int? alumnoId;
   final int? docenteId;
 
