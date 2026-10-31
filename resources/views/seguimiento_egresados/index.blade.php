@@ -259,6 +259,7 @@
         <header class="topbar">
             <span class="season">▦ Seguimiento de egresados — campaña 2026-II</span>
             <div class="topright">
+                <a href="{{ route('seguimiento.laboratorio') }}" class="btn sm" style="background:#832128;color:#fff;text-decoration:none;">📊 Laboratorio Analítico</a>
                 <button type="button" class="btn sm outline" onclick="window.CampaignPortal.open()">✉ Enlace de campaña WhatsApp</button>
                 <select aria-label="Perfil simulado" class="role-switch" id="role-picker">
                     <option value="coordinacion">Coordinación</option>

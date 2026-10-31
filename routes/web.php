@@ -176,6 +176,24 @@ Route::middleware(['auth'])->prefix('seguimiento-egresados')->group(function () 
     // Vista principal con control de alcances (egresado solo ve su ficha, encuestador sus asignados, admin todo)
     Route::get('/', [App\Http\Controllers\SeguimientoEgresadoController::class, 'index'])
         ->name('seguimiento-egresados.index');
+    Route::get('/padron', [App\Http\Controllers\SeguimientoEgresadoController::class, 'index'])
+        ->name('seguimiento.index');
+
+    // Laboratorio de Inteligencia Institucional y Observatorio Territorial (Fase 2A)
+    Route::get('/laboratorio', [App\Http\Controllers\SeguimientoLaboratorioController::class, 'index'])
+        ->name('seguimiento.laboratorio');
+    Route::post('/analitica', [App\Http\Controllers\SeguimientoLaboratorioController::class, 'analiticaAjax'])
+        ->name('seguimiento.analitica');
+    Route::get('/analitica/exportar', [App\Http\Controllers\SeguimientoLaboratorioController::class, 'exportar'])
+        ->name('seguimiento.analitica.exportar');
+
+    // Alias compatibles para seguimiento-egresados.*
+    Route::get('/laboratorio-alias', [App\Http\Controllers\SeguimientoLaboratorioController::class, 'index'])
+        ->name('seguimiento-egresados.laboratorio');
+    Route::post('/analitica-alias', [App\Http\Controllers\SeguimientoLaboratorioController::class, 'analiticaAjax'])
+        ->name('seguimiento-egresados.analitica');
+    Route::get('/analitica/exportar-alias', [App\Http\Controllers\SeguimientoLaboratorioController::class, 'exportar'])
+        ->name('seguimiento-egresados.analitica.exportar');
 
     // Episodios laborales (consulta y cierre con verificación en servidor de propiedad o asignación)
     Route::get('/episodios/{userId}', [App\Http\Controllers\SeguimientoEgresadoController::class, 'obtenerEpisodios'])
