@@ -890,6 +890,32 @@
             </div>
         </div>
 
+        {{-- Puklla en Red — Seguimiento de Egresados --}}
+        @if (auth()->user()?->hasRole('seguimiento-egresados') || auth()->user()?->can('seguimiento-egresados.ver-dashboard'))
+            <div class="card docente-ui-card mb-3 mb-md-4" style="border-left: 4px solid #832128; background: #fffdfd;">
+                <div class="card-body p-3 d-flex flex-wrap align-items-center justify-content-between" style="gap:.5rem .75rem;">
+                    <div class="d-flex align-items-center" style="gap: .75rem;">
+                        <div style="width: 40px; height: 40px; border-radius: 8px; background: #fce8e9; color: #832128; display: grid; place-items: center; font-size: 1.1rem;">
+                            <i class="fas fa-network-wired"></i>
+                        </div>
+                        <div>
+                            <span class="font-weight-bold d-block" style="color: #832128; font-size: 0.95rem;">
+                                Seguimiento de Egresados — Puklla en Red
+                            </span>
+                            <small class="text-muted">
+                                Tienes asignado el rol institucional para registro de entrevistas, seguimiento y acompañamiento de egresados.
+                            </small>
+                        </div>
+                    </div>
+                    <div>
+                        <a href="{{ route('seguimiento-egresados.index') }}" class="btn btn-sm text-white font-weight-bold" style="background: #832128; border-radius: 20px; padding: 0.4rem 1.1rem;">
+                            <i class="fas fa-external-link-alt mr-1"></i> Ingresar a Puklla en Red
+                        </a>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         {{-- Taq'e --}}
         @php $proyectosACargo = $docente->proyectosIntegradores()->orderBy('nombre')->get(); @endphp
         @if ($proyectosACargo->isNotEmpty())

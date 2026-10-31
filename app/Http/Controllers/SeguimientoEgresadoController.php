@@ -16,20 +16,26 @@ use App\Models\SeguimientoEgresado\InvitacionCampana;
 use App\Models\SeguimientoEgresado\Llamada;
 use App\Models\Titulacion\SeguimientoTitulacion;
 use App\Models\User;
+use App\Services\SeguimientoEgresado\SeguimientoAutorizacionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class SeguimientoEgresadoController extends Controller
 {
+    protected SeguimientoAutorizacionService $autorizacionService;
+
+    public function __construct(?SeguimientoAutorizacionService $autorizacionService = null)
+    {
+        $this->autorizacionService = $autorizacionService ?: app(SeguimientoAutorizacionService::class);
+    }
+
     /**
      * Verifica si el usuario tiene rol directivo o de coordinación de empleabilidad.
      */
     protected function esPersonalGestion(?User $user = null): bool
     {
-        $user = $user ?: auth()->user();
-        if (!$user) return false;
-        return $user->hasAnyRole(['admin', 'super-admin', 'coordinacion-empleabilidad', 'direccion']);
+        return $this->autorizacionService->esPersonalGestion($user);
     }
 
     /**
@@ -37,9 +43,7 @@ class SeguimientoEgresadoController extends Controller
      */
     protected function esEquipoDocente(?User $user = null): bool
     {
-        $user = $user ?: auth()->user();
-        if (!$user) return false;
-        return $user->hasAnyRole(['docente', 'tutor', 'bienestar', 'formacion-continua', 'gestor-titulacion', 'investigador']);
+        return $this->autorizacionService->esDocenteOEntrevistador($user) || $this->autorizacionService->esBienestarSocial($user);
     }
 
     /**
@@ -57,9 +61,7 @@ class SeguimientoEgresadoController extends Controller
      */
     protected function esEgresadoOAlumno(?User $user = null): bool
     {
-        $user = $user ?: auth()->user();
-        if (!$user) return false;
-        return $user->condicion === 'Egresado' || $user->hasAnyRole(['egresado', 'alumno', 'alumnoB']);
+        return $this->autorizacionService->esEgresadoOAlumno($user);
     }
 
     /**
@@ -67,30 +69,7 @@ class SeguimientoEgresadoController extends Controller
      */
     protected function puedeAccederAEgresado(int $targetUserId, ?User $user = null): bool
     {
-        $user = $user ?: auth()->user();
-        if (!$user) return false;
-
-        // Si es su propio expediente
-        if ((int)$user->id === (int)$targetUserId) {
-            return true;
-        }
-
-        // Si es personal directivo o coordinación
-        if ($this->esPersonalGestion($user)) {
-            return true;
-        }
-
-        // Si es cuerpo docente o formativo
-        if ($this->esEquipoDocente($user)) {
-            return true;
-        }
-
-        // Si es encuestador, verificar asignación obligatoria en grupos activos
-        if ($this->esEncuestador($user)) {
-            return GrupoEntrevistador::esEntrevistadorAsignado($user->id, $targetUserId);
-        }
-
-        return false;
+        return $this->autorizacionService->puedeConsultarEgresado($targetUserId, $user);
     }
 
     /**
@@ -111,12 +90,12 @@ class SeguimientoEgresadoController extends Controller
             ->orderBy('apellidos')
             ->orderBy('name');
 
-        // Si es egresado/alumno, restringir estrictamente a su propio expediente
-        if ($this->esEgresadoOAlumno($authUser)) {
+        // Si es egresado/alumno sin rol de seguimiento ni gestión, restringir estrictamente a su propio expediente
+        if ($this->esEgresadoOAlumno($authUser) && !$this->esPersonalGestion($authUser) && !$authUser->hasRole('seguimiento-egresados')) {
             $egresadosQuery->where('id', $authUser->id);
         }
-        // Si es encuestador temporal, filtrar solo a los egresados asignados en sus grupos activos
-        elseif ($this->esEncuestador($authUser) && !$this->esPersonalGestion($authUser) && !$this->esEquipoDocente($authUser)) {
+        // Si es encuestador o docente con rol seguimiento-egresados (sin rol directivo de gestión), filtrar SOLO a los egresados asignados en sus grupos activos
+        elseif (($authUser->hasRole('seguimiento-egresados') || $this->esEncuestador($authUser)) && !$this->esPersonalGestion($authUser)) {
             $gruposActivos = GrupoEntrevistador::where('estado', 'activo')->get();
             $asignadosIds = $gruposActivos->filter(fn ($g) => in_array($authUser->id, (array)$g->entrevistadores))
                 ->flatMap(fn ($g) => (array)$g->egresados_ids)
@@ -411,19 +390,22 @@ class SeguimientoEgresadoController extends Controller
             $nombre = trim($u->name . ' ' . $u->apellidos);
         }
 
-        // Marcar token como consumido si vino de una invitación válida
-        if ($invitacionValida) {
-            $invitacionValida->marcarComoUsado($request->ip());
-        }
-
         // -------------------------------------------------------------
         // 3. EJECUCIÓN TRANSACCIONAL PROTEGIDA CON BLOQUEO PESIMISTA (ACID)
         // -------------------------------------------------------------
         try {
             return DB::transaction(function () use (
                 $request, $targetUserId, $idTemporal, $nombre, $canal, $registradoPor,
-                $campana, $estadoVerificacion, $procedencia, $tokenInput
+                $campana, $estadoVerificacion, $procedencia, $tokenInput, $invitacionValida
             ) {
+                // Marcar token como consumido de manera atómica dentro de la transacción
+                if ($invitacionValida) {
+                    $invLock = InvitacionCampana::where('id', $invitacionValida->id)->lockForUpdate()->first();
+                    if ($invLock) {
+                        $invLock->marcarComoUsado($request->ip());
+                    }
+                }
+
                 // Control de concurrencia: serializar escrituras sobre el mismo egresado
                 if ($targetUserId) {
                     Actualizacion::where('user_id', $targetUserId)->lockForUpdate()->get();

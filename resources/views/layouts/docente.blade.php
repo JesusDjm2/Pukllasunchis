@@ -333,7 +333,7 @@
             $esInvestigadorSb = $usuarioSb?->hasRole('investigador') && Route::has('taqe.investigador.index');
             $esTitulacionSb = $usuarioSb?->hasRole('gestor-titulacion') && Route::has('titulacion.index');
             $esBolsaSb = $usuarioSb?->hasRole('adminB');
-            $esSeguimientoSb = Route::has('seguimiento-egresados.index');
+            $esSeguimientoSb = ($usuarioSb?->hasRole('seguimiento-egresados') || $usuarioSb?->can('seguimiento-egresados.ver-dashboard') || $usuarioSb?->hasAnyRole(['admin', 'super-admin', 'coordinacion-empleabilidad'])) && Route::has('seguimiento-egresados.index');
             $tieneFuncionesSb = $esTutorSb || $esInvestigadorSb || $esTitulacionSb || $esBolsaSb || $esSeguimientoSb || $proyectosSb->isNotEmpty();
         @endphp
         <ul class="navbar-nav sidebar sidebar-dark accordion pk-sb" id="accordionSidebar">
@@ -452,9 +452,9 @@
                 @endif
                 @if ($esSeguimientoSb)
                     <li class="nav-item">
-                        <a class="nav-link pk-sb-link {{ request()->routeIs('seguimiento-egresados.*') ? 'is-activo' : '' }}" href="{{ route('seguimiento-egresados.index') }}" title="Sistema de seguimiento de egresados">
-                            <span class="pk-sb-icono"><i class="fas fa-user-graduate"></i></span>
-                            <span class="pk-sb-texto">Sistema de seguimiento de egresados</span>
+                        <a class="nav-link pk-sb-link {{ request()->routeIs('seguimiento-egresados.*', 'seguimiento.*') ? 'is-activo' : '' }}" href="{{ route('seguimiento-egresados.index') }}" title="Seguimiento de Egresados — Puklla en Red">
+                            <span class="pk-sb-icono"><i class="fas fa-network-wired"></i></span>
+                            <span class="pk-sb-texto">Seguimiento de Egresados — Puklla en Red</span>
                         </a>
                     </li>
                 @endif

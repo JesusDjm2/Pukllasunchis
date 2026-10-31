@@ -742,7 +742,7 @@ class AdminController extends Controller
                     $fail('El rol Investigador requiere que también se asigne el rol Docente.');
                 }
             }],
-            'roles.*' => 'string|in:super-admin,admin,docente,alumno,adminB,alumnoB,inhabilitado,tutor,investigador,gestor-titulacion',
+            'roles.*' => 'string|in:super-admin,admin,docente,alumno,adminB,alumnoB,inhabilitado,tutor,investigador,gestor-titulacion,seguimiento-egresados',
             'programa_id' => [\Illuminate\Validation\Rule::requiredIf(fn () => !empty(array_intersect($request->input('roles', []), ['alumno', 'alumnoB']))), 'nullable', 'exists:programas,id'],
             'ciclo_id' => [\Illuminate\Validation\Rule::requiredIf(fn () => !empty(array_intersect($request->input('roles', []), ['alumno', 'alumnoB']))), 'nullable', 'exists:ciclos,id'],
         ]);
@@ -802,7 +802,7 @@ class AdminController extends Controller
                     $fail('El rol Investigador requiere que también se asigne el rol Docente.');
                 }
             }],
-            'roles.*' => 'string|in:super-admin,admin,docente,alumno,adminB,alumnoB,inhabilitado,tutor,investigador,gestor-titulacion',
+            'roles.*' => 'string|in:super-admin,admin,docente,alumno,adminB,alumnoB,inhabilitado,tutor,investigador,gestor-titulacion,seguimiento-egresados',
             'programa_id' => [\Illuminate\Validation\Rule::requiredIf(fn () => !empty(array_intersect($request->input('roles', []), ['alumno', 'alumnoB']))), 'nullable', 'exists:programas,id'],
             'ciclo_id' => [\Illuminate\Validation\Rule::requiredIf(fn () => !empty(array_intersect($request->input('roles', []), ['alumno', 'alumnoB']))), 'nullable', 'exists:ciclos,id'],
             'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
@@ -854,7 +854,40 @@ class AdminController extends Controller
             $user->whatsapp_key = $request->input('whatsapp_key');
         }
 
+        // Trazabilidad y auditoría institucional de asignación/revocación de roles
+        $teniaSeguimiento = $user->hasRole('seguimiento-egresados');
+        $tendraSeguimiento = in_array('seguimiento-egresados', $roles, true);
+
+        if ($teniaSeguimiento !== $tendraSeguimiento) {
+            if (!auth()->user()?->hasAnyRole(['super-admin', 'admin'])) {
+                abort(403, 'No tienes autorización para asignar o revocar el rol de seguimiento de egresados.');
+            }
+        }
+
+        $rolesAnteriores = $user->getRoleNames()->toArray();
         $user->syncRoles($roles);
+
+        if (!$teniaSeguimiento && $tendraSeguimiento) {
+            \App\Models\SeguimientoEgresado\AuditoriaRolSeguimiento::registrarEvento(
+                $user,
+                'asignado',
+                'seguimiento-egresados',
+                'Asignación del rol Seguimiento de Egresados desde panel administrativo',
+                $rolesAnteriores,
+                $user->getRoleNames()->toArray()
+            );
+            \Illuminate\Support\Facades\Log::info("Rol 'seguimiento-egresados' asignado al usuario ID {$user->id} por admin ID " . auth()->id());
+        } elseif ($teniaSeguimiento && !$tendraSeguimiento) {
+            \App\Models\SeguimientoEgresado\AuditoriaRolSeguimiento::registrarEvento(
+                $user,
+                'revocado',
+                'seguimiento-egresados',
+                'Revocación del rol Seguimiento de Egresados desde panel administrativo',
+                $rolesAnteriores,
+                $user->getRoleNames()->toArray()
+            );
+            \Illuminate\Support\Facades\Log::info("Rol 'seguimiento-egresados' revocado del usuario ID {$user->id} por admin ID " . auth()->id());
+        }
 
         if (in_array('docente', $roles)) {
             $docente = $user->docente;

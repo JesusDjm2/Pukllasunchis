@@ -64,6 +64,7 @@
 .rp-alumno  { --rc:#3b82f6; --rb:#dbeafe; --rt:#1d4ed8; --rr:59,130,246; }
 .rp-alumnoB { --rc:#6366f1; --rb:#ede9fe; --rt:#4338ca; --rr:99,102,241; }
 .rp-adminB  { --rc:#64748b; --rb:#f1f5f9; --rt:#334155; --rr:100,116,139; }
+.rp-seguimiento { --rc:#832128; --rb:#fce8e9; --rt:#5c151b; --rr:131,33,40; }
 .rp-inh     { --rc:#ef4444; --rb:#fee2e2; --rt:#b91c1c; --rr:239,68,68; }
 .rp-sa      { --rc:#7c3aed; --rb:#ede9fe; --rt:#5b21b6; --rr:124,58,237; }
 

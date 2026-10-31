@@ -9,6 +9,7 @@
         'tutor'        => ['Tutor',           'rp-tutor',   'fas fa-chalkboard'],
         'investigador' => ['Investigador',    'rp-investigador', 'fas fa-microscope'],
         'gestor-titulacion' => ['Gestor de Titulación', 'rp-titulacion', 'fas fa-user-graduate'],
+        'seguimiento-egresados' => ['Seguimiento Egresados', 'rp-seguimiento', 'fas fa-network-wired'],
         'alumno'       => ['Alumno FID',      'rp-alumno',  'fas fa-graduation-cap'],
         'alumnoB'      => ['Alumno PPD',      'rp-alumnoB', 'fas fa-user-graduate'],
         'adminB'       => ['Admin Bolsa',     'rp-adminB',  'fas fa-briefcase'],
