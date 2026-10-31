@@ -1,0 +1,63 @@
+PHPUnit 10.5.63 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.2.32
+Configuration: /Users/pavelchaparro/.gemini/antigravity/scratch/Pukllasunchis/phpunit.xml
+
+.............................................                     45 / 45 (100%)
+
+Time: 00:03.927, Memory: 84.81 MB
+
+Seguimiento Egresados Fase1B (Tests\Feature\SeguimientoEgresadosFase1B)
+ ✔ 01 primer episodio laboral
+ ✔ 02 cambio de empleo con conservacion de historial
+ ✔ 03 finalizacion de empleo sin crear empleador ficticio
+ ✔ 04 confirmacion sin cambios no duplica episodios
+ ✔ 05 empleos simultaneos
+ ✔ 06 fecha de finalizacion desconocida
+ ✔ 07 reenvio identico idempotente no duplica episodios
+ ✔ 08 rechazo de identificador de usuario invalido
+ ✔ 09 rechazo acceso egresado a otra ficha
+ ✔ 10 rechazo http 403 encuestador caso no asignado
+ ✔ 11 rollback ante error transaccional
+ ✔ 12 consistencia entre episodios y estado laboral
+
+Seguimiento Egresados Fase1C (Tests\Feature\SeguimientoEgresadosFase1C)
+ ✔ 01 rutas intranet requieren autenticacion
+ ✔ 02 egresado no puede consultar ni cerrar episodios de otros
+ ✔ 03 encuestador no asignado recibe 403
+ ✔ 04 egresados y encuestadores no pueden gestionar grupos ni avanzar casos
+ ✔ 05 intento publico sin token no adultera ficha verificada
+ ✔ 06 invitacion criptografica whatsapp actualiza con verificacion
+ ✔ 07 preservacion multicampana sin sobrescritura
+ ✔ 08 no inferencia de fechas now ni atributos ausentes
+
+Seguimiento Integracion Roles (Tests\Feature\SeguimientoIntegracionRoles)
+ ✔ 01 super admin accede al panel administrativo
+ ✔ 02 usuario sin permiso no puede asignar roles
+ ✔ 03 rol seguimiento egresados es idempotente
+ ✔ 04 docente conserva rol docente al recibir seguimiento egresados
+ ✔ 05 asignacion genera trazabilidad en base de datos
+ ✔ 06 docente autorizado ve puklla en red en su dashboard
+ ✔ 07 docente sin rol no ve opcion en dashboard
+ ✔ 08 escribir url directa sin autorizacion es rechazada
+ ✔ 09 revocar rol elimina acceso y visibilidad
+ ✔ 10 revocacion no afecta otras funciones docentes
+ ✔ 11 entrevistadores no pueden consultar egresados no asignados
+ ✔ 12 separacion estricta de permisos operativos y analitica
+ ✔ 13 flujo completo extremo a extremo
+ ✔ Admin sin privilegio no puede asignar superadmin ni modificar cuentas privilegiadas
+ ✔ Asignacion expediente requiere campana activa y vigente
+
+Seguimiento Laboratorio Fase2A (Tests\Feature\SeguimientoLaboratorioFase2A)
+ ✔ 01 rutas laboratorio requieren autenticacion
+ ✔ 02 egresados y alumnos no tienen acceso al laboratorio
+ ✔ 03 personal autorizado accede al laboratorio con exito
+ ✔ 04 universos analiticos distinguen padron elegibles y no respondientes
+ ✔ 05 matriz cruzada cuenta personas unicas sin duplicar por empleos
+ ✔ 06 privacidad estadistica aplica supresion primaria a celdas menores a 5
+ ✔ 07 privacidad estadistica aplica supresion secundaria para evitar deduccion
+ ✔ 08 filtros combinables en endpoint ajax
+ ✔ 09 observatorio territorial agrupa provincias y agenda institucional
+ ✔ 10 exportacion csv contiene metadatos y cero fuga pii
+
+OK (45 tests, 236 assertions)

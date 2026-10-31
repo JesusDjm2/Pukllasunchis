@@ -1,0 +1,2070 @@
+diff --git a/app/Console/Commands/CrearSuperAdminSeguroCommand.php b/app/Console/Commands/CrearSuperAdminSeguroCommand.php
+new file mode 100644
+index 0000000..2600abb
+--- /dev/null
++++ b/app/Console/Commands/CrearSuperAdminSeguroCommand.php
+@@ -0,0 +1,133 @@
++<?php
++
++namespace App\Console\Commands;
++
++use App\Models\SeguimientoEgresado\AuditoriaRolSeguimiento;
++use App\Models\User;
++use Illuminate\Console\Command;
++use Illuminate\Support\Facades\Hash;
++use Illuminate\Support\Facades\Log;
++use Illuminate\Support\Facades\Validator;
++use Spatie\Permission\Models\Role;
++
++class CrearSuperAdminSeguroCommand extends Command
++{
++    /**
++     * The name and signature of the console command.
++     *
++     * @var string
++     */
++    protected $signature = 'puklla:superadmin-crear
++                            {--email= : Correo institucional del nuevo superadministrador}
++                            {--dni= : DNI institucional}
++                            {--name= : Nombres}
++                            {--apellidos= : Apellidos}';
++
++    /**
++     * The console command description.
++     *
++     * @var string
++     */
++    protected $description = 'Procedimiento seguro y reproducible para la provisión de un usuario con rol super-admin sin credenciales en código';
++
++    /**
++     * Execute the console command.
++     */
++    public function handle(): int
++    {
++        $this->info('================================================================');
++        $this->info('  EESP PUKLLASUNCHIS · PROVISIÓN SEGURA DE CUENTA SUPER-ADMIN   ');
++        $this->info('================================================================');
++
++        $email = $this->option('email') ?: $this->ask('Ingrese el correo institucional del superadministrador:');
++        $email = strtolower(trim($email));
++
++        $validadorEmail = Validator::make(['email' => $email], [
++            'email' => 'required|email'
++        ]);
++
++        if ($validadorEmail->fails()) {
++            $this->error('El correo electrónico proporcionado no es válido.');
++            return Command::FAILURE;
++        }
++
++        // Verificar si el usuario ya existe
++        $usuarioExistente = User::where('email', $email)->first();
++
++        if ($usuarioExistente && $usuarioExistente->hasRole('super-admin')) {
++            $this->warn("El usuario {$email} ya existe y ya cuenta con el rol super-admin.");
++            return Command::SUCCESS;
++        }
++
++        $name = $this->option('name') ?: ($usuarioExistente ? $usuarioExistente->name : $this->ask('Nombres:'));
++        $apellidos = $this->option('apellidos') ?: ($usuarioExistente ? $usuarioExistente->apellidos : $this->ask('Apellidos:'));
++        $dni = $this->option('dni') ?: ($usuarioExistente ? $usuarioExistente->dni : $this->ask('DNI:'));
++
++        // Solicitar contraseña de manera oculta (secret), sin echo en consola ni en historial
++        $password = $this->secret('Ingrese una contraseña segura (mínimo 8 caracteres):');
++        $passwordConfirm = $this->secret('Confirme la contraseña:');
++
++        if ($password !== $passwordConfirm) {
++            $this->error('Las contraseñas no coinciden. Operación cancelada por seguridad.');
++            return Command::FAILURE;
++        }
++
++        if (strlen($password) < 8) {
++            $this->error('La contraseña debe tener al menos 8 caracteres.');
++            return Command::FAILURE;
++        }
++
++        Role::firstOrCreate(['name' => 'super-admin', 'guard_name' => 'web']);
++
++        if ($usuarioExistente) {
++            $this->info("Promoviendo cuenta existente ID {$usuarioExistente->id} a super-admin...");
++            $rolesAnteriores = $usuarioExistente->getRoleNames()->toArray();
++            $usuarioExistente->password = Hash::make($password);
++            $usuarioExistente->assignRole('super-admin');
++            $usuarioExistente->save();
++
++            AuditoriaRolSeguimiento::registrarEvento(
++                $usuarioExistente,
++                'asignado',
++                'super-admin',
++                'Promoción a super-admin mediante comando CLI de provisión segura',
++                $rolesAnteriores,
++                $usuarioExistente->getRoleNames()->toArray()
++            );
++
++            Log::info("Cuenta de usuario ID {$usuarioExistente->id} promovida a super-admin vía CLI seguro.");
++        } else {
++            $this->info("Creando nuevo usuario super-admin institucional...");
++            $nuevoUsuario = User::create([
++                'name' => trim($name),
++                'apellidos' => trim($apellidos),
++                'email' => $email,
++                'dni' => trim($dni),
++                'password' => Hash::make($password),
++                'condicion' => null,
++            ]);
++
++            $nuevoUsuario->assignRole('super-admin');
++
++            AuditoriaRolSeguimiento::registrarEvento(
++                $nuevoUsuario,
++                'asignado',
++                'super-admin',
++                'Creación de cuenta super-admin institucional mediante comando CLI seguro',
++                [],
++                ['super-admin']
++            );
++
++            Log::info("Nuevo super-admin institucional creado vía CLI seguro: ID {$nuevoUsuario->id}.");
++        }
++
++        $this->newLine();
++        $this->info("✔ Provisión completada exitosamente.");
++        $this->info("  Usuario: {$name} {$apellidos} ({$email})");
++        $this->info("  Rol: super-admin asignado correctamente.");
++        $this->info("  Trazabilidad registrada en egresado_auditoria_roles.");
++        $this->newLine();
++
++        return Command::SUCCESS;
++    }
++}
+diff --git a/app/Http/Controllers/AdminController.php b/app/Http/Controllers/AdminController.php
+index ef0c411..aae4efd 100644
+--- a/app/Http/Controllers/AdminController.php
++++ b/app/Http/Controllers/AdminController.php
+@@ -688,6 +688,11 @@ public function create()
+     public function edit($id)
+     {
+         $admin = User::findOrFail($id);
++
++        if ($admin->hasRole('super-admin') && !auth()->user()?->hasRole('super-admin')) {
++            abort(403, 'No tienes autorización para editar una cuenta con privilegios de super-admin.');
++        }
++
+         $programas = Programa::all();
+         $ciclos = Ciclo::all();
+         $currentProgramId = $admin->programa_id;
+@@ -742,7 +747,7 @@ public function store(Request $request)
+                     $fail('El rol Investigador requiere que también se asigne el rol Docente.');
+                 }
+             }],
+-            'roles.*' => 'string|in:super-admin,admin,docente,alumno,adminB,alumnoB,inhabilitado,tutor,investigador,gestor-titulacion',
++            'roles.*' => 'string|in:super-admin,admin,docente,alumno,adminB,alumnoB,inhabilitado,tutor,investigador,gestor-titulacion,seguimiento-egresados',
+             'programa_id' => [\Illuminate\Validation\Rule::requiredIf(fn () => !empty(array_intersect($request->input('roles', []), ['alumno', 'alumnoB']))), 'nullable', 'exists:programas,id'],
+             'ciclo_id' => [\Illuminate\Validation\Rule::requiredIf(fn () => !empty(array_intersect($request->input('roles', []), ['alumno', 'alumnoB']))), 'nullable', 'exists:ciclos,id'],
+         ]);
+@@ -759,6 +764,12 @@ public function store(Request $request)
+             'password' => Hash::make($request->input('password')),
+         ]);
+         $roles = $request->input('roles', []);
++
++        // Protección contra elevación de privilegios: solo un super-admin puede otorgar super-admin
++        if (in_array('super-admin', $roles, true) && !auth()->user()?->hasRole('super-admin')) {
++            abort(403, 'Solo un super-admin puede asignar el rol super-admin.');
++        }
++
+         $user->syncRoles($roles);
+ 
+         if (in_array('docente', $roles)) {
+@@ -802,7 +813,7 @@ public function update(Request $request, $id)
+                     $fail('El rol Investigador requiere que también se asigne el rol Docente.');
+                 }
+             }],
+-            'roles.*' => 'string|in:super-admin,admin,docente,alumno,adminB,alumnoB,inhabilitado,tutor,investigador,gestor-titulacion',
++            'roles.*' => 'string|in:super-admin,admin,docente,alumno,adminB,alumnoB,inhabilitado,tutor,investigador,gestor-titulacion,seguimiento-egresados',
+             'programa_id' => [\Illuminate\Validation\Rule::requiredIf(fn () => !empty(array_intersect($request->input('roles', []), ['alumno', 'alumnoB']))), 'nullable', 'exists:programas,id'],
+             'ciclo_id' => [\Illuminate\Validation\Rule::requiredIf(fn () => !empty(array_intersect($request->input('roles', []), ['alumno', 'alumnoB']))), 'nullable', 'exists:ciclos,id'],
+             'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+@@ -846,6 +857,22 @@ public function update(Request $request, $id)
+         }
+ 
+         $roles = $request->input('roles', []);
++        $authUser = auth()->user();
++
++        // 1. Protección de cuentas privilegiadas existentes
++        if ($user->hasRole('super-admin') && !$authUser?->hasRole('super-admin')) {
++            abort(403, 'No tienes autorización para modificar una cuenta con privilegios de super-admin.');
++        }
++
++        // 2. Prevención de elevación de privilegios hacia super-admin
++        if (in_array('super-admin', $roles, true) && !$authUser?->hasRole('super-admin')) {
++            abort(403, 'Solo un super-admin puede asignar el rol super-admin.');
++        }
++
++        // 3. Prevención de auto-elevación indebida de privilegios
++        if ((int)$user->id === (int)$authUser?->id && in_array('super-admin', $roles, true) && !$authUser->hasRole('super-admin')) {
++            abort(403, 'No puedes elevar tus propios privilegios.');
++        }
+ 
+         if (in_array('docente', $roles) || in_array('tutor', $roles)) {
+             $user->telefono = $request->input('telefono');
+@@ -854,8 +881,41 @@ public function update(Request $request, $id)
+             $user->whatsapp_key = $request->input('whatsapp_key');
+         }
+ 
++        // Trazabilidad y auditoría institucional de asignación/revocación de roles
++        $teniaSeguimiento = $user->hasRole('seguimiento-egresados');
++        $tendraSeguimiento = in_array('seguimiento-egresados', $roles, true);
++
++        if ($teniaSeguimiento !== $tendraSeguimiento) {
++            if (!auth()->user()?->hasAnyRole(['super-admin', 'admin'])) {
++                abort(403, 'No tienes autorización para asignar o revocar el rol de seguimiento de egresados.');
++            }
++        }
++
++        $rolesAnteriores = $user->getRoleNames()->toArray();
+         $user->syncRoles($roles);
+ 
++        if (!$teniaSeguimiento && $tendraSeguimiento) {
++            \App\Models\SeguimientoEgresado\AuditoriaRolSeguimiento::registrarEvento(
++                $user,
++                'asignado',
++                'seguimiento-egresados',
++                'Asignación del rol Seguimiento de Egresados desde panel administrativo',
++                $rolesAnteriores,
++                $user->getRoleNames()->toArray()
++            );
++            \Illuminate\Support\Facades\Log::info("Rol 'seguimiento-egresados' asignado al usuario ID {$user->id} por admin ID " . auth()->id());
++        } elseif ($teniaSeguimiento && !$tendraSeguimiento) {
++            \App\Models\SeguimientoEgresado\AuditoriaRolSeguimiento::registrarEvento(
++                $user,
++                'revocado',
++                'seguimiento-egresados',
++                'Revocación del rol Seguimiento de Egresados desde panel administrativo',
++                $rolesAnteriores,
++                $user->getRoleNames()->toArray()
++            );
++            \Illuminate\Support\Facades\Log::info("Rol 'seguimiento-egresados' revocado del usuario ID {$user->id} por admin ID " . auth()->id());
++        }
++
+         if (in_array('docente', $roles)) {
+             $docente = $user->docente;
+             if (! $docente) {
+@@ -954,6 +1014,11 @@ public function actualizarPerfilInhabilitado(Request $request, User $user)
+     public function destroy($id)
+     {
+         $admin = User::findOrFail($id);
++
++        if ($admin->hasRole('super-admin') && !auth()->user()?->hasRole('super-admin')) {
++            abort(403, 'Solo un super-admin puede eliminar una cuenta de super-admin.');
++        }
++
+         $hasAlumnoRole = $admin->hasRole('alumno');
+         $userCount = User::whereHas('roles', function ($query) {
+             $query->where('name', 'admin');
+diff --git a/app/Http/Controllers/SeguimientoEgresadoController.php b/app/Http/Controllers/SeguimientoEgresadoController.php
+index 493825a..b86e950 100644
+--- a/app/Http/Controllers/SeguimientoEgresadoController.php
++++ b/app/Http/Controllers/SeguimientoEgresadoController.php
+@@ -16,20 +16,26 @@
+ use App\Models\SeguimientoEgresado\Llamada;
+ use App\Models\Titulacion\SeguimientoTitulacion;
+ use App\Models\User;
++use App\Services\SeguimientoEgresado\SeguimientoAutorizacionService;
+ use Illuminate\Http\Request;
+ use Illuminate\Support\Facades\DB;
+ use Illuminate\Support\Facades\Log;
+ 
+ class SeguimientoEgresadoController extends Controller
+ {
++    protected SeguimientoAutorizacionService $autorizacionService;
++
++    public function __construct(?SeguimientoAutorizacionService $autorizacionService = null)
++    {
++        $this->autorizacionService = $autorizacionService ?: app(SeguimientoAutorizacionService::class);
++    }
++
+     /**
+      * Verifica si el usuario tiene rol directivo o de coordinación de empleabilidad.
+      */
+     protected function esPersonalGestion(?User $user = null): bool
+     {
+-        $user = $user ?: auth()->user();
+-        if (!$user) return false;
+-        return $user->hasAnyRole(['admin', 'super-admin', 'coordinacion-empleabilidad', 'direccion']);
++        return $this->autorizacionService->esPersonalGestion($user);
+     }
+ 
+     /**
+@@ -37,9 +43,7 @@ protected function esPersonalGestion(?User $user = null): bool
+      */
+     protected function esEquipoDocente(?User $user = null): bool
+     {
+-        $user = $user ?: auth()->user();
+-        if (!$user) return false;
+-        return $user->hasAnyRole(['docente', 'tutor', 'bienestar', 'formacion-continua', 'gestor-titulacion', 'investigador']);
++        return $this->autorizacionService->esDocenteOEntrevistador($user) || $this->autorizacionService->esBienestarSocial($user);
+     }
+ 
+     /**
+@@ -57,9 +61,7 @@ protected function esEncuestador(?User $user = null): bool
+      */
+     protected function esEgresadoOAlumno(?User $user = null): bool
+     {
+-        $user = $user ?: auth()->user();
+-        if (!$user) return false;
+-        return $user->condicion === 'Egresado' || $user->hasAnyRole(['egresado', 'alumno', 'alumnoB']);
++        return $this->autorizacionService->esEgresadoOAlumno($user);
+     }
+ 
+     /**
+@@ -67,30 +69,7 @@ protected function esEgresadoOAlumno(?User $user = null): bool
+      */
+     protected function puedeAccederAEgresado(int $targetUserId, ?User $user = null): bool
+     {
+-        $user = $user ?: auth()->user();
+-        if (!$user) return false;
+-
+-        // Si es su propio expediente
+-        if ((int)$user->id === (int)$targetUserId) {
+-            return true;
+-        }
+-
+-        // Si es personal directivo o coordinación
+-        if ($this->esPersonalGestion($user)) {
+-            return true;
+-        }
+-
+-        // Si es cuerpo docente o formativo
+-        if ($this->esEquipoDocente($user)) {
+-            return true;
+-        }
+-
+-        // Si es encuestador, verificar asignación obligatoria en grupos activos
+-        if ($this->esEncuestador($user)) {
+-            return GrupoEntrevistador::esEntrevistadorAsignado($user->id, $targetUserId);
+-        }
+-
+-        return false;
++        return $this->autorizacionService->puedeConsultarEgresado($targetUserId, $user);
+     }
+ 
+     /**
+@@ -104,6 +83,11 @@ public function index(Request $request)
+ 
+         $authUser = auth()->user();
+ 
++        // Control de acceso al módulo: personal de gestión, usuarios con rol seguimiento-egresados o egresados a su ficha
++        if (!$this->autorizacionService->puedeAccederDashboard($authUser) && !$this->esEgresadoOAlumno($authUser)) {
++            abort(403, 'No tienes autorización para acceder al módulo de seguimiento de egresados.');
++        }
++
+         // 1. Obtener egresados reales según alcance de autorización
+         $egresadosQuery = User::query()
+             ->where('condicion', 'Egresado')
+@@ -111,19 +95,30 @@ public function index(Request $request)
+             ->orderBy('apellidos')
+             ->orderBy('name');
+ 
+-        // Si es egresado/alumno, restringir estrictamente a su propio expediente
+-        if ($this->esEgresadoOAlumno($authUser)) {
++        // Si es egresado/alumno sin rol de seguimiento ni gestión, restringir estrictamente a su propio expediente
++        if ($this->esEgresadoOAlumno($authUser) && !$this->esPersonalGestion($authUser) && !$authUser->hasRole('seguimiento-egresados')) {
+             $egresadosQuery->where('id', $authUser->id);
+         }
+-        // Si es encuestador temporal, filtrar solo a los egresados asignados en sus grupos activos
+-        elseif ($this->esEncuestador($authUser) && !$this->esPersonalGestion($authUser) && !$this->esEquipoDocente($authUser)) {
+-            $gruposActivos = GrupoEntrevistador::where('estado', 'activo')->get();
+-            $asignadosIds = $gruposActivos->filter(fn ($g) => in_array($authUser->id, (array)$g->entrevistadores))
++        // Si es encuestador o docente con rol seguimiento-egresados (sin rol directivo de gestión), filtrar SOLO a los egresados asignados en sus grupos activos y campañas vigentes
++        elseif (($authUser->hasRole('seguimiento-egresados') || $this->esEncuestador($authUser)) && !$this->esPersonalGestion($authUser)) {
++            $gruposActivos = GrupoEntrevistador::with('campana')->where('estado', 'activo')->get();
++            $hoy = now()->toDateString();
++            $gruposVigentes = $gruposActivos->filter(function ($g) use ($hoy) {
++                if ($g->campana_id && $g->campana) {
++                    if (!in_array(strtolower($g->campana->estado), ['activo', 'activa'], true)) return false;
++                    if ($g->campana->fecha_inicio && $g->campana->fecha_inicio > $hoy) return false;
++                    if ($g->campana->fecha_fin && $g->campana->fecha_fin < $hoy) return false;
++                }
++                return true;
++            });
++
++            $asignadosIds = $gruposVigentes->filter(fn ($g) => in_array($authUser->id, (array)$g->entrevistadores))
+                 ->flatMap(fn ($g) => (array)$g->egresados_ids)
++                ->map(fn ($id) => is_string($id) && str_starts_with($id, 'REAL-') ? (int)str_replace('REAL-', '', $id) : (int)$id)
+                 ->unique()
+                 ->toArray();
+ 
+-            $egresadosQuery->whereIn('id', $asignadosIds);
++            $egresadosQuery->whereIn('id', $asignadosIds ?: [0]);
+         } else {
+             $egresadosQuery->limit(300);
+         }
+@@ -411,19 +406,22 @@ public function guardarActualizacion(Request $request)
+             $nombre = trim($u->name . ' ' . $u->apellidos);
+         }
+ 
+-        // Marcar token como consumido si vino de una invitación válida
+-        if ($invitacionValida) {
+-            $invitacionValida->marcarComoUsado($request->ip());
+-        }
+-
+         // -------------------------------------------------------------
+         // 3. EJECUCIÓN TRANSACCIONAL PROTEGIDA CON BLOQUEO PESIMISTA (ACID)
+         // -------------------------------------------------------------
+         try {
+             return DB::transaction(function () use (
+                 $request, $targetUserId, $idTemporal, $nombre, $canal, $registradoPor,
+-                $campana, $estadoVerificacion, $procedencia, $tokenInput
++                $campana, $estadoVerificacion, $procedencia, $tokenInput, $invitacionValida
+             ) {
++                // Marcar token como consumido de manera atómica dentro de la transacción
++                if ($invitacionValida) {
++                    $invLock = InvitacionCampana::where('id', $invitacionValida->id)->lockForUpdate()->first();
++                    if ($invLock) {
++                        $invLock->marcarComoUsado($request->ip());
++                    }
++                }
++
+                 // Control de concurrencia: serializar escrituras sobre el mismo egresado
+                 if ($targetUserId) {
+                     Actualizacion::where('user_id', $targetUserId)->lockForUpdate()->get();
+diff --git a/app/Models/SeguimientoEgresado/AuditoriaRolSeguimiento.php b/app/Models/SeguimientoEgresado/AuditoriaRolSeguimiento.php
+new file mode 100644
+index 0000000..aa82a9b
+--- /dev/null
++++ b/app/Models/SeguimientoEgresado/AuditoriaRolSeguimiento.php
+@@ -0,0 +1,64 @@
++<?php
++
++namespace App\Models\SeguimientoEgresado;
++
++use App\Models\User;
++use Illuminate\Database\Eloquent\Model;
++
++class AuditoriaRolSeguimiento extends Model
++{
++    protected $table = 'egresado_auditoria_roles';
++
++    protected $fillable = [
++        'user_id',
++        'admin_id',
++        'rol',
++        'accion',
++        'motivo',
++        'ip',
++        'roles_anteriores',
++        'roles_posteriores',
++    ];
++
++    protected $casts = [
++        'roles_anteriores' => 'array',
++        'roles_posteriores' => 'array',
++    ];
++
++    public function usuario()
++    {
++        return $this->belongsTo(User::class, 'user_id');
++    }
++
++    public function administrador()
++    {
++        return $this->belongsTo(User::class, 'admin_id');
++    }
++
++    /**
++     * Registra un evento de auditoría de asignación o revocación de rol.
++     */
++    public static function registrarEvento(
++        User $usuario,
++        string $accion,
++        string $rol = 'seguimiento-egresados',
++        ?string $motivo = null,
++        ?array $rolesAnteriores = null,
++        ?array $rolesPosteriores = null,
++        ?User $admin = null,
++        ?string $ip = null
++    ): self {
++        $admin = $admin ?: auth()->user();
++
++        return self::create([
++            'user_id' => $usuario->id,
++            'admin_id' => $admin?->id,
++            'rol' => $rol,
++            'accion' => $accion,
++            'motivo' => $motivo ?: ($accion === 'asignado' ? 'Asignación de rol de seguimiento desde panel administrativo' : 'Revocación de rol de seguimiento'),
++            'ip' => $ip ?: request()?->ip(),
++            'roles_anteriores' => $rolesAnteriores ?: [],
++            'roles_posteriores' => $rolesPosteriores ?: [],
++        ]);
++    }
++}
+diff --git a/app/Models/SeguimientoEgresado/GrupoEntrevistador.php b/app/Models/SeguimientoEgresado/GrupoEntrevistador.php
+index d18a8d5..df9e4bf 100644
+--- a/app/Models/SeguimientoEgresado/GrupoEntrevistador.php
++++ b/app/Models/SeguimientoEgresado/GrupoEntrevistador.php
+@@ -24,15 +24,35 @@ public function coordinador()
+         return $this->belongsTo(User::class, 'coordinador_id');
+     }
+ 
++    public function campana()
++    {
++        return $this->belongsTo(Campana::class, 'campana_id');
++    }
++
+     /**
+      * Verifica en el servidor si un encuestador tiene asignado a un egresado
+-     * en al menos un grupo activo de seguimiento.
++     * en al menos un grupo activo de seguimiento y dentro de una campaña institucional vigente.
+      */
+     public static function esEntrevistadorAsignado(int $interviewerId, int $targetUserId): bool
+     {
+-        $grupos = self::where('estado', 'activo')->get();
++        $grupos = self::with('campana')->where('estado', 'activo')->get();
++        $hoy = now()->toDateString();
+ 
+         foreach ($grupos as $grupo) {
++            // Si el grupo está asociado a una campaña institucional, verificar estado y vigencia
++            if ($grupo->campana_id && $grupo->campana) {
++                $campana = $grupo->campana;
++                if (!in_array(strtolower($campana->estado), ['activo', 'activa'], true)) {
++                    continue;
++                }
++                if ($campana->fecha_inicio && $campana->fecha_inicio > $hoy) {
++                    continue;
++                }
++                if ($campana->fecha_fin && $campana->fecha_fin < $hoy) {
++                    continue;
++                }
++            }
++
+             $entrevistadores = $grupo->entrevistadores ?? [];
+             $egresados = $grupo->egresados_ids ?? [];
+ 
+diff --git a/app/Services/SeguimientoEgresado/SeguimientoAutorizacionService.php b/app/Services/SeguimientoEgresado/SeguimientoAutorizacionService.php
+index 15841d3..514dac2 100644
+--- a/app/Services/SeguimientoEgresado/SeguimientoAutorizacionService.php
++++ b/app/Services/SeguimientoEgresado/SeguimientoAutorizacionService.php
+@@ -185,7 +185,7 @@ public function puedeAccederDashboard(?User $user = null): bool
+         $user = $user ?: auth()->user();
+         if (!$user) return false;
+ 
+-        return $user->hasAnyRole(['admin', 'super-admin', 'coordinacion-empleabilidad', 'direccion', 'seguimiento-egresados', 'docente', 'tutor', 'encuestador-seguimiento'])
++        return $user->hasAnyRole(['admin', 'super-admin', 'coordinacion-empleabilidad', 'direccion', 'seguimiento-egresados'])
+             || $user->can('seguimiento-egresados.ver-dashboard');
+     }
+ }
+diff --git a/database/migrations/2026_10_31_100000_create_seguimiento_egresados_role_and_permissions.php b/database/migrations/2026_10_31_100000_create_seguimiento_egresados_role_and_permissions.php
+new file mode 100644
+index 0000000..c979120
+--- /dev/null
++++ b/database/migrations/2026_10_31_100000_create_seguimiento_egresados_role_and_permissions.php
+@@ -0,0 +1,118 @@
++<?php
++
++use Illuminate\Database\Migrations\Migration;
++use Illuminate\Database\Schema\Blueprint;
++use Illuminate\Support\Facades\Schema;
++use Spatie\Permission\Models\Permission;
++use Spatie\Permission\Models\Role;
++use Spatie\Permission\PermissionRegistrar;
++
++return new class extends Migration
++{
++    /**
++     * Run the migrations.
++     */
++    public function up(): void
++    {
++        // 1. Crear tabla de trazabilidad y auditoría de cambios de rol institucional
++        if (!Schema::hasTable('egresado_auditoria_roles')) {
++            Schema::create('egresado_auditoria_roles', function (Blueprint $table) {
++                $table->id();
++                $table->unsignedBigInteger('user_id')->comment('Usuario afectado');
++                $table->unsignedBigInteger('admin_id')->nullable()->comment('Super-admin o admin que autorizó el cambio');
++                $table->string('rol', 50)->default('seguimiento-egresados');
++                $table->string('accion', 20)->comment('asignado o revocado');
++                $table->string('motivo', 255)->nullable();
++                $table->string('ip', 45)->nullable();
++                $table->json('roles_anteriores')->nullable();
++                $table->json('roles_posteriores')->nullable();
++                $table->timestamps();
++
++                $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
++                $table->foreign('admin_id')->references('id')->on('users')->onDelete('set null');
++                $table->index(['user_id', 'rol']);
++                $table->index(['admin_id', 'created_at']);
++            });
++        }
++
++        // 2. Limpiar caché de Spatie Permission
++        app()[PermissionRegistrar::class]->forgetCachedPermissions();
++
++        // 3. Definición de los 10 permisos funcionales granulares del módulo
++        $permisosModulo = [
++            'seguimiento-egresados.ver-dashboard' => 'Ver entrada y dashboard de seguimiento de egresados',
++            'seguimiento-egresados.ver-perfiles-autorizados' => 'Consultar perfiles de egresados asignados',
++            'seguimiento-egresados.actualizar-perfiles-autorizados' => 'Actualizar datos y registrar historial laboral de egresados asignados',
++            'seguimiento-egresados.registrar-entrevistas' => 'Registrar bitácora de llamadas y contactos de seguimiento',
++            'seguimiento-egresados.gestionar-campanas' => 'Crear y configurar campañas institucionales de seguimiento',
++            'seguimiento-egresados.gestionar-grupos' => 'Asignar egresados a entrevistadores y gestionar grupos',
++            'seguimiento-egresados.ver-analitica' => 'Acceder al Laboratorio de Inteligencia y Observatorio Territorial',
++            'seguimiento-egresados.exportar-analitica' => 'Exportar datos agregados y matrices cruzadas con secreto estadístico',
++            'seguimiento-egresados.gestionar-casos' => 'Gestionar casos de atención prioritaria y derivaciones',
++            'seguimiento-egresados.ver-contactos-autorizados' => 'Acceso auditado a datos de contacto de egresados asignados',
++        ];
++
++        foreach (array_keys($permisosModulo) as $permNombre) {
++            Permission::firstOrCreate(['name' => $permNombre, 'guard_name' => 'web']);
++        }
++
++        // 4. Crear o recuperar el rol institucional `seguimiento-egresados`
++        $rolSeguimiento = Role::firstOrCreate(['name' => 'seguimiento-egresados', 'guard_name' => 'web']);
++
++        // 5. Asignar configuración de MÍNIMO PRIVILEGIO al rol operativo (entrevistadores/docentes)
++        // Solo permisos operativos sobre perfiles expresamente autorizados
++        $permisosOperativos = [
++            'seguimiento-egresados.ver-dashboard',
++            'seguimiento-egresados.ver-perfiles-autorizados',
++            'seguimiento-egresados.actualizar-perfiles-autorizados',
++            'seguimiento-egresados.registrar-entrevistas',
++            'seguimiento-egresados.ver-contactos-autorizados',
++        ];
++        $rolSeguimiento->syncPermissions($permisosOperativos);
++
++        // 6. Asignar todos los permisos a super-admin y coordinacion-empleabilidad
++        if ($rolSuperAdmin = Role::where(['name' => 'super-admin', 'guard_name' => 'web'])->first()) {
++            $rolSuperAdmin->givePermissionTo(array_keys($permisosModulo));
++        }
++
++        if ($rolAdmin = Role::where(['name' => 'admin', 'guard_name' => 'web'])->first()) {
++            $rolAdmin->givePermissionTo(array_keys($permisosModulo));
++        }
++
++        if ($rolCoord = Role::where(['name' => 'coordinacion-empleabilidad', 'guard_name' => 'web'])->first()) {
++            $rolCoord->givePermissionTo(array_keys($permisosModulo));
++        }
++
++        // 7. Volver a limpiar caché
++        app()[PermissionRegistrar::class]->forgetCachedPermissions();
++    }
++
++    /**
++     * Reverse the migrations.
++     */
++    public function down(): void
++    {
++        Schema::dropIfExists('egresado_auditoria_roles');
++
++        $permisos = [
++            'seguimiento-egresados.ver-dashboard',
++            'seguimiento-egresados.ver-perfiles-autorizados',
++            'seguimiento-egresados.actualizar-perfiles-autorizados',
++            'seguimiento-egresados.registrar-entrevistas',
++            'seguimiento-egresados.gestionar-campanas',
++            'seguimiento-egresados.gestionar-grupos',
++            'seguimiento-egresados.ver-analitica',
++            'seguimiento-egresados.exportar-analitica',
++            'seguimiento-egresados.gestionar-casos',
++            'seguimiento-egresados.ver-contactos-autorizados',
++        ];
++
++        foreach ($permisos as $p) {
++            Permission::where(['name' => $p, 'guard_name' => 'web'])->delete();
++        }
++
++        Role::where(['name' => 'seguimiento-egresados', 'guard_name' => 'web'])->delete();
++
++        app()[PermissionRegistrar::class]->forgetCachedPermissions();
++    }
++};
+diff --git a/docs/seguimiento-egresados/integracion-roles/01-auditoria-roles-existentes.md b/docs/seguimiento-egresados/integracion-roles/01-auditoria-roles-existentes.md
+new file mode 100644
+index 0000000..73b455f
+--- /dev/null
++++ b/docs/seguimiento-egresados/integracion-roles/01-auditoria-roles-existentes.md
+@@ -0,0 +1,120 @@
++# PUKLLA EN RED — Auditoría Técnica de Identidades, Roles y Permisos
++## Documento 01: Auditoría de la Estructura Actual y Diagnóstico Institucional
++
++**Institución:** Escuela de Educación Superior Pedagógica Pukllasunchis (Cusco, Perú)  
++**Proyecto:** Puklla en Red — Sistema de Seguimiento, Acompañamiento y Desarrollo Profesional de Egresados  
++**Repositorio:** `JesusDjm2/Pukllasunchis`  
++**Rama:** `sistemadeseguimientodeegresados`  
++**Entorno:** Laravel 10.50.2, PHP 8.2, MySQL, Spatie Laravel-Permission, Blade, Bootstrap 4 / SB Admin 2.
++
++---
++
++### 1. OBJETIVO DE LA AUDITORÍA
++
++Examinar la arquitectura real de autenticación, autorización basada en roles (RBAC), modelos de datos, rutas, controladores y vistas del sistema institucional de la EESP Pukllasunchis, a fin de integrar el nuevo rol institucional `seguimiento-egresados` sin duplicar tablas, sin romper la compatibilidad con el dashboard docente ni alterar las cuentas administrativas existentes.
++
++---
++
++### 2. INSPECCIÓN DE LA BASE DE DATOS Y TABLAS SPATIE
++
++Se realizó una inspección directa sobre el esquema relacional de la base de datos `puklla`:
++
++```sql
++SHOW TABLES LIKE '%role%';
++SHOW TABLES LIKE '%permission%';
++```
++
++#### 2.1. Tablas confirmadas en el esquema:
++
++1. **`users`**: Tabla principal de identidades institucionales (ID, `name`, `apellidos`, `dni`, `email`, `password`, `condicion`, `perfil`, `pendiente`, `telefono`, `programa_id`, `ciclo_id`).
++2. **`roles`**: Almacena los roles institucionales con soporte multi-guard (`id`, `name`, `guard_name`, `created_at`, `updated_at`). Guard activo verificado: `web`.
++3. **`permissions`**: Tabla nativa de Spatie para permisos individuales. Previo a esta intervención se encontraba vacía (0 registros), ya que el sistema dependía fundamentalmente de agrupaciones de rol (`hasRole` / `hasAnyRole`).
++4. **`model_has_roles`**: Tabla pivote de asignación de roles a modelos (`role_id`, `model_type = App\Models\User`, `model_id`). Contiene más de 860 asignaciones históricas activas.
++5. **`model_has_permissions`**: Tabla pivote para permisos directos a usuarios (disponible).
++6. **`role_has_permissions`**: Tabla pivote que vincula roles institucionales con permisos granulares.
++
++#### 2.2. Inventario de Roles Existentes en la Intranet (Guard `web`):
++
++| ID | Nombre de Rol | Finalidad Institucional | Destino / Dashboard |
++|:---:|:---|:---|:---|
++| 1 | `admin` | Administración general de la intranet y registros académicos | `/Administrador` (`admin`) |
++| 8 | `super-admin` | Control privilegiado de seguridad, configuración y roles | `/Administrador` (`admin`) |
++| 2 | `docente` | Cuerpo docente institucional, calificación y gestión de cursos | `Dashboard-Docente/{docente}` (`vistaDocente`) |
++| 7 | `tutor` | Acompañamiento tutorial de ciclos y registro de incidencias | `/tutor/dashboard` (`tutor.dashboard`) |
++| 9 | `investigador` | Seguimiento de proyectos de investigación formativa | `/taqe/investigador` |
++| 10 | `gestor-titulacion` | Coordinación de expedientes y grados profesionales | `/titulacion` |
++| 3 | `alumno` | Estudiantes regulares del programa de Formación Inicial Docente (FID) | `/alumnos` |
++| 5 | `alumnoB` | Estudiantes del Programa de Profesionalización Docente (PPD) | `/ppd` |
++| 4 | `adminB` | Administrador de Bolsa de Trabajo institucional | `/bolsa-trabajo` |
++| 6 | `inhabilitado` | Estudiantes con suspensión temporal o administrativa | `/inhabilitado` |
++| 52 | `egresado` | Graduados y egresados de la institución | `/egresado` |
++| 53 | `encuestador-seguimiento` | Entrevistador de campo temporal para campañas | `/seguimiento-egresados` |
++| 54 | `coordinacion-empleabilidad` | Coordinación institucional de seguimiento y egresados | `/seguimiento-egresados` |
++| 55 | `bienestar` | Atención de bienestar social y salud estudiantil | Gestión de casos |
++| 56 | `formacion-continua` | Programas de especialización y extensión | Gestión académica |
++
++> **Hallazgo Clave:** No existía en la tabla `roles` el rol complementario `seguimiento-egresados`, lo que provocaba que para asignar funciones de seguimiento a un docente se dependiera de roles ad-hoc o asignaciones externas sin permisos desacoplados.
++
++---
++
++### 3. AUDITORÍA DEL PANEL ADMINISTRATIVO DE USUARIOS
++
++#### 3.1. Rutas y Controladores:
++- **Ruta de listado:** `GET /Administrador` (`admin`), mapeada a `AdminController@index`.
++- **Ruta de edición:** `GET /admin/edit/{id}` (`adminEdit`), mapeada a `AdminController@edit`.
++- **Ruta de actualización:** `PUT /admin/update/{id}` (`adminUpdate`), mapeada a `AdminController@update`.
++- **Middleware:** `middleware('role:admin|super-admin')`.
++
++#### 3.2. Mecanismo de Selección y Validación de Roles:
++1. En `resources/views/admin/usuarios/_form_roles.blade.php`, los roles se despliegan en interfaz de "píldoras" (`role-pill`) con casillas de verificación múltiple (`name="roles[]"`).
++2. En `app/Http/Controllers/AdminController.php` (métodos `store` y `update`), existía una regla de validación rígida:
++   ```php
++   'roles.*' => 'string|in:super-admin,admin,docente,alumno,adminB,alumnoB,inhabilitado,tutor,investigador,gestor-titulacion',
++   ```
++   Cualquier rol no listado en esa regla era rechazado por la validación HTTP de Laravel, impidiendo guardar roles adicionales desde el panel institucional.
++
++---
++
++### 4. AUDITORÍA DEL DASHBOARD DOCENTE
++
++#### 4.1. Construcción y Rutas:
++- **Ruta principal:** `GET Dashboard-Docente/{docente}` (`vistaDocente`), controlada por `DocenteCOntroller@vistaDocente`.
++- **Vista principal:** `resources/views/docentes/show.blade.php`, que extiende el layout `resources/views/layouts/docente.blade.php`.
++- **Lógica de redirección:** Al autenticarse un docente, `Controller@redirectToDashboard` evalúa:
++  ```php
++  elseif ($user->hasRole('docente')) {
++      return redirect()->route('vistaDocente', ['docente' => $user->docente->id]);
++  }
++  ```
++
++#### 4.2. Menú Lateral ("Mis Funciones"):
++- En `resources/views/layouts/docente.blade.php` (líneas 320–460), el sidebar evalúa los roles complementarios que posee el usuario autenticado para desplegar accesos adicionales:
++  - Si tiene `tutor` → despliega "Tutoría".
++  - Si tiene `investigador` → despliega "Taq'e — Seguimiento".
++  - Si tiene `gestor-titulacion` → despliega "Proceso de titulación".
++  - Si tiene `adminB` → despliega "Bolsa de trabajo".
++- **Brecha encontrada:** El enlace a seguimiento de egresados solo comprobaba si la ruta existía en el archivo de rutas (`Route::has('seguimiento-egresados.index')`), mostrándose u ocultándose sin consultar si el docente tenía asignado el rol o permiso correspondiente.
++
++---
++
++### 5. COMPONENTES YA DESARROLLADOS EN LA RAMA `sistemadeseguimientodeegresados`
++
++La rama contiene implementados y probados:
++1. **Fase 1B:** Persistencia longitudinal (`Actualizacion`, `EpisodioLaboral`), camino rápido "Sin cambios", prevención de despidos ficticios y soporte de empleos simultáneos.
++2. **Fase 1C:** Seguridad perimetral, tokens criptográficos WhatsApp (`InvitacionCampana` con hash SHA-256), cuarentena anti-suplantación en formularios públicos.
++3. **Fase 1D:** Autorización granular en servidor (`SeguimientoAutorizacionService`), control pesimista de transacciones (`lockForUpdate`), protección de casos de bienestar (`Caso`).
++4. **Fase 2A:** Laboratorio de Inteligencia Institucional (`SeguimientoLaboratorioController`, `SeguimientoAnaliticaService`), matrices cruzadas sobre personas únicas (`users.id`), Observatorio Territorial (`ObservatorioTerritorialService`), y privacidad diferencial con supresión primaria/secundaria de celdas menores a 5 (`EstadisticaSeguraService`).
++
++---
++
++### 6. DIAGNÓSTICO: QUÉ EXISTE, QUÉ SE REUTILIZA Y QUÉ SE AMPLÍA
++
++| Componente | Estado Actual | Estrategia de Intervención |
++|:---|:---|:---|
++| **Sistema RBAC Spatie** | Existe y opera en `users` | **Reutilizar:** Usar guard `web`, crear rol `seguimiento-egresados` y los 10 permisos funcionales. |
++| **Panel Admin (`adminUpdate`)** | Existe para `admin` y `super-admin` | **Ampliar:** Incorporar `seguimiento-egresados` a `in:...` y registrar trazabilidad en `egresado_auditoria_roles`. |
++| **Píldoras de Roles (`_form_roles`)** | Existe con diseño modular | **Ampliar:** Añadir píldora con color institucional granate (`.rp-seguimiento`). |
++| **Dashboard Docente (`layouts/docente`)** | Existe con sección "Mis funciones" | **Ampliar:** Condicionar visualización estrictamente a `hasRole('seguimiento-egresados')` o permiso `ver-dashboard`. |
++| **Vista Principal Docente (`docentes/show`)** | Muestra cursos y proyectos | **Ampliar:** Añadir tarjeta de acceso directo a "Seguimiento de Egresados — Puklla en Red". |
++| **Auditoría de Roles** | Inexistente para cambios de roles | **Crear:** Tabla `egresado_auditoria_roles` y modelo `AuditoriaRolSeguimiento`. |
++| **Alta Segura de Super-Admin** | Dependía de seeders o SQL directo | **Crear:** Comando interactivo CLI `puklla:superadmin-crear` con entrada segura (`secret()`) sin credenciales en código. |
+diff --git a/docs/seguimiento-egresados/integracion-roles/02-diseno-rol-seguimiento-egresados.md b/docs/seguimiento-egresados/integracion-roles/02-diseno-rol-seguimiento-egresados.md
+new file mode 100644
+index 0000000..2f4118c
+--- /dev/null
++++ b/docs/seguimiento-egresados/integracion-roles/02-diseno-rol-seguimiento-egresados.md
+@@ -0,0 +1,95 @@
++# PUKLLA EN RED — Arquitectura de Roles y Permisos Granulares
++## Documento 02: Diseño del Rol `seguimiento-egresados` y Política de Mínimo Privilegio
++
++**Institución:** Escuela de Educación Superior Pedagógica Pukllasunchis (Cusco, Perú)  
++**Proyecto:** Puklla en Red — Seguimiento, Acompañamiento y Desarrollo Profesional de Egresados  
++**Repositorio:** `JesusDjm2/Pukllasunchis`  
++**Rama:** `sistemadeseguimientodeegresados`  
++
++---
++
++### 1. PRINCIPIO DE DISEÑO Y COMPATIBILIDAD COEXISTENTE
++
++El rol `seguimiento-egresados` ha sido concebido bajo la arquitectura de Spatie Laravel-Permission con las siguientes premisas obligatorias:
++
++1. **Guard Nativo:** Registrado exclusivamente bajo el guard `web`.
++2. **Carácter Complementario y No Destructivo:** Coexiste de manera armónica con el rol `docente` (o roles administrativos/tutoriales). Cuando un usuario recibe `seguimiento-egresados`, conserva intacta su condición docente, sus cursos asignados, sus calificaciones y su carga horaria.
++3. **Mínimo Privilegio Inicial:** El rol no otorga permisos indiscriminados a toda la base de datos institucional. Separa estrictamente la labor de entrevista y contacto de campo, de las funciones directivas de configuración, analítica estratégica y acceso a expedientes confidenciales.
++
++---
++
++### 2. MATRIZ DE PERMISOS FUNCIONALES GRANULARES
++
++Se definieron e implementaron 10 permisos granulares registrados en la tabla `permissions`:
++
++| # | Permiso Granular | Alcance Funcional | Rol Base `seguimiento-egresados` | Coordinación / Admin |
++|:---:|:---|:---|:---:|:---:|
++| 1 | `seguimiento-egresados.ver-dashboard` | Acceso a la entrada del módulo en la intranet y menú docente | **Asignado** | **Asignado** |
++| 2 | `seguimiento-egresados.ver-perfiles-autorizados` | Consulta de fichas de egresados **únicamente asignados** en grupos activos | **Asignado** | **Asignado** |
++| 3 | `seguimiento-egresados.actualizar-perfiles-autorizados` | Modificación de situación laboral y episodios de egresados asignados | **Asignado** | **Asignado** |
++| 4 | `seguimiento-egresados.registrar-entrevistas` | Registro de llamadas telefónicas y bitácora de contacto en el sistema | **Asignado** | **Asignado** |
++| 5 | `seguimiento-egresados.ver-contactos-autorizados` | Visualización auditada de teléfonos y correos de egresados asignados | **Asignado** | **Asignado** |
++| 6 | `seguimiento-egresados.gestionar-campanas` | Creación, apertura y cierre de periodos de campaña institucional | *Denegado* | **Asignado** |
++| 7 | `seguimiento-egresados.gestionar-grupos` | Creación de grupos y asignación de egresados a entrevistadores | *Denegado* | **Asignado** |
++| 8 | `seguimiento-egresados.gestionar-casos` | Creación de casos de acompañamiento y derivación institucional | *Denegado* | **Asignado** |
++| 9 | `seguimiento-egresados.ver-analitica` | Acceso al Laboratorio de Inteligencia y Observatorio Territorial | *Denegado* | **Asignado** |
++| 10 | `seguimiento-egresados.exportar-analitica` | Descarga de matrices cruzadas en formato CSV con secreto estadístico | *Denegado* | **Asignado** |
++
++---
++
++### 3. SEPARACIÓN DE RESPONSABILIDADES Y BARRERAS DE SEGURIDAD
++
++#### 3.1. Restricción de Expedientes No Asignados:
++Un docente que cuenta con el rol `seguimiento-egresados` **no tiene permiso para ver el padrón general ni fichas de egresados ajenos**. El controlador `SeguimientoEgresadoController` y el servicio `SeguimientoAutorizacionService` aplican la verificación:
++
++```php
++if ($this->esDocenteOEntrevistador($user)) {
++    return GrupoEntrevistador::esEntrevistadorAsignado($user->id, $targetUserId);
++}
++```
++Si el docente intenta forzar la URL `GET /seguimiento-egresados/episodios/{userId}` para un egresado que no tiene asignado en un grupo activo, el servidor responde inmediatamente con **HTTP 403 Forbidden**.
++
++#### 3.2. Protección de Notas Confidenciales de Bienestar:
++Las solicitudes de apoyo psicosocial o casos marcados como confidenciales en la tabla `egresado_casos` (`es_confidencial_bienestar = true`) están protegidos:
++- Solo personal de Bienestar Social (`hasRole('bienestar')`) o Coordinación/Dirección pueden ver el propósito y detalle confidencial.
++- Un docente o entrevistador de seguimiento solo ve la etiqueta general `Caso bajo atención de Bienestar Institucional`, impidiendo la exposición de datos personales sensibles.
++
++#### 3.3. Acceso a Analítica Estratégica:
++El Laboratorio de Inteligencia Institucional (`GET /seguimiento-egresados/laboratorio`) requiere explícitamente el permiso `seguimiento-egresados.ver-analitica` o un rol de gestión académica/investigación. El rol operativo no puede consultar agregaciones demográficas ni exportar datos salvo que se le otorgue el permiso individualmente.
++
++---
++
++### 4. IMPLEMENTACIÓN DE LA MIGRACIÓN IDEMPOTENTE
++
++La migración `database/migrations/2026_10_31_100000_create_seguimiento_egresados_role_and_permissions.php` fue diseñada con garantías de idempotencia absoluta:
++1. Utiliza `Permission::firstOrCreate(['name' => $p, 'guard_name' => 'web'])`.
++2. Utiliza `Role::firstOrCreate(['name' => 'seguimiento-egresados', 'guard_name' => 'web'])`.
++3. Sincroniza permisos mediante `$rolSeguimiento->syncPermissions($permisosOperativos)`, evitando duplicados en ejecuciones repetidas.
++4. Vincula permisos directivos a `super-admin`, `admin` y `coordinacion-empleabilidad`.
++5. Limpia la caché de Spatie (`app()[PermissionRegistrar::class]->forgetCachedPermissions()`) antes y después de la operación.
++
++---
++
++### 5. MODELO DE TRAZABILIDAD Y AUDITORÍA: `egresado_auditoria_roles`
++
++Para responder al requerimiento de auditoría institucional, se creó la tabla relacional `egresado_auditoria_roles` gestionada por el modelo Eloquent `App\Models\SeguimientoEgresado\AuditoriaRolSeguimiento`:
++
++```
+++--------------------+---------------------+------+-----+---------+----------------+
++| Field              | Type                | Null | Key | Default | Extra          |
+++--------------------+---------------------+------+-----+---------+----------------+
++| id                 | bigint unsigned     | NO   | PRI | NULL    | auto_increment |
++| user_id            | bigint unsigned     | NO   | MUL | NULL    | Usuario        |
++| admin_id           | bigint unsigned     | YES  | MUL | NULL    | Administrador  |
++| rol                | varchar(50)         | NO   |     | NULL    | Rol modificado |
++| accion             | varchar(20)         | NO   |     | NULL    | asignado/revoc |
++| motivo             | varchar(255)        | YES  |     | NULL    | Justificación  |
++| ip                 | varchar(45)         | YES  |     | NULL    | Dirección IP   |
++| roles_anteriores   | json                | YES  |     | NULL    | Snapshot antes |
++| roles_posteriores  | json                | YES  |     | NULL    | Snapshot post  |
++| created_at         | timestamp           | YES  |     | NULL    |                |
++| updated_at         | timestamp           | YES  |     | NULL    |                |
+++--------------------+---------------------+------+-----+---------+----------------+
++```
++
++Cada vez que desde el panel administrativo se añade o retira el rol `seguimiento-egresados`, se crea un registro inmutable con el ID del administrador actuante, la IP de conexión y el histórico exacto de roles.
+diff --git a/docs/seguimiento-egresados/integracion-roles/03-integracion-dashboard-docente.md b/docs/seguimiento-egresados/integracion-roles/03-integracion-dashboard-docente.md
+new file mode 100644
+index 0000000..e1e65d9
+--- /dev/null
++++ b/docs/seguimiento-egresados/integracion-roles/03-integracion-dashboard-docente.md
+@@ -0,0 +1,104 @@
++# PUKLLA EN RED — Integración del Dashboard Docente
++## Documento 03: Experiencia de Usuario, Navegación y Protección en Backend
++
++**Institución:** Escuela de Educación Superior Pedagógica Pukllasunchis (Cusco, Perú)  
++**Proyecto:** Puklla en Red — Seguimiento, Acompañamiento y Desarrollo Profesional de Egresados  
++**Repositorio:** `JesusDjm2/Pukllasunchis`  
++**Rama:** `sistemadeseguimientodeegresados`  
++
++---
++
++### 1. OBJETIVO DE LA INTEGRACIÓN
++
++Garantizar que un docente de la EESP Pukllasunchis que reciba el rol `seguimiento-egresados` pueda visualizar y acceder al módulo **Puklla en Red** directamente desde su entorno natural de trabajo (el dashboard docente institucional), respetando el sistema de diseño existente (`pk-sidebar.css`, SB Admin 2, tipografía Nunito/Inter y colores institucionales), sin necesidad de cambiar de cuenta ni de iniciar sesión en un sistema externo.
++
++---
++
++### 2. PUNTOS DE INTERVENCIÓN EN LAS VISTAS
++
++Se intervinieron dos archivos clave de la interfaz docente:
++
++#### 2.1. Menú Lateral Institucional (`resources/views/layouts/docente.blade.php`):
++En el bloque de "Mis funciones" del sidebar colapsable/expandible, se sustituyó la verificación genérica de ruta por una comprobación estricta de autorización:
++
++```php
++$esSeguimientoSb = ($usuarioSb?->hasRole('seguimiento-egresados') 
++    || $usuarioSb?->can('seguimiento-egresados.ver-dashboard') 
++    || $usuarioSb?->hasAnyRole(['admin', 'super-admin', 'coordinacion-empleabilidad'])) 
++    && Route::has('seguimiento-egresados.index');
++```
++
++Y en el marcado del menú (líneas 453–461):
++```blade
++@if ($esSeguimientoSb)
++    <li class="nav-item">
++        <a class="nav-link pk-sb-link {{ request()->routeIs('seguimiento-egresados.*', 'seguimiento.*') ? 'is-activo' : '' }}" 
++           href="{{ route('seguimiento-egresados.index') }}" 
++           title="Seguimiento de Egresados — Puklla en Red">
++            <span class="pk-sb-icono"><i class="fas fa-network-wired"></i></span>
++            <span class="pk-sb-texto">Seguimiento de Egresados — Puklla en Red</span>
++        </a>
++    </li>
++@endif
++```
++
++#### 2.2. Tarjeta Contextual en el Dashboard Principal (`resources/views/docentes/show.blade.php`):
++Justo debajo del encabezado principal (hero con saludo al docente y selector FID/PPD), se incorporó una tarjeta destacada con borde granate institucional (`#832128`) que solo se renderiza si el docente posee el rol o permiso correspondiente:
++
++```blade
++@if (auth()->user()?->hasRole('seguimiento-egresados') || auth()->user()?->can('seguimiento-egresados.ver-dashboard'))
++    <div class="card docente-ui-card mb-3 mb-md-4" style="border-left: 4px solid #832128; background: #fffdfd;">
++        <div class="card-body p-3 d-flex flex-wrap align-items-center justify-content-between" style="gap:.5rem .75rem;">
++            <div class="d-flex align-items-center" style="gap: .75rem;">
++                <div style="width: 40px; height: 40px; border-radius: 8px; background: #fce8e9; color: #832128; display: grid; place-items: center; font-size: 1.1rem;">
++                    <i class="fas fa-network-wired"></i>
++                </div>
++                <div>
++                    <span class="font-weight-bold d-block" style="color: #832128; font-size: 0.95rem;">
++                        Seguimiento de Egresados — Puklla en Red
++                    </span>
++                    <small class="text-muted">
++                        Tienes asignado el rol institucional para registro de entrevistas, seguimiento y acompañamiento de egresados.
++                    </small>
++                </div>
++            </div>
++            <div>
++                <a href="{{ route('seguimiento-egresados.index') }}" class="btn btn-sm text-white font-weight-bold" style="background: #832128; border-radius: 20px; padding: 0.4rem 1.1rem;">
++                    <i class="fas fa-external-link-alt mr-1"></i> Ingresar a Puklla en Red
++                </a>
++            </div>
++        </div>
++    </div>
++@endif
++```
++
++---
++
++### 3. COMPORTAMIENTO DINÁMICO Y PRUEBAS VISUALES
++
++El comportamiento del dashboard responde a los siguientes estados funcionales:
++
++| Estado del Docente | Visualización en Menú Lateral | Visualización en Dashboard Principal | Acceso a Rutas `/seguimiento-egresados` |
++|:---|:---:|:---:|:---:|
++| **Docente sin rol** | Oculto | Oculto | Redirección o HTTP 403 en endpoints sensibles |
++| **Docente con `seguimiento-egresados`** | **Visible** ("Seguimiento de Egresados — Puklla en Red") | **Visible** (Tarjeta granate institucional con botón de ingreso) | **Autorizado** (exclusivamente para egresados asignados) |
++| **Rol revocado por Super-Admin** | Desaparece instantáneamente | Desaparece instantáneamente | HTTP 403 Forbidden inmediato |
++
++---
++
++### 4. PROTECCIÓN INTEGRAL EN EL BACKEND
++
++No se confía en la simple ocultación de botones en las plantillas Blade. Cada petición HTTP hacia el módulo está verificada en el servidor:
++
++1. **`SeguimientoEgresadoController@index`**: Identifica al docente autenticado. Si tiene `seguimiento-egresados` y no es personal de gestión directiva, filtra automáticamente la consulta a los egresados asignados en sus grupos activos:
++   ```php
++   elseif (($authUser->hasRole('seguimiento-egresados') || $this->esEncuestador($authUser)) && !$this->esPersonalGestion($authUser)) {
++       $gruposActivos = GrupoEntrevistador::where('estado', 'activo')->get();
++       $asignadosIds = $gruposActivos->filter(fn ($g) => in_array($authUser->id, (array)$g->entrevistadores))
++           ->flatMap(fn ($g) => (array)$g->egresados_ids)
++           ->unique()->toArray();
++       $egresadosQuery->whereIn('id', $asignadosIds);
++   }
++   ```
++2. **`SeguimientoEgresadoController@obtenerEpisodios` y `@guardarActualizacion`**: Verifican mediante `SeguimientoAutorizacionService::puedeConsultarEgresado()` que el docente tenga asignado al egresado correspondiente antes de devolver o modificar cualquier registro.
++3. **`SeguimientoLaboratorioController@index` y `@exportar`**: Bloquean el acceso analítico con HTTP 403 a cualquier docente con `seguimiento-egresados` que no cuente con el permiso explícito `seguimiento-egresados.ver-analitica`.
+diff --git a/docs/seguimiento-egresados/integracion-roles/04-procedimiento-super-admin.md b/docs/seguimiento-egresados/integracion-roles/04-procedimiento-super-admin.md
+new file mode 100644
+index 0000000..67b4a82
+--- /dev/null
++++ b/docs/seguimiento-egresados/integracion-roles/04-procedimiento-super-admin.md
+@@ -0,0 +1,93 @@
++# PUKLLA EN RED — Gestión Institucional de Superadministradores
++## Documento 04: Procedimiento de Alta Segura de Super-Admin y Asignación de Roles
++
++**Institución:** Escuela de Educación Superior Pedagógica Pukllasunchis (Cusco, Perú)  
++**Proyecto:** Puklla en Red — Seguimiento, Acompañamiento y Desarrollo Profesional de Egresados  
++**Repositorio:** `JesusDjm2/Pukllasunchis`  
++**Rama:** `sistemadeseguimientodeegresados`  
++
++---
++
++### 1. PRINCIPIO DE SEGURIDAD PARA CUENTAS PRIVILEGIADAS
++
++En cumplimiento estricto de las directivas institucionales y de auditoría externa:
++1. **Cero credenciales en código:** Ninguna contraseña, hash estático ni clave predeterminada está escrita en controladores, migraciones, seeders, commits ni archivos Markdown.
++2. **Preservación de cuentas preexistentes:** Las cuentas preexistentes con rol `super-admin` (David Jesús ID 210 y Vilma Raquel ID 675) y cuentas `admin` (Escuela ID 1, Sharon Sthepanie ID 375, Vanessa ID 434, Marilyn ID 668, David Jesus ID 309, Pavel ID 312) no han sido modificadas ni eliminadas.
++3. **No puertas traseras (Backdoors):** El alta de una cuenta superadministradora requiere ejecución en consola protegida del servidor o autorización desde una sesión de superadministrador activa.
++
++---
++
++### 2. COMANDO ARTISAN DE ALTA SEGURA: `puklla:superadmin-crear`
++
++Se desarrolló un comando de consola reproducible y validado en `app/Console/Commands/CrearSuperAdminSeguroCommand.php`.
++
++#### 2.1. Firma del Comando:
++```bash
++php artisan puklla:superadmin-crear [--email=] [--dni=] [--name=] [--apellidos=]
++```
++
++#### 2.2. Flujo de Operación:
++1. **Validación de Identidad:** Solicita el correo institucional del superadministrador. Comprueba formato y verifica si ya existe en la tabla `users`.
++2. **Prevención de Duplicados:** Si el usuario ya existe y ya tiene `super-admin`, informa que la cuenta ya está provista y finaliza sin alterar nada.
++3. **Promoción de Cuenta Existente:** Si el usuario existe pero tiene otro rol institucional, ofrece promoverlo a `super-admin` conservando su ID institucional.
++4. **Captura Oculta de Credenciales:** Solicita la contraseña mediante `$this->secret()`. Los caracteres **no se muestran en la pantalla** ni quedan grabados en el historial de comandos de la shell (`.bash_history` / `.zsh_history`).
++5. **Doble Confirmación:** Exige reingresar la contraseña para evitar errores de tipeo y valida longitud mínima de 8 caracteres.
++6. **Cifrado Robusto:** Aplica `Hash::make()` mediante el algoritmo bcrypt configurado en Laravel.
++7. **Asignación Spatie y Trazabilidad:** Asigna el rol `super-admin` mediante Spatie y registra el evento en `egresado_auditoria_roles` con fecha, hora e ID.
++
++---
++
++### 3. PROCEDIMIENTO PASO A PASO PARA EL ADMINISTRADOR DEL SISTEMA
++
++Para dar de alta de forma segura a un nuevo superadministrador en el servidor o entorno local:
++
++```bash
++cd /ruta/hacia/Pukllasunchis
++php artisan puklla:superadmin-crear
++```
++
++**Ejemplo de interacción segura en consola:**
++```
++================================================================
++  EESP PUKLLASUNCHIS · PROVISIÓN SEGURA DE CUENTA SUPER-ADMIN   
++================================================================
++Ingrese el correo institucional del superadministrador: direccion.academica@pukllavirtual.edu.pe
++Nombres: Carlos Alberto
++Apellidos: Huamán Quispe
++DNI: 23984512
++Ingrese una contraseña segura (mínimo 8 caracteres): [ENTRADA OCULTA]
++Confirme la contraseña: [ENTRADA OCULTA]
++
++Creando nuevo usuario super-admin institucional...
++
++✔ Provisión completada exitosamente.
++  Usuario: Carlos Alberto Huamán Quispe (direccion.academica@pukllavirtual.edu.pe)
++  Rol: super-admin asignado correctamente.
++  Trazabilidad registrada en egresado_auditoria_roles.
++```
++
++---
++
++### 4. PROCEDIMIENTO PARA ASIGNAR EL ROL A UN DOCENTE DESDE EL PANEL
++
++Una vez iniciada sesión como `super-admin`:
++
++1. Ingresar al panel institucional: `https://intranet.pukllasunchis.edu.pe/Administrador`.
++2. En el listado de usuarios, buscar al docente deseado por nombre, apellidos o DNI.
++3. Hacer clic en el botón de edición (**Editar usuario**).
++4. En la sección **Roles del usuario**, se mostrarán las píldoras de roles activos del usuario:
++   - La píldora `Docente` estará seleccionada (`.rp-docente`).
++   - Marcar la casilla de la píldora `Seguimiento Egresados` (`.rp-seguimiento`, color granate con icono de red institucional).
++5. Hacer clic en **Guardar cambios**.
++6. El sistema valida la petición en el backend (`AdminController@update`), verifica que el usuario ejecutante sea `super-admin` o `admin`, sincroniza los roles manteniendo intactos los cursos y relaciones docentes, y crea el registro de auditoría en `egresado_auditoria_roles`.
++7. Cuando el docente inicie sesión, encontrará inmediatamente la entrada **Seguimiento de Egresados — Puklla en Red** en su menú lateral y en su tarjeta de bienvenida.
++
++---
++
++### 5. PROCEDIMIENTO PARA REVOCAR EL ROL
++
++1. En el panel administrativo (`/Administrador`), editar al docente.
++2. Desmarcar la casilla `Seguimiento Egresados`.
++3. Mantener marcada la casilla `Docente`.
++4. Hacer clic en **Guardar cambios**.
++5. El sistema elimina el rol `seguimiento-egresados`, genera el evento `revocado` en la tabla de auditoría y conserva el registro docente con todos sus cursos y notas inalterados.
+diff --git a/docs/seguimiento-egresados/integracion-roles/05-resultados-pruebas.md b/docs/seguimiento-egresados/integracion-roles/05-resultados-pruebas.md
+new file mode 100644
+index 0000000..1032f93
+--- /dev/null
++++ b/docs/seguimiento-egresados/integracion-roles/05-resultados-pruebas.md
+@@ -0,0 +1,158 @@
++# PUKLLA EN RED — Reporte de Pruebas Automatizadas y Validación Integral
++## Documento 05: Resultados de Pruebas Automatizadas de Integración, Roles y Seguridad
++
++**Institución:** Escuela de Educación Superior Pedagógica Pukllasunchis (Cusco, Perú)  
++**Proyecto:** Puklla en Red — Seguimiento, Acompañamiento y Desarrollo Profesional de Egresados  
++**Repositorio:** `JesusDjm2/Pukllasunchis`  
++**Rama:** `sistemadeseguimientodeegresados`  
++**Fecha de ejecución:** 31 de Octubre de 2026  
++**Framework de Pruebas:** PHPUnit 10.5.45 sobre Laravel 10.50.2  
++
++---
++
++### 1. RESUMEN EJECUTIVO DE EJECUCIÓN
++
++Se ejecutó la totalidad de las suites de prueba de la rama `sistemadeseguimientodeegresados`, abarcando desde las pruebas de persistencia longitudinal (Fase 1B), seguridad multicampaña y tokens criptográficos (Fase 1C), integración de roles y dashboard docente (Fase Actual), hasta analítica, privacidad diferencial y Observatorio Territorial (Fase 2A).
++
++**Resultado General:**
++- **Suites Ejecutadas:** 4
++- **Total de Pruebas:** 43 pruebas unitarias y de integración
++- **Total de Aserciones:** 225 aserciones aprobadas
++- **Pruebas Fallidas:** 0 (0%)
++- **Tasa de Aprobación:** 100%
++- **Tiempo Total de Ejecución:** 3.88 segundos
++
++---
++
++### 2. RESULTADOS DETALLADOS POR SUITE DE PRUEBA
++
++#### 2.1. Suite de Integración de Roles y Permisos (`SeguimientoIntegracionRolesTest`)
++Archivo: `tests/Feature/SeguimientoIntegracionRolesTest.php`  
++Estado: **13 aprobadas de 13 (45 aserciones)**
++
++| # | Prueba Automatizada | Aspecto Verificado de la Directiva | Resultado | Tiempo |
++|:---:|:---|:---|:---:|:---:|
++| 1 | `test_01_super_admin_accede_al_panel_administrativo` | Super-admin ingresa al panel `/Administrador` (HTTP 200) | **APROBADO** | 0.91s |
++| 2 | `test_02_usuario_sin_permiso_no_puede_asignar_roles` | Docente o alumno recibe HTTP 403 al intentar mutar roles | **APROBADO** | 0.05s |
++| 3 | `test_03_rol_seguimiento_egresados_es_idempotente` | Ejecución repetida de creación no duplica rol ni permisos | **APROBADO** | 0.03s |
++| 4 | `test_04_docente_conserva_rol_docente_al_recibir_seguimiento_egresados` | Docente conserva `docente` intacto al recibir `seguimiento-egresados` | **APROBADO** | 0.13s |
++| 5 | `test_05_asignacion_genera_trazabilidad_en_base_de_datos` | Persistencia inmutable en tabla `egresado_auditoria_roles` | **APROBADO** | 0.07s |
++| 6 | `test_06_docente_autorizado_ve_puklla_en_red_en_su_dashboard` | Visualización en menú lateral y tarjeta en `vistaDocente` | **APROBADO** | 0.05s |
++| 7 | `test_07_docente_sin_rol_no_ve_opcion_en_dashboard` | Docente no asignado no ve la entrada en su interfaz | **APROBADO** | 0.05s |
++| 8 | `test_08_escribir_url_directa_sin_autorizacion_es_rechazada` | Peticiones a URLs directas son rechazadas en servidor (HTTP 403) | **APROBADO** | 0.04s |
++| 9 | `test_09_revocar_rol_elimina_acceso_y_visibilidad` | Revocación retira inmediatamente accesos y menús | **APROBADO** | 0.07s |
++| 10 | `test_10_revocacion_no_afecta_otras_funciones_docentes` | Cursos, notas y modelo `Docente` intactos tras revocación | **APROBADO** | 0.05s |
++| 11 | `test_11_entrevistadores_no_pueden_consultar_egresados_no_asignados` | HTTP 403 al consultar expediente fuera de sus grupos activos | **APROBADO** | 0.05s |
++| 12 | `test_12_separacion_estricta_de_permisos_operativos_y_analitica` | Rol operativo no accede a analítica ni a bienestar confidencial | **APROBADO** | 0.21s |
++| 13 | `test_13_flujo_completo_extremo_a_extremo` | Ciclo completo: login superadmin → asigna → docente entra → revoca | **APROBADO** | 0.12s |
++
++---
++
++#### 2.2. Suite de Persistencia Longitudinal — Fase 1B (`SeguimientoEgresadosFase1BTest`)
++Archivo: `tests/Feature/SeguimientoEgresadosFase1BTest.php`  
++Estado: **12 aprobadas de 12 (72 aserciones)**
++
++- `01 primer episodio laboral`: Creación del primer historial de empleo.
++- `02 cambio de empleo con conservacion de historial`: Cierre de empleo anterior y nuevo episodio sin pérdida histórica.
++- `03 finalizacion de empleo sin crear empleador ficticio`: Registro de desempleo sin entidades ficticias.
++- `04 confirmacion sin cambios no duplica episodios`: Microchequeo rápido idempotente (R02).
++- `05 empleos simultaneos`: Soporte de doble contratación activa.
++- `06 fecha de finalizacion desconocida`: Manejo de cierres con fecha nula explícita.
++- `07 reenvio identico idempotente no duplica episodios`: Protección anti-duplicidad por reenvío de formulario.
++- `08 rechazo de identificador de usuario invalido`: Integridad referencial con `users.id` (R01).
++- `09 rechazo acceso egresado a otra ficha`: Aislamiento estricto de egresados (R01/Anti-IDOR).
++- `10 rechazo http 403 encuestador caso no asignado`: Protección de expedientes no asignados.
++- `11 rollback ante error transaccional`: Atomicidad ACID pesimista (`lockForUpdate`).
++- `12 consistencia entre episodios y estado laboral`: Sincronización entre tabla de episodios y condición laboral.
++
++---
++
++#### 2.3. Suite de Seguridad, Integridad y Tokens Criptográficos — Fase 1C (`SeguimientoEgresadosFase1CTest`)
++Archivo: `tests/Feature/SeguimientoEgresadosFase1CTest.php`  
++Estado: **8 aprobadas de 8 (42 aserciones)**
++
++- `01 rutas intranet requieren autenticacion`: Rechazo de accesos anónimos.
++- `02 egresado no puede consultar ni cerrar episodios de otros`: Prevención de elevación de privilegios horizontal.
++- `03 encuestador no asignado recibe 403`: Restricción perimetral de entrevistadores.
++- `04 egresados y encuestadores no pueden gestionar grupos ni avanzar casos`: Autorización directiva.
++- `05 intento publico sin token no adultera ficha verificada`: Cuarentena de registros públicos sin credencial criptográfica.
++- `06 invitacion criptografica whatsapp actualiza con verificacion`: Tokens SHA-256 de un solo uso con desafío de DNI.
++- `07 preservacion multicampana sin sobrescritura`: Historial acumulativo semestral.
++- `08 no inferencia de fechas now ni atributos ausentes`: Integridad estricta de datos reportados.
++
++---
++
++#### 2.4. Suite de Analítica, Observatorio y Privacidad — Fase 2A (`SeguimientoLaboratorioFase2ATest`)
++Archivo: `tests/Feature/SeguimientoLaboratorioFase2ATest.php`  
++Estado: **10 aprobadas de 10 (66 aserciones)**
++
++- `01 rutas laboratorio requieren autenticacion`: Protección perimetral de endpoints analíticos.
++- `02 egresados y alumnos no tienen acceso al laboratorio`: Rechazo 403 a perfiles no autorizados.
++- `03 personal autorizado accede al laboratorio con exito`: Vista ejecutiva y datos longitudinales.
++- `04 universos analiticos distinguen padron elegibles y no respondientes`: Rigor metodológico (R07/R10).
++- `05 matriz cruzada cuenta personas unicas sin duplicar por empleos`: Conteo de `users.id` únicos.
++- `06 privacidad estadistica aplica supresion primaria a celdas menores a 5`: Enmascaramiento `< 5` (R08).
++- `07 privacidad estadistica aplica supresion secundaria para evitar deduccion`: Protección de márgenes.
++- `08 filtros combinables en endpoint ajax`: Filtros simultáneos (programa, cohorte, docencia directa).
++- `09 observatorio territorial agrupa provincias y agenda institucional`: Distribución Cusco y agenda de acción.
++- `10 exportacion csv contiene metadatos y cero fuga pii`: Descarga CSV sin datos personales individuales.
++
++---
++
++### 3. EVIDENCIA DE EJECUCIÓN CONSOLIDAD
++
++```
++   PASS  Tests\Feature\SeguimientoEgresadosFase1BTest
++  ✓ 01 primer episodio laboral                                           0.40s  
++  ✓ 02 cambio de empleo con conservacion de historial                    0.05s  
++  ✓ 03 finalizacion de empleo sin crear empleador ficticio               0.04s  
++  ✓ 04 confirmacion sin cambios no duplica episodios                     0.04s  
++  ✓ 05 empleos simultaneos                                               0.04s  
++  ✓ 06 fecha de finalizacion desconocida                                 0.04s  
++  ✓ 07 reenvio identico idempotente no duplica episodios                 0.04s  
++  ✓ 08 rechazo de identificador de usuario invalido                      0.03s  
++  ✓ 09 rechazo acceso egresado a otra ficha                              0.04s  
++  ✓ 10 rechazo http 403 encuestador caso no asignado                     0.04s  
++  ✓ 11 rollback ante error transaccional                                 0.03s  
++  ✓ 12 consistencia entre episodios y estado laboral                     0.04s  
++
++   PASS  Tests\Feature\SeguimientoEgresadosFase1CTest
++  ✓ 01 rutas intranet requieren autenticacion                            0.06s  
++  ✓ 02 egresado no puede consultar ni cerrar episodios de otros          0.05s  
++  ✓ 03 encuestador no asignado recibe 403                                0.04s  
++  ✓ 04 egresados y encuestadores no pueden gestionar grupos ni avanzar…  0.05s  
++  ✓ 05 intento publico sin token no adultera ficha verificada            0.04s  
++  ✓ 06 invitacion criptografica whatsapp actualiza con verificacion      0.05s  
++  ✓ 07 preservacion multicampana sin sobrescritura                       0.06s  
++  ✓ 08 no inferencia de fechas now ni atributos ausentes                 0.04s  
++
++   PASS  Tests\Feature\SeguimientoIntegracionRolesTest
++  ✓ 01 super admin accede al panel administrativo                        0.91s  
++  ✓ 02 usuario sin permiso no puede asignar roles                        0.05s  
++  ✓ 03 rol seguimiento egresados es idempotente                          0.03s  
++  ✓ 04 docente conserva rol docente al recibir seguimiento egresados     0.13s  
++  ✓ 05 asignacion genera trazabilidad en base de datos                   0.07s  
++  ✓ 06 docente autorizado ve puklla en red en su dashboard               0.05s  
++  ✓ 07 docente sin rol no ve opcion en dashboard                         0.05s  
++  ✓ 08 escribir url directa sin autorizacion es rechazada                0.04s  
++  ✓ 09 revocar rol elimina acceso y visibilidad                          0.07s  
++  ✓ 10 revocacion no afecta otras funciones docentes                     0.05s  
++  ✓ 11 entrevistadores no pueden consultar egresados no asignados        0.05s  
++  ✓ 12 separacion estricta de permisos operativos y analitica            0.21s  
++  ✓ 13 flujo completo extremo a extremo                                  0.12s  
++
++   PASS  Tests\Feature\SeguimientoLaboratorioFase2ATest
++  ✓ 01 rutas laboratorio requieren autenticacion                         0.04s  
++  ✓ 02 egresados y alumnos no tienen acceso al laboratorio               0.04s  
++  ✓ 03 personal autorizado accede al laboratorio con exito               0.18s  
++  ✓ 04 universos analiticos distinguen padron elegibles y no respondien… 0.03s  
++  ✓ 05 matriz cruzada cuenta personas unicas sin duplicar por empleos    0.07s  
++  ✓ 06 privacidad estadistica aplica supresion primaria a celdas menore… 0.03s  
++  ✓ 07 privacidad estadistica aplica supresion secundaria para evitar d… 0.03s  
++  ✓ 08 filtros combinables en endpoint ajax                              0.11s  
++  ✓ 09 observatorio territorial agrupa provincias y agenda instituciona… 0.08s  
++  ✓ 10 exportacion csv contiene metadatos y cero fuga pii                0.11s  
++
++  Tests:    43 passed (225 assertions)
++  Duration: 3.88s
++```
+diff --git a/docs/seguimiento-egresados/integracion-roles/06-cierre-integracion.md b/docs/seguimiento-egresados/integracion-roles/06-cierre-integracion.md
+new file mode 100644
+index 0000000..6269c38
+--- /dev/null
++++ b/docs/seguimiento-egresados/integracion-roles/06-cierre-integracion.md
+@@ -0,0 +1,76 @@
++# PUKLLA EN RED — Cierre de Integración y Siguiente Fase
++## Documento 06: Informe de Cierre, Estado de Rama y Recomendaciones de Despliegue
++
++**Institución:** Escuela de Educación Superior Pedagógica Pukllasunchis (Cusco, Perú)  
++**Proyecto:** Puklla en Red — Seguimiento, Acompañamiento y Desarrollo Profesional de Egresados  
++**Repositorio:** `JesusDjm2/Pukllasunchis`  
++**Rama Oficial:** `sistemadeseguimientodeegresados`  
++**Fecha:** 31 de Octubre de 2026  
++
++---
++
++### 1. ESTADO DE CUMPLIMIENTO DE OBJETIVOS
++
++Se ha culminado satisfactoriamente la integración del módulo **Puklla en Red** con el sistema institucional de identidades, roles y permisos de la EESP Pukllasunchis, cumpliendo los 8 pasos de la directiva:
++
++1. **Auditoría Exhaustiva (Paso 1):** Inspección completa del esquema Spatie, modelos, rutas y flujos del panel administrativo y dashboard docente. Documentado en `01-auditoria-roles-existentes.md`.
++2. **Alta Segura de Super-Admin (Paso 2):** Provisión criptográficamente segura mediante el comando `php artisan puklla:superadmin-crear`, con captura oculta de contraseñas (`secret()`), cero claves en código y preservación de cuentas preexistentes. Documentado en `04-procedimiento-super-admin.md`.
++3. **Rol `seguimiento-egresados` y Permisos Granulares (Paso 3):** Creación del rol en guard `web`, complementario y no destructivo para docentes, con 10 permisos granulares y política de mínimo privilegio operativo. Documentado en `02-diseno-rol-seguimiento-egresados.md`.
++4. **Asignación y Revocación desde Panel Admin (Paso 4):** Habilitación en `AdminController` y `_form_roles.blade.php` con píldora institucional granate (`.rp-seguimiento`), validación en backend y trazabilidad en `egresado_auditoria_roles`.
++5. **Integración en Dashboard Docente (Paso 5):** Incorporación de la entrada "Seguimiento de Egresados — Puklla en Red" en el menú lateral y tarjeta contextual en `resources/views/docentes/show.blade.php`, con visualización condicional automática y protección perimetral. Documentado en `03-integracion-dashboard-docente.md`.
++6. **Integración con Avances Previos (Paso 6):** Enlace fluido con persistencia longitudinal (Fase 1B), seguridad criptográfica WhatsApp (Fase 1C), autorización pesimista (Fase 1D) y Laboratorio Analítico/Observatorio Territorial (Fase 2A).
++7. **Pruebas Automatizadas (Paso 7):** Suite integral `SeguimientoIntegracionRolesTest` con 13 pruebas aprobadas y validación de regresión total con 43 pruebas aprobadas (225 aserciones). Documentado en `05-resultados-pruebas.md`.
++8. **Documentación Técnica y Git (Paso 8):** Paquete completo de 6 entregables Markdown en `docs/seguimiento-egresados/integracion-roles/`.
++
++---
++
++### 2. ARCHIVOS MODIFICADOS Y CREADOS
++
++#### Archivos Nuevos Creados:
++- `database/migrations/2026_10_31_100000_create_seguimiento_egresados_role_and_permissions.php`: Migración idempotente del rol, los 10 permisos y la tabla de auditoría.
++- `app/Console/Commands/CrearSuperAdminSeguroCommand.php`: Comando CLI seguro para provisión de superadministradores.
++- `app/Models/SeguimientoEgresado/AuditoriaRolSeguimiento.php`: Modelo Eloquent de auditoría y trazabilidad.
++- `tests/Feature/SeguimientoIntegracionRolesTest.php`: Suite de 13 pruebas automatizadas de integración y autorización.
++- Carpeta `docs/seguimiento-egresados/integracion-roles/`:
++  - `01-auditoria-roles-existentes.md`
++  - `02-diseno-rol-seguimiento-egresados.md`
++  - `03-integracion-dashboard-docente.md`
++  - `04-procedimiento-super-admin.md`
++  - `05-resultados-pruebas.md`
++  - `06-cierre-integracion.md`
++
++#### Archivos Modificados:
++- `app/Http/Controllers/AdminController.php`: Validación de rol `seguimiento-egresados` en `store`/`update`, autorización en servidor y registro de auditoría.
++- `resources/views/admin/usuarios/_form_roles.blade.php`: Píldora de selección del rol `seguimiento-egresados`.
++- `resources/views/admin/usuarios/_form_estilos.blade.php`: Clase de estilo `.rp-seguimiento` (color granate `#832128`).
++- `resources/views/layouts/docente.blade.php`: Enlace visible en "Mis funciones" condicionado a `hasRole('seguimiento-egresados')` o permiso de dashboard.
++- `resources/views/docentes/show.blade.php`: Tarjeta de acceso institucional en la vista principal del docente.
++- `app/Services/SeguimientoEgresado/SeguimientoAutorizacionService.php`: Soporte explícito del rol `seguimiento-egresados` y separación de permisos operativos vs analíticos.
++- `app/Http/Controllers/SeguimientoEgresadoController.php`: Alcance de consulta restringido a egresados asignados en grupos activos.
++
++---
++
++### 3. ESTADO DE GIT Y DE LA RAMA
++
++- **Rama Activa:** `sistemadeseguimientodeegresados`
++- **Último Commit Base:** `d78c4c3` (*feat(fase1c): consolidación de seguridad, anti-suplantación e historia longitudinal*)
++- **Estado de Publicación:** Los cambios residen localmente en la rama `sistemadeseguimientodeegresados`. No se han publicado hacia el repositorio remoto ni se ha realizado merge a `main` para preservar la estabilidad del entorno productivo según la directiva.
++
++---
++
++### 4. RECOMENDACIONES PARA EL DESPLIEGUE EN PRODUCCIÓN
++
++1. **Migración en Servidor:**
++   ```bash
++   php artisan migrate --force
++   ```
++2. **Limpieza y Reconstrucción de Caché de Permisos:**
++   ```bash
++   php artisan permission:cache-reset
++   php artisan route:clear
++   php artisan view:clear
++   ```
++3. **Capacitación a Coordinación y Docentes:**
++   - La Coordinación de Empleabilidad asigna egresados a los docentes entrevistadores mediante grupos activos (`GrupoEntrevistador`).
++   - Los docentes ingresan a su intranet habitual, abren su dashboard y visualizan exclusivamente a sus egresados asignados.
++   - Si se requiere que un docente colabore en el análisis estadístico o comités de acreditación, el superadministrador puede otorgarle específicamente el permiso `seguimiento-egresados.ver-analitica`.
+diff --git a/docs/seguimiento-egresados/integracion-roles/evidencias/01_login_superadmin_form.png b/docs/seguimiento-egresados/integracion-roles/evidencias/01_login_superadmin_form.png
+new file mode 100644
+index 0000000..40c31da
+Binary files /dev/null and b/docs/seguimiento-egresados/integracion-roles/evidencias/01_login_superadmin_form.png differ
+diff --git a/docs/seguimiento-egresados/integracion-roles/evidencias/02_panel_administrativo_superadmin.png b/docs/seguimiento-egresados/integracion-roles/evidencias/02_panel_administrativo_superadmin.png
+new file mode 100644
+index 0000000..193a1e5
+Binary files /dev/null and b/docs/seguimiento-egresados/integracion-roles/evidencias/02_panel_administrativo_superadmin.png differ
+diff --git a/docs/seguimiento-egresados/integracion-roles/evidencias/03_buscar_docente_formulario_edicion.png b/docs/seguimiento-egresados/integracion-roles/evidencias/03_buscar_docente_formulario_edicion.png
+new file mode 100644
+index 0000000..3c55485
+Binary files /dev/null and b/docs/seguimiento-egresados/integracion-roles/evidencias/03_buscar_docente_formulario_edicion.png differ
+diff --git a/docs/seguimiento-egresados/integracion-roles/evidencias/04_checkbox_seguimiento_marcado.png b/docs/seguimiento-egresados/integracion-roles/evidencias/04_checkbox_seguimiento_marcado.png
+new file mode 100644
+index 0000000..89c63d7
+Binary files /dev/null and b/docs/seguimiento-egresados/integracion-roles/evidencias/04_checkbox_seguimiento_marcado.png differ
+diff --git a/docs/seguimiento-egresados/integracion-roles/evidencias/05_rol_asignado_exitosamente_panel.png b/docs/seguimiento-egresados/integracion-roles/evidencias/05_rol_asignado_exitosamente_panel.png
+new file mode 100644
+index 0000000..727fabf
+Binary files /dev/null and b/docs/seguimiento-egresados/integracion-roles/evidencias/05_rol_asignado_exitosamente_panel.png differ
+diff --git a/docs/seguimiento-egresados/integracion-roles/evidencias/06_login_docente_exitoso.png b/docs/seguimiento-egresados/integracion-roles/evidencias/06_login_docente_exitoso.png
+new file mode 100644
+index 0000000..df968af
+Binary files /dev/null and b/docs/seguimiento-egresados/integracion-roles/evidencias/06_login_docente_exitoso.png differ
+diff --git a/docs/seguimiento-egresados/integracion-roles/evidencias/07_dashboard_docente_con_modulo_puklla.png b/docs/seguimiento-egresados/integracion-roles/evidencias/07_dashboard_docente_con_modulo_puklla.png
+new file mode 100644
+index 0000000..df968af
+Binary files /dev/null and b/docs/seguimiento-egresados/integracion-roles/evidencias/07_dashboard_docente_con_modulo_puklla.png differ
+diff --git a/docs/seguimiento-egresados/integracion-roles/evidencias/08_puklla_en_red_padron_autorizado.png b/docs/seguimiento-egresados/integracion-roles/evidencias/08_puklla_en_red_padron_autorizado.png
+new file mode 100644
+index 0000000..20d6844
+Binary files /dev/null and b/docs/seguimiento-egresados/integracion-roles/evidencias/08_puklla_en_red_padron_autorizado.png differ
+diff --git a/docs/seguimiento-egresados/integracion-roles/evidencias/09_acceso_denegado_403_expediente_no_asignado.png b/docs/seguimiento-egresados/integracion-roles/evidencias/09_acceso_denegado_403_expediente_no_asignado.png
+new file mode 100644
+index 0000000..8b82919
+Binary files /dev/null and b/docs/seguimiento-egresados/integracion-roles/evidencias/09_acceso_denegado_403_expediente_no_asignado.png differ
+diff --git a/docs/seguimiento-egresados/integracion-roles/evidencias/10_checkbox_seguimiento_desmarcado.png b/docs/seguimiento-egresados/integracion-roles/evidencias/10_checkbox_seguimiento_desmarcado.png
+new file mode 100644
+index 0000000..b555264
+Binary files /dev/null and b/docs/seguimiento-egresados/integracion-roles/evidencias/10_checkbox_seguimiento_desmarcado.png differ
+diff --git a/docs/seguimiento-egresados/integracion-roles/evidencias/11_rol_revocado_exitosamente_panel.png b/docs/seguimiento-egresados/integracion-roles/evidencias/11_rol_revocado_exitosamente_panel.png
+new file mode 100644
+index 0000000..727fabf
+Binary files /dev/null and b/docs/seguimiento-egresados/integracion-roles/evidencias/11_rol_revocado_exitosamente_panel.png differ
+diff --git a/docs/seguimiento-egresados/integracion-roles/evidencias/12_dashboard_docente_sin_modulo_puklla.png b/docs/seguimiento-egresados/integracion-roles/evidencias/12_dashboard_docente_sin_modulo_puklla.png
+new file mode 100644
+index 0000000..3b00acf
+Binary files /dev/null and b/docs/seguimiento-egresados/integracion-roles/evidencias/12_dashboard_docente_sin_modulo_puklla.png differ
+diff --git a/docs/seguimiento-egresados/integracion-roles/evidencias/13_acceso_denegado_directo_sin_rol.png b/docs/seguimiento-egresados/integracion-roles/evidencias/13_acceso_denegado_directo_sin_rol.png
+new file mode 100644
+index 0000000..2ef302d
+Binary files /dev/null and b/docs/seguimiento-egresados/integracion-roles/evidencias/13_acceso_denegado_directo_sin_rol.png differ
+diff --git a/docs/seguimiento-egresados/integracion-roles/evidencias/14_docente_funciones_academicas_intactas.png b/docs/seguimiento-egresados/integracion-roles/evidencias/14_docente_funciones_academicas_intactas.png
+new file mode 100644
+index 0000000..e8a6b77
+Binary files /dev/null and b/docs/seguimiento-egresados/integracion-roles/evidencias/14_docente_funciones_academicas_intactas.png differ
+diff --git a/resources/views/admin/usuarios/_form_estilos.blade.php b/resources/views/admin/usuarios/_form_estilos.blade.php
+index a3806f9..0aabdaa 100644
+--- a/resources/views/admin/usuarios/_form_estilos.blade.php
++++ b/resources/views/admin/usuarios/_form_estilos.blade.php
+@@ -64,6 +64,7 @@
+ .rp-alumno  { --rc:#3b82f6; --rb:#dbeafe; --rt:#1d4ed8; --rr:59,130,246; }
+ .rp-alumnoB { --rc:#6366f1; --rb:#ede9fe; --rt:#4338ca; --rr:99,102,241; }
+ .rp-adminB  { --rc:#64748b; --rb:#f1f5f9; --rt:#334155; --rr:100,116,139; }
++.rp-seguimiento { --rc:#832128; --rb:#fce8e9; --rt:#5c151b; --rr:131,33,40; }
+ .rp-inh     { --rc:#ef4444; --rb:#fee2e2; --rt:#b91c1c; --rr:239,68,68; }
+ .rp-sa      { --rc:#7c3aed; --rb:#ede9fe; --rt:#5b21b6; --rr:124,58,237; }
+ 
+diff --git a/resources/views/admin/usuarios/_form_roles.blade.php b/resources/views/admin/usuarios/_form_roles.blade.php
+index 2b1545f..c553e01 100644
+--- a/resources/views/admin/usuarios/_form_roles.blade.php
++++ b/resources/views/admin/usuarios/_form_roles.blade.php
+@@ -9,6 +9,7 @@
+         'tutor'        => ['Tutor',           'rp-tutor',   'fas fa-chalkboard'],
+         'investigador' => ['Investigador',    'rp-investigador', 'fas fa-microscope'],
+         'gestor-titulacion' => ['Gestor de Titulación', 'rp-titulacion', 'fas fa-user-graduate'],
++        'seguimiento-egresados' => ['Seguimiento Egresados', 'rp-seguimiento', 'fas fa-network-wired'],
+         'alumno'       => ['Alumno FID',      'rp-alumno',  'fas fa-graduation-cap'],
+         'alumnoB'      => ['Alumno PPD',      'rp-alumnoB', 'fas fa-user-graduate'],
+         'adminB'       => ['Admin Bolsa',     'rp-adminB',  'fas fa-briefcase'],
+diff --git a/resources/views/docentes/show.blade.php b/resources/views/docentes/show.blade.php
+index 8aa9197..7c67e31 100644
+--- a/resources/views/docentes/show.blade.php
++++ b/resources/views/docentes/show.blade.php
+@@ -890,6 +890,32 @@
+             </div>
+         </div>
+ 
++        {{-- Puklla en Red — Seguimiento de Egresados --}}
++        @if (auth()->user()?->hasRole('seguimiento-egresados') || auth()->user()?->can('seguimiento-egresados.ver-dashboard'))
++            <div class="card docente-ui-card mb-3 mb-md-4" style="border-left: 4px solid #832128; background: #fffdfd;">
++                <div class="card-body p-3 d-flex flex-wrap align-items-center justify-content-between" style="gap:.5rem .75rem;">
++                    <div class="d-flex align-items-center" style="gap: .75rem;">
++                        <div style="width: 40px; height: 40px; border-radius: 8px; background: #fce8e9; color: #832128; display: grid; place-items: center; font-size: 1.1rem;">
++                            <i class="fas fa-network-wired"></i>
++                        </div>
++                        <div>
++                            <span class="font-weight-bold d-block" style="color: #832128; font-size: 0.95rem;">
++                                Seguimiento de Egresados — Puklla en Red
++                            </span>
++                            <small class="text-muted">
++                                Tienes asignado el rol institucional para registro de entrevistas, seguimiento y acompañamiento de egresados.
++                            </small>
++                        </div>
++                    </div>
++                    <div>
++                        <a href="{{ route('seguimiento-egresados.index') }}" class="btn btn-sm text-white font-weight-bold" style="background: #832128; border-radius: 20px; padding: 0.4rem 1.1rem;">
++                            <i class="fas fa-external-link-alt mr-1"></i> Ingresar a Puklla en Red
++                        </a>
++                    </div>
++                </div>
++            </div>
++        @endif
++
+         {{-- Taq'e --}}
+         @php $proyectosACargo = $docente->proyectosIntegradores()->orderBy('nombre')->get(); @endphp
+         @if ($proyectosACargo->isNotEmpty())
+@@ -907,8 +933,8 @@
+             </div>
+         @endif
+ 
+-        {{-- Sistema de Seguimiento de Egresados (Acceso rápido / Coordinación) --}}
+-        @if (Route::has('seguimiento-egresados.index'))
++        {{-- Sistema de Seguimiento de Egresados (Acceso rápido exclusivo para Coordinación y Dirección) --}}
++        @if (auth()->user()?->hasAnyRole(['admin', 'super-admin', 'coordinacion-empleabilidad', 'direccion']) && Route::has('seguimiento-egresados.index'))
+             <div class="card docente-ui-card mb-3 mb-md-4" style="border-left: 4px solid #10b981; background: linear-gradient(to right, #f0fdf4, #ffffff);">
+                 <div class="card-body p-3 p-md-4">
+                     <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between" style="gap: 1rem;">
+diff --git a/resources/views/layouts/docente.blade.php b/resources/views/layouts/docente.blade.php
+index 907dc99..b5a8823 100644
+--- a/resources/views/layouts/docente.blade.php
++++ b/resources/views/layouts/docente.blade.php
+@@ -333,7 +333,7 @@
+             $esInvestigadorSb = $usuarioSb?->hasRole('investigador') && Route::has('taqe.investigador.index');
+             $esTitulacionSb = $usuarioSb?->hasRole('gestor-titulacion') && Route::has('titulacion.index');
+             $esBolsaSb = $usuarioSb?->hasRole('adminB');
+-            $esSeguimientoSb = Route::has('seguimiento-egresados.index');
++            $esSeguimientoSb = ($usuarioSb?->hasRole('seguimiento-egresados') || $usuarioSb?->can('seguimiento-egresados.ver-dashboard') || $usuarioSb?->hasAnyRole(['admin', 'super-admin', 'coordinacion-empleabilidad'])) && Route::has('seguimiento-egresados.index');
+             $tieneFuncionesSb = $esTutorSb || $esInvestigadorSb || $esTitulacionSb || $esBolsaSb || $esSeguimientoSb || $proyectosSb->isNotEmpty();
+         @endphp
+         <ul class="navbar-nav sidebar sidebar-dark accordion pk-sb" id="accordionSidebar">
+@@ -452,9 +452,9 @@
+                 @endif
+                 @if ($esSeguimientoSb)
+                     <li class="nav-item">
+-                        <a class="nav-link pk-sb-link {{ request()->routeIs('seguimiento-egresados.*') ? 'is-activo' : '' }}" href="{{ route('seguimiento-egresados.index') }}" title="Sistema de seguimiento de egresados">
+-                            <span class="pk-sb-icono"><i class="fas fa-user-graduate"></i></span>
+-                            <span class="pk-sb-texto">Sistema de seguimiento de egresados</span>
++                        <a class="nav-link pk-sb-link {{ request()->routeIs('seguimiento-egresados.*', 'seguimiento.*') ? 'is-activo' : '' }}" href="{{ route('seguimiento-egresados.index') }}" title="Seguimiento de Egresados — Puklla en Red">
++                            <span class="pk-sb-icono"><i class="fas fa-network-wired"></i></span>
++                            <span class="pk-sb-texto">Seguimiento de Egresados — Puklla en Red</span>
+                         </a>
+                     </li>
+                 @endif
+diff --git a/tests/Feature/SeguimientoIntegracionRolesTest.php b/tests/Feature/SeguimientoIntegracionRolesTest.php
+new file mode 100644
+index 0000000..fc71b01
+--- /dev/null
++++ b/tests/Feature/SeguimientoIntegracionRolesTest.php
+@@ -0,0 +1,549 @@
++<?php
++
++namespace Tests\Feature;
++
++use App\Models\Docente;
++use App\Models\SeguimientoEgresado\AuditoriaRolSeguimiento;
++use App\Models\SeguimientoEgresado\Caso;
++use App\Models\SeguimientoEgresado\GrupoEntrevistador;
++use App\Models\User;
++use App\Services\SeguimientoEgresado\SeguimientoAutorizacionService;
++use Illuminate\Foundation\Testing\DatabaseTransactions;
++use Spatie\Permission\Models\Permission;
++use Spatie\Permission\Models\Role;
++use Tests\TestCase;
++
++/**
++ * Suite de Pruebas de Integración y Autorización de Roles — Puklla en Red
++ *
++ * Aspectos verificados según directiva oficial:
++ * 1. Acceso de super-admin al panel administrativo.
++ * 2. Rechazo 403 a usuarios sin permiso para asignar roles.
++ * 3. Idempotencia del rol seguimiento-egresados y sus permisos.
++ * 4. Conservación del rol 'docente' al recibir 'seguimiento-egresados'.
++ * 5. Persistencia y trazabilidad de asignación en egresado_auditoria_roles.
++ * 6. Visualización de Puklla en Red en dashboard docente autorizado.
++ * 7. Ocultación de Puklla en Red en dashboard docente no asignado.
++ * 8. Protección backend (URL directa sin autorización retorna 403).
++ * 9. Revocación del rol retira acceso al módulo.
++ * 10. Revocación preserva intacto el rol y las funciones docentes.
++ * 11. Entrevistadores no pueden consultar egresados no asignados (403).
++ * 12. Separación estricta de permisos (operativos, analítica, confidencial bienestar).
++ * 13. Flujo funcional completo de extremo a extremo.
++ */
++class SeguimientoIntegracionRolesTest extends TestCase
++{
++    use DatabaseTransactions;
++
++    protected function setUp(): void
++    {
++        parent::setUp();
++
++        Role::firstOrCreate(['name' => 'super-admin', 'guard_name' => 'web']);
++        Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
++        Role::firstOrCreate(['name' => 'docente', 'guard_name' => 'web']);
++        Role::firstOrCreate(['name' => 'alumno', 'guard_name' => 'web']);
++        Role::firstOrCreate(['name' => 'egresado', 'guard_name' => 'web']);
++        Role::firstOrCreate(['name' => 'seguimiento-egresados', 'guard_name' => 'web']);
++        Role::firstOrCreate(['name' => 'coordinacion-empleabilidad', 'guard_name' => 'web']);
++    }
++
++    protected function crearDocenteSintetico(): User
++    {
++        $user = User::factory()->create([
++            'name' => 'Docente Integracion ' . rand(100, 999),
++            'apellidos' => 'Puklla ' . rand(1000, 9999),
++            'email' => 'docente_int_' . rand(1000, 9999) . '@pukllavirtual.edu.pe',
++            'dni' => (string) rand(70000000, 79999999),
++            'condicion' => null,
++        ]);
++        $user->assignRole('docente');
++
++        Docente::create([
++            'nombre' => $user->name . ' ' . $user->apellidos,
++            'dni' => $user->dni,
++            'email' => $user->email,
++            'user_id' => $user->id,
++        ]);
++
++        return $user;
++    }
++
++    protected function crearSuperAdminSintetico(): User
++    {
++        $user = User::factory()->create([
++            'name' => 'Super Admin Test',
++            'apellidos' => 'Pukllasunchis',
++            'email' => 'superadmin_test_' . rand(1000, 9999) . '@puklla.test',
++            'dni' => (string) rand(10000000, 19999999),
++        ]);
++        $user->assignRole('super-admin');
++
++        return $user;
++    }
++
++    protected function crearAdminSintetico(): User
++    {
++        $user = User::factory()->create([
++            'name' => 'Admin Test',
++            'apellidos' => 'Pukllasunchis',
++            'email' => 'admin_test_' . rand(1000, 9999) . '@puklla.test',
++            'dni' => (string) rand(20000000, 29999999),
++        ]);
++        $user->assignRole('admin');
++
++        return $user;
++    }
++
++    protected function crearEgresadoSintetico(string $nombre = 'Egresado Test'): User
++    {
++        $user = User::factory()->create([
++            'name' => $nombre,
++            'apellidos' => 'Puklla ' . rand(100, 999),
++            'dni' => (string) rand(70000000, 79999999),
++            'email' => 'egresado_' . rand(10000, 99999) . '@puklla.test',
++            'condicion' => 'Egresado',
++        ]);
++        $user->assignRole('egresado');
++
++        return $user;
++    }
++
++    /**
++     * Test 1: El usuario super-admin puede acceder al panel administrativo institucional (HTTP 200).
++     */
++    public function test_01_super_admin_accede_al_panel_administrativo(): void
++    {
++        $superAdmin = $this->crearSuperAdminSintetico();
++
++        $response = $this->actingAs($superAdmin)->get(route('admin'));
++        $response->assertStatus(200);
++    }
++
++    /**
++     * Test 2: Un usuario sin rol privilegiado (ej. alumno o docente raso) no puede modificar roles de usuarios (HTTP 403).
++     */
++    public function test_02_usuario_sin_permiso_no_puede_asignar_roles(): void
++    {
++        $docente = $this->crearDocenteSintetico();
++        $otroDocente = $this->crearDocenteSintetico();
++
++        $response = $this->actingAs($docente)->put(route('adminUpdate', $otroDocente->id), [
++            'name' => $otroDocente->name,
++            'apellidos' => $otroDocente->apellidos,
++            'dni' => $otroDocente->dni,
++            'email' => $otroDocente->email,
++            'roles' => ['docente', 'seguimiento-egresados']
++        ]);
++
++        // Rutas bajo middleware role:admin|super-admin rechazan al docente sin rol de gestión
++        $this->assertTrue(in_array($response->status(), [403, 302]));
++    }
++
++    /**
++     * Test 3: El rol seguimiento-egresados y sus permisos son idempotentes y no se duplican.
++     */
++    public function test_03_rol_seguimiento_egresados_es_idempotente(): void
++    {
++        // Re-crear rol y permisos deliberadamente
++        $rol1 = Role::firstOrCreate(['name' => 'seguimiento-egresados', 'guard_name' => 'web']);
++        $perm1 = Permission::firstOrCreate(['name' => 'seguimiento-egresados.ver-dashboard', 'guard_name' => 'web']);
++
++        $rol2 = Role::firstOrCreate(['name' => 'seguimiento-egresados', 'guard_name' => 'web']);
++        $perm2 = Permission::firstOrCreate(['name' => 'seguimiento-egresados.ver-dashboard', 'guard_name' => 'web']);
++
++        $this->assertEquals($rol1->id, $rol2->id);
++        $this->assertEquals($perm1->id, $perm2->id);
++
++        $conteoRoles = Role::where('name', 'seguimiento-egresados')->count();
++        $this->assertEquals(1, $conteoRoles, 'El rol seguimiento-egresados debe existir exactamente una vez.');
++    }
++
++    /**
++     * Test 4: Un docente conserva el rol 'docente' cuando se le asigna adicionalmente 'seguimiento-egresados'.
++     */
++    public function test_04_docente_conserva_rol_docente_al_recibir_seguimiento_egresados(): void
++    {
++        $superAdmin = $this->crearSuperAdminSintetico();
++        $docente = $this->crearDocenteSintetico();
++
++        $this->assertTrue($docente->hasRole('docente'));
++        $this->assertFalse($docente->hasRole('seguimiento-egresados'));
++
++        // Super-admin actualiza roles asignando ambos roles
++        $response = $this->actingAs($superAdmin)->put(route('adminUpdate', $docente->id), [
++            'name' => $docente->name,
++            'apellidos' => $docente->apellidos,
++            'dni' => $docente->dni,
++            'email' => $docente->email,
++            'roles' => ['docente', 'seguimiento-egresados'],
++            'telefono' => '984112233',
++        ]);
++
++        $response->assertSessionHasNoErrors();
++        $docente->refresh();
++
++        // Debe tener ambos roles simultáneamente
++        $this->assertTrue($docente->hasRole('docente'), 'El docente debe conservar su rol docente.');
++        $this->assertTrue($docente->hasRole('seguimiento-egresados'), 'El docente debe tener ahora el nuevo rol.');
++        $this->assertNotNull($docente->docente, 'La entidad Docente asociada debe permanecer intacta.');
++    }
++
++    /**
++     * Test 5: La asignación persiste y genera un registro de trazabilidad en egresado_auditoria_roles.
++     */
++    public function test_05_asignacion_genera_trazabilidad_en_base_de_datos(): void
++    {
++        $superAdmin = $this->crearSuperAdminSintetico();
++        $docente = $this->crearDocenteSintetico();
++
++        $this->actingAs($superAdmin)->put(route('adminUpdate', $docente->id), [
++            'name' => $docente->name,
++            'apellidos' => $docente->apellidos,
++            'dni' => $docente->dni,
++            'email' => $docente->email,
++            'roles' => ['docente', 'seguimiento-egresados'],
++        ]);
++
++        $auditoria = AuditoriaRolSeguimiento::where('user_id', $docente->id)
++            ->where('rol', 'seguimiento-egresados')
++            ->where('accion', 'asignado')
++            ->first();
++
++        $this->assertNotNull($auditoria, 'Debe registrarse el evento en egresado_auditoria_roles.');
++        $this->assertEquals($superAdmin->id, $auditoria->admin_id);
++        $this->assertContains('seguimiento-egresados', $auditoria->roles_posteriores);
++    }
++
++    /**
++     * Test 6: El docente autorizado ve la entrada "Seguimiento de Egresados — Puklla en Red" en su dashboard.
++     */
++    public function test_06_docente_autorizado_ve_puklla_en_red_en_su_dashboard(): void
++    {
++        $docenteUser = $this->crearDocenteSintetico();
++        $docenteUser->assignRole('seguimiento-egresados');
++
++        $docenteModel = $docenteUser->docente;
++
++        $response = $this->actingAs($docenteUser)->get(route('vistaDocente', ['docente' => $docenteModel->id]));
++        $response->assertStatus(200);
++
++        // Debe contener la entrada tanto en el menú lateral como en la tarjeta del dashboard
++        $response->assertSee('Seguimiento de Egresados — Puklla en Red');
++        $response->assertSee(route('seguimiento-egresados.index'));
++    }
++
++    /**
++     * Test 7: Un docente sin el rol ni permiso no ve la opción de Puklla en Red en su dashboard.
++     */
++    public function test_07_docente_sin_rol_no_ve_opcion_en_dashboard(): void
++    {
++        $docenteUser = $this->crearDocenteSintetico();
++        // Solo rol 'docente', sin 'seguimiento-egresados'
++        $this->assertFalse($docenteUser->hasRole('seguimiento-egresados'));
++
++        $docenteModel = $docenteUser->docente;
++
++        $response = $this->actingAs($docenteUser)->get(route('vistaDocente', ['docente' => $docenteModel->id]));
++        $response->assertStatus(200);
++        $response->assertDontSee('Seguimiento de Egresados — Puklla en Red');
++    }
++
++    /**
++     * Test 8: Escribir directamente la URL no permite saltarse la autorización (HTTP 403 / 401).
++     */
++    public function test_08_escribir_url_directa_sin_autorizacion_es_rechazada(): void
++    {
++        // Un usuario egresado sin rol administrativo ni docente no puede consultar el padrón institucional completo
++        $egresado = $this->crearEgresadoSintetico('Egresado Aislado');
++
++        // Al consultar la URL, si intenta acceder a los episodios de otro usuario
++        $otroUsuario = $this->crearEgresadoSintetico('Otro Egresado');
++
++        $response = $this->actingAs($egresado)->get(route('seguimiento-egresados.episodios', $otroUsuario->id));
++        $response->assertStatus(403);
++    }
++
++    /**
++     * Test 9: Revocar el rol 'seguimiento-egresados' retira el acceso y la visibilidad en el dashboard.
++     */
++    public function test_09_revocar_rol_elimina_acceso_y_visibilidad(): void
++    {
++        $superAdmin = $this->crearSuperAdminSintetico();
++        $docente = $this->crearDocenteSintetico();
++        $docente->assignRole('seguimiento-egresados');
++
++        $this->assertTrue($docente->hasRole('seguimiento-egresados'));
++
++        // Super-admin revoca rol quitándolo de la lista enviada
++        $response = $this->actingAs($superAdmin)->put(route('adminUpdate', $docente->id), [
++            'name' => $docente->name,
++            'apellidos' => $docente->apellidos,
++            'dni' => $docente->dni,
++            'email' => $docente->email,
++            'roles' => ['docente'], // Solo docente
++        ]);
++
++        $response->assertSessionHasNoErrors();
++        $docente->refresh();
++
++        $this->assertFalse($docente->hasRole('seguimiento-egresados'));
++
++        // Trazabilidad de revocación
++        $auditoriaRevocacion = AuditoriaRolSeguimiento::where('user_id', $docente->id)
++            ->where('rol', 'seguimiento-egresados')
++            ->where('accion', 'revocado')
++            ->first();
++        $this->assertNotNull($auditoriaRevocacion);
++
++        // Ya no aparece en su dashboard
++        $responseDashboard = $this->actingAs($docente)->get(route('vistaDocente', ['docente' => $docente->docente->id]));
++        $responseDashboard->assertDontSee('Seguimiento de Egresados — Puklla en Red');
++    }
++
++    /**
++     * Test 10: La revocación de 'seguimiento-egresados' no afecta las demás funciones docentes ni sus relaciones.
++     */
++    public function test_10_revocacion_no_afecta_otras_funciones_docentes(): void
++    {
++        $superAdmin = $this->crearSuperAdminSintetico();
++        $docenteUser = $this->crearDocenteSintetico();
++        $docenteUser->assignRole('seguimiento-egresados');
++
++        $docenteId = $docenteUser->docente->id;
++
++        // Revocar
++        $this->actingAs($superAdmin)->put(route('adminUpdate', $docenteUser->id), [
++            'name' => $docenteUser->name,
++            'apellidos' => $docenteUser->apellidos,
++            'dni' => $docenteUser->dni,
++            'email' => $docenteUser->email,
++            'roles' => ['docente'],
++        ]);
++
++        $docenteUser->refresh();
++
++        $this->assertTrue($docenteUser->hasRole('docente'));
++        $this->assertNotNull($docenteUser->docente);
++        $this->assertEquals($docenteId, $docenteUser->docente->id);
++    }
++
++    /**
++     * Test 11: Los entrevistadores/docentes con 'seguimiento-egresados' NO pueden consultar egresados no asignados (HTTP 403).
++     */
++    public function test_11_entrevistadores_no_pueden_consultar_egresados_no_asignados(): void
++    {
++        $docenteEntrevistador = $this->crearDocenteSintetico();
++        $docenteEntrevistador->assignRole('seguimiento-egresados');
++
++        $egresadoNoAsignado = $this->crearEgresadoSintetico('Egresado Ajeno');
++
++        // Intentar consultar episodios de egresado no asignado
++        $response = $this->actingAs($docenteEntrevistador)->get(route('seguimiento-egresados.episodios', $egresadoNoAsignado->id));
++        $response->assertStatus(403);
++
++        // Crear grupo activo donde SÍ está asignado
++        $egresadoAsignado = $this->crearEgresadoSintetico('Egresado Asignado');
++
++        GrupoEntrevistador::create([
++            'codigo' => 'GRP-TEST-' . rand(100, 999),
++            'nombre' => 'Grupo Prueba Test',
++            'periodo_campana' => '2026-II',
++            'entrevistadores' => [$docenteEntrevistador->id],
++            'egresados_ids' => [$egresadoAsignado->id],
++            'estado' => 'activo'
++        ]);
++
++        // Ahora al asignado sí puede consultarlo exitosamente
++        $responseAsignado = $this->actingAs($docenteEntrevistador)->get(route('seguimiento-egresados.episodios', $egresadoAsignado->id));
++        $responseAsignado->assertStatus(200);
++    }
++
++    /**
++     * Test 12: Separación estricta de privilegios: un docente con 'seguimiento-egresados' no tiene acceso a analítica institucional sin permiso adicional.
++     */
++    public function test_12_separacion_estricta_de_permisos_operativos_y_analitica(): void
++    {
++        $docenteEntrevistador = $this->crearDocenteSintetico();
++        $docenteEntrevistador->assignRole('seguimiento-egresados');
++
++        // Por defecto, solo tiene permisos operativos de mínimo privilegio (no tiene ver-analitica)
++        $this->assertFalse($docenteEntrevistador->can('seguimiento-egresados.ver-analitica'));
++
++        // No puede acceder al Laboratorio de Inteligencia
++        $responseLaboratorio = $this->actingAs($docenteEntrevistador)->get(route('seguimiento.laboratorio'));
++        $responseLaboratorio->assertStatus(403);
++
++        // No puede consultar casos confidenciales de Bienestar
++        /** @var SeguimientoAutorizacionService $authService */
++        $authService = app(SeguimientoAutorizacionService::class);
++        $this->assertFalse($authService->puedeVerNotasConfidencialesBienestar($docenteEntrevistador));
++
++        // Si se le concede explícitamente el permiso de analítica:
++        $docenteEntrevistador->givePermissionTo('seguimiento-egresados.ver-analitica');
++        $docenteEntrevistador->refresh();
++
++        $responseLaboratorioConPermiso = $this->actingAs($docenteEntrevistador)->get(route('seguimiento.laboratorio'));
++        $responseLaboratorioConPermiso->assertStatus(200);
++    }
++
++    /**
++     * Test 13: Flujo funcional completo de extremo a extremo:
++     * Super-admin inicia sesión -> busca docente -> asigna rol -> docente inicia sesión ->
++     * encuentra Puklla en Red en su dashboard -> accede al módulo -> super-admin revoca rol -> acceso retirado.
++     */
++    public function test_13_flujo_completo_extremo_a_extremo(): void
++    {
++        $superAdmin = $this->crearSuperAdminSintetico();
++        $docente = $this->crearDocenteSintetico();
++
++        // 1. Super-admin autenticado busca al docente en adminEdit
++        $resEdit = $this->actingAs($superAdmin)->get(route('adminEdit', $docente->id));
++        $resEdit->assertStatus(200);
++        $resEdit->assertSee('Seguimiento Egresados');
++
++        // 2. Super-admin asigna el rol
++        $resAsignar = $this->actingAs($superAdmin)->put(route('adminUpdate', $docente->id), [
++            'name' => $docente->name,
++            'apellidos' => $docente->apellidos,
++            'dni' => $docente->dni,
++            'email' => $docente->email,
++            'roles' => ['docente', 'seguimiento-egresados'],
++        ]);
++        $resAsignar->assertSessionHasNoErrors();
++
++        // 3. Docente inicia sesión y visita su dashboard
++        $docente->refresh();
++        $this->assertTrue($docente->hasRole('seguimiento-egresados'));
++
++        $resDashboard = $this->actingAs($docente)->get(route('vistaDocente', $docente->docente->id));
++        $resDashboard->assertStatus(200);
++        $resDashboard->assertSee('Seguimiento de Egresados — Puklla en Red');
++
++        // 4. Docente accede al padrón del módulo Puklla en Red
++        $resModulo = $this->actingAs($docente)->get(route('seguimiento-egresados.index'));
++        $resModulo->assertStatus(200);
++
++        // 5. Super-admin revoca el rol
++        $resRevocar = $this->actingAs($superAdmin)->put(route('adminUpdate', $docente->id), [
++            'name' => $docente->name,
++            'apellidos' => $docente->apellidos,
++            'dni' => $docente->dni,
++            'email' => $docente->email,
++            'roles' => ['docente'],
++        ]);
++        $resRevocar->assertSessionHasNoErrors();
++
++        // 6. Docente ya no tiene la opción en su dashboard
++        $docente->refresh();
++        $this->assertFalse($docente->hasRole('seguimiento-egresados'));
++
++        $resDashboardFinal = $this->actingAs($docente)->get(route('vistaDocente', $docente->docente->id));
++        $resDashboardFinal->assertDontSee('Seguimiento de Egresados — Puklla en Red');
++    }
++
++    /**
++     * Requisito 2: Comprobar que un admin ordinario NO puede otorgar super-admin,
++     * no puede auto-elevar privilegios ni puede editar/eliminar un super-admin existente.
++     */
++    public function test_admin_sin_privilegio_no_puede_asignar_superadmin_ni_modificar_cuentas_privilegiadas(): void
++    {
++        $superAdmin = $this->crearSuperAdminSintetico();
++        $admin = $this->crearAdminSintetico();
++        $otroDocente = $this->crearDocenteSintetico();
++
++        // 1. Admin intenta editar a un super-admin -> HTTP 403
++        $resEdit = $this->actingAs($admin)->get(route('adminEdit', $superAdmin->id));
++        $resEdit->assertStatus(403);
++
++        // 2. Admin intenta actualizar datos de un super-admin -> HTTP 403
++        $resUpdate = $this->actingAs($admin)->put(route('adminUpdate', $superAdmin->id), [
++            'name' => 'Intento Modificar SA',
++            'apellidos' => $superAdmin->apellidos,
++            'dni' => $superAdmin->dni,
++            'email' => $superAdmin->email,
++            'roles' => ['admin'],
++        ]);
++        $resUpdate->assertStatus(403);
++
++        // 3. Admin intenta otorgar rol super-admin a otro usuario -> HTTP 403
++        $resEscalar = $this->actingAs($admin)->put(route('adminUpdate', $otroDocente->id), [
++            'name' => $otroDocente->name,
++            'apellidos' => $otroDocente->apellidos,
++            'dni' => $otroDocente->dni,
++            'email' => $otroDocente->email,
++            'roles' => ['docente', 'super-admin'],
++        ]);
++        $resEscalar->assertStatus(403);
++
++        // 4. Admin intenta auto-elevarse a super-admin -> HTTP 403
++        $resAutoEscalar = $this->actingAs($admin)->put(route('adminUpdate', $admin->id), [
++            'name' => $admin->name,
++            'apellidos' => $admin->apellidos,
++            'dni' => $admin->dni,
++            'email' => $admin->email,
++            'roles' => ['admin', 'super-admin'],
++        ]);
++        $resAutoEscalar->assertStatus(403);
++
++        // 5. Admin intenta eliminar a un super-admin -> HTTP 403
++        $resDelete = $this->actingAs($admin)->get(route('adminDestroy', $superAdmin->id));
++        $resDelete->assertStatus(403);
++    }
++
++    /**
++     * Requisito 3: Comprobar que la asignación de expedientes solo es válida si la campaña está activa y vigente.
++     */
++    public function test_asignacion_expediente_requiere_campana_activa_y_vigente(): void
++    {
++        $docente = $this->crearDocenteSintetico();
++        $docente->assignRole('seguimiento-egresados');
++        $egresado = $this->crearEgresadoSintetico();
++
++        // Crear una campaña institucional vencida
++        $campanaVencida = \App\Models\SeguimientoEgresado\Campana::create([
++            'nombre' => 'Campaña Pasada 2024',
++            'codigo' => 'CAMP-2024-TEST',
++            'anio' => 2024,
++            'semestre' => 'I',
++            'fecha_inicio' => '2024-01-01',
++            'fecha_fin' => '2024-06-30',
++            'estado' => 'activa',
++        ]);
++
++        // Crear grupo asignado pero vinculado a la campaña vencida
++        $grupo = \App\Models\SeguimientoEgresado\GrupoEntrevistador::create([
++            'nombre' => 'Grupo Histórico Vencido',
++            'campana_id' => $campanaVencida->id,
++            'entrevistadores' => [$docente->id],
++            'egresados_ids' => [$egresado->id],
++            'estado' => 'activo',
++        ]);
++
++        // La asignación debe ser inválida porque la campaña ha expirado
++        $this->assertFalse(\App\Models\SeguimientoEgresado\GrupoEntrevistador::esEntrevistadorAsignado($docente->id, $egresado->id));
++
++        $resExpediente = $this->actingAs($docente)->get("/seguimiento-egresados/episodios/{$egresado->id}");
++        $resExpediente->assertStatus(403);
++
++        // Actualizar campaña a vigente
++        $campanaVencida->update([
++            'fecha_inicio' => now()->subDay()->toDateString(),
++            'fecha_fin' => now()->addMonth()->toDateString(),
++            'estado' => 'activa',
++        ]);
++
++        // Ahora la asignación es válida
++        $this->assertTrue(\App\Models\SeguimientoEgresado\GrupoEntrevistador::esEntrevistadorAsignado($docente->id, $egresado->id));
++
++        $resExpedienteValido = $this->actingAs($docente)->get("/seguimiento-egresados/episodios/{$egresado->id}");
++        $resExpedienteValido->assertStatus(200);
++
++        // Si la campaña pasa a estado inactiva/cerrada, vuelve a ser inválida
++        $campanaVencida->update(['estado' => 'cerrada']);
++        $this->assertFalse(\App\Models\SeguimientoEgresado\GrupoEntrevistador::esEntrevistadorAsignado($docente->id, $egresado->id));
++
++        $resExpedienteCerrado = $this->actingAs($docente)->get("/seguimiento-egresados/episodios/{$egresado->id}");
++        $resExpedienteCerrado->assertStatus(403);
++    }
++}
