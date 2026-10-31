@@ -16,7 +16,7 @@
     // Patrones de ruta de cada submenú: si la página actual coincide, el submenú se abre.
     $grupos = [
         'mgAcademico' => ['programa.*', 'ciclo.*', 'curso.*', 'periodoactual.*', 'periodos.*', 'competencias.*', 'capacidades.*', 'estandares.*', 'enfoques.*', 'proyectos.*'],
-        'mgSeguimiento' => ['expediente.panel*', 'admin.seguimiento*', 'alumnos.demograficos', 'titulacion.*'],
+        'mgSeguimiento' => ['admin.asistencias.*', 'expediente.panel*', 'admin.seguimiento*', 'alumnos.demograficos', 'titulacion.*'],
         'mgAdmision' => ['admin-fids.*', 'regulares.*', 'postulantes.ppd.*'],
         'mgComunicacion' => ['bolsa-trabajo.*', 'admin.comunicados.*', 'admin.minkarikuy.*', 'trabajo.*', 'listaPostulantes', 'bitacora.*', 'admin.taqe.*'],
     ];
@@ -78,12 +78,17 @@
         </a>
         <div id="mgSeguimiento" class="collapse {{ $abierto('mgSeguimiento') ? 'show' : '' }}" data-parent="#accordionSidebar">
             <div class="py-2 collapse-inner rounded">
+                <a class="collapse-item {{ $activo('admin.asistencias.*') }}" href="{{ route('admin.asistencias.index') }}"
+                   title="Control institucional de asistencias por curso, becas (Amantani, Pronabec) y licencias">Control de asistencia</a>
                 <a class="collapse-item {{ $activo('expediente.panel*') }}" href="{{ route('expediente.panel') }}"
                    title="Licencias, retiros, reincorporaciones, desaprobados y repitencia">Alertas académicas</a>
                 <a class="collapse-item {{ $activo('admin.seguimiento*') }}" href="{{ route('admin.seguimiento') }}"
                    title="Incidencias reportadas, solicitudes de tutoría y sugerencias del buzón QR">Incidencias y tutorías</a>
                 <a class="collapse-item {{ $activo('alumnos.demograficos') }}" href="{{ route('alumnos.demograficos') }}">Datos demográficos</a>
-                <a class="collapse-item {{ $activo('seguimiento-egresados.*') }}" href="{{ route('seguimiento-egresados.index') }}" title="Seguimiento de egresados">Seguimiento de egresados</a>
+                <a class="collapse-item {{ $activo('seguimiento-egresados.*', 'seguimiento.*') }}" href="{{ route('seguimiento-egresados.index') }}" title="Seguimiento de egresados">Seguimiento de egresados</a>
+                @if (Route::has('seguimiento.campanas.gestion'))
+                    <a class="collapse-item {{ $activo('seguimiento.campanas.*') }}" href="{{ route('seguimiento.campanas.gestion') }}" title="Gestión de campañas y distribución de docentes">Campañas y Entrevistadores</a>
+                @endif
                 @if ($esSA && Route::has('titulacion.index'))
                     <a class="collapse-item {{ $activo('titulacion.*') }}" href="{{ route('titulacion.index') }}">Titulación</a>
                 @endif

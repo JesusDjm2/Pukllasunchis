@@ -28,7 +28,7 @@ class AprovisionarCuentasAuditoriaCommand extends Command
         $this->info('  PUKLLA EN RED — Aprovisionamiento de Cuentas para Auditoría  ');
         $this->info('================================================================');
 
-        $passwordComun = $this->option('password') ?: 'Puklla2026!Auditor';
+        $passwordComun = $this->option('password') ?: '12345678';
         $hashed = Hash::make($passwordComun);
 
         // 1. Asegurar roles institucionales en Spatie

@@ -8,6 +8,7 @@ use App\Models\Distrito;
 use App\Models\Provincia;
 use App\Models\SeguimientoEgresado\AccesoContacto;
 use App\Models\SeguimientoEgresado\Actualizacion;
+use App\Models\SeguimientoEgresado\AsignacionCampana;
 use App\Models\SeguimientoEgresado\Campana;
 use App\Models\SeguimientoEgresado\Caso;
 use App\Models\SeguimientoEgresado\EpisodioLaboral;
@@ -99,8 +100,8 @@ class SeguimientoEgresadoController extends Controller
         if ($this->esEgresadoOAlumno($authUser) && !$this->esPersonalGestion($authUser) && !$authUser->hasRole('seguimiento-egresados')) {
             $egresadosQuery->where('id', $authUser->id);
         }
-        // Si es encuestador o docente con rol seguimiento-egresados (sin rol directivo de gestión), filtrar SOLO a los egresados asignados en sus grupos activos y campañas vigentes
-        elseif (($authUser->hasRole('seguimiento-egresados') || $this->esEncuestador($authUser)) && !$this->esPersonalGestion($authUser)) {
+        // Si es encuestador o docente con rol seguimiento-egresados o asignaciones (sin rol directivo de gestión), filtrar SOLO a los egresados asignados en sus grupos activos y campañas vigentes
+        elseif (($authUser->hasRole('seguimiento-egresados') || $this->esEncuestador($authUser) || $this->esEquipoDocente($authUser)) && !$this->esPersonalGestion($authUser)) {
             $gruposActivos = GrupoEntrevistador::with('campana')->where('estado', 'activo')->get();
             $hoy = now()->toDateString();
             $gruposVigentes = $gruposActivos->filter(function ($g) use ($hoy) {
@@ -112,11 +113,26 @@ class SeguimientoEgresadoController extends Controller
                 return true;
             });
 
-            $asignadosIds = $gruposVigentes->filter(fn ($g) => in_array($authUser->id, (array)$g->entrevistadores))
+            $asignadosGrupoIds = $gruposVigentes->filter(fn ($g) => in_array($authUser->id, (array)$g->entrevistadores))
                 ->flatMap(fn ($g) => (array)$g->egresados_ids)
                 ->map(fn ($id) => is_string($id) && str_starts_with($id, 'REAL-') ? (int)str_replace('REAL-', '', $id) : (int)$id)
-                ->unique()
-                ->toArray();
+                ->all();
+
+            $asignadosCampanaIds = AsignacionCampana::activos()
+                ->where('docente_user_id', $authUser->id)
+                ->whereHas('campana', function ($q) use ($hoy) {
+                    $q->whereIn('estado', ['activo', 'activa'])
+                      ->where(function ($sub) use ($hoy) {
+                          $sub->whereNull('fecha_inicio')->orWhere('fecha_inicio', '<=', $hoy);
+                      })
+                      ->where(function ($sub) use ($hoy) {
+                          $sub->whereNull('fecha_fin')->orWhere('fecha_fin', '>=', $hoy);
+                      });
+                })
+                ->pluck('egresado_user_id')
+                ->all();
+
+            $asignadosIds = array_values(array_unique(array_merge($asignadosGrupoIds, $asignadosCampanaIds)));
 
             $egresadosQuery->whereIn('id', $asignadosIds ?: [0]);
         } else {
@@ -294,13 +310,13 @@ class SeguimientoEgresadoController extends Controller
                 $procedencia = 'intranet_autogestion';
                 $registradoPor = $authUser->name;
                 $canal = $request->input('canal', 'intranet');
-            } elseif ($this->esEncuestador($authUser)) {
+            } elseif ($this->esEncuestador($authUser) || $this->esEquipoDocente($authUser)) {
                 if ($targetUserId) {
-                    $asignado = GrupoEntrevistador::esEntrevistadorAsignado($authUser->id, $targetUserId);
+                    $asignado = $this->autorizacionService->puedeModificarEgresado($targetUserId, $authUser);
                     if (!$asignado) {
                         return response()->json([
                             'success' => false,
-                            'error' => 'No tienes asignado este egresado en tus grupos activos de seguimiento.'
+                            'error' => 'No tienes asignado este egresado en tus grupos o campañas activas de seguimiento.'
                         ], 403);
                     }
                 }
@@ -477,7 +493,19 @@ class SeguimientoEgresadoController extends Controller
                         ]);
                     }
 
-                    $episodiosActivos = EpisodioLaboral::where('user_id', $targetUserId)
+                    if ($targetUserId) {
+                        AsignacionCampana::where('egresado_user_id', $targetUserId)
+                            ->whereIn('estado', ['asignado', 'contactado'])
+                            ->update(['estado' => 'completado']);
+                    }
+
+                    if ($targetUserId) {
+                    AsignacionCampana::where('egresado_user_id', $targetUserId)
+                        ->whereIn('estado', ['asignado', 'contactado'])
+                        ->update(['estado' => 'completado']);
+                }
+
+                $episodiosActivos = EpisodioLaboral::where('user_id', $targetUserId)
                         ->where('es_actual', true)
                         ->count();
 
@@ -697,6 +725,12 @@ class SeguimientoEgresadoController extends Controller
                     ]);
                 }
 
+                if ($targetUserId) {
+                    AsignacionCampana::where('egresado_user_id', $targetUserId)
+                        ->whereIn('estado', ['asignado', 'contactado'])
+                        ->update(['estado' => 'completado']);
+                }
+
                 $episodiosActivos = EpisodioLaboral::where('user_id', $targetUserId)
                     ->where('es_actual', true)
                     ->count();
@@ -885,14 +919,85 @@ class SeguimientoEgresadoController extends Controller
             ], 403);
         }
 
+        $resultado = $request->input('result', 'No contesta');
+        $tipoResultado = $request->input('tipo_resultado');
+        if (!$tipoResultado) {
+            $tipoResultado = match(strtolower(trim($resultado))) {
+                'contacto efectivo', 'contactado' => 'contacto_efectivo',
+                'entrevista programada', 'reprogramado' => 'entrevista_programada',
+                'actualización completa', 'actualizacion completa' => 'actualizacion_completa',
+                'actualización parcial', 'actualizacion parcial' => 'actualizacion_parcial',
+                'confirmación sin cambios', 'confirmacion sin cambios' => 'confirmacion_sin_cambios',
+                'número equivocado', 'numero equivocado', 'numero invalido' => 'numero_equivocado',
+                'rechazo', 'rechazo de participación' => 'rechazo_participacion',
+                'requiere verificación', 'requiere verificacion' => 'requiere_verificacion',
+                'requiere derivación', 'requiere derivacion' => 'requiere_derivacion',
+                default => 'intento_sin_respuesta'
+            };
+        }
+
+        $contactosEfectivosTipos = [
+            'contacto_efectivo', 'entrevista_programada', 'actualizacion_completa',
+            'actualizacion_parcial', 'confirmacion_sin_cambios', 'rechazo_participacion'
+        ];
+        $esEfectivo = $request->boolean('es_contacto_efectivo') || in_array($tipoResultado, $contactosEfectivosTipos, true);
+
+        $campanaId = $request->input('campana_id');
+        $esEnsayo = $request->boolean('es_ensayo');
+        if ($campanaId && !$esEnsayo) {
+            $c = Campana::find($campanaId);
+            if ($c && $c->es_ensayo) {
+                $esEnsayo = true;
+            }
+        }
+
+        $requiereDerivacion = $request->boolean('requiere_derivacion') || $tipoResultado === 'requiere_derivacion';
+        $motivoDerivacion = $request->input('motivo_derivacion');
+
         $llamada = Llamada::create([
             'user_id' => $userId,
             'identificador_temporal' => $idTemporal,
-            'resultado' => $request->input('result', 'No contesta'),
+            'campana_id' => $campanaId,
+            'docente_user_id' => auth()->id(),
+            'resultado' => $resultado,
+            'tipo_resultado' => $tipoResultado,
+            'es_contacto_efectivo' => $esEfectivo,
+            'fecha_reprogramada' => $request->input('fecha_reprogramada'),
+            'requiere_derivacion' => $requiereDerivacion,
+            'motivo_derivacion' => $motivoDerivacion,
+            'es_ensayo' => $esEnsayo,
             'observaciones' => $request->input('comment', ''),
             'encuestador' => auth()->user()->name,
             'fecha_hora' => now()
         ]);
+
+        // Si el egresado tiene asignación en la campaña y hubo contacto, actualizar estado de asignación
+        if ($userId && $campanaId) {
+            $asig = AsignacionCampana::where('campana_id', $campanaId)
+                ->where('egresado_user_id', $userId)
+                ->where('docente_user_id', auth()->id())
+                ->whereIn('estado', ['asignado', 'contactado'])
+                ->first();
+
+            if ($asig && $esEfectivo && $asig->estado === 'asignado') {
+                $asig->update(['estado' => 'contactado']);
+            }
+        }
+
+        // Si requiere derivación, abrir caso institucional automáticamente
+        if ($requiereDerivacion && $userId) {
+            Caso::create([
+                'codigo' => 'DERIV-' . time() . '-' . rand(10, 99),
+                'user_id' => $userId,
+                'nombre_egresado' => User::find($userId)?->name ?? 'Egresado/a',
+                'tema' => 'Derivación desde llamada de seguimiento',
+                'responsable' => 'Coordinación / Bienestar',
+                'fecha_gestion' => now()->addDays(2)->toDateString(),
+                'estado' => 'Pendiente',
+                'proposito' => $motivoDerivacion ?: 'Docente entrevistador reportó necesidad de derivación o atención especial.',
+                'origen' => 'Llamada telefónica docente'
+            ]);
+        }
 
         return response()->json([
             'success' => true,

@@ -20,10 +20,35 @@ class Campana extends Model
         'fecha_fin',
         'estado',
         'descripcion',
+        'es_ensayo',
+    ];
+
+    protected $casts = [
+        'es_ensayo' => 'boolean',
     ];
 
     public function actualizaciones()
     {
         return $this->hasMany(Actualizacion::class, 'campana_id');
+    }
+
+    public function asignaciones()
+    {
+        return $this->hasMany(AsignacionCampana::class, 'campana_id');
+    }
+
+    public function llamadas()
+    {
+        return $this->hasMany(Llamada::class, 'campana_id');
+    }
+
+    public function scopeEnsayo($query)
+    {
+        return $query->where('es_ensayo', true);
+    }
+
+    public function scopeReales($query)
+    {
+        return $query->where('es_ensayo', false);
     }
 }

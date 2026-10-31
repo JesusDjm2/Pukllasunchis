@@ -2,6 +2,7 @@
 
 namespace App\Services\SeguimientoEgresado;
 
+use App\Models\SeguimientoEgresado\AsignacionCampana;
 use App\Models\SeguimientoEgresado\GrupoEntrevistador;
 use App\Models\User;
 
@@ -74,7 +75,8 @@ class SeguimientoAutorizacionService
         }
 
         if ($this->esDocenteOEntrevistador($user)) {
-            return GrupoEntrevistador::esEntrevistadorAsignado($user->id, $targetUserId);
+            return AsignacionCampana::esDocenteAsignado($user->id, $targetUserId)
+                || GrupoEntrevistador::esEntrevistadorAsignado($user->id, $targetUserId);
         }
 
         return false;
@@ -104,7 +106,8 @@ class SeguimientoAutorizacionService
         }
 
         if ($this->esDocenteOEntrevistador($user)) {
-            return GrupoEntrevistador::esEntrevistadorAsignado($user->id, $targetUserId);
+            return AsignacionCampana::esDocenteAsignado($user->id, $targetUserId)
+                || GrupoEntrevistador::esEntrevistadorAsignado($user->id, $targetUserId);
         }
 
         return false;

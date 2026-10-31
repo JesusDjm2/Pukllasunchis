@@ -20,6 +20,37 @@
                             <p class="login-card__subtitle">Ingresa tus credenciales para acceder a tu cuenta</p>
                         </div>
 
+                        @if (app()->isLocal())
+                            <div class="alert alert-light border shadow-sm mb-3 text-start p-2" style="border-left: 4px solid #832128 !important; font-size: 0.82rem; background: #fffdfd;">
+                                <div class="d-flex align-items-center justify-content-between mb-1">
+                                    <span class="font-weight-bold" style="color: #832128;">
+                                        <i class="fas fa-magic mr-1"></i> Accesos Rápidos de Auditoría (1 Clic)
+                                    </span>
+                                    <span class="badge" style="background:#832128; color:#fff; font-size:0.7rem;">Clave: 12345678</span>
+                                </div>
+                                <div class="d-flex flex-wrap" style="gap: 4px; margin-top: 4px;">
+                                    <a href="{{ route('auditoria.login.perfil', 'superadmin') }}" class="btn btn-sm btn-outline-dark" style="font-size: 0.72rem; padding: 2px 7px;">
+                                        👑 SuperAdmin
+                                    </a>
+                                    <a href="{{ route('auditoria.login.perfil', 'docente-seguimiento') }}" class="btn btn-sm btn-outline-primary" style="font-size: 0.72rem; padding: 2px 7px;">
+                                        👨‍🏫 Docente c/ Rol
+                                    </a>
+                                    <a href="{{ route('auditoria.login.perfil', 'docente-regular') }}" class="btn btn-sm btn-outline-secondary" style="font-size: 0.72rem; padding: 2px 7px;">
+                                        👩‍🏫 Docente Regular
+                                    </a>
+                                    <a href="{{ route('auditoria.login.perfil', 'coordinacion') }}" class="btn btn-sm btn-outline-success" style="font-size: 0.72rem; padding: 2px 7px;">
+                                        📋 Coordinación
+                                    </a>
+                                    <a href="{{ route('auditoria.login.perfil', 'direccion') }}" class="btn btn-sm btn-outline-info" style="font-size: 0.72rem; padding: 2px 7px;">
+                                        🏛️ Dirección
+                                    </a>
+                                    <a href="{{ route('auditoria.login.perfil', 'egresada') }}" class="btn btn-sm btn-outline-warning text-dark" style="font-size: 0.72rem; padding: 2px 7px;">
+                                        🎓 Egresada
+                                    </a>
+                                </div>
+                            </div>
+                        @endif
+
                         <form method="POST" action="{{ route('login') }}" id="loginForm" class="login-card__form" novalidate>
                             @csrf
                             <div class="mb-3">

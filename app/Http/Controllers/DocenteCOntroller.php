@@ -80,7 +80,12 @@ class DocenteCOntroller extends Controller
         $docente = Docente::findOrFail($docenteId);
         $user = $docente->user;
 
-        return view('docentes.show', compact('user', 'docente', 'periodoActual'));
+        $asignacionesDocente = \App\Models\SeguimientoEgresado\AsignacionCampana::activos()
+            ->where('docente_user_id', $user->id)
+            ->with(['campana', 'egresado'])
+            ->get();
+
+        return view('docentes.show', compact('user', 'docente', 'periodoActual', 'asignacionesDocente'));
     }
 
     public function asignar($id)

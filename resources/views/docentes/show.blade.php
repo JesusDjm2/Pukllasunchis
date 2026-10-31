@@ -890,26 +890,46 @@
             </div>
         </div>
 
-        {{-- Puklla en Red — Seguimiento de Egresados --}}
-        @if (auth()->user()?->hasRole('seguimiento-egresados') || auth()->user()?->can('seguimiento-egresados.ver-dashboard'))
+        {{-- Puklla en Red — Seguimiento de Egresados y Asignaciones de Campaña --}}
+        @php
+            $asigsCount = isset($asignacionesDocente) ? $asignacionesDocente->count() : 0;
+            $tieneRolSeguimiento = auth()->user()?->hasRole('seguimiento-egresados') || auth()->user()?->can('seguimiento-egresados.ver-dashboard');
+        @endphp
+        @if ($tieneRolSeguimiento || $asigsCount > 0)
             <div class="card docente-ui-card mb-3 mb-md-4" style="border-left: 4px solid #832128; background: #fffdfd;">
                 <div class="card-body p-3 d-flex flex-wrap align-items-center justify-content-between" style="gap:.5rem .75rem;">
                     <div class="d-flex align-items-center" style="gap: .75rem;">
-                        <div style="width: 40px; height: 40px; border-radius: 8px; background: #fce8e9; color: #832128; display: grid; place-items: center; font-size: 1.1rem;">
+                        <div style="width: 44px; height: 44px; border-radius: 8px; background: #fce8e9; color: #832128; display: grid; place-items: center; font-size: 1.2rem;">
                             <i class="fas fa-network-wired"></i>
                         </div>
                         <div>
-                            <span class="font-weight-bold d-block" style="color: #832128; font-size: 0.95rem;">
-                                Seguimiento de Egresados — Puklla en Red
-                            </span>
-                            <small class="text-muted">
-                                Tienes asignado el rol institucional para registro de entrevistas, seguimiento y acompañamiento de egresados.
+                            <div class="d-flex align-items-center" style="gap: .5rem;">
+                                <span class="font-weight-bold" style="color: #832128; font-size: 0.95rem;">
+                                    Seguimiento de Egresados — Puklla en Red
+                                </span>
+                                @if ($asigsCount > 0)
+                                    <span class="badge badge-success" style="background: #10b981; color: #fff; font-size: 0.75rem; font-weight: 700; border-radius: 12px; padding: 2px 8px;">
+                                        {{ $asigsCount }} egresados asignados
+                                    </span>
+                                @endif
+                            </div>
+                            <small class="text-muted d-block mt-1">
+                                @if ($asigsCount > 0)
+                                    Tienes una lista activa de egresados para llamadas, entrevistas y acompañamiento institucional.
+                                @else
+                                    Tienes asignado el rol institucional para registro de entrevistas, seguimiento y acompañamiento de egresados.
+                                @endif
                             </small>
                         </div>
                     </div>
-                    <div>
+                    <div class="d-flex align-items-center" style="gap: .5rem;">
+                        @if ($asigsCount > 0 && Route::has('seguimiento-egresados.mis-asignaciones'))
+                            <a href="{{ route('seguimiento-egresados.mis-asignaciones') }}" class="btn btn-sm text-white font-weight-bold" style="background: #10b981; border-radius: 20px; padding: 0.4rem 1.1rem;">
+                                <i class="fas fa-clipboard-list mr-1"></i> Mis Egresados Asignados
+                            </a>
+                        @endif
                         <a href="{{ route('seguimiento-egresados.index') }}" class="btn btn-sm text-white font-weight-bold" style="background: #832128; border-radius: 20px; padding: 0.4rem 1.1rem;">
-                            <i class="fas fa-external-link-alt mr-1"></i> Ingresar a Puklla en Red
+                            <i class="fas fa-external-link-alt mr-1"></i> Padrón Puklla en Red
                         </a>
                     </div>
                 </div>

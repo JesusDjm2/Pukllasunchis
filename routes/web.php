@@ -222,9 +222,93 @@ Route::middleware(['auth'])->prefix('seguimiento-egresados')->group(function () 
         ->name('seguimiento-egresados.grupos.guardar');
     Route::delete('/grupos/{id}', [App\Http\Controllers\SeguimientoEgresadoController::class, 'eliminarGrupo'])
         ->name('seguimiento-egresados.grupos.eliminar');
+
+    // Gestión Operativa de Campañas, Asignación Equilibrada y Monitoreo (Fase Campañas con Docentes y Egresados Reales)
+    Route::get('/campanas/gestion', [App\Http\Controllers\SeguimientoCampanaController::class, 'gestion'])
+        ->name('seguimiento.campanas.gestion');
+    Route::get('/campanas/gestion-alias', [App\Http\Controllers\SeguimientoCampanaController::class, 'gestion'])
+        ->name('seguimiento-egresados.campanas.gestion');
+
+    Route::post('/campanas/distribuir/preview', [App\Http\Controllers\SeguimientoCampanaController::class, 'previewDistribucion'])
+        ->name('seguimiento.campanas.distribuir.preview');
+    Route::post('/campanas/distribuir', [App\Http\Controllers\SeguimientoCampanaController::class, 'ejecutarDistribucion'])
+        ->name('seguimiento.campanas.distribuir');
+
+    Route::get('/campanas/{campanaId}/monitoreo', [App\Http\Controllers\SeguimientoCampanaController::class, 'monitoreo'])
+        ->name('seguimiento.campanas.monitoreo');
+    Route::get('/campanas/{campanaId}/monitoreo-alias', [App\Http\Controllers\SeguimientoCampanaController::class, 'monitoreo'])
+        ->name('seguimiento-egresados.campanas.monitoreo');
+
+    Route::post('/campanas/reasignar', [App\Http\Controllers\SeguimientoCampanaController::class, 'reasignar'])
+        ->name('seguimiento.campanas.reasignar');
+
+    Route::get('/campanas/{campanaId}/territorio', [App\Http\Controllers\SeguimientoCampanaController::class, 'territorio'])
+        ->name('seguimiento.campanas.territorio');
+    Route::get('/campanas/{campanaId}/territorio-alias', [App\Http\Controllers\SeguimientoCampanaController::class, 'territorio'])
+        ->name('seguimiento-egresados.campanas.territorio');
+
+    // Panel del Docente: "Mis Egresados Asignados"
+    Route::get('/mis-asignaciones', [App\Http\Controllers\SeguimientoCampanaController::class, 'misAsignaciones'])
+        ->name('seguimiento-egresados.mis-asignaciones');
+    Route::get('/mis-asignaciones-alias', [App\Http\Controllers\SeguimientoCampanaController::class, 'misAsignaciones'])
+        ->name('seguimiento.docente.mis-asignaciones');
 });
 
 if (app()->isLocal()) {
+    Route::prefix('auditoria')->group(function () {
+        Route::get('/login/{perfil}', function (string $perfil) {
+            $emails = [
+                'superadmin' => 'auditor.superadmin@puklla.test',
+                'docente-seguimiento' => 'auditor.docente.seguimiento@puklla.test',
+                'docente-entrevistador' => 'marcelbosch.iesp@pukllavirtual.edu.pe',
+                'docente-regular' => 'auditor.docente.regular@puklla.test',
+                'coordinacion' => 'auditor.coordinacion@puklla.test',
+                'direccion' => 'auditor.direccion@puklla.test',
+                'egresada' => 'auditor.egresada@puklla.test',
+            ];
+
+            $email = $emails[$perfil] ?? null;
+            if (!$email) {
+                return redirect()->route('login')->withErrors(['email' => "Perfil de auditoría '{$perfil}' no reconocido."]);
+            }
+
+            $user = \App\Models\User::where('email', $email)->first();
+            if (!$user) {
+                \Illuminate\Support\Facades\Artisan::call('puklla:auditoria-perfiles');
+                $user = \App\Models\User::where('email', $email)->first();
+            }
+
+            if ($user) {
+                \Illuminate\Support\Facades\Auth::login($user);
+                request()->session()->regenerate();
+
+                if ($user->hasRole('super-admin')) {
+                    return redirect()->route('admin')->with('userData', $user);
+                } elseif ($user->hasRole('coordinacion-empleabilidad')) {
+                    return redirect()->route('seguimiento-egresados.index');
+                } elseif ($user->hasRole('direccion')) {
+                    return redirect()->route('seguimiento.laboratorio');
+                } elseif ($user->hasRole('admin')) {
+                    return redirect()->route('admin')->with('userData', $user);
+                } elseif ($user->hasRole('docente') && $user->docente) {
+                    return redirect()->route('vistaDocente', ['docente' => $user->docente->id]);
+                } elseif ($user->condicion === 'Egresado') {
+                    return redirect()->route('egresado.intranet');
+                }
+                return redirect('/home');
+            }
+
+            return redirect()->route('login')->withErrors(['email' => "No se pudo iniciar sesión como {$email}"]);
+        })->name('auditoria.login.perfil');
+
+        Route::get('/logout', function () {
+            \Illuminate\Support\Facades\Auth::logout();
+            request()->session()->invalidate();
+            request()->session()->regenerateToken();
+            return redirect()->route('login')->with('success', 'Sesión de auditoría cerrada correctamente.');
+        })->name('auditoria.logout');
+    });
+
     Route::get('/dev/login-docente', function () {
         $docente = \App\Models\Docente::first();
         if ($docente && $docente->user) {
