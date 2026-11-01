@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/puklla_dashboard_styles.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_state.dart';
 import '../../../core/widgets/puklla_app_bar_actions.dart';
 import '../../../core/widgets/puklla_bottom_nav_bar.dart';
+import '../../../core/widgets/puklla_preloader.dart';
 import '../../../routing/app_drawer.dart';
 import '../application/docente_providers.dart';
 import '../data/docente_incidencia.dart';
@@ -54,7 +56,10 @@ class DocenteIncidenciasScreen extends ConsumerWidget {
                   _Paginador(pagina: data, ref: ref),
                 ],
               ),
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Padding(
+          padding: EdgeInsets.symmetric(vertical: 40),
+          child: PukllaPreloader.inline(mensaje: 'Cargando incidencias registradas...'),
+        ),
         error: (e, _) => Padding(
           padding: const EdgeInsets.all(16),
           child: ErrorState(
@@ -74,6 +79,16 @@ class _TarjetaIncidencia extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = PukllaDashboardStyles.isDark(context);
+
+    final badgeBg = incidencia.estaPendiente
+        ? (isDark ? const Color(0xFF78350F).withValues(alpha: 0.35) : AppColors.warningBg)
+        : (isDark ? const Color(0xFF064E3B).withValues(alpha: 0.35) : AppColors.successBg);
+
+    final badgeTextColor = incidencia.estaPendiente
+        ? (isDark ? const Color(0xFFFBBF24) : AppColors.warning)
+        : (isDark ? const Color(0xFF34D399) : AppColors.success);
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -84,31 +99,41 @@ class _TarjetaIncidencia extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 16,
-                  backgroundColor: AppColors.teal.withValues(alpha: 0.1),
+                  backgroundColor: AppColors.teal.withValues(alpha: isDark ? 0.25 : 0.12),
                   child: Text(
                     (incidencia.alumnoNombre?.isNotEmpty ?? false) ? incidencia.alumnoNombre![0].toUpperCase() : '?',
-                    style: const TextStyle(color: AppColors.teal, fontWeight: FontWeight.w700, fontSize: 13),
+                    style: TextStyle(
+                      color: isDark ? AppColors.goldHover : AppColors.teal,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     incidencia.alumnoNombre ?? 'Alumno',
-                    style: const TextStyle(fontWeight: FontWeight.w700),
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: isDark ? AppColors.darkText : const Color(0xFF0F172A),
+                    ),
                   ),
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                   decoration: BoxDecoration(
-                    color: incidencia.estaPendiente ? AppColors.warningBg : AppColors.successBg,
+                    color: badgeBg,
                     borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: badgeTextColor.withValues(alpha: 0.35),
+                    ),
                   ),
                   child: Text(
                     incidencia.estado,
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
-                      color: incidencia.estaPendiente ? AppColors.warning : AppColors.success,
+                      color: badgeTextColor,
                     ),
                   ),
                 ),
@@ -118,10 +143,19 @@ class _TarjetaIncidencia extends StatelessWidget {
             Text(
               '${incidencia.fecha.toLocal().toString().split(' ').first}'
               '${incidencia.cicloNombre == null ? '' : ' · ${incidencia.cicloNombre}'}',
-              style: const TextStyle(fontSize: 12, color: AppColors.muted),
+              style: TextStyle(
+                fontSize: 12,
+                color: isDark ? AppColors.darkMuted : AppColors.muted,
+              ),
             ),
             const SizedBox(height: 8),
-            Text(incidencia.reporte),
+            Text(
+              incidencia.reporte,
+              style: TextStyle(
+                color: isDark ? AppColors.darkText : const Color(0xFF334155),
+                height: 1.4,
+              ),
+            ),
           ],
         ),
       ),
