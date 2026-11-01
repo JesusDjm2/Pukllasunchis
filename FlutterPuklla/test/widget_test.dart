@@ -9,6 +9,15 @@ import 'package:flutter_puklla/main.dart';
 class _FakeTokenStorage extends TokenStorage {
   @override
   Future<String?> readToken() async => null;
+
+  @override
+  Future<String?> readSavedUsername() async => null;
+
+  @override
+  Future<void> saveUsername(String username) async {}
+
+  @override
+  Future<void> deleteSavedUsername() async {}
 }
 
 void main() {
