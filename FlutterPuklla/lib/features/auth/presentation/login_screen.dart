@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:ui' show ImageFilter;
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -167,24 +167,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       return const PukllaPreloader(mensaje: 'Verificando sesión institucional...');
     }
 
-    final isDark = PukllaDashboardStyles.isDark(context);
-
     return Scaffold(
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // ── FONDO DINÁMICO CON FOTOS DE LA ESCUELA ──
+          // ── FONDO DINÁMICO CON FOTOS DE LA ESCUELA (PROTAGONISTA VISUAL) ──
           const _BreathingBackground(),
 
-          // ── OVERLAY GRADIENTE OSCURO INSTITUCIONAL ──
+          // ── OVERLAY GRADIENTE LIGERO (GARANTIZA LEGIBILIDAD SIN OPACAR LAS FOTOS) ──
           DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Colors.black.withValues(alpha: 0.50),
-                  Colors.black.withValues(alpha: 0.78),
+                  Colors.black.withValues(alpha: 0.28),
+                  Colors.black.withValues(alpha: 0.58),
                 ],
               ),
             ),
@@ -193,351 +191,302 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // ── TARJETA GLASSMORPHISM OFICIAL (CALCADA DE LA WEB) ──
-                    ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 420),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(22),
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: isDark
-                                  ? AppColors.darkSurface.withValues(alpha: 0.90)
-                                  : Colors.white.withValues(alpha: 0.94),
-                              borderRadius: BorderRadius.circular(22),
-                              border: Border.all(
-                                color: isDark ? AppColors.darkBorder : Colors.white.withValues(alpha: 0.7),
-                                width: 1,
+                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 400),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // Logo institucional oficial en blanco
+                        Center(
+                          child: Image.asset(
+                            AppAssets.logoBlanco,
+                            height: 84,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                        const SizedBox(height: 26),
+
+                        // Título de bienvenida
+                        Text(
+                          'Bienvenido(a)',
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: -0.3,
+                                shadows: const [
+                                  Shadow(color: Colors.black54, blurRadius: 10, offset: Offset(0, 2)),
+                                ],
                               ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: isDark ? 0.45 : 0.22),
-                                  blurRadius: 30,
-                                  offset: const Offset(0, 10),
-                                ),
-                              ],
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Ingresa con tu cuenta institucional',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.88),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            shadows: const [
+                              Shadow(color: Colors.black54, blurRadius: 6, offset: Offset(0, 1)),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 28),
+
+                        // Campo Usuario / Correo institucional
+                        TextFormField(
+                          controller: _emailController,
+                          keyboardType: TextInputType.emailAddress,
+                          autofillHints: const [AutofillHints.email],
+                          style: const TextStyle(
+                            color: Color(0xFF0F172A),
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14.5,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: 'Usuario o Correo institucional',
+                            hintStyle: const TextStyle(
+                              color: Color(0xFF94A3B8),
+                              fontWeight: FontWeight.normal,
+                              fontSize: 14,
                             ),
-                            child: Stack(
-                              children: [
-                                // Borde superior dorado institucional (4.5px como en la web oficial)
-                                Positioned(
-                                  top: 0,
-                                  left: 0,
-                                  right: 0,
-                                  child: Container(
-                                    height: 4.5,
-                                    decoration: const BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: [Color(0xFFB57D33), Color(0xFFCD9244), Color(0xFFE2B068)],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.fromLTRB(26, 28, 26, 24),
-                                  child: Form(
-                                    key: _formKey,
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                                      children: [
-                                        // Logo institucional oficial
-                                        Center(
-                                          child: Image.asset(
-                                            isDark ? AppAssets.logoBlanco : AppAssets.logoColor,
-                                            height: 64,
-                                            fit: BoxFit.contain,
-                                          ),
-                                        ),
-                                  const SizedBox(height: 18),
+                            prefixIcon: const Icon(Icons.person_outline_rounded, color: AppColors.goldHover),
+                            filled: true,
+                            fillColor: Colors.white.withValues(alpha: 0.95),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.8), width: 1),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: AppColors.gold, width: 2),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          ),
+                          validator: (value) => (value == null || value.isEmpty) ? 'Ingresa tu usuario' : null,
+                        ),
+                        const SizedBox(height: 16),
 
-                                  // Título oficial
-                                  Text(
-                                    'Bienvenido(a)',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.w800,
-                                      letterSpacing: -0.3,
-                                      color: PukllaDashboardStyles.textPrimary(context),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'Ingresa con tu cuenta institucional',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color: PukllaDashboardStyles.textSecondary(context),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 22),
+                        // Campo Contraseña
+                        TextFormField(
+                          controller: _passwordController,
+                          obscureText: _obscurePassword,
+                          autofillHints: const [AutofillHints.password],
+                          style: const TextStyle(
+                            color: Color(0xFF0F172A),
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14.5,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: 'Contraseña',
+                            hintStyle: const TextStyle(
+                              color: Color(0xFF94A3B8),
+                              fontWeight: FontWeight.normal,
+                              fontSize: 14,
+                            ),
+                            prefixIcon: const Icon(Icons.lock_outline_rounded, color: AppColors.goldHover),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                                color: const Color(0xFF64748B),
+                              ),
+                              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                            ),
+                            filled: true,
+                            fillColor: Colors.white.withValues(alpha: 0.95),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.8), width: 1),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: AppColors.gold, width: 2),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          ),
+                          validator: (value) => (value == null || value.isEmpty) ? 'Ingresa tu contraseña' : null,
+                          onFieldSubmitted: (_) => _submit(),
+                        ),
 
-                                  // Campo Usuario / Email
-                                  TextFormField(
-                                    controller: _emailController,
-                                    keyboardType: TextInputType.emailAddress,
-                                    autofillHints: const [AutofillHints.email, AutofillHints.username],
-                                    style: TextStyle(
-                                      color: PukllaDashboardStyles.textPrimary(context),
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                    decoration: InputDecoration(
-                                      labelText: 'Usuario / Correo Institucional',
-                                      labelStyle: TextStyle(
-                                        color: PukllaDashboardStyles.textSecondary(context),
-                                        fontSize: 13,
-                                      ),
-                                      hintText: 'Ej. 70123456 o usuario@pukllavirtual.edu.pe',
-                                      hintStyle: TextStyle(
-                                        color: PukllaDashboardStyles.textSecondary(context).withValues(alpha: 0.5),
-                                        fontSize: 12.5,
-                                      ),
-                                      prefixIcon: const Icon(Icons.person_outline_rounded, color: AppColors.goldHover),
-                                      filled: true,
-                                      fillColor: isDark ? AppColors.darkCard : const Color(0xFFF8FAFC),
-                                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide(
-                                          color: isDark ? AppColors.darkBorder : const Color(0xFFCBD5E1),
-                                        ),
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide(
-                                          color: isDark ? AppColors.darkBorder : const Color(0xFFE2E8F0),
-                                        ),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                        borderSide: const BorderSide(color: AppColors.gold, width: 2),
-                                      ),
-                                    ),
-                                    validator: (value) =>
-                                        (value == null || value.trim().isEmpty) ? 'Ingresa tu usuario o correo' : null,
-                                  ),
-                                  const SizedBox(height: 14),
+                        const SizedBox(height: 14),
 
-                                  // Campo Contraseña
-                                  TextFormField(
-                                    controller: _passwordController,
-                                    obscureText: _obscurePassword,
-                                    autofillHints: const [AutofillHints.password],
-                                    style: TextStyle(
-                                      color: PukllaDashboardStyles.textPrimary(context),
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                    decoration: InputDecoration(
-                                      labelText: 'Contraseña',
-                                      labelStyle: TextStyle(
-                                        color: PukllaDashboardStyles.textSecondary(context),
-                                        fontSize: 13,
-                                      ),
-                                      hintText: '••••••••',
-                                      prefixIcon: const Icon(Icons.lock_outline_rounded, color: AppColors.goldHover),
-                                      suffixIcon: IconButton(
-                                        icon: Icon(
-                                          _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                                          color: PukllaDashboardStyles.textSecondary(context),
-                                          size: 20,
-                                        ),
-                                        onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-                                      ),
-                                      filled: true,
-                                      fillColor: isDark ? AppColors.darkCard : const Color(0xFFF8FAFC),
-                                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide(
-                                          color: isDark ? AppColors.darkBorder : const Color(0xFFCBD5E1),
-                                        ),
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide(
-                                          color: isDark ? AppColors.darkBorder : const Color(0xFFE2E8F0),
-                                        ),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                        borderSide: const BorderSide(color: AppColors.gold, width: 2),
-                                      ),
-                                    ),
-                                    validator: (value) =>
-                                        (value == null || value.isEmpty) ? 'Ingresa tu contraseña' : null,
-                                    onFieldSubmitted: (_) => _submit(),
-                                  ),
-                                  const SizedBox(height: 12),
-
-                                  // Checkbox Recordar Usuario
-                                  Row(
-                                    children: [
-                                      SizedBox(
-                                        width: 22,
-                                        height: 22,
-                                        child: Checkbox(
-                                          value: _rememberUser,
-                                          activeColor: AppColors.gold,
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                                          onChanged: (val) => setState(() => _rememberUser = val ?? false),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      GestureDetector(
-                                        onTap: () => setState(() => _rememberUser = !_rememberUser),
-                                        child: Text(
-                                          'Recordar mi cuenta',
-                                          style: TextStyle(
-                                            fontSize: 12.5,
-                                            fontWeight: FontWeight.w500,
-                                            color: PukllaDashboardStyles.textSecondary(context),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-
-                                  // Banner de Error Semántico
-                                  if (_errorMessage != null) ...[
-                                    const SizedBox(height: 12),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                      decoration: BoxDecoration(
-                                        color: isDark ? const Color(0xFF450A0A) : const Color(0xFFFEF2F2),
-                                        borderRadius: BorderRadius.circular(10),
-                                        border: Border.all(
-                                          color: isDark ? const Color(0xFFB91C1C) : const Color(0xFFFECACA),
-                                        ),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          const Icon(Icons.error_outline_rounded, size: 18, color: Color(0xFFEF4444)),
-                                          const SizedBox(width: 8),
-                                          Expanded(
-                                            child: Text(
-                                              _errorMessage!,
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w600,
-                                                color: isDark ? const Color(0xFFFCA5A5) : const Color(0xFFB91C1C),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-
-                                  const SizedBox(height: 20),
-
-                                  // Botón Ingresar Dorado con Gradiente y PukllaScaleTap
-                                  PukllaScaleTap(
-                                    onTap: _submitting ? null : _submit,
-                                    child: Container(
-                                      height: 48,
-                                      alignment: Alignment.center,
-                                      decoration: BoxDecoration(
-                                        gradient: const LinearGradient(
-                                          colors: [Color(0xFFD59D52), Color(0xFFCD9244)],
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                        ),
-                                        borderRadius: BorderRadius.circular(12),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: const Color(0xFFCD9244).withValues(alpha: 0.38),
-                                            blurRadius: 14,
-                                            offset: const Offset(0, 4),
-                                          ),
-                                        ],
-                                      ),
-                                      child: _submitting
-                                          ? const SizedBox(
-                                              width: 22,
-                                              height: 22,
-                                              child: CircularProgressIndicator(
-                                                strokeWidth: 2.2,
-                                                color: Colors.white,
-                                              ),
-                                            )
-                                          : const Text(
-                                              'Ingresar',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.w700,
-                                                fontSize: 15,
-                                                letterSpacing: 0.3,
-                                              ),
-                                            ),
-                                    ),
-                                  ),
-
-                                  const SizedBox(height: 12),
-
-                                  // Enlace de Ayuda / Soporte
-                                  Center(
-                                    child: TextButton(
-                                      onPressed: () => _mostrarAyuda(context),
-                                      style: TextButton.styleFrom(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                      ),
-                                      child: Text(
-                                        '¿Necesitas ayuda institucional?',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: isDark ? AppColors.goldHover : AppColors.teal,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
+                        // Checkbox "Recordar mi cuenta" sobre el fondo
+                        Row(
+                          children: [
+                            SizedBox(
+                              height: 22,
+                              width: 22,
+                              child: Checkbox(
+                                value: _rememberUser,
+                                activeColor: AppColors.gold,
+                                checkColor: Colors.white,
+                                side: const BorderSide(color: Colors.white, width: 1.5),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                                onChanged: (val) => setState(() => _rememberUser = val ?? false),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            GestureDetector(
+                              onTap: () => setState(() => _rememberUser = !_rememberUser),
+                              child: const Text(
+                                'Recordar mi cuenta',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  shadows: [
+                                    Shadow(color: Colors.black54, blurRadius: 4, offset: Offset(0, 1)),
                                   ],
                                 ),
                               ),
                             ),
                           ],
                         ),
-                      ),
-                    ),
-                  ),
-                ),
 
-                    const SizedBox(height: 28),
+                        // Banner de Error semántico
+                        if (_errorMessage != null) ...[
+                          const SizedBox(height: 14),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFEF2F2).withValues(alpha: 0.96),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: const Color(0xFFEF4444)),
+                              boxShadow: const [
+                                BoxShadow(color: Colors.black26, blurRadius: 6, offset: Offset(0, 2)),
+                              ],
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.error_outline_rounded, size: 18, color: Color(0xFFDC2626)),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    _errorMessage!,
+                                    style: const TextStyle(
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF991B1B),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
 
-                    // ── ESLOGAN INSTITUCIONAL EQUILIBRADO ──
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text(
-                          'Formando docentes para un mejor mañana',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontStyle: FontStyle.italic,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 14.5,
-                            letterSpacing: 0.2,
-                            shadows: [
-                              Shadow(color: Colors.black54, blurRadius: 6, offset: Offset(0, 2)),
+                        const SizedBox(height: 22),
+
+                        // Botón Ingresar Dorado con Gradiente y PukllaScaleTap
+                        PukllaScaleTap(
+                          onTap: _submitting ? null : _submit,
+                          child: Container(
+                            height: 50,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFFD59D52), Color(0xFFCD9244)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.35),
+                                  blurRadius: 14,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: _submitting
+                                ? const SizedBox(
+                                    width: 22,
+                                    height: 22,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Text(
+                                    'Ingresar',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 16,
+                                      letterSpacing: 0.3,
+                                    ),
+                                  ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 14),
+
+                        // Enlace de Ayuda / Soporte
+                        Center(
+                          child: TextButton(
+                            onPressed: () => _mostrarAyuda(context),
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            ),
+                            child: const Text(
+                              '¿Necesitas ayuda institucional?',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Color(0xFFFDE68A),
+                                fontWeight: FontWeight.w700,
+                                shadows: [
+                                  Shadow(color: Colors.black54, blurRadius: 4, offset: Offset(0, 1)),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 36),
+
+                        // Eslogan institucional inclinado (-12°) con subrayado de marcador
+                        Transform.rotate(
+                          angle: -12 * math.pi / 180,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text(
+                                'Formando docentes\npara un mejor mañana',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontStyle: FontStyle.italic,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 16,
+                                  shadows: [
+                                    Shadow(color: Colors.black54, blurRadius: 8, offset: Offset(0, 2)),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              CustomPaint(
+                                size: const Size(190, 12),
+                                painter: const _MarkerUnderlinePainter(),
+                              ),
                             ],
                           ),
                         ),
-                        const SizedBox(height: 6),
-                        CustomPaint(
-                          size: const Size(200, 10),
-                          painter: const _MarkerUnderlinePainter(),
-                        ),
                       ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),
