@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_exception.dart';
-import '../../../core/storage/token_storage.dart';
 import '../../../core/theme/app_assets.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/puklla_dashboard_styles.dart';
@@ -27,24 +26,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   bool _submitting = false;
   bool _obscurePassword = true;
-  bool _rememberUser = false;
   String? _errorMessage;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadSavedUsername();
-  }
-
-  Future<void> _loadSavedUsername() async {
-    final saved = await ref.read(tokenStorageProvider).readSavedUsername();
-    if (saved != null && saved.isNotEmpty && mounted) {
-      setState(() {
-        _emailController.text = saved;
-        _rememberUser = true;
-      });
-    }
-  }
 
   @override
   void dispose() {
@@ -62,11 +44,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     });
 
     final username = _emailController.text.trim();
-    if (_rememberUser) {
-      await ref.read(tokenStorageProvider).saveUsername(username);
-    } else {
-      await ref.read(tokenStorageProvider).deleteSavedUsername();
-    }
 
     try {
       await ref.read(authControllerProvider.notifier).login(
@@ -319,41 +296,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                           validator: (value) => (value == null || value.isEmpty) ? 'Ingresa tu contraseña' : null,
                           onFieldSubmitted: (_) => _submit(),
-                        ),
-
-                        const SizedBox(height: 14),
-
-                        // Checkbox "Recordar mi cuenta" sobre el fondo
-                        Row(
-                          children: [
-                            SizedBox(
-                              height: 22,
-                              width: 22,
-                              child: Checkbox(
-                                value: _rememberUser,
-                                activeColor: AppColors.gold,
-                                checkColor: Colors.white,
-                                side: const BorderSide(color: Colors.white, width: 1.5),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                                onChanged: (val) => setState(() => _rememberUser = val ?? false),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            GestureDetector(
-                              onTap: () => setState(() => _rememberUser = !_rememberUser),
-                              child: const Text(
-                                'Recordar mi cuenta',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  shadows: [
-                                    Shadow(color: Colors.black54, blurRadius: 4, offset: Offset(0, 1)),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
                         ),
 
                         // Banner de Error semántico
