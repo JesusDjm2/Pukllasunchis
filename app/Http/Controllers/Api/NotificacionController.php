@@ -10,7 +10,9 @@ class NotificacionController extends Controller
 {
     public function index(Request $request)
     {
-        $notificaciones = $request->user()->notifications()->paginate(15);
+        // Orden estrictamente cronológico (más recientes primero) sin excluir
+        // ninguna notificación: las leídas permanecen siempre en el historial.
+        $notificaciones = $request->user()->notifications()->latest()->paginate(50);
 
         return response()->json([
             'data' => NotificacionResource::collection($notificaciones),

@@ -5,6 +5,8 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_state.dart';
+import '../../../core/widgets/puklla_app_bar_actions.dart';
+import '../../../core/widgets/puklla_bottom_nav_bar.dart';
 import '../../../routing/app_drawer.dart';
 import '../../notificaciones/presentation/notification_bell_action.dart';
 import '../application/bolsa_trabajo_providers.dart';
@@ -20,9 +22,10 @@ class BolsaTrabajoScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Bolsa de trabajo'),
-        actions: const [NotificationBellAction()],
+        actions: const [PukllaAppBarActions()],
       ),
-      drawer: const AppDrawer(),
+      endDrawer: const AppDrawer(),
+      bottomNavigationBar: const PukllaBottomNavBar(),
       body: RefreshIndicator(
         onRefresh: () => ref.refresh(bolsaTrabajoProvider.future),
         child: ofertasAsync.when(

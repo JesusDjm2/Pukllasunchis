@@ -24,6 +24,43 @@ class TaqeProyecto {
   final String? ciclo;
 }
 
+class TaqeCursoOpcion {
+  const TaqeCursoOpcion({
+    required this.id,
+    required this.nombre,
+    this.ciclo,
+  });
+
+  factory TaqeCursoOpcion.fromJson(Map<String, dynamic> json) {
+    return TaqeCursoOpcion(
+      id: json['id'] as int? ?? 0,
+      nombre: json['nombre'] as String? ?? '',
+      ciclo: json['ciclo'] as String?,
+    );
+  }
+
+  final int id;
+  final String nombre;
+  final String? ciclo;
+}
+
+class TaqeCompanero {
+  const TaqeCompanero({
+    required this.id,
+    required this.nombre,
+  });
+
+  factory TaqeCompanero.fromJson(Map<String, dynamic> json) {
+    return TaqeCompanero(
+      id: json['id'] as int? ?? 0,
+      nombre: json['nombre'] as String? ?? '',
+    );
+  }
+
+  final int id;
+  final String nombre;
+}
+
 class TaqeIntegrante {
   const TaqeIntegrante({
     required this.id,
@@ -59,7 +96,10 @@ class TaqeArchivo {
     this.url,
     required this.esEnlace,
     this.subidoPor,
+    this.subidoPorId,
     this.fecha,
+    this.puedeEliminar = false,
+    this.puedeMover = false,
   });
 
   factory TaqeArchivo.fromJson(Map<String, dynamic> json) {
@@ -71,7 +111,10 @@ class TaqeArchivo {
       url: json['url'] as String?,
       esEnlace: json['es_enlace'] as bool? ?? false,
       subidoPor: json['subido_por'] as String?,
+      subidoPorId: json['subido_por_id'] as int?,
       fecha: json['fecha'] as String?,
+      puedeEliminar: json['puede_eliminar'] as bool? ?? false,
+      puedeMover: json['puede_mover'] as bool? ?? false,
     );
   }
 
@@ -82,7 +125,10 @@ class TaqeArchivo {
   final String? url;
   final bool esEnlace;
   final String? subidoPor;
+  final int? subidoPorId;
   final String? fecha;
+  final bool puedeEliminar;
+  final bool puedeMover;
 }
 
 class TaqeGrupo {
@@ -94,6 +140,9 @@ class TaqeGrupo {
     required this.estado,
     required this.esOrganizador,
     required this.entregado,
+    this.entregadoAt,
+    this.puedeEntregar = false,
+    this.puedeReabrir = false,
     required this.integrantes,
     required this.evidencias,
     required this.finales,
@@ -112,6 +161,9 @@ class TaqeGrupo {
       estado: json['estado'] as String? ?? 'en_proceso',
       esOrganizador: json['es_organizador'] as bool? ?? false,
       entregado: json['entregado'] as bool? ?? false,
+      entregadoAt: json['entregado_at'] as String?,
+      puedeEntregar: json['puede_entregar'] as bool? ?? false,
+      puedeReabrir: json['puede_reabrir'] as bool? ?? false,
       integrantes: integrantesList
           .map((e) => TaqeIntegrante.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -131,6 +183,9 @@ class TaqeGrupo {
   final String estado;
   final bool esOrganizador;
   final bool entregado;
+  final String? entregadoAt;
+  final bool puedeEntregar;
+  final bool puedeReabrir;
   final List<TaqeIntegrante> integrantes;
   final List<TaqeArchivo> evidencias;
   final List<TaqeArchivo> finales;
@@ -189,6 +244,7 @@ class TaqeData {
   const TaqeData({
     required this.periodoNombre,
     this.proyecto,
+    this.cursosSinGrupo = const [],
     required this.misGrupos,
     required this.invitacionesPendientes,
     required this.investigadores,
@@ -197,6 +253,7 @@ class TaqeData {
 
   factory TaqeData.fromJson(Map<String, dynamic> json) {
     final proyectoMap = json['proyecto'] as Map<String, dynamic>?;
+    final cursosList = json['cursos_sin_grupo'] as List? ?? [];
     final gruposList = json['mis_grupos'] as List? ?? [];
     final invitacionesList = json['invitaciones_pendientes'] as List? ?? [];
     final investigadoresList = json['investigadores'] as List? ?? [];
@@ -204,6 +261,9 @@ class TaqeData {
     return TaqeData(
       periodoNombre: json['periodo_nombre'] as String? ?? '',
       proyecto: proyectoMap != null ? TaqeProyecto.fromJson(proyectoMap) : null,
+      cursosSinGrupo: cursosList
+          .map((e) => TaqeCursoOpcion.fromJson(e as Map<String, dynamic>))
+          .toList(),
       misGrupos: gruposList
           .map((e) => TaqeGrupo.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -219,6 +279,7 @@ class TaqeData {
 
   final String periodoNombre;
   final TaqeProyecto? proyecto;
+  final List<TaqeCursoOpcion> cursosSinGrupo;
   final List<TaqeGrupo> misGrupos;
   final List<TaqeInvitacion> invitacionesPendientes;
   final List<TaqeInvestigador> investigadores;

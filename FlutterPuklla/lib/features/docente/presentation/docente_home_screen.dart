@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_state.dart';
+import '../../../core/widgets/puklla_app_bar_actions.dart';
+import '../../../core/widgets/puklla_bottom_nav_bar.dart';
 import '../../../core/widgets/stat_card.dart';
 import '../../../routing/app_drawer.dart';
 import '../../auth/application/auth_controller.dart';
@@ -46,9 +48,10 @@ class _DocenteHomeScreenState extends ConsumerState<DocenteHomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Mi panel'),
-        actions: const [NotificationBellAction()],
+        actions: const [PukllaAppBarActions()],
       ),
-      drawer: const AppDrawer(),
+      endDrawer: const AppDrawer(),
+      bottomNavigationBar: const PukllaBottomNavBar(),
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(docenteResumenProvider);

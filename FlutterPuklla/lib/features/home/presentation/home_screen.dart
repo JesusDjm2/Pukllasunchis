@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/puklla_app_bar_actions.dart';
+import '../../../core/widgets/puklla_bottom_nav_bar.dart';
 import '../../../routing/app_drawer.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../comunicados/application/comunicados_providers.dart';
@@ -32,10 +34,11 @@ class HomeScreen extends ConsumerWidget {
           'Portal Estudiantil',
           style: TextStyle(fontWeight: FontWeight.w800, fontSize: 19),
         ),
-        actions: const [NotificationBellAction()],
+        actions: const [PukllaAppBarActions()],
         elevation: 0,
       ),
-      drawer: const AppDrawer(),
+      endDrawer: const AppDrawer(),
+      bottomNavigationBar: const PukllaBottomNavBar(),
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(perfilProvider);

@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_state.dart';
+import '../../../core/widgets/puklla_app_bar_actions.dart';
+import '../../../core/widgets/puklla_bottom_nav_bar.dart';
 import '../../../routing/app_drawer.dart';
 import '../application/docente_providers.dart';
 import '../data/docente_incidencia.dart';
@@ -19,8 +21,12 @@ class DocenteIncidenciasScreen extends ConsumerWidget {
     final pagina = ref.watch(docenteIncidenciasProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Mis incidencias')),
-      drawer: const AppDrawer(),
+      appBar: AppBar(
+        title: const Text('Mis incidencias'),
+        actions: const [PukllaAppBarActions()],
+      ),
+      endDrawer: const AppDrawer(),
+      bottomNavigationBar: const PukllaBottomNavBar(),
       body: pagina.when(
         data: (data) => data.items.isEmpty
             ? const EmptyState(

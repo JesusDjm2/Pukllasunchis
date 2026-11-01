@@ -6,53 +6,161 @@ import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_state.dart';
+import '../../../core/widgets/puklla_bottom_nav_bar.dart';
 import '../../../routing/app_drawer.dart';
 import '../application/notificaciones_controller.dart';
 import '../application/notificaciones_providers.dart';
 import '../data/notificacion.dart';
 import '../data/notificaciones_page.dart';
 
-class NotificacionesScreen extends ConsumerWidget {
+class NotificacionesScreen extends ConsumerStatefulWidget {
   const NotificacionesScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<NotificacionesScreen> createState() => _NotificacionesScreenState();
+}
+
+class _NotificacionesScreenState extends ConsumerState<NotificacionesScreen> {
+  int _filtroSeleccionado = 0; // 0: Todas, 1: Solo no leídas
+
+  @override
+  Widget build(BuildContext context) {
     final pagina = ref.watch(notificacionesProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Notificaciones'),
         actions: [
-          TextButton(
-            onPressed: () => ref.read(notificacionesControllerProvider).marcarTodasLeidas(),
-            child: const Text('Marcar todas', style: TextStyle(color: Colors.white)),
+          TextButton.icon(
+            onPressed: () async {
+              await ref.read(notificacionesControllerProvider).marcarTodasLeidas();
+              ref.invalidate(notificacionesProvider);
+            },
+            icon: const Icon(Icons.done_all, size: 16, color: Colors.white),
+            label: const Text('Marcar todas', style: TextStyle(color: Colors.white, fontSize: 12)),
           ),
+          Builder(
+            builder: (ctx) => IconButton(
+              icon: const Icon(Icons.menu_rounded),
+              tooltip: 'Menú principal',
+              onPressed: () => Scaffold.of(ctx).openEndDrawer(),
+            ),
+          ),
+          const SizedBox(width: 4),
         ],
       ),
-      drawer: const AppDrawer(),
+      endDrawer: const AppDrawer(),
+      bottomNavigationBar: const PukllaBottomNavBar(),
       body: pagina.when(
-        data: (data) => data.items.isEmpty
-            ? const EmptyState(icon: Icons.notifications_none, message: 'No tienes notificaciones todavía.')
-            : Column(
-                children: [
-                  Expanded(
-                    child: RefreshIndicator(
-                      onRefresh: () => ref.refresh(notificacionesProvider.future),
-                      child: ListView(
-                        padding: const EdgeInsets.all(16),
-                        children: _agrupadasPorFecha(data.items, context),
-                      ),
+        data: (data) {
+          // Orden estrictamente cronológico (más recientes primero)
+          final itemsOrdenados = List<Notificacion>.from(data.items)
+            ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+          final itemsFiltrados = _filtroSeleccionado == 1
+              ? itemsOrdenados.where((n) => !n.leida).toList()
+              : itemsOrdenados;
+
+          final noLeidasCount = itemsOrdenados.where((n) => !n.leida).length;
+
+          return Column(
+            children: [
+              // Barra de filtros senior (Todas vs No leídas)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
+                ),
+                child: Row(
+                  children: [
+                    _FiltroChip(
+                      label: 'Todas (${itemsOrdenados.length})',
+                      isSelected: _filtroSeleccionado == 0,
+                      onTap: () => setState(() => _filtroSeleccionado = 0),
                     ),
-                  ),
-                  _PaginadorBar(pagina: data),
-                ],
+                    const SizedBox(width: 8),
+                    _FiltroChip(
+                      label: 'No leídas ($noLeidasCount)',
+                      isSelected: _filtroSeleccionado == 1,
+                      badgeCount: noLeidasCount,
+                      onTap: () => setState(() => _filtroSeleccionado = 1),
+                    ),
+                  ],
+                ),
               ),
+
+              // Lista de notificaciones
+              Expanded(
+                child: itemsFiltrados.isEmpty
+                    ? Center(
+                        child: EmptyState(
+                          icon: _filtroSeleccionado == 1 ? Icons.mark_email_read_outlined : Icons.notifications_none,
+                          message: _filtroSeleccionado == 1
+                              ? '¡Estás al día! No tienes notificaciones pendientes.'
+                              : 'No tienes notificaciones registradas todavía.',
+                        ),
+                      )
+                    : RefreshIndicator(
+                        onRefresh: () => ref.refresh(notificacionesProvider.future),
+                        child: ListView(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          children: _agrupadasPorFecha(itemsFiltrados, context),
+                        ),
+                      ),
+              ),
+              _PaginadorBar(pagina: data),
+            ],
+          );
+        },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => Padding(
           padding: const EdgeInsets.all(16),
           child: ErrorState(
             message: error is ApiException ? error.message : 'No se pudieron cargar las notificaciones.',
             onRetry: () => ref.refresh(notificacionesProvider),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FiltroChip extends StatelessWidget {
+  const _FiltroChip({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+    this.badgeCount = 0,
+  });
+
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+  final int badgeCount;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.gold.withValues(alpha: 0.16) : const Color(0xFFF1F5F9),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? AppColors.goldHover : Colors.transparent,
+            width: 1.2,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12.5,
+            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+            color: isSelected ? AppColors.goldHover : const Color(0xFF475569),
           ),
         ),
       ),
@@ -70,13 +178,21 @@ List<Widget> _agrupadasPorFecha(List<Notificacion> items, BuildContext context) 
       grupoActual = grupo;
       widgets.add(
         Padding(
-          padding: const EdgeInsets.only(top: 16, bottom: 8),
-          child: Text(
-            grupo,
-            style: Theme.of(context)
-                .textTheme
-                .titleSmall
-                ?.copyWith(color: AppColors.muted, fontWeight: FontWeight.w700),
+          padding: const EdgeInsets.only(top: 14, bottom: 8),
+          child: Row(
+            children: [
+              Text(
+                grupo,
+                style: const TextStyle(
+                  color: Color(0xFF64748B),
+                  fontWeight: FontWeight.w800,
+                  fontSize: 12.5,
+                  letterSpacing: 0.3,
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Expanded(child: Divider(color: Color(0xFFE2E8F0), thickness: 1)),
+            ],
           ),
         ),
       );
@@ -112,8 +228,34 @@ class _NotificacionTile extends ConsumerWidget {
         return Icons.campaign_outlined;
       case 'MatriculaVoucherVerificado':
         return Icons.verified_outlined;
+      case 'TaqeInvitacionGrupo':
+      case 'TaqeMiembroAcepto':
+      case 'TaqeMiembroSalio':
+      case 'TaqeIntegranteRetirado':
+        return Icons.science_outlined;
+      case 'TutoriaCitaCreada':
+      case 'TutoriaCitaActualizada':
+        return Icons.support_agent_outlined;
       default:
         return Icons.notifications_outlined;
+    }
+  }
+
+  Color get _colorTipo {
+    switch (notificacion.tipo) {
+      case 'CalificacionRegistrada':
+        return const Color(0xFF10B981);
+      case 'ComunicadoPublicado':
+        return AppColors.goldHover;
+      case 'MatriculaVoucherVerificado':
+        return const Color(0xFF0284C7);
+      case 'TaqeInvitacionGrupo':
+      case 'TaqeMiembroAcepto':
+        return const Color(0xFF059669);
+      case 'TutoriaCitaCreada':
+        return const Color(0xFF7C3AED);
+      default:
+        return AppColors.teal;
     }
   }
 
@@ -125,6 +267,14 @@ class _NotificacionTile extends ConsumerWidget {
         return '/comunicados';
       case 'MatriculaVoucherVerificado':
         return '/home';
+      case 'TaqeInvitacionGrupo':
+      case 'TaqeMiembroAcepto':
+      case 'TaqeMiembroSalio':
+      case 'TaqeIntegranteRetirado':
+        return '/taqe';
+      case 'TutoriaCitaCreada':
+      case 'TutoriaCitaActualizada':
+        return '/tutoria';
       default:
         return '/home';
     }
@@ -132,33 +282,128 @@ class _NotificacionTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Card(
+    final color = _colorTipo;
+
+    return Container(
       margin: const EdgeInsets.only(bottom: 8),
-      color: notificacion.leida ? null : AppColors.gold.withValues(alpha: 0.05),
-      child: ListTile(
-        leading: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: (notificacion.leida ? AppColors.muted : AppColors.gold).withValues(alpha: 0.14),
-            shape: BoxShape.circle,
+      decoration: BoxDecoration(
+        color: notificacion.leida ? Colors.white : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: notificacion.leida ? const Color(0xFFE2E8F0) : color.withValues(alpha: 0.35),
+          width: notificacion.leida ? 1 : 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF0F172A).withValues(alpha: notificacion.leida ? 0.02 : 0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
-          child: Icon(_icono, size: 19, color: notificacion.leida ? AppColors.muted : AppColors.gold),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(14),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: () async {
+            if (!notificacion.leida) {
+              await ref.read(notificacionesControllerProvider).marcarLeida(notificacion.id);
+            }
+            if (context.mounted) {
+              context.push(_destino);
+            }
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Ícono del tipo de notificación
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: (notificacion.leida ? const Color(0xFF64748B) : color).withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    _icono,
+                    size: 20,
+                    color: notificacion.leida ? const Color(0xFF64748B) : color,
+                  ),
+                ),
+                const SizedBox(width: 12),
+
+                // Contenido y fecha
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              notificacion.mensaje,
+                              style: TextStyle(
+                                fontSize: 13.5,
+                                height: 1.35,
+                                fontWeight: notificacion.leida ? FontWeight.w500 : FontWeight.w700,
+                                color: notificacion.leida ? const Color(0xFF334155) : const Color(0xFF0F172A),
+                              ),
+                            ),
+                          ),
+                          if (!notificacion.leida) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: AppColors.gold.withValues(alpha: 0.18),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Text(
+                                'NUEVA',
+                                style: TextStyle(
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.goldHover,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.access_time_rounded,
+                            size: 12.5,
+                            color: const Color(0xFF94A3B8),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            _formatFechaHora(notificacion.createdAt),
+                            style: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
+                          ),
+                          const Spacer(),
+                          Text(
+                            notificacion.leida ? 'Leída' : 'Toca para abrir',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: notificacion.leida ? const Color(0xFF94A3B8) : AppColors.goldHover,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-        title: Text(
-          notificacion.mensaje,
-          style: TextStyle(fontWeight: notificacion.leida ? FontWeight.normal : FontWeight.w700),
-        ),
-        subtitle: Text(_formatFechaHora(notificacion.createdAt)),
-        trailing: notificacion.leida
-            ? null
-            : const CircleAvatar(radius: 4, backgroundColor: AppColors.gold),
-        onTap: () async {
-          if (!notificacion.leida) {
-            await ref.read(notificacionesControllerProvider).marcarLeida(notificacion.id);
-          }
-          if (context.mounted) context.push(_destino);
-        },
       ),
     );
   }
@@ -173,23 +418,29 @@ class _PaginadorBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     if (pagina.lastPage <= 1) return const SizedBox.shrink();
 
-    return Padding(
+    return Container(
+      color: Colors.white,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          TextButton(
+          TextButton.icon(
             onPressed: pagina.hayPaginaAnterior
                 ? () => ref.read(notificacionesPageIndexProvider.notifier).state--
                 : null,
-            child: const Text('Anterior'),
+            icon: const Icon(Icons.chevron_left, size: 18),
+            label: const Text('Anterior'),
           ),
-          Text('Página ${pagina.currentPage} de ${pagina.lastPage}'),
-          TextButton(
+          Text(
+            'Página ${pagina.currentPage} de ${pagina.lastPage}',
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
+          ),
+          TextButton.icon(
             onPressed: pagina.hayPaginaSiguiente
                 ? () => ref.read(notificacionesPageIndexProvider.notifier).state++
                 : null,
-            child: const Text('Siguiente'),
+            label: const Text('Siguiente'),
+            icon: const Icon(Icons.chevron_right, size: 18),
           ),
         ],
       ),
@@ -200,7 +451,8 @@ class _PaginadorBar extends ConsumerWidget {
 String _formatFechaHora(DateTime fecha) {
   final dia = fecha.day.toString().padLeft(2, '0');
   final mes = fecha.month.toString().padLeft(2, '0');
+  final anio = fecha.year;
   final hora = fecha.hour.toString().padLeft(2, '0');
   final minuto = fecha.minute.toString().padLeft(2, '0');
-  return '$dia/$mes · $hora:$minuto';
+  return '$dia/$mes/$anio · $hora:$minuto';
 }

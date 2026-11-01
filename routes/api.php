@@ -60,9 +60,21 @@ Route::prefix('v1')->group(function () {
         Route::post('/sugerencia', [TutoriaController::class, 'storeSugerencia']);
 
         // Taq'e: proyectos integradores, grupos y entregables
-        Route::get('/taqe', [TaqeController::class, 'index']);
-        Route::post('/taqe/responder', [TaqeController::class, 'responder']);
-        Route::post('/taqe/solicitar-ayuda', [TaqeController::class, 'solicitarAyuda']);
+        Route::prefix('taqe')->group(function () {
+            Route::get('/', [TaqeController::class, 'index']);
+            Route::post('/grupos', [TaqeController::class, 'crearGrupo']);
+            Route::get('/cursos/{curso}/alumnos', [TaqeController::class, 'alumnosDelCurso']);
+            Route::post('/grupos/{grupo}/trabajos', [TaqeController::class, 'subirTrabajo']);
+            Route::post('/grupos/{grupo}/entregar', [TaqeController::class, 'entregar']);
+            Route::post('/grupos/{grupo}/reabrir', [TaqeController::class, 'reabrir']);
+            Route::post('/grupos/{grupo}/integrantes', [TaqeController::class, 'agregarIntegrantes']);
+            Route::delete('/grupos/{grupo}/integrantes/{integrante}', [TaqeController::class, 'retirarIntegrante']);
+            Route::post('/grupos/{grupo}/salir', [TaqeController::class, 'salir']);
+            Route::post('/trabajos/{trabajo}/mover', [TaqeController::class, 'moverTrabajo']);
+            Route::delete('/trabajos/{trabajo}', [TaqeController::class, 'eliminarTrabajo']);
+            Route::post('/responder', [TaqeController::class, 'responder']);
+            Route::post('/solicitar-ayuda', [TaqeController::class, 'solicitarAyuda']);
+        });
 
         Route::get('/incidencias', [IncidenciaController::class, 'index']);
 

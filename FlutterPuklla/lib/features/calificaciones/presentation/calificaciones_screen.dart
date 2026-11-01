@@ -5,6 +5,8 @@ import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_state.dart';
+import '../../../core/widgets/puklla_app_bar_actions.dart';
+import '../../../core/widgets/puklla_bottom_nav_bar.dart';
 import '../../../routing/app_drawer.dart';
 import '../../notificaciones/presentation/notification_bell_action.dart';
 import '../application/calificaciones_providers.dart';
@@ -23,7 +25,7 @@ class CalificacionesScreen extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Calificaciones y matrícula'),
-          actions: const [NotificationBellAction()],
+          actions: const [PukllaAppBarActions()],
           bottom: const TabBar(
             labelColor: AppColors.gold,
             unselectedLabelColor: Colors.white70,
@@ -32,7 +34,8 @@ class CalificacionesScreen extends StatelessWidget {
             tabs: [Tab(text: 'Calificaciones'), Tab(text: 'Matrícula')],
           ),
         ),
-        drawer: const AppDrawer(),
+        endDrawer: const AppDrawer(),
+        bottomNavigationBar: const PukllaBottomNavBar(),
         body: const TabBarView(
           children: [_CalificacionesTab(), _MatriculaTab()],
         ),

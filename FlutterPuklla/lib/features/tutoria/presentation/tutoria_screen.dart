@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/error_state.dart';
+import '../../../core/widgets/puklla_app_bar_actions.dart';
+import '../../../core/widgets/puklla_bottom_nav_bar.dart';
 import '../../../routing/app_drawer.dart';
 import '../../notificaciones/presentation/notification_bell_action.dart';
 import '../application/tutoria_providers.dart';
@@ -148,9 +150,10 @@ class _TutoriaScreenState extends ConsumerState<TutoriaScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Tutoría y Sugerencias'),
-        actions: const [NotificationBellAction()],
+        actions: const [PukllaAppBarActions()],
       ),
-      drawer: const AppDrawer(),
+      endDrawer: const AppDrawer(),
+      bottomNavigationBar: const PukllaBottomNavBar(),
       body: tutoriaAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, stack) => ErrorState(
