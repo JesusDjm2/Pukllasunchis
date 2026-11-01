@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/puklla_app_bar_actions.dart';
+import '../../../core/widgets/puklla_avatar.dart';
 import '../../../core/widgets/puklla_bottom_nav_bar.dart';
 import '../../../routing/app_drawer.dart';
 import '../../auth/application/auth_controller.dart';
@@ -16,16 +17,98 @@ import '../application/home_providers.dart';
 import '../data/curso.dart';
 import '../data/periodo_actual.dart';
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  static bool _popupMatriculaMostrado = false;
+
+  void _verificarAlertaMatricula(PeriodoActual? periodo, bool? yaMatriculado) {
+    if (_popupMatriculaMostrado) return;
+    if (periodo == null || !periodo.formularioHabilitado) return;
+    if (yaMatriculado == null || yaMatriculado == true) return;
+
+    _popupMatriculaMostrado = true;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        barrierDismissible: true,
+        builder: (dialogCtx) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFEF3C7),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.warning_amber_rounded, color: Color(0xFFD97706), size: 24),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Text(
+                  '¡Aún no te has matriculado!',
+                  style: TextStyle(fontSize: 16.5, fontWeight: FontWeight.w800, color: Color(0xFF92400E)),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'El período académico ${periodo.nombre} ya se encuentra activo con el formulario de matrícula habilitado.',
+                style: const TextStyle(fontSize: 13.5, color: Color(0xFF334155), height: 1.4),
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                'No estás matriculado en el período actual activo. Completa tu ficha de matrícula para confirmar tus asignaturas, registrar tus datos y acceder a tus notas.',
+                style: TextStyle(fontSize: 13, color: Color(0xFF64748B), height: 1.35),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogCtx),
+              child: const Text('Recordarme después', style: TextStyle(color: Color(0xFF64748B))),
+            ),
+            FilledButton.icon(
+              onPressed: () {
+                Navigator.pop(dialogCtx);
+                context.push('/matricula/formulario');
+              },
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.goldHover,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              icon: const Icon(Icons.arrow_forward_rounded, size: 16),
+              label: const Text('Completar matrícula ahora', style: TextStyle(fontWeight: FontWeight.w700)),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final user = ref.watch(authControllerProvider).user;
     final perfilAsync = ref.watch(perfilProvider);
     final periodoAsync = ref.watch(periodoActualProvider);
     final cursosAsync = ref.watch(cursosProvider);
     final comunicadosAsync = ref.watch(comunicadosProvider);
+    final yaMatriculadoAsync = ref.watch(yaMatriculadoProvider);
+
+    // Si el usuario es alumno y el formulario está abierto sin matrícula, mostrar popup de alerta
+    _verificarAlertaMatricula(periodoAsync.valueOrNull, yaMatriculadoAsync.valueOrNull);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
@@ -45,6 +128,7 @@ class HomeScreen extends ConsumerWidget {
           ref.invalidate(periodoActualProvider);
           ref.invalidate(cursosProvider);
           ref.invalidate(comunicadosProvider);
+          ref.invalidate(yaMatriculadoProvider);
           await ref.read(perfilProvider.future);
         },
         child: ListView(
@@ -52,13 +136,21 @@ class HomeScreen extends ConsumerWidget {
           children: [
             // ── HERO BANNER SENIOR CON IDENTIDAD VISUAL ──
             perfilAsync.when(
-              data: (perfil) => _HeroHeader(perfil: perfil),
+              data: (perfil) => _HeroHeader(
+                perfil: perfil,
+                yaMatriculado: yaMatriculadoAsync.valueOrNull,
+                periodoNombre: periodoAsync.valueOrNull?.nombre,
+                formularioHabilitado: periodoAsync.valueOrNull?.formularioHabilitado ?? false,
+              ),
               loading: () => Container(
                 height: 180,
                 color: AppColors.teal,
                 child: const Center(child: CircularProgressIndicator(color: Colors.white)),
               ),
-              error: (_, __) => _HeroHeaderFallback(userNombre: user?.name ?? 'Estudiante'),
+              error: (_, __) => _HeroHeaderFallback(
+                userNombre: user?.name ?? 'Estudiante',
+                fotoUrl: user?.foto,
+              ),
             ),
 
             Padding(
@@ -66,6 +158,17 @@ class HomeScreen extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // ── BANNER DE ALERTA DE MATRÍCULA PENDIENTE O EXITOSA ──
+                  if (periodoAsync.valueOrNull != null) ...[
+                    if (yaMatriculadoAsync.valueOrNull == false && (periodoAsync.valueOrNull?.formularioHabilitado ?? false)) ...[
+                      _AlertaMatriculaBanner(periodo: periodoAsync.valueOrNull!),
+                      const SizedBox(height: 14),
+                    ] else if (yaMatriculadoAsync.valueOrNull == true) ...[
+                      _ExitoMatriculaBanner(periodo: periodoAsync.valueOrNull!),
+                      const SizedBox(height: 14),
+                    ],
+                  ],
+
                   // ── TARJETA DE PERIODO ACTUAL & HORARIO ──
                   periodoAsync.when(
                     data: (periodo) => periodo != null
@@ -285,9 +388,17 @@ class HomeScreen extends ConsumerWidget {
 
 // ── CABECERA HERO SENIOR ──
 class _HeroHeader extends StatelessWidget {
-  const _HeroHeader({required this.perfil});
+  const _HeroHeader({
+    required this.perfil,
+    this.yaMatriculado,
+    this.periodoNombre,
+    this.formularioHabilitado = false,
+  });
 
   final AlumnoPerfil perfil;
+  final bool? yaMatriculado;
+  final String? periodoNombre;
+  final bool formularioHabilitado;
 
   @override
   Widget build(BuildContext context) {
@@ -323,32 +434,12 @@ class _HeroHeader extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  // Avatar con aro dorado
-                  Container(
-                    width: 58,
-                    height: 58,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.gold, width: 2.2),
-                      color: Colors.white.withValues(alpha: 0.15),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.2),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      iniciales,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 21,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
+                  // Avatar: si tiene foto se muestra, si no las iniciales
+                  PukllaAvatar(
+                    fotoUrl: perfil.foto,
+                    iniciales: iniciales,
+                    size: 58,
+                    borderWidth: 2.2,
                   ),
                   const SizedBox(width: 14),
                   Expanded(
@@ -415,12 +506,20 @@ class _HeroHeader extends StatelessWidget {
                     bg: Colors.white.withValues(alpha: 0.12),
                     color: Colors.white,
                   ),
-                  _PillBadge(
-                    icon: Icons.check_circle_outline,
-                    label: 'Matrícula Verificada',
-                    bg: const Color(0xFF10B981).withValues(alpha: 0.2),
-                    color: const Color(0xFF6EE7B7),
-                  ),
+                  if (yaMatriculado == true)
+                    _PillBadge(
+                      icon: Icons.check_circle_rounded,
+                      label: 'Matrícula exitosa · ${periodoNombre ?? ""}',
+                      bg: const Color(0xFF10B981).withValues(alpha: 0.22),
+                      color: const Color(0xFF6EE7B7),
+                    )
+                  else if (formularioHabilitado)
+                    _PillBadge(
+                      icon: Icons.warning_amber_rounded,
+                      label: 'Matrícula pendiente · ${periodoNombre ?? ""}',
+                      bg: const Color(0xFFF59E0B).withValues(alpha: 0.28),
+                      color: const Color(0xFFFDE68A),
+                    ),
                   if (perfil.ayudaEconomica == true)
                     _PillBadge(
                       icon: Icons.star_border,
@@ -439,11 +538,14 @@ class _HeroHeader extends StatelessWidget {
 }
 
 class _HeroHeaderFallback extends StatelessWidget {
-  const _HeroHeaderFallback({required this.userNombre});
+  const _HeroHeaderFallback({required this.userNombre, this.fotoUrl});
   final String userNombre;
+  final String? fotoUrl;
 
   @override
   Widget build(BuildContext context) {
+    final inicial = userNombre.isNotEmpty ? userNombre[0].toUpperCase() : 'P';
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
@@ -453,17 +555,147 @@ class _HeroHeaderFallback extends StatelessWidget {
         ),
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
       ),
+      child: Row(
+        children: [
+          PukllaAvatar(
+            fotoUrl: fotoUrl,
+            iniciales: inicial,
+            size: 50,
+            borderWidth: 2,
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '¡Hola, $userNombre!',
+                  style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'Bienvenido al portal móvil de la EESP Pukllasunchis',
+                  style: TextStyle(color: Color(0xFFCBD5E1), fontSize: 13),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Banner de alerta cuando la matrícula está abierta en el período activo y no se ha completado
+class _AlertaMatriculaBanner extends StatelessWidget {
+  const _AlertaMatriculaBanner({required this.periodo});
+  final PeriodoActual periodo;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFBEB),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFFDE68A), width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFD97706).withValues(alpha: 0.08),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '¡Hola, $userNombre!',
-            style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFEF3C7),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.warning_amber_rounded, color: Color(0xFFD97706), size: 22),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'No estás matriculado en el período activo',
+                      style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13.5, color: Color(0xFF92400E)),
+                    ),
+                    Text(
+                      'Período ${periodo.nombre} · Formulario disponible',
+                      style: const TextStyle(fontSize: 12, color: Color(0xFFB45309)),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 10),
           const Text(
-            'Bienvenido al portal móvil de la EESP Pukllasunchis',
-            style: TextStyle(color: Color(0xFFCBD5E1), fontSize: 13),
+            'El formulario de matrícula ya está habilitado. Llénalo ahora para confirmar tus datos socioeconómicos y registrar tus asignaturas.',
+            style: TextStyle(fontSize: 12.5, color: Color(0xFF78350F), height: 1.35),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: () => context.push('/matricula/formulario'),
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.goldHover,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                padding: const EdgeInsets.symmetric(vertical: 10),
+              ),
+              icon: const Icon(Icons.edit_document, size: 16),
+              label: const Text('Completar matrícula ahora', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Banner de confirmación de matrícula exitosa
+class _ExitoMatriculaBanner extends StatelessWidget {
+  const _ExitoMatriculaBanner({required this.periodo});
+  final PeriodoActual periodo;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF0FDF4),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFBBF7D0)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.check_circle_rounded, color: Color(0xFF16A34A), size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              '¡Matrícula exitosa! Estás matriculado en el período ${periodo.nombre}.',
+              style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: Color(0xFF166534)),
+            ),
+          ),
+          TextButton(
+            onPressed: () => context.push('/calificaciones'),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: const Text('Ver ficha', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Color(0xFF15803D))),
           ),
         ],
       ),

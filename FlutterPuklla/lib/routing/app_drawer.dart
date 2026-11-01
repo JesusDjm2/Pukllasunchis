@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../core/theme/app_assets.dart';
 import '../core/theme/app_colors.dart';
+import '../core/widgets/puklla_avatar.dart';
 import '../features/auth/application/auth_controller.dart';
 
 class AppDrawer extends ConsumerWidget {
@@ -40,25 +41,11 @@ class AppDrawer extends ConsumerWidget {
                   const SizedBox(height: 18),
                   Row(
                     children: [
-                      Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: AppColors.gold, width: 2),
-                          color: Colors.white.withValues(alpha: 0.15),
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          (user?.name.isNotEmpty ?? false)
-                              ? user!.name[0].toUpperCase()
-                              : 'P',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
+                      PukllaAvatar(
+                        fotoUrl: user?.foto,
+                        iniciales: (user?.name.isNotEmpty ?? false) ? user!.name[0].toUpperCase() : 'P',
+                        size: 44,
+                        borderWidth: 2,
                       ),
                       const SizedBox(width: 12),
                       Expanded(

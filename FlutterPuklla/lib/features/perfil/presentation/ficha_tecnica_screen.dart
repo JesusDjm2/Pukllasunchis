@@ -10,6 +10,7 @@ import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/error_state.dart';
 import '../../../core/widgets/puklla_app_bar_actions.dart';
+import '../../../core/widgets/puklla_avatar.dart';
 import '../../../core/widgets/puklla_bottom_nav_bar.dart';
 import '../../../core/widgets/section_header.dart';
 import '../../../routing/app_drawer.dart';
@@ -120,13 +121,11 @@ class _Hero extends StatelessWidget {
       ),
       child: Row(
         children: [
-          CircleAvatar(
-            radius: 26,
-            backgroundColor: Colors.white.withValues(alpha: 0.15),
-            child: Text(
-              iniciales,
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 18),
-            ),
+          PukllaAvatar(
+            fotoUrl: perfil.foto,
+            iniciales: iniciales,
+            size: 52,
+            borderWidth: 2,
           ),
           const SizedBox(width: 14),
           Expanded(

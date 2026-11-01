@@ -9,6 +9,16 @@ class AlumnoResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        $fotoNombre = $this->user?->foto;
+        $fotoUrl = null;
+        if ($fotoNombre) {
+            if (str_starts_with($fotoNombre, 'http://') || str_starts_with($fotoNombre, 'https://')) {
+                $fotoUrl = $fotoNombre;
+            } else {
+                $fotoUrl = url('img/estudiantes/' . ltrim($fotoNombre, '/'));
+            }
+        }
+
         return [
             'id' => $this->id,
             'email' => $this->email,
@@ -16,7 +26,7 @@ class AlumnoResource extends JsonResource
             'nombres' => $this->nombres,
             'apellidos' => $this->apellidos,
             'genero' => $this->genero,
-            'foto' => $this->foto,
+            'foto' => $fotoUrl,
             'numero' => $this->numero,
             'numero_referencia' => $this->numero_referencia,
             'fecha_nacimiento' => $this->fecha_nacimiento,

@@ -13,6 +13,7 @@ class AlumnoPerfil {
     required this.apellidos,
     required this.dni,
     required this.email,
+    this.foto,
     required this.numero,
     required this.numeroReferencia,
     required this.departamento,
@@ -65,6 +66,7 @@ class AlumnoPerfil {
       apellidos: json['apellidos'] as String,
       dni: json['dni'] as String,
       email: json['email'] as String,
+      foto: json['foto'] as String?,
       numero: json['numero'] as String,
       numeroReferencia: json['numero_referencia'] as String,
       departamento: json['departamento'] as String?,
@@ -118,6 +120,7 @@ class AlumnoPerfil {
   final String apellidos;
   final String dni;
   final String email;
+  final String? foto;
   final String numero;
   final String numeroReferencia;
   final String? departamento;
