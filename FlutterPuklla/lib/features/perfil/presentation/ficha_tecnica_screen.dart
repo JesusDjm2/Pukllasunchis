@@ -31,7 +31,6 @@ class FichaTecnicaScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final perfil = ref.watch(perfilProvider);
-    final isDark = PukllaDashboardStyles.isDark(context);
 
     return Scaffold(
       backgroundColor: PukllaDashboardStyles.backgroundColor(context),

@@ -11,7 +11,6 @@ import '../../../core/widgets/puklla_bottom_nav_bar.dart';
 import '../../../routing/app_drawer.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../comunicados/application/comunicados_providers.dart';
-import '../../notificaciones/presentation/notification_bell_action.dart';
 import '../../perfil/application/perfil_providers.dart';
 import '../../perfil/data/alumno_perfil.dart';
 import '../application/home_providers.dart';

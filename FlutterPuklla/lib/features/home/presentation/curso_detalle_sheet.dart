@@ -428,7 +428,7 @@ class CursoDetalleSheet extends StatelessWidget {
           ),
           const SizedBox(height: 2),
           Text(
-            tieneNota ? nota! : '—',
+            tieneNota ? nota : '—',
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w900,

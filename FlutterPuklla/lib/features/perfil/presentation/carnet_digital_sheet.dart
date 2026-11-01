@@ -255,7 +255,7 @@ class _CarnetCredencialView extends StatelessWidget {
     final labelColor = esBiblioteca ? const Color(0xFF20ADE9) : const Color(0xFFC41E3A);
     final titulo = esBiblioteca ? 'Carnet Biblioteca' : 'ID Estudiante';
 
-    final email = perfil.email ?? '';
+    final email = perfil.email;
     final match = RegExp(r'20\d{2}').firstMatch(email);
     final anioIngreso = match?.group(0) ?? DateTime.now().year.toString();
 

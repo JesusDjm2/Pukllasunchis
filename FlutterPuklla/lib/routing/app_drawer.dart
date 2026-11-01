@@ -254,7 +254,7 @@ class AppDrawer extends ConsumerWidget {
                             scale: 0.8,
                             child: Switch.adaptive(
                               value: isDark,
-                              activeColor: AppColors.gold,
+                              activeTrackColor: AppColors.gold,
                               onChanged: (_) => ref.read(themeModeProvider.notifier).toggleTheme(),
                             ),
                           ),

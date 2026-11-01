@@ -3,8 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:flutter_puklla/core/storage/token_storage.dart';
-import 'package:flutter_puklla/features/auth/application/auth_controller.dart';
-import 'package:flutter_puklla/features/auth/data/auth_user.dart';
 import 'package:flutter_puklla/features/calificaciones/application/calificaciones_providers.dart';
 import 'package:flutter_puklla/features/calificaciones/data/calificacion.dart';
 import 'package:flutter_puklla/features/calificaciones/presentation/calificaciones_screen.dart';

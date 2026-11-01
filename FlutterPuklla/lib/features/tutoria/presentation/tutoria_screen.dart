@@ -8,7 +8,6 @@ import '../../../core/widgets/puklla_app_bar_actions.dart';
 import '../../../core/widgets/puklla_bottom_nav_bar.dart';
 import '../../../core/widgets/puklla_preloader.dart';
 import '../../../routing/app_drawer.dart';
-import '../../notificaciones/presentation/notification_bell_action.dart';
 import '../application/tutoria_providers.dart';
 import '../data/tutoria_data.dart';
 import '../data/tutoria_repository.dart';
@@ -499,7 +498,7 @@ class _FormTutoriaIndividual extends StatelessWidget {
 
             // Dropdown de opciones exactas
             DropdownButtonFormField<String>(
-              value: urgenciaSeleccionada,
+              initialValue: urgenciaSeleccionada,
               isExpanded: true,
               dropdownColor: isDark ? AppColors.darkSurfaceElevated : Colors.white,
               hint: Text(
@@ -553,7 +552,7 @@ class _FormTutoriaIndividual extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<int>(
-                value: docenteSeleccionadoId,
+                initialValue: docenteSeleccionadoId,
                 isExpanded: true,
                 dropdownColor: isDark ? AppColors.darkSurfaceElevated : Colors.white,
                 hint: Text(

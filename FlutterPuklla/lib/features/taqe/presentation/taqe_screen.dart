@@ -91,7 +91,7 @@ class _TaqeScreenState extends ConsumerState<TaqeScreen> {
                     const Text('Motivo de la solicitud:', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12.5)),
                     const SizedBox(height: 6),
                     DropdownButtonFormField<String>(
-                      value: motivo,
+                      initialValue: motivo,
                       isExpanded: true,
                       decoration: InputDecoration(
                         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -130,6 +130,7 @@ class _TaqeScreenState extends ConsumerState<TaqeScreen> {
                       ? null
                       : () async {
                           setDialogState(() => enviando = true);
+                          final messenger = ScaffoldMessenger.of(context);
                           try {
                             final repo = ref.read(taqeRepositoryProvider);
                             final msg = await repo.solicitarAyuda(
@@ -138,26 +139,22 @@ class _TaqeScreenState extends ConsumerState<TaqeScreen> {
                               mensaje: motivo == 'otro' ? mensajeController.text.trim() : null,
                             );
                             if (dialogCtx.mounted) Navigator.pop(dialogCtx);
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(msg),
-                                  backgroundColor: const Color(0xFF10B981),
-                                  behavior: SnackBarBehavior.floating,
-                                ),
-                              );
-                            }
+                            messenger.showSnackBar(
+                              SnackBar(
+                                content: Text(msg),
+                                backgroundColor: const Color(0xFF10B981),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
                           } catch (e) {
                             setDialogState(() => enviando = false);
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Error: ${e.toString()}'),
-                                  backgroundColor: AppColors.danger,
-                                  behavior: SnackBarBehavior.floating,
-                                ),
-                              );
-                            }
+                            messenger.showSnackBar(
+                              SnackBar(
+                                content: Text('Error: ${e.toString()}'),
+                                backgroundColor: AppColors.danger,
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
                           }
                         },
                   style: FilledButton.styleFrom(
@@ -351,7 +348,7 @@ class _TaqeScreenState extends ConsumerState<TaqeScreen> {
                       const Text('Curso del periodo:', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12.5)),
                       const SizedBox(height: 6),
                       DropdownButtonFormField<int>(
-                        value: cursoSeleccionado,
+                        initialValue: cursoSeleccionado,
                         isExpanded: true,
                         decoration: InputDecoration(
                           contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -2248,7 +2245,7 @@ class _CajaEntrega extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Entregado ${grupo.entregadoAt != null ? "el " + grupo.entregadoAt! : ""}. Archivos bloqueados.',
+                    'Entregado ${grupo.entregadoAt != null ? "el ${grupo.entregadoAt}" : ""}. Archivos bloqueados.',
                     style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: Color(0xFF166534)),
                   ),
                 ),
