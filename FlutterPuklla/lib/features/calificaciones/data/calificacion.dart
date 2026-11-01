@@ -1,18 +1,26 @@
+int? _toInt(dynamic value) {
+  if (value == null) return null;
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+  if (value is String) return int.tryParse(value);
+  return null;
+}
+
 /// `{valoracion_curso, calificacion_curso, calificacion_sistema}` de un
 /// parcial (Parcial 1 / Parcial 2 / Promedio) — `null` si el alumno aún no
 /// tiene esa nota registrada.
 class NotaParcial {
   const NotaParcial({
-    required this.valoracionCurso,
-    required this.calificacionCurso,
-    required this.calificacionSistema,
+    this.valoracionCurso,
+    this.calificacionCurso,
+    this.calificacionSistema,
   });
 
   factory NotaParcial.fromJson(Map<String, dynamic> json) {
     return NotaParcial(
-      valoracionCurso: json['valoracion_curso'] as String?,
-      calificacionCurso: json['calificacion_curso'] as String?,
-      calificacionSistema: json['calificacion_sistema'] as String?,
+      valoracionCurso: json['valoracion_curso']?.toString(),
+      calificacionCurso: json['calificacion_curso']?.toString(),
+      calificacionSistema: json['calificacion_sistema']?.toString(),
     );
   }
 
@@ -30,27 +38,27 @@ class CursoConNotas {
     required this.cursoNombre,
     this.cicloNombre,
     this.programaNombre,
-    required this.parcial1,
-    required this.parcial2,
-    required this.promedio,
-    required this.observaciones,
+    this.parcial1,
+    this.parcial2,
+    this.promedio,
+    this.observaciones,
   });
 
   factory CursoConNotas.fromJson(Map<String, dynamic> json) {
     NotaParcial? parcial(String key) {
       final value = json[key];
-      return value == null ? null : NotaParcial.fromJson(value as Map<String, dynamic>);
+      return value is Map<String, dynamic> ? NotaParcial.fromJson(value) : null;
     }
 
     return CursoConNotas(
-      cursoId: json['curso_id'] as int,
-      cursoNombre: json['curso_nombre'] as String,
-      cicloNombre: json['ciclo_nombre'] as String?,
-      programaNombre: json['programa_nombre'] as String?,
+      cursoId: _toInt(json['curso_id']) ?? 0,
+      cursoNombre: json['curso_nombre']?.toString() ?? '',
+      cicloNombre: json['ciclo_nombre']?.toString(),
+      programaNombre: json['programa_nombre']?.toString(),
       parcial1: parcial('parcial_1'),
       parcial2: parcial('parcial_2'),
       promedio: parcial('promedio'),
-      observaciones: json['observaciones'] as String?,
+      observaciones: json['observaciones']?.toString(),
     );
   }
 
@@ -66,7 +74,7 @@ class CursoConNotas {
 
 class PeriodoActualCalificaciones {
   const PeriodoActualCalificaciones({
-    required this.periodoNombre,
+    this.periodoNombre,
     required this.cursos,
     this.p1Visible = true,
     this.p2Visible = true,
@@ -75,15 +83,21 @@ class PeriodoActualCalificaciones {
   });
 
   factory PeriodoActualCalificaciones.fromJson(Map<String, dynamic> json) {
+    final cursosRaw = json['cursos'];
+    final cursosList = cursosRaw is List
+        ? cursosRaw
+            .whereType<Map<String, dynamic>>()
+            .map((j) => CursoConNotas.fromJson(j))
+            .toList()
+        : <CursoConNotas>[];
+
     return PeriodoActualCalificaciones(
-      periodoNombre: json['periodo_nombre'] as String?,
+      periodoNombre: json['periodo_nombre']?.toString(),
       p1Visible: json['p1_visible'] as bool? ?? true,
       p2Visible: json['p2_visible'] as bool? ?? true,
-      fechaP1Visible: json['fecha_p1_visible'] as String?,
-      fechaP2Visible: json['fecha_p2_visible'] as String?,
-      cursos: (json['cursos'] as List)
-          .map((j) => CursoConNotas.fromJson(j as Map<String, dynamic>))
-          .toList(),
+      fechaP1Visible: json['fecha_p1_visible']?.toString(),
+      fechaP2Visible: json['fecha_p2_visible']?.toString(),
+      cursos: cursosList,
     );
   }
 
@@ -102,28 +116,28 @@ class Calificacion {
   const Calificacion({
     required this.id,
     required this.cursoId,
-    required this.cursoNombre,
+    this.cursoNombre,
     this.cicloNombre,
     this.programaNombre,
     this.creditos,
     this.horas,
-    required this.valoracionCurso,
-    required this.calificacionCurso,
-    required this.calificacionSistema,
+    this.valoracionCurso,
+    this.calificacionCurso,
+    this.calificacionSistema,
   });
 
   factory Calificacion.fromJson(Map<String, dynamic> json) {
     return Calificacion(
-      id: json['id'] as int,
-      cursoId: json['curso_id'] as int,
-      cursoNombre: json['curso_nombre'] as String?,
-      cicloNombre: json['ciclo_nombre'] as String?,
-      programaNombre: json['programa_nombre'] as String?,
-      creditos: json['creditos'] as int?,
-      horas: json['horas'] as int?,
-      valoracionCurso: json['valoracion_curso'] as String?,
-      calificacionCurso: json['calificacion_curso'] as String?,
-      calificacionSistema: json['calificacion_sistema'] as String?,
+      id: _toInt(json['id']) ?? 0,
+      cursoId: _toInt(json['curso_id']) ?? 0,
+      cursoNombre: json['curso_nombre']?.toString(),
+      cicloNombre: json['ciclo_nombre']?.toString(),
+      programaNombre: json['programa_nombre']?.toString(),
+      creditos: _toInt(json['creditos']),
+      horas: _toInt(json['horas']),
+      valoracionCurso: json['valoracion_curso']?.toString(),
+      calificacionCurso: json['calificacion_curso']?.toString(),
+      calificacionSistema: json['calificacion_sistema']?.toString(),
     );
   }
 
@@ -151,19 +165,34 @@ class CalificacionesResponse {
   const CalificacionesResponse({required this.periodoActual, required this.anteriores});
 
   factory CalificacionesResponse.fromJson(Map<String, dynamic> json) {
-    final anterioresJson = json['anteriores'] as Map<String, dynamic>;
-    return CalificacionesResponse(
-      periodoActual: PeriodoActualCalificaciones.fromJson(json['periodo_actual'] as Map<String, dynamic>),
-      anteriores: anterioresJson.entries
-          .map(
-            (entry) => CalificacionesPorPeriodo(
-              periodoNombre: entry.key,
-              calificaciones: (entry.value as List)
-                  .map((j) => Calificacion.fromJson(j as Map<String, dynamic>))
+    final periodoActualRaw = json['periodo_actual'];
+    final periodoActualMap = periodoActualRaw is Map<String, dynamic>
+        ? periodoActualRaw
+        : const <String, dynamic>{'cursos': []};
+
+    final anterioresRaw = json['anteriores'];
+    final List<CalificacionesPorPeriodo> anterioresList = [];
+
+    if (anterioresRaw is Map) {
+      for (final entry in anterioresRaw.entries) {
+        final items = entry.value;
+        if (items is List) {
+          anterioresList.add(
+            CalificacionesPorPeriodo(
+              periodoNombre: entry.key.toString(),
+              calificaciones: items
+                  .whereType<Map<String, dynamic>>()
+                  .map((j) => Calificacion.fromJson(j))
                   .toList(),
             ),
-          )
-          .toList(),
+          );
+        }
+      }
+    }
+
+    return CalificacionesResponse(
+      periodoActual: PeriodoActualCalificaciones.fromJson(periodoActualMap),
+      anteriores: anterioresList,
     );
   }
 

@@ -16,16 +16,16 @@ class CalificacionResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
-            'curso_id' => $this->curso_id,
+            'id' => (int) $this->id,
+            'curso_id' => (int) $this->curso_id,
             'curso_nombre' => $this->curso?->nombre,
             'ciclo_nombre' => $this->curso?->ciclo?->nombre,
             'programa_nombre' => $this->curso?->ciclo?->programa?->nombre,
-            'creditos' => $this->curso?->creditos,
-            'horas' => $this->curso?->horas,
-            'valoracion_curso' => $this->valoracion_curso,
-            'calificacion_curso' => $this->calificacion_curso,
-            'calificacion_sistema' => $this->calificacion_sistema,
+            'creditos' => is_numeric($this->curso?->creditos) ? (int) $this->curso?->creditos : null,
+            'horas' => is_numeric($this->curso?->horas) ? (int) $this->curso?->horas : null,
+            'valoracion_curso' => $this->valoracion_curso !== null ? (string) $this->valoracion_curso : null,
+            'calificacion_curso' => $this->calificacion_curso !== null ? (string) $this->calificacion_curso : null,
+            'calificacion_sistema' => $this->calificacion_sistema !== null ? (string) $this->calificacion_sistema : null,
         ];
     }
 }

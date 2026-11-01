@@ -16,6 +16,12 @@ class Alumno extends Model
     {
         static::updated(fn (Alumno $alumno) => \App\Services\SincronizarFicha::desdeFicha($alumno));
     }
+
+    public function nombreCompleto(): string
+    {
+        return trim("{$this->nombres} {$this->apellidos}");
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);

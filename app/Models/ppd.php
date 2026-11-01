@@ -15,6 +15,11 @@ class ppd extends Model
         static::updated(fn (ppd $ficha) => \App\Services\SincronizarFicha::desdeFicha($ficha));
     }
 
+    public function nombreCompleto(): string
+    {
+        return trim("{$this->nombres} {$this->apellidos}");
+    }
+
     protected $table = 'ppds';
 
     protected $fillable = [

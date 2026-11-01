@@ -8,6 +8,8 @@ import '../../../core/theme/puklla_dashboard_styles.dart';
 import '../../../core/widgets/puklla_app_bar_actions.dart';
 import '../../../core/widgets/puklla_bottom_nav_bar.dart';
 import '../../../routing/app_drawer.dart';
+import '../../auth/application/auth_controller.dart';
+import '../../perfil/application/perfil_providers.dart';
 
 /// Pantalla completa de Guías de TI, Tesis y Biblioteca Virtual.
 /// Replica al 100% las funciones del portal web:
@@ -25,7 +27,6 @@ class FormatosBibliotecaScreen extends ConsumerStatefulWidget {
 class _FormatosBibliotecaScreenState extends ConsumerState<FormatosBibliotecaScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
-  bool _esPpd = false; // Alterna entre Formación Inicial (FID) y Profesionalización (PPD)
 
   // URL oficial de la nueva Biblioteca Virtual institucional
   static const String _urlBibliotecaVirtual = 'https://pukllavirtual.eesppukllasunchis.edu.pe/';
@@ -60,6 +61,12 @@ class _FormatosBibliotecaScreenState extends ConsumerState<FormatosBibliotecaScr
   @override
   Widget build(BuildContext context) {
     final isDark = PukllaDashboardStyles.isDark(context);
+    final authUser = ref.watch(authControllerProvider).user;
+    final perfil = ref.watch(perfilProvider).valueOrNull;
+
+    final esPpd = (authUser?.roles.contains('alumnoB') ?? false) ||
+        (perfil?.programaNombre?.toUpperCase().contains('PPD') ?? false) ||
+        (perfil?.programaNombre?.toLowerCase().contains('profesionalización') ?? false);
 
     return Scaffold(
       backgroundColor: PukllaDashboardStyles.backgroundColor(context),
@@ -89,32 +96,33 @@ class _FormatosBibliotecaScreenState extends ConsumerState<FormatosBibliotecaScr
                     ),
                     const SizedBox(height: 18),
 
-                    // ── SELECTOR DE MODALIDAD FID / PPD (IGUAL QUE EN LA WEB) ──
+                    // ── BADGE INFORMATIVO DE MODALIDAD (FID o PPD) ──
                     Container(
-                      padding: const EdgeInsets.all(4),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                       decoration: BoxDecoration(
-                        color: isDark ? AppColors.darkSurface : const Color(0xFFF1F5F9),
-                        borderRadius: BorderRadius.circular(12),
+                        color: isDark ? AppColors.darkSurface : const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(10),
                         border: Border.all(
                           color: isDark ? AppColors.darkBorder : const Color(0xFFE2E8F0),
                         ),
                       ),
                       child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Expanded(
-                            child: _ModalidadButton(
-                              label: 'Formación Inicial (FID)',
-                              icon: Icons.school_outlined,
-                              isSelected: !_esPpd,
-                              onTap: () => setState(() => _esPpd = false),
-                            ),
+                          Icon(
+                            esPpd ? Icons.workspace_premium_outlined : Icons.school_outlined,
+                            size: 16,
+                            color: AppColors.goldHover,
                           ),
-                          Expanded(
-                            child: _ModalidadButton(
-                              label: 'Profesionalización (PPD)',
-                              icon: Icons.workspace_premium_outlined,
-                              isSelected: _esPpd,
-                              onTap: () => setState(() => _esPpd = true),
+                          const SizedBox(width: 8),
+                          Text(
+                            esPpd
+                                ? 'Documentos para Profesionalización (PPD)'
+                                : 'Documentos para Formación Inicial (FID)',
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w700,
+                              color: isDark ? Colors.white70 : const Color(0xFF334155),
                             ),
                           ),
                         ],
@@ -180,14 +188,14 @@ class _FormatosBibliotecaScreenState extends ConsumerState<FormatosBibliotecaScr
                   url: _resolverUrl('FormatoTI.docx'),
                 ),
                 _DocumentoRecurso(
-                  titulo: _esPpd ? 'Carátula de TI (PPD)' : 'Carátula de TI (FID)',
-                  descripcion: _esPpd
+                  titulo: esPpd ? 'Carátula de TI (PPD)' : 'Carátula de TI (FID)',
+                  descripcion: esPpd
                       ? 'Carátula oficial para el Programa de Profesionalización Docente.'
                       : 'Carátula oficial para el Programa de Formación Inicial Docente.',
                   tipo: 'Word',
-                  archivo: _esPpd ? 'CaratulaTI-2025 PPD.docx' : 'CaratulaTI-2025.docx',
+                  archivo: esPpd ? 'CaratulaTI-2025 PPD.docx' : 'CaratulaTI-2025.docx',
                   url: _resolverUrl(
-                      _esPpd ? 'CaratulaTI-2025 PPD.docx' : 'CaratulaTI-2025.docx'),
+                      esPpd ? 'CaratulaTI-2025 PPD.docx' : 'CaratulaTI-2025.docx'),
                 ),
                 _DocumentoRecurso(
                   titulo: 'Guía de Trabajo de Investigación',
@@ -223,15 +231,15 @@ class _FormatosBibliotecaScreenState extends ConsumerState<FormatosBibliotecaScr
                   url: _resolverUrl('FormatoTesis.docx'),
                 ),
                 _DocumentoRecurso(
-                  titulo: _esPpd ? 'Carátula de Tesis (PPD)' : 'Carátula de Tesis (FID)',
-                  descripcion: _esPpd
+                  titulo: esPpd ? 'Carátula de Tesis (PPD)' : 'Carátula de Tesis (FID)',
+                  descripcion: esPpd
                       ? 'Carátula oficial para sustentación de tesis en Profesionalización.'
                       : 'Carátula oficial para sustentación de tesis en Formación Inicial.',
                   tipo: 'Word',
                   archivo:
-                      _esPpd ? 'CaratulaTesis-2025-PPD.docx' : 'CaratulaTesis-2025.docx',
+                      esPpd ? 'CaratulaTesis-2025-PPD.docx' : 'CaratulaTesis-2025.docx',
                   url: _resolverUrl(
-                      _esPpd ? 'CaratulaTesis-2025-PPD.docx' : 'CaratulaTesis-2025.docx'),
+                      esPpd ? 'CaratulaTesis-2025-PPD.docx' : 'CaratulaTesis-2025.docx'),
                 ),
                 _DocumentoRecurso(
                   titulo: 'Guía de Elaboración de Tesis',
@@ -475,75 +483,6 @@ class _BibliotecaVirtualHeroBanner extends StatelessWidget {
   }
 }
 
-/// Botón conmutador para la modalidad FID / PPD
-class _ModalidadButton extends StatelessWidget {
-  const _ModalidadButton({
-    required this.label,
-    required this.icon,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  final String label;
-  final IconData icon;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = PukllaDashboardStyles.isDark(context);
-
-    return PukllaScaleTap(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? (isDark ? AppColors.darkSurfaceElevated : Colors.white)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(9),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ]
-              : null,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: 16,
-              color: isSelected
-                  ? AppColors.goldHover
-                  : (isDark ? AppColors.darkMuted : const Color(0xFF64748B)),
-            ),
-            const SizedBox(width: 6),
-            Flexible(
-              child: Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 11.5,
-                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                  color: isSelected
-                      ? (isDark ? AppColors.darkText : const Color(0xFF0F172A))
-                      : (isDark ? AppColors.darkMuted : const Color(0xFF64748B)),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 /// Modelo de datos de un documento descargable
 class _DocumentoRecurso {

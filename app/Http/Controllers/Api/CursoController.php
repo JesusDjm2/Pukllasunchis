@@ -83,7 +83,7 @@ class CursoController extends Controller
                     'fecha_p2_visible' => $periodoActual?->fechaNotasVisibles(2)?->format('d/m/Y'),
                     'cursos' => $cursosPeriodoActual,
                 ],
-                'anteriores' => $anteriores,
+                'anteriores' => $anteriores->isEmpty() ? (object) [] : $anteriores,
             ],
         ]);
     }
