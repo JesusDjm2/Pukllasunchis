@@ -109,6 +109,19 @@ class _Hero extends StatelessWidget {
         .take(2)
         .join();
 
+    final cicloRaw = perfil.cicloNombre;
+    final cicloFormatted = (cicloRaw != null && cicloRaw.isNotEmpty)
+        ? (cicloRaw.toLowerCase().startsWith('ciclo') ? cicloRaw : 'Ciclo $cicloRaw')
+        : null;
+
+    final programaCiclo = [
+      if (perfil.programaNombre != null && perfil.programaNombre!.isNotEmpty)
+        perfil.programaNombre!
+      else
+        'EESP Pukllasunchis',
+      if (cicloFormatted != null) cicloFormatted,
+    ].join(' · ');
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
@@ -137,11 +150,27 @@ class _Hero extends StatelessWidget {
                   style: const TextStyle(color: Colors.white, fontSize: 19, fontWeight: FontWeight.w700),
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  [perfil.programaNombre, perfil.cicloNombre].whereType<String>().join(' · '),
-                  style: TextStyle(color: Colors.white.withValues(alpha: 0.75), fontSize: 13),
-                  overflow: TextOverflow.ellipsis,
+                const SizedBox(height: 3),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.school_outlined,
+                      size: 14,
+                      color: Color(0xFFFDE68A),
+                    ),
+                    const SizedBox(width: 5),
+                    Expanded(
+                      child: Text(
+                        programaCiclo,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.85),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

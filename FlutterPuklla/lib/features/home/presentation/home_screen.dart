@@ -340,6 +340,19 @@ class _HeroHeader extends StatelessWidget {
         .take(2)
         .join();
 
+    final cicloRaw = perfil.cicloNombre;
+    final cicloFormatted = (cicloRaw != null && cicloRaw.isNotEmpty)
+        ? (cicloRaw.toLowerCase().startsWith('ciclo') ? cicloRaw : 'Ciclo $cicloRaw')
+        : null;
+
+    final programaCiclo = [
+      if (perfil.programaNombre != null && perfil.programaNombre!.isNotEmpty)
+        perfil.programaNombre!
+      else
+        'EESP Pukllasunchis',
+      if (cicloFormatted != null) cicloFormatted,
+    ].join(' · ');
+
     return Container(
       width: double.infinity,
       decoration: PukllaDashboardStyles.heroHeaderDecoration(context),
@@ -396,43 +409,43 @@ class _HeroHeader extends StatelessWidget {
                             letterSpacing: -0.2,
                           ),
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          perfil.programaNombre ?? 'EESP Pukllasunchis',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.8),
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w500,
-                          ),
+                        const SizedBox(height: 3),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.school_outlined,
+                              size: 14,
+                              color: Color(0xFFFDE68A),
+                            ),
+                            const SizedBox(width: 5),
+                            Expanded(
+                              child: Text(
+                                programaCiclo,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.88),
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-              // Chips de estado institucional del estudiante
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  _PillBadge(
-                    icon: Icons.layers_outlined,
-                    label: perfil.cicloNombre ?? 'Semestre Vigente',
-                    bg: Colors.white.withValues(alpha: 0.12),
-                    color: Colors.white,
-                  ),
-                  if (perfil.ayudaEconomica == true)
-                    _PillBadge(
-                      icon: Icons.star_border,
-                      label: 'Apoyo Económico',
-                      bg: AppColors.gold.withValues(alpha: 0.3),
-                      color: const Color(0xFFFEF08A),
-                    ),
-                ],
-              ),
+              if (perfil.ayudaEconomica == true) ...[
+                const SizedBox(height: 12),
+                _PillBadge(
+                  icon: Icons.star_border,
+                  label: 'Apoyo Económico',
+                  bg: AppColors.gold.withValues(alpha: 0.3),
+                  color: const Color(0xFFFEF08A),
+                ),
+              ],
             ],
           ),
         ),
