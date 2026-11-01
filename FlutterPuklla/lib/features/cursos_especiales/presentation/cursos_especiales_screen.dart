@@ -38,7 +38,7 @@ class _CursosEspecialesScreenState extends ConsumerState<CursosEspecialesScreen>
     return Scaffold(
       backgroundColor: PukllaDashboardStyles.backgroundColor(context),
       appBar: AppBar(
-        title: const Text('Cursos especiales'),
+        title: const Text('Cursos Asincrónicos'),
         actions: const [PukllaAppBarActions()],
       ),
       endDrawer: const AppDrawer(),
@@ -51,7 +51,7 @@ class _CursosEspecialesScreenState extends ConsumerState<CursosEspecialesScreen>
           error: (error, _) => Padding(
             padding: const EdgeInsets.all(24),
             child: ErrorState(
-              message: error is ApiException ? error.message : 'No se pudo cargar el catálogo de cursos especiales.',
+              message: error is ApiException ? error.message : 'No se pudo cargar el catálogo de cursos asincrónicos.',
               onRetry: () => ref.invalidate(cursosEspecialesProvider),
             ),
           ),
@@ -160,7 +160,7 @@ class _CursosEspecialesScreenState extends ConsumerState<CursosEspecialesScreen>
                     color: PukllaDashboardStyles.textPrimary(context),
                   ),
                   decoration: InputDecoration(
-                    hintText: 'Buscar en catálogo de cursos especiales...',
+                    hintText: 'Buscar en catálogo de cursos asincrónicos...',
                     hintStyle: TextStyle(
                       fontSize: 13,
                       color: PukllaDashboardStyles.textSecondary(context),
@@ -224,7 +224,7 @@ class _CursosEspecialesScreenState extends ConsumerState<CursosEspecialesScreen>
                 const Icon(Icons.school_outlined, size: 48, color: AppColors.muted),
                 const SizedBox(height: 12),
                 Text(
-                  'No hay cursos especiales disponibles por ahora.',
+                  'No hay cursos asincrónicos disponibles por ahora.',
                   style: TextStyle(
                     color: PukllaDashboardStyles.textPrimary(context),
                     fontSize: 15,
@@ -325,7 +325,7 @@ class _CursosHeroBanner extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Cursos Especiales & Extensión',
+                      'Cursos Asincrónicos & Extensión',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 17,

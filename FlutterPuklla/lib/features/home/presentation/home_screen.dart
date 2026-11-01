@@ -883,8 +883,8 @@ class _BentoGridModulos extends ConsumerWidget {
               child: _BentoItem(
                 icon: Icons.workspace_premium_outlined,
                 color: const Color(0xFF0891B2),
-                title: 'Cursos Especiales',
-                subtitle: 'Talleres asincrónicos',
+                title: 'Asincrónicos',
+                subtitle: 'Talleres y microcursos',
                 onTap: () => context.go('/cursos-especiales'),
               ),
             ),

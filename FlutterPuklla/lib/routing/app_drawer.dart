@@ -108,7 +108,7 @@ class AppDrawer extends ConsumerWidget {
                     ),
                     _DrawerItem(
                       icon: Icons.school_outlined,
-                      label: 'Cursos Especiales',
+                      label: 'Asincrónicos',
                       route: '/cursos-especiales',
                       currentLocation: location,
                     ),
