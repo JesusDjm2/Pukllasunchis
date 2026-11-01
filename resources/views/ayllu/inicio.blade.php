@@ -120,6 +120,13 @@
                         </div>
                     </div>
 
+                    <div class="custom-control custom-checkbox mt-2 mb-1">
+                        <input type="checkbox" class="custom-control-input" id="checkMenoresInicio" name="confirmacion_politica_menores" value="1" checked>
+                        <label class="custom-control-label small text-muted" for="checkMenoresInicio" style="font-size: 0.75rem;">
+                            <i class="fas fa-child mr-1 text-warning"></i> Confirmo que esta publicación respeta la política institucional y no expone rostros ni datos identificables de menores de edad sin autorización firmada.
+                        </label>
+                    </div>
+
                     <div class="d-flex align-items-center justify-content-between flex-wrap mt-2">
                         <button class="btn btn-sm btn-link text-muted p-0 font-weight-bold" type="button" data-toggle="collapse" data-target="#opcionesAvanzadasPub">
                             <i class="fas fa-language mr-1" style="color:#cd9244;"></i> + Añadir síntesis en Quechua / Enlace / Etiquetas

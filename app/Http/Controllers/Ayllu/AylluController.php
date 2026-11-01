@@ -19,16 +19,20 @@ use App\Models\Proyecto;
 use App\Models\TaqeGrupo;
 use App\Models\TaqeTrabajo;
 use App\Models\User;
+use App\Services\AylluAuthorizationService;
 use App\Services\AylluContextService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class AylluController extends Controller
 {
     public function __construct(
-        protected AylluContextService $contextService
+        protected AylluContextService $contextService,
+        protected AylluAuthorizationService $authService
     ) {
         $this->middleware('auth');
     }
@@ -54,7 +58,7 @@ class AylluController extends Controller
             ->get();
 
         $misGruposIds = $grupos->filter(function (AylluGrupo $g) use ($user) {
-            return $g->miembros()->where('users.id', $user->id)->exists();
+            return $this->authService->esMiembroGrupoAyllu($user, $g);
         })->pluck('id')->all();
 
         $query = AylluPublicacion::with([
@@ -71,19 +75,33 @@ class AylluController extends Controller
         if ($filtro === 'institucional') {
             $query->where('ambito', 'institucional');
         } elseif ($filtro === 'mis-cursos') {
-            $query->where('ambito', 'curso')
-                ->when(!empty($cursoIds), fn ($q) => $q->whereIn('curso_id', $cursoIds));
+            $query->where('ambito', 'curso');
+            if (!empty($cursoIds)) {
+                $query->whereIn('curso_id', $cursoIds);
+            } else {
+                $query->whereRaw('1 = 0');
+            }
         } elseif ($filtro === 'mi-ciclo') {
-            $query->where('ambito', 'ciclo')
-                ->when($cicloId, fn ($q) => $q->where('ciclo_id', $cicloId));
+            $query->where('ambito', 'ciclo');
+            if ($cicloId) {
+                $query->where('ciclo_id', $cicloId);
+            } else {
+                $query->whereRaw('1 = 0');
+            }
         } elseif ($filtro === 'grupos') {
             $query->where('ambito', 'grupo');
+            if (!$this->authService->esAutoridadInstitucional($user, $ctx)) {
+                if (!empty($misGruposIds)) {
+                    $query->whereIn('ayllu_grupo_id', $misGruposIds);
+                } else {
+                    $query->whereRaw('1 = 0');
+                }
+            }
         } else {
-            // Vista unificada «Inicio»: comunicados/institucionales + destacados + comunidades del usuario
+            // Vista unificada «Inicio»: comunicados/institucionales + destacados + comunidades donde el usuario pertenece
             $query->where(function ($q) use ($cursoIds, $cicloId, $programaId, $misGruposIds) {
                 $q->where('ambito', 'institucional')
-                    ->orWhere('destacado_inicio', true)
-                    ->orWhere('ambito', 'grupo');
+                    ->orWhere('destacado_inicio', true);
 
                 if (!empty($cursoIds)) {
                     $q->orWhere(function ($q2) use ($cursoIds) {
@@ -101,7 +119,9 @@ class AylluController extends Controller
                     });
                 }
                 if (!empty($misGruposIds)) {
-                    $q->orWhereIn('ayllu_grupo_id', $misGruposIds);
+                    $q->orWhere(function ($q2) use ($misGruposIds) {
+                        $q2->where('ambito', 'grupo')->whereIn('ayllu_grupo_id', $misGruposIds);
+                    });
                 }
             });
         }
@@ -123,9 +143,7 @@ class AylluController extends Controller
     }
 
     /**
-     * Publicar en Ayllu Puklla respetando la política aprobada (Decisión A3):
-     * - Muro general institucional: reservado a docentes, tutores, investigadores y administración.
-     * - Comunidades de Curso, Ciclo y Grupos: abierto a estudiantes y docentes de la comunidad.
+     * Publicar en Ayllu Puklla respetando la política aprobada (Decisión A3) y las reglas de pertenencia.
      */
     public function storePublicacion(Request $request)
     {
@@ -139,28 +157,47 @@ class AylluController extends Controller
             'contenido' => 'required|string|max:5000',
             'resumen_quechua' => 'nullable|string|max:1000',
             'curso_id' => 'nullable|exists:cursos,id',
+            'ciclo_id' => 'nullable|exists:ciclos,id',
             'ayllu_grupo_id' => 'nullable|exists:ayllu_grupos,id',
             'enlace_externo' => 'nullable|url|max:500',
             'enlace_titulo' => 'nullable|string|max:180',
             'etiquetas_texto' => 'nullable|string|max:250',
+            'confirmacion_politica_menores' => 'nullable|boolean',
+            'contiene_imagen_menores_sin_consentimiento' => 'nullable|boolean',
         ]);
 
+        $this->validarProteccionMenores($request, $validated['contenido'], $validated['enlace_externo'] ?? null);
+
         $ambito = $validated['ambito'];
-        $grupoFallbackId = $validated['ayllu_grupo_id'] ?? null;
+        $cursoIdDestino = $validated['curso_id'] ?? null;
+        $cicloIdDestino = $validated['ciclo_id'] ?? $ctx['ciclo']?->id;
+        $grupoIdDestino = $validated['ayllu_grupo_id'] ?? null;
 
         // Regla A3: Si un estudiante intenta publicar en 'institucional', se redirige su publicación
-        // a su Comunidad de Ciclo, Curso o Grupo salvo que tenga permiso explícito de muro general.
+        // a su Comunidad de Ciclo o Curso salvo que tenga permiso explícito de muro general.
         if ($ambito === 'institucional' && !$ctx['puedePublicarMuroGeneral']) {
-            if (!empty($validated['curso_id']) || $ctx['cursos']->isNotEmpty()) {
+            if ($cursoIdDestino || $ctx['cursos']->isNotEmpty()) {
                 $ambito = 'curso';
-            } elseif (!empty($validated['ayllu_grupo_id'])) {
+                $cursoIdDestino = $cursoIdDestino ?? $ctx['cursos']->first()?->id;
+            } elseif ($grupoIdDestino) {
                 $ambito = 'grupo';
-            } elseif ($ctx['ciclo']) {
+            } elseif ($cicloIdDestino) {
                 $ambito = 'ciclo';
             } else {
-                $ambito = 'grupo';
-                $grupoFallbackId = AylluGrupo::where('activo', true)->value('id');
+                abort(403, 'En el muro general institucional solo publican docentes, tutores y coordinación.');
             }
+        }
+
+        // Validación estricta de autorización sobre la comunidad destino
+        if ($ambito === 'curso') {
+            $cursoIdDestino = $cursoIdDestino ?? $ctx['cursos']->first()?->id;
+            $curso = $cursoIdDestino ? Curso::find($cursoIdDestino) : null;
+            abort_unless($curso && $this->authService->puedeAccederCurso($user, $curso, $ctx), 403);
+        } elseif ($ambito === 'ciclo') {
+            abort_unless($cicloIdDestino && $this->authService->puedeAccederCiclo($user, (int) $cicloIdDestino, $ctx), 403);
+        } elseif ($ambito === 'grupo') {
+            $grupo = $grupoIdDestino ? AylluGrupo::find($grupoIdDestino) : null;
+            abort_unless($grupo && $this->authService->puedeParticiparEnGrupo($user, $grupo, $ctx), 403);
         }
 
         $etiquetas = [];
@@ -175,9 +212,9 @@ class AylluController extends Controller
             'user_id' => $user->id,
             'ambito' => $ambito,
             'programa_id' => $ctx['programa']?->id,
-            'ciclo_id' => $ambito === 'ciclo' ? $ctx['ciclo']?->id : null,
-            'curso_id' => $ambito === 'curso' ? ($validated['curso_id'] ?? $ctx['cursos']->first()?->id) : null,
-            'ayllu_grupo_id' => $ambito === 'grupo' ? $grupoFallbackId : null,
+            'ciclo_id' => $ambito === 'ciclo' ? $cicloIdDestino : null,
+            'curso_id' => $ambito === 'curso' ? $cursoIdDestino : null,
+            'ayllu_grupo_id' => $ambito === 'grupo' ? $grupoIdDestino : null,
             'tipo' => $validated['tipo'],
             'titulo' => $validated['titulo'] ?? null,
             'contenido' => $validated['contenido'],
@@ -193,9 +230,44 @@ class AylluController extends Controller
         return back()->with('success', 'Publicación compartida en Ayllu Puklla.');
     }
 
+    /**
+     * Actualizar una publicación existente (solo autor o moderador autorizado en el ámbito).
+     */
+    public function updatePublicacion(Request $request, AylluPublicacion $publicacion)
+    {
+        $user = Auth::user();
+        $ctx = $this->contextService->resolverContexto($user);
+        $publicacion->loadMissing(['curso', 'grupo']);
+
+        abort_unless($this->authService->puedeModificarPublicacion($user, $publicacion, $ctx), 403);
+
+        $validated = $request->validate([
+            'titulo' => 'nullable|string|max:180',
+            'contenido' => 'required|string|max:5000',
+            'resumen_quechua' => 'nullable|string|max:1000',
+            'enlace_externo' => 'nullable|url|max:500',
+        ]);
+
+        $this->validarProteccionMenores($request, $validated['contenido'], $validated['enlace_externo'] ?? null);
+
+        $publicacion->update([
+            'titulo' => $validated['titulo'] ?? $publicacion->titulo,
+            'contenido' => $validated['contenido'],
+            'resumen_quechua' => $validated['resumen_quechua'] ?? $publicacion->resumen_quechua,
+            'enlace_externo' => $validated['enlace_externo'] ?? $publicacion->enlace_externo,
+        ]);
+
+        return back()->with('success', 'Publicación actualizada correctamente.');
+    }
+
     public function storeComentario(Request $request, AylluPublicacion $publicacion)
     {
         $user = Auth::user();
+        $ctx = $this->contextService->resolverContexto($user);
+        $publicacion->loadMissing(['curso', 'grupo']);
+
+        abort_unless($this->authService->puedeInteractuarConPublicacion($user, $publicacion, $ctx), 403);
+
         $validated = $request->validate([
             'contenido' => 'required|string|max:2000',
         ]);
@@ -213,6 +285,11 @@ class AylluController extends Controller
     public function toggleReaccion(Request $request, AylluPublicacion $publicacion)
     {
         $user = Auth::user();
+        $ctx = $this->contextService->resolverContexto($user);
+        $publicacion->loadMissing(['curso', 'grupo']);
+
+        abort_unless($this->authService->puedeInteractuarConPublicacion($user, $publicacion, $ctx), 403);
+
         $tipo = $request->input('tipo', 'allinmi');
         if (!array_key_exists($tipo, AylluReaccion::catalogo())) {
             $tipo = 'allinmi';
@@ -243,7 +320,9 @@ class AylluController extends Controller
     {
         $user = Auth::user();
         $ctx = $this->contextService->resolverContexto($user);
-        abort_unless($ctx['puedeModerar'], 403);
+        $publicacion->loadMissing(['curso', 'grupo']);
+
+        abort_unless($ctx['puedeModerar'] && $this->authService->puedeModificarPublicacion($user, $publicacion, $ctx), 403);
 
         $publicacion->update([
             'destacado_inicio' => !$publicacion->destacado_inicio,
@@ -258,7 +337,9 @@ class AylluController extends Controller
     {
         $user = Auth::user();
         $ctx = $this->contextService->resolverContexto($user);
-        abort_unless($publicacion->user_id === $user->id || $ctx['puedeModerar'], 403);
+        $publicacion->loadMissing(['curso', 'grupo']);
+
+        abort_unless($this->authService->puedeModificarPublicacion($user, $publicacion, $ctx), 403);
 
         $publicacion->delete();
 
@@ -272,6 +353,8 @@ class AylluController extends Controller
     {
         $user = Auth::user();
         $ctx = $this->contextService->resolverContexto($user);
+
+        abort_unless($this->authService->puedeAccederCurso($user, $curso, $ctx), 403);
 
         $curso->load([
             'ciclo.programa',
@@ -298,11 +381,8 @@ class AylluController extends Controller
             ->orderByDesc('created_at')
             ->get();
 
-        // Evaluación y Retroalimentación Formativa (Plano 2: privado estudiante-docente)
-        $esDocenteDelCurso = $ctx['esAdmin']
-            || $ctx['esTutor']
-            || ($ctx['docente'] && $curso->docentes->contains('id', $ctx['docente']->id))
-            || $ctx['esDocente'];
+        // Evaluación y Retroalimentación Formativa (Plano 2: estrictamente docente asignado al curso o titular)
+        $esDocenteDelCurso = $this->authService->puedeEvaluarEnCurso($user, $curso, $ctx);
 
         $entregasQuery = AylluEntregaFormativa::with([
             'estudiante',
@@ -313,7 +393,7 @@ class AylluController extends Controller
         ])->where('curso_id', $curso->id);
 
         if (!$esDocenteDelCurso) {
-            // Un estudiante solo ve SUS propias entregas formativas (o las vinculadas a su grupo Taq'e)
+            // Un estudiante solo ve SUS propias entregas formativas (o las vinculadas a su grupo Taq'e validado)
             $misTaqeIds = $ctx['taqeGrupos']->pluck('id')->all();
             $entregasQuery->where(function ($q) use ($user, $misTaqeIds) {
                 $q->where('user_id', $user->id);
@@ -349,12 +429,14 @@ class AylluController extends Controller
 
     /**
      * Registrar una entrega/avance formativo en el curso (Plano 2 — no modifica actas oficiales).
-     * Permite articular el producto con el Proyecto Anual Integrador (Taq'e) y con el Portafolio EIB.
+     * Garantiza transacción atómica cuando se vincula simultáneamente una evidencia Taq'e.
      */
     public function storeEntregaFormativa(Request $request, Curso $curso)
     {
         $user = Auth::user();
         $ctx = $this->contextService->resolverContexto($user);
+
+        abort_unless($this->authService->puedeAccederCurso($user, $curso, $ctx), 403);
 
         $validated = $request->validate([
             'titulo' => 'required|string|max:200',
@@ -367,23 +449,49 @@ class AylluController extends Controller
             'taqe_grupo_id' => 'nullable|exists:taqe_grupos,id',
             'en_portafolio' => 'nullable|boolean',
             'reflexion_portafolio' => 'nullable|string|max:1500',
+            'confirmacion_politica_menores' => 'nullable|boolean',
+            'contiene_imagen_menores_sin_consentimiento' => 'nullable|boolean',
         ]);
 
+        $this->validarProteccionMenores($request, $validated['descripcion_reflexion'], $validated['enlace_evidencia'] ?? null);
+
         $silabo = $curso->relacionsilabo;
+
+        // Si se especificó unidad_id, verificar que pertenezca al sílabo del curso
+        if (!empty($validated['unidad_id'])) {
+            $unidadPerteneceAlCurso = $silabo && $silabo->unidades()->where('unidades.id', $validated['unidad_id'])->exists();
+            abort_unless($unidadPerteneceAlCurso, 403, 'La unidad seleccionada no pertenece al sílabo de este curso.');
+        }
+
+        // Si se especificó un grupo Taq'e, validar que el estudiante pertenezca realmente a dicho grupo y corresponda al curso/proyecto
+        $taqeGrupoId = $validated['taqe_grupo_id'] ?? null;
+        $grupoTaqe = null;
+        if ($taqeGrupoId) {
+            $grupoTaqe = TaqeGrupo::find($taqeGrupoId);
+            abort_unless($grupoTaqe && $this->authService->puedeVincularGrupoTaqe($user, $grupoTaqe, $curso, $ctx), 403);
+        }
+
         $proyectoId = $curso->ciclo?->proyecto_id ?? $ctx['proyectoIntegrador']?->id;
         $esAportePi = $request->boolean('es_aporte_proyecto_integrador');
         $enPortafolio = $request->boolean('en_portafolio');
 
-        $taqeGrupoId = $validated['taqe_grupo_id'] ?? null;
-        $taqeTrabajoId = null;
+        DB::transaction(function () use (
+            $curso,
+            $silabo,
+            $proyectoId,
+            $esAportePi,
+            $enPortafolio,
+            $taqeGrupoId,
+            $grupoTaqe,
+            $validated,
+            $ctx,
+            $user
+        ) {
+            $taqeTrabajoId = null;
 
-        // Si el estudiante marca que este producto tributa a su grupo Taq'e y provee un enlace externo,
-        // registramos el vínculo aditivo en taqe_trabajos (categoría 'evidencia') si pertenece al grupo.
-        if ($esAportePi && $taqeGrupoId && !empty($validated['enlace_evidencia']) && $ctx['alumno']) {
-            $grupo = TaqeGrupo::find($taqeGrupoId);
-            if ($grupo) {
+            if ($esAportePi && $grupoTaqe && !empty($validated['enlace_evidencia']) && $ctx['alumno']) {
                 $trabajo = TaqeTrabajo::create([
-                    'taqe_grupo_id' => $grupo->id,
+                    'taqe_grupo_id' => $grupoTaqe->id,
                     'nombre' => '[Aporte ' . $curso->nombre . '] ' . $validated['titulo'],
                     'enlace' => $validated['enlace_evidencia'],
                     'tipo_archivo' => 'enlace',
@@ -393,26 +501,26 @@ class AylluController extends Controller
                 ]);
                 $taqeTrabajoId = $trabajo->id;
             }
-        }
 
-        AylluEntregaFormativa::create([
-            'curso_id' => $curso->id,
-            'silabo_id' => $silabo?->id,
-            'unidad_id' => $validated['unidad_id'] ?? null,
-            'proyecto_id' => $proyectoId,
-            'taqe_grupo_id' => $taqeGrupoId,
-            'taqe_trabajo_id' => $taqeTrabajoId,
-            'user_id' => $user->id,
-            'titulo' => $validated['titulo'],
-            'descripcion_reflexion' => $validated['descripcion_reflexion'],
-            'enlace_evidencia' => $validated['enlace_evidencia'] ?? null,
-            'autoevaluacion_nivel' => $validated['autoevaluacion_nivel'] ?? 'en_proceso',
-            'autoevaluacion_comentario' => $validated['autoevaluacion_comentario'] ?? null,
-            'es_aporte_proyecto_integrador' => $esAportePi,
-            'en_portafolio' => $enPortafolio,
-            'reflexion_portafolio' => $validated['reflexion_portafolio'] ?? null,
-            'estado' => $taqeTrabajoId ? 'vinculado_taqe' : 'enviado',
-        ]);
+            AylluEntregaFormativa::create([
+                'curso_id' => $curso->id,
+                'silabo_id' => $silabo?->id,
+                'unidad_id' => $validated['unidad_id'] ?? null,
+                'proyecto_id' => $proyectoId,
+                'taqe_grupo_id' => $taqeGrupoId,
+                'taqe_trabajo_id' => $taqeTrabajoId,
+                'user_id' => $user->id,
+                'titulo' => $validated['titulo'],
+                'descripcion_reflexion' => $validated['descripcion_reflexion'],
+                'enlace_evidencia' => $validated['enlace_evidencia'] ?? null,
+                'autoevaluacion_nivel' => $validated['autoevaluacion_nivel'] ?? 'en_proceso',
+                'autoevaluacion_comentario' => $validated['autoevaluacion_comentario'] ?? null,
+                'es_aporte_proyecto_integrador' => $esAportePi,
+                'en_portafolio' => $enPortafolio,
+                'reflexion_portafolio' => $validated['reflexion_portafolio'] ?? null,
+                'estado' => $taqeTrabajoId ? 'vinculado_taqe' : 'enviado',
+            ]);
+        });
 
         return redirect()
             ->route('ayllu.cursos.show', ['curso' => $curso->id, 'tab' => 'formativa'])
@@ -420,17 +528,17 @@ class AylluController extends Controller
     }
 
     /**
-     * Retroalimentación formativa dialogada (docente o respuesta reflexiva del estudiante).
+     * Retroalimentación formativa dialogada (docente asignado al curso o respuesta reflexiva del estudiante titular).
      */
     public function storeRetroalimentacion(Request $request, AylluEntregaFormativa $entrega)
     {
         $user = Auth::user();
         $ctx = $this->contextService->resolverContexto($user);
+        $entrega->loadMissing('curso');
 
-        $esDocente = $ctx['esDocente'] || $ctx['esTutor'] || $ctx['esAdmin'];
-        $esPropietario = ($entrega->user_id === $user->id);
+        abort_unless($this->authService->puedeRetroalimentarEntrega($user, $entrega, $ctx), 403);
 
-        abort_unless($esDocente || $esPropietario, 403);
+        $esDocenteEvaluador = $entrega->curso && $this->authService->puedeEvaluarEnCurso($user, $entrega->curso, $ctx) && ((int) $entrega->user_id !== (int) $user->id);
 
         $validated = $request->validate([
             'valoracion_formativa' => 'nullable|in:en_inicio,en_proceso,logrado,destacado',
@@ -442,14 +550,14 @@ class AylluController extends Controller
         AylluRetroalimentacion::create([
             'ayllu_entrega_formativa_id' => $entrega->id,
             'autor_user_id' => $user->id,
-            'tipo' => $esDocente ? 'docente' : 'respuesta_estudiante',
-            'valoracion_formativa' => $esDocente ? ($validated['valoracion_formativa'] ?? null) : null,
-            'fortalezas' => $esDocente ? ($validated['fortalezas'] ?? null) : null,
-            'sugerencias_mejora' => $esDocente ? ($validated['sugerencias_mejora'] ?? null) : null,
+            'tipo' => $esDocenteEvaluador ? 'docente' : 'respuesta_estudiante',
+            'valoracion_formativa' => $esDocenteEvaluador ? ($validated['valoracion_formativa'] ?? null) : null,
+            'fortalezas' => $esDocenteEvaluador ? ($validated['fortalezas'] ?? null) : null,
+            'sugerencias_mejora' => $esDocenteEvaluador ? ($validated['sugerencias_mejora'] ?? null) : null,
             'comentario_general' => $validated['comentario_general'],
         ]);
 
-        if ($esDocente && $entrega->estado === 'enviado') {
+        if ($esDocenteEvaluador && $entrega->estado === 'enviado') {
             $entrega->update(['estado' => 'retroalimentado']);
         }
 
@@ -462,7 +570,7 @@ class AylluController extends Controller
     public function togglePortafolio(Request $request, AylluEntregaFormativa $entrega)
     {
         $user = Auth::user();
-        abort_unless($entrega->user_id === $user->id, 403);
+        abort_unless((int) $entrega->user_id === (int) $user->id, 403);
 
         $entrega->update([
             'en_portafolio' => !$entrega->en_portafolio,
@@ -485,15 +593,29 @@ class AylluController extends Controller
         $todosProyectos = Proyecto::with(['ciclos.programa', 'docentes'])->orderBy('id')->get();
         $proyectoActual = $ctx['proyectoIntegrador'] ?? $todosProyectos->first();
 
-        // Aportes formativos de los cursos hacia el Proyecto Integrador
-        $aportesCursos = AylluEntregaFormativa::with(['curso', 'estudiante', 'unidad', 'taqeGrupo', 'retroalimentaciones'])
+        $cursoIdsAutorizados = $ctx['cursos']->pluck('id')->all();
+        $misTaqeIds = $ctx['taqeGrupos']->pluck('id')->all();
+
+        // Aportes formativos hacia el Proyecto Integrador (sin exponer retroalimentaciones privadas de terceros)
+        $aportesCursos = AylluEntregaFormativa::with(['curso', 'estudiante', 'unidad', 'taqeGrupo'])
             ->where('es_aporte_proyecto_integrador', true)
-            ->when(!$ctx['esDocente'] && !$ctx['esAdmin'], fn ($q) => $q->where('user_id', $user->id))
+            ->when(!$this->authService->esAutoridadInstitucional($user, $ctx), function ($q) use ($user, $ctx, $cursoIdsAutorizados, $misTaqeIds) {
+                if ($ctx['esDocente']) {
+                    $q->whereIn('curso_id', !empty($cursoIdsAutorizados) ? $cursoIdsAutorizados : [0]);
+                } else {
+                    $q->where(function ($sub) use ($user, $misTaqeIds) {
+                        $sub->where('user_id', $user->id);
+                        if (!empty($misTaqeIds)) {
+                            $sub->orWhereIn('taqe_grupo_id', $misTaqeIds);
+                        }
+                    });
+                }
+            })
             ->latest()
             ->take(20)
             ->get();
 
-        // Portafolio EIB curado por el usuario
+        // Portafolio EIB curado por el propio usuario autenticado
         $miPortafolio = AylluEntregaFormativa::with(['curso.ciclo', 'unidad', 'retroalimentaciones.autor'])
             ->where('user_id', $user->id)
             ->where('en_portafolio', true)
@@ -529,6 +651,14 @@ class AylluController extends Controller
             ? $grupos->firstWhere('id', (int) $grupoSeleccionadoId)
             : $grupos->first();
 
+        $misGruposIds = $grupos->filter(fn (AylluGrupo $g) => $this->authService->esMiembroGrupoAyllu($user, $g))
+            ->pluck('id')
+            ->all();
+
+        $puedeParticiparEnGrupoActual = $grupoActual
+            ? $this->authService->puedeParticiparEnGrupo($user, $grupoActual, $ctx)
+            : false;
+
         $publicacionesGrupo = $grupoActual
             ? AylluPublicacion::with(['autor.roles', 'comentarios.autor', 'reacciones'])
                 ->where('ambito', 'grupo')
@@ -539,22 +669,20 @@ class AylluController extends Controller
                 ->get()
             : collect();
 
-        $misGruposIds = $grupos->filter(fn (AylluGrupo $g) => $g->miembros()->where('users.id', $user->id)->exists())
-            ->pluck('id')
-            ->all();
-
         return view('ayllu.grupos', array_merge($ctx, [
             'seccionActiva' => 'grupos',
             'grupos' => $grupos,
             'grupoActual' => $grupoActual,
             'publicacionesGrupo' => $publicacionesGrupo,
             'misGruposIds' => $misGruposIds,
+            'puedeParticiparEnGrupoActual' => $puedeParticiparEnGrupoActual,
             'catalogoReacciones' => AylluReaccion::catalogo(),
         ]));
     }
 
     public function toggleMiembroGrupo(AylluGrupo $grupo)
     {
+        abort_unless($grupo->activo, 404);
         $user = Auth::user();
         $existe = $grupo->miembros()->where('users.id', $user->id)->exists();
 
@@ -602,12 +730,13 @@ class AylluController extends Controller
     }
 
     /**
-     * Calendario Vivo Comunitario y Académico + Chat Académico.
+     * Calendario Vivo Comunitario y Académico.
      */
     public function calendario()
     {
         $user = Auth::user();
         $ctx = $this->contextService->resolverContexto($user);
+        $cursoIdsAutorizados = $ctx['cursos']->pluck('id')->all();
 
         $hitos = collect();
         $pa = $ctx['periodoActual'];
@@ -664,6 +793,12 @@ class AylluController extends Controller
         }
 
         $eventosAditivos = AylluEventoCalendario::with('curso')
+            ->where(function ($q) use ($cursoIdsAutorizados) {
+                $q->whereNull('curso_id');
+                if (!empty($cursoIdsAutorizados)) {
+                    $q->orWhereIn('curso_id', $cursoIdsAutorizados);
+                }
+            })
             ->orderBy('fecha_inicio')
             ->get();
 
@@ -699,6 +834,11 @@ class AylluController extends Controller
             'curso_id' => 'nullable|exists:cursos,id',
         ]);
 
+        if (!empty($validated['curso_id'])) {
+            $curso = Curso::findOrFail($validated['curso_id']);
+            abort_unless($this->authService->puedeEvaluarEnCurso($user, $curso, $ctx), 403);
+        }
+
         AylluEventoCalendario::create(array_merge($validated, [
             'creado_por' => $user->id,
         ]));
@@ -707,26 +847,45 @@ class AylluController extends Controller
     }
 
     /**
-     * Chat Académico por Curso o Comunidad Ayllu.
+     * Chat Académico por Curso o Comunidad Ayllu (validando pertenencia al canal).
      */
     public function chat(Request $request)
     {
         $user = Auth::user();
         $ctx = $this->contextService->resolverContexto($user);
 
-        $grupos = AylluGrupo::where('activo', true)->orderBy('nombre')->get();
+        $todosGrupos = AylluGrupo::where('activo', true)->orderBy('nombre')->get();
+        $grupos = $this->authService->esAutoridadInstitucional($user, $ctx)
+            ? $todosGrupos
+            : $todosGrupos->filter(fn (AylluGrupo $g) => $this->authService->esMiembroGrupoAyllu($user, $g))->values();
+
         $canalTipo = $request->query('tipo', $ctx['cursos']->isNotEmpty() ? 'curso' : 'grupo');
+        $tieneIdExplicito = $request->has('id');
         $canalId = (int) $request->query('id', $canalTipo === 'curso'
             ? ($ctx['cursos']->first()?->id ?? 0)
             : ($grupos->first()?->id ?? 0));
 
-        $mensajes = AylluMensajeChat::with('emisor')
-            ->where('canal_tipo', $canalTipo)
-            ->when($canalTipo === 'curso', fn ($q) => $q->where('curso_id', $canalId))
-            ->when($canalTipo === 'grupo', fn ($q) => $q->where('ayllu_grupo_id', $canalId))
-            ->orderBy('created_at')
-            ->take(80)
-            ->get();
+        if ($canalTipo === 'curso' && $canalId > 0) {
+            $cursoCanal = Curso::find($canalId);
+            abort_unless($cursoCanal && $this->authService->puedeAccederCurso($user, $cursoCanal, $ctx), 403);
+        } elseif ($canalTipo === 'grupo' && $canalId > 0) {
+            $grupoCanal = AylluGrupo::find($canalId);
+            if ($tieneIdExplicito) {
+                abort_unless($grupoCanal && $this->authService->puedeParticiparEnGrupo($user, $grupoCanal, $ctx), 403);
+            } elseif (!$grupoCanal || !$this->authService->puedeParticiparEnGrupo($user, $grupoCanal, $ctx)) {
+                $canalId = 0;
+            }
+        }
+
+        $mensajes = $canalId > 0
+            ? AylluMensajeChat::with('emisor')
+                ->where('canal_tipo', $canalTipo)
+                ->when($canalTipo === 'curso', fn ($q) => $q->where('curso_id', $canalId))
+                ->when($canalTipo === 'grupo', fn ($q) => $q->where('ayllu_grupo_id', $canalId))
+                ->orderBy('created_at')
+                ->take(80)
+                ->get()
+            : collect();
 
         return view('ayllu.chat', array_merge($ctx, [
             'seccionActiva' => 'chat',
@@ -740,11 +899,21 @@ class AylluController extends Controller
     public function storeMensajeChat(Request $request)
     {
         $user = Auth::user();
+        $ctx = $this->contextService->resolverContexto($user);
+
         $validated = $request->validate([
             'canal_tipo' => 'required|in:curso,grupo',
             'canal_id' => 'required|integer',
             'mensaje' => 'required|string|max:1500',
         ]);
+
+        if ($validated['canal_tipo'] === 'curso') {
+            $curso = Curso::find($validated['canal_id']);
+            abort_unless($curso && $this->authService->puedeAccederCurso($user, $curso, $ctx), 403);
+        } else {
+            $grupo = AylluGrupo::find($validated['canal_id']);
+            abort_unless($grupo && $this->authService->puedeParticiparEnGrupo($user, $grupo, $ctx), 403);
+        }
 
         AylluMensajeChat::create([
             'canal_tipo' => $validated['canal_tipo'],
@@ -762,7 +931,6 @@ class AylluController extends Controller
 
     /**
      * Mi Espacio Privado (Plano 3: Notas Oficiales, Asistencia, Matrícula y Trámites).
-     * Estrictamente individual y separado de las publicaciones sociales y entregas formativas.
      */
     public function miEspacioPrivado()
     {
@@ -794,12 +962,15 @@ class AylluController extends Controller
 
     /**
      * Perfil Intercultural y Portafolio Docente EIB.
+     * - Cumple mostrar_portafolio_comunidad en el controlador y en la consulta SQL.
+     * - Nunca expone retroalimentaciones formativas individuales ni autoevaluaciones privadas a visitantes.
      */
     public function perfil(Request $request, ?User $usuario = null)
     {
         $user = Auth::user();
         $ctx = $this->contextService->resolverContexto($user);
         $perfilUser = $usuario ?? $user;
+        $esMiPerfil = ((int) $perfilUser->id === (int) $user->id);
 
         $perfilAyllu = AylluPerfil::firstOrCreate(
             ['user_id' => $perfilUser->id],
@@ -807,21 +978,47 @@ class AylluController extends Controller
                 'saludo_intercultural' => 'Allillanchu · Kuska yachasunchis',
                 'lengua_preferida' => 'castellano_quechua',
                 'saberes_intereses' => ['Diálogo de saberes', 'Crianza mutua', 'EIB'],
+                'mostrar_portafolio_comunidad' => true,
             ]
         );
 
-        $portafolioPublico = AylluEntregaFormativa::with(['curso.ciclo', 'unidad', 'retroalimentaciones.autor'])
-            ->where('user_id', $perfilUser->id)
-            ->where('en_portafolio', true)
-            ->latest()
-            ->get();
+        if ($esMiPerfil) {
+            $portafolioItems = AylluEntregaFormativa::with(['curso.ciclo', 'unidad', 'retroalimentaciones.autor'])
+                ->where('user_id', $perfilUser->id)
+                ->where('en_portafolio', true)
+                ->latest()
+                ->get();
+        } elseif ($perfilAyllu->mostrar_portafolio_comunidad) {
+            // Para visitantes de la comunidad: solo evidencias y reflexión de portafolio compartidas,
+            // excluyendo estrictamente retroalimentaciones docentes confidenciales y autoevaluaciones privadas.
+            $portafolioItems = AylluEntregaFormativa::with(['curso.ciclo', 'unidad'])
+                ->select([
+                    'id',
+                    'curso_id',
+                    'unidad_id',
+                    'user_id',
+                    'titulo',
+                    'descripcion_reflexion',
+                    'enlace_evidencia',
+                    'reflexion_portafolio',
+                    'en_portafolio',
+                    'created_at',
+                ])
+                ->where('user_id', $perfilUser->id)
+                ->where('en_portafolio', true)
+                ->latest()
+                ->get()
+                ->each(fn (AylluEntregaFormativa $item) => $item->setRelation('retroalimentaciones', collect()));
+        } else {
+            $portafolioItems = collect();
+        }
 
         return view('ayllu.perfil', array_merge($ctx, [
             'seccionActiva' => 'perfil',
             'perfilUser' => $perfilUser,
             'perfilAyllu' => $perfilAyllu,
-            'esMiPerfil' => ($perfilUser->id === $user->id),
-            'portafolioItems' => $portafolioPublico,
+            'esMiPerfil' => $esMiPerfil,
+            'portafolioItems' => $portafolioItems,
         ]));
     }
 
@@ -848,10 +1045,28 @@ class AylluController extends Controller
                 'biografia' => $validated['biografia'] ?? null,
                 'lengua_preferida' => $validated['lengua_preferida'],
                 'saberes_intereses' => !empty($saberes) ? array_slice($saberes, 0, 8) : ['Diálogo de saberes', 'EIB'],
-                'mostrar_portafolio_comunidad' => $request->boolean('mostrar_portafolio_comunidad', true),
+                'mostrar_portafolio_comunidad' => $request->boolean('mostrar_portafolio_comunidad', false),
             ]
         );
 
         return back()->with('success', 'Tu perfil intercultural de Ayllu Puklla ha sido actualizado.');
+    }
+
+    /**
+     * Protege las evidencias de prácticas docentes que involucren datos o imágenes de menores de edad.
+     */
+    protected function validarProteccionMenores(Request $request, string $texto, ?string $enlace): void
+    {
+        if ($request->boolean('contiene_imagen_menores_sin_consentimiento')) {
+            throw ValidationException::withMessages([
+                'confirmacion_politica_menores' => 'Por política institucional de protección de menores, no está permitido publicar fotografías ni datos identificables de niñas, niños o adolescentes sin autorización expresa.',
+            ]);
+        }
+
+        if ($request->has('confirmacion_politica_menores') && !$request->boolean('confirmacion_politica_menores')) {
+            throw ValidationException::withMessages([
+                'confirmacion_politica_menores' => 'Debes confirmar el cumplimiento de la política institucional de protección de identidad e imagen de menores.',
+            ]);
+        }
     }
 }

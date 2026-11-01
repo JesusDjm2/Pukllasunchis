@@ -31,8 +31,6 @@ class AylluContextService
      */
     public function resolverContexto(User $user): array
     {
-        $this->asegurarSemillaInstitucional();
-
         $esDocente = $user->hasRole('docente') || $user->docente !== null;
         $esTutor = $user->hasRole('tutor');
         $esAdmin = $user->hasAnyRole(['super-admin', 'admin', 'adminB']);
@@ -177,7 +175,12 @@ class AylluContextService
                 : collect();
 
             $cursosExtra = $periodoActual
-                ? $alumno->cursosDelPeriodo($periodoActual->id)->pluck('cursos.id')
+                ? $alumno->cursos()
+                    ->where(function ($q) use ($periodoActual) {
+                        $q->whereNull('alumno_cursos.periodo_actual_id')
+                          ->orWhere('alumno_cursos.periodo_actual_id', $periodoActual->id);
+                    })
+                    ->pluck('cursos.id')
                 : $alumno->cursos()->pluck('cursos.id');
 
             $ids = $cursosCiclo->merge($cursosExtra)->unique()->values();
@@ -359,7 +362,7 @@ class AylluContextService
                 ],
                 [
                     'nombre' => 'Semillero Taq’e — Proyectos Anuales Integradores',
-                    'nombre_quechua' => 'Taq’eマスク Maskhaykuna',
+                    'nombre_quechua' => 'Taq’e Maskhaykuna',
                     'slug' => 'semillero-taqe-proyectos-integradores',
                     'descripcion' => 'Articulación de los productos de cada curso con el Proyecto Anual Integrador de ciclo y las ferias de investigación Taq’e.',
                     'tipo' => 'investigacion',
@@ -371,8 +374,11 @@ class AylluContextService
             ];
 
             foreach ($gruposIniciales as $g) {
-                AylluGrupo::create($g);
+                AylluGrupo::firstOrCreate(['slug' => $g['slug']], $g);
             }
+        } else {
+            AylluGrupo::where('slug', 'semillero-taqe-proyectos-integradores')
+                ->update(['nombre_quechua' => 'Taq’e Maskhaykuna']);
         }
 
         if (AylluPublicacion::count() === 0) {
@@ -389,7 +395,7 @@ class AylluContextService
                     'tipo' => 'anuncio',
                     'titulo' => 'Allinllachu, bienvenidos a Ayllu Puklla — Un espacio para aprender y construir comunidad',
                     'contenido' => 'Iniciamos nuestro tejido digital en la EESP Pukllasunchis. Aquí articulamos nuestros cursos como comunidades con sílabo vivo, el acompañamiento formativo continuo y los aportes de cada asignatura hacia el Proyecto Anual Integrador (Taq’e), manteniendo siempre separadas y protegidas nuestras calificaciones y trámites oficiales.',
-                    'resumen_quechua' => 'Kusisqa chaskiykiku Ayllu Puklla llikanchisman. Kay空間pi kuska yachasunchis, uywanakusunchis ima.',
+                    'resumen_quechua' => 'Kusisqa chaskiykiku Ayllu Puklla llikanchisman. Kay ayllupi kuska yachasunchis, uywanakusunchis ima.',
                     'etiquetas' => ['Ayllu Puklla', 'Crianza Mutua', 'EIB', 'Comunidad'],
                     'fijado' => true,
                     'destacado_inicio' => true,
@@ -429,6 +435,9 @@ class AylluContextService
                     ]);
                 }
             }
+        } else {
+            AylluPublicacion::where('resumen_quechua', 'like', '%Kay%pi%')
+                ->update(['resumen_quechua' => 'Kusisqa chaskiykiku Ayllu Puklla llikanchisman. Kay ayllupi kuska yachasunchis, uywanakusunchis ima.']);
         }
 
         if (Schema::hasTable('ayllu_eventos_calendario') && AylluEventoCalendario::count() === 0) {

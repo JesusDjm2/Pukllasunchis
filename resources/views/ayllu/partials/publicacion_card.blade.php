@@ -1,4 +1,5 @@
 @php
+    $pub = $pub ?? $publicacion;
     $autor = $pub->autor;
     $nombreAutor = trim(($autor->name ?? '') . ' ' . ($autor->apellidos ?? '')) ?: 'Integrante Pukllasunchis';
     $iniciales = strtoupper(mb_substr($autor->name ?? 'P', 0, 1) . mb_substr($autor->apellidos ?? 'K', 0, 1));
@@ -62,6 +63,9 @@
                                 </button>
                             </form>
                         @endif
+                        <button type="button" class="dropdown-item small" data-toggle="collapse" data-target="#editar-pub-{{ $pub->id }}">
+                            <i class="fas fa-edit mr-1 text-primary"></i> Editar publicación
+                        </button>
                         <form action="{{ route('ayllu.publicaciones.eliminar', $pub->id) }}" method="POST" onsubmit="return confirm('¿Deseas eliminar esta publicación?');">
                             @csrf
                             @method('DELETE')
@@ -76,6 +80,28 @@
     </div>
 
     <div class="ayllu-card-body">
+        @if(($puedeModerar ?? false) || $pub->user_id === auth()->id())
+            <div class="collapse mb-3 p-3 rounded border" id="editar-pub-{{ $pub->id }}" style="background: var(--ayllu-surface-soft);">
+                <form action="{{ route('ayllu.publicaciones.update', $pub->id) }}" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <div class="form-group mb-2">
+                        <input type="text" name="titulo" class="form-control form-control-sm" value="{{ $pub->titulo }}" placeholder="Título (opcional)" maxlength="180">
+                    </div>
+                    <div class="form-group mb-2">
+                        <textarea name="contenido" rows="3" class="form-control form-control-sm" required maxlength="5000">{{ $pub->contenido }}</textarea>
+                    </div>
+                    <div class="form-group mb-2">
+                        <input type="text" name="resumen_quechua" class="form-control form-control-sm" value="{{ $pub->resumen_quechua }}" placeholder="Síntesis en Quechua (opcional)" maxlength="1000">
+                    </div>
+                    <div class="text-right">
+                        <button type="submit" class="btn btn-sm btn-primary font-weight-bold px-3" style="border-radius: 999px;">
+                            Guardar cambios
+                        </button>
+                    </div>
+                </form>
+            </div>
+        @endif
         @if($pub->titulo)
             <h5 class="font-weight-bold mb-2" style="font-size: 1.05rem; color: var(--ayllu-text);">
                 {{ $pub->titulo }}

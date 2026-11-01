@@ -249,20 +249,48 @@ return new class extends Migration
     }
 
     /**
-     * Rollback limpio y no destructivo sobre el núcleo existente.
+     * Rollback protegido: prohíbe eliminar tablas de Ayllu Puklla en producción o cuando
+     * existen datos comunitarios/formativos registrados sin autorización y respaldo expreso.
      */
     public function down(): void
     {
-        Schema::dropIfExists('ayllu_mensajes_chat');
-        Schema::dropIfExists('ayllu_eventos_calendario');
-        Schema::dropIfExists('ayllu_retroalimentaciones');
-        Schema::dropIfExists('ayllu_entregas_formativas');
-        Schema::dropIfExists('ayllu_reacciones');
-        Schema::dropIfExists('ayllu_comentarios');
-        Schema::dropIfExists('ayllu_publicaciones');
-        Schema::dropIfExists('ayllu_grupo_miembros');
-        Schema::dropIfExists('ayllu_grupos');
-        Schema::dropIfExists('ayllu_perfiles');
+        if (app()->environment('production')) {
+            throw new \RuntimeException(
+                'PROHIBIDO: No se permite ejecutar rollback destructivo de Ayllu Puklla en producción.'
+            );
+        }
+
+        $tablasAyllu = [
+            'ayllu_mensajes_chat',
+            'ayllu_eventos_calendario',
+            'ayllu_retroalimentaciones',
+            'ayllu_entregas_formativas',
+            'ayllu_reacciones',
+            'ayllu_comentarios',
+            'ayllu_publicaciones',
+            'ayllu_grupo_miembros',
+            'ayllu_grupos',
+            'ayllu_perfiles',
+        ];
+
+        $tieneDatos = false;
+        foreach ($tablasAyllu as $tabla) {
+            if (Schema::hasTable($tabla) && \Illuminate\Support\Facades\DB::table($tabla)->exists()) {
+                $tieneDatos = true;
+                break;
+            }
+        }
+
+        if ($tieneDatos && !filter_var(env('AYLLU_ALLOW_DESTRUCTIVE_ROLLBACK', false), FILTER_VALIDATE_BOOLEAN)) {
+            throw new \RuntimeException(
+                'ROLLBACK BLOQUEADO: Las tablas de Ayllu Puklla contienen datos comunitarios o entregas formativas. ' .
+                'Realice primero un respaldo completo y defina AYLLU_ALLOW_DESTRUCTIVE_ROLLBACK=true si cuenta con autorización expresa.'
+            );
+        }
+
+        foreach ($tablasAyllu as $tabla) {
+            Schema::dropIfExists($tabla);
+        }
 
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
         $permisosAyllu = [

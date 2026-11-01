@@ -129,14 +129,20 @@
                             <textarea name="contenido" rows="2" class="form-control form-control-sm" placeholder="Comparte dudas, hallazgos de lectura, acuerdos de clase o materiales..." required></textarea>
                         </div>
                         <div class="form-row align-items-center">
-                            <div class="col-md-8 mb-2 mb-md-0">
+                            <div class="col-md-12 mb-2">
                                 <input type="url" name="enlace_externo" class="form-control form-control-sm" placeholder="Enlace opcional a Drive / Canva / Documento (https://...)">
                             </div>
-                            <div class="col-md-4 text-right">
-                                <button type="submit" class="btn btn-sm btn-success font-weight-bold btn-block" style="border-radius:999px;">
-                                    <i class="fas fa-paper-plane mr-1"></i> Compartir en el Curso
-                                </button>
+                        </div>
+                        <div class="d-flex flex-wrap justify-content-between align-items-center mt-1 pt-2" style="border-top: 1px dashed #e6e0d6; gap: 0.5rem;">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" id="chkPoliticaMenoresCurso" name="confirmacion_politica_menores" value="1" checked required>
+                                <label class="custom-control-label text-muted" for="chkPoliticaMenoresCurso" style="font-size: 0.72rem;">
+                                    <i class="fas fa-child text-warning mr-1"></i>Confirmo que el enlace externo no expone rostros ni datos identificables de menores sin consentimiento.
+                                </label>
                             </div>
+                            <button type="submit" class="btn btn-sm btn-success font-weight-bold px-3" style="border-radius:999px;">
+                                <i class="fas fa-paper-plane mr-1"></i> Compartir en el Curso
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -383,6 +389,13 @@
                                 <input type="checkbox" class="custom-control-input" id="chkPortafolio" name="en_portafolio" value="1" checked>
                                 <label class="custom-control-label small font-weight-bold" for="chkPortafolio">
                                     <i class="fas fa-folder-open text-warning mr-1"></i>Destacar en mi Portafolio Docente EIB
+                                </label>
+                            </div>
+
+                            <div class="custom-control custom-checkbox mt-2 pt-2" style="border-top: 1px dashed #d5e6dc;">
+                                <input type="checkbox" class="custom-control-input" id="chkPoliticaMenoresEntrega" name="confirmacion_politica_menores" value="1" checked required>
+                                <label class="custom-control-label text-muted" for="chkPoliticaMenoresEntrega" style="font-size: 0.72rem;">
+                                    <i class="fas fa-child text-warning mr-1"></i>Confirmo que la evidencia cumple la política de protección de datos e imagen de niños y niñas.
                                 </label>
                             </div>
                         </div>

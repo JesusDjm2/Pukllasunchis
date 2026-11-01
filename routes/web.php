@@ -269,6 +269,8 @@ Route::middleware(['auth'])->group(function () {
     // Publicaciones comunitarias, reacciones y moderación (Plano 1)
     Route::post('/ayllu/publicaciones', [App\Http\Controllers\Ayllu\AylluController::class, 'storePublicacion'])
         ->name('ayllu.publicaciones.store');
+    Route::match(['put', 'patch'], '/ayllu/publicaciones/{publicacion}', [App\Http\Controllers\Ayllu\AylluController::class, 'updatePublicacion'])
+        ->name('ayllu.publicaciones.update');
     Route::post('/ayllu/publicaciones/{publicacion}/comentar', [App\Http\Controllers\Ayllu\AylluController::class, 'storeComentario'])
         ->name('ayllu.publicaciones.comentar');
     Route::post('/ayllu/publicaciones/{publicacion}/reaccionar', [App\Http\Controllers\Ayllu\AylluController::class, 'toggleReaccion'])
@@ -384,6 +386,35 @@ if (app()->isLocal()) {
         }
         return response('No se encontró docente en la base de datos.', 404);
     })->name('dev.login-docente');
+
+    // Accesos directos de prueba interactiva exclusivamente en entorno local para Ayllu Puklla
+    Route::get('/dev/ayllu/{rol}', function (string $rol) {
+        abort_unless(app()->environment('local'), 404);
+
+        $user = null;
+        if ($rol === 'alumno-fid') {
+            $alumno = \App\Models\Alumno::whereHas('user')->whereHas('cursos')->first()
+                ?? \App\Models\Alumno::whereHas('user')->first();
+            $user = $alumno?->user;
+        } elseif ($rol === 'alumno-ppd') {
+            $ppd = \App\Models\ppd::whereHas('user')->first();
+            $user = $ppd?->user;
+        } elseif ($rol === 'docente') {
+            $docente = \App\Models\Docente::whereHas('user')->whereHas('cursos')->first()
+                ?? \App\Models\Docente::whereHas('user')->first();
+            $user = $docente?->user;
+        }
+
+        if (!$user) {
+            return response("No se encontró usuario local para el perfil '{$rol}'.", 404);
+        }
+
+        \Illuminate\Support\Facades\Auth::login($user);
+        request()->session()->regenerate();
+
+        return redirect()->route('ayllu.inicio')
+            ->with('success', 'Sesión interactiva iniciada como: ' . $user->name . ' (' . strtoupper($rol) . ')');
+    })->name('dev.ayllu.login');
 }
 
 

@@ -118,42 +118,64 @@
                     Muro de la comunidad: {{ $grupoActual->nombre }}
                 </h3>
                 <span class="small text-muted">
-                    Todos los estudiantes y docentes pueden compartir saberes, preguntas y recursos en esta comunidad.
+                    Los integrantes de esta comunidad pueden compartir saberes, preguntas y recursos.
                 </span>
             </div>
-            <a href="{{ route('ayllu.chat', ['tipo' => 'grupo', 'id' => $grupoActual->id]) }}" class="btn btn-sm btn-outline-primary font-weight-bold" style="border-radius: 999px; font-size: 0.76rem;">
-                <i class="fas fa-comments mr-1"></i> Abrir chat de {{ $grupoActual->nombre }}
-            </a>
+            @if($puedeParticiparEnGrupoActual ?? false)
+                <a href="{{ route('ayllu.chat', ['tipo' => 'grupo', 'id' => $grupoActual->id]) }}" class="btn btn-sm btn-outline-primary font-weight-bold" style="border-radius: 999px; font-size: 0.76rem;">
+                    <i class="fas fa-comments mr-1"></i> Abrir chat de {{ $grupoActual->nombre }}
+                </a>
+            @endif
         </div>
 
-        <form action="{{ route('ayllu.publicaciones.store') }}" method="POST" class="mt-2">
-            @csrf
-            <input type="hidden" name="ambito" value="grupo">
-            <input type="hidden" name="ayllu_grupo_id" value="{{ $grupoActual->id }}">
+        @if($puedeParticiparEnGrupoActual ?? false)
+            <form action="{{ route('ayllu.publicaciones.store') }}" method="POST" class="mt-2">
+                @csrf
+                <input type="hidden" name="ambito" value="grupo">
+                <input type="hidden" name="ayllu_grupo_id" value="{{ $grupoActual->id }}">
 
-            <div class="form-row">
-                <div class="col-md-4 mb-2">
-                    <select name="tipo" class="form-control form-control-sm" required>
-                        <option value="dialogo_saber">Diálogo de saberes / Reflexión</option>
-                        <option value="recurso">Recurso o material compartido</option>
-                        <option value="pregunta">Pregunta a la comunidad</option>
-                        <option value="reconocimiento">Reconocimiento comunitario</option>
-                    </select>
+                <div class="form-row">
+                    <div class="col-md-4 mb-2">
+                        <select name="tipo" class="form-control form-control-sm" required>
+                            <option value="dialogo_saber">Diálogo de saberes / Reflexión</option>
+                            <option value="recurso">Recurso o material compartido</option>
+                            <option value="pregunta">Pregunta a la comunidad</option>
+                            <option value="reconocimiento">Reconocimiento comunitario</option>
+                        </select>
+                    </div>
+                    <div class="col-md-8 mb-2">
+                        <input type="text" name="titulo" class="form-control form-control-sm" placeholder="Título de tu aporte (opcional)" maxlength="180">
+                    </div>
                 </div>
-                <div class="col-md-8 mb-2">
-                    <input type="text" name="titulo" class="form-control form-control-sm" placeholder="Título de tu aporte (opcional)" maxlength="180">
+                <div class="form-group mb-2">
+                    <textarea name="contenido" rows="2" class="form-control form-control-sm" required placeholder="Comparte una experiencia, saber o recurso con {{ $grupoActual->nombre }}..."></textarea>
                 </div>
+                <div class="custom-control custom-checkbox mb-2">
+                    <input type="checkbox" class="custom-control-input" id="checkMenoresGrupo" name="confirmacion_politica_menores" value="1" checked>
+                    <label class="custom-control-label small text-muted" for="checkMenoresGrupo" style="font-size: 0.74rem;">
+                        Confirmo el respeto a la política institucional de protección de datos e imagen de menores de edad.
+                    </label>
+                </div>
+                <div class="d-flex flex-wrap justify-content-between align-items-center" style="gap: 0.5rem;">
+                    <input type="url" name="enlace_externo" class="form-control form-control-sm" style="max-width: 340px;" placeholder="Enlace de Drive, video o lectura (opcional)">
+                    <button type="submit" class="btn btn-sm font-weight-bold text-white px-4" style="background: #9e3d22; border-radius: 999px;">
+                        <i class="fas fa-paper-plane mr-1"></i> Publicar en comunidad
+                    </button>
+                </div>
+            </form>
+        @else
+            <div class="p-3 rounded mt-2 d-flex flex-wrap justify-content-between align-items-center" style="background: #f5f2ed; border: 1px solid #e6e0d6;">
+                <span class="small text-muted">
+                    <i class="fas fa-info-circle mr-1 text-warning"></i> Únete a <strong>{{ $grupoActual->nombre }}</strong> para publicar en este muro y participar en su canal de chat.
+                </span>
+                <form action="{{ route('ayllu.grupos.miembro', $grupoActual->id) }}" method="POST" class="d-inline">
+                    @csrf
+                    <button type="submit" class="btn btn-sm font-weight-bold text-white px-3" style="background: #9e3d22; border-radius: 999px;">
+                        <i class="fas fa-user-plus mr-1"></i> Unirme a esta comunidad
+                    </button>
+                </form>
             </div>
-            <div class="form-group mb-2">
-                <textarea name="contenido" rows="2" class="form-control form-control-sm" required placeholder="Comparte una experiencia, saber o recurso con {{ $grupoActual->nombre }}..."></textarea>
-            </div>
-            <div class="d-flex flex-wrap justify-content-between align-items-center" style="gap: 0.5rem;">
-                <input type="url" name="enlace_externo" class="form-control form-control-sm" style="max-width: 340px;" placeholder="Enlace de Drive, video o lectura (opcional)">
-                <button type="submit" class="btn btn-sm font-weight-bold text-white px-4" style="background: #9e3d22; border-radius: 999px;">
-                    <i class="fas fa-paper-plane mr-1"></i> Publicar en comunidad
-                </button>
-            </div>
-        </form>
+        @endif
     </div>
 
     @forelse($publicacionesGrupo as $publicacion)

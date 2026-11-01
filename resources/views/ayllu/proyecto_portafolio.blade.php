@@ -151,9 +151,11 @@
             <p class="small mb-2 text-muted">{{ $aporte->descripcion_reflexion }}</p>
             <div class="d-flex flex-wrap justify-content-between align-items-center">
                 <div class="small">
-                    <span class="badge badge-light border">
-                        Autoevaluación: {{ $nivelesFormativos[$aporte->autoevaluacion_nivel]['label'] ?? $aporte->autoevaluacion_nivel }}
-                    </span>
+                    @if($aporte->user_id === $user->id)
+                        <span class="badge badge-light border">
+                            Autoevaluación: {{ $nivelesFormativos[$aporte->autoevaluacion_nivel]['label'] ?? $aporte->autoevaluacion_nivel }}
+                        </span>
+                    @endif
                     @if($aporte->taqeGrupo)
                         <span class="badge badge-info ml-1">
                             Equipo Taq'e: {{ $aporte->taqeGrupo->nombre_grupo }}
