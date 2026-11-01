@@ -15,9 +15,9 @@ class UserResource extends JsonResource
             if (str_starts_with($fotoNombre, 'http://') || str_starts_with($fotoNombre, 'https://')) {
                 $fotoUrl = $fotoNombre;
             } elseif ($this->docente && file_exists(public_path('docentes/fotos/' . $fotoNombre))) {
-                $fotoUrl = url('docentes/fotos/' . ltrim($fotoNombre, '/'));
+                $fotoUrl = $request->getSchemeAndHttpHost() . '/api/v1/foto/docente/' . ltrim($fotoNombre, '/');
             } else {
-                $fotoUrl = url('img/estudiantes/' . ltrim($fotoNombre, '/'));
+                $fotoUrl = $request->getSchemeAndHttpHost() . '/api/v1/foto/estudiante/' . ltrim($fotoNombre, '/');
             }
         }
 

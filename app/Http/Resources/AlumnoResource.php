@@ -15,7 +15,7 @@ class AlumnoResource extends JsonResource
             if (str_starts_with($fotoNombre, 'http://') || str_starts_with($fotoNombre, 'https://')) {
                 $fotoUrl = $fotoNombre;
             } else {
-                $fotoUrl = url('img/estudiantes/' . ltrim($fotoNombre, '/'));
+                $fotoUrl = $request->getSchemeAndHttpHost() . '/api/v1/foto/estudiante/' . ltrim($fotoNombre, '/');
             }
         }
 

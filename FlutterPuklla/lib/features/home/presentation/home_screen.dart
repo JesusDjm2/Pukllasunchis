@@ -593,173 +593,203 @@ class _PeriodoMatriculaCard extends StatelessWidget {
     final esPendiente = yaMatriculado == false && periodo.formularioHabilitado;
     final esMatriculado = yaMatriculado == true;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
+    void onCardTap() {
+      if (esPendiente) {
+        context.push('/matricula/formulario');
+      } else {
+        context.push('/calificaciones');
+      }
+    }
+
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: onCardTap,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF0F172A).withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-        border: Border.all(
-          color: esPendiente
-              ? const Color(0xFFFDE68A)
-              : (esMatriculado ? const Color(0xFFA7F3D0) : const Color(0xFFE2E8F0)),
-          width: esPendiente || esMatriculado ? 1.2 : 1,
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(
-              color: esMatriculado
-                  ? const Color(0xFF10B981).withValues(alpha: 0.12)
-                  : (esPendiente
-                      ? const Color(0xFFF59E0B).withValues(alpha: 0.15)
-                      : const Color(0xFF3B82F6).withValues(alpha: 0.10)),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              esMatriculado
-                  ? Icons.verified_rounded
-                  : (esPendiente ? Icons.assignment_late_outlined : Icons.calendar_month_outlined),
-              color: esMatriculado
-                  ? const Color(0xFF059669)
-                  : (esPendiente ? const Color(0xFFD97706) : const Color(0xFF2563EB)),
-              size: 24,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF0F172A).withValues(alpha: 0.04),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
+            border: Border.all(
+              color: esPendiente
+                  ? const Color(0xFFFDE68A)
+                  : (esMatriculado ? const Color(0xFFA7F3D0) : const Color(0xFFE2E8F0)),
+              width: esPendiente || esMatriculado ? 1.2 : 1,
             ),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
+          child: Row(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: esMatriculado
+                      ? const Color(0xFF10B981).withValues(alpha: 0.12)
+                      : (esPendiente
+                          ? const Color(0xFFF59E0B).withValues(alpha: 0.15)
+                          : const Color(0xFF3B82F6).withValues(alpha: 0.10)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  esMatriculado
+                      ? Icons.verified_rounded
+                      : (esPendiente ? Icons.assignment_late_outlined : Icons.calendar_month_outlined),
+                  color: esMatriculado
+                      ? const Color(0xFF059669)
+                      : (esPendiente ? const Color(0xFFD97706) : const Color(0xFF2563EB)),
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
+                    Row(
+                      children: [
+                        Text(
+                          'Período ${periodo.nombre}',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 14.5,
+                            color: Color(0xFF0F172A),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        if (esMatriculado)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFECFDF5),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: const Color(0xFFA7F3D0)),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.check_circle_rounded, size: 11, color: Color(0xFF059669)),
+                                SizedBox(width: 4),
+                                Text(
+                                  'Matriculado',
+                                  style: TextStyle(
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF059669),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        else if (esPendiente)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFFBEB),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: const Color(0xFFFDE68A)),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.warning_amber_rounded, size: 11, color: Color(0xFFD97706)),
+                                SizedBox(width: 4),
+                                Text(
+                                  'Pendiente',
+                                  style: TextStyle(
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFFD97706),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
                     Text(
-                      'Período ${periodo.nombre}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 14.5,
-                        color: Color(0xFF0F172A),
+                      esMatriculado
+                          ? 'Matrícula confirmada · Clases y evaluaciones activas'
+                          : (esPendiente
+                              ? 'Formulario habilitado · Toca para formalizar'
+                              : 'Clases vigentes y evaluaciones en curso'),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: esPendiente ? const Color(0xFFB45309) : const Color(0xFF64748B),
+                        fontWeight: esPendiente ? FontWeight.w600 : FontWeight.normal,
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    if (esMatriculado)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFECFDF5),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: const Color(0xFFA7F3D0)),
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.check_circle_rounded, size: 11, color: Color(0xFF059669)),
-                            SizedBox(width: 4),
-                            Text(
-                              'Matriculado',
-                              style: TextStyle(
-                                fontSize: 10.5,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFF059669),
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                    else if (esPendiente)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFFFBEB),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: const Color(0xFFFDE68A)),
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.warning_amber_rounded, size: 11, color: Color(0xFFD97706)),
-                            SizedBox(width: 4),
-                            Text(
-                              'Pendiente',
-                              style: TextStyle(
-                                fontSize: 10.5,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFFD97706),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
                   ],
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  esMatriculado
-                      ? 'Matrícula confirmada · Clases y evaluaciones activas'
-                      : (esPendiente
-                          ? 'Formulario habilitado · Toca para formalizar'
-                          : 'Clases vigentes y evaluaciones en curso'),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: esPendiente ? const Color(0xFFB45309) : const Color(0xFF64748B),
-                    fontWeight: esPendiente ? FontWeight.w600 : FontWeight.normal,
+              ),
+              if (esPendiente) ...[
+                const SizedBox(width: 8),
+                FilledButton.tonal(
+                  onPressed: () => context.push('/matricula/formulario'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.goldHover,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('Llenar', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700)),
+                      SizedBox(width: 2),
+                      Icon(Icons.arrow_forward_rounded, size: 13),
+                    ],
+                  ),
+                ),
+              ] else ...[
+                if (tieneHorario) ...[
+                  const SizedBox(width: 4),
+                  IconButton(
+                    onPressed: () {
+                      final uri = Uri.parse(periodo.horario!);
+                      launchUrl(uri, mode: LaunchMode.externalApplication);
+                    },
+                    icon: const Icon(Icons.picture_as_pdf_outlined, size: 18),
+                    tooltip: 'Ver horario del ciclo',
+                    style: IconButton.styleFrom(
+                      backgroundColor: AppColors.gold.withValues(alpha: 0.12),
+                      foregroundColor: AppColors.goldHover,
+                      padding: const EdgeInsets.all(7),
+                      minimumSize: const Size(34, 34),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                  ),
+                ],
+                const SizedBox(width: 2),
+                IconButton(
+                  onPressed: () => context.push('/calificaciones'),
+                  icon: const Icon(Icons.chevron_right_rounded, size: 22),
+                  tooltip: 'Ver asignaturas y notas',
+                  style: IconButton.styleFrom(
+                    foregroundColor: AppColors.teal,
+                    padding: const EdgeInsets.all(4),
+                    minimumSize: const Size(32, 32),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                 ),
               ],
-            ),
+            ],
           ),
-          if (esPendiente) ...[
-            const SizedBox(width: 8),
-            FilledButton.tonal(
-              onPressed: () => context.push('/matricula/formulario'),
-              style: FilledButton.styleFrom(
-                backgroundColor: AppColors.goldHover,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                minimumSize: Size.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text('Llenar', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700)),
-                  SizedBox(width: 2),
-                  Icon(Icons.arrow_forward_rounded, size: 13),
-                ],
-              ),
-            ),
-          ] else if (tieneHorario) ...[
-            const SizedBox(width: 6),
-            IconButton(
-              onPressed: () {
-                final uri = Uri.parse(periodo.horario!);
-                launchUrl(uri, mode: LaunchMode.externalApplication);
-              },
-              icon: const Icon(Icons.picture_as_pdf_outlined, size: 20),
-              tooltip: 'Ver horario del ciclo',
-              style: IconButton.styleFrom(
-                backgroundColor: AppColors.gold.withValues(alpha: 0.12),
-                foregroundColor: AppColors.goldHover,
-                padding: const EdgeInsets.all(8),
-                minimumSize: const Size(36, 36),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-            ),
-          ],
-        ],
+        ),
       ),
     );
   }

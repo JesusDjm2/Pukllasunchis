@@ -27,6 +27,35 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::prefix('v1')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
 
+    // Servir fotos con encabezados CORS para apps móviles y Flutter Web
+    Route::get('/foto/estudiante/{archivo}', function ($archivo) {
+        $path = public_path('img/estudiantes/' . basename($archivo));
+        if (! file_exists($path)) {
+            abort(404);
+        }
+
+        return response()->file($path, [
+            'Access-Control-Allow-Origin' => '*',
+            'Access-Control-Allow-Methods' => 'GET, OPTIONS',
+            'Access-Control-Allow-Headers' => '*',
+            'Cache-Control' => 'public, max-age=86400',
+        ]);
+    })->where('archivo', '.*');
+
+    Route::get('/foto/docente/{archivo}', function ($archivo) {
+        $path = public_path('docentes/fotos/' . basename($archivo));
+        if (! file_exists($path)) {
+            abort(404);
+        }
+
+        return response()->file($path, [
+            'Access-Control-Allow-Origin' => '*',
+            'Access-Control-Allow-Methods' => 'GET, OPTIONS',
+            'Access-Control-Allow-Headers' => '*',
+            'Cache-Control' => 'public, max-age=86400',
+        ]);
+    })->where('archivo', '.*');
+
     // Pública, igual que informacion/bolsa-de-trabajo en la web.
     Route::get('/bolsa-trabajo', [BolsaTrabajoOfertaController::class, 'index']);
 

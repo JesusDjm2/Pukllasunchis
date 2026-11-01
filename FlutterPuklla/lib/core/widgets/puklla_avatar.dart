@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../env/env.dart';
 import '../theme/app_colors.dart';
 
 /// Avatar institucional de Pukllasunchis:
@@ -27,7 +28,17 @@ class PukllaAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tieneFoto = fotoUrl != null && fotoUrl!.trim().isNotEmpty;
+    String? resolvedUrl = fotoUrl?.trim();
+    if (resolvedUrl != null && resolvedUrl.isNotEmpty) {
+      if (!resolvedUrl.startsWith('http://') && !resolvedUrl.startsWith('https://')) {
+        // En caso de que venga ruta relativa como /api/v1/... o /img/...
+        final apiBase = Env.apiBaseUrl;
+        final origin = apiBase.split('/api/v1').first;
+        resolvedUrl = '$origin/${resolvedUrl.startsWith('/') ? resolvedUrl.substring(1) : resolvedUrl}';
+      }
+    }
+
+    final tieneFoto = resolvedUrl != null && resolvedUrl.isNotEmpty;
     final bg = backgroundColor ?? Colors.white.withValues(alpha: 0.15);
 
     Widget fallbackWidget = Container(
@@ -67,7 +78,7 @@ class PukllaAvatar extends StatelessWidget {
       child: ClipOval(
         child: tieneFoto
             ? Image.network(
-                fotoUrl!,
+                resolvedUrl,
                 width: size,
                 height: size,
                 fit: BoxFit.cover,
