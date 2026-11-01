@@ -12,11 +12,19 @@ class AppColors {
   static const teal = Color(0xFF33445A);
   static const tealDark = Color(0xFF253449);
 
-  static const background = Color(0xFFEEF2F7);
+  static const background = Color(0xFFF8FAFC);
   static const surface = Color(0xFFFFFFFF);
   static const text = Color(0xFF1E293B);
   static const muted = Color(0xFF64748B);
   static const border = Color(0x140F172A); // rgba(15,23,42,.08)
+
+  // Tokens para Modo Oscuro
+  static const darkBackground = Color(0xFF0F172A);
+  static const darkSurface = Color(0xFF1E293B);
+  static const darkSurfaceElevated = Color(0xFF273549);
+  static const darkBorder = Color(0xFF334155);
+  static const darkText = Color(0xFFF8FAFC);
+  static const darkMuted = Color(0xFF94A3B8);
 
   static const success = Color(0xFF0F5132);
   static const successBg = Color(0x21198754); // rgba(25,135,84,.13)

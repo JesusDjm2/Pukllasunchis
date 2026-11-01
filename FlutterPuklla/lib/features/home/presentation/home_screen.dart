@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/puklla_dashboard_styles.dart';
 import '../../../core/widgets/puklla_app_bar_actions.dart';
 import '../../../core/widgets/puklla_avatar.dart';
 import '../../../core/widgets/puklla_bottom_nav_bar.dart';
@@ -39,61 +40,82 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       showDialog(
         context: context,
         barrierDismissible: true,
-        builder: (dialogCtx) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFEF3C7),
-                  borderRadius: BorderRadius.circular(10),
+        builder: (dialogCtx) {
+          final isDarkDialog = PukllaDashboardStyles.isDark(dialogCtx);
+          return AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            backgroundColor: PukllaDashboardStyles.surfaceColor(dialogCtx),
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: isDarkDialog
+                        ? const Color(0xFF78350F).withValues(alpha: 0.35)
+                        : const Color(0xFFFEF3C7),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.warning_amber_rounded, color: Color(0xFFD97706), size: 24),
                 ),
-                child: const Icon(Icons.warning_amber_rounded, color: Color(0xFFD97706), size: 24),
-              ),
-              const SizedBox(width: 12),
-              const Expanded(
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    '¡Aún no te has matriculado!',
+                    style: TextStyle(
+                      fontSize: 16.5,
+                      fontWeight: FontWeight.w800,
+                      color: isDarkDialog ? const Color(0xFFFBBF24) : const Color(0xFF92400E),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'El período académico ${periodo.nombre} ya se encuentra activo con el formulario de matrícula habilitado.',
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    color: isDarkDialog ? AppColors.darkText : const Color(0xFF334155),
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  'No estás matriculado en el período actual activo. Completa tu ficha de matrícula para confirmar tus asignaturas, registrar tus datos y acceder a tus notas.',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: isDarkDialog ? AppColors.darkMuted : const Color(0xFF64748B),
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogCtx),
                 child: Text(
-                  '¡Aún no te has matriculado!',
-                  style: TextStyle(fontSize: 16.5, fontWeight: FontWeight.w800, color: Color(0xFF92400E)),
+                  'Recordarme después',
+                  style: TextStyle(color: isDarkDialog ? AppColors.darkMuted : const Color(0xFF64748B)),
                 ),
               ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'El período académico ${periodo.nombre} ya se encuentra activo con el formulario de matrícula habilitado.',
-                style: const TextStyle(fontSize: 13.5, color: Color(0xFF334155), height: 1.4),
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                'No estás matriculado en el período actual activo. Completa tu ficha de matrícula para confirmar tus asignaturas, registrar tus datos y acceder a tus notas.',
-                style: TextStyle(fontSize: 13, color: Color(0xFF64748B), height: 1.35),
+              FilledButton.icon(
+                onPressed: () {
+                  Navigator.pop(dialogCtx);
+                  context.push('/matricula/formulario');
+                },
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.goldHover,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                icon: const Icon(Icons.arrow_forward_rounded, size: 16),
+                label: const Text('Completar matrícula ahora', style: TextStyle(fontWeight: FontWeight.w700)),
               ),
             ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogCtx),
-              child: const Text('Recordarme después', style: TextStyle(color: Color(0xFF64748B))),
-            ),
-            FilledButton.icon(
-              onPressed: () {
-                Navigator.pop(dialogCtx);
-                context.push('/matricula/formulario');
-              },
-              style: FilledButton.styleFrom(
-                backgroundColor: AppColors.goldHover,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-              icon: const Icon(Icons.arrow_forward_rounded, size: 16),
-              label: const Text('Completar matrícula ahora', style: TextStyle(fontWeight: FontWeight.w700)),
-            ),
-          ],
-        ),
+          );
+        },
       );
     });
   }
@@ -111,7 +133,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     _verificarAlertaMatricula(periodoAsync.valueOrNull, yaMatriculadoAsync.valueOrNull);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: PukllaDashboardStyles.backgroundColor(context),
       appBar: AppBar(
         title: const Text(
           'Portal Estudiantil',
@@ -166,23 +188,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   const SizedBox(height: 22),
 
                   // ── TÍTULO SECCIÓN ACCESOS DIRECTOS ──
-                  const Row(
-                    children: [
-                      Text(
-                        'Servicios y Módulos',
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w800,
-                          color: Color(0xFF0F172A),
-                          letterSpacing: -0.2,
-                        ),
-                      ),
-                      Spacer(),
-                      Text(
-                        'Todo en un solo lugar',
-                        style: TextStyle(fontSize: 12, color: Color(0xFF64748B), fontWeight: FontWeight.w500),
-                      ),
-                    ],
+                  const PukllaSectionHeader(
+                    title: 'Servicios y Módulos',
+                    subtitle: 'Todo en un solo lugar',
                   ),
                   const SizedBox(height: 12),
 
@@ -191,34 +199,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   const SizedBox(height: 26),
 
                   // ── MIS CURSOS ACTIVOS ──
-                  Row(
-                    children: [
-                      const Text(
-                        'Cursos del Semestre',
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w800,
-                          color: Color(0xFF0F172A),
-                          letterSpacing: -0.2,
-                        ),
-                      ),
-                      const Spacer(),
-                      TextButton(
-                        onPressed: () => context.push('/calificaciones'),
-                        style: TextButton.styleFrom(
-                          padding: EdgeInsets.zero,
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        child: const Row(
-                          children: [
-                            Text('Ver notas', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AppColors.goldHover)),
-                            SizedBox(width: 2),
-                            Icon(Icons.chevron_right, size: 16, color: AppColors.goldHover),
-                          ],
-                        ),
-                      ),
-                    ],
+                  PukllaSectionHeader(
+                    title: 'Cursos del Semestre',
+                    actionText: 'Ver notas',
+                    onAction: () => context.push('/calificaciones'),
                   ),
                   const SizedBox(height: 12),
                   cursosAsync.when(
@@ -226,15 +210,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       if (cursos.isEmpty) {
                         return Container(
                           padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: const Color(0xFFE2E8F0)),
-                          ),
-                          child: const Center(
+                          decoration: PukllaDashboardStyles.cardDecoration(context, radius: 16),
+                          child: Center(
                             child: Text(
                               'No tienes cursos matriculados en este periodo.',
-                              style: TextStyle(color: Color(0xFF64748B), fontSize: 13.5),
+                              style: TextStyle(
+                                color: PukllaDashboardStyles.textSecondary(context),
+                                fontSize: 13.5,
+                              ),
                             ),
                           ),
                         );
@@ -255,34 +238,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   const SizedBox(height: 24),
 
                   // ── COMUNICADOS RECIENTES ──
-                  Row(
-                    children: [
-                      const Text(
-                        'Avisos y Comunicados',
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w800,
-                          color: Color(0xFF0F172A),
-                          letterSpacing: -0.2,
-                        ),
-                      ),
-                      const Spacer(),
-                      TextButton(
-                        onPressed: () => context.push('/comunicados'),
-                        style: TextButton.styleFrom(
-                          padding: EdgeInsets.zero,
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        child: const Row(
-                          children: [
-                            Text('Ver todos', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AppColors.teal)),
-                            SizedBox(width: 2),
-                            Icon(Icons.chevron_right, size: 16, color: AppColors.teal),
-                          ],
-                        ),
-                      ),
-                    ],
+                  PukllaSectionHeader(
+                    title: 'Avisos y Comunicados',
+                    actionText: 'Ver todos',
+                    onAction: () => context.push('/comunicados'),
                   ),
                   const SizedBox(height: 12),
                   comunicadosAsync.when(
@@ -291,13 +250,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       if (items.isEmpty) {
                         return Container(
                           padding: const EdgeInsets.all(18),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: const Color(0xFFE2E8F0)),
-                          ),
-                          child: const Center(
-                            child: Text('No hay comunicados recientes.', style: TextStyle(color: Color(0xFF64748B))),
+                          decoration: PukllaDashboardStyles.cardDecoration(context, radius: 16),
+                          child: Center(
+                            child: Text(
+                              'No hay comunicados recientes.',
+                              style: TextStyle(
+                                color: PukllaDashboardStyles.textSecondary(context),
+                              ),
+                            ),
                           ),
                         );
                       }
@@ -306,18 +266,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           return Container(
                             margin: const EdgeInsets.only(bottom: 10),
                             padding: const EdgeInsets.all(14),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(14),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFF0F172A).withValues(alpha: 0.03),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 3),
-                                ),
-                              ],
-                              border: Border.all(color: const Color(0xFFF1F5F9)),
-                            ),
+                            decoration: PukllaDashboardStyles.cardDecoration(context, radius: 14),
                             child: Row(
                               children: [
                                 Container(
@@ -337,10 +286,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                         item.titulo,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontWeight: FontWeight.w700,
                                           fontSize: 13.5,
-                                          color: Color(0xFF1E293B),
+                                          color: PukllaDashboardStyles.textPrimary(context),
                                         ),
                                       ),
                                       const SizedBox(height: 3),
@@ -348,7 +297,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                         item.descripcion ?? 'Aviso institucional para la comunidad educativa.',
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: PukllaDashboardStyles.textSecondary(context),
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -390,21 +342,7 @@ class _HeroHeader extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF1B2A4A), Color(0xFF2C3E60)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
-        boxShadow: [
-          BoxShadow(
-            color: Color(0x221B2A4A),
-            blurRadius: 20,
-            offset: Offset(0, 10),
-          ),
-        ],
-      ),
+      decoration: PukllaDashboardStyles.heroHeaderDecoration(context),
       child: SafeArea(
         bottom: false,
         child: Padding(
@@ -515,12 +453,7 @@ class _HeroHeaderFallback extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF1B2A4A), Color(0xFF2C3E60)],
-        ),
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
-      ),
+      decoration: PukllaDashboardStyles.heroHeaderDecoration(context),
       child: Row(
         children: [
           PukllaAvatar(
@@ -589,6 +522,7 @@ class _PeriodoMatriculaCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = PukllaDashboardStyles.isDark(context);
     final tieneHorario = periodo.horario != null && periodo.horario!.isNotEmpty;
     final esPendiente = yaMatriculado == false && periodo.formularioHabilitado;
     final esMatriculado = yaMatriculado == true;
@@ -601,6 +535,12 @@ class _PeriodoMatriculaCard extends StatelessWidget {
       }
     }
 
+    final borderColor = esPendiente
+        ? (isDark ? const Color(0xFFD97706) : const Color(0xFFFDE68A))
+        : (esMatriculado
+            ? (isDark ? const Color(0xFF059669) : const Color(0xFFA7F3D0))
+            : PukllaDashboardStyles.borderColor(context));
+
     return Material(
       color: Colors.transparent,
       borderRadius: BorderRadius.circular(16),
@@ -609,22 +549,10 @@ class _PeriodoMatriculaCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF0F172A).withValues(alpha: 0.04),
-                blurRadius: 10,
-                offset: const Offset(0, 3),
-              ),
-            ],
-            border: Border.all(
-              color: esPendiente
-                  ? const Color(0xFFFDE68A)
-                  : (esMatriculado ? const Color(0xFFA7F3D0) : const Color(0xFFE2E8F0)),
-              width: esPendiente || esMatriculado ? 1.2 : 1,
-            ),
+          decoration: PukllaDashboardStyles.cardDecoration(
+            context,
+            radius: 16,
+            customBorder: borderColor,
           ),
           child: Row(
             children: [
@@ -633,10 +561,10 @@ class _PeriodoMatriculaCard extends StatelessWidget {
                 height: 42,
                 decoration: BoxDecoration(
                   color: esMatriculado
-                      ? const Color(0xFF10B981).withValues(alpha: 0.12)
+                      ? const Color(0xFF10B981).withValues(alpha: isDark ? 0.20 : 0.12)
                       : (esPendiente
-                          ? const Color(0xFFF59E0B).withValues(alpha: 0.15)
-                          : const Color(0xFF3B82F6).withValues(alpha: 0.10)),
+                          ? const Color(0xFFF59E0B).withValues(alpha: isDark ? 0.22 : 0.15)
+                          : const Color(0xFF3B82F6).withValues(alpha: isDark ? 0.20 : 0.10)),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
@@ -644,8 +572,10 @@ class _PeriodoMatriculaCard extends StatelessWidget {
                       ? Icons.verified_rounded
                       : (esPendiente ? Icons.assignment_late_outlined : Icons.calendar_month_outlined),
                   color: esMatriculado
-                      ? const Color(0xFF059669)
-                      : (esPendiente ? const Color(0xFFD97706) : const Color(0xFF2563EB)),
+                      ? (isDark ? const Color(0xFF34D399) : const Color(0xFF059669))
+                      : (esPendiente
+                          ? (isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706))
+                          : (isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB))),
                   size: 24,
                 ),
               ),
@@ -659,10 +589,10 @@ class _PeriodoMatriculaCard extends StatelessWidget {
                       children: [
                         Text(
                           'Período ${periodo.nombre}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontWeight: FontWeight.w800,
                             fontSize: 14.5,
-                            color: Color(0xFF0F172A),
+                            color: PukllaDashboardStyles.textPrimary(context),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -670,21 +600,27 @@ class _PeriodoMatriculaCard extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFECFDF5),
+                              color: isDark ? const Color(0xFF064E3B) : const Color(0xFFECFDF5),
                               borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: const Color(0xFFA7F3D0)),
+                              border: Border.all(
+                                color: isDark ? const Color(0xFF059669) : const Color(0xFFA7F3D0),
+                              ),
                             ),
-                            child: const Row(
+                            child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.check_circle_rounded, size: 11, color: Color(0xFF059669)),
-                                SizedBox(width: 4),
+                                Icon(
+                                  Icons.check_circle_rounded,
+                                  size: 11,
+                                  color: isDark ? const Color(0xFF34D399) : const Color(0xFF059669),
+                                ),
+                                const SizedBox(width: 4),
                                 Text(
                                   'Matriculado',
                                   style: TextStyle(
                                     fontSize: 10.5,
                                     fontWeight: FontWeight.w700,
-                                    color: Color(0xFF059669),
+                                    color: isDark ? const Color(0xFF34D399) : const Color(0xFF059669),
                                   ),
                                 ),
                               ],
@@ -694,21 +630,27 @@ class _PeriodoMatriculaCard extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFFFFBEB),
+                              color: isDark ? const Color(0xFF451A03) : const Color(0xFFFFFBEB),
                               borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: const Color(0xFFFDE68A)),
+                              border: Border.all(
+                                color: isDark ? const Color(0xFFD97706) : const Color(0xFFFDE68A),
+                              ),
                             ),
-                            child: const Row(
+                            child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.warning_amber_rounded, size: 11, color: Color(0xFFD97706)),
-                                SizedBox(width: 4),
+                                Icon(
+                                  Icons.warning_amber_rounded,
+                                  size: 11,
+                                  color: isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706),
+                                ),
+                                const SizedBox(width: 4),
                                 Text(
                                   'Pendiente',
                                   style: TextStyle(
                                     fontSize: 10.5,
                                     fontWeight: FontWeight.w700,
-                                    color: Color(0xFFD97706),
+                                    color: isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706),
                                   ),
                                 ),
                               ],
@@ -727,7 +669,9 @@ class _PeriodoMatriculaCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: 12,
-                        color: esPendiente ? const Color(0xFFB45309) : const Color(0xFF64748B),
+                        color: esPendiente
+                            ? (isDark ? const Color(0xFFFBBF24) : const Color(0xFFB45309))
+                            : PukllaDashboardStyles.textSecondary(context),
                         fontWeight: esPendiente ? FontWeight.w600 : FontWeight.normal,
                       ),
                     ),
@@ -766,8 +710,8 @@ class _PeriodoMatriculaCard extends StatelessWidget {
                     icon: const Icon(Icons.picture_as_pdf_outlined, size: 18),
                     tooltip: 'Ver horario del ciclo',
                     style: IconButton.styleFrom(
-                      backgroundColor: AppColors.gold.withValues(alpha: 0.12),
-                      foregroundColor: AppColors.goldHover,
+                      backgroundColor: AppColors.gold.withValues(alpha: isDark ? 0.20 : 0.12),
+                      foregroundColor: isDark ? const Color(0xFFF1B768) : AppColors.goldHover,
                       padding: const EdgeInsets.all(7),
                       minimumSize: const Size(34, 34),
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -780,7 +724,7 @@ class _PeriodoMatriculaCard extends StatelessWidget {
                   icon: const Icon(Icons.chevron_right_rounded, size: 22),
                   tooltip: 'Ver asignaturas y notas',
                   style: IconButton.styleFrom(
-                    foregroundColor: AppColors.teal,
+                    foregroundColor: isDark ? AppColors.gold : AppColors.teal,
                     padding: const EdgeInsets.all(4),
                     minimumSize: const Size(32, 32),
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -918,23 +862,14 @@ class _BentoItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = PukllaDashboardStyles.isDark(context);
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(18),
       child: Container(
         padding: const EdgeInsets.all(15),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF0F172A).withValues(alpha: 0.04),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-          border: Border.all(color: const Color(0xFFF1F5F9), width: 1.2),
-        ),
+        decoration: PukllaDashboardStyles.cardDecoration(context, radius: 18),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -943,13 +878,17 @@ class _BentoItem extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(9),
                   decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.1),
+                    color: color.withValues(alpha: isDark ? 0.20 : 0.12),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(icon, color: color, size: 22),
                 ),
                 const Spacer(),
-                Icon(Icons.arrow_forward_ios, size: 12, color: Colors.grey.shade400),
+                Icon(
+                  Icons.arrow_forward_ios,
+                  size: 12,
+                  color: isDark ? const Color(0xFF475569) : Colors.grey.shade400,
+                ),
               ],
             ),
             const SizedBox(height: 12),
@@ -957,10 +896,10 @@ class _BentoItem extends StatelessWidget {
               title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
+              style: TextStyle(
                 fontWeight: FontWeight.w800,
                 fontSize: 14,
-                color: Color(0xFF1E293B),
+                color: PukllaDashboardStyles.textPrimary(context),
               ),
             ),
             const SizedBox(height: 2),
@@ -968,9 +907,9 @@ class _BentoItem extends StatelessWidget {
               subtitle,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 11.5,
-                color: Color(0xFF64748B),
+                color: PukllaDashboardStyles.textSecondary(context),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -988,30 +927,25 @@ class _CursoItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = PukllaDashboardStyles.isDark(context);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF0F172A).withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-        border: Border.all(color: const Color(0xFFF1F5F9)),
-      ),
+      decoration: PukllaDashboardStyles.cardDecoration(context, radius: 16),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: AppColors.teal.withValues(alpha: 0.08),
+              color: AppColors.teal.withValues(alpha: isDark ? 0.25 : 0.08),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.book_outlined, color: AppColors.teal, size: 22),
+            child: Icon(
+              Icons.book_outlined,
+              color: isDark ? const Color(0xFF38BDF8) : AppColors.teal,
+              size: 22,
+            ),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -1020,10 +954,10 @@ class _CursoItemCard extends StatelessWidget {
               children: [
                 Text(
                   curso.nombre,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 14,
-                    color: Color(0xFF1E293B),
+                    color: PukllaDashboardStyles.textPrimary(context),
                   ),
                 ),
                 const SizedBox(height: 3),
@@ -1031,7 +965,7 @@ class _CursoItemCard extends StatelessWidget {
                   curso.horas.isNotEmpty
                       ? '${curso.horas} horas lectivas · Plan de estudios'
                       : 'Horario semestral regular',
-                  style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                  style: TextStyle(fontSize: 12, color: PukllaDashboardStyles.textSecondary(context)),
                 ),
               ],
             ),
@@ -1040,15 +974,15 @@ class _CursoItemCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: const Color(0xFFF1F5F9),
+                color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF1F5F9),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
                 '${curso.creditos} CR',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF475569),
+                  color: isDark ? AppColors.darkMuted : const Color(0xFF475569),
                 ),
               ),
             ),

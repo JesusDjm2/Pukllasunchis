@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../theme/puklla_dashboard_styles.dart';
 import '../../features/notificaciones/presentation/notification_bell_action.dart';
 
 /// Acciones estándar del AppBar en la parte derecha superior:
+/// - Selector dinámico de Modo Claro / Modo Oscuro
 /// - Campana de notificaciones con badge en tiempo real
 /// - Botón de menú hamburguesa accesible para el pulgar derecho (abre el endDrawer)
 class PukllaAppBarActions extends StatelessWidget {
@@ -16,6 +18,7 @@ class PukllaAppBarActions extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         ...extraActions,
+        const PukllaThemeToggleButton(),
         const NotificationBellAction(),
         Builder(
           builder: (innerContext) => IconButton(

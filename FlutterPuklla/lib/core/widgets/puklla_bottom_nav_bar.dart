@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/auth/application/auth_controller.dart';
 import '../theme/app_colors.dart';
+import '../theme/puklla_dashboard_styles.dart';
 
 /// Barra inferior fija para navegación táctil con el pulgar (Thumb Zone).
 /// Ofrece los 5 accesos directos requeridos por la institución:
@@ -17,6 +18,7 @@ class PukllaBottomNavBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isDark = PukllaDashboardStyles.isDark(context);
     String location = '';
     try {
       location = GoRouterState.of(context).matchedLocation;
@@ -55,13 +57,18 @@ class PukllaBottomNavBar extends ConsumerWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: const Border(
-          top: BorderSide(color: Color(0xFFE2E8F0), width: 1),
+        color: isDark ? AppColors.darkSurface : Colors.white,
+        border: Border(
+          top: BorderSide(
+            color: isDark ? AppColors.darkBorder : const Color(0xFFE2E8F0),
+            width: 1,
+          ),
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0F172A).withValues(alpha: 0.06),
+            color: isDark
+                ? Colors.black.withValues(alpha: 0.35)
+                : const Color(0xFF0F172A).withValues(alpha: 0.06),
             blurRadius: 12,
             offset: const Offset(0, -3),
           ),
@@ -80,6 +87,7 @@ class PukllaBottomNavBar extends ConsumerWidget {
                 icon: Icons.home_outlined,
                 selectedIcon: Icons.home_rounded,
                 isSelected: activeIndex == 0,
+                isDark: isDark,
                 onTap: () => navigateTo(homeRoute),
               ),
               _NavItem(
@@ -88,6 +96,7 @@ class PukllaBottomNavBar extends ConsumerWidget {
                 icon: Icons.grade_outlined,
                 selectedIcon: Icons.grade_rounded,
                 isSelected: activeIndex == 1,
+                isDark: isDark,
                 onTap: () => navigateTo('/calificaciones'),
               ),
               _NavItem(
@@ -96,6 +105,7 @@ class PukllaBottomNavBar extends ConsumerWidget {
                 icon: Icons.support_agent_outlined,
                 selectedIcon: Icons.support_agent_rounded,
                 isSelected: activeIndex == 2,
+                isDark: isDark,
                 onTap: () => navigateTo('/tutoria'),
               ),
               _NavItem(
@@ -104,6 +114,7 @@ class PukllaBottomNavBar extends ConsumerWidget {
                 icon: Icons.work_outline_rounded,
                 selectedIcon: Icons.work_rounded,
                 isSelected: activeIndex == 3,
+                isDark: isDark,
                 onTap: () => navigateTo('/bolsa-trabajo'),
               ),
               _NavItem(
@@ -112,6 +123,7 @@ class PukllaBottomNavBar extends ConsumerWidget {
                 icon: Icons.campaign_outlined,
                 selectedIcon: Icons.campaign_rounded,
                 isSelected: activeIndex == 4,
+                isDark: isDark,
                 onTap: () => navigateTo('/comunicados'),
               ),
             ],
@@ -130,6 +142,7 @@ class _NavItem extends StatelessWidget {
     required this.selectedIcon,
     required this.isSelected,
     required this.onTap,
+    this.isDark = false,
   });
 
   final int index;
@@ -137,10 +150,15 @@ class _NavItem extends StatelessWidget {
   final IconData icon;
   final IconData selectedIcon;
   final bool isSelected;
+  final bool isDark;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
+    final activeColor = isDark ? const Color(0xFFF1B768) : AppColors.goldHover;
+    final unselectedColor = isDark ? AppColors.darkMuted : const Color(0xFF64748B);
+    final activeTextColor = isDark ? const Color(0xFFF1B768) : AppColors.tealDark;
+
     return Expanded(
       child: Material(
         color: Colors.transparent,
@@ -155,13 +173,15 @@ class _NavItem extends StatelessWidget {
                 duration: const Duration(milliseconds: 200),
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
                 decoration: BoxDecoration(
-                  color: isSelected ? AppColors.gold.withValues(alpha: 0.14) : Colors.transparent,
+                  color: isSelected
+                      ? AppColors.gold.withValues(alpha: isDark ? 0.22 : 0.14)
+                      : Colors.transparent,
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Icon(
                   isSelected ? selectedIcon : icon,
                   size: 22,
-                  color: isSelected ? AppColors.goldHover : const Color(0xFF64748B),
+                  color: isSelected ? activeColor : unselectedColor,
                 ),
               ),
               const SizedBox(height: 2),
@@ -172,7 +192,7 @@ class _NavItem extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 10.5,
                   fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                  color: isSelected ? AppColors.tealDark : const Color(0xFF64748B),
+                  color: isSelected ? activeTextColor : unselectedColor,
                   letterSpacing: -0.1,
                 ),
               ),
