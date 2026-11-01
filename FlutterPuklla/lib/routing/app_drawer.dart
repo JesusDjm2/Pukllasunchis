@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../core/theme/app_assets.dart';
 import '../core/theme/app_colors.dart';
+import '../core/theme/puklla_dashboard_styles.dart';
+import '../core/theme/theme_mode_provider.dart';
 import '../core/widgets/puklla_avatar.dart';
 import '../features/auth/application/auth_controller.dart';
 
@@ -16,9 +18,10 @@ class AppDrawer extends ConsumerWidget {
     final user = ref.watch(authControllerProvider).user;
     final esDocenteOTutor = user != null && user.isDocenteOTutor;
     final esAlumno = user == null || user.isAlumno || !esDocenteOTutor;
+    final isDark = PukllaDashboardStyles.isDark(context);
 
     return Drawer(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: isDark ? AppColors.darkSurface : const Color(0xFFF8FAFC),
       child: SafeArea(
         top: false,
         child: Column(
@@ -27,11 +30,18 @@ class AppDrawer extends ConsumerWidget {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(20, 48, 20, 20),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Color(0xFF1B2A4A), Color(0xFF2C3E60)],
+                  colors: isDark
+                      ? const [Color(0xFF0F172A), Color(0xFF1E293B)]
+                      : const [Color(0xFF1B2A4A), Color(0xFF2C3E60)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
+                ),
+                border: Border(
+                  bottom: BorderSide(
+                    color: isDark ? AppColors.darkBorder : Colors.transparent,
+                  ),
                 ),
               ),
               child: Column(
@@ -203,27 +213,77 @@ class AppDrawer extends ConsumerWidget {
               ),
             ),
 
-            // ── BOTÓN CERRAR SESIÓN ──
+            // ── FOOTER: SELECTOR MODO OSCURO + CERRAR SESIÓN ──
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: const BoxDecoration(
-                border: Border(top: BorderSide(color: Color(0xFFE2E8F0))),
-              ),
-              child: ListTile(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                leading: const Icon(Icons.logout, color: AppColors.danger, size: 22),
-                title: const Text(
-                  'Cerrar sesión',
-                  style: TextStyle(
-                    color: AppColors.danger,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(
+                    color: isDark ? AppColors.darkBorder : const Color(0xFFE2E8F0),
                   ),
                 ),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  ref.read(authControllerProvider.notifier).logout();
-                },
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Toggle interactivo de Tema Claro / Oscuro
+                  InkWell(
+                    borderRadius: BorderRadius.circular(12),
+                    onTap: () => ref.read(themeModeProvider.notifier).toggleTheme(),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      child: Row(
+                        children: [
+                          Icon(
+                            isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+                            color: isDark ? AppColors.goldHover : const Color(0xFF64748B),
+                            size: 20,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              isDark ? 'Modo Claro' : 'Modo Oscuro',
+                              style: TextStyle(
+                                color: isDark ? const Color(0xFFE2E8F0) : const Color(0xFF475569),
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                          Transform.scale(
+                            scale: 0.8,
+                            child: Switch.adaptive(
+                              value: isDark,
+                              activeColor: AppColors.gold,
+                              onChanged: (_) => ref.read(themeModeProvider.notifier).toggleTheme(),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+
+                  // Cerrar sesión
+                  ListTile(
+                    dense: true,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 10),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    leading: const Icon(Icons.logout, color: AppColors.danger, size: 20),
+                    title: const Text(
+                      'Cerrar sesión',
+                      style: TextStyle(
+                        color: AppColors.danger,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13.5,
+                      ),
+                    ),
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      ref.read(authControllerProvider.notifier).logout();
+                    },
+                  ),
+                ],
               ),
             ),
           ],
@@ -239,12 +299,13 @@ class _SectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = PukllaDashboardStyles.isDark(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(14, 6, 14, 6),
+      padding: const EdgeInsets.fromLTRB(14, 10, 14, 6),
       child: Text(
         title,
-        style: const TextStyle(
-          color: Color(0xFF94A3B8),
+        style: TextStyle(
+          color: isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
           fontSize: 11,
           fontWeight: FontWeight.w800,
           letterSpacing: 0.8,
@@ -270,23 +331,30 @@ class _DrawerItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final selected = currentLocation == route;
+    final isDark = PukllaDashboardStyles.isDark(context);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: ListTile(
         dense: true,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        tileColor: selected ? AppColors.gold.withValues(alpha: 0.12) : Colors.transparent,
+        tileColor: selected
+            ? (isDark ? AppColors.gold.withValues(alpha: 0.18) : AppColors.gold.withValues(alpha: 0.12))
+            : Colors.transparent,
         leading: Icon(
           icon,
-          color: selected ? AppColors.goldHover : const Color(0xFF475569),
+          color: selected
+              ? AppColors.goldHover
+              : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569)),
           size: 21,
         ),
         title: Text(
           label,
           style: TextStyle(
             fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
-            color: selected ? AppColors.goldHover : const Color(0xFF1E293B),
+            color: selected
+                ? AppColors.goldHover
+                : (isDark ? const Color(0xFFF1F5F9) : const Color(0xFF1E293B)),
             fontSize: 13.5,
           ),
         ),
