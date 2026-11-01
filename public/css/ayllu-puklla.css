@@ -330,4 +330,26 @@ body.dark-mode .ayllu-plano-oficial {
     .ayllu-bottom-nav-item.is-active {
         color: var(--ayllu-oro);
     }
+
+    #content-wrapper,
+    #content,
+    .container-fluid,
+    .ayllu-wrapper,
+    .ayllu-hero-banner {
+        min-width: 0;
+        max-width: 100%;
+        overflow-x: hidden;
+        word-break: break-word;
+    }
+
+    .ayllu-hero-pill {
+        max-width: 100%;
+        white-space: normal;
+        text-align: center;
+    }
+
+    .ayllu-kicker {
+        white-space: normal;
+        max-width: 100%;
+    }
 }

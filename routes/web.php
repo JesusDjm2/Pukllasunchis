@@ -290,9 +290,39 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/ayllu/entregas/{entrega}/portafolio', [App\Http\Controllers\Ayllu\AylluController::class, 'togglePortafolio'])
         ->name('ayllu.entregas.portafolio');
 
-    // Proyecto Anual Integrador (Taq'e) + Portafolio Docente EIB
-    Route::get('/ayllu/proyecto-integrador', [App\Http\Controllers\Ayllu\AylluController::class, 'proyectoIntegrador'])
+    // Mesa Docente de Proyectos Integradores Anuales + Portafolio Docente EIB
+    Route::get('/ayllu/proyecto-integrador', [App\Http\Controllers\Ayllu\AylluMesaProyectoController::class, 'index'])
         ->name('ayllu.proyecto');
+    Route::get('/ayllu/proyecto-integrador/aportes/{aporte}', [App\Http\Controllers\Ayllu\AylluMesaProyectoController::class, 'showAporte'])
+        ->name('ayllu.pi.aportes.show');
+    Route::match(['put', 'patch'], '/ayllu/proyecto-integrador/aportes/{aporte}', [App\Http\Controllers\Ayllu\AylluMesaProyectoController::class, 'actualizarAporteOperativo'])
+        ->name('ayllu.pi.aportes.update');
+    Route::post('/ayllu/proyecto-integrador/aportes/{aporte}/versiones', [App\Http\Controllers\Ayllu\AylluMesaProyectoController::class, 'storeEvidenciaVersion'])
+        ->name('ayllu.pi.versiones.store');
+    Route::post('/ayllu/proyecto-integrador/versiones/{version}/revisar', [App\Http\Controllers\Ayllu\AylluMesaProyectoController::class, 'revisarOIntegrarVersion'])
+        ->name('ayllu.pi.versiones.revisar');
+    Route::get('/ayllu/proyecto-integrador/versiones/{version}/archivo', [App\Http\Controllers\Ayllu\AylluMesaProyectoController::class, 'descargarArchivoEvidencia'])
+        ->name('ayllu.pi.versiones.archivo');
+    Route::post('/ayllu/proyecto-integrador/versiones/{version}/restriccion', [App\Http\Controllers\Ayllu\AylluMesaProyectoController::class, 'actualizarRestriccionEvidencia'])
+        ->name('ayllu.pi.versiones.restriccion');
+    Route::post('/ayllu/proyecto-integrador/articulaciones', [App\Http\Controllers\Ayllu\AylluMesaProyectoController::class, 'storeArticulacion'])
+        ->name('ayllu.pi.articulaciones.store');
+    Route::post('/ayllu/proyecto-integrador/bitacora', [App\Http\Controllers\Ayllu\AylluMesaProyectoController::class, 'storeBitacora'])
+        ->name('ayllu.pi.bitacora.store');
+    Route::post('/ayllu/proyecto-integrador/sintesis', [App\Http\Controllers\Ayllu\AylluMesaProyectoController::class, 'solicitarSintesisComunitaria'])
+        ->name('ayllu.pi.sintesis.store');
+    Route::post('/ayllu/proyecto-integrador/sintesis/{sintesis}/revisar', [App\Http\Controllers\Ayllu\AylluMesaProyectoController::class, 'revisarSintesisComunitaria'])
+        ->name('ayllu.pi.sintesis.revisar');
+    Route::post('/ayllu/proyecto-integrador/coordinacion/importar', [App\Http\Controllers\Ayllu\AylluMesaProyectoController::class, 'ejecutarImportacionWeb'])
+        ->name('ayllu.pi.coordinacion.importar');
+    Route::post('/ayllu/proyecto-integrador/coordinacion/adoptar-version', [App\Http\Controllers\Ayllu\AylluMesaProyectoController::class, 'adoptarVersionDefinicion'])
+        ->name('ayllu.pi.coordinacion.adoptar');
+    Route::post('/ayllu/proyecto-integrador/ejecuciones/{ejecucion}/hitos', [App\Http\Controllers\Ayllu\AylluMesaProyectoController::class, 'guardarFechasHitosOperativos'])
+        ->name('ayllu.pi.ejecuciones.hitos');
+    Route::post('/ayllu/proyecto-integrador/coordinacion/asignaciones', [App\Http\Controllers\Ayllu\AylluMesaProyectoController::class, 'asignarDocenteMesa'])
+        ->name('ayllu.pi.asignaciones.store');
+    Route::post('/ayllu/proyecto-integrador/coordinacion/asignaciones/{asignacion}/revocar', [App\Http\Controllers\Ayllu\AylluMesaProyectoController::class, 'revocarAsignacionMesa'])
+        ->name('ayllu.pi.asignaciones.revocar');
 
     // Comunidades y Grupos Interculturales (Ayllus)
     Route::get('/ayllu/grupos', [App\Http\Controllers\Ayllu\AylluController::class, 'grupos'])
@@ -403,6 +433,8 @@ if (app()->isLocal()) {
             $docente = \App\Models\Docente::whereHas('user')->whereHas('cursos')->first()
                 ?? \App\Models\Docente::whereHas('user')->first();
             $user = $docente?->user;
+        } elseif ($rol === 'coordinacion') {
+            $user = \App\Models\User::role(['super-admin', 'admin', 'direccion'])->first();
         }
 
         if (!$user) {

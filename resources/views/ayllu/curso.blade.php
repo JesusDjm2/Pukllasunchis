@@ -536,11 +536,16 @@
     <div class="ayllu-card">
         <div class="ayllu-card-header">
             <span class="font-weight-bold"><i class="fas fa-project-diagram mr-1 text-primary"></i>Articulación del Curso con el Proyecto Anual Integrador (Taq’e)</span>
-            @if(Route::has('taqe.index'))
-                <a href="{{ route('taqe.index') }}" class="btn btn-sm btn-outline-primary font-weight-bold" style="border-radius:999px;">
-                    Ir al módulo Taq’e oficial
+            <div class="d-flex flex-wrap" style="gap: 0.4rem;">
+                <a href="{{ route('ayllu.proyecto', ['ciclo' => strtoupper(trim((string) $cursoActual->ciclo?->nombre)) ?: 'I', 'foco' => 'ciclo']) }}" class="btn btn-sm btn-primary font-weight-bold" style="border-radius:999px;">
+                    <i class="fas fa-table mr-1"></i> Abrir Mesa de Proyectos del Ciclo {{ $cursoActual->ciclo?->nombre }}
                 </a>
-            @endif
+                @if(Route::has('taqe.index'))
+                    <a href="{{ route('taqe.index') }}" class="btn btn-sm btn-outline-primary font-weight-bold" style="border-radius:999px;">
+                        Ir al módulo Taq’e oficial
+                    </a>
+                @endif
+            </div>
         </div>
         <div class="ayllu-card-body">
             @if($proyectoCiclo)
