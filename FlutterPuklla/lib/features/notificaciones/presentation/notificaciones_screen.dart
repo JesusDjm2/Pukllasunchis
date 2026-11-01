@@ -8,6 +8,7 @@ import '../../../core/theme/puklla_dashboard_styles.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_state.dart';
 import '../../../core/widgets/puklla_bottom_nav_bar.dart';
+import '../../../core/widgets/puklla_preloader.dart';
 import '../../../routing/app_drawer.dart';
 import '../application/notificaciones_controller.dart';
 import '../application/notificaciones_providers.dart';
@@ -115,7 +116,7 @@ class _NotificacionesScreenState extends ConsumerState<NotificacionesScreen> {
             ],
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const PukllaPreloader(mensaje: 'Cargando notificaciones institucionales...'),
         error: (error, _) => Padding(
           padding: const EdgeInsets.all(16),
           child: ErrorState(

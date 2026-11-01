@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/puklla_preloader.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../calificaciones/application/calificaciones_providers.dart';
 import '../../calificaciones/data/matricula.dart';
@@ -39,7 +40,7 @@ class MatriculaFormScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Completar ficha de matrícula')),
       body: loading
-          ? const Center(child: CircularProgressIndicator())
+          ? const PukllaPreloader(mensaje: 'Cargando formulario de matrícula...')
           : error != null
               ? Center(
                   child: Padding(

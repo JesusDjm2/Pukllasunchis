@@ -18,20 +18,160 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta name="description" content="Portal Académico Institucional EESP Pukllasunchis">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="flutter_puklla">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Pukllasunchis">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
-  <title>flutter_puklla</title>
+  <title>EESP Pukllasunchis · Portal Académico</title>
   <link rel="manifest" href="manifest.json">
+
+  <style>
+    /* Ocultar barra superior genérica predeterminada de Flutter Web */
+    .flutter-loader, #flutter-loader {
+      display: none !important;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: #181006;
+      overflow: hidden;
+    }
+
+    /* ─── Preloader Institucional Pukllasunchis (Calcado del Admin Web) ─── */
+    #preloader {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(160deg, #181006 0%, #2d1e0c 55%, #181006 100%);
+      z-index: 999999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.35s ease, visibility 0.35s ease;
+    }
+
+    #preloader.pl-out {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .pl-logo {
+      width: 82px;
+      height: auto;
+      margin-bottom: 22px;
+      animation: pl-float 3.2s ease-in-out infinite;
+      filter: drop-shadow(0 6px 22px rgba(205, 146, 68, 0.45));
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    .pl-name {
+      margin: 0 0 5px;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      color: #cd9244;
+    }
+
+    .pl-tagline {
+      margin: 0 0 32px;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 9.5px;
+      letter-spacing: 2.8px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.38);
+      font-weight: 500;
+    }
+
+    .pl-dots {
+      display: flex;
+      gap: 9px;
+    }
+
+    .pl-dots span {
+      display: block;
+      width: 7.5px;
+      height: 7.5px;
+      border-radius: 50%;
+      background: #cd9244;
+      animation: pl-bounce 1.5s ease-in-out infinite;
+      box-shadow: 0 0 6px rgba(205, 146, 68, 0.5);
+    }
+
+    .pl-dots span:nth-child(2) { animation-delay: 0.18s; }
+    .pl-dots span:nth-child(3) { animation-delay: 0.36s; }
+
+    .pl-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 2.5px;
+      background: rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+    }
+
+    .pl-bar::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -55%;
+      width: 55%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, #b27835, #e3ac66, transparent);
+      animation: pl-sweep 1.9s cubic-bezier(.4, 0, .6, 1) infinite;
+    }
+
+    @keyframes pl-float {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-7.5px); }
+    }
+
+    @keyframes pl-bounce {
+      0%, 80%, 100% { transform: translateY(0);    opacity: 0.4; }
+      40%           { transform: translateY(-9px); opacity: 1;   }
+    }
+
+    @keyframes pl-sweep {
+      0%   { left: -55%; }
+      100% { left: 100%; }
+    }
+  </style>
 </head>
 <body>
+  <!-- ══ PRELOADER OFICIAL INSTITUCIONAL PUKLLASUNCHIS ══ -->
+  <div id="preloader">
+    <img class="pl-logo" src="logo-blanco.png" alt="Pukllasunchis">
+    <p class="pl-name">Pukllasunchis</p>
+    <p class="pl-tagline">Sistema de Gestión</p>
+    <div class="pl-dots"><span></span><span></span><span></span></div>
+    <div class="pl-bar"></div>
+  </div>
+
+  <script>
+    function removePreloader() {
+      var pl = document.getElementById('preloader');
+      if (pl && !pl.classList.contains('pl-out')) {
+        pl.classList.add('pl-out');
+        setTimeout(function() {
+          if (pl && pl.parentNode) pl.parentNode.removeChild(pl);
+        }, 350);
+      }
+    }
+    window.addEventListener('flutter-first-frame', removePreloader);
+    // Timeout de respaldo
+    setTimeout(removePreloader, 6000);
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

@@ -6,6 +6,7 @@ import '../../../core/theme/puklla_dashboard_styles.dart';
 import '../../../core/widgets/error_state.dart';
 import '../../../core/widgets/puklla_app_bar_actions.dart';
 import '../../../core/widgets/puklla_bottom_nav_bar.dart';
+import '../../../core/widgets/puklla_preloader.dart';
 import '../../../routing/app_drawer.dart';
 import '../../notificaciones/presentation/notification_bell_action.dart';
 import '../application/tutoria_providers.dart';
@@ -157,7 +158,7 @@ class _TutoriaScreenState extends ConsumerState<TutoriaScreen> {
       endDrawer: const AppDrawer(),
       bottomNavigationBar: const PukllaBottomNavBar(),
       body: tutoriaAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const PukllaPreloader(mensaje: 'Conectando con el espacio de tutoría...'),
         error: (err, stack) => ErrorState(
           message: 'No se pudo cargar la información de tutoría.',
           onRetry: () => ref.refresh(tutoriaDataProvider),

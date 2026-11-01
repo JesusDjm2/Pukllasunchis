@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_exception.dart';
+import '../../../core/widgets/puklla_preloader.dart';
 import '../application/cursos_especiales_controller.dart';
 import '../application/cursos_especiales_providers.dart';
 import '../data/curso_especial_detalle.dart';
@@ -19,7 +20,7 @@ class CursoEspecialDetalleScreen extends ConsumerWidget {
       appBar: AppBar(title: Text(detalle.valueOrNull?.nombre ?? 'Curso especial')),
       body: detalle.when(
         data: (curso) => _DetalleBody(cursoId: cursoId, curso: curso),
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const PukllaPreloader(mensaje: 'Cargando contenidos del curso...'),
         error: (error, _) => Center(
           child: Text(error is ApiException ? error.message : 'No se pudo cargar el curso.'),
         ),

@@ -7,6 +7,7 @@ import '../../../core/theme/puklla_dashboard_styles.dart';
 import '../../../core/widgets/error_state.dart';
 import '../../../core/widgets/puklla_app_bar_actions.dart';
 import '../../../core/widgets/puklla_bottom_nav_bar.dart';
+import '../../../core/widgets/puklla_preloader.dart';
 import '../../../routing/app_drawer.dart';
 import '../application/taqe_providers.dart';
 import '../data/taqe_data.dart';
@@ -1209,7 +1210,7 @@ class _TaqeScreenState extends ConsumerState<TaqeScreen> {
       endDrawer: const AppDrawer(),
       bottomNavigationBar: const PukllaBottomNavBar(),
       body: taqeAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const PukllaPreloader(mensaje: "Cargando espacio Taq'e..."),
         error: (err, stack) => ErrorState(
           message: "No se pudo cargar el espacio Taq'e.",
           onRetry: () => ref.refresh(taqeDataProvider),

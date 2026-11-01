@@ -19,6 +19,7 @@ import '../data/curso.dart';
 import '../data/periodo_actual.dart';
 import 'curso_detalle_sheet.dart';
 import '../../perfil/presentation/carnet_digital_sheet.dart';
+import '../../../core/widgets/puklla_preloader.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -163,10 +164,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               data: (perfil) => _HeroHeader(
                 perfil: perfil,
               ),
-              loading: () => Container(
+              loading: () => const SizedBox(
                 height: 180,
-                color: AppColors.teal,
-                child: const Center(child: CircularProgressIndicator(color: Colors.white)),
+                child: PukllaPreloader.inline(
+                  mensaje: 'Cargando información del estudiante...',
+                ),
               ),
               error: (_, __) => _HeroHeaderFallback(
                 userNombre: user?.name ?? 'Estudiante',

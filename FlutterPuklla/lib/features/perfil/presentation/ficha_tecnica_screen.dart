@@ -15,6 +15,7 @@ import '../../../core/widgets/puklla_app_bar_actions.dart';
 import '../../../core/widgets/puklla_avatar.dart';
 import '../../../core/widgets/puklla_bottom_nav_bar.dart';
 import '../../../core/widgets/section_header.dart';
+import '../../../core/widgets/puklla_preloader.dart';
 import '../../../routing/app_drawer.dart';
 import '../../home/application/home_providers.dart';
 import '../../home/data/curso.dart';
@@ -779,7 +780,10 @@ class _CursosDelSemestre extends ConsumerWidget {
               ),
             )
           : Column(children: [for (final curso in list) _CursoDelSemestreTile(curso: curso)]),
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const Padding(
+        padding: EdgeInsets.symmetric(vertical: 24),
+        child: PukllaPreloader.inline(mensaje: 'Cargando asignaturas...'),
+      ),
       error: (error, _) => ErrorState(
         message: error is ApiException ? error.message : 'No se pudieron cargar los cursos.',
         onRetry: () => ref.invalidate(cursosProvider),
