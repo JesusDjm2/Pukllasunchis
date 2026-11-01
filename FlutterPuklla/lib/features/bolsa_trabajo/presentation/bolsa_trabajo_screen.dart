@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/puklla_dashboard_styles.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_state.dart';
 import '../../../core/widgets/puklla_app_bar_actions.dart';
@@ -20,6 +21,7 @@ class BolsaTrabajoScreen extends ConsumerWidget {
     final ofertasAsync = ref.watch(bolsaTrabajoProvider);
 
     return Scaffold(
+      backgroundColor: PukllaDashboardStyles.backgroundColor(context),
       appBar: AppBar(
         title: const Text('Bolsa de trabajo'),
         actions: const [PukllaAppBarActions()],
@@ -69,6 +71,7 @@ class _OfertaCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = PukllaDashboardStyles.isDark(context);
     final fecha = oferta.fechaPublicacion;
     final fechaTexto = fecha != null
         ? '${fecha.day.toString().padLeft(2, '0')}/${fecha.month.toString().padLeft(2, '0')}/${fecha.year}'
@@ -76,18 +79,7 @@ class _OfertaCard extends StatelessWidget {
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF1E293B).withValues(alpha: 0.06),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
-        border: Border.all(color: Colors.black.withValues(alpha: 0.04)),
-      ),
+      decoration: PukllaDashboardStyles.cardDecoration(context, radius: 18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -113,35 +105,45 @@ class _OfertaCard extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
                         color: oferta.vigente
-                            ? const Color(0xFF10B981).withValues(alpha: 0.12)
-                            : AppColors.gold.withValues(alpha: 0.12),
+                            ? const Color(0xFF10B981).withValues(alpha: 0.16)
+                            : AppColors.gold.withValues(alpha: 0.16),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         oferta.vigente ? 'Convocatoria Activa' : 'Institucional',
                         style: TextStyle(
-                          color: oferta.vigente ? const Color(0xFF047857) : AppColors.goldHover,
+                          color: oferta.vigente
+                              ? (isDark ? const Color(0xFF34D399) : const Color(0xFF047857))
+                              : AppColors.goldHover,
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
                     const Spacer(),
-                    Icon(Icons.calendar_today_outlined, size: 13, color: Colors.grey.shade500),
+                    Icon(
+                      Icons.calendar_today_outlined,
+                      size: 13,
+                      color: PukllaDashboardStyles.textSecondary(context),
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       fechaTexto,
-                      style: TextStyle(fontSize: 12, color: Colors.grey.shade600, fontWeight: FontWeight.w500),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: PukllaDashboardStyles.textSecondary(context),
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12),
                 Text(
                   oferta.nombre,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF1E293B),
+                    color: PukllaDashboardStyles.textPrimary(context),
                     height: 1.3,
                   ),
                 ),
@@ -150,7 +152,7 @@ class _OfertaCard extends StatelessWidget {
                   oferta.resumenLimpio,
                   style: TextStyle(
                     fontSize: 13.5,
-                    color: Colors.grey.shade700,
+                    color: PukllaDashboardStyles.textSecondary(context),
                     height: 1.45,
                   ),
                 ),
@@ -165,8 +167,11 @@ class _OfertaCard extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF1F5F9),
+                        color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF1F5F9),
                         borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: isDark ? AppColors.darkBorder : Colors.transparent,
+                        ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,

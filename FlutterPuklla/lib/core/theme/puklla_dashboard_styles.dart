@@ -22,6 +22,9 @@ class PukllaDashboardStyles {
     return isDark(context) ? AppColors.darkSurface : Colors.white;
   }
 
+  /// Alias de surfaceColor
+  static Color cardColor(BuildContext context) => surfaceColor(context);
+
   /// Color de fondo de pantalla dinámico
   static Color backgroundColor(BuildContext context) {
     return isDark(context) ? AppColors.darkBackground : const Color(0xFFF8FAFC);

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/puklla_dashboard_styles.dart';
 import '../../../core/widgets/error_state.dart';
 import '../../../core/widgets/puklla_app_bar_actions.dart';
 import '../../../core/widgets/puklla_bottom_nav_bar.dart';
@@ -1125,9 +1126,9 @@ class _TaqeScreenState extends ConsumerState<TaqeScreen> {
       builder: (ctx) {
         return Container(
           padding: const EdgeInsets.all(24),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          decoration: BoxDecoration(
+            color: PukllaDashboardStyles.surfaceColor(ctx),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -1200,6 +1201,7 @@ class _TaqeScreenState extends ConsumerState<TaqeScreen> {
     final taqeAsync = ref.watch(taqeDataProvider);
 
     return Scaffold(
+      backgroundColor: PukllaDashboardStyles.backgroundColor(context),
       appBar: AppBar(
         title: const Text("Taq'e · Proyectos"),
         actions: const [PukllaAppBarActions()],
@@ -1651,18 +1653,7 @@ class _ProyectoIntegradorCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF1E293B).withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
+      decoration: PukllaDashboardStyles.cardDecoration(context, radius: 18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1763,35 +1754,44 @@ class _EmptyGruposCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = PukllaDashboardStyles.isDark(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
+      decoration: PukllaDashboardStyles.cardDecoration(context, radius: 18),
       child: Center(
         child: Column(
           children: [
             Container(
               padding: const EdgeInsets.all(16),
-              decoration: const BoxDecoration(
-                color: Color(0xFFF1F5F9),
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF1F5F9),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.biotech_outlined, color: Color(0xFF64748B), size: 36),
+              child: Icon(
+                Icons.biotech_outlined,
+                color: PukllaDashboardStyles.textSecondary(context),
+                size: 36,
+              ),
             ),
             const SizedBox(height: 14),
-            const Text(
+            Text(
               "Aún no perteneces a ningún grupo Taq'e este periodo",
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Color(0xFF1E293B)),
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+                color: PukllaDashboardStyles.textPrimary(context),
+              ),
             ),
             const SizedBox(height: 6),
-            const Text(
+            Text(
               'Crea uno para un curso y suma a tus compañeros, o espera su invitación en tu bandeja.',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12.5, color: Color(0xFF64748B), height: 1.35),
+              style: TextStyle(
+                fontSize: 12.5,
+                color: PukllaDashboardStyles.textSecondary(context),
+                height: 1.35,
+              ),
             ),
             if (cursosSinGrupo.isNotEmpty) ...[
               const SizedBox(height: 16),
@@ -1849,6 +1849,7 @@ class _GrupoCardState extends State<_GrupoCard> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = PukllaDashboardStyles.isDark(context);
     final grupo = widget.grupo;
     final esFinalizado = grupo.entregado;
     final esOrganizador = grupo.esOrganizador;
@@ -1856,18 +1857,7 @@ class _GrupoCardState extends State<_GrupoCard> {
     return Container(
       margin: const EdgeInsets.only(bottom: 18),
       padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF1E293B).withValues(alpha: 0.05),
-            blurRadius: 14,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+      decoration: PukllaDashboardStyles.cardDecoration(context, radius: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1878,7 +1868,7 @@ class _GrupoCardState extends State<_GrupoCard> {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: AppColors.teal.withValues(alpha: 0.12),
+                  color: AppColors.teal.withValues(alpha: isDark ? 0.2 : 0.12),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(Icons.biotech_outlined, color: AppColors.teal, size: 24),
@@ -1890,11 +1880,19 @@ class _GrupoCardState extends State<_GrupoCard> {
                   children: [
                     Text(
                       grupo.nombre,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.tealDark),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: isDark ? AppColors.goldHover : AppColors.tealDark,
+                      ),
                     ),
                     Text(
                       grupo.cursoNombre,
-                      style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w600,
+                        color: PukllaDashboardStyles.textSecondary(context),
+                      ),
                     ),
                   ],
                 ),
@@ -1902,7 +1900,9 @@ class _GrupoCardState extends State<_GrupoCard> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: esFinalizado ? const Color(0xFFE6F4EC) : const Color(0xFFEFF6FF),
+                  color: esFinalizado
+                      ? (isDark ? const Color(0xFF064E3B).withValues(alpha: 0.5) : const Color(0xFFE6F4EC))
+                      : (isDark ? const Color(0xFF1E3A8A).withValues(alpha: 0.5) : const Color(0xFFEFF6FF)),
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Row(
@@ -1911,7 +1911,9 @@ class _GrupoCardState extends State<_GrupoCard> {
                     Icon(
                       esFinalizado ? Icons.check_circle : Icons.autorenew,
                       size: 13,
-                      color: esFinalizado ? const Color(0xFF0B7A43) : const Color(0xFF1D4ED8),
+                      color: esFinalizado
+                          ? (isDark ? const Color(0xFF34D399) : const Color(0xFF0B7A43))
+                          : (isDark ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8)),
                     ),
                     const SizedBox(width: 4),
                     Text(
@@ -1919,7 +1921,9 @@ class _GrupoCardState extends State<_GrupoCard> {
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
-                        color: esFinalizado ? const Color(0xFF0B7A43) : const Color(0xFF1D4ED8),
+                        color: esFinalizado
+                            ? (isDark ? const Color(0xFF34D399) : const Color(0xFF0B7A43))
+                            : (isDark ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8)),
                       ),
                     ),
                   ],
@@ -1933,9 +1937,11 @@ class _GrupoCardState extends State<_GrupoCard> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFC),
+              color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF8FAFC),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
+              border: Border.all(
+                color: PukllaDashboardStyles.borderColor(context),
+              ),
             ),
             child: Row(
               children: [

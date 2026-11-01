@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/puklla_dashboard_styles.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_state.dart';
 import '../../../core/widgets/puklla_bottom_nav_bar.dart';
@@ -28,6 +29,7 @@ class _NotificacionesScreenState extends ConsumerState<NotificacionesScreen> {
     final pagina = ref.watch(notificacionesProvider);
 
     return Scaffold(
+      backgroundColor: PukllaDashboardStyles.backgroundColor(context),
       appBar: AppBar(
         title: const Text('Notificaciones'),
         actions: [
@@ -68,9 +70,9 @@ class _NotificacionesScreenState extends ConsumerState<NotificacionesScreen> {
               // Barra de filtros senior (Todas vs No leídas)
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
+                decoration: BoxDecoration(
+                  color: PukllaDashboardStyles.surfaceColor(context),
+                  border: Border(bottom: BorderSide(color: PukllaDashboardStyles.borderColor(context))),
                 ),
                 child: Row(
                   children: [
@@ -141,6 +143,7 @@ class _FiltroChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = PukllaDashboardStyles.isDark(context);
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(20),
@@ -148,7 +151,9 @@ class _FiltroChip extends StatelessWidget {
         duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.gold.withValues(alpha: 0.16) : const Color(0xFFF1F5F9),
+          color: isSelected
+              ? AppColors.gold.withValues(alpha: 0.16)
+              : (isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF1F5F9)),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected ? AppColors.goldHover : Colors.transparent,
@@ -160,7 +165,9 @@ class _FiltroChip extends StatelessWidget {
           style: TextStyle(
             fontSize: 12.5,
             fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-            color: isSelected ? AppColors.goldHover : const Color(0xFF475569),
+            color: isSelected
+                ? AppColors.goldHover
+                : (isDark ? AppColors.darkMuted : const Color(0xFF475569)),
           ),
         ),
       ),
@@ -183,15 +190,15 @@ List<Widget> _agrupadasPorFecha(List<Notificacion> items, BuildContext context) 
             children: [
               Text(
                 grupo,
-                style: const TextStyle(
-                  color: Color(0xFF64748B),
+                style: TextStyle(
+                  color: PukllaDashboardStyles.textSecondary(context),
                   fontWeight: FontWeight.w800,
                   fontSize: 12.5,
                   letterSpacing: 0.3,
                 ),
               ),
               const SizedBox(width: 8),
-              const Expanded(child: Divider(color: Color(0xFFE2E8F0), thickness: 1)),
+              Expanded(child: Divider(color: PukllaDashboardStyles.borderColor(context), thickness: 1)),
             ],
           ),
         ),
@@ -282,20 +289,25 @@ class _NotificacionTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isDark = PukllaDashboardStyles.isDark(context);
     final color = _colorTipo;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        color: notificacion.leida ? Colors.white : const Color(0xFFF8FAFC),
+        color: notificacion.leida
+            ? PukllaDashboardStyles.cardColor(context)
+            : (isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF8FAFC)),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: notificacion.leida ? const Color(0xFFE2E8F0) : color.withValues(alpha: 0.35),
+          color: notificacion.leida
+              ? PukllaDashboardStyles.borderColor(context)
+              : color.withValues(alpha: isDark ? 0.5 : 0.35),
           width: notificacion.leida ? 1 : 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0F172A).withValues(alpha: notificacion.leida ? 0.02 : 0.05),
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : (notificacion.leida ? 0.02 : 0.05)),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -324,13 +336,18 @@ class _NotificacionTile extends ConsumerWidget {
                   width: 38,
                   height: 38,
                   decoration: BoxDecoration(
-                    color: (notificacion.leida ? const Color(0xFF64748B) : color).withValues(alpha: 0.12),
+                    color: (notificacion.leida
+                            ? (isDark ? Colors.white30 : const Color(0xFF64748B))
+                            : color)
+                        .withValues(alpha: isDark ? 0.22 : 0.12),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(
                     _icono,
                     size: 20,
-                    color: notificacion.leida ? const Color(0xFF64748B) : color,
+                    color: notificacion.leida
+                        ? (isDark ? Colors.white70 : const Color(0xFF64748B))
+                        : color,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -349,7 +366,9 @@ class _NotificacionTile extends ConsumerWidget {
                                 fontSize: 13.5,
                                 height: 1.35,
                                 fontWeight: notificacion.leida ? FontWeight.w500 : FontWeight.w700,
-                                color: notificacion.leida ? const Color(0xFF334155) : const Color(0xFF0F172A),
+                                color: notificacion.leida
+                                    ? PukllaDashboardStyles.textSecondary(context)
+                                    : PukllaDashboardStyles.textPrimary(context),
                               ),
                             ),
                           ),
@@ -379,12 +398,15 @@ class _NotificacionTile extends ConsumerWidget {
                           Icon(
                             Icons.access_time_rounded,
                             size: 12.5,
-                            color: const Color(0xFF94A3B8),
+                            color: isDark ? AppColors.darkMuted : const Color(0xFF94A3B8),
                           ),
                           const SizedBox(width: 4),
                           Text(
                             _formatFechaHora(notificacion.createdAt),
-                            style: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              color: isDark ? AppColors.darkMuted : const Color(0xFF64748B),
+                            ),
                           ),
                           const Spacer(),
                           Text(
@@ -392,7 +414,9 @@ class _NotificacionTile extends ConsumerWidget {
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
-                              color: notificacion.leida ? const Color(0xFF94A3B8) : AppColors.goldHover,
+                              color: notificacion.leida
+                                  ? (isDark ? AppColors.darkMuted : const Color(0xFF94A3B8))
+                                  : AppColors.goldHover,
                             ),
                           ),
                         ],
@@ -419,7 +443,7 @@ class _PaginadorBar extends ConsumerWidget {
     if (pagina.lastPage <= 1) return const SizedBox.shrink();
 
     return Container(
-      color: Colors.white,
+      color: PukllaDashboardStyles.surfaceColor(context),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -433,7 +457,11 @@ class _PaginadorBar extends ConsumerWidget {
           ),
           Text(
             'Página ${pagina.currentPage} de ${pagina.lastPage}',
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: PukllaDashboardStyles.textSecondary(context),
+            ),
           ),
           TextButton.icon(
             onPressed: pagina.hayPaginaSiguiente

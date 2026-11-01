@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/puklla_dashboard_styles.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_state.dart';
 import '../../../core/widgets/puklla_app_bar_actions.dart';
@@ -22,6 +23,7 @@ class ComunicadosScreen extends ConsumerWidget {
     final pagina = ref.watch(comunicadosProvider);
 
     return Scaffold(
+      backgroundColor: PukllaDashboardStyles.backgroundColor(context),
       appBar: AppBar(
         title: const Text('Comunicados'),
         actions: const [PukllaAppBarActions()],
@@ -75,8 +77,11 @@ class _ComunicadoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    final isDark = PukllaDashboardStyles.isDark(context);
+
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
+      decoration: PukllaDashboardStyles.cardDecoration(context, radius: 16),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -85,23 +90,34 @@ class _ComunicadoCard extends StatelessWidget {
             Row(
               children: [
                 Container(
-                  width: 34,
-                  height: 34,
+                  width: 36,
+                  height: 36,
                   decoration: BoxDecoration(
-                    color: AppColors.teal.withValues(alpha: 0.08),
+                    color: AppColors.teal.withValues(alpha: isDark ? 0.2 : 0.08),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.campaign_outlined, size: 17, color: AppColors.teal),
+                  child: const Icon(Icons.campaign_outlined, size: 18, color: AppColors.teal),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(comunicado.titulo, style: Theme.of(context).textTheme.titleMedium),
+                      Text(
+                        comunicado.titulo,
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: PukllaDashboardStyles.textPrimary(context),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
                       Text(
                         _formatDate(comunicado.fechaPublicacion),
-                        style: Theme.of(context).textTheme.bodySmall,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: PukllaDashboardStyles.textSecondary(context),
+                        ),
                       ),
                     ],
                   ),
@@ -109,8 +125,15 @@ class _ComunicadoCard extends StatelessWidget {
               ],
             ),
             if (comunicado.descripcion != null) ...[
-              const SizedBox(height: 8),
-              Text(comunicado.descripcion!),
+              const SizedBox(height: 10),
+              Text(
+                comunicado.descripcion!,
+                style: TextStyle(
+                  fontSize: 13.5,
+                  height: 1.4,
+                  color: isDark ? Colors.white70 : const Color(0xFF334155),
+                ),
+              ),
             ],
             if (comunicado.esImagen) ...[
               const SizedBox(height: 12),
@@ -127,7 +150,10 @@ class _ComunicadoCard extends StatelessWidget {
               alignment: Alignment.centerRight,
               child: TextButton.icon(
                 onPressed: () => _abrirArchivo(context),
-                icon: Icon(comunicado.esImagen ? Icons.image_outlined : Icons.picture_as_pdf_outlined),
+                icon: Icon(
+                  comunicado.esImagen ? Icons.image_outlined : Icons.picture_as_pdf_outlined,
+                  size: 16,
+                ),
                 label: Text(comunicado.esImagen ? 'Ver imagen completa' : 'Ver documento'),
               ),
             ),
@@ -156,7 +182,14 @@ class _PaginadorBar extends ConsumerWidget {
                 : null,
             child: const Text('Anterior'),
           ),
-          Text('Página ${pagina.currentPage} de ${pagina.lastPage}'),
+          Text(
+            'Página ${pagina.currentPage} de ${pagina.lastPage}',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: PukllaDashboardStyles.textSecondary(context),
+            ),
+          ),
           TextButton(
             onPressed: pagina.hayPaginaSiguiente
                 ? () => ref.read(comunicadosPageIndexProvider.notifier).state++

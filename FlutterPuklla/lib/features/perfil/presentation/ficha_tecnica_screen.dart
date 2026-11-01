@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/puklla_dashboard_styles.dart';
 import '../../../core/widgets/error_state.dart';
 import '../../../core/widgets/puklla_app_bar_actions.dart';
 import '../../../core/widgets/puklla_avatar.dart';
@@ -32,6 +33,7 @@ class FichaTecnicaScreen extends ConsumerWidget {
     final perfil = ref.watch(perfilProvider);
 
     return Scaffold(
+      backgroundColor: PukllaDashboardStyles.backgroundColor(context),
       appBar: AppBar(
         title: const Text('Ficha técnica'),
         actions: const [PukllaAppBarActions()],
@@ -365,21 +367,26 @@ class _MatriculadoBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = PukllaDashboardStyles.isDark(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.successBg,
+        color: isDark ? const Color(0xFF064E3B) : AppColors.successBg,
         borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: isDark ? const Color(0xFF059669) : Colors.transparent),
       ),
       child: Row(
         children: [
-          const Icon(Icons.check_circle, color: AppColors.success, size: 20),
+          Icon(Icons.check_circle, color: isDark ? const Color(0xFF34D399) : AppColors.success, size: 20),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               'Matriculado · $periodoNombre',
-              style: const TextStyle(color: AppColors.success, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                color: isDark ? const Color(0xFF34D399) : AppColors.success,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
         ],
@@ -395,20 +402,25 @@ class _MatriculaPendienteAviso extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = PukllaDashboardStyles.isDark(context);
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.warningBg,
+        color: isDark ? const Color(0xFF451A03) : AppColors.warningBg,
         borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: isDark ? const Color(0xFFD97706) : Colors.transparent),
       ),
       child: Row(
         children: [
-          const Icon(Icons.error_outline, color: AppColors.warning),
+          Icon(Icons.error_outline, color: isDark ? const Color(0xFFFBBF24) : AppColors.warning),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               'El período $periodoNombre está abierto. Aún no completas tu ficha de matrícula.',
-              style: const TextStyle(color: AppColors.warning),
+              style: TextStyle(
+                color: isDark ? const Color(0xFFFDE68A) : AppColors.warning,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           const SizedBox(width: 8),
@@ -429,19 +441,18 @@ class _DatosPersonalesCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _DatoRow(icon: Icons.badge_outlined, label: 'DNI', value: perfil.dni),
-            _DatoRow(icon: Icons.mail_outline, label: 'Correo', value: perfil.email),
-            _DatoRow(icon: Icons.phone_outlined, label: 'Teléfono', value: perfil.numero),
-            _DatoRow(icon: Icons.contact_phone_outlined, label: 'Emergencia', value: perfil.numeroReferencia),
-            _DatoRow(icon: Icons.home_outlined, label: 'Domicilio', value: perfil.domicilio, isLast: true),
-          ],
-        ),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: PukllaDashboardStyles.cardDecoration(context, radius: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _DatoRow(icon: Icons.badge_outlined, label: 'DNI', value: perfil.dni),
+          _DatoRow(icon: Icons.mail_outline, label: 'Correo', value: perfil.email),
+          _DatoRow(icon: Icons.phone_outlined, label: 'Teléfono', value: perfil.numero),
+          _DatoRow(icon: Icons.contact_phone_outlined, label: 'Emergencia', value: perfil.numeroReferencia),
+          _DatoRow(icon: Icons.home_outlined, label: 'Domicilio', value: perfil.domicilio, isLast: true),
+        ],
       ),
     );
   }
@@ -467,13 +478,24 @@ class _DatoRow extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 18, color: AppColors.muted),
+          Icon(icon, size: 18, color: PukllaDashboardStyles.textSecondary(context)),
           const SizedBox(width: 12),
           SizedBox(
             width: 84,
-            child: Text(label, style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+            child: Text(
+              label,
+              style: TextStyle(color: PukllaDashboardStyles.textSecondary(context), fontSize: 13),
+            ),
           ),
-          Expanded(child: Text(value, style: const TextStyle(fontWeight: FontWeight.w500))),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: PukllaDashboardStyles.textPrimary(context),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -489,9 +511,12 @@ class _CursosDelSemestre extends ConsumerWidget {
 
     return cursos.when(
       data: (list) => list.isEmpty
-          ? const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8),
-              child: Text('No tienes cursos en el periodo actual.', style: TextStyle(color: AppColors.muted)),
+          ? Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Text(
+                'No tienes cursos en el periodo actual.',
+                style: TextStyle(color: PukllaDashboardStyles.textSecondary(context)),
+              ),
             )
           : Column(children: [for (final curso in list) _CursoDelSemestreTile(curso: curso)]),
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -510,8 +535,9 @@ class _CursoDelSemestreTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 10),
+      decoration: PukllaDashboardStyles.cardDecoration(context, radius: 14),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         leading: Container(
@@ -523,11 +549,20 @@ class _CursoDelSemestreTile extends StatelessWidget {
           ),
           child: const Icon(Icons.menu_book_outlined, size: 18, color: AppColors.gold),
         ),
-        title: Text(curso.nombre, style: const TextStyle(fontWeight: FontWeight.w600)),
-        subtitle: Text('${curso.cc} · ${curso.horas} h'),
+        title: Text(
+          curso.nombre,
+          style: TextStyle(
+            fontWeight: FontWeight.w700,
+            color: PukllaDashboardStyles.textPrimary(context),
+          ),
+        ),
+        subtitle: Text(
+          '${curso.cc} · ${curso.horas} h',
+          style: TextStyle(color: PukllaDashboardStyles.textSecondary(context)),
+        ),
         trailing: curso.classroom != null
             ? IconButton(
-                icon: const Icon(Icons.open_in_new),
+                icon: Icon(Icons.open_in_new, color: PukllaDashboardStyles.textSecondary(context)),
                 tooltip: 'Abrir classroom',
                 onPressed: () => launchUrl(Uri.parse(curso.classroom!), mode: LaunchMode.externalApplication),
               )

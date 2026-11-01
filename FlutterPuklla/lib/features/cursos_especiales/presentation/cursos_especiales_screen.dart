@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/puklla_dashboard_styles.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_state.dart';
 import '../../../core/widgets/puklla_app_bar_actions.dart';
@@ -22,6 +23,7 @@ class CursosEspecialesScreen extends ConsumerWidget {
     final catalogo = ref.watch(cursosEspecialesProvider);
 
     return Scaffold(
+      backgroundColor: PukllaDashboardStyles.backgroundColor(context),
       appBar: AppBar(
         title: const Text('Cursos especiales'),
         actions: const [PukllaAppBarActions()],
@@ -69,7 +71,8 @@ class _CursoEspecialCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Card(
+    return Container(
+      decoration: PukllaDashboardStyles.cardDecoration(context, radius: 14),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         leading: Container(
@@ -85,12 +88,27 @@ class _CursoEspecialCard extends ConsumerWidget {
             color: curso.inscrito ? AppColors.success : AppColors.gold,
           ),
         ),
-        title: Text(curso.nombre, style: const TextStyle(fontWeight: FontWeight.w600)),
-        subtitle: curso.descripcion != null ? Text(curso.descripcion!) : null,
+        title: Text(
+          curso.nombre,
+          style: TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 14.5,
+            color: PukllaDashboardStyles.textPrimary(context),
+          ),
+        ),
+        subtitle: curso.descripcion != null
+            ? Text(
+                curso.descripcion!,
+                style: TextStyle(
+                  fontSize: 12.5,
+                  color: PukllaDashboardStyles.textSecondary(context),
+                ),
+              )
+            : null,
         trailing: curso.inscrito
             ? Text(
                 '${curso.porcentaje ?? 0}%',
-                style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.success),
+                style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.success),
               )
             : FilledButton(
                 onPressed: () async {

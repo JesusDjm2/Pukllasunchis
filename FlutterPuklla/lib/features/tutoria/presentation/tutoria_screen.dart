@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/puklla_dashboard_styles.dart';
 import '../../../core/widgets/error_state.dart';
 import '../../../core/widgets/puklla_app_bar_actions.dart';
 import '../../../core/widgets/puklla_bottom_nav_bar.dart';
@@ -148,6 +149,7 @@ class _TutoriaScreenState extends ConsumerState<TutoriaScreen> {
     final tutoriaAsync = ref.watch(tutoriaDataProvider);
 
     return Scaffold(
+      backgroundColor: PukllaDashboardStyles.backgroundColor(context),
       appBar: AppBar(
         title: const Text('Tutoría y Sugerencias'),
         actions: const [PukllaAppBarActions()],
@@ -228,24 +230,14 @@ class _HeaderTutorCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = PukllaDashboardStyles.isDark(context);
     final tutoresTexto = alumno.tutores.isNotEmpty
         ? alumno.tutores.join(', ')
         : 'Tu ciclo aún no tiene tutor(a) asignado';
 
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF1E293B).withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
+      decoration: PukllaDashboardStyles.cardDecoration(context, radius: 16),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -265,29 +257,29 @@ class _HeaderTutorCard extends StatelessWidget {
               children: [
                 Text(
                   alumno.tutores.length > 1 ? 'TUS TUTORES' : 'TU TUTOR(A)',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 0.8,
-                    color: Color(0xFF64748B),
+                    color: PukllaDashboardStyles.textSecondary(context),
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   tutoresTexto,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.tealDark,
+                    color: isDark ? AppColors.goldHover : AppColors.tealDark,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   '${alumno.programa} · ${alumno.ciclo}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
-                    color: Color(0xFF475569),
+                    color: PukllaDashboardStyles.textSecondary(context),
                   ),
                 ),
               ],
@@ -311,11 +303,17 @@ class _TabSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = PukllaDashboardStyles.isDark(context);
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: const Color(0xFFE2E8F0).withValues(alpha: 0.6),
+        color: isDark
+            ? AppColors.darkSurfaceElevated
+            : const Color(0xFFE2E8F0).withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isDark ? AppColors.darkBorder : Colors.transparent,
+        ),
       ),
       child: Row(
         children: [
@@ -361,6 +359,7 @@ class _TabButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = PukllaDashboardStyles.isDark(context);
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(10),
@@ -368,12 +367,14 @@ class _TabButton extends StatelessWidget {
         duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.white : Colors.transparent,
+          color: isSelected
+              ? (isDark ? AppColors.darkSurface : Colors.white)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.06),
+                    color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.06),
                     blurRadius: 6,
                     offset: const Offset(0, 2),
                   ),
@@ -386,7 +387,9 @@ class _TabButton extends StatelessWidget {
             Icon(
               icon,
               size: 18,
-              color: isSelected ? activeColor : const Color(0xFF64748B),
+              color: isSelected
+                  ? activeColor
+                  : (isDark ? AppColors.darkMuted : const Color(0xFF64748B)),
             ),
             const SizedBox(width: 8),
             Flexible(
@@ -397,7 +400,9 @@ class _TabButton extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 12.5,
                   fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-                  color: isSelected ? activeColor : const Color(0xFF64748B),
+                  color: isSelected
+                      ? activeColor
+                      : (isDark ? AppColors.darkMuted : const Color(0xFF64748B)),
                 ),
               ),
             ),
@@ -436,22 +441,12 @@ class _FormTutoriaIndividual extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = PukllaDashboardStyles.isDark(context);
     final pideOtroDocente = urgenciaSeleccionada == 'otro_docente';
 
     return Container(
       padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF1E293B).withValues(alpha: 0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+      decoration: PukllaDashboardStyles.cardDecoration(context, radius: 18),
       child: Form(
         key: formKey,
         child: Column(
@@ -462,38 +457,41 @@ class _FormTutoriaIndividual extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppColors.teal.withValues(alpha: 0.12),
+                    color: AppColors.teal.withValues(alpha: isDark ? 0.2 : 0.12),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(Icons.record_voice_over_outlined, color: AppColors.teal, size: 20),
                 ),
                 const SizedBox(width: 10),
-                const Expanded(
+                Expanded(
                   child: Text(
                     'Solicitar tutoría individual',
                     style: TextStyle(
                       fontSize: 15.5,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.tealDark,
+                      color: isDark ? AppColors.goldHover : AppColors.tealDark,
                     ),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 6),
-            const Text(
+            Text(
               'Tu tutor(a) lo recibe al instante y se comunicará contigo.',
-              style: TextStyle(fontSize: 12.5, color: Color(0xFF64748B)),
+              style: TextStyle(
+                fontSize: 12.5,
+                color: PukllaDashboardStyles.textSecondary(context),
+              ),
             ),
             const SizedBox(height: 18),
 
             // Pregunta central
-            const Text(
+            Text(
               '¿Te gustaría conversar individualmente con el tutor sobre alguna situación? *',
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF334155),
+                color: PukllaDashboardStyles.textPrimary(context),
               ),
             ),
             const SizedBox(height: 8),
@@ -502,13 +500,21 @@ class _FormTutoriaIndividual extends StatelessWidget {
             DropdownButtonFormField<String>(
               value: urgenciaSeleccionada,
               isExpanded: true,
-              hint: const Text('— Elige una opción —', style: TextStyle(fontSize: 13)),
+              dropdownColor: isDark ? AppColors.darkSurfaceElevated : Colors.white,
+              hint: Text(
+                '— Elige una opción —',
+                style: TextStyle(fontSize: 13, color: PukllaDashboardStyles.textSecondary(context)),
+              ),
               items: opciones.map((opc) {
                 return DropdownMenuItem<String>(
                   value: opc.clave,
                   child: Text(
                     opc.texto,
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: PukllaDashboardStyles.textPrimary(context),
+                    ),
                   ),
                 );
               }).toList(),
@@ -516,14 +522,19 @@ class _FormTutoriaIndividual extends StatelessWidget {
               validator: (val) => val == null ? 'Por favor elige una opción' : null,
               decoration: InputDecoration(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                fillColor: const Color(0xFFF8FAFC),
+                filled: true,
+                fillColor: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF8FAFC),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                  borderSide: BorderSide(
+                    color: isDark ? AppColors.darkBorder : const Color(0xFFCBD5E1),
+                  ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                  borderSide: BorderSide(
+                    color: isDark ? AppColors.darkBorder : const Color(0xFFE2E8F0),
+                  ),
                 ),
               ),
             ),
@@ -531,19 +542,23 @@ class _FormTutoriaIndividual extends StatelessWidget {
             // Campo condicional para elegir otro docente si pide "otro_docente"
             if (pideOtroDocente) ...[
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 '¿Con qué docente te gustaría conversar? *',
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF334155),
+                  color: PukllaDashboardStyles.textPrimary(context),
                 ),
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<int>(
                 value: docenteSeleccionadoId,
                 isExpanded: true,
-                hint: const Text('— Elige un docente —', style: TextStyle(fontSize: 13)),
+                dropdownColor: isDark ? AppColors.darkSurfaceElevated : Colors.white,
+                hint: Text(
+                  '— Elige un docente —',
+                  style: TextStyle(fontSize: 13, color: PukllaDashboardStyles.textSecondary(context)),
+                ),
                 items: docentesElegibles.map((doc) {
                   final detalle = doc.detalle != null ? ' (${doc.detalle})' : '';
                   return DropdownMenuItem<int>(
@@ -552,7 +567,10 @@ class _FormTutoriaIndividual extends StatelessWidget {
                       '${doc.nombre}$detalle',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 12.5),
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        color: PukllaDashboardStyles.textPrimary(context),
+                      ),
                     ),
                   );
                 }).toList(),
@@ -565,29 +583,38 @@ class _FormTutoriaIndividual extends StatelessWidget {
                 },
                 decoration: InputDecoration(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                  fillColor: const Color(0xFFF8FAFC),
+                  filled: true,
+                  fillColor: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF8FAFC),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                    borderSide: BorderSide(
+                      color: isDark ? AppColors.darkBorder : const Color(0xFFCBD5E1),
+                    ),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                    borderSide: BorderSide(
+                      color: isDark ? AppColors.darkBorder : const Color(0xFFE2E8F0),
+                    ),
                   ),
                 ),
               ),
             ],
 
             const SizedBox(height: 16),
-            const Row(
+            Row(
               children: [
                 Text(
                   'Motivo ',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF334155)),
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: PukllaDashboardStyles.textPrimary(context),
+                  ),
                 ),
                 Text(
                   '(opcional)',
-                  style: TextStyle(fontSize: 12, color: Color(0xFF94A3B8)),
+                  style: TextStyle(fontSize: 12, color: PukllaDashboardStyles.textSecondary(context)),
                 ),
               ],
             ),
@@ -596,17 +623,26 @@ class _FormTutoriaIndividual extends StatelessWidget {
               controller: motivoController,
               maxLines: 4,
               maxLength: 3000,
+              style: TextStyle(
+                fontSize: 13,
+                color: PukllaDashboardStyles.textPrimary(context),
+              ),
               decoration: InputDecoration(
                 hintText: 'Si quieres, cuéntanos brevemente de qué te gustaría conversar…',
-                hintStyle: const TextStyle(fontSize: 12.5, color: Color(0xFF94A3B8)),
-                fillColor: const Color(0xFFF8FAFC),
+                hintStyle: TextStyle(fontSize: 12.5, color: PukllaDashboardStyles.textSecondary(context)),
+                filled: true,
+                fillColor: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF8FAFC),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                  borderSide: BorderSide(
+                    color: isDark ? AppColors.darkBorder : const Color(0xFFCBD5E1),
+                  ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                  borderSide: BorderSide(
+                    color: isDark ? AppColors.darkBorder : const Color(0xFFE2E8F0),
+                  ),
                 ),
               ),
             ),
@@ -657,20 +693,11 @@ class _FormBuzonSugerencias extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = PukllaDashboardStyles.isDark(context);
+
     return Container(
       padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF1E293B).withValues(alpha: 0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+      decoration: PukllaDashboardStyles.cardDecoration(context, radius: 18),
       child: Form(
         key: formKey,
         child: Column(
@@ -687,31 +714,35 @@ class _FormBuzonSugerencias extends StatelessWidget {
                   child: const Icon(Icons.lightbulb_outline, color: AppColors.goldHover, size: 20),
                 ),
                 const SizedBox(width: 10),
-                const Expanded(
+                Expanded(
                   child: Text(
                     'Buzón de sugerencias',
                     style: TextStyle(
                       fontSize: 15.5,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.tealDark,
+                      color: isDark ? AppColors.goldHover : AppColors.tealDark,
                     ),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 6),
-            const Text(
+            Text(
               '¿Una idea para mejorar las clases o un tema que te gustaría trabajar en tutoría? Compártelo con tu tutor(a).',
-              style: TextStyle(fontSize: 12.5, color: Color(0xFF64748B), height: 1.35),
+              style: TextStyle(
+                fontSize: 12.5,
+                color: PukllaDashboardStyles.textSecondary(context),
+                height: 1.35,
+              ),
             ),
             const SizedBox(height: 18),
 
-            const Text(
+            Text(
               'Tu sugerencia *',
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF334155),
+                color: PukllaDashboardStyles.textPrimary(context),
               ),
             ),
             const SizedBox(height: 8),
@@ -719,6 +750,10 @@ class _FormBuzonSugerencias extends StatelessWidget {
               controller: controller,
               maxLines: 6,
               maxLength: 3000,
+              style: TextStyle(
+                fontSize: 13,
+                color: PukllaDashboardStyles.textPrimary(context),
+              ),
               validator: (val) {
                 if (val == null || val.trim().length < 10) {
                   return 'Escribe al menos 10 caracteres para que tu tutor(a) entienda la idea.';
@@ -727,15 +762,20 @@ class _FormBuzonSugerencias extends StatelessWidget {
               },
               decoration: InputDecoration(
                 hintText: 'Ej.: Me gustaría que en tutoría habláramos sobre técnicas de estudio o talleres pedagógicos…',
-                hintStyle: const TextStyle(fontSize: 12.5, color: Color(0xFF94A3B8)),
-                fillColor: const Color(0xFFF8FAFC),
+                hintStyle: TextStyle(fontSize: 12.5, color: PukllaDashboardStyles.textSecondary(context)),
+                filled: true,
+                fillColor: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF8FAFC),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                  borderSide: BorderSide(
+                    color: isDark ? AppColors.darkBorder : const Color(0xFFCBD5E1),
+                  ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                  borderSide: BorderSide(
+                    color: isDark ? AppColors.darkBorder : const Color(0xFFE2E8F0),
+                  ),
                 ),
               ),
             ),
@@ -779,20 +819,11 @@ class _HistorialSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = PukllaDashboardStyles.isDark(context);
+
     return Container(
       padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF1E293B).withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
+      decoration: PukllaDashboardStyles.cardDecoration(context, radius: 18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -800,27 +831,27 @@ class _HistorialSection extends StatelessWidget {
             children: [
               const Icon(Icons.history_rounded, size: 19, color: AppColors.teal),
               const SizedBox(width: 8),
-              const Text(
+              Text(
                 'Lo que has enviado',
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.tealDark,
+                  color: isDark ? AppColors.goldHover : AppColors.tealDark,
                 ),
               ),
               const Spacer(),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF1F5F9),
+                  color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF1F5F9),
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
                   '${historial.length}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 11.5,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF64748B),
+                    color: PukllaDashboardStyles.textSecondary(context),
                   ),
                 ),
               ),
@@ -833,11 +864,18 @@ class _HistorialSection extends StatelessWidget {
               child: Center(
                 child: Column(
                   children: [
-                    Icon(Icons.inbox_outlined, size: 36, color: Colors.grey.shade400),
+                    Icon(
+                      Icons.inbox_outlined,
+                      size: 36,
+                      color: isDark ? AppColors.darkMuted : Colors.grey.shade400,
+                    ),
                     const SizedBox(height: 8),
-                    const Text(
+                    Text(
                       'Aún no has enviado solicitudes ni sugerencias.',
-                      style: TextStyle(fontSize: 13, color: Color(0xFF64748B)),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: PukllaDashboardStyles.textSecondary(context),
+                      ),
                     ),
                   ],
                 ),
@@ -848,7 +886,10 @@ class _HistorialSection extends StatelessWidget {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: historial.length,
-              separatorBuilder: (_, __) => const Divider(color: Color(0xFFF1F5F9), height: 20),
+              separatorBuilder: (_, __) => Divider(
+                color: PukllaDashboardStyles.borderColor(context),
+                height: 20,
+              ),
               itemBuilder: (context, index) {
                 final item = historial[index];
                 final esTutoria = item.tipo == 'tutoria';
@@ -861,8 +902,8 @@ class _HistorialSection extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
                         color: esTutoria
-                            ? AppColors.teal.withValues(alpha: 0.12)
-                            : AppColors.gold.withValues(alpha: 0.15),
+                            ? AppColors.teal.withValues(alpha: isDark ? 0.22 : 0.12)
+                            : AppColors.gold.withValues(alpha: isDark ? 0.22 : 0.15),
                         borderRadius: BorderRadius.circular(999),
                       ),
                       child: Text(
@@ -881,10 +922,10 @@ class _HistorialSection extends StatelessWidget {
                         children: [
                           Text(
                             item.texto,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
-                              color: Color(0xFF1E293B),
+                              color: PukllaDashboardStyles.textPrimary(context),
                               height: 1.35,
                             ),
                           ),
@@ -893,7 +934,10 @@ class _HistorialSection extends StatelessWidget {
                             item.extra != null
                                 ? '${item.fecha} · ${item.extra}'
                                 : item.fecha,
-                            style: const TextStyle(fontSize: 11.5, color: Color(0xFF94A3B8)),
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              color: PukllaDashboardStyles.textSecondary(context),
+                            ),
                           ),
                         ],
                       ),
@@ -903,7 +947,9 @@ class _HistorialSection extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: item.listo ? const Color(0xFFE6F4EC) : const Color(0xFFFFF4D6),
+                        color: item.listo
+                            ? (isDark ? const Color(0xFF064E3B).withValues(alpha: 0.5) : const Color(0xFFE6F4EC))
+                            : (isDark ? const Color(0xFF78350F).withValues(alpha: 0.4) : const Color(0xFFFFF4D6)),
                         borderRadius: BorderRadius.circular(999),
                       ),
                       child: Row(
@@ -912,7 +958,9 @@ class _HistorialSection extends StatelessWidget {
                           Icon(
                             item.listo ? Icons.check_circle_outline : Icons.access_time_rounded,
                             size: 13,
-                            color: item.listo ? const Color(0xFF0B7A43) : const Color(0xFF9A6700),
+                            color: item.listo
+                                ? (isDark ? const Color(0xFF34D399) : const Color(0xFF0B7A43))
+                                : (isDark ? const Color(0xFFFBBF24) : const Color(0xFF9A6700)),
                           ),
                           const SizedBox(width: 4),
                           Text(
@@ -920,7 +968,9 @@ class _HistorialSection extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
-                              color: item.listo ? const Color(0xFF0B7A43) : const Color(0xFF9A6700),
+                              color: item.listo
+                                  ? (isDark ? const Color(0xFF34D399) : const Color(0xFF0B7A43))
+                                  : (isDark ? const Color(0xFFFBBF24) : const Color(0xFF9A6700)),
                             ),
                           ),
                         ],
