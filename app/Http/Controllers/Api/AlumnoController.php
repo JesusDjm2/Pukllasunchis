@@ -24,9 +24,51 @@ class AlumnoController extends Controller
             return response()->json(['message' => 'No se encontró un perfil de alumno para este usuario.'], 404);
         }
 
-        $alumno->load('programa', 'ciclo');
+        $alumno->load('programa', 'ciclo.tutores.docente');
 
         return response()->json(['data' => new AlumnoResource($alumno)]);
+    }
+
+    public function carnet(Request $request)
+    {
+        $alumno = $request->user()->alumno;
+
+        if (! $alumno) {
+            return response()->json(['message' => 'No se encontró un perfil de alumno para este usuario.'], 404);
+        }
+
+        $alumno->loadMissing(['programa', 'ciclo', 'user']);
+
+        $fotoNombre = $alumno->user?->foto;
+        $fotoUrl = null;
+        if ($fotoNombre) {
+            if (str_starts_with($fotoNombre, 'http://') || str_starts_with($fotoNombre, 'https://')) {
+                $fotoUrl = $fotoNombre;
+            } else {
+                $fotoUrl = $request->getSchemeAndHttpHost() . '/api/v1/foto/estudiante/' . ltrim($fotoNombre, '/');
+            }
+        }
+
+        $email = $alumno->user?->email ?? $alumno->email ?? '';
+        preg_match('/20\d{2}/', $email, $matches);
+        $anioIngreso = $matches[0] ?? (($alumno->user?->created_at ?? $alumno->created_at)?->format('Y') ?? date('Y'));
+
+        return response()->json([
+            'data' => [
+                'alumno_id' => $alumno->id,
+                'nombres' => $alumno->nombres,
+                'apellidos' => $alumno->apellidos,
+                'nombre_completo' => trim("{$alumno->nombres} {$alumno->apellidos}"),
+                'dni' => $alumno->dni,
+                'email' => $email,
+                'programa_nombre' => $alumno->programa?->nombre ?? 'EESP Pukllasunchis',
+                'ciclo_nombre' => $alumno->ciclo?->nombre ?? 'I',
+                'anio_ingreso' => (string) $anioIngreso,
+                'foto' => $fotoUrl,
+                'institucion' => 'EESP PUKLLASUNCHIS',
+                'codigo_qr' => "PUKLLA-ALU-{$alumno->id}-{$alumno->dni}",
+            ],
+        ]);
     }
 
     /**

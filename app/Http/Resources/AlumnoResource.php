@@ -19,6 +19,32 @@ class AlumnoResource extends JsonResource
             }
         }
 
+        $email = $this->user?->email ?? $this->email ?? '';
+        preg_match('/20\d{2}/', $email, $matches);
+        $anioIngreso = $matches[0] ?? (($this->user?->created_at ?? $this->created_at)?->format('Y') ?? '');
+
+        // Tutor asignado al ciclo del alumno
+        $tutorUser = $this->ciclo?->tutores?->first();
+        $tutorDocente = $tutorUser?->docente;
+        $tutorData = null;
+        if ($tutorUser) {
+            $tutorFoto = $tutorDocente?->foto ?? $tutorUser->foto;
+            $tutorFotoUrl = null;
+            if ($tutorFoto) {
+                $tutorFotoUrl = (str_starts_with($tutorFoto, 'http://') || str_starts_with($tutorFoto, 'https://'))
+                    ? $tutorFoto
+                    : asset('docentes/fotos/' . ltrim($tutorFoto, '/'));
+            }
+
+            $tutorData = [
+                'id' => $tutorUser->id,
+                'nombre' => $tutorDocente?->nombre ?? $tutorUser->name,
+                'email' => $tutorDocente?->email ?? $tutorUser->email,
+                'telefono' => $tutorDocente?->telefono,
+                'foto' => $tutorFotoUrl,
+            ];
+        }
+
         return [
             'id' => $this->id,
             'email' => $this->email,
@@ -27,6 +53,8 @@ class AlumnoResource extends JsonResource
             'apellidos' => $this->apellidos,
             'genero' => $this->genero,
             'foto' => $fotoUrl,
+            'anio_ingreso' => $anioIngreso,
+            'tutor' => $tutorData,
             'numero' => $this->numero,
             'numero_referencia' => $this->numero_referencia,
             'fecha_nacimiento' => $this->fecha_nacimiento,

@@ -18,9 +18,11 @@ import '../../../core/widgets/section_header.dart';
 import '../../../routing/app_drawer.dart';
 import '../../home/application/home_providers.dart';
 import '../../home/data/curso.dart';
+import '../../home/presentation/curso_detalle_sheet.dart';
 import '../application/perfil_providers.dart';
 import '../data/alumno_perfil.dart';
 import '../data/perfil_repository.dart';
+import 'carnet_digital_sheet.dart';
 
 class FichaTecnicaScreen extends ConsumerWidget {
   const FichaTecnicaScreen({super.key});
@@ -147,6 +149,12 @@ class _FichaBody extends ConsumerWidget {
               const SectionHeader(icon: Icons.badge_outlined, title: 'Datos del Estudiante'),
               _DatosPersonalesCard(perfil: perfil),
               const SizedBox(height: 20),
+
+              if (perfil.tutor != null) ...[
+                const SectionHeader(icon: Icons.support_agent_outlined, title: 'Mi Tutor Asignado'),
+                _TutorAsignadoCard(tutor: perfil.tutor!),
+                const SizedBox(height: 20),
+              ],
 
               const SectionHeader(icon: Icons.menu_book_outlined, title: 'Cursos del semestre'),
               const _CursosDelSemestre(),
@@ -467,78 +475,120 @@ class _AccionesFichaState extends State<_AccionesFicha> {
   Widget build(BuildContext context) {
     return Consumer(
       builder: (context, ref, _) {
-        return Row(
+        return Column(
           children: [
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.gold.withValues(alpha: 0.28),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.gold.withValues(alpha: 0.28),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                child: FilledButton.icon(
-                  onPressed: () => context.push('/matricula/formulario'),
-                  icon: const Icon(Icons.edit_note_rounded, size: 20),
-                  label: const Text(
-                    'Actualizar mis datos',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.1,
+                    child: FilledButton.icon(
+                      onPressed: () => context.push('/matricula/formulario'),
+                      icon: const Icon(Icons.edit_note_rounded, size: 20),
+                      label: const Text(
+                        'Actualizar mis datos',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.1,
+                        ),
+                      ),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.gold,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        elevation: 0,
+                      ),
                     ),
                   ),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.gold,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                    elevation: 0,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.teal.withValues(alpha: 0.22),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: FilledButton.icon(
+                      onPressed: _descargandoPdf ? null : () => _descargarFicha(ref),
+                      icon: _descargandoPdf
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            )
+                          : const Icon(Icons.picture_as_pdf_rounded, size: 19),
+                      label: Text(
+                        _descargandoPdf ? 'Descargando...' : 'Ficha oficial (PDF)',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.1,
+                        ),
+                      ),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.teal,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        elevation: 0,
+                      ),
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.teal.withValues(alpha: 0.22),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+            const SizedBox(height: 10),
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(14),
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFB96328), Color(0xFFA05220)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-                child: FilledButton.icon(
-                  onPressed: _descargandoPdf ? null : () => _descargarFicha(ref),
-                  icon: _descargandoPdf
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                        )
-                      : const Icon(Icons.picture_as_pdf_rounded, size: 19),
-                  label: Text(
-                    _descargandoPdf ? 'Descargando...' : 'Ficha oficial (PDF)',
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.1,
-                    ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFB96328).withValues(alpha: 0.28),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
                   ),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.teal,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                    elevation: 0,
+                ],
+              ),
+              child: FilledButton.icon(
+                onPressed: () => CarnetDigitalSheet.show(context, widget.perfil),
+                icon: const Icon(Icons.badge_rounded, size: 20, color: Colors.white),
+                label: const Text(
+                  'Mi Carnet Digital (ID Estudiante & Biblioteca)',
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                    letterSpacing: 0.2,
                   ),
+                ),
+                style: FilledButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                  padding: const EdgeInsets.symmetric(vertical: 13),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
               ),
             ),
@@ -757,6 +807,7 @@ class _CursoDelSemestreTile extends StatelessWidget {
               Container(width: 4, color: AppColors.teal),
               Expanded(
                 child: ListTile(
+                  onTap: () => CursoDetalleSheet.show(context, curso),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
                   leading: Container(
                     width: 38,
@@ -776,19 +827,126 @@ class _CursoDelSemestreTile extends StatelessWidget {
                     ),
                   ),
                   subtitle: Text(
-                    '${curso.cc} · ${curso.horas} h',
+                    '${curso.cc} · ${curso.horas} h · ${curso.creditos} cr.',
                     style: TextStyle(
                       color: PukllaDashboardStyles.textSecondary(context),
                       fontSize: 12,
                     ),
                   ),
-                  trailing: curso.classroom != null
-                      ? IconButton(
-                          icon: Icon(Icons.open_in_new_rounded, color: PukllaDashboardStyles.textSecondary(context), size: 18),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (curso.classroom != null)
+                        IconButton(
+                          icon: Icon(Icons.open_in_new_rounded,
+                              color: PukllaDashboardStyles.textSecondary(context), size: 18),
                           tooltip: 'Abrir classroom',
-                          onPressed: () => launchUrl(Uri.parse(curso.classroom!), mode: LaunchMode.externalApplication),
-                        )
-                      : null,
+                          onPressed: () =>
+                              launchUrl(Uri.parse(curso.classroom!), mode: LaunchMode.externalApplication),
+                        ),
+                      const Icon(Icons.chevron_right_rounded, size: 20, color: Colors.grey),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TutorAsignadoCard extends StatelessWidget {
+  const _TutorAsignadoCard({required this.tutor});
+
+  final TutorInfo tutor;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = PukllaDashboardStyles.isDark(context);
+
+    return Container(
+      decoration: PukllaDashboardStyles.cardDecoration(context, radius: 16),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Container(width: 4, color: AppColors.gold),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Row(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: AppColors.gold, width: 2),
+                        ),
+                        child: CircleAvatar(
+                          radius: 22,
+                          backgroundColor: AppColors.gold.withValues(alpha: 0.15),
+                          backgroundImage: tutor.foto != null ? NetworkImage(tutor.foto!) : null,
+                          child: tutor.foto == null
+                              ? const Icon(Icons.person_rounded, color: AppColors.goldHover, size: 24)
+                              : null,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              tutor.nombre,
+                              style: TextStyle(
+                                fontSize: 14.5,
+                                fontWeight: FontWeight.w800,
+                                color: PukllaDashboardStyles.textPrimary(context),
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Tutor(a) pedagógico de ciclo',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: PukllaDashboardStyles.textSecondary(context),
+                              ),
+                            ),
+                            if (tutor.email != null) ...[
+                              const SizedBox(height: 2),
+                              Text(
+                                tutor.email!,
+                                style: TextStyle(
+                                  fontSize: 11.5,
+                                  color: isDark ? AppColors.goldHover : AppColors.teal,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      if (tutor.email != null)
+                        IconButton(
+                          icon: const Icon(Icons.mail_outline_rounded, size: 20),
+                          tooltip: 'Enviar correo al tutor',
+                          color: AppColors.teal,
+                          onPressed: () => launchUrl(Uri.parse('mailto:${tutor.email}'),
+                              mode: LaunchMode.externalApplication),
+                        ),
+                      if (tutor.telefono != null)
+                        IconButton(
+                          icon: const Icon(Icons.phone_outlined, size: 20),
+                          tooltip: 'Llamar al tutor',
+                          color: const Color(0xFF10B981),
+                          onPressed: () => launchUrl(Uri.parse('tel:${tutor.telefono}'),
+                              mode: LaunchMode.externalApplication),
+                        ),
+                    ],
+                  ),
                 ),
               ),
             ],

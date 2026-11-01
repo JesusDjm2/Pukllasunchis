@@ -57,9 +57,13 @@ class AlumnoPerfil {
     required this.otrosServicios,
     required this.tipoSeguro,
     required this.estudioBeca,
+    this.tutor,
+    this.anioIngreso,
   });
 
   factory AlumnoPerfil.fromJson(Map<String, dynamic> json) {
+    final tutorJson = json['tutor'] as Map<String, dynamic>?;
+
     return AlumnoPerfil(
       id: json['id'] as int,
       nombres: json['nombres'] as String,
@@ -67,6 +71,8 @@ class AlumnoPerfil {
       dni: json['dni'] as String,
       email: json['email'] as String,
       foto: json['foto'] as String?,
+      tutor: tutorJson != null ? TutorInfo.fromJson(tutorJson) : null,
+      anioIngreso: json['anio_ingreso']?.toString(),
       numero: json['numero'] as String,
       numeroReferencia: json['numero_referencia'] as String,
       departamento: json['departamento'] as String?,
@@ -164,6 +170,8 @@ class AlumnoPerfil {
   final List<String> otrosServicios;
   final String? tipoSeguro;
   final bool? estudioBeca;
+  final TutorInfo? tutor;
+  final String? anioIngreso;
 
   bool get tieneFechaNacimiento => fechaNacimiento != null;
 
@@ -197,4 +205,30 @@ int? _toInt(dynamic v) {
   if (v is num) return v.toInt();
   if (v is String) return int.tryParse(v.trim());
   return null;
+}
+
+class TutorInfo {
+  const TutorInfo({
+    required this.id,
+    required this.nombre,
+    this.email,
+    this.telefono,
+    this.foto,
+  });
+
+  factory TutorInfo.fromJson(Map<String, dynamic> json) {
+    return TutorInfo(
+      id: json['id'] as int? ?? 0,
+      nombre: json['nombre'] as String? ?? 'Tutor(a) asignado',
+      email: json['email'] as String?,
+      telefono: json['telefono'] as String?,
+      foto: json['foto'] as String?,
+    );
+  }
+
+  final int id;
+  final String nombre;
+  final String? email;
+  final String? telefono;
+  final String? foto;
 }

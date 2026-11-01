@@ -56,6 +56,20 @@ Route::prefix('v1')->group(function () {
         ]);
     })->where('archivo', '.*');
 
+    Route::get('/silabo/archivo/{archivo}', function ($archivo) {
+        $path = public_path('docentes/silabo/' . basename($archivo));
+        if (! file_exists($path)) {
+            abort(404);
+        }
+
+        return response()->file($path, [
+            'Access-Control-Allow-Origin' => '*',
+            'Access-Control-Allow-Methods' => 'GET, OPTIONS',
+            'Access-Control-Allow-Headers' => '*',
+            'Content-Type' => 'application/pdf',
+        ]);
+    })->where('archivo', '.*');
+
     // Pública, igual que informacion/bolsa-de-trabajo en la web.
     Route::get('/bolsa-trabajo', [BolsaTrabajoOfertaController::class, 'index']);
 
@@ -66,12 +80,14 @@ Route::prefix('v1')->group(function () {
         Route::get('/alumno/perfil', [AlumnoController::class, 'perfil']);
         Route::put('/alumno/perfil', [AlumnoController::class, 'actualizarPerfil']);
         Route::get('/alumno/ficha-pdf', [AlumnoController::class, 'fichaPdf']);
+        Route::get('/alumno/carnet', [AlumnoController::class, 'carnet']);
 
         Route::get('/periodo-actual', [PeriodoActualController::class, 'show']);
 
         Route::get('/matriculas', [MatriculaController::class, 'index']);
 
         Route::get('/cursos', [CursoController::class, 'index']);
+        Route::get('/cursos/{curso}', [CursoController::class, 'show']);
         Route::get('/calificaciones', [CursoController::class, 'calificaciones']);
 
         Route::get('/cursos-especiales', [CursoEspecialController::class, 'index']);

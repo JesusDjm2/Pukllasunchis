@@ -22,8 +22,16 @@ class CursoController extends Controller
         }
 
         $cursos = $this->cursosDelPeriodoActual($alumno);
+        $cursos->loadMissing(['docentes', 'competencias', 'ciclo.programa', 'silabos', 'silabosPdf']);
 
         return response()->json(['data' => CursoResource::collection($cursos->sortBy('nombre')->values())]);
+    }
+
+    public function show(Request $request, Curso $curso)
+    {
+        $curso->loadMissing(['docentes', 'competencias', 'ciclo.programa', 'silabos', 'silabosPdf']);
+
+        return response()->json(['data' => new CursoResource($curso)]);
     }
 
     public function calificaciones(Request $request)

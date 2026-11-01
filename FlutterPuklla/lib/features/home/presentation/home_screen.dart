@@ -17,6 +17,8 @@ import '../../perfil/data/alumno_perfil.dart';
 import '../application/home_providers.dart';
 import '../data/curso.dart';
 import '../data/periodo_actual.dart';
+import 'curso_detalle_sheet.dart';
+import '../../perfil/presentation/carnet_digital_sheet.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -780,10 +782,12 @@ class _PeriodoMatriculaCard extends StatelessWidget {
     }
   }
 
-// ── BENTO GRID COMPLETO (8 MÓDULOS DE LA WEB) ──
-class _BentoGridModulos extends StatelessWidget {
+// ── BENTO GRID COMPLETO (MÓDULOS DE LA WEB + CARNET + TUTOR) ──
+class _BentoGridModulos extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final perfil = ref.watch(perfilProvider).valueOrNull;
+
     return Column(
       children: [
         Row(
@@ -805,6 +809,38 @@ class _BentoGridModulos extends StatelessWidget {
                 title: 'Calificaciones',
                 subtitle: 'Notas y récord académico',
                 onTap: () => context.go('/calificaciones'),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _BentoItem(
+                icon: Icons.credit_card_rounded,
+                color: const Color(0xFFB96328),
+                title: 'Carnet Digital',
+                subtitle: 'ID Estudiante & Biblioteca',
+                onTap: () {
+                  if (perfil != null) {
+                    CarnetDigitalSheet.show(context, perfil);
+                  } else {
+                    context.go('/ficha-tecnica');
+                  }
+                },
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _BentoItem(
+                icon: Icons.support_agent_rounded,
+                color: AppColors.teal,
+                title: 'Mi Tutor',
+                subtitle: perfil?.tutor != null
+                    ? perfil!.tutor!.nombre
+                    : 'Acompañamiento docente',
+                onTap: () => context.go('/ficha-tecnica'),
               ),
             ),
           ],
@@ -970,7 +1006,7 @@ class _CursoItemCard extends StatelessWidget {
     final isDark = PukllaDashboardStyles.isDark(context);
 
     return PukllaScaleTap(
-      onTap: () => context.push('/calificaciones'),
+      onTap: () => CursoDetalleSheet.show(context, curso),
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(14),
@@ -1004,15 +1040,13 @@ class _CursoItemCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    curso.horas.isNotEmpty
-                        ? '${curso.horas} horas lectivas · Plan de estudios'
-                        : 'Horario semestral regular',
+                    '${curso.cc} · ${curso.horas} h · Toca para ver detalle',
                     style: TextStyle(fontSize: 12, color: PukllaDashboardStyles.textSecondary(context)),
                   ),
                 ],
               ),
             ),
-            if (curso.creditos != null)
+            if (curso.creditos.isNotEmpty && curso.creditos != '—')
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
@@ -1028,6 +1062,8 @@ class _CursoItemCard extends StatelessWidget {
                   ),
                 ),
               ),
+            const SizedBox(width: 6),
+            Icon(Icons.chevron_right_rounded, size: 20, color: PukllaDashboardStyles.textSecondary(context)),
           ],
         ),
       ),

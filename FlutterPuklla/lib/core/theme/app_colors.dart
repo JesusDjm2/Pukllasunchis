@@ -22,6 +22,7 @@ class AppColors {
   static const darkBackground = Color(0xFF0F172A);
   static const darkSurface = Color(0xFF1E293B);
   static const darkSurfaceElevated = Color(0xFF273549);
+  static const darkCard = Color(0xFF273549);
   static const darkBorder = Color(0xFF334155);
   static const darkText = Color(0xFFF8FAFC);
   static const darkMuted = Color(0xFF94A3B8);
