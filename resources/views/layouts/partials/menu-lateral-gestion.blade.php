@@ -26,6 +26,20 @@
         </span>
     </div>
 
+    @if (Route::has('ayllu.inicio'))
+        <div class="pk-sb-titulo">Comunidad</div>
+        <li class="nav-item">
+            <a class="nav-link pk-sb-link {{ request()->routeIs('ayllu.*') ? 'is-activo' : '' }}"
+                href="{{ route('ayllu.inicio') }}" title="Inicio — Ayllu Puklla">
+                <span class="pk-sb-icono"><i class="fas fa-home"></i></span>
+                <span class="pk-sb-texto">
+                    Inicio
+                    <small>Ayllu Puklla · Comunidad</small>
+                </span>
+            </a>
+        </li>
+    @endif
+
     {{-- Menú de gestión (admin, super-admin, adminB): mismas opciones en ambos layouts --}}
     @include('layouts.partials.menu-gestion')
 

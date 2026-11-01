@@ -42,6 +42,18 @@
             </a>
             @php $esEgresado = auth()->user()?->condicion === 'Egresado'; @endphp
             <hr class="sidebar-divider">
+            @if (Route::has('ayllu.inicio'))
+                <div class="sidebar-heading">
+                    Ayllu Puklla · Comunidad
+                </div>
+                <li class="nav-item {{ request()->routeIs('ayllu.*') ? 'active' : '' }}">
+                    <a class="nav-link collapsed" href="{{ route('ayllu.inicio') }}" style="background: rgba(205, 146, 68, 0.18); border-left: 3px solid #cd9244;">
+                        <i class="fas fa-fw fa-home" style="color: #f6d39c;"></i>
+                        <span class="font-weight-bold">Inicio <small class="d-block" style="font-size:0.68rem; opacity:0.88;">Ayllu Puklla</small></span>
+                    </a>
+                </li>
+                <hr class="sidebar-divider my-2">
+            @endif
             <div class="sidebar-heading">
                 {{ $esEgresado ? 'Egresado(a) · PPD' : 'Profesionalización Docente' }}
             </div>

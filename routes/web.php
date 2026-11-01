@@ -254,6 +254,73 @@ Route::middleware(['auth'])->prefix('seguimiento-egresados')->group(function () 
         ->name('seguimiento.docente.mis-asignaciones');
 });
 
+/*
+|--------------------------------------------------------------------------
+| Ayllu Puklla — Un espacio para aprender y construir comunidad (MVP Fase 1)
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth'])->group(function () {
+    Route::get('/inicio', [App\Http\Controllers\Ayllu\AylluController::class, 'inicio'])
+        ->name('ayllu.inicio');
+    Route::get('/ayllu', function () {
+        return redirect()->route('ayllu.inicio');
+    })->name('ayllu.redirect');
+
+    // Publicaciones comunitarias, reacciones y moderación (Plano 1)
+    Route::post('/ayllu/publicaciones', [App\Http\Controllers\Ayllu\AylluController::class, 'storePublicacion'])
+        ->name('ayllu.publicaciones.store');
+    Route::post('/ayllu/publicaciones/{publicacion}/comentar', [App\Http\Controllers\Ayllu\AylluController::class, 'storeComentario'])
+        ->name('ayllu.publicaciones.comentar');
+    Route::post('/ayllu/publicaciones/{publicacion}/reaccionar', [App\Http\Controllers\Ayllu\AylluController::class, 'toggleReaccion'])
+        ->name('ayllu.publicaciones.reaccionar');
+    Route::post('/ayllu/publicaciones/{publicacion}/destacar', [App\Http\Controllers\Ayllu\AylluController::class, 'toggleDestacar'])
+        ->name('ayllu.publicaciones.destacar');
+    Route::delete('/ayllu/publicaciones/{publicacion}', [App\Http\Controllers\Ayllu\AylluController::class, 'eliminarPublicacion'])
+        ->name('ayllu.publicaciones.eliminar');
+
+    // Comunidades de Curso, Sílabo Vivo y Evaluación Formativa (Plano 2)
+    Route::get('/ayllu/cursos/{curso}', [App\Http\Controllers\Ayllu\AylluController::class, 'cursoComunidad'])
+        ->name('ayllu.cursos.show');
+    Route::post('/ayllu/cursos/{curso}/entregas', [App\Http\Controllers\Ayllu\AylluController::class, 'storeEntregaFormativa'])
+        ->name('ayllu.cursos.entregas.store');
+    Route::post('/ayllu/entregas/{entrega}/retroalimentar', [App\Http\Controllers\Ayllu\AylluController::class, 'storeRetroalimentacion'])
+        ->name('ayllu.entregas.retroalimentar');
+    Route::post('/ayllu/entregas/{entrega}/portafolio', [App\Http\Controllers\Ayllu\AylluController::class, 'togglePortafolio'])
+        ->name('ayllu.entregas.portafolio');
+
+    // Proyecto Anual Integrador (Taq'e) + Portafolio Docente EIB
+    Route::get('/ayllu/proyecto-integrador', [App\Http\Controllers\Ayllu\AylluController::class, 'proyectoIntegrador'])
+        ->name('ayllu.proyecto');
+
+    // Comunidades y Grupos Interculturales (Ayllus)
+    Route::get('/ayllu/grupos', [App\Http\Controllers\Ayllu\AylluController::class, 'grupos'])
+        ->name('ayllu.grupos');
+    Route::post('/ayllu/grupos', [App\Http\Controllers\Ayllu\AylluController::class, 'storeGrupo'])
+        ->name('ayllu.grupos.store');
+    Route::post('/ayllu/grupos/{grupo}/miembro', [App\Http\Controllers\Ayllu\AylluController::class, 'toggleMiembroGrupo'])
+        ->name('ayllu.grupos.miembro');
+
+    // Calendario Vivo y Chat Académico (Rimanakuy)
+    Route::get('/ayllu/calendario', [App\Http\Controllers\Ayllu\AylluController::class, 'calendario'])
+        ->name('ayllu.calendario');
+    Route::post('/ayllu/calendario', [App\Http\Controllers\Ayllu\AylluController::class, 'storeEventoCalendario'])
+        ->name('ayllu.calendario.store');
+    Route::get('/ayllu/chat', [App\Http\Controllers\Ayllu\AylluController::class, 'chat'])
+        ->name('ayllu.chat');
+    Route::post('/ayllu/chat', [App\Http\Controllers\Ayllu\AylluController::class, 'storeMensajeChat'])
+        ->name('ayllu.chat.store');
+
+    // Mi Espacio Privado (Plano 3: Notas Oficiales, Asistencia, Matrícula y Trámites)
+    Route::get('/ayllu/mi-espacio-privado', [App\Http\Controllers\Ayllu\AylluController::class, 'miEspacioPrivado'])
+        ->name('ayllu.privado');
+
+    // Perfil Intercultural y Portafolio EIB
+    Route::get('/ayllu/perfil/{usuario?}', [App\Http\Controllers\Ayllu\AylluController::class, 'perfil'])
+        ->name('ayllu.perfil');
+    Route::post('/ayllu/perfil', [App\Http\Controllers\Ayllu\AylluController::class, 'actualizarPerfil'])
+        ->name('ayllu.perfil.update');
+});
+
 if (app()->isLocal()) {
     Route::prefix('auditoria')->group(function () {
         Route::get('/login/{perfil}', function (string $perfil) {

@@ -1,0 +1,333 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   AYLLU PUKLLA — Un espacio para aprender y construir comunidad
+   Hoja de estilos cálida, comunitaria, intercultural y Mobile-First
+   Hereda variables de public/css/pk-tokens.css (--pk-oro, --pk-marron, --pk-petroleo)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+    --ayllu-bg: #faf7f2;
+    --ayllu-surface: #ffffff;
+    --ayllu-surface-soft: #fdfaf5;
+    --ayllu-border: #eadfce;
+    --ayllu-text: #1e293b;
+    --ayllu-muted: #64748b;
+    --ayllu-terracota: #832128;
+    --ayllu-oro: #cd9244;
+    --ayllu-oro-suave: #fef5e7;
+    --ayllu-petroleo: #33445a;
+    --ayllu-verde: #0e9467;
+    --ayllu-verde-suave: #e6f7f1;
+    --ayllu-azul-formativo: #1d4ed8;
+    --ayllu-azul-suave: #eff6ff;
+    --ayllu-sombra: 0 6px 24px rgba(51, 68, 90, 0.06);
+}
+
+body.dark-mode {
+    --ayllu-bg: #0f141c;
+    --ayllu-surface: #18202c;
+    --ayllu-surface-soft: #1e2837;
+    --ayllu-border: #2b3648;
+    --ayllu-text: #e2e8f0;
+    --ayllu-muted: #94a3b8;
+    --ayllu-oro-suave: rgba(205, 146, 68, 0.15);
+    --ayllu-verde-suave: rgba(14, 148, 103, 0.15);
+    --ayllu-azul-suave: rgba(37, 99, 235, 0.15);
+}
+
+body.dim-mode {
+    --ayllu-bg: #1e1821;
+    --ayllu-surface: #28202c;
+    --ayllu-surface-soft: #312736;
+    --ayllu-border: #423449;
+    --ayllu-text: #f3e8f7;
+    --ayllu-muted: #c6b4ce;
+}
+
+.ayllu-wrapper {
+    background-color: var(--ayllu-bg);
+    color: var(--ayllu-text);
+    padding-bottom: 5.5rem;
+    min-height: calc(100vh - 120px);
+    border-radius: 16px;
+}
+
+/* Franja artesanal andina sutil (Chakana / Tejido) */
+.ayllu-top-strip {
+    height: 5px;
+    background: repeating-linear-gradient(
+        90deg,
+        #832128 0px,
+        #832128 24px,
+        #cd9244 24px,
+        #cd9244 48px,
+        #0e9467 48px,
+        #0e9467 72px,
+        #33445a 72px,
+        #33445a 96px
+    );
+    border-radius: 14px 14px 0 0;
+}
+
+/* Cabecera de marca Ayllu Puklla */
+.ayllu-hero-banner {
+    background: linear-gradient(135deg, #253449 0%, #33445a 58%, #5e3d28 100%);
+    color: #ffffff;
+    border-radius: 0 0 16px 16px;
+    padding: 1.35rem 1.5rem;
+    box-shadow: var(--ayllu-sombra);
+    margin-bottom: 1rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.ayllu-hero-banner::after {
+    content: "";
+    position: absolute;
+    right: -40px;
+    top: -40px;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(205, 146, 68, 0.25) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.ayllu-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(246, 211, 156, 0.16);
+    border: 1px solid rgba(246, 211, 156, 0.35);
+    color: #f6d39c;
+    font-size: 0.73rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 0.22rem 0.7rem;
+    border-radius: 999px;
+    margin-bottom: 0.45rem;
+}
+
+.ayllu-hero-title {
+    font-size: 1.45rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 0.2rem;
+    line-height: 1.25;
+}
+
+.ayllu-hero-sub {
+    font-size: 0.88rem;
+    color: rgba(255, 255, 255, 0.86);
+    margin-bottom: 0;
+}
+
+/* Navegación horizontal de módulos Ayllu */
+.ayllu-subnav {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 0.45rem;
+    padding: 0.55rem 0.65rem;
+    background: var(--ayllu-surface);
+    border: 1px solid var(--ayllu-border);
+    border-radius: 14px;
+    box-shadow: var(--ayllu-sombra);
+    margin-bottom: 1.25rem;
+    scrollbar-width: none;
+}
+
+.ayllu-subnav::-webkit-scrollbar {
+    display: none;
+}
+
+.ayllu-subnav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.5rem 0.95rem;
+    border-radius: 10px;
+    font-size: 0.84rem;
+    font-weight: 700;
+    color: var(--ayllu-muted);
+    white-space: nowrap;
+    text-decoration: none !important;
+    transition: all 0.18s ease;
+}
+
+.ayllu-subnav-link:hover {
+    background: var(--ayllu-oro-suave);
+    color: var(--ayllu-text);
+}
+
+.ayllu-subnav-link.is-active {
+    background: var(--ayllu-petroleo);
+    color: #ffffff !important;
+    box-shadow: 0 3px 10px rgba(37, 52, 73, 0.22);
+}
+
+.ayllu-subnav-link.is-privado.is-active {
+    background: #832128;
+}
+
+/* Tarjetas comunitarias */
+.ayllu-card {
+    background: var(--ayllu-surface);
+    border: 1px solid var(--ayllu-border);
+    border-radius: 14px;
+    box-shadow: var(--ayllu-sombra);
+    margin-bottom: 1.1rem;
+    overflow: hidden;
+}
+
+.ayllu-card-header {
+    padding: 0.9rem 1.15rem;
+    border-bottom: 1px solid var(--ayllu-border);
+    background: var(--ayllu-surface-soft);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.ayllu-card-body {
+    padding: 1.15rem;
+}
+
+/* Distintivos de los 3 Planos (Social, Formativo, Oficial) */
+.ayllu-plano-banner {
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    font-size: 0.83rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.ayllu-plano-social {
+    background: var(--ayllu-oro-suave);
+    border-left: 4px solid var(--ayllu-oro);
+    color: var(--ayllu-text);
+}
+
+.ayllu-plano-formativo {
+    background: var(--ayllu-azul-suave);
+    border-left: 4px solid var(--ayllu-azul-formativo);
+    color: var(--ayllu-text);
+}
+
+.ayllu-plano-oficial {
+    background: #fdf2f2;
+    border-left: 4px solid #832128;
+    color: #7f1d1d;
+}
+
+body.dark-mode .ayllu-plano-oficial {
+    background: rgba(131, 33, 40, 0.2);
+    color: #fecaca;
+}
+
+/* Avatar comunitario */
+.ayllu-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #cd9244, #9c6b37);
+    color: #ffffff;
+    font-weight: 800;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* Botones de reacción quechua-castellano */
+.ayllu-reaccion-btn {
+    border: 1px solid var(--ayllu-border);
+    background: var(--ayllu-surface-soft);
+    color: var(--ayllu-text);
+    border-radius: 999px;
+    padding: 0.28rem 0.75rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.ayllu-reaccion-btn:hover,
+.ayllu-reaccion-btn.is-active {
+    background: var(--ayllu-oro-suave);
+    border-color: var(--ayllu-oro);
+    color: #9c6b37;
+}
+
+/* Etiquetas y chips */
+.ayllu-tag {
+    display: inline-block;
+    background: var(--ayllu-oro-suave);
+    color: #9c6b37;
+    font-size: 0.73rem;
+    font-weight: 700;
+    padding: 0.18rem 0.58rem;
+    border-radius: 999px;
+    margin-right: 0.3rem;
+    margin-bottom: 0.25rem;
+}
+
+/* Barra de Navegación Inferior Móvil (< 768px) */
+.ayllu-bottom-nav {
+    display: none;
+}
+
+@media (max-width: 767.98px) {
+    .ayllu-hero-title {
+        font-size: 1.2rem;
+    }
+
+    .ayllu-bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 64px;
+        background: var(--ayllu-surface);
+        border-top: 1px solid var(--ayllu-border);
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+        z-index: 1045;
+        justify-content: space-around;
+        align-items: center;
+        padding: 0 0.25rem;
+    }
+
+    .ayllu-bottom-nav-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.68rem;
+        font-weight: 700;
+        color: var(--ayllu-muted);
+        text-decoration: none !important;
+        padding: 0.3rem 0;
+        border-radius: 8px;
+    }
+
+    .ayllu-bottom-nav-item i {
+        font-size: 1.05rem;
+        margin-bottom: 0.18rem;
+    }
+
+    .ayllu-bottom-nav-item.is-active {
+        color: var(--ayllu-oro);
+    }
+}

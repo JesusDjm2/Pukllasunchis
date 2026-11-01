@@ -55,6 +55,32 @@
             </div>
         </div>
 
+        {{-- Ayllu Puklla — Comunidad Académica e Intercultural --}}
+        @if (Route::has('ayllu.inicio'))
+            <div class="card shadow-sm mt-3" style="border-left: 4px solid #cd9244; background: #fffcf7;">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap: .75rem;">
+                        <div class="d-flex align-items-center" style="gap: .75rem;">
+                            <div style="width: 44px; height: 44px; border-radius: 10px; background: #fef5e7; color: #9c6b37; display: grid; place-items: center; font-size: 1.2rem;">
+                                <i class="fas fa-home"></i>
+                            </div>
+                            <div>
+                                <h6 class="font-weight-bold mb-0" style="color: #33445a;">Inicio — Ayllu Puklla</h6>
+                                <small class="text-muted d-block">
+                                    Un espacio para aprender y construir comunidad en Pukllasunchis.
+                                </small>
+                            </div>
+                        </div>
+                        <div>
+                            <a href="{{ route('ayllu.inicio') }}" class="btn btn-sm text-white font-weight-bold" style="background: #cd9244; border-radius: 20px; padding: 0.35rem 1rem;">
+                                <i class="fas fa-comments mr-1"></i> Entrar a Inicio
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         {{-- Puklla en Red — Seguimiento y Actualización de Egresados --}}
         <div class="card shadow-sm mt-3" style="border-left: 4px solid #832128; background: #fffdfd;">
             <div class="card-body p-3">

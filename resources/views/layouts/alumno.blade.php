@@ -41,6 +41,18 @@
             </a>
             <hr class="sidebar-divider">
             <div class="sidebar-heading">
+                Ayllu Puklla · Comunidad
+            </div>
+            @if (Route::has('ayllu.inicio'))
+                <li class="nav-item {{ request()->routeIs('ayllu.*') ? 'active' : '' }}">
+                    <a class="nav-link collapsed" href="{{ route('ayllu.inicio') }}" style="background: rgba(205, 146, 68, 0.18); border-left: 3px solid #cd9244;">
+                        <i class="fas fa-fw fa-home" style="color: #f6d39c;"></i>
+                        <span class="font-weight-bold">Inicio <small class="d-block" style="font-size:0.68rem; opacity:0.88;">Ayllu Puklla</small></span>
+                    </a>
+                </li>
+            @endif
+            <hr class="sidebar-divider my-2">
+            <div class="sidebar-heading">
                 Dashboard Alumno
             </div>
             <li class="nav-item {{ request()->routeIs('alumnos.index', 'alumnos.editarDatos') ? 'active' : '' }}">
