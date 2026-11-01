@@ -874,8 +874,8 @@ class _BentoGridModulos extends StatelessWidget {
               child: _BentoItem(
                 icon: Icons.local_library_outlined,
                 color: const Color(0xFFCA8A04),
-                title: 'Biblioteca & Tesis',
-                subtitle: 'Guías y libros virtuales',
+                title: 'Guías de TI y Tesis',
+                subtitle: 'Biblioteca virtual y guías',
                 onTap: () => context.go('/recursos'),
               ),
             ),

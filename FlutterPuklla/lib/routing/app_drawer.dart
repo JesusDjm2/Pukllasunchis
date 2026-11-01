@@ -123,7 +123,7 @@ class AppDrawer extends ConsumerWidget {
                     ),
                     _DrawerItem(
                       icon: Icons.local_library_outlined,
-                      label: 'Guías de Tesis & Biblioteca',
+                      label: 'Guías de TI, Tesis & Biblioteca Virtual',
                       route: '/recursos',
                       currentLocation: location,
                     ),
@@ -185,7 +185,7 @@ class AppDrawer extends ConsumerWidget {
                     ),
                     _DrawerItem(
                       icon: Icons.local_library_outlined,
-                      label: 'Biblioteca y Recursos',
+                      label: 'Guías de TI, Tesis & Biblioteca Virtual',
                       route: '/recursos',
                       currentLocation: location,
                     ),
