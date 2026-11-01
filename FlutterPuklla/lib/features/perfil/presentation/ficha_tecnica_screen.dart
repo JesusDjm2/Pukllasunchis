@@ -10,8 +10,10 @@ import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/error_state.dart';
 import '../../../core/widgets/section_header.dart';
+import '../../../routing/app_drawer.dart';
 import '../../home/application/home_providers.dart';
 import '../../home/data/curso.dart';
+import '../../notificaciones/presentation/notification_bell_action.dart';
 import '../application/perfil_providers.dart';
 import '../data/alumno_perfil.dart';
 import '../data/perfil_repository.dart';
@@ -29,7 +31,16 @@ class FichaTecnicaScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Ficha técnica'),
+        leading: Builder(
+          builder: (ctx) => IconButton(
+            icon: const Icon(Icons.menu),
+            tooltip: 'Menú principal',
+            onPressed: () => Scaffold.of(ctx).openDrawer(),
+          ),
+        ),
+        actions: const [NotificationBellAction()],
       ),
+      drawer: const AppDrawer(),
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(perfilProvider);
@@ -182,50 +193,144 @@ class _EstadoMatriculaBanner extends ConsumerWidget {
           loading: () => const SizedBox.shrink(),
           error: (_, _) => const SizedBox.shrink(),
         ),
-        Row(
-          children: [
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: () => context.push('/matricula/formulario'),
-                icon: const Icon(Icons.edit_note_outlined, size: 18),
-                label: const Text('Actualizar mis datos'),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: () => _descargarFicha(context, ref),
-                icon: const Icon(Icons.picture_as_pdf_outlined, size: 18),
-                label: const Text('Ficha (PDF)'),
-              ),
-            ),
-          ],
-        ),
+        _AccionesFicha(perfil: perfil),
       ],
     );
   }
+}
 
-  Future<void> _descargarFicha(BuildContext context, WidgetRef ref) async {
+class _AccionesFicha extends StatefulWidget {
+  const _AccionesFicha({required this.perfil});
+
+  final AlumnoPerfil perfil;
+
+  @override
+  State<_AccionesFicha> createState() => _AccionesFichaState();
+}
+
+class _AccionesFichaState extends State<_AccionesFicha> {
+  bool _descargandoPdf = false;
+
+  Future<void> _descargarFicha(WidgetRef ref) async {
     final messenger = ScaffoldMessenger.of(context);
+    setState(() => _descargandoPdf = true);
     try {
       final bytes = await ref.read(perfilRepositoryProvider).descargarFichaPdf();
 
       if (kIsWeb) {
-        messenger.showSnackBar(
-          const SnackBar(content: Text('La descarga de PDF está disponible en la app instalada (Android/iOS).')),
-        );
-        return;
-      }
-
-      final file = File('${Directory.systemTemp.path}/ficha_${perfil.dni}.pdf');
-      await file.writeAsBytes(bytes);
-      final abierto = await launchUrl(Uri.file(file.path), mode: LaunchMode.externalApplication);
-      if (!abierto) {
-        messenger.showSnackBar(SnackBar(content: Text('Ficha guardada en ${file.path}')));
+        final uri = Uri.dataFromBytes(bytes, mimeType: 'application/pdf');
+        await launchUrl(uri);
+      } else {
+        final file = File('${Directory.systemTemp.path}/ficha_${widget.perfil.dni}.pdf');
+        await file.writeAsBytes(bytes);
+        final abierto = await launchUrl(Uri.file(file.path), mode: LaunchMode.externalApplication);
+        if (!abierto) {
+          messenger.showSnackBar(SnackBar(
+            content: Text('Ficha guardada en ${file.path}'),
+            behavior: SnackBarBehavior.floating,
+          ));
+        }
       }
     } on ApiException catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text(e.message)));
+      messenger.showSnackBar(SnackBar(
+        content: Text(e.message),
+        backgroundColor: AppColors.danger,
+        behavior: SnackBarBehavior.floating,
+      ));
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(
+        content: Text('Error al obtener la ficha PDF: $e'),
+        backgroundColor: AppColors.danger,
+        behavior: SnackBarBehavior.floating,
+      ));
+    } finally {
+      if (mounted) setState(() => _descargandoPdf = false);
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer(
+      builder: (context, ref, _) {
+        return Row(
+          children: [
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.gold.withValues(alpha: 0.28),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: FilledButton.icon(
+                  onPressed: () => context.push('/matricula/formulario'),
+                  icon: const Icon(Icons.edit_note_rounded, size: 20),
+                  label: const Text(
+                    'Actualizar mis datos',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.1,
+                    ),
+                  ),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.gold,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    elevation: 0,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.teal.withValues(alpha: 0.22),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: FilledButton.icon(
+                  onPressed: _descargandoPdf ? null : () => _descargarFicha(ref),
+                  icon: _descargandoPdf
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        )
+                      : const Icon(Icons.picture_as_pdf_rounded, size: 19),
+                  label: Text(
+                    _descargandoPdf ? 'Descargando...' : 'Ficha oficial (PDF)',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.1,
+                    ),
+                  ),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.teal,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    elevation: 0,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 }
 
