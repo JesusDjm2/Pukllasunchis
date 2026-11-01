@@ -7,6 +7,7 @@ import 'docente_alumno.dart';
 import 'docente_curso.dart';
 import 'docente_incidencia.dart';
 import 'docente_resumen.dart';
+import 'docente_tutor_dashboard.dart';
 
 final docenteRepositoryProvider = Provider<DocenteRepository>((ref) {
   return DocenteRepository(ref.watch(dioProvider));
@@ -56,6 +57,15 @@ class DocenteRepository {
       return (response.data!['data'] as List)
           .map((item) => DocenteCursoAlumnos.fromJson(item as Map<String, dynamic>))
           .toList();
+    } on DioException catch (e) {
+      throwApiException(e);
+    }
+  }
+
+  Future<DocenteTutorDashboard> fetchTutorDashboard() async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>('/docente/tutor');
+      return DocenteTutorDashboard.fromJson(response.data!['data'] as Map<String, dynamic>);
     } on DioException catch (e) {
       throwApiException(e);
     }

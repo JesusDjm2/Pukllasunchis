@@ -41,6 +41,42 @@ class _DocenteHomeScreenState extends ConsumerState<DocenteHomeScreen> {
     );
   }
 
+  void _mostrarModalTutoria(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => const _ModalTutoriaDocente(),
+    );
+  }
+
+  void _mostrarModalTaqe(BuildContext context, DocenteResumen resumen) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _ModalTaqeDocente(resumen: resumen),
+    );
+  }
+
+  void _mostrarModalTitulacion(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => const _ModalTitulacionDocente(),
+    );
+  }
+
+  void _mostrarModalBolsa(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => const _ModalBolsaDocente(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final resumenAsync = ref.watch(docenteResumenProvider);
@@ -95,6 +131,10 @@ class _DocenteHomeScreenState extends ConsumerState<DocenteHomeScreen> {
                     _FuncionesEspecialesSection(
                       resumen: resumenAsync.valueOrNull!,
                       onVerAlumnos: () => _mostrarModalAlumnos(context),
+                      onVerTutoria: () => _mostrarModalTutoria(context),
+                      onVerTaqe: () => _mostrarModalTaqe(context, resumenAsync.valueOrNull!),
+                      onVerTitulacion: () => _mostrarModalTitulacion(context),
+                      onVerBolsa: () => _mostrarModalBolsa(context),
                     ),
                   ],
 
@@ -406,10 +446,18 @@ class _FuncionesEspecialesSection extends StatelessWidget {
   const _FuncionesEspecialesSection({
     required this.resumen,
     required this.onVerAlumnos,
+    required this.onVerTutoria,
+    required this.onVerTaqe,
+    required this.onVerTitulacion,
+    required this.onVerBolsa,
   });
 
   final DocenteResumen resumen;
   final VoidCallback onVerAlumnos;
+  final VoidCallback onVerTutoria;
+  final VoidCallback onVerTaqe;
+  final VoidCallback onVerTitulacion;
+  final VoidCallback onVerBolsa;
 
   @override
   Widget build(BuildContext context) {
@@ -456,7 +504,7 @@ class _FuncionesEspecialesSection extends StatelessWidget {
                 ),
               ],
             ],
-            onTap: () => context.go('/tutoria'),
+            onTap: onVerTutoria,
           ),
           const SizedBox(height: 10),
         ],
@@ -468,11 +516,11 @@ class _FuncionesEspecialesSection extends StatelessWidget {
             iconoBg: const Color(0xFFF5F3FF),
             iconoColor: const Color(0xFF8B5CF6),
             titulo: "Taq'e — Seguimiento de Proyectos",
-            subtitulo: 'Ferias de investigación, asesoría metodológica y revisión de entregables.',
+            subtitulo: 'Ferias de investigación, asesoría metodológica y proyectos a tu cargo.',
             chips: [
               if (resumen.investigadorData != null && resumen.investigadorData!.solicitudesPendientes > 0)
                 _BadgeInfo(
-                  texto: '${resumen.investigadorData!.solicitudesPendientes} ayudas pend.',
+                  texto: '${resumen.investigadorData!.solicitudesPendientes} consultas pend.',
                   isAlert: true,
                 ),
               if (resumen.proyectosACargo.isNotEmpty)
@@ -481,7 +529,7 @@ class _FuncionesEspecialesSection extends StatelessWidget {
                   isAlert: false,
                 ),
             ],
-            onTap: () => context.go('/taqe'),
+            onTap: onVerTaqe,
           ),
           const SizedBox(height: 10),
         ],
@@ -494,12 +542,25 @@ class _FuncionesEspecialesSection extends StatelessWidget {
             iconoColor: const Color(0xFFD97706),
             titulo: 'Proceso de Titulación',
             subtitulo: 'Seguimiento de egresados, planes de tesis y sustentaciones.',
-            onTap: () {},
+            onTap: onVerTitulacion,
           ),
           const SizedBox(height: 10),
         ],
 
-        // 4. Directorio de Mis Alumnos
+        // 4. Bolsa de Trabajo (si tiene rol adminB)
+        if (resumen.esBolsa) ...[
+          _FuncionCard(
+            icon: Icons.work_outline,
+            iconoBg: const Color(0xFFEFF6FF),
+            iconoColor: const Color(0xFF2563EB),
+            titulo: 'Bolsa de Trabajo',
+            subtitulo: 'Gestión y seguimiento de ofertas laborales para egresados.',
+            onTap: onVerBolsa,
+          ),
+          const SizedBox(height: 10),
+        ],
+
+        // 5. Directorio de Mis Alumnos
         _FuncionCard(
           icon: Icons.contacts_outlined,
           iconoBg: const Color(0xFFEFF6FF),
@@ -1360,6 +1421,918 @@ class _ModalAlumnosDocenteState extends ConsumerState<_ModalAlumnosDocente> {
                   },
                 );
               },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Hoja modal para la gestión de Tutoría Docente (Solicitudes y Buzón de Sugerencias)
+class _ModalTutoriaDocente extends ConsumerStatefulWidget {
+  const _ModalTutoriaDocente();
+
+  @override
+  ConsumerState<_ModalTutoriaDocente> createState() => _ModalTutoriaDocenteState();
+}
+
+class _ModalTutoriaDocenteState extends ConsumerState<_ModalTutoriaDocente>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final tutorAsync = ref.watch(docenteTutorDashboardProvider);
+    final isDark = PukllaDashboardStyles.isDark(context);
+
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkSurface : Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.5 : 0.2),
+            blurRadius: 25,
+            offset: const Offset(0, -5),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 44,
+              height: 4.5,
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.darkBorder : Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(3),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withValues(alpha: isDark ? 0.20 : 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.support_agent_rounded, color: Color(0xFF10B981), size: 22),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Tutoría y Acompañamiento',
+                      style: TextStyle(
+                        fontSize: 16.5,
+                        fontWeight: FontWeight.w800,
+                        color: isDark ? AppColors.darkText : AppColors.tealDark,
+                      ),
+                    ),
+                    Text(
+                      'Gestión de tutorías y sugerencias de tus estudiantes',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark ? AppColors.darkMuted : const Color(0xFF64748B),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: Icon(Icons.close, size: 20, color: isDark ? AppColors.darkMuted : const Color(0xFF64748B)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          tutorAsync.when(
+            loading: () => const Expanded(
+              child: Center(
+                child: PukllaPreloader.inline(mensaje: 'Cargando información de tutoría...'),
+              ),
+            ),
+            error: (err, _) => Expanded(
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline, size: 40, color: AppColors.danger),
+                    const SizedBox(height: 10),
+                    Text(
+                      'No se pudo cargar la información de tutoría',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? AppColors.darkText : const Color(0xFF0F172A),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ElevatedButton(
+                      onPressed: () => ref.invalidate(docenteTutorDashboardProvider),
+                      style: ElevatedButton.styleFrom(backgroundColor: AppColors.teal),
+                      child: const Text('Reintentar', style: TextStyle(color: Colors.white)),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            data: (tutorData) {
+              return Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (tutorData.ciclos.isNotEmpty) ...[
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: tutorData.ciclos.map((c) {
+                          return Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: AppColors.teal.withValues(alpha: isDark ? 0.20 : 0.10),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: AppColors.teal.withValues(alpha: 0.3)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.class_outlined, size: 14, color: AppColors.teal),
+                                const SizedBox(width: 5),
+                                Text(
+                                  c,
+                                  style: const TextStyle(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.teal,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+                    TabBar(
+                      controller: _tabController,
+                      labelColor: isDark ? AppColors.goldHover : AppColors.tealDark,
+                      unselectedLabelColor: isDark ? AppColors.darkMuted : const Color(0xFF64748B),
+                      indicatorColor: AppColors.teal,
+                      indicatorWeight: 3,
+                      tabs: [
+                        Tab(text: 'Solicitudes (${tutorData.tutorias.length})'),
+                        Tab(text: 'Buzón (${tutorData.sugerencias.length})'),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Expanded(
+                      child: TabBarView(
+                        controller: _tabController,
+                        children: [
+                          // Tab 1: Solicitudes de Tutoría
+                          tutorData.tutorias.isEmpty
+                              ? Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.mark_email_read_outlined,
+                                          size: 44,
+                                          color: isDark ? AppColors.darkMuted : const Color(0xFF94A3B8)),
+                                      const SizedBox(height: 10),
+                                      Text(
+                                        'No tienes solicitudes de tutoría pendientes',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          color: isDark ? AppColors.darkMuted : const Color(0xFF64748B),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : ListView.separated(
+                                  padding: const EdgeInsets.symmetric(vertical: 8),
+                                  itemCount: tutorData.tutorias.length,
+                                  separatorBuilder: (_, __) => const SizedBox(height: 8),
+                                  itemBuilder: (context, index) {
+                                    final item = tutorData.tutorias[index];
+                                    final esUrgente = item.urgencia?.toLowerCase() == 'alta';
+                                    final esPendiente = item.estado.toLowerCase() == 'pendiente';
+
+                                    return Container(
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF8FAFC),
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: esUrgente
+                                              ? AppColors.danger.withValues(alpha: 0.3)
+                                              : PukllaDashboardStyles.borderColor(context),
+                                        ),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Expanded(
+                                                child: Text(
+                                                  item.alumnoNombre,
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.w700,
+                                                    fontSize: 13.5,
+                                                    color: isDark ? AppColors.darkText : const Color(0xFF0F172A),
+                                                  ),
+                                                ),
+                                              ),
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                                decoration: BoxDecoration(
+                                                  color: esPendiente
+                                                      ? const Color(0xFFD97706).withValues(alpha: 0.15)
+                                                      : const Color(0xFF10B981).withValues(alpha: 0.15),
+                                                  borderRadius: BorderRadius.circular(6),
+                                                ),
+                                                child: Text(
+                                                  item.estado.toUpperCase(),
+                                                  style: TextStyle(
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.w700,
+                                                    color: esPendiente
+                                                        ? const Color(0xFFD97706)
+                                                        : const Color(0xFF10B981),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          if (item.ciclo != null || item.programa != null) ...[
+                                            const SizedBox(height: 3),
+                                            Text(
+                                              [item.programa, item.ciclo].whereType<String>().join(' · '),
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                color: isDark ? AppColors.darkMuted : const Color(0xFF64748B),
+                                              ),
+                                            ),
+                                          ],
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            item.motivo,
+                                            style: TextStyle(
+                                              fontSize: 12.5,
+                                              color: isDark ? AppColors.darkText : const Color(0xFF334155),
+                                            ),
+                                          ),
+                                          if (item.fecha != null) ...[
+                                            const SizedBox(height: 8),
+                                            Text(
+                                              'Fecha: ${item.fecha}',
+                                              style: TextStyle(
+                                                fontSize: 10.5,
+                                                color: isDark ? AppColors.darkMuted : const Color(0xFF94A3B8),
+                                              ),
+                                            ),
+                                          ],
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                ),
+
+                          // Tab 2: Sugerencias
+                          tutorData.sugerencias.isEmpty
+                              ? Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.inbox_outlined,
+                                          size: 44,
+                                          color: isDark ? AppColors.darkMuted : const Color(0xFF94A3B8)),
+                                      const SizedBox(height: 10),
+                                      Text(
+                                        'No hay sugerencias en el buzón',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          color: isDark ? AppColors.darkMuted : const Color(0xFF64748B),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : ListView.separated(
+                                  padding: const EdgeInsets.symmetric(vertical: 8),
+                                  itemCount: tutorData.sugerencias.length,
+                                  separatorBuilder: (_, __) => const SizedBox(height: 8),
+                                  itemBuilder: (context, index) {
+                                    final item = tutorData.sugerencias[index];
+                                    return Container(
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF8FAFC),
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(color: PukllaDashboardStyles.borderColor(context)),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Expanded(
+                                                child: Text(
+                                                  item.alumnoNombre,
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.w700,
+                                                    fontSize: 13,
+                                                    color: isDark ? AppColors.darkText : const Color(0xFF0F172A),
+                                                  ),
+                                                ),
+                                              ),
+                                              if (item.fecha != null)
+                                                Text(
+                                                  item.fecha!,
+                                                  style: TextStyle(
+                                                    fontSize: 10.5,
+                                                    color: isDark ? AppColors.darkMuted : const Color(0xFF94A3B8),
+                                                  ),
+                                                ),
+                                            ],
+                                          ),
+                                          if (item.ciclo != null || item.programa != null) ...[
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              [item.programa, item.ciclo].whereType<String>().join(' · '),
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                color: isDark ? AppColors.darkMuted : const Color(0xFF64748B),
+                                              ),
+                                            ),
+                                          ],
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            item.mensaje,
+                                            style: TextStyle(
+                                              fontSize: 12.5,
+                                              color: isDark ? AppColors.darkText : const Color(0xFF334155),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Hoja modal para Proyectos Taq'e e Investigación a cargo del docente
+class _ModalTaqeDocente extends StatelessWidget {
+  const _ModalTaqeDocente({required this.resumen});
+
+  final DocenteResumen resumen;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = PukllaDashboardStyles.isDark(context);
+
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.80,
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkSurface : Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.5 : 0.2),
+            blurRadius: 25,
+            offset: const Offset(0, -5),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 44,
+              height: 4.5,
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.darkBorder : Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(3),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF8B5CF6).withValues(alpha: isDark ? 0.20 : 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.science_rounded, color: Color(0xFF8B5CF6), size: 22),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Taq'e — Proyectos de Investigación",
+                      style: TextStyle(
+                        fontSize: 16.5,
+                        fontWeight: FontWeight.w800,
+                        color: isDark ? AppColors.darkText : AppColors.tealDark,
+                      ),
+                    ),
+                    Text(
+                      'Seguimiento y evaluación de proyectos integradores',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark ? AppColors.darkMuted : const Color(0xFF64748B),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: Icon(Icons.close, size: 20, color: isDark ? AppColors.darkMuted : const Color(0xFF64748B)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+
+          // Tarjeta informativa de consultas de investigación
+          if (resumen.investigadorData != null) ...[
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF8B5CF6).withValues(alpha: isDark ? 0.15 : 0.08),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFF8B5CF6).withValues(alpha: 0.25)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.help_center_outlined, color: Color(0xFF8B5CF6), size: 20),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Consultas metodológicas asignadas: ${resumen.investigadorData!.solicitudesPendientes} pendientes.',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? AppColors.darkText : const Color(0xFF334155),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+          ],
+
+          Text(
+            'Proyectos Integradores Asignados (${resumen.proyectosACargo.length})',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: isDark ? AppColors.darkText : AppColors.tealDark,
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          Expanded(
+            child: resumen.proyectosACargo.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.folder_open_outlined,
+                            size: 44,
+                            color: isDark ? AppColors.darkMuted : const Color(0xFF94A3B8)),
+                        const SizedBox(height: 10),
+                        Text(
+                          'No tienes proyectos integradores asignados en este ciclo',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: isDark ? AppColors.darkMuted : const Color(0xFF64748B),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.separated(
+                    itemCount: resumen.proyectosACargo.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                    itemBuilder: (context, index) {
+                      final proyecto = resumen.proyectosACargo[index];
+                      final esEncargado = proyecto.rol.toLowerCase().contains('encargad');
+
+                      return Container(
+                        padding: const EdgeInsets.all(13),
+                        decoration: BoxDecoration(
+                          color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: PukllaDashboardStyles.borderColor(context)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    proyecto.nombre,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 13.5,
+                                      color: isDark ? AppColors.darkText : const Color(0xFF0F172A),
+                                    ),
+                                  ),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: esEncargado
+                                        ? const Color(0xFF8B5CF6).withValues(alpha: 0.15)
+                                        : const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    proyecto.rol.toUpperCase(),
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                      color: esEncargado ? const Color(0xFF8B5CF6) : const Color(0xFF3B82F6),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            if (proyecto.producto != null && proyecto.producto!.isNotEmpty) ...[
+                              const SizedBox(height: 6),
+                              Row(
+                                children: [
+                                  const Icon(Icons.inventory_2_outlined, size: 14, color: AppColors.teal),
+                                  const SizedBox(width: 5),
+                                  Expanded(
+                                    child: Text(
+                                      'Entregable: ${proyecto.producto}',
+                                      style: TextStyle(
+                                        fontSize: 11.5,
+                                        color: isDark ? AppColors.darkMuted : const Color(0xFF64748B),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Hoja modal para el Proceso de Titulación
+class _ModalTitulacionDocente extends StatelessWidget {
+  const _ModalTitulacionDocente();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = PukllaDashboardStyles.isDark(context);
+
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.70,
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkSurface : Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.5 : 0.2),
+            blurRadius: 25,
+            offset: const Offset(0, -5),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 44,
+              height: 4.5,
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.darkBorder : Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(3),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFD97706).withValues(alpha: isDark ? 0.20 : 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.school_rounded, color: Color(0xFFD97706), size: 22),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Proceso de Titulación',
+                      style: TextStyle(
+                        fontSize: 16.5,
+                        fontWeight: FontWeight.w800,
+                        color: isDark ? AppColors.darkText : AppColors.tealDark,
+                      ),
+                    ),
+                    Text(
+                      'Gestión de egresados, planes de tesis y sustentaciones',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark ? AppColors.darkMuted : const Color(0xFF64748B),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: Icon(Icons.close, size: 20, color: isDark ? AppColors.darkMuted : const Color(0xFF64748B)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+
+          // Opciones de Titulación
+          const _ItemTitulacion(
+            icon: Icons.description_outlined,
+            titulo: 'Revisión de Planes de Tesis',
+            descripcion: 'Revisión y emisión de dictamen metodológico y temático de proyectos.',
+            color: Color(0xFFD97706),
+          ),
+          const SizedBox(height: 10),
+          const _ItemTitulacion(
+            icon: Icons.gavel_outlined,
+            titulo: 'Jurados de Sustentación',
+            descripcion: 'Consulta de fechas programadas y actas de sustentación asignadas.',
+            color: Color(0xFF3B82F6),
+          ),
+          const SizedBox(height: 10),
+          const _ItemTitulacion(
+            icon: Icons.assignment_turned_in_outlined,
+            titulo: 'Expedientes de Grados y Títulos',
+            descripcion: 'Validación de constancias de egresado y cumplimiento de requisitos.',
+            color: Color(0xFF10B981),
+          ),
+          const Spacer(),
+
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF1F5F9),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.info_outline, size: 18, color: AppColors.gold),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'La firma digital de actas y dictámenes oficiales se realiza a través de la plataforma web institucional.',
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      color: isDark ? AppColors.darkMuted : const Color(0xFF64748B),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Hoja modal para el Módulo de Bolsa de Trabajo
+class _ModalBolsaDocente extends StatelessWidget {
+  const _ModalBolsaDocente();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = PukllaDashboardStyles.isDark(context);
+
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.65,
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkSurface : Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.5 : 0.2),
+            blurRadius: 25,
+            offset: const Offset(0, -5),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 44,
+              height: 4.5,
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.darkBorder : Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(3),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2563EB).withValues(alpha: isDark ? 0.20 : 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.work_outline_rounded, color: Color(0xFF2563EB), size: 22),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Bolsa de Trabajo',
+                      style: TextStyle(
+                        fontSize: 16.5,
+                        fontWeight: FontWeight.w800,
+                        color: isDark ? AppColors.darkText : AppColors.tealDark,
+                      ),
+                    ),
+                    Text(
+                      'Gestión de oportunidades laborales y prácticas',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark ? AppColors.darkMuted : const Color(0xFF64748B),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: Icon(Icons.close, size: 20, color: isDark ? AppColors.darkMuted : const Color(0xFF64748B)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          const _ItemTitulacion(
+            icon: Icons.post_add_outlined,
+            titulo: 'Publicación de Convocatorias',
+            descripcion: 'Registro de vacantes de colegios e instituciones educativas.',
+            color: Color(0xFF2563EB),
+          ),
+          const SizedBox(height: 10),
+          const _ItemTitulacion(
+            icon: Icons.person_search_outlined,
+            titulo: 'Seguimiento de Postulaciones',
+            descripcion: 'Revisión de perfiles de egresados postulantes a convocatorias activas.',
+            color: Color(0xFF10B981),
+          ),
+          const Spacer(),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF1F5F9),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.info_outline, size: 18, color: AppColors.gold),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'La aprobación y publicación masiva de ofertas se realiza a través del módulo web de Bolsa de Trabajo.',
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      color: isDark ? AppColors.darkMuted : const Color(0xFF64748B),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ItemTitulacion extends StatelessWidget {
+  const _ItemTitulacion({
+    required this.icon,
+    required this.titulo,
+    required this.descripcion,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String titulo;
+  final String descripcion;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = PukllaDashboardStyles.isDark(context);
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: PukllaDashboardStyles.borderColor(context)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: isDark ? 0.20 : 0.12),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  titulo,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                    color: isDark ? AppColors.darkText : const Color(0xFF0F172A),
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  descripcion,
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    color: isDark ? AppColors.darkMuted : const Color(0xFF64748B),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
