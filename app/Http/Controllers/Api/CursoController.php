@@ -22,14 +22,33 @@ class CursoController extends Controller
         }
 
         $cursos = $this->cursosDelPeriodoActual($alumno);
-        $cursos->loadMissing(['docentes', 'competencias', 'ciclo.programa', 'silabos', 'silabosPdf']);
+        $cursos->loadMissing([
+            'docentes',
+            'competencias',
+            'ciclo.programa',
+            'silabos',
+            'silabosPdf',
+            'periodos' => fn ($q) => $q->where('alumno_id', $alumno->id),
+            'periododos' => fn ($q) => $q->where('alumno_id', $alumno->id),
+            'periodotres' => fn ($q) => $q->where('alumno_id', $alumno->id),
+        ]);
 
         return response()->json(['data' => CursoResource::collection($cursos->sortBy('nombre')->values())]);
     }
 
     public function show(Request $request, Curso $curso)
     {
-        $curso->loadMissing(['docentes', 'competencias', 'ciclo.programa', 'silabos', 'silabosPdf']);
+        $alumno = $request->user()->alumno;
+        $curso->loadMissing([
+            'docentes',
+            'competencias',
+            'ciclo.programa',
+            'silabos',
+            'silabosPdf',
+            'periodos' => fn ($q) => $alumno ? $q->where('alumno_id', $alumno->id) : $q,
+            'periododos' => fn ($q) => $alumno ? $q->where('alumno_id', $alumno->id) : $q,
+            'periodotres' => fn ($q) => $alumno ? $q->where('alumno_id', $alumno->id) : $q,
+        ]);
 
         return response()->json(['data' => new CursoResource($curso)]);
     }

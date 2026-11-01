@@ -834,13 +834,11 @@ class _BentoGridModulos extends ConsumerWidget {
             const SizedBox(width: 12),
             Expanded(
               child: _BentoItem(
-                icon: Icons.support_agent_rounded,
+                icon: Icons.school_rounded,
                 color: AppColors.teal,
-                title: 'Mi Tutor',
-                subtitle: perfil?.tutor != null
-                    ? perfil!.tutor!.nombre
-                    : 'Acompañamiento docente',
-                onTap: () => context.go('/ficha-tecnica'),
+                title: 'Mis Cursos',
+                subtitle: 'Asignaturas y récord de notas',
+                onTap: () => context.go('/calificaciones'),
               ),
             ),
           ],

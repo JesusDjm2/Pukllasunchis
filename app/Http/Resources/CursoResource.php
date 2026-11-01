@@ -26,6 +26,22 @@ class CursoResource extends JsonResource
             $silaboUrl = url('/api/v1/silabo/archivo/' . ltrim($this->silabo, '/'));
         }
 
+        // Calificaciones del alumno autenticado en esta asignatura
+        $alumno = $request->user()?->alumno;
+        $calificaciones = null;
+        if ($alumno) {
+            $p1 = $this->periodos?->firstWhere('alumno_id', $alumno->id);
+            $p2 = $this->periododos?->firstWhere('alumno_id', $alumno->id);
+            $p3 = $this->periodotres?->firstWhere('alumno_id', $alumno->id);
+
+            $calificaciones = [
+                'parcial_1' => $p1?->calificacion_sistema,
+                'parcial_2' => $p2?->calificacion_sistema,
+                'promedio' => $p3?->calificacion_sistema,
+                'observaciones' => $p2?->observaciones ?? $p1?->observaciones,
+            ];
+        }
+
         return [
             'id' => $this->id,
             'nombre' => $this->nombre,
@@ -38,6 +54,7 @@ class CursoResource extends JsonResource
             'classroom' => $this->classroom,
             'clave' => $this->clave,
             'silabo_url' => $silaboUrl,
+            'calificaciones' => $calificaciones,
             'docentes' => $this->docentes ? $this->docentes->map(function ($d) {
                 $fotoUrl = null;
                 if ($d->foto) {

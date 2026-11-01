@@ -13,6 +13,7 @@ class Curso {
     this.cicloNombre,
     this.programaNombre,
     this.silaboUrl,
+    this.calificaciones,
     this.docentes = const [],
     this.competencias = const [],
   });
@@ -28,6 +29,8 @@ class Curso {
             .toList() ??
         const [];
 
+    final califJson = json['calificaciones'] as Map<String, dynamic>?;
+
     return Curso(
       id: json['id'] as int? ?? 0,
       nombre: json['nombre'] as String? ?? 'Curso sin nombre',
@@ -40,6 +43,7 @@ class Curso {
       cicloNombre: json['ciclo_nombre'] as String?,
       programaNombre: json['programa_nombre'] as String?,
       silaboUrl: json['silabo_url'] as String?,
+      calificaciones: califJson != null ? CalificacionesResumenCurso.fromJson(califJson) : null,
       docentes: docentesList,
       competencias: competenciasList,
     );
@@ -56,8 +60,37 @@ class Curso {
   final String? cicloNombre;
   final String? programaNombre;
   final String? silaboUrl;
+  final CalificacionesResumenCurso? calificaciones;
   final List<DocenteCurso> docentes;
   final List<CompetenciaCurso> competencias;
+}
+
+class CalificacionesResumenCurso {
+  const CalificacionesResumenCurso({
+    this.parcial1,
+    this.parcial2,
+    this.promedio,
+    this.observaciones,
+  });
+
+  factory CalificacionesResumenCurso.fromJson(Map<String, dynamic> json) {
+    return CalificacionesResumenCurso(
+      parcial1: json['parcial_1']?.toString(),
+      parcial2: json['parcial_2']?.toString(),
+      promedio: json['promedio']?.toString(),
+      observaciones: json['observaciones'] as String?,
+    );
+  }
+
+  final String? parcial1;
+  final String? parcial2;
+  final String? promedio;
+  final String? observaciones;
+
+  bool get tieneAlgunaNota =>
+      (parcial1 != null && parcial1!.isNotEmpty) ||
+      (parcial2 != null && parcial2!.isNotEmpty) ||
+      (promedio != null && promedio!.isNotEmpty);
 }
 
 class DocenteCurso {
