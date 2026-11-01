@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -163,14 +164,18 @@ class _NavItem extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: onTap,
+          onTap: () {
+            HapticFeedback.selectionClick();
+            onTap();
+          },
           splashColor: AppColors.gold.withValues(alpha: 0.12),
           highlightColor: Colors.transparent,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeOutCubic,
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
                 decoration: BoxDecoration(
                   color: isSelected
@@ -178,10 +183,15 @@ class _NavItem extends StatelessWidget {
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: Icon(
-                  isSelected ? selectedIcon : icon,
-                  size: 22,
-                  color: isSelected ? activeColor : unselectedColor,
+                child: AnimatedScale(
+                  scale: isSelected ? 1.06 : 1.0,
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeOutCubic,
+                  child: Icon(
+                    isSelected ? selectedIcon : icon,
+                    size: 22,
+                    color: isSelected ? activeColor : unselectedColor,
+                  ),
                 ),
               ),
               const SizedBox(height: 2),

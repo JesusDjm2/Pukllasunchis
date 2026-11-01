@@ -179,140 +179,173 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 children: [
                   // ── TARJETA COMPACTA UNIFICADA: PERÍODO ACTUAL & ESTADO DE MATRÍCULA ──
                   if (periodoAsync.valueOrNull != null) ...[
-                    _PeriodoMatriculaCard(
-                      periodo: periodoAsync.valueOrNull!,
-                      yaMatriculado: yaMatriculadoAsync.valueOrNull,
+                    PukllaFadeInSlide(
+                      delayMs: 40,
+                      child: _PeriodoMatriculaCard(
+                        periodo: periodoAsync.valueOrNull!,
+                        yaMatriculado: yaMatriculadoAsync.valueOrNull,
+                      ),
                     ),
                     const SizedBox(height: 18),
                   ],
                   const SizedBox(height: 22),
 
-                  // ── TÍTULO SECCIÓN ACCESOS DIRECTOS ──
-                  const PukllaSectionHeader(
-                    title: 'Servicios y Módulos',
-                    subtitle: 'Todo en un solo lugar',
+                  // ── TÍTULO SECCIÓN ACCESOS DIRECTOS & BENTO ──
+                  PukllaFadeInSlide(
+                    delayMs: 80,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const PukllaSectionHeader(
+                          title: 'Servicios y Módulos',
+                          subtitle: 'Todo en un solo lugar',
+                        ),
+                        const SizedBox(height: 12),
+                        _BentoGridModulos(),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 12),
-
-                  // ── BENTO GRID SENIOR ──
-                  _BentoGridModulos(),
                   const SizedBox(height: 26),
 
                   // ── MIS CURSOS ACTIVOS ──
-                  PukllaSectionHeader(
-                    title: 'Cursos del Semestre',
-                    actionText: 'Ver notas',
-                    onAction: () => context.push('/calificaciones'),
-                  ),
-                  const SizedBox(height: 12),
-                  cursosAsync.when(
-                    data: (cursos) {
-                      if (cursos.isEmpty) {
-                        return Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: PukllaDashboardStyles.cardDecoration(context, radius: 16),
-                          child: Center(
-                            child: Text(
-                              'No tienes cursos matriculados en este periodo.',
-                              style: TextStyle(
-                                color: PukllaDashboardStyles.textSecondary(context),
-                                fontSize: 13.5,
-                              ),
-                            ),
+                  PukllaFadeInSlide(
+                    delayMs: 140,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        PukllaSectionHeader(
+                          title: 'Cursos del Semestre',
+                          actionText: 'Ver notas',
+                          onAction: () => context.push('/calificaciones'),
+                        ),
+                        const SizedBox(height: 12),
+                        cursosAsync.when(
+                          data: (cursos) {
+                            if (cursos.isEmpty) {
+                              return Container(
+                                padding: const EdgeInsets.all(20),
+                                decoration: PukllaDashboardStyles.cardDecoration(context, radius: 16),
+                                child: Center(
+                                  child: Text(
+                                    'No tienes cursos matriculados en este periodo.',
+                                    style: TextStyle(
+                                      color: PukllaDashboardStyles.textSecondary(context),
+                                      fontSize: 13.5,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }
+                            return Column(
+                              children: cursos.map((c) => _CursoItemCard(curso: c)).toList(),
+                            );
+                          },
+                          loading: () => const Column(
+                            children: [
+                              PukllaSkeletonCard(height: 72),
+                              PukllaSkeletonCard(height: 72),
+                            ],
                           ),
-                        );
-                      }
-                      return Column(
-                        children: cursos.map((c) => _CursoItemCard(curso: c)).toList(),
-                      );
-                    },
-                    loading: () => const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(20),
-                        child: CircularProgressIndicator(),
-                      ),
+                          error: (_, __) => const SizedBox.shrink(),
+                        ),
+                      ],
                     ),
-                    error: (_, __) => const SizedBox.shrink(),
                   ),
 
                   const SizedBox(height: 24),
 
                   // ── COMUNICADOS RECIENTES ──
-                  PukllaSectionHeader(
-                    title: 'Avisos y Comunicados',
-                    actionText: 'Ver todos',
-                    onAction: () => context.push('/comunicados'),
-                  ),
-                  const SizedBox(height: 12),
-                  comunicadosAsync.when(
-                    data: (page) {
-                      final items = page.items.take(3).toList();
-                      if (items.isEmpty) {
-                        return Container(
-                          padding: const EdgeInsets.all(18),
-                          decoration: PukllaDashboardStyles.cardDecoration(context, radius: 16),
-                          child: Center(
-                            child: Text(
-                              'No hay comunicados recientes.',
-                              style: TextStyle(
-                                color: PukllaDashboardStyles.textSecondary(context),
-                              ),
-                            ),
+                  PukllaFadeInSlide(
+                    delayMs: 200,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        PukllaSectionHeader(
+                          title: 'Avisos y Comunicados',
+                          actionText: 'Ver todos',
+                          onAction: () => context.push('/comunicados'),
+                        ),
+                        const SizedBox(height: 12),
+                        comunicadosAsync.when(
+                          data: (page) {
+                            final items = page.items.take(3).toList();
+                            if (items.isEmpty) {
+                              return Container(
+                                padding: const EdgeInsets.all(18),
+                                decoration: PukllaDashboardStyles.cardDecoration(context, radius: 16),
+                                child: Center(
+                                  child: Text(
+                                    'No hay comunicados recientes.',
+                                    style: TextStyle(
+                                      color: PukllaDashboardStyles.textSecondary(context),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }
+                            return Column(
+                              children: items.map((item) {
+                                return PukllaScaleTap(
+                                  onTap: () => context.push('/comunicados'),
+                                  child: Container(
+                                    margin: const EdgeInsets.only(bottom: 10),
+                                    padding: const EdgeInsets.all(14),
+                                    decoration: PukllaDashboardStyles.cardDecoration(context, radius: 14),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(10),
+                                          decoration: BoxDecoration(
+                                            color: AppColors.gold.withValues(alpha: 0.12),
+                                            borderRadius: BorderRadius.circular(10),
+                                          ),
+                                          child: const Icon(Icons.campaign_outlined, color: AppColors.goldHover, size: 20),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                item.titulo,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.w700,
+                                                  fontSize: 13.5,
+                                                  color: PukllaDashboardStyles.textPrimary(context),
+                                                ),
+                                              ),
+                                              const SizedBox(height: 3),
+                                              Text(
+                                                item.descripcion ?? 'Aviso institucional para la comunidad educativa.',
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  color: PukllaDashboardStyles.textSecondary(context),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            );
+                          },
+                          loading: () => const Column(
+                            children: [
+                              PukllaSkeletonCard(height: 64),
+                              PukllaSkeletonCard(height: 64),
+                            ],
                           ),
-                        );
-                      }
-                      return Column(
-                        children: items.map((item) {
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 10),
-                            padding: const EdgeInsets.all(14),
-                            decoration: PukllaDashboardStyles.cardDecoration(context, radius: 14),
-                            child: Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.gold.withValues(alpha: 0.12),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: const Icon(Icons.campaign_outlined, color: AppColors.goldHover, size: 20),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        item.titulo,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 13.5,
-                                          color: PukllaDashboardStyles.textPrimary(context),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 3),
-                                      Text(
-                                        item.descripcion ?? 'Aviso institucional para la comunidad educativa.',
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: PukllaDashboardStyles.textSecondary(context),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }).toList(),
-                      );
-                    },
-                    loading: () => const SizedBox.shrink(),
-                    error: (_, __) => const SizedBox.shrink(),
+                          error: (_, __) => const SizedBox.shrink(),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -554,20 +587,16 @@ class _PeriodoMatriculaCard extends StatelessWidget {
             ? (isDark ? const Color(0xFF059669) : const Color(0xFFA7F3D0))
             : PukllaDashboardStyles.borderColor(context));
 
-    return Material(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        onTap: onCardTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          decoration: PukllaDashboardStyles.cardDecoration(
-            context,
-            radius: 16,
-            customBorder: borderColor,
-          ),
-          child: Row(
+    return PukllaScaleTap(
+      onTap: onCardTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: PukllaDashboardStyles.cardDecoration(
+          context,
+          radius: 16,
+          customBorder: borderColor,
+        ),
+        child: Row(
             children: [
               Container(
                 width: 42,
@@ -747,10 +776,9 @@ class _PeriodoMatriculaCard extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
+      );
+    }
   }
-}
 
 // ── BENTO GRID COMPLETO (8 MÓDULOS DE LA WEB) ──
 class _BentoGridModulos extends StatelessWidget {
@@ -877,9 +905,8 @@ class _BentoItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = PukllaDashboardStyles.isDark(context);
 
-    return InkWell(
+    return PukllaScaleTap(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(18),
       child: Container(
         padding: const EdgeInsets.all(15),
         decoration: PukllaDashboardStyles.cardDecoration(context, radius: 18),
@@ -942,64 +969,67 @@ class _CursoItemCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = PukllaDashboardStyles.isDark(context);
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
-      decoration: PukllaDashboardStyles.cardDecoration(context, radius: 16),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: AppColors.teal.withValues(alpha: isDark ? 0.25 : 0.08),
-              borderRadius: BorderRadius.circular(12),
+    return PukllaScaleTap(
+      onTap: () => context.push('/calificaciones'),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.all(14),
+        decoration: PukllaDashboardStyles.cardDecoration(context, radius: 16),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppColors.teal.withValues(alpha: isDark ? 0.25 : 0.08),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                Icons.book_outlined,
+                color: isDark ? const Color(0xFF38BDF8) : AppColors.teal,
+                size: 22,
+              ),
             ),
-            child: Icon(
-              Icons.book_outlined,
-              color: isDark ? const Color(0xFF38BDF8) : AppColors.teal,
-              size: 22,
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    curso.nombre,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                      color: PukllaDashboardStyles.textPrimary(context),
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    curso.horas.isNotEmpty
+                        ? '${curso.horas} horas lectivas · Plan de estudios'
+                        : 'Horario semestral regular',
+                    style: TextStyle(fontSize: 12, color: PukllaDashboardStyles.textSecondary(context)),
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  curso.nombre,
+            if (curso.creditos != null)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF1F5F9),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '${curso.creditos} CR',
                   style: TextStyle(
+                    fontSize: 11,
                     fontWeight: FontWeight.w700,
-                    fontSize: 14,
-                    color: PukllaDashboardStyles.textPrimary(context),
+                    color: isDark ? AppColors.darkMuted : const Color(0xFF475569),
                   ),
                 ),
-                const SizedBox(height: 3),
-                Text(
-                  curso.horas.isNotEmpty
-                      ? '${curso.horas} horas lectivas · Plan de estudios'
-                      : 'Horario semestral regular',
-                  style: TextStyle(fontSize: 12, color: PukllaDashboardStyles.textSecondary(context)),
-                ),
-              ],
-            ),
-          ),
-          if (curso.creditos != null)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF1F5F9),
-                borderRadius: BorderRadius.circular(8),
               ),
-              child: Text(
-                '${curso.creditos} CR',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: isDark ? AppColors.darkMuted : const Color(0xFF475569),
-                ),
-              ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
