@@ -87,14 +87,22 @@ class AppTheme {
         backgroundColor: AppColors.gold,
         textColor: Colors.white,
       ),
-      tabBarTheme: TabBarThemeData(
+      tabBarTheme: const TabBarThemeData(
         labelColor: AppColors.gold,
-        unselectedLabelColor: Colors.white.withOpacity(0.70),
+        unselectedLabelColor: Color(0xFFE2E8F0),
         indicatorColor: AppColors.gold,
         indicatorSize: TabBarIndicatorSize.tab,
         dividerColor: Colors.transparent,
-        labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
-        unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+        labelStyle: TextStyle(
+          color: AppColors.gold,
+          fontWeight: FontWeight.w700,
+          fontSize: 14,
+        ),
+        unselectedLabelStyle: TextStyle(
+          color: Color(0xFFE2E8F0),
+          fontWeight: FontWeight.w600,
+          fontSize: 14,
+        ),
       ),
       dividerTheme: const DividerThemeData(color: AppColors.border, space: 1),
       textTheme: const TextTheme(

@@ -38,7 +38,7 @@ class CursoController extends Controller
         // `Periodo` (tabla `periodos`), no `Calificacion` (`calificacions`,
         // que está vacía en producción — nadie escribe ahí). `Periodo` sí
         // trae `periodo_actual_id`, por eso permite agrupar por período.
-        $periodos = $alumno->periodo()->with(['curso', 'periodoActual'])->get();
+        $periodos = $alumno->periodo()->with(['curso.ciclo.programa', 'periodoActual'])->get();
 
         $anteriores = $periodos
             ->groupBy(fn ($p) => optional($p->periodoActual)->nombre ?? 'Sin periodo')
@@ -48,11 +48,11 @@ class CursoController extends Controller
         // Período actual: mismos cursos que GET /cursos, cada uno con sus
         // notas de Parcial 1 (`PeriodoUno`), Parcial 2 (`PeriodoDos`) y
         // Promedio (`PeriodoTres`) — tres modelos separados de `Periodo`,
-        // igual que `calificaciones.blade.php` en la web. Ninguno de los
-        // tres se filtra por `periodo_actual_id` aquí (la web tampoco lo
-        // hace para Parcial 1/2/Promedio): se replica ese comportamiento
-        // real, no se "corrige" sin que se pida.
+        // igual que `calificaciones.blade.php` en la web.
         $periodoActual = PeriodoActual::actual();
+        $p1Visible = ! $periodoActual || $periodoActual->parcial1Visible();
+        $p2Visible = ! $periodoActual || $periodoActual->parcial2DesempenoVisible();
+
         $cursosPeriodoActual = $this->cursosDelPeriodoActual($alumno)
             ->sortBy('nombre')
             ->values()
@@ -64,6 +64,8 @@ class CursoController extends Controller
                 return [
                     'curso_id' => $curso->id,
                     'curso_nombre' => $curso->nombre,
+                    'ciclo_nombre' => $curso->ciclo?->nombre,
+                    'programa_nombre' => $curso->ciclo?->programa?->nombre,
                     'parcial_1' => $this->notaParcial($p1),
                     'parcial_2' => $this->notaParcial($p2),
                     'promedio' => $this->notaParcial($p3),
@@ -75,6 +77,10 @@ class CursoController extends Controller
             'data' => [
                 'periodo_actual' => [
                     'periodo_nombre' => optional($periodoActual)->nombre,
+                    'p1_visible' => $p1Visible,
+                    'p2_visible' => $p2Visible,
+                    'fecha_p1_visible' => $periodoActual?->fechaNotasVisibles(1)?->format('d/m/Y'),
+                    'fecha_p2_visible' => $periodoActual?->fechaNotasVisibles(2)?->format('d/m/Y'),
                     'cursos' => $cursosPeriodoActual,
                 ],
                 'anteriores' => $anteriores,

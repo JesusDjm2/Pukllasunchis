@@ -28,6 +28,8 @@ class CursoConNotas {
   const CursoConNotas({
     required this.cursoId,
     required this.cursoNombre,
+    this.cicloNombre,
+    this.programaNombre,
     required this.parcial1,
     required this.parcial2,
     required this.promedio,
@@ -43,6 +45,8 @@ class CursoConNotas {
     return CursoConNotas(
       cursoId: json['curso_id'] as int,
       cursoNombre: json['curso_nombre'] as String,
+      cicloNombre: json['ciclo_nombre'] as String?,
+      programaNombre: json['programa_nombre'] as String?,
       parcial1: parcial('parcial_1'),
       parcial2: parcial('parcial_2'),
       promedio: parcial('promedio'),
@@ -52,6 +56,8 @@ class CursoConNotas {
 
   final int cursoId;
   final String cursoNombre;
+  final String? cicloNombre;
+  final String? programaNombre;
   final NotaParcial? parcial1;
   final NotaParcial? parcial2;
   final NotaParcial? promedio;
@@ -59,11 +65,22 @@ class CursoConNotas {
 }
 
 class PeriodoActualCalificaciones {
-  const PeriodoActualCalificaciones({required this.periodoNombre, required this.cursos});
+  const PeriodoActualCalificaciones({
+    required this.periodoNombre,
+    required this.cursos,
+    this.p1Visible = true,
+    this.p2Visible = true,
+    this.fechaP1Visible,
+    this.fechaP2Visible,
+  });
 
   factory PeriodoActualCalificaciones.fromJson(Map<String, dynamic> json) {
     return PeriodoActualCalificaciones(
       periodoNombre: json['periodo_nombre'] as String?,
+      p1Visible: json['p1_visible'] as bool? ?? true,
+      p2Visible: json['p2_visible'] as bool? ?? true,
+      fechaP1Visible: json['fecha_p1_visible'] as String?,
+      fechaP2Visible: json['fecha_p2_visible'] as String?,
       cursos: (json['cursos'] as List)
           .map((j) => CursoConNotas.fromJson(j as Map<String, dynamic>))
           .toList(),
@@ -71,6 +88,10 @@ class PeriodoActualCalificaciones {
   }
 
   final String? periodoNombre;
+  final bool p1Visible;
+  final bool p2Visible;
+  final String? fechaP1Visible;
+  final String? fechaP2Visible;
   final List<CursoConNotas> cursos;
 }
 
@@ -82,6 +103,10 @@ class Calificacion {
     required this.id,
     required this.cursoId,
     required this.cursoNombre,
+    this.cicloNombre,
+    this.programaNombre,
+    this.creditos,
+    this.horas,
     required this.valoracionCurso,
     required this.calificacionCurso,
     required this.calificacionSistema,
@@ -92,6 +117,10 @@ class Calificacion {
       id: json['id'] as int,
       cursoId: json['curso_id'] as int,
       cursoNombre: json['curso_nombre'] as String?,
+      cicloNombre: json['ciclo_nombre'] as String?,
+      programaNombre: json['programa_nombre'] as String?,
+      creditos: json['creditos'] as int?,
+      horas: json['horas'] as int?,
       valoracionCurso: json['valoracion_curso'] as String?,
       calificacionCurso: json['calificacion_curso'] as String?,
       calificacionSistema: json['calificacion_sistema'] as String?,
@@ -101,6 +130,10 @@ class Calificacion {
   final int id;
   final int cursoId;
   final String? cursoNombre;
+  final String? cicloNombre;
+  final String? programaNombre;
+  final int? creditos;
+  final int? horas;
   final String? valoracionCurso;
   final String? calificacionCurso;
   final String? calificacionSistema;

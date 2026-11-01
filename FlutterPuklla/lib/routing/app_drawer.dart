@@ -102,7 +102,7 @@ class AppDrawer extends ConsumerWidget {
                     ),
                     _DrawerItem(
                       icon: Icons.grade_outlined,
-                      label: 'Calificaciones y Matrícula',
+                      label: 'Calificaciones',
                       route: '/calificaciones',
                       currentLocation: location,
                     ),
