@@ -138,9 +138,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             perfilAsync.when(
               data: (perfil) => _HeroHeader(
                 perfil: perfil,
-                yaMatriculado: yaMatriculadoAsync.valueOrNull,
-                periodoNombre: periodoAsync.valueOrNull?.nombre,
-                formularioHabilitado: periodoAsync.valueOrNull?.formularioHabilitado ?? false,
               ),
               loading: () => Container(
                 height: 180,
@@ -154,29 +151,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
 
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 18, 16, 24),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ── BANNER DE ALERTA DE MATRÍCULA PENDIENTE O EXITOSA ──
+                  // ── TARJETA COMPACTA UNIFICADA: PERÍODO ACTUAL & ESTADO DE MATRÍCULA ──
                   if (periodoAsync.valueOrNull != null) ...[
-                    if (yaMatriculadoAsync.valueOrNull == false && (periodoAsync.valueOrNull?.formularioHabilitado ?? false)) ...[
-                      _AlertaMatriculaBanner(periodo: periodoAsync.valueOrNull!),
-                      const SizedBox(height: 14),
-                    ] else if (yaMatriculadoAsync.valueOrNull == true) ...[
-                      _ExitoMatriculaBanner(periodo: periodoAsync.valueOrNull!),
-                      const SizedBox(height: 14),
-                    ],
+                    _PeriodoMatriculaCard(
+                      periodo: periodoAsync.valueOrNull!,
+                      yaMatriculado: yaMatriculadoAsync.valueOrNull,
+                    ),
+                    const SizedBox(height: 18),
                   ],
-
-                  // ── TARJETA DE PERIODO ACTUAL & HORARIO ──
-                  periodoAsync.when(
-                    data: (periodo) => periodo != null
-                        ? _PeriodoCard(periodo: periodo)
-                        : const SizedBox.shrink(),
-                    loading: () => const SizedBox.shrink(),
-                    error: (_, __) => const SizedBox.shrink(),
-                  ),
                   const SizedBox(height: 22),
 
                   // ── TÍTULO SECCIÓN ACCESOS DIRECTOS ──
@@ -390,15 +376,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 class _HeroHeader extends StatelessWidget {
   const _HeroHeader({
     required this.perfil,
-    this.yaMatriculado,
-    this.periodoNombre,
-    this.formularioHabilitado = false,
   });
 
   final AlumnoPerfil perfil;
-  final bool? yaMatriculado;
-  final String? periodoNombre;
-  final bool formularioHabilitado;
 
   @override
   Widget build(BuildContext context) {
@@ -494,8 +474,8 @@ class _HeroHeader extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 18),
-              // Chips de estado rápido
+              const SizedBox(height: 16),
+              // Chips de estado institucional del estudiante
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
@@ -506,20 +486,6 @@ class _HeroHeader extends StatelessWidget {
                     bg: Colors.white.withValues(alpha: 0.12),
                     color: Colors.white,
                   ),
-                  if (yaMatriculado == true)
-                    _PillBadge(
-                      icon: Icons.check_circle_rounded,
-                      label: 'Matrícula exitosa · ${periodoNombre ?? ""}',
-                      bg: const Color(0xFF10B981).withValues(alpha: 0.22),
-                      color: const Color(0xFF6EE7B7),
-                    )
-                  else if (formularioHabilitado)
-                    _PillBadge(
-                      icon: Icons.warning_amber_rounded,
-                      label: 'Matrícula pendiente · ${periodoNombre ?? ""}',
-                      bg: const Color(0xFFF59E0B).withValues(alpha: 0.28),
-                      color: const Color(0xFFFDE68A),
-                    ),
                   if (perfil.ayudaEconomica == true)
                     _PillBadge(
                       icon: Icons.star_border,
@@ -586,123 +552,6 @@ class _HeroHeaderFallback extends StatelessWidget {
   }
 }
 
-/// Banner de alerta cuando la matrícula está abierta en el período activo y no se ha completado
-class _AlertaMatriculaBanner extends StatelessWidget {
-  const _AlertaMatriculaBanner({required this.periodo});
-  final PeriodoActual periodo;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFFBEB),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFFDE68A), width: 1.2),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFFD97706).withValues(alpha: 0.08),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: const BoxDecoration(
-                  color: Color(0xFFFEF3C7),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.warning_amber_rounded, color: Color(0xFFD97706), size: 22),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'No estás matriculado en el período activo',
-                      style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13.5, color: Color(0xFF92400E)),
-                    ),
-                    Text(
-                      'Período ${periodo.nombre} · Formulario disponible',
-                      style: const TextStyle(fontSize: 12, color: Color(0xFFB45309)),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            'El formulario de matrícula ya está habilitado. Llénalo ahora para confirmar tus datos socioeconómicos y registrar tus asignaturas.',
-            style: TextStyle(fontSize: 12.5, color: Color(0xFF78350F), height: 1.35),
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton.icon(
-              onPressed: () => context.push('/matricula/formulario'),
-              style: FilledButton.styleFrom(
-                backgroundColor: AppColors.goldHover,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                padding: const EdgeInsets.symmetric(vertical: 10),
-              ),
-              icon: const Icon(Icons.edit_document, size: 16),
-              label: const Text('Completar matrícula ahora', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Banner de confirmación de matrícula exitosa
-class _ExitoMatriculaBanner extends StatelessWidget {
-  const _ExitoMatriculaBanner({required this.periodo});
-  final PeriodoActual periodo;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF0FDF4),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFBBF7D0)),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.check_circle_rounded, color: Color(0xFF16A34A), size: 20),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              '¡Matrícula exitosa! Estás matriculado en el período ${periodo.nombre}.',
-              style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: Color(0xFF166534)),
-            ),
-          ),
-          TextButton(
-            onPressed: () => context.push('/calificaciones'),
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              minimumSize: Size.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            ),
-            child: const Text('Ver ficha', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Color(0xFF15803D))),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _PillBadge extends StatelessWidget {
   const _PillBadge({required this.icon, required this.label, required this.bg, required this.color});
 
@@ -728,58 +577,173 @@ class _PillBadge extends StatelessWidget {
   }
 }
 
-// ── PERIODO Y HORARIO BANNER ──
-class _PeriodoCard extends StatelessWidget {
-  const _PeriodoCard({required this.periodo});
+/// Tarjeta compacta institucional unificada de período actual y estado de matrícula
+class _PeriodoMatriculaCard extends StatelessWidget {
+  const _PeriodoMatriculaCard({
+    required this.periodo,
+    required this.yaMatriculado,
+  });
+
   final PeriodoActual periodo;
+  final bool? yaMatriculado;
 
   @override
   Widget build(BuildContext context) {
     final tieneHorario = periodo.horario != null && periodo.horario!.isNotEmpty;
+    final esPendiente = yaMatriculado == false && periodo.formularioHabilitado;
+    final esMatriculado = yaMatriculado == true;
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0F172A).withValues(alpha: 0.05),
-            blurRadius: 14,
-            offset: const Offset(0, 4),
+            color: const Color(0xFF0F172A).withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
           ),
         ],
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(
+          color: esPendiente
+              ? const Color(0xFFFDE68A)
+              : (esMatriculado ? const Color(0xFFA7F3D0) : const Color(0xFFE2E8F0)),
+          width: esPendiente || esMatriculado ? 1.2 : 1,
+        ),
       ),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(12),
+            width: 42,
+            height: 42,
             decoration: BoxDecoration(
-              color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(14),
+              color: esMatriculado
+                  ? const Color(0xFF10B981).withValues(alpha: 0.12)
+                  : (esPendiente
+                      ? const Color(0xFFF59E0B).withValues(alpha: 0.15)
+                      : const Color(0xFF3B82F6).withValues(alpha: 0.10)),
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.calendar_month_outlined, color: Color(0xFF2563EB), size: 26),
+            child: Icon(
+              esMatriculado
+                  ? Icons.verified_rounded
+                  : (esPendiente ? Icons.assignment_late_outlined : Icons.calendar_month_outlined),
+              color: esMatriculado
+                  ? const Color(0xFF059669)
+                  : (esPendiente ? const Color(0xFFD97706) : const Color(0xFF2563EB)),
+              size: 24,
+            ),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  'Período Académico ${periodo.nombre}',
-                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: Color(0xFF0F172A)),
+                Row(
+                  children: [
+                    Text(
+                      'Período ${periodo.nombre}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 14.5,
+                        color: Color(0xFF0F172A),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    if (esMatriculado)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFECFDF5),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: const Color(0xFFA7F3D0)),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.check_circle_rounded, size: 11, color: Color(0xFF059669)),
+                            SizedBox(width: 4),
+                            Text(
+                              'Matriculado',
+                              style: TextStyle(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF059669),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    else if (esPendiente)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFFBEB),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: const Color(0xFFFDE68A)),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.warning_amber_rounded, size: 11, color: Color(0xFFD97706)),
+                            SizedBox(width: 4),
+                            Text(
+                              'Pendiente',
+                              style: TextStyle(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFFD97706),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
                 ),
                 const SizedBox(height: 2),
-                const Text(
-                  'Clases vigentes y evaluaciones en curso',
-                  style: TextStyle(color: Color(0xFF64748B), fontSize: 12),
+                Text(
+                  esMatriculado
+                      ? 'Matrícula confirmada · Clases y evaluaciones activas'
+                      : (esPendiente
+                          ? 'Formulario habilitado · Toca para formalizar'
+                          : 'Clases vigentes y evaluaciones en curso'),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: esPendiente ? const Color(0xFFB45309) : const Color(0xFF64748B),
+                    fontWeight: esPendiente ? FontWeight.w600 : FontWeight.normal,
+                  ),
                 ),
               ],
             ),
           ),
-          if (tieneHorario)
-            IconButton.filledTonal(
+          if (esPendiente) ...[
+            const SizedBox(width: 8),
+            FilledButton.tonal(
+              onPressed: () => context.push('/matricula/formulario'),
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.goldHover,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Llenar', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700)),
+                  SizedBox(width: 2),
+                  Icon(Icons.arrow_forward_rounded, size: 13),
+                ],
+              ),
+            ),
+          ] else if (tieneHorario) ...[
+            const SizedBox(width: 6),
+            IconButton(
               onPressed: () {
                 final uri = Uri.parse(periodo.horario!);
                 launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -787,10 +751,14 @@ class _PeriodoCard extends StatelessWidget {
               icon: const Icon(Icons.picture_as_pdf_outlined, size: 20),
               tooltip: 'Ver horario del ciclo',
               style: IconButton.styleFrom(
-                backgroundColor: AppColors.gold.withValues(alpha: 0.15),
+                backgroundColor: AppColors.gold.withValues(alpha: 0.12),
                 foregroundColor: AppColors.goldHover,
+                padding: const EdgeInsets.all(8),
+                minimumSize: const Size(36, 36),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
             ),
+          ],
         ],
       ),
     );
