@@ -790,32 +790,19 @@ class _BentoGridModulos extends ConsumerWidget {
 
     return Column(
       children: [
+        // ── FILA 1: ACADÉMICO CORE & IDENTIDAD DIGITAL ──
         Row(
           children: [
             Expanded(
               child: _BentoItem(
-                icon: Icons.badge_outlined,
-                color: const Color(0xFF2563EB),
-                title: 'Ficha Técnica',
-                subtitle: 'Datos personales y PDF',
-                onTap: () => context.go('/ficha-tecnica'),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _BentoItem(
-                icon: Icons.grade_outlined,
-                color: const Color(0xFF059669),
-                title: 'Calificaciones',
-                subtitle: 'Notas y récord académico',
+                icon: Icons.school_rounded,
+                color: AppColors.teal,
+                title: 'Mis Cursos & Notas',
+                subtitle: 'Asignaturas y récord',
                 onTap: () => context.go('/calificaciones'),
               ),
             ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
+            const SizedBox(width: 12),
             Expanded(
               child: _BentoItem(
                 icon: Icons.credit_card_rounded,
@@ -831,19 +818,39 @@ class _BentoGridModulos extends ConsumerWidget {
                 },
               ),
             ),
+          ],
+        ),
+        const SizedBox(height: 12),
+
+        // ── FILA 2: EXPEDIENTE Y ACOMPAÑAMIENTO ──
+        Row(
+          children: [
+            Expanded(
+              child: _BentoItem(
+                icon: Icons.badge_outlined,
+                color: const Color(0xFF2563EB),
+                title: 'Ficha Técnica',
+                subtitle: 'Datos personales y PDF',
+                onTap: () => context.go('/ficha-tecnica'),
+              ),
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: _BentoItem(
-                icon: Icons.school_rounded,
-                color: AppColors.teal,
-                title: 'Mis Cursos',
-                subtitle: 'Asignaturas y récord de notas',
-                onTap: () => context.go('/calificaciones'),
+                icon: Icons.support_agent_rounded,
+                color: const Color(0xFFE11D48),
+                title: 'Tutoría y Apoyo',
+                subtitle: perfil?.tutor != null
+                    ? perfil!.tutor!.nombre
+                    : 'Atención y bienestar',
+                onTap: () => context.go('/tutoria'),
               ),
             ),
           ],
         ),
         const SizedBox(height: 12),
+
+        // ── FILA 3: INVESTIGACIÓN Y EMPLEABILIDAD ──
         Row(
           children: [
             Expanded(
@@ -868,11 +875,13 @@ class _BentoGridModulos extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: 12),
+
+        // ── FILA 4: FORMACIÓN CONTINUA Y RECURSOS ──
         Row(
           children: [
             Expanded(
               child: _BentoItem(
-                icon: Icons.school_outlined,
+                icon: Icons.workspace_premium_outlined,
                 color: const Color(0xFF0891B2),
                 title: 'Cursos Especiales',
                 subtitle: 'Talleres asincrónicos',
@@ -882,33 +891,9 @@ class _BentoGridModulos extends ConsumerWidget {
             const SizedBox(width: 12),
             Expanded(
               child: _BentoItem(
-                icon: Icons.favorite_outline,
-                color: const Color(0xFFE11D48),
-                title: 'Tutoría y Apoyo',
-                subtitle: 'Atención y sugerencias',
-                onTap: () => context.go('/tutoria'),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _BentoItem(
-                icon: Icons.campaign_outlined,
-                color: const Color(0xFF4F46E5),
-                title: 'Comunicados',
-                subtitle: 'Avisos institucionales',
-                onTap: () => context.go('/comunicados'),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _BentoItem(
                 icon: Icons.local_library_outlined,
                 color: const Color(0xFFCA8A04),
-                title: 'Guías de TI y Tesis',
+                title: 'Guías & Biblioteca',
                 subtitle: 'Biblioteca virtual y guías',
                 onTap: () => context.go('/recursos'),
               ),
