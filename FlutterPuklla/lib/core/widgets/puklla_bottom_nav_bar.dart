@@ -28,20 +28,34 @@ class PukllaBottomNavBar extends ConsumerWidget {
     }
 
     final user = ref.watch(authControllerProvider).user;
-    final esDocenteOTutor = user != null && user.isDocenteOTutor && !user.isAlumno;
+    final esDocenteOTutor = user != null && user.isDocenteOTutor;
     final homeRoute = esDocenteOTutor ? '/docente' : '/home';
 
     int? activeIndex;
-    if (location == '/home' || location == '/docente') {
-      activeIndex = 0;
-    } else if (location.startsWith('/calificaciones')) {
-      activeIndex = 1;
-    } else if (location.startsWith('/tutoria')) {
-      activeIndex = 2;
-    } else if (location.startsWith('/bolsa-trabajo')) {
-      activeIndex = 3;
-    } else if (location.startsWith('/comunicados')) {
-      activeIndex = 4;
+    if (esDocenteOTutor) {
+      if (location == '/docente') {
+        activeIndex = 0;
+      } else if (location.startsWith('/docente/incidencias')) {
+        activeIndex = 1;
+      } else if (location.startsWith('/cursos-especiales')) {
+        activeIndex = 2;
+      } else if (location.startsWith('/bolsa-trabajo')) {
+        activeIndex = 3;
+      } else if (location.startsWith('/comunicados')) {
+        activeIndex = 4;
+      }
+    } else {
+      if (location == '/home' || location == '/docente') {
+        activeIndex = 0;
+      } else if (location.startsWith('/calificaciones')) {
+        activeIndex = 1;
+      } else if (location.startsWith('/tutoria')) {
+        activeIndex = 2;
+      } else if (location.startsWith('/bolsa-trabajo')) {
+        activeIndex = 3;
+      } else if (location.startsWith('/comunicados')) {
+        activeIndex = 4;
+      }
     }
 
     void navigateTo(String targetRoute) {
@@ -81,53 +95,101 @@ class PukllaBottomNavBar extends ConsumerWidget {
           height: 62,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _NavItem(
-                index: 0,
-                label: 'Inicio',
-                icon: Icons.home_outlined,
-                selectedIcon: Icons.home_rounded,
-                isSelected: activeIndex == 0,
-                isDark: isDark,
-                onTap: () => navigateTo(homeRoute),
-              ),
-              _NavItem(
-                index: 1,
-                label: 'Notas',
-                icon: Icons.grade_outlined,
-                selectedIcon: Icons.grade_rounded,
-                isSelected: activeIndex == 1,
-                isDark: isDark,
-                onTap: () => navigateTo('/calificaciones'),
-              ),
-              _NavItem(
-                index: 2,
-                label: 'Tutoría',
-                icon: Icons.support_agent_outlined,
-                selectedIcon: Icons.support_agent_rounded,
-                isSelected: activeIndex == 2,
-                isDark: isDark,
-                onTap: () => navigateTo('/tutoria'),
-              ),
-              _NavItem(
-                index: 3,
-                label: 'Bolsa',
-                icon: Icons.work_outline_rounded,
-                selectedIcon: Icons.work_rounded,
-                isSelected: activeIndex == 3,
-                isDark: isDark,
-                onTap: () => navigateTo('/bolsa-trabajo'),
-              ),
-              _NavItem(
-                index: 4,
-                label: 'Comunicados',
-                icon: Icons.campaign_outlined,
-                selectedIcon: Icons.campaign_rounded,
-                isSelected: activeIndex == 4,
-                isDark: isDark,
-                onTap: () => navigateTo('/comunicados'),
-              ),
-            ],
+            children: esDocenteOTutor
+                ? [
+                    _NavItem(
+                      index: 0,
+                      label: 'Mi Panel',
+                      icon: Icons.dashboard_outlined,
+                      selectedIcon: Icons.dashboard_rounded,
+                      isSelected: activeIndex == 0,
+                      isDark: isDark,
+                      onTap: () => navigateTo('/docente'),
+                    ),
+                    _NavItem(
+                      index: 1,
+                      label: 'Incidencias',
+                      icon: Icons.assignment_outlined,
+                      selectedIcon: Icons.assignment_rounded,
+                      isSelected: activeIndex == 1,
+                      isDark: isDark,
+                      onTap: () => navigateTo('/docente/incidencias'),
+                    ),
+                    _NavItem(
+                      index: 2,
+                      label: 'Asincrónicos',
+                      icon: Icons.school_outlined,
+                      selectedIcon: Icons.school_rounded,
+                      isSelected: activeIndex == 2,
+                      isDark: isDark,
+                      onTap: () => navigateTo('/cursos-especiales'),
+                    ),
+                    _NavItem(
+                      index: 3,
+                      label: 'Bolsa',
+                      icon: Icons.work_outline_rounded,
+                      selectedIcon: Icons.work_rounded,
+                      isSelected: activeIndex == 3,
+                      isDark: isDark,
+                      onTap: () => navigateTo('/bolsa-trabajo'),
+                    ),
+                    _NavItem(
+                      index: 4,
+                      label: 'Avisos',
+                      icon: Icons.campaign_outlined,
+                      selectedIcon: Icons.campaign_rounded,
+                      isSelected: activeIndex == 4,
+                      isDark: isDark,
+                      onTap: () => navigateTo('/comunicados'),
+                    ),
+                  ]
+                : [
+                    _NavItem(
+                      index: 0,
+                      label: 'Inicio',
+                      icon: Icons.home_outlined,
+                      selectedIcon: Icons.home_rounded,
+                      isSelected: activeIndex == 0,
+                      isDark: isDark,
+                      onTap: () => navigateTo(homeRoute),
+                    ),
+                    _NavItem(
+                      index: 1,
+                      label: 'Notas',
+                      icon: Icons.grade_outlined,
+                      selectedIcon: Icons.grade_rounded,
+                      isSelected: activeIndex == 1,
+                      isDark: isDark,
+                      onTap: () => navigateTo('/calificaciones'),
+                    ),
+                    _NavItem(
+                      index: 2,
+                      label: 'Tutoría',
+                      icon: Icons.support_agent_outlined,
+                      selectedIcon: Icons.support_agent_rounded,
+                      isSelected: activeIndex == 2,
+                      isDark: isDark,
+                      onTap: () => navigateTo('/tutoria'),
+                    ),
+                    _NavItem(
+                      index: 3,
+                      label: 'Bolsa',
+                      icon: Icons.work_outline_rounded,
+                      selectedIcon: Icons.work_rounded,
+                      isSelected: activeIndex == 3,
+                      isDark: isDark,
+                      onTap: () => navigateTo('/bolsa-trabajo'),
+                    ),
+                    _NavItem(
+                      index: 4,
+                      label: 'Comunicados',
+                      icon: Icons.campaign_outlined,
+                      selectedIcon: Icons.campaign_rounded,
+                      isSelected: activeIndex == 4,
+                      isDark: isDark,
+                      onTap: () => navigateTo('/comunicados'),
+                    ),
+                  ],
           ),
         ),
       ),

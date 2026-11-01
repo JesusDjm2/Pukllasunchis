@@ -37,8 +37,8 @@ void main() {
       expect(inicioPara(_usuario(docenteId: 4, roles: ['docente'])), '/docente');
     });
 
-    test('quien tiene ambos perfiles se queda en la vista de alumno', () {
-      expect(inicioPara(_usuario(alumnoId: 9, docenteId: 4)), '/home');
+    test('quien tiene ambos perfiles aterriza en su panel docente (prioridad según LoginController de Laravel)', () {
+      expect(inicioPara(_usuario(alumnoId: 9, docenteId: 4, roles: ['docente'])), '/docente');
     });
 
     test('sin usuario conocido no se cambia la ruta', () {

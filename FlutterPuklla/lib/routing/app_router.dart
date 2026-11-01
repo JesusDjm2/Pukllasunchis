@@ -20,9 +20,13 @@ import '../features/recursos/presentation/formatos_biblioteca_screen.dart';
 import '../features/taqe/presentation/taqe_screen.dart';
 import '../features/tutoria/presentation/tutoria_screen.dart';
 
-/// Un usuario con perfil docente o tutor y sin perfil de alumno aterriza en su panel.
-String inicioPara(AuthUser? user) =>
-    user != null && user.isDocenteOTutor && !user.isAlumno ? '/docente' : '/home';
+/// Si el usuario tiene perfil docente o tutor, aterriza directamente en su panel docente (/docente).
+/// Si solo es estudiante, aterriza en su espacio académico (/home).
+String inicioPara(AuthUser? user) {
+  if (user == null) return '/home';
+  if (user.isDocenteOTutor) return '/docente';
+  return '/home';
+}
 
 /// Reconstruir el GoRouter completo cuando cambia el estado de auth es
 /// aceptable para el tamaño de esta app; así el `redirect` de abajo siempre
@@ -45,9 +49,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         case AuthStatus.authenticated:
           final inicio = inicioPara(authState.user);
           if (onLoginPage) return inicio;
-          // '/home' es la ficha del alumno: un docente sin perfil de alumno no
-          // debe quedarse en esa vista vacía.
-          if (state.matchedLocation == '/home' && inicio != '/home') return inicio;
+          // Un docente no debe quedarse atrapado en '/home' (espacio del alumno)
+          if (state.matchedLocation == '/home' && inicio == '/docente') return inicio;
           return null;
       }
     },
