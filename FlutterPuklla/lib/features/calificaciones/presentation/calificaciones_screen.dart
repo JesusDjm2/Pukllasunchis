@@ -147,17 +147,23 @@ class _PeriodoActualTabState extends ConsumerState<_PeriodoActualTab> {
   Widget _buildContent(PeriodoActualCalificaciones periodoActual, bool isDark) {
     final cursos = periodoActual.cursos;
 
-    // Métricas del período
-    final notasFinales = cursos
-        .map((c) => double.tryParse(c.promedio?.calificacionSistema ?? ''))
-        .whereType<double>()
-        .toList();
-    final promedioGeneral = notasFinales.isNotEmpty
-        ? (notasFinales.reduce((a, b) => a + b) / notasFinales.length)
+    // Métricas del período actual ponderadas por créditos
+    double sumaPonderada = 0;
+    int totalCreditosConNota = 0;
+    for (final c in cursos) {
+      if (c.tieneNota) {
+        final cred = (c.creditos != null && c.creditos! > 0) ? c.creditos! : 3;
+        sumaPonderada += c.notaVigenteNum! * cred;
+        totalCreditosConNota += cred;
+      }
+    }
+    final promedioGeneral = totalCreditosConNota > 0
+        ? (sumaPonderada / totalCreditosConNota)
         : null;
-    final aprobados = notasFinales.where((n) => n >= 11.0).length;
-    final desaprobados = notasFinales.where((n) => n < 11.0).length;
-    final pendientes = cursos.length - notasFinales.length;
+
+    final aprobados = cursos.where((c) => c.esAprobado).length;
+    final desaprobados = cursos.where((c) => c.esDesaprobado).length;
+    final pendientes = cursos.where((c) => !c.tieneNota).length;
 
     final tieneAvisos = (!periodoActual.p1Visible && periodoActual.fechaP1Visible != null) ||
         (!periodoActual.p2Visible && periodoActual.fechaP2Visible != null);
@@ -168,12 +174,14 @@ class _PeriodoActualTabState extends ConsumerState<_PeriodoActualTab> {
       if (query.isNotEmpty && !c.cursoNombre.toLowerCase().contains(query)) {
         return false;
       }
-      final notaFinal = double.tryParse(c.promedio?.calificacionSistema ?? '');
       if (_filtroEstado == 1) {
-        return notaFinal != null && notaFinal >= 11.0;
+        return c.esAprobado;
       }
       if (_filtroEstado == 2) {
-        return notaFinal == null;
+        return !c.tieneNota;
+      }
+      if (_filtroEstado == 3) {
+        return c.esDesaprobado;
       }
       return true;
     }).toList();
@@ -205,7 +213,7 @@ class _PeriodoActualTabState extends ConsumerState<_PeriodoActualTab> {
             Expanded(
               child: _StatCard(
                 icon: Icons.star_rounded,
-                titulo: 'Promedio',
+                titulo: 'Ponderado',
                 valor: promedioGeneral != null ? promedioGeneral.toStringAsFixed(1) : '—',
                 color: AppColors.goldHover,
               ),
@@ -337,6 +345,15 @@ class _PeriodoActualTabState extends ConsumerState<_PeriodoActualTab> {
                 onTap: () => setState(() => _filtroEstado = 2),
                 isDark: isDark,
               ),
+              if (desaprobados > 0) ...[
+                const SizedBox(width: 8),
+                _FilterChip(
+                  label: 'Desaprobados ($desaprobados)',
+                  isSelected: _filtroEstado == 3,
+                  onTap: () => setState(() => _filtroEstado = 3),
+                  isDark: isDark,
+                ),
+              ],
             ],
           ),
         ),
@@ -596,12 +613,13 @@ class _CursoActualCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = PukllaDashboardStyles.isDark(context);
-    final finalSistema = curso.promedio?.calificacionSistema;
-    final notaFinalNum = double.tryParse(finalSistema ?? '');
-    final esAprobado = notaFinalNum != null && notaFinalNum >= 11.0;
+    final notaTexto = curso.notaVigenteTexto;
+    final esAprobado = curso.esAprobado;
+    final tieneNota = curso.tieneNota;
+    final etiquetaNota = curso.etiquetaNotaVigente;
 
     // Color del borde de acento izquierdo según estado
-    final accentColor = notaFinalNum == null
+    final accentColor = !tieneNota
         ? AppColors.teal
         : (esAprobado ? const Color(0xFF10B981) : const Color(0xFFEF4444));
 
@@ -688,16 +706,36 @@ class _CursoActualCard extends StatelessWidget {
                                           ),
                                         ),
                                       ),
+                                    if (curso.creditos != null && curso.creditos! > 0)
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF1F5F9),
+                                          borderRadius: BorderRadius.circular(6),
+                                          border: Border.all(
+                                            color: isDark ? AppColors.darkBorder : const Color(0xFFE2E8F0),
+                                          ),
+                                        ),
+                                        child: Text(
+                                          '${curso.creditos} créd.',
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w700,
+                                            color: isDark ? AppColors.darkMuted : const Color(0xFF475569),
+                                          ),
+                                        ),
+                                      ),
                                   ],
                                 ),
                               ],
                             ),
                           ),
                           const SizedBox(width: 8),
-                          // Badge de Nota Final
+                          // Badge de Nota Final / Vigente
                           _FinalGradeBadge(
-                            notaStr: finalSistema,
+                            notaStr: notaTexto,
                             esAprobado: esAprobado,
+                            etiqueta: etiquetaNota,
                             isDark: isDark,
                           ),
                         ],
@@ -996,11 +1034,13 @@ class _FinalGradeBadge extends StatelessWidget {
   const _FinalGradeBadge({
     required this.notaStr,
     required this.esAprobado,
+    this.etiqueta = 'Final',
     required this.isDark,
   });
 
   final String? notaStr;
   final bool esAprobado;
+  final String etiqueta;
   final bool isDark;
 
   @override
@@ -1024,7 +1064,7 @@ class _FinalGradeBadge extends StatelessWidget {
               ),
             ),
             const Text(
-              'En curso',
+              'Pendiente',
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
@@ -1064,7 +1104,7 @@ class _FinalGradeBadge extends StatelessWidget {
             ),
           ),
           Text(
-            'Final',
+            etiqueta,
             style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w700,
@@ -1157,13 +1197,21 @@ class _PeriodosAnterioresTabState extends ConsumerState<_PeriodosAnterioresTab> 
           final safeIndex = _selectedPeriodoIndex.clamp(0, periodos.length - 1);
           final grupoActual = periodos[safeIndex];
 
-          // Cálculo de métricas del período seleccionado
-          final notas = grupoActual.calificaciones
-              .map((c) => double.tryParse(c.calificacionSistema ?? ''))
-              .whereType<double>()
-              .toList();
-          final promedioGrupo = notas.isNotEmpty
-              ? (notas.reduce((a, b) => a + b) / notas.length)
+          // Cálculo de métricas ponderadas por créditos del período seleccionado
+          double sumaPonderada = 0;
+          int totalCreditosConNota = 0;
+          final notas = <double>[];
+          for (final c in grupoActual.calificaciones) {
+            final n = double.tryParse(c.calificacionSistema ?? '');
+            if (n != null) {
+              notas.add(n);
+              final cred = (c.creditos != null && c.creditos! > 0) ? c.creditos! : 3;
+              sumaPonderada += n * cred;
+              totalCreditosConNota += cred;
+            }
+          }
+          final promedioGrupo = totalCreditosConNota > 0
+              ? (sumaPonderada / totalCreditosConNota)
               : null;
           final aprobadas = notas.where((n) => n >= 11.0).length;
           final creditosTotal = grupoActual.calificaciones

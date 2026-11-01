@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -17,20 +18,17 @@ import '../../../core/widgets/section_header.dart';
 import '../../../routing/app_drawer.dart';
 import '../../home/application/home_providers.dart';
 import '../../home/data/curso.dart';
-import '../../notificaciones/presentation/notification_bell_action.dart';
 import '../application/perfil_providers.dart';
 import '../data/alumno_perfil.dart';
 import '../data/perfil_repository.dart';
 
-/// Pantalla de aterrizaje del alumno tras iniciar sesión — replica
-/// `alumnos/vistasAlumnos/index.blade.php`: datos personales, programa y
-/// ciclo, estado de matrícula del período activo, y cursos del semestre.
 class FichaTecnicaScreen extends ConsumerWidget {
   const FichaTecnicaScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final perfil = ref.watch(perfilProvider);
+    final isDark = PukllaDashboardStyles.isDark(context);
 
     return Scaffold(
       backgroundColor: PukllaDashboardStyles.backgroundColor(context),
@@ -50,7 +48,26 @@ class FichaTecnicaScreen extends ConsumerWidget {
         },
         child: perfil.when(
           data: (data) => _FichaBody(perfil: data),
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => ListView(
+            padding: const EdgeInsets.all(16),
+            children: const [
+              PukllaSkeletonCard(height: 160),
+              SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(child: PukllaSkeletonCard(height: 70)),
+                  SizedBox(width: 8),
+                  Expanded(child: PukllaSkeletonCard(height: 70)),
+                  SizedBox(width: 8),
+                  Expanded(child: PukllaSkeletonCard(height: 70)),
+                ],
+              ),
+              SizedBox(height: 16),
+              PukllaSkeletonCard(height: 180),
+              SizedBox(height: 16),
+              PukllaSkeletonCard(height: 120),
+            ],
+          ),
           error: (error, _) => ListView(
             children: [
               Padding(
@@ -74,20 +91,63 @@ class _FichaBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final cursosAsync = ref.watch(cursosProvider);
+    final periodoAsync = ref.watch(periodoActualProvider);
+    final matriculadoAsync = ref.watch(yaMatriculadoProvider);
+
+    final totalCursos = cursosAsync.valueOrNull?.length ?? 0;
+    final periodoNombre = periodoAsync.valueOrNull?.nombre ?? '2026-I';
+    final estaMatriculado = matriculadoAsync.valueOrNull ?? false;
+
     return ListView(
       padding: EdgeInsets.zero,
       children: [
         _Hero(perfil: perfil),
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // ── KPI STATS ROW ──
+              Row(
+                children: [
+                  Expanded(
+                    child: _FichaStatCard(
+                      icon: Icons.menu_book_rounded,
+                      titulo: 'Cursos Ciclo',
+                      valor: totalCursos.toString(),
+                      color: AppColors.teal,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _FichaStatCard(
+                      icon: Icons.calendar_month_rounded,
+                      titulo: 'Periodo',
+                      valor: periodoNombre,
+                      color: AppColors.goldHover,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _FichaStatCard(
+                      icon: estaMatriculado ? Icons.verified_user_rounded : Icons.pending_actions_rounded,
+                      titulo: 'Matrícula',
+                      valor: estaMatriculado ? 'Activa' : 'Pendiente',
+                      color: estaMatriculado ? const Color(0xFF10B981) : const Color(0xFFF59E0B),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+
               _EstadoMatriculaBanner(perfil: perfil),
               const SizedBox(height: 20),
-              const SectionHeader(icon: Icons.badge_outlined, title: 'Mis datos'),
+
+              const SectionHeader(icon: Icons.badge_outlined, title: 'Datos del Estudiante'),
               _DatosPersonalesCard(perfil: perfil),
               const SizedBox(height: 20),
+
               const SectionHeader(icon: Icons.menu_book_outlined, title: 'Cursos del semestre'),
               const _CursosDelSemestre(),
             ],
@@ -105,6 +165,7 @@ class _Hero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = PukllaDashboardStyles.isDark(context);
     final iniciales = [perfil.nombres, perfil.apellidos]
         .where((s) => s.isNotEmpty)
         .map((s) => s[0].toUpperCase())
@@ -114,67 +175,195 @@ class _Hero extends StatelessWidget {
     final cicloRaw = perfil.cicloNombre;
     final cicloFormatted = (cicloRaw != null && cicloRaw.isNotEmpty)
         ? (cicloRaw.toLowerCase().startsWith('ciclo') ? cicloRaw : 'Ciclo $cicloRaw')
-        : null;
-
-    final programaCiclo = [
-      if (perfil.programaNombre != null && perfil.programaNombre!.isNotEmpty)
-        perfil.programaNombre!
-      else
-        'EESP Pukllasunchis',
-      if (cicloFormatted != null) cicloFormatted,
-    ].join(' · ');
+        : 'Ciclo';
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
-      decoration: const BoxDecoration(
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+      decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppColors.teal, AppColors.tealDark],
+          colors: isDark
+              ? const [Color(0xFF0F1E36), Color(0xFF1B2A4A)]
+              : const [Color(0xFF1B2A4A), Color(0xFF2C3E60)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-      ),
-      child: Row(
-        children: [
-          PukllaAvatar(
-            fotoUrl: perfil.foto,
-            iniciales: iniciales,
-            size: 52,
-            borderWidth: 2,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.15),
+            blurRadius: 14,
+            offset: const Offset(0, 5),
           ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  perfil.nombreCompleto,
-                  style: const TextStyle(color: Colors.white, fontSize: 19, fontWeight: FontWeight.w700),
-                  overflow: TextOverflow.ellipsis,
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.gold, width: 2.2),
                 ),
-                const SizedBox(height: 3),
-                Row(
+                child: PukllaAvatar(
+                  fotoUrl: perfil.foto,
+                  iniciales: iniciales,
+                  size: 58,
+                  borderWidth: 0,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(
-                      Icons.school_outlined,
-                      size: 14,
-                      color: Color(0xFFFDE68A),
-                    ),
-                    const SizedBox(width: 5),
-                    Expanded(
-                      child: Text(
-                        programaCiclo,
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.85),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        overflow: TextOverflow.ellipsis,
+                    Text(
+                      perfil.nombreCompleto,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18.5,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.2,
                       ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 5),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 4,
+                      children: [
+                        if (perfil.programaNombre != null)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: AppColors.gold.withValues(alpha: 0.22),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              perfil.programaNombre!,
+                              style: const TextStyle(
+                                color: AppColors.gold,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.16),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            cicloFormatted,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          // Pill con DNI copiable
+          InkWell(
+            onTap: () {
+              Clipboard.setData(ClipboardData(text: perfil.dni));
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('DNI ${perfil.dni} copiado al portapapeles'),
+                  duration: const Duration(seconds: 2),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
+            borderRadius: BorderRadius.circular(10),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.14)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.fingerprint_rounded, size: 16, color: Color(0xFFFDE68A)),
+                  const SizedBox(width: 6),
+                  Text(
+                    'DNI: ${perfil.dni}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.4,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  const Icon(Icons.copy_rounded, size: 12, color: Color(0xFFCBD5E1)),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FichaStatCard extends StatelessWidget {
+  const _FichaStatCard({
+    required this.icon,
+    required this.titulo,
+    required this.valor,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String titulo;
+  final String valor;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: PukllaDashboardStyles.cardDecoration(context, radius: 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 16, color: color),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  titulo,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: PukllaDashboardStyles.textSecondary(context),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            valor,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w900,
+              color: PukllaDashboardStyles.textPrimary(context),
             ),
           ),
         ],
@@ -382,10 +571,11 @@ class _MatriculadoBadge extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Matriculado · $periodoNombre',
+              'Matriculado · Periodo $periodoNombre',
               style: TextStyle(
                 color: isDark ? const Color(0xFF34D399) : AppColors.success,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w800,
+                fontSize: 13.5,
               ),
             ),
           ),
@@ -447,9 +637,9 @@ class _DatosPersonalesCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _DatoRow(icon: Icons.badge_outlined, label: 'DNI', value: perfil.dni),
-          _DatoRow(icon: Icons.mail_outline, label: 'Correo', value: perfil.email),
-          _DatoRow(icon: Icons.phone_outlined, label: 'Teléfono', value: perfil.numero),
+          _DatoRow(icon: Icons.fingerprint_rounded, label: 'DNI / Código', value: perfil.dni, copyable: true),
+          _DatoRow(icon: Icons.alternate_email_rounded, label: 'Correo', value: perfil.email, copyable: true),
+          _DatoRow(icon: Icons.phone_outlined, label: 'Teléfono', value: perfil.numero, copyable: true),
           _DatoRow(icon: Icons.contact_phone_outlined, label: 'Emergencia', value: perfil.numeroReferencia),
           _DatoRow(icon: Icons.home_outlined, label: 'Domicilio', value: perfil.domicilio, isLast: true),
         ],
@@ -463,12 +653,14 @@ class _DatoRow extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.value,
+    this.copyable = false,
     this.isLast = false,
   });
 
   final IconData icon;
   final String label;
   final String value;
+  final bool copyable;
   final bool isLast;
 
   @override
@@ -481,7 +673,7 @@ class _DatoRow extends StatelessWidget {
           Icon(icon, size: 18, color: PukllaDashboardStyles.textSecondary(context)),
           const SizedBox(width: 12),
           SizedBox(
-            width: 84,
+            width: 90,
             child: Text(
               label,
               style: TextStyle(color: PukllaDashboardStyles.textSecondary(context), fontSize: 13),
@@ -489,13 +681,31 @@ class _DatoRow extends StatelessWidget {
           ),
           Expanded(
             child: Text(
-              value,
+              value.isNotEmpty ? value : '—',
               style: TextStyle(
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w700,
                 color: PukllaDashboardStyles.textPrimary(context),
+                fontSize: 13.5,
               ),
             ),
           ),
+          if (copyable && value.isNotEmpty)
+            GestureDetector(
+              onTap: () {
+                Clipboard.setData(ClipboardData(text: value));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('$label copiado al portapapeles'),
+                    duration: const Duration(seconds: 2),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+              child: Padding(
+                padding: const EdgeInsets.only(left: 6),
+                child: Icon(Icons.copy_rounded, size: 14, color: PukllaDashboardStyles.textSecondary(context)),
+              ),
+            ),
         ],
       ),
     );
@@ -538,35 +748,52 @@ class _CursoDelSemestreTile extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: PukllaDashboardStyles.cardDecoration(context, radius: 14),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        leading: Container(
-          width: 38,
-          height: 38,
-          decoration: BoxDecoration(
-            color: AppColors.gold.withValues(alpha: 0.14),
-            shape: BoxShape.circle,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(14),
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Container(width: 4, color: AppColors.teal),
+              Expanded(
+                child: ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                  leading: Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: AppColors.teal.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.menu_book_rounded, size: 18, color: AppColors.teal),
+                  ),
+                  title: Text(
+                    curso.nombre,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: PukllaDashboardStyles.textPrimary(context),
+                      fontSize: 14,
+                    ),
+                  ),
+                  subtitle: Text(
+                    '${curso.cc} · ${curso.horas} h',
+                    style: TextStyle(
+                      color: PukllaDashboardStyles.textSecondary(context),
+                      fontSize: 12,
+                    ),
+                  ),
+                  trailing: curso.classroom != null
+                      ? IconButton(
+                          icon: Icon(Icons.open_in_new_rounded, color: PukllaDashboardStyles.textSecondary(context), size: 18),
+                          tooltip: 'Abrir classroom',
+                          onPressed: () => launchUrl(Uri.parse(curso.classroom!), mode: LaunchMode.externalApplication),
+                        )
+                      : null,
+                ),
+              ),
+            ],
           ),
-          child: const Icon(Icons.menu_book_outlined, size: 18, color: AppColors.gold),
         ),
-        title: Text(
-          curso.nombre,
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-            color: PukllaDashboardStyles.textPrimary(context),
-          ),
-        ),
-        subtitle: Text(
-          '${curso.cc} · ${curso.horas} h',
-          style: TextStyle(color: PukllaDashboardStyles.textSecondary(context)),
-        ),
-        trailing: curso.classroom != null
-            ? IconButton(
-                icon: Icon(Icons.open_in_new, color: PukllaDashboardStyles.textSecondary(context)),
-                tooltip: 'Abrir classroom',
-                onPressed: () => launchUrl(Uri.parse(curso.classroom!), mode: LaunchMode.externalApplication),
-              )
-            : null,
       ),
     );
   }

@@ -66,6 +66,8 @@ class CursoController extends Controller
                     'curso_nombre' => $curso->nombre,
                     'ciclo_nombre' => $curso->ciclo?->nombre,
                     'programa_nombre' => $curso->ciclo?->programa?->nombre,
+                    'creditos' => $curso->creditos,
+                    'horas' => $curso->horas,
                     'parcial_1' => $this->notaParcial($p1),
                     'parcial_2' => $this->notaParcial($p2),
                     'promedio' => $this->notaParcial($p3),
