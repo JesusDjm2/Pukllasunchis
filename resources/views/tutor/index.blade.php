@@ -202,9 +202,12 @@
                                     @endforeach
                                 </ul>
 
-                                <div class="mt-auto p-3">
-                                    <a href="{{ route('tutor.ciclo', $ciclo->id) }}#seguimiento" class="al-btn al-btn-petroleo w-100 justify-content-center">
-                                        <i class="fas fa-chart-line"></i> Seguimiento académico
+                                <div class="mt-auto p-3 d-flex gap-2">
+                                    <a href="{{ route('tutor.ciclo', $ciclo->id) }}" class="al-btn al-btn-petroleo flex-fill justify-content-center">
+                                        <i class="fas fa-chart-line"></i> Seguimiento
+                                    </a>
+                                    <a href="{{ route('tutor.asistencias', $ciclo->id) }}" class="al-btn al-btn-borde justify-content-center" title="Ver control de asistencia del ciclo">
+                                        <i class="fas fa-clipboard-check"></i> Asistencia
                                     </a>
                                 </div>
                             </div>

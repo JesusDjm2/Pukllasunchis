@@ -75,6 +75,14 @@
         <button type="button" class="al-tab" role="tab" data-panel="alumnos">
             <i class="fas fa-users"></i> Alumnos<span class="d-none d-sm-inline"> y contacto</span> <span class="al-badge is-muted">{{ $alumnos->count() }}</span>
         </button>
+        <button type="button" class="al-tab" role="tab" data-panel="asistencia">
+            <i class="fas fa-clipboard-check"></i> Asistencia<span class="d-none d-sm-inline"> del ciclo</span>
+            @if (($resumenAsistencia['total_en_alerta'] ?? 0) > 0)
+                <span class="al-badge is-mal" title="Alumnos en alerta por faltas">{{ $resumenAsistencia['total_en_alerta'] }}</span>
+            @else
+                <span class="al-badge is-muted">{{ $resumenAsistencia['total_sesiones'] ?? 0 }}</span>
+            @endif
+        </button>
     </div>
 
     <section class="al-ui al-panel" role="tabpanel" data-panel="seguimiento">
@@ -97,6 +105,10 @@
         'panelId'   => 'pkAlCiclo'.$ciclo->id,
     ])
     </section>
+
+    <section class="al-panel" role="tabpanel" data-panel="asistencia" hidden>
+        @include('tutor.partials.asistencia')
+    </section>
     </div>{{-- /pestañas --}}
 </div>
 
@@ -104,4 +116,13 @@
     'remitenteNombre' => $nombreTutor,
     'remitenteCorreo' => $docenteTutor?->email ?: auth()->user()->email,
 ])
+
+@if (session('activar_tab') === 'asistencia')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var tab = document.querySelector('[data-al-tabs] [data-panel="asistencia"]');
+    if (tab) tab.click();
+});
+</script>
+@endif
 @endsection

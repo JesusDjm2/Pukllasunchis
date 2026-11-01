@@ -172,6 +172,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/tutorias/{tutoria}/estado', [App\Http\Controllers\TutoriaController::class, 'marcarEstado'])->name('tutorias.estado');
         Route::post('/sugerencias/{sugerencia}/estado', [App\Http\Controllers\SugerenciaController::class, 'marcarEstado'])->name('sugerencias.estado');
         Route::post('/ciclo/{ciclo}/mensaje', [App\Http\Controllers\TutorController::class, 'enviarMensaje'])->name('mensaje')->middleware('throttle:10,1');
+        Route::get('/ciclo/{ciclo}/asistencias', [App\Http\Controllers\TutorController::class, 'asistencias'])->name('asistencias');
     });
 
     // ── Notificaciones (in-app) ──────────────────────────────
@@ -244,6 +245,12 @@ Route::middleware('auth')->group(function () {
     Route::match(['get', 'post'], 'docentes/{docente}/cursosPPD/{curso}/calificar', [DocenteCOntroller::class, 'calificarCursoPPD'])->name('competencias.calificar.ppd')->middleware('role:docente|admin|super-admin');
     Route::post('/docentes/blog/{id}', [DocenteCOntroller::class, 'updateBlog'])->name('docentes.updateBlog');
 
+    // ── Asistencias (docente toma lista y ve historial) ────────
+    Route::get('/docente/{docente}/curso/{curso}/asistencia', [\App\Http\Controllers\DocenteAsistenciaController::class, 'tomar'])->name('docente.asistencia.tomar');
+    Route::post('/docente/{docente}/curso/{curso}/asistencia', [\App\Http\Controllers\DocenteAsistenciaController::class, 'guardar'])->name('docente.asistencia.guardar');
+    Route::get('/docente/{docente}/curso/{curso}/asistencia/historial', [\App\Http\Controllers\DocenteAsistenciaController::class, 'historial'])->name('docente.asistencia.historial');
+    Route::delete('/docente/{docente}/curso/{curso}/asistencia/{asistencia}', [\App\Http\Controllers\DocenteAsistenciaController::class, 'eliminar'])->name('docente.asistencia.eliminar');
+
     // ── Taq'e — vista de solo lectura del docente, por curso ────
     Route::get('docentes/{docente}/cursos/{curso}/taqe', [DocenteCOntroller::class, 'verTaqe'])->name('docente.curso.taqe');
 
@@ -295,6 +302,10 @@ Route::middleware('auth')->group(function () {
         ->name('admin.tutorias.destroy')->middleware('role:admin|super-admin');
     Route::delete('admin/sugerencias/{sugerencia}', [App\Http\Controllers\SugerenciaController::class, 'destroy'])
         ->name('admin.sugerencias.destroy')->middleware('role:admin|super-admin');
+
+    // ── Control de Asistencias (Dirección y Coordinación Académica) ──
+    Route::get('admin/asistencias', [\App\Http\Controllers\AsistenciaAdminController::class, 'index'])->name('admin.asistencias.index')->middleware('role:admin|super-admin|adminB');
+    Route::get('admin/asistencias/{asistencia}', [\App\Http\Controllers\AsistenciaAdminController::class, 'show'])->name('admin.asistencias.show')->middleware('role:admin|super-admin|adminB');
 
     Route::prefix('docente/{docente}/incidencias')->name('docente.incidencias.')->group(function () {
         Route::get('/', [App\Http\Controllers\IncidenciaController::class, 'index'])->name('index');

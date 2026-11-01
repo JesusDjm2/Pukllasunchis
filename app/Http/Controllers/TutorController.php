@@ -53,8 +53,9 @@ class TutorController extends Controller
         $contactos = $alumnos->mapWithKeys(fn ($a) => [$a->id => ContactoAlumno::desdeAlumno($a)]);
         $puedeEscribir = (bool) $user->docente;
         $seguimiento = SeguimientoCiclo::de($ciclo, $alumnos);
+        $resumenAsistencia = \App\Services\AsistenciaService::resumenCiclo($ciclo);
 
-        return view('tutor.ciclo', compact('ciclo', 'alumnos', 'contactos', 'puedeEscribir', 'seguimiento'));
+        return view('tutor.ciclo', compact('ciclo', 'alumnos', 'contactos', 'puedeEscribir', 'seguimiento', 'resumenAsistencia'));
     }
 
     /** El tutor escribe por correo a uno, varios o todos los alumnos de un ciclo que tutorea. */
@@ -130,5 +131,10 @@ class TutorController extends Controller
         }
 
         return view('tutor.qr', $data);
+    }
+
+    public function asistencias($cicloId)
+    {
+        return redirect()->route('tutor.ciclo', ['ciclo' => $cicloId])->with('activar_tab', 'asistencia');
     }
 }
