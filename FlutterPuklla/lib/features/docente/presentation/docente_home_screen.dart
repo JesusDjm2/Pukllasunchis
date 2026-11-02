@@ -41,6 +41,30 @@ class _DocenteHomeScreenState extends ConsumerState<DocenteHomeScreen> {
     );
   }
 
+  void _mostrarModalCalificar(BuildContext context, DocenteCurso curso) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _ModalCalificarCurso(curso: curso),
+    );
+  }
+
+  void _mostrarModalSelectorCalificar(BuildContext context, List<DocenteCurso> cursos) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _ModalSelectorCalificar(
+        cursos: cursos,
+        onSeleccionarCurso: (c) {
+          Navigator.pop(ctx);
+          _mostrarModalCalificar(context, c);
+        },
+      ),
+    );
+  }
+
   void _mostrarModalTutoria(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -82,6 +106,27 @@ class _DocenteHomeScreenState extends ConsumerState<DocenteHomeScreen> {
     final resumenAsync = ref.watch(docenteResumenProvider);
     final cursosAsync = ref.watch(docenteCursosProvider);
     final nombre = ref.watch(authControllerProvider).user?.name ?? 'Docente';
+    final cursos = cursosAsync.valueOrNull ?? [];
+
+    // Reaccionar a las acciones disparadas desde la barra de navegación inferior
+    ref.listen<DocenteModalVista?>(docenteModalVistaProvider, (prev, next) {
+      if (next == null) return;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        ref.read(docenteModalVistaProvider.notifier).state = null;
+        switch (next) {
+          case DocenteModalVista.alumnos:
+            _mostrarModalAlumnos(context);
+            break;
+          case DocenteModalVista.calificar:
+            _mostrarModalSelectorCalificar(context, cursos);
+            break;
+          case DocenteModalVista.tutoria:
+            _mostrarModalTutoria(context);
+            break;
+        }
+      });
+    });
 
     return Scaffold(
       appBar: AppBar(
@@ -174,6 +219,7 @@ class _DocenteHomeScreenState extends ConsumerState<DocenteHomeScreen> {
                               child: _TarjetaCursoSenior(
                                 curso: curso,
                                 onVerAlumnos: () => _mostrarModalAlumnos(context, cursoIdFiltro: curso.id),
+                                onCalificar: () => _mostrarModalCalificar(context, curso),
                               ),
                             ),
                         ],
@@ -796,10 +842,12 @@ class _TarjetaCursoSenior extends StatelessWidget {
   const _TarjetaCursoSenior({
     required this.curso,
     required this.onVerAlumnos,
+    required this.onCalificar,
   });
 
   final DocenteCurso curso;
   final VoidCallback onVerAlumnos;
+  final VoidCallback onCalificar;
 
   static const _etiquetas = {
     'parcial_1': 'Parcial 1',
@@ -945,45 +993,88 @@ class _TarjetaCursoSenior extends StatelessWidget {
                         ),
                       ),
 
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 10),
 
-                    // Badge de Sílabo institucional
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: curso.silaboListo
-                            ? (isDark ? const Color(0xFF064E3B).withValues(alpha: 0.35) : const Color(0xFF10B981).withValues(alpha: 0.12))
-                            : (isDark ? const Color(0xFF78350F).withValues(alpha: 0.35) : const Color(0xFFF59E0B).withValues(alpha: 0.12)),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: curso.silaboListo
-                              ? (isDark ? const Color(0xFF059669).withValues(alpha: 0.4) : const Color(0xFFA7F3D0))
-                              : (isDark ? const Color(0xFFD97706).withValues(alpha: 0.4) : const Color(0xFFFDE68A)),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            curso.silaboListo ? Icons.check_circle_outline : Icons.error_outline,
-                            size: 14,
+                    // Fila de acciones del curso: Sílabo institucional y Botón Calificar
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // Badge de Sílabo institucional
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                          decoration: BoxDecoration(
                             color: curso.silaboListo
-                                ? (isDark ? const Color(0xFF34D399) : const Color(0xFF0B7A43))
-                                : (isDark ? const Color(0xFFFBBF24) : const Color(0xFFB45309)),
-                          ),
-                          const SizedBox(width: 5),
-                          Text(
-                            curso.silaboListo ? 'Sílabo registrado' : 'Sílabo pendiente',
-                            style: TextStyle(
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w700,
+                                ? (isDark ? const Color(0xFF064E3B).withValues(alpha: 0.35) : const Color(0xFF10B981).withValues(alpha: 0.12))
+                                : (isDark ? const Color(0xFF78350F).withValues(alpha: 0.35) : const Color(0xFFF59E0B).withValues(alpha: 0.12)),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
                               color: curso.silaboListo
-                                  ? (isDark ? const Color(0xFF34D399) : const Color(0xFF0B7A43))
-                                  : (isDark ? const Color(0xFFFBBF24) : const Color(0xFFB45309)),
+                                  ? (isDark ? const Color(0xFF059669).withValues(alpha: 0.4) : const Color(0xFFA7F3D0))
+                                  : (isDark ? const Color(0xFFD97706).withValues(alpha: 0.4) : const Color(0xFFFDE68A)),
                             ),
                           ),
-                        ],
-                      ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                curso.silaboListo ? Icons.check_circle_outline : Icons.error_outline,
+                                size: 14,
+                                color: curso.silaboListo
+                                    ? (isDark ? const Color(0xFF34D399) : const Color(0xFF0B7A43))
+                                    : (isDark ? const Color(0xFFFBBF24) : const Color(0xFFB45309)),
+                              ),
+                              const SizedBox(width: 5),
+                              Text(
+                                curso.silaboListo ? 'Sílabo registrado' : 'Sílabo pendiente',
+                                style: TextStyle(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: curso.silaboListo
+                                      ? (isDark ? const Color(0xFF34D399) : const Color(0xFF0B7A43))
+                                      : (isDark ? const Color(0xFFFBBF24) : const Color(0xFFB45309)),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // Botón dorado Calificar (espejo del botón de la app web)
+                        PukllaScaleTap(
+                          onTap: onCalificar,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6.5),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [AppColors.gold, Color(0xFFD97706)],
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.gold.withValues(alpha: 0.30),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.edit_note_rounded, size: 16, color: Colors.white),
+                                SizedBox(width: 5),
+                                Text(
+                                  'Calificar',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.white,
+                                    letterSpacing: 0.2,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -2333,6 +2424,658 @@ class _ItemTitulacion extends StatelessWidget {
                   ),
                 ),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Hoja Modal para seleccionar el curso a calificar (disparada desde el botón "Calificar" de la barra inferior)
+class _ModalSelectorCalificar extends StatelessWidget {
+  const _ModalSelectorCalificar({
+    required this.cursos,
+    required this.onSeleccionarCurso,
+  });
+
+  final List<DocenteCurso> cursos;
+  final ValueChanged<DocenteCurso> onSeleccionarCurso;
+
+  static const _etiquetas = {
+    'parcial_1': 'Parcial 1',
+    'parcial_2': 'Parcial 2',
+    'desempeno': 'Desempeño',
+    'calificado': 'Avance General',
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = PukllaDashboardStyles.isDark(context);
+
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.82,
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkSurface : Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.5 : 0.2),
+            blurRadius: 25,
+            offset: const Offset(0, -5),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Barra de arrastre
+          Center(
+            child: Container(
+              width: 44,
+              height: 4.5,
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.darkBorder : Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(3),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Cabecera del selector
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.gold.withValues(alpha: isDark ? 0.22 : 0.15),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.edit_note_rounded, color: AppColors.gold, size: 24),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Calificar Cursos',
+                      style: TextStyle(
+                        fontSize: 16.5,
+                        fontWeight: FontWeight.w800,
+                        color: isDark ? AppColors.darkText : const Color(0xFF0F172A),
+                      ),
+                    ),
+                    Text(
+                      'Selecciona uno de tus cursos asignados para ingresar notas',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark ? AppColors.darkMuted : const Color(0xFF64748B),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: Icon(Icons.close, size: 20, color: isDark ? AppColors.darkMuted : const Color(0xFF64748B)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Divider(height: 1, color: PukllaDashboardStyles.borderColor(context)),
+          const SizedBox(height: 12),
+
+          // Lista de cursos disponibles
+          Expanded(
+            child: cursos.isEmpty
+                ? const Center(
+                    child: EmptyState(
+                      icon: Icons.school_outlined,
+                      message: 'No tienes cursos activos para calificar en este período lectivo.',
+                    ),
+                  )
+                : ListView.separated(
+                    itemCount: cursos.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    itemBuilder: (context, i) {
+                      final curso = cursos[i];
+                      return Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: PukllaDashboardStyles.borderColor(context)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        curso.nombre,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 14.5,
+                                          color: isDark ? AppColors.darkText : const Color(0xFF0F172A),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 5),
+                                      Wrap(
+                                        spacing: 6,
+                                        runSpacing: 4,
+                                        children: [
+                                          if (curso.programa != null && curso.programa!.isNotEmpty)
+                                            _InfoPill(icon: Icons.school_outlined, texto: curso.programa!),
+                                          if (curso.ciclo != null && curso.ciclo!.isNotEmpty)
+                                            _InfoPill(icon: Icons.repeat, texto: 'Ciclo ${curso.ciclo}'),
+                                          _InfoPill(icon: Icons.people_outline, texto: '${curso.alumnosCount} alumnos'),
+                                          _InfoPill(icon: Icons.badge_outlined, texto: curso.area.toUpperCase()),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+
+                            // Barras de progreso resumidas
+                            for (final entrada in curso.progreso.entries)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 6),
+                                child: _BarraProgresoSenior(
+                                  etiqueta: _etiquetas[entrada.key] ?? entrada.key,
+                                  valor: entrada.value,
+                                ),
+                              ),
+
+                            const SizedBox(height: 10),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                // Badge Sílabo
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: curso.silaboListo
+                                        ? (isDark ? const Color(0xFF064E3B).withValues(alpha: 0.35) : const Color(0xFF10B981).withValues(alpha: 0.12))
+                                        : (isDark ? const Color(0xFF78350F).withValues(alpha: 0.35) : const Color(0xFFF59E0B).withValues(alpha: 0.12)),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    curso.silaboListo ? 'Sílabo OK' : 'Sílabo pendiente',
+                                    style: TextStyle(
+                                      fontSize: 10.5,
+                                      fontWeight: FontWeight.w700,
+                                      color: curso.silaboListo
+                                          ? (isDark ? const Color(0xFF34D399) : const Color(0xFF0B7A43))
+                                          : (isDark ? const Color(0xFFFBBF24) : const Color(0xFFB45309)),
+                                    ),
+                                  ),
+                                ),
+
+                                // Botón Calificar
+                                PukllaScaleTap(
+                                  onTap: () => onSeleccionarCurso(curso),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                                    decoration: BoxDecoration(
+                                      gradient: const LinearGradient(
+                                        colors: [AppColors.gold, Color(0xFFD97706)],
+                                      ),
+                                      borderRadius: BorderRadius.circular(8),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: AppColors.gold.withValues(alpha: 0.28),
+                                          blurRadius: 6,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: const Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.edit_note_rounded, size: 16, color: Colors.white),
+                                        SizedBox(width: 6),
+                                        Text(
+                                          'Calificar este curso',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w800,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Hoja Modal para calificar y revisar evaluaciones de un curso específico
+class _ModalCalificarCurso extends ConsumerStatefulWidget {
+  const _ModalCalificarCurso({required this.curso});
+
+  final DocenteCurso curso;
+
+  @override
+  ConsumerState<_ModalCalificarCurso> createState() => _ModalCalificarCursoState();
+}
+
+class _ModalCalificarCursoState extends ConsumerState<_ModalCalificarCurso> {
+  final TextEditingController _busquedaController = TextEditingController();
+  String _filtroTexto = '';
+
+  @override
+  void dispose() {
+    _busquedaController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _abrirRubricaWeb() async {
+    final uri = Uri.parse('http://127.0.0.1:8001/docentes');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    }
+  }
+
+  Future<void> _contactarPorEmail(String email) async {
+    final uri = Uri.parse('mailto:$email');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    }
+  }
+
+  Future<void> _contactarPorTelefono(String telefono) async {
+    final uri = Uri.parse('tel:$telefono');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    }
+  }
+
+  static const _etiquetas = {
+    'parcial_1': 'Parcial 1',
+    'parcial_2': 'Parcial 2',
+    'desempeno': 'Desempeño',
+    'calificado': 'Avance General',
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = PukllaDashboardStyles.isDark(context);
+    final curso = widget.curso;
+    final alumnosAsync = ref.watch(docenteAlumnosProvider);
+
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.88,
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkSurface : Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.5 : 0.2),
+            blurRadius: 25,
+            offset: const Offset(0, -5),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Barra de arrastre
+          Center(
+            child: Container(
+              width: 44,
+              height: 4.5,
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.darkBorder : Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(3),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Cabecera con datos del curso
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(9),
+                decoration: BoxDecoration(
+                  color: AppColors.gold.withValues(alpha: isDark ? 0.22 : 0.15),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.edit_note_rounded, color: AppColors.gold, size: 24),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      curso.nombre,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: isDark ? AppColors.darkText : const Color(0xFF0F172A),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 4,
+                      children: [
+                        if (curso.programa != null)
+                          _InfoPill(icon: Icons.school_outlined, texto: curso.programa!),
+                        if (curso.ciclo != null)
+                          _InfoPill(icon: Icons.repeat, texto: 'Ciclo ${curso.ciclo}'),
+                        _InfoPill(icon: Icons.people_outline, texto: '${curso.alumnosCount} alumnos'),
+                        _InfoPill(icon: Icons.badge_outlined, texto: curso.area.toUpperCase()),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: Icon(Icons.close, size: 20, color: isDark ? AppColors.darkMuted : const Color(0xFF64748B)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+
+          // Tarjeta de Registro Oficial Web (Espejo de competencias.calificar en Laravel)
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.teal.withValues(alpha: isDark ? 0.18 : 0.08),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: AppColors.teal.withValues(alpha: isDark ? 0.40 : 0.25),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.teal.withValues(alpha: isDark ? 0.25 : 0.15),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.sync_rounded, color: AppColors.teal, size: 20),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Registro de Rúbricas y Competencias',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w700,
+                          color: isDark ? AppColors.darkText : AppColors.tealDark,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Ingresa las notas oficiales y firmas ministeriales en el módulo web.',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: isDark ? AppColors.darkMuted : const Color(0xFF475569),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                PukllaScaleTap(
+                  onTap: _abrirRubricaWeb,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: AppColors.teal,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.open_in_browser_rounded, size: 15, color: Colors.white),
+                        SizedBox(width: 4),
+                        Text(
+                          'Abrir Web',
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Avance de evaluaciones del curso
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: PukllaDashboardStyles.borderColor(context)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Avance de Calificaciones',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: isDark ? AppColors.darkMuted : const Color(0xFF475569),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                for (final entrada in curso.progreso.entries)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 6),
+                    child: _BarraProgresoSenior(
+                      etiqueta: _etiquetas[entrada.key] ?? entrada.key,
+                      valor: entrada.value,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Buscador de alumnos en este curso
+          Container(
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: PukllaDashboardStyles.borderColor(context)),
+            ),
+            child: TextField(
+              controller: _busquedaController,
+              onChanged: (val) => setState(() => _filtroTexto = val.trim().toLowerCase()),
+              style: TextStyle(
+                fontSize: 13,
+                color: isDark ? AppColors.darkText : const Color(0xFF0F172A),
+              ),
+              decoration: InputDecoration(
+                hintText: 'Buscar alumno en este curso...',
+                hintStyle: TextStyle(
+                  fontSize: 12,
+                  color: isDark ? AppColors.darkMuted : const Color(0xFF94A3B8),
+                ),
+                prefixIcon: const Icon(Icons.search, size: 18, color: AppColors.gold),
+                suffixIcon: _filtroTexto.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear, size: 16),
+                        onPressed: () {
+                          _busquedaController.clear();
+                          setState(() => _filtroTexto = '');
+                        },
+                      )
+                    : null,
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          // Listado de estudiantes del curso
+          Expanded(
+            child: alumnosAsync.when(
+              loading: () => const Center(
+                child: PukllaPreloader.inline(mensaje: 'Cargando alumnos del curso...'),
+              ),
+              error: (err, _) => Center(
+                child: ErrorState(
+                  message: 'No se pudo cargar la lista de alumnos: $err',
+                  onRetry: () => ref.refresh(docenteAlumnosProvider),
+                ),
+              ),
+              data: (cursosAlumnos) {
+                // Filtrar el curso específico por id o nombre
+                DocenteCursoAlumnos? cursoAlumnos;
+                for (final ca in cursosAlumnos) {
+                  if (ca.cursoId == curso.id ||
+                      ca.cursoNombre.trim().toLowerCase() == curso.nombre.trim().toLowerCase()) {
+                    cursoAlumnos = ca;
+                    break;
+                  }
+                }
+
+                final alumnos = cursoAlumnos?.alumnos ?? [];
+                final alumnosFiltrados = alumnos.where((a) {
+                  if (_filtroTexto.isEmpty) return true;
+                  final nombre = a.nombreCompleto.toLowerCase();
+                  final dni = a.dni?.toLowerCase() ?? '';
+                  final email = a.email?.toLowerCase() ?? '';
+                  return nombre.contains(_filtroTexto) || dni.contains(_filtroTexto) || email.contains(_filtroTexto);
+                }).toList();
+
+                if (alumnosFiltrados.isEmpty) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.person_search_outlined, size: 40, color: isDark ? AppColors.darkMuted : const Color(0xFF94A3B8)),
+                          const SizedBox(height: 10),
+                          Text(
+                            _filtroTexto.isEmpty
+                                ? 'No se registran alumnos matriculados en este curso.'
+                                : 'No se encontraron alumnos para "$_filtroTexto".',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              color: isDark ? AppColors.darkMuted : const Color(0xFF64748B),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+
+                return ListView.separated(
+                  itemCount: alumnosFiltrados.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
+                  itemBuilder: (context, idx) {
+                    final a = alumnosFiltrados[idx];
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: isDark ? AppColors.darkBorder.withValues(alpha: 0.5) : const Color(0xFFF1F5F9),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 16,
+                            backgroundColor: AppColors.teal.withValues(alpha: isDark ? 0.25 : 0.15),
+                            child: Text(
+                              a.nombreCompleto.isNotEmpty ? a.nombreCompleto[0].toUpperCase() : '?',
+                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: AppColors.teal),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  a.nombreCompleto,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: isDark ? AppColors.darkText : const Color(0xFF0F172A),
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  [
+                                    if (a.dni != null && a.dni!.isNotEmpty) 'DNI: ${a.dni}',
+                                    if (a.email != null && a.email!.isNotEmpty) a.email,
+                                  ].join(' · '),
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: isDark ? AppColors.darkMuted : const Color(0xFF64748B),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          // Contacto rápido
+                          if (a.telefono != null && a.telefono!.isNotEmpty)
+                            IconButton(
+                              icon: const Icon(Icons.phone_outlined, size: 17, color: Color(0xFF10B981)),
+                              tooltip: 'Llamar a ${a.telefono}',
+                              onPressed: () => _contactarPorTelefono(a.telefono!),
+                            ),
+                          if (a.email != null && a.email!.isNotEmpty)
+                            IconButton(
+                              icon: const Icon(Icons.email_outlined, size: 17, color: AppColors.teal),
+                              tooltip: 'Enviar correo',
+                              onPressed: () => _contactarPorEmail(a.email!),
+                            ),
+                        ],
+                      ),
+                    );
+                  },
+                );
+              },
             ),
           ),
         ],

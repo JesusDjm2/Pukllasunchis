@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/auth/application/auth_controller.dart';
+import '../../features/docente/application/docente_providers.dart';
 import '../theme/app_colors.dart';
 import '../theme/puklla_dashboard_styles.dart';
 
@@ -29,23 +30,13 @@ class PukllaBottomNavBar extends ConsumerWidget {
 
     final user = ref.watch(authControllerProvider).user;
     final esDocenteOTutor = user != null && user.isDocenteOTutor;
+    final resumen = esDocenteOTutor ? ref.watch(docenteResumenProvider).valueOrNull : null;
+    final esTutor = user?.isTutor == true || resumen?.esTutor == true;
     final homeRoute = esDocenteOTutor ? '/docente' : '/home';
 
     int? activeIndex;
-    if (esDocenteOTutor) {
-      if (location == '/docente') {
-        activeIndex = 0;
-      } else if (location.startsWith('/docente/incidencias')) {
-        activeIndex = 1;
-      } else if (location.startsWith('/cursos-especiales')) {
-        activeIndex = 2;
-      } else if (location.startsWith('/bolsa-trabajo')) {
-        activeIndex = 3;
-      } else if (location.startsWith('/comunicados')) {
-        activeIndex = 4;
-      }
-    } else {
-      if (location == '/home' || location == '/docente') {
+    if (!esDocenteOTutor) {
+      if (location == '/home') {
         activeIndex = 0;
       } else if (location.startsWith('/calificaciones')) {
         activeIndex = 1;
@@ -68,6 +59,13 @@ class PukllaBottomNavBar extends ConsumerWidget {
           Navigator.of(context).pushNamed(targetRoute);
         }
       } catch (_) {}
+    }
+
+    void abrirModalDocente(DocenteModalVista vista) {
+      ref.read(docenteModalVistaProvider.notifier).state = vista;
+      if (location != '/docente') {
+        navigateTo('/docente');
+      }
     }
 
     return Container(
@@ -99,48 +97,61 @@ class PukllaBottomNavBar extends ConsumerWidget {
                 ? [
                     _NavItem(
                       index: 0,
-                      label: 'Mi Panel',
-                      icon: Icons.dashboard_outlined,
-                      selectedIcon: Icons.dashboard_rounded,
-                      isSelected: activeIndex == 0,
+                      label: 'Cursos',
+                      icon: Icons.school_outlined,
+                      selectedIcon: Icons.school_rounded,
+                      isSelected: location == '/docente',
                       isDark: isDark,
                       onTap: () => navigateTo('/docente'),
                     ),
                     _NavItem(
                       index: 1,
-                      label: 'Incidencias',
-                      icon: Icons.assignment_outlined,
-                      selectedIcon: Icons.assignment_rounded,
-                      isSelected: activeIndex == 1,
+                      label: 'Calificar',
+                      icon: Icons.edit_note_outlined,
+                      selectedIcon: Icons.edit_note_rounded,
+                      isSelected: false,
                       isDark: isDark,
-                      onTap: () => navigateTo('/docente/incidencias'),
+                      onTap: () => abrirModalDocente(DocenteModalVista.calificar),
                     ),
                     _NavItem(
                       index: 2,
-                      label: 'Asincrónicos',
-                      icon: Icons.school_outlined,
-                      selectedIcon: Icons.school_rounded,
-                      isSelected: activeIndex == 2,
+                      label: 'Alumnos',
+                      icon: Icons.people_alt_outlined,
+                      selectedIcon: Icons.people_alt_rounded,
+                      isSelected: false,
                       isDark: isDark,
-                      onTap: () => navigateTo('/cursos-especiales'),
+                      onTap: () => abrirModalDocente(DocenteModalVista.alumnos),
                     ),
-                    _NavItem(
-                      index: 3,
-                      label: 'Bolsa',
-                      icon: Icons.work_outline_rounded,
-                      selectedIcon: Icons.work_rounded,
-                      isSelected: activeIndex == 3,
-                      isDark: isDark,
-                      onTap: () => navigateTo('/bolsa-trabajo'),
-                    ),
+                    if (esTutor)
+                      _NavItem(
+                        index: 3,
+                        label: 'Tutoría',
+                        icon: Icons.support_agent_outlined,
+                        selectedIcon: Icons.support_agent_rounded,
+                        isSelected: false,
+                        isDark: isDark,
+                        onTap: () => abrirModalDocente(DocenteModalVista.tutoria),
+                      )
+                    else
+                      _NavItem(
+                        index: 3,
+                        label: 'Incidencias',
+                        icon: Icons.assignment_outlined,
+                        selectedIcon: Icons.assignment_rounded,
+                        isSelected: location.startsWith('/docente/incidencias'),
+                        isDark: isDark,
+                        onTap: () => navigateTo('/docente/incidencias'),
+                      ),
                     _NavItem(
                       index: 4,
-                      label: 'Avisos',
-                      icon: Icons.campaign_outlined,
-                      selectedIcon: Icons.campaign_rounded,
-                      isSelected: activeIndex == 4,
+                      label: esTutor ? 'Incidencias' : 'Avisos',
+                      icon: esTutor ? Icons.assignment_outlined : Icons.campaign_outlined,
+                      selectedIcon: esTutor ? Icons.assignment_rounded : Icons.campaign_rounded,
+                      isSelected: esTutor
+                          ? location.startsWith('/docente/incidencias')
+                          : location.startsWith('/comunicados'),
                       isDark: isDark,
-                      onTap: () => navigateTo('/comunicados'),
+                      onTap: () => navigateTo(esTutor ? '/docente/incidencias' : '/comunicados'),
                     ),
                   ]
                 : [

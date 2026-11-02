@@ -29,3 +29,8 @@ final docenteAlumnosProvider = FutureProvider<List<DocenteCursoAlumnos>>((ref) {
 final docenteTutorDashboardProvider = FutureProvider<DocenteTutorDashboard>((ref) {
   return ref.watch(docenteRepositoryProvider).fetchTutorDashboard();
 });
+
+/// Vistas y hojas modales activadas desde la barra de navegación inferior del docente
+enum DocenteModalVista { alumnos, calificar, tutoria }
+
+final docenteModalVistaProvider = StateProvider<DocenteModalVista?>((ref) => null);
