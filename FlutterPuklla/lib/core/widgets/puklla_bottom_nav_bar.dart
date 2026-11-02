@@ -118,9 +118,9 @@ class PukllaBottomNavBar extends ConsumerWidget {
                       label: 'Alumnos',
                       icon: Icons.people_alt_outlined,
                       selectedIcon: Icons.people_alt_rounded,
-                      isSelected: false,
+                      isSelected: location.startsWith('/docente/alumnos'),
                       isDark: isDark,
-                      onTap: () => abrirModalDocente(DocenteModalVista.alumnos),
+                      onTap: () => navigateTo('/docente/alumnos'),
                     ),
                     if (esTutor)
                       _NavItem(

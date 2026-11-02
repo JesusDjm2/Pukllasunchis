@@ -82,7 +82,9 @@ class DocenteController extends Controller
         // Alumnos totales
         $totalAlumnos = 0;
         foreach ($cursos as $c) {
-            $totalAlumnos += $c->alumnosValidosIds()->count();
+            $totalAlumnos += $this->esPpd($c)
+                ? $this->alumnosPpdCount($c)
+                : $c->alumnosValidosIds()->count();
         }
 
         return response()->json([
@@ -135,25 +137,39 @@ class DocenteController extends Controller
             ->with(['ciclo.programa'])
             ->get()
             ->map(function (Curso $curso) {
-                $alumnosIds = $curso->alumnosValidosIds();
-                $alumnos = Alumno::whereIn('id', $alumnosIds)
-                    ->with('user')
-                    ->orderBy('apellidos')
-                    ->orderBy('nombres')
-                    ->get()
-                    ->map(fn (Alumno $a) => [
-                        'id' => $a->id,
-                        'nombre_completo' => $a->nombreCompleto(),
-                        'email' => $a->user?->email,
-                        'telefono' => $a->telefono,
-                        'dni' => $a->dni,
+                if ($this->esPpd($curso)) {
+                    $alumnosPpd = $this->alumnosPpdDelCurso($curso);
+                    $alumnos = $alumnosPpd->map(fn ($u) => [
+                        'id' => $u->id,
+                        'nombre_completo' => trim(($u->apellidos ?? '') . ', ' . ($u->name ?? ''), ', '),
+                        'email' => $u->email,
+                        'telefono' => $u->alumnoB?->numero ?: $u->telefono,
+                        'telefono_referencia' => $u->alumnoB?->numero_referencia,
+                        'dni' => $u->dni,
                     ])->values()->all();
+                } else {
+                    $alumnosIds = $curso->alumnosValidosIds();
+                    $alumnos = Alumno::whereIn('id', $alumnosIds)
+                        ->with('user')
+                        ->orderBy('apellidos')
+                        ->orderBy('nombres')
+                        ->get()
+                        ->map(fn (Alumno $a) => [
+                            'id' => $a->id,
+                            'nombre_completo' => $a->nombreCompleto(),
+                            'email' => $a->email ?: $a->user?->email,
+                            'telefono' => $a->numero ?: $a->user?->telefono,
+                            'telefono_referencia' => $a->numero_referencia,
+                            'dni' => $a->dni,
+                        ])->values()->all();
+                }
 
                 return [
                     'curso_id' => $curso->id,
                     'curso_nombre' => $curso->nombre,
                     'ciclo' => $curso->ciclo?->nombre,
                     'programa' => $curso->ciclo?->programa?->nombre,
+                    'area' => $this->esPpd($curso) ? 'ppd' : 'fid',
                     'total' => count($alumnos),
                     'alumnos' => $alumnos,
                 ];
@@ -249,5 +265,50 @@ class DocenteController extends Controller
         $silaboPdf = $curso->silabosPdf->firstWhere('periodo_actual_id', $periodoActual?->id);
 
         return (bool) ($silaboDelPeriodo || $silaboPdf || $curso->silabo);
+    }
+
+    private function alumnosPpdCount(Curso $curso): int
+    {
+        $programaId = $curso->ciclo?->programa_id;
+        if (! $programaId) {
+            return 0;
+        }
+
+        return \App\Models\User::where('programa_id', $programaId)
+            ->where(function ($q) {
+                $q->whereHas('roles', fn ($r) => $r->where('name', 'alumnoB'))
+                  ->orWhere(function ($q2) {
+                      $q2->whereHas('roles', fn ($r) => $r->where('name', 'inhabilitado'))
+                          ->where('perfil', '!=', 'Retirado');
+                  });
+            })
+            ->where(function ($q) {
+                $q->whereNull('condicion')->orWhere('condicion', '!=', 'Egresado');
+            })
+            ->count();
+    }
+
+    /** @return Collection<int, \App\Models\User> */
+    private function alumnosPpdDelCurso(Curso $curso): Collection
+    {
+        $programaId = $curso->ciclo?->programa_id;
+        if (! $programaId) {
+            return collect();
+        }
+
+        return \App\Models\User::with(['alumnoB', 'roles'])
+            ->where('programa_id', $programaId)
+            ->where(function ($q) {
+                $q->whereHas('roles', fn ($r) => $r->where('name', 'alumnoB'))
+                  ->orWhere(function ($q2) {
+                      $q2->whereHas('roles', fn ($r) => $r->where('name', 'inhabilitado'))
+                          ->where('perfil', '!=', 'Retirado');
+                  });
+            })
+            ->where(function ($q) {
+                $q->whereNull('condicion')->orWhere('condicion', '!=', 'Egresado');
+            })
+            ->orderBy('apellidos')
+            ->get();
     }
 }

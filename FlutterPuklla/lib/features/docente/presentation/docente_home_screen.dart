@@ -116,7 +116,7 @@ class _DocenteHomeScreenState extends ConsumerState<DocenteHomeScreen> {
         ref.read(docenteModalVistaProvider.notifier).state = null;
         switch (next) {
           case DocenteModalVista.alumnos:
-            _mostrarModalAlumnos(context);
+            context.push('/docente/alumnos');
             break;
           case DocenteModalVista.calificar:
             _mostrarModalSelectorCalificar(context, cursos);
@@ -218,7 +218,7 @@ class _DocenteHomeScreenState extends ConsumerState<DocenteHomeScreen> {
                               padding: const EdgeInsets.only(bottom: 14),
                               child: _TarjetaCursoSenior(
                                 curso: curso,
-                                onVerAlumnos: () => _mostrarModalAlumnos(context, cursoIdFiltro: curso.id),
+                                onVerAlumnos: () => context.push('/docente/alumnos?cursoId=${curso.id}'),
                                 onCalificar: () => _mostrarModalCalificar(context, curso),
                               ),
                             ),

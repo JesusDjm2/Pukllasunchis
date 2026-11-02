@@ -23,15 +23,19 @@ class DocenteCursoResource extends JsonResource
 
     public function toArray(Request $request): array
     {
+        $alumnosCount = $this->area === 'ppd'
+            ? $this->alumnosPpdCount()
+            : $this->alumnosValidosIds()->count();
+
         return [
             'id' => $this->id,
             'nombre' => $this->nombre,
             'area' => $this->area,
             'ciclo' => $this->ciclo?->nombre,
             'programa' => $this->ciclo?->programa?->nombre,
-            'creditos' => $this->creditos ?? 0,
-            'horas' => $this->horas ?? 0,
-            'alumnos_count' => $this->alumnosValidosIds()->count(),
+            'creditos' => (int) ($this->creditos ?? 0),
+            'horas' => (int) ($this->horas ?? 0),
+            'alumnos_count' => (int) $alumnosCount,
             'silabo_listo' => $this->silaboListo,
             'progreso' => $this->area === 'ppd'
                 ? ['calificado' => round($this->porcentajePPD(), 1)]
@@ -41,5 +45,26 @@ class DocenteCursoResource extends JsonResource
                     'desempeno' => round($this->porcentajePeriodo(3), 1),
                 ],
         ];
+    }
+
+    private function alumnosPpdCount(): int
+    {
+        $programaId = $this->ciclo?->programa_id;
+        if (! $programaId) {
+            return 0;
+        }
+
+        return \App\Models\User::where('programa_id', $programaId)
+            ->where(function ($q) {
+                $q->whereHas('roles', fn ($r) => $r->where('name', 'alumnoB'))
+                  ->orWhere(function ($q2) {
+                      $q2->whereHas('roles', fn ($r) => $r->where('name', 'inhabilitado'))
+                          ->where('perfil', '!=', 'Retirado');
+                  });
+            })
+            ->where(function ($q) {
+                $q->whereNull('condicion')->orWhere('condicion', '!=', 'Egresado');
+            })
+            ->count();
     }
 }

@@ -121,6 +121,12 @@ class AppDrawer extends ConsumerWidget {
                       currentLocation: location,
                     ),
                     _DrawerItem(
+                      icon: Icons.people_alt_outlined,
+                      label: 'Directorio de Alumnos',
+                      route: '/docente/alumnos',
+                      currentLocation: location,
+                    ),
+                    _DrawerItem(
                       icon: Icons.assignment_outlined,
                       label: 'Mis Incidencias',
                       route: '/docente/incidencias',

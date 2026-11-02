@@ -1,3 +1,11 @@
+int _asInt(dynamic v) {
+  if (v == null) return 0;
+  if (v is int) return v;
+  if (v is num) return v.toInt();
+  if (v is String) return int.tryParse(v) ?? 0;
+  return 0;
+}
+
 class DocenteTutorCiclo {
   const DocenteTutorCiclo({
     required this.id,
@@ -7,7 +15,7 @@ class DocenteTutorCiclo {
 
   factory DocenteTutorCiclo.fromJson(Map<String, dynamic> json) {
     return DocenteTutorCiclo(
-      id: json['id'] as int? ?? 0,
+      id: _asInt(json['id']),
       nombre: json['nombre'] as String? ?? '',
       programa: json['programa'] as String?,
     );
@@ -110,14 +118,14 @@ class DocenteResumen {
 
     return DocenteResumen(
       periodoActual: json['periodo_actual'] as String?,
-      cursos: json['cursos'] as int? ?? 0,
-      cursosFid: json['cursos_fid'] as int? ?? 0,
-      cursosPpd: json['cursos_ppd'] as int? ?? 0,
-      cursosAsincronicos: json['cursos_asincronicos'] as int? ?? 0,
-      incidenciasTotal: json['incidencias_total'] as int? ?? 0,
-      incidenciasPendientes: json['incidencias_pendientes'] as int? ?? 0,
-      notificacionesSinLeer: json['notificaciones_sin_leer'] as int? ?? 0,
-      totalAlumnos: json['total_alumnos'] as int? ?? 0,
+      cursos: _asInt(json['cursos']),
+      cursosFid: _asInt(json['cursos_fid']),
+      cursosPpd: _asInt(json['cursos_ppd']),
+      cursosAsincronicos: _asInt(json['cursos_asincronicos']),
+      incidenciasTotal: _asInt(json['incidencias_total']),
+      incidenciasPendientes: _asInt(json['incidencias_pendientes']),
+      notificacionesSinLeer: _asInt(json['notificaciones_sin_leer']),
+      totalAlumnos: _asInt(json['total_alumnos']),
       roles: rolesList,
       esTutor: json['es_tutor'] as bool? ?? false,
       esInvestigador: json['es_investigador'] as bool? ?? false,
