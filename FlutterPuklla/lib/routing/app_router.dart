@@ -11,6 +11,7 @@ import '../features/comunicados/presentation/comunicados_screen.dart';
 import '../features/cursos_especiales/presentation/curso_especial_detalle_screen.dart';
 import '../features/cursos_especiales/presentation/cursos_especiales_screen.dart';
 import '../features/docente/presentation/docente_alumnos_screen.dart';
+import '../features/docente/presentation/docente_calificar_screen.dart';
 import '../features/docente/presentation/docente_home_screen.dart';
 import '../features/docente/presentation/docente_incidencias_screen.dart';
 import '../features/home/presentation/home_screen.dart';
@@ -125,6 +126,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           final cursoIdStr = state.uri.queryParameters['cursoId'];
           final cursoId = cursoIdStr != null ? int.tryParse(cursoIdStr) : null;
           return DocenteAlumnosScreen(cursoIdInicial: cursoId);
+        },
+      ),
+      GoRoute(
+        path: '/docente/calificar/:cursoId',
+        builder: (context, state) {
+          final idStr = state.pathParameters['cursoId'];
+          final cursoId = idStr != null ? int.tryParse(idStr) ?? 0 : 0;
+          return DocenteCalificarScreen(cursoId: cursoId);
         },
       ),
     ],

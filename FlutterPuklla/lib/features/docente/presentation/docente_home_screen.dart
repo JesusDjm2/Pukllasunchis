@@ -42,12 +42,7 @@ class _DocenteHomeScreenState extends ConsumerState<DocenteHomeScreen> {
   }
 
   void _mostrarModalCalificar(BuildContext context, DocenteCurso curso) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => _ModalCalificarCurso(curso: curso),
-    );
+    context.push('/docente/calificar/${curso.id}');
   }
 
   void _mostrarModalSelectorCalificar(BuildContext context, List<DocenteCurso> cursos) {
@@ -59,7 +54,7 @@ class _DocenteHomeScreenState extends ConsumerState<DocenteHomeScreen> {
         cursos: cursos,
         onSeleccionarCurso: (c) {
           Navigator.pop(ctx);
-          _mostrarModalCalificar(context, c);
+          context.push('/docente/calificar/${c.id}');
         },
       ),
     );
@@ -2132,6 +2127,45 @@ class _ModalTaqeDocente extends StatelessWidget {
                       );
                     },
                   ),
+          ),
+          const SizedBox(height: 12),
+          PukllaScaleTap(
+            onTap: () {
+              Navigator.pop(context);
+              context.push('/taqe');
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF8B5CF6), Color(0xFF6D28D9)],
+                ),
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF8B5CF6).withValues(alpha: 0.30),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.science_outlined, color: Colors.white, size: 18),
+                  SizedBox(width: 8),
+                  Text(
+                    "Abrir Espacio Taq'e Completo",
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),

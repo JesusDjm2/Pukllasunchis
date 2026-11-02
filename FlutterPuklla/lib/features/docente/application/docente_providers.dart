@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/docente_alumno.dart';
+import '../data/docente_calificar_data.dart';
 import '../data/docente_curso.dart';
 import '../data/docente_incidencia.dart';
 import '../data/docente_repository.dart';
@@ -28,6 +29,10 @@ final docenteAlumnosProvider = FutureProvider<List<DocenteCursoAlumnos>>((ref) {
 
 final docenteTutorDashboardProvider = FutureProvider<DocenteTutorDashboard>((ref) {
   return ref.watch(docenteRepositoryProvider).fetchTutorDashboard();
+});
+
+final docenteCalificacionesProvider = FutureProvider.family<DocenteCalificarData, int>((ref, cursoId) {
+  return ref.watch(docenteRepositoryProvider).fetchCalificaciones(cursoId);
 });
 
 /// Vistas y hojas modales activadas desde la barra de navegación inferior del docente
