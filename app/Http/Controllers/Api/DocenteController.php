@@ -305,12 +305,39 @@ class DocenteController extends Controller
                     'es_inhabilitado' => $u->roles->contains('name', 'inhabilitado'),
                     'no_matriculado' => false,
                     'calificacion' => $cal ? [
+                        'pp_c1_1' => $cal->pp_c1_1,
+                        'pp_c1_2' => $cal->pp_c1_2,
+                        'pp_c1_3' => $cal->pp_c1_3,
                         'pp_c1_4' => $cal->pp_c1_4,
+                        'pf_c1_1' => $cal->pf_c1_1,
+                        'pf_c1_2' => $cal->pf_c1_2,
                         'pf_c1_3' => $cal->pf_c1_3,
+                        'pg_c1_1' => $cal->pg_c1_1,
+                        'pg_c1_2' => $cal->pg_c1_2,
+                        'pg_c1_3' => $cal->pg_c1_3,
+
+                        'pp_c2_1' => $cal->pp_c2_1,
+                        'pp_c2_2' => $cal->pp_c2_2,
+                        'pp_c2_3' => $cal->pp_c2_3,
                         'pp_c2_4' => $cal->pp_c2_4,
+                        'pf_c2_1' => $cal->pf_c2_1,
+                        'pf_c2_2' => $cal->pf_c2_2,
                         'pf_c2_3' => $cal->pf_c2_3,
+                        'pg_c2_1' => $cal->pg_c2_1,
+                        'pg_c2_2' => $cal->pg_c2_2,
+                        'pg_c2_3' => $cal->pg_c2_3,
+
+                        'pp_c3_1' => $cal->pp_c3_1,
+                        'pp_c3_2' => $cal->pp_c3_2,
+                        'pp_c3_3' => $cal->pp_c3_3,
                         'pp_c3_4' => $cal->pp_c3_4,
+                        'pf_c3_1' => $cal->pf_c3_1,
+                        'pf_c3_2' => $cal->pf_c3_2,
                         'pf_c3_3' => $cal->pf_c3_3,
+                        'pg_c3_1' => $cal->pg_c3_1,
+                        'pg_c3_2' => $cal->pg_c3_2,
+                        'pg_c3_3' => $cal->pg_c3_3,
+
                         'calificacion_curso' => $cal->calificacion_curso,
                         'calificacion_sistema' => $cal->calificacion_sistema,
                         'nivel_desempeno' => $cal->nivel_desempeno,
@@ -439,22 +466,69 @@ class DocenteController extends Controller
                 }
 
                 $criterio = $ppdId ? ['curso_id' => $curso->id, 'ppd_id' => $ppdId] : ['curso_id' => $curso->id, 'user_id' => $userId];
-                Calificacionesppd::updateOrCreate(
-                    $criterio,
-                    [
-                        'user_id' => $userId,
-                        'pp_c1_4' => $data['pp_c1_4'] ?? null,
-                        'pf_c1_3' => $data['pf_c1_3'] ?? null,
-                        'pp_c2_4' => $data['pp_c2_4'] ?? null,
-                        'pf_c2_3' => $data['pf_c2_3'] ?? null,
-                        'pp_c3_4' => $data['pp_c3_4'] ?? null,
-                        'pf_c3_3' => $data['pf_c3_3'] ?? null,
-                        'nivel_desempeno' => $data['nivel_desempeno'] ?? null,
-                        'calificacion_curso' => isset($data['calificacion_curso']) ? (string) $data['calificacion_curso'] : null,
-                        'calificacion_sistema' => isset($data['calificacion_sistema']) ? (string) $data['calificacion_sistema'] : null,
-                        'observaciones' => $data['observaciones'] ?? null,
-                    ]
-                );
+
+                $ppdFields = [
+                    'user_id' => $userId,
+                    'nombre' => $data['nombre'] ?? 'Periodo 1',
+                    'fecha' => $data['fecha'] ?? now(),
+                    'observaciones' => $data['observaciones'] ?? null,
+                ];
+
+                $valoraciones = [];
+                for ($c = 1; $c <= 3; $c++) {
+                    $p1 = isset($data["pp_c{$c}_1"]) && $data["pp_c{$c}_1"] !== '' && $data["pp_c{$c}_1"] !== null ? (int)$data["pp_c{$c}_1"] : null;
+                    $p2 = isset($data["pp_c{$c}_2"]) && $data["pp_c{$c}_2"] !== '' && $data["pp_c{$c}_2"] !== null ? (int)$data["pp_c{$c}_2"] : null;
+                    $p4 = isset($data["pp_c{$c}_4"]) && $data["pp_c{$c}_4"] !== '' && $data["pp_c{$c}_4"] !== null
+                        ? (int)$data["pp_c{$c}_4"]
+                        : ($p1 !== null && $p2 !== null ? (int)round(($p1 + $p2) / 2) : ($p1 ?? $p2));
+
+                    $f1 = isset($data["pf_c{$c}_1"]) && $data["pf_c{$c}_1"] !== '' && $data["pf_c{$c}_1"] !== null ? (int)$data["pf_c{$c}_1"] : null;
+                    $f2 = isset($data["pf_c{$c}_2"]) && $data["pf_c{$c}_2"] !== '' && $data["pf_c{$c}_2"] !== null ? (int)$data["pf_c{$c}_2"] : null;
+                    $f3 = isset($data["pf_c{$c}_3"]) && $data["pf_c{$c}_3"] !== '' && $data["pf_c{$c}_3"] !== null
+                        ? (int)$data["pf_c{$c}_3"]
+                        : ($f1 !== null && $f2 !== null ? (int)round(($f1 + $f2) / 2) : ($f1 ?? $f2));
+
+                    $pg1 = $p4;
+                    $pg2 = $f3;
+                    $pg3 = isset($data["pg_c{$c}_3"]) && $data["pg_c{$c}_3"] !== '' && $data["pg_c{$c}_3"] !== null
+                        ? (int)$data["pg_c{$c}_3"]
+                        : ($p4 !== null && $f3 !== null ? (int)round($p4 * 0.4 + $f3 * 0.6) : ($p4 ?? $f3));
+
+                    $ppdFields["pp_c{$c}_1"] = $p1 !== null ? (string)$p1 : null;
+                    $ppdFields["pp_c{$c}_2"] = $p2 !== null ? (string)$p2 : null;
+                    $ppdFields["pp_c{$c}_3"] = $p4 !== null ? (string)$p4 : null;
+                    $ppdFields["pp_c{$c}_4"] = $p4 !== null ? (string)$p4 : null;
+
+                    $ppdFields["pf_c{$c}_1"] = $f1 !== null ? (string)$f1 : null;
+                    $ppdFields["pf_c{$c}_2"] = $f2 !== null ? (string)$f2 : null;
+                    $ppdFields["pf_c{$c}_3"] = $f3 !== null ? (string)$f3 : null;
+
+                    $ppdFields["pg_c{$c}_1"] = $pg1 !== null ? (string)$pg1 : null;
+                    $ppdFields["pg_c{$c}_2"] = $pg2 !== null ? (string)$pg2 : null;
+                    $ppdFields["pg_c{$c}_3"] = $pg3 !== null ? (string)$pg3 : null;
+
+                    if ($pg3 !== null && $c <= $numComps) {
+                        $valoraciones[] = $pg3;
+                    }
+                }
+
+                $califSistema = isset($data['calificacion_sistema']) && $data['calificacion_sistema'] !== '' && $data['calificacion_sistema'] !== null
+                    ? (int)$data['calificacion_sistema']
+                    : (!empty($valoraciones) ? (int)round(array_sum($valoraciones) / count($valoraciones)) : null);
+
+                $califCurso = isset($data['calificacion_curso']) && $data['calificacion_curso'] !== '' && $data['calificacion_curso'] !== null
+                    ? (float)$data['calificacion_curso']
+                    : ($califSistema !== null ? self::convertirCalificacionCursoPpd((float)$califSistema) : null);
+
+                $nivelDesempeno = isset($data['nivel_desempeno']) && $data['nivel_desempeno'] !== '' && $data['nivel_desempeno'] !== null
+                    ? (string)$data['nivel_desempeno']
+                    : ($califCurso !== null ? (string)floor($califCurso) : null);
+
+                $ppdFields['calificacion_sistema'] = $califSistema !== null ? (string)$califSistema : null;
+                $ppdFields['calificacion_curso'] = $califCurso !== null ? number_format($califCurso, 2, '.', '') : null;
+                $ppdFields['nivel_desempeno'] = $nivelDesempeno;
+
+                Calificacionesppd::updateOrCreate($criterio, $ppdFields);
             }
 
             return response()->json([
@@ -691,5 +765,31 @@ class DocenteController extends Controller
             })
             ->orderBy('apellidos')
             ->get();
+    }
+
+    public static function convertirCalificacionCursoPpd(?float $valor): ?float
+    {
+        if ($valor === null) return null;
+        if ($valor >= 1 && $valor < 1.5) return 1.0;
+        if ($valor >= 1.5 && $valor < 2.5) return 1.1;
+        if ($valor >= 2.5 && $valor < 3.5) return 1.2;
+        if ($valor >= 3.5 && $valor < 4.5) return 1.3;
+        if ($valor >= 4.5 && valor < 5.5) return 1.4;
+        if ($valor >= 5.5 && $valor < 6.5) return 1.5;
+        if ($valor >= 6.5 && $valor < 7.5) return 1.6;
+        if ($valor >= 7.5 && $valor < 8.5) return 1.7;
+        if ($valor >= 8.5 && $valor < 9.5) return 1.8;
+        if ($valor >= 9.5 && $valor < 10.5) return 1.9;
+        if ($valor >= 10.5 && $valor < 11.5) return 2.2;
+        if ($valor >= 11.5 && $valor < 12.5) return 2.5;
+        if ($valor >= 12.5 && $valor < 13.5) return 2.7;
+        if ($valor >= 13.5 && $valor < 14.5) return 2.9;
+        if ($valor >= 14.5 && $valor < 15.5) return 3.1;
+        if ($valor >= 15.5 && $valor < 16.5) return 3.3;
+        if ($valor >= 16.5 && $valor < 17.5) return 3.5;
+        if ($valor >= 17.5 && $valor < 18.5) return 3.7;
+        if ($valor >= 18.5 && $valor < 19.5) return 3.9;
+        if ($valor >= 19.5 && $valor <= 20) return 4.0;
+        return null;
     }
 }

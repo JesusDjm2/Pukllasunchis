@@ -141,12 +141,30 @@ class PeriodoRegistro {
 
 class PpdRegistro {
   const PpdRegistro({
+    this.ppC1_1,
+    this.ppC1_2,
     this.ppC1_4,
+    this.pfC1_1,
+    this.pfC1_2,
     this.pfC1_3,
+    this.pgC1_3,
+
+    this.ppC2_1,
+    this.ppC2_2,
     this.ppC2_4,
+    this.pfC2_1,
+    this.pfC2_2,
     this.pfC2_3,
+    this.pgC2_3,
+
+    this.ppC3_1,
+    this.ppC3_2,
     this.ppC3_4,
+    this.pfC3_1,
+    this.pfC3_2,
     this.pfC3_3,
+    this.pgC3_3,
+
     this.calificacionCurso,
     this.calificacionSistema,
     this.nivelDesempeno,
@@ -158,12 +176,30 @@ class PpdRegistro {
     double? asDouble(dynamic v) => v == null ? null : (v is double ? v : double.tryParse('$v'));
 
     return PpdRegistro(
+      ppC1_1: asInt(json['pp_c1_1']),
+      ppC1_2: asInt(json['pp_c1_2']),
       ppC1_4: asInt(json['pp_c1_4']),
+      pfC1_1: asInt(json['pf_c1_1']),
+      pfC1_2: asInt(json['pf_c1_2']),
       pfC1_3: asInt(json['pf_c1_3']),
+      pgC1_3: asInt(json['pg_c1_3']),
+
+      ppC2_1: asInt(json['pp_c2_1']),
+      ppC2_2: asInt(json['pp_c2_2']),
       ppC2_4: asInt(json['pp_c2_4']),
+      pfC2_1: asInt(json['pf_c2_1']),
+      pfC2_2: asInt(json['pf_c2_2']),
       pfC2_3: asInt(json['pf_c2_3']),
+      pgC2_3: asInt(json['pg_c2_3']),
+
+      ppC3_1: asInt(json['pp_c3_1']),
+      ppC3_2: asInt(json['pp_c3_2']),
       ppC3_4: asInt(json['pp_c3_4']),
+      pfC3_1: asInt(json['pf_c3_1']),
+      pfC3_2: asInt(json['pf_c3_2']),
       pfC3_3: asInt(json['pf_c3_3']),
+      pgC3_3: asInt(json['pg_c3_3']),
+
       calificacionCurso: asDouble(json['calificacion_curso']),
       calificacionSistema: asInt(json['calificacion_sistema']),
       nivelDesempeno: json['nivel_desempeno']?.toString(),
@@ -171,36 +207,241 @@ class PpdRegistro {
     );
   }
 
+  // Competencia 1
+  final int? ppC1_1;
+  final int? ppC1_2;
   final int? ppC1_4;
+  final int? pfC1_1;
+  final int? pfC1_2;
   final int? pfC1_3;
+  final int? pgC1_3;
+
+  // Competencia 2
+  final int? ppC2_1;
+  final int? ppC2_2;
   final int? ppC2_4;
+  final int? pfC2_1;
+  final int? pfC2_2;
   final int? pfC2_3;
+  final int? pgC2_3;
+
+  // Competencia 3
+  final int? ppC3_1;
+  final int? ppC3_2;
   final int? ppC3_4;
+  final int? pfC3_1;
+  final int? pfC3_2;
   final int? pfC3_3;
+  final int? pgC3_3;
+
+  // Evaluaciones Finales
   final double? calificacionCurso;
   final int? calificacionSistema;
   final String? nivelDesempeno;
   final String? observaciones;
 
+  /// Obtiene un indicador por índice de competencia (0..2)
+  int? getParticipacion(int compIdx) => switch (compIdx) {
+        0 => ppC1_1,
+        1 => ppC2_1,
+        _ => ppC3_1,
+      };
+
+  int? getActividad(int compIdx) => switch (compIdx) {
+        0 => ppC1_2,
+        1 => ppC2_2,
+        _ => ppC3_2,
+      };
+
+  int? getPromedioProceso(int compIdx) => switch (compIdx) {
+        0 => ppC1_4,
+        1 => ppC2_4,
+        _ => ppC3_4,
+      };
+
+  int? getAutoevaluacion(int compIdx) => switch (compIdx) {
+        0 => pfC1_1,
+        1 => pfC2_1,
+        _ => pfC3_1,
+      };
+
+  int? getEvaluacion(int compIdx) => switch (compIdx) {
+        0 => pfC1_2,
+        1 => pfC2_2,
+        _ => pfC3_2,
+      };
+
+  int? getPromedioFinal(int compIdx) => switch (compIdx) {
+        0 => pfC1_3,
+        1 => pfC2_3,
+        _ => pfC3_3,
+      };
+
+  int? getValoracion(int compIdx) => switch (compIdx) {
+        0 => pgC1_3,
+        1 => pgC2_3,
+        _ => pgC3_3,
+      };
+
+  /// Conversión oficial de puntaje vigesimal del sistema (0-20) a la escala de curso (1.0-4.0)
+  static double? convertirCalificacionCurso(double? valor) {
+    if (valor == null) return null;
+    if (valor >= 1 && valor < 1.5) return 1.0;
+    if (valor >= 1.5 && valor < 2.5) return 1.1;
+    if (valor >= 2.5 && valor < 3.5) return 1.2;
+    if (valor >= 3.5 && valor < 4.5) return 1.3;
+    if (valor >= 4.5 && valor < 5.5) return 1.4;
+    if (valor >= 5.5 && valor < 6.5) return 1.5;
+    if (valor >= 6.5 && valor < 7.5) return 1.6;
+    if (valor >= 7.5 && valor < 8.5) return 1.7;
+    if (valor >= 8.5 && valor < 9.5) return 1.8;
+    if (valor >= 9.5 && valor < 10.5) return 1.9;
+    if (valor >= 10.5 && valor < 11.5) return 2.2;
+    if (valor >= 11.5 && valor < 12.5) return 2.5;
+    if (valor >= 12.5 && valor < 13.5) return 2.7;
+    if (valor >= 13.5 && valor < 14.5) return 2.9;
+    if (valor >= 14.5 && valor < 15.5) return 3.1;
+    if (valor >= 15.5 && valor < 16.5) return 3.3;
+    if (valor >= 16.5 && valor < 17.5) return 3.5;
+    if (valor >= 17.5 && valor < 18.5) return 3.7;
+    if (valor >= 18.5 && valor < 19.5) return 3.9;
+    if (valor >= 19.5 && valor <= 20) return 4.0;
+    return null;
+  }
+
+  /// Recalcula todos los promedios derivados de la fila de forma reactiva
+  PpdRegistro conNota({
+    required int compIdx,
+    required String campo,
+    required int? valor,
+    required int totalCompetencias,
+  }) {
+    int? p1 = compIdx == 0 ? (campo == 'participacion' ? valor : ppC1_1) : (compIdx == 1 ? (campo == 'participacion' ? valor : ppC2_1) : (campo == 'participacion' ? valor : ppC3_1));
+    int? p2 = compIdx == 0 ? (campo == 'actividad' ? valor : ppC1_2) : (compIdx == 1 ? (campo == 'actividad' ? valor : ppC2_2) : (campo == 'actividad' ? valor : ppC3_2));
+    int? f1 = compIdx == 0 ? (campo == 'autoevaluacion' ? valor : pfC1_1) : (compIdx == 1 ? (campo == 'autoevaluacion' ? valor : pfC2_1) : (campo == 'autoevaluacion' ? valor : pfC3_1));
+    int? f2 = compIdx == 0 ? (campo == 'evaluacion' ? valor : pfC1_2) : (compIdx == 1 ? (campo == 'evaluacion' ? valor : pfC2_2) : (campo == 'evaluacion' ? valor : pfC3_2));
+
+    int? p4;
+    if (p1 != null || p2 != null) {
+      p4 = (((p1 ?? 0) + (p2 ?? 0)) / 2).round();
+    }
+
+    int? f3;
+    if (f1 != null || f2 != null) {
+      f3 = (((f1 ?? 0) + (f2 ?? 0)) / 2).round();
+    }
+
+    int? pg3;
+    if (p4 != null || f3 != null) {
+      pg3 = (((p4 ?? 0) * 0.4) + ((f3 ?? 0) * 0.6)).round();
+    }
+
+    // Copiar registro con los nuevos valores de la competencia
+    PpdRegistro regActualizado = copyWith(
+      ppC1_1: compIdx == 0 ? p1 : ppC1_1,
+      ppC1_2: compIdx == 0 ? p2 : ppC1_2,
+      ppC1_4: compIdx == 0 ? p4 : ppC1_4,
+      pfC1_1: compIdx == 0 ? f1 : pfC1_1,
+      pfC1_2: compIdx == 0 ? f2 : pfC1_2,
+      pfC1_3: compIdx == 0 ? f3 : pfC1_3,
+      pgC1_3: compIdx == 0 ? pg3 : pgC1_3,
+
+      ppC2_1: compIdx == 1 ? p1 : ppC2_1,
+      ppC2_2: compIdx == 1 ? p2 : ppC2_2,
+      ppC2_4: compIdx == 1 ? p4 : ppC2_4,
+      pfC2_1: compIdx == 1 ? f1 : pfC2_1,
+      pfC2_2: compIdx == 1 ? f2 : pfC2_2,
+      pfC2_3: compIdx == 1 ? f3 : pfC2_3,
+      pgC2_3: compIdx == 1 ? pg3 : pgC2_3,
+
+      ppC3_1: compIdx == 2 ? p1 : ppC3_1,
+      ppC3_2: compIdx == 2 ? p2 : ppC3_2,
+      ppC3_4: compIdx == 2 ? p4 : ppC3_4,
+      pfC3_1: compIdx == 2 ? f1 : pfC3_1,
+      pfC3_2: compIdx == 2 ? f2 : pfC3_2,
+      pfC3_3: compIdx == 2 ? f3 : pfC3_3,
+      pgC3_3: compIdx == 2 ? pg3 : pgC3_3,
+    );
+
+    // Recalcular notas finales consolidadas
+    final vals = <int>[];
+    if (regActualizado.pgC1_3 != null && totalCompetencias >= 1) vals.add(regActualizado.pgC1_3!);
+    if (regActualizado.pgC2_3 != null && totalCompetencias >= 2) vals.add(regActualizado.pgC2_3!);
+    if (regActualizado.pgC3_3 != null && totalCompetencias >= 3) vals.add(regActualizado.pgC3_3!);
+
+    int? nuevoSistema;
+    double? nuevoCurso;
+    String? nuevoDesempeno;
+
+    if (vals.isNotEmpty) {
+      final prom = vals.reduce((a, b) => a + b) / vals.length;
+      nuevoSistema = prom.round();
+      nuevoCurso = convertirCalificacionCurso(nuevoSistema.toDouble());
+      nuevoDesempeno = nuevoCurso?.floor().toString();
+    }
+
+    return regActualizado.copyWith(
+      calificacionSistema: nuevoSistema,
+      calificacionCurso: nuevoCurso,
+      nivelDesempeno: nuevoDesempeno,
+    );
+  }
+
   PpdRegistro copyWith({
+    int? ppC1_1,
+    int? ppC1_2,
     int? ppC1_4,
+    int? pfC1_1,
+    int? pfC1_2,
     int? pfC1_3,
+    int? pgC1_3,
+
+    int? ppC2_1,
+    int? ppC2_2,
     int? ppC2_4,
+    int? pfC2_1,
+    int? pfC2_2,
     int? pfC2_3,
+    int? pgC2_3,
+
+    int? ppC3_1,
+    int? ppC3_2,
     int? ppC3_4,
+    int? pfC3_1,
+    int? pfC3_2,
     int? pfC3_3,
+    int? pgC3_3,
+
     double? calificacionCurso,
     int? calificacionSistema,
     String? nivelDesempeno,
     String? observaciones,
   }) {
     return PpdRegistro(
+      ppC1_1: ppC1_1 ?? this.ppC1_1,
+      ppC1_2: ppC1_2 ?? this.ppC1_2,
       ppC1_4: ppC1_4 ?? this.ppC1_4,
+      pfC1_1: pfC1_1 ?? this.pfC1_1,
+      pfC1_2: pfC1_2 ?? this.pfC1_2,
       pfC1_3: pfC1_3 ?? this.pfC1_3,
+      pgC1_3: pgC1_3 ?? this.pgC1_3,
+
+      ppC2_1: ppC2_1 ?? this.ppC2_1,
+      ppC2_2: ppC2_2 ?? this.ppC2_2,
       ppC2_4: ppC2_4 ?? this.ppC2_4,
+      pfC2_1: pfC2_1 ?? this.pfC2_1,
+      pfC2_2: pfC2_2 ?? this.pfC2_2,
       pfC2_3: pfC2_3 ?? this.pfC2_3,
+      pgC2_3: pgC2_3 ?? this.pgC2_3,
+
+      ppC3_1: ppC3_1 ?? this.ppC3_1,
+      ppC3_2: ppC3_2 ?? this.ppC3_2,
       ppC3_4: ppC3_4 ?? this.ppC3_4,
+      pfC3_1: pfC3_1 ?? this.pfC3_1,
+      pfC3_2: pfC3_2 ?? this.pfC3_2,
       pfC3_3: pfC3_3 ?? this.pfC3_3,
+      pgC3_3: pgC3_3 ?? this.pgC3_3,
+
       calificacionCurso: calificacionCurso ?? this.calificacionCurso,
       calificacionSistema: calificacionSistema ?? this.calificacionSistema,
       nivelDesempeno: nivelDesempeno ?? this.nivelDesempeno,
@@ -212,12 +453,31 @@ class PpdRegistro {
     return {
       'id': id,
       'ppd_id': ppdId,
+
+      'pp_c1_1': ppC1_1,
+      'pp_c1_2': ppC1_2,
       'pp_c1_4': ppC1_4,
+      'pf_c1_1': pfC1_1,
+      'pf_c1_2': pfC1_2,
       'pf_c1_3': pfC1_3,
+      'pg_c1_3': pgC1_3,
+
+      'pp_c2_1': ppC2_1,
+      'pp_c2_2': ppC2_2,
       'pp_c2_4': ppC2_4,
+      'pf_c2_1': pfC2_1,
+      'pf_c2_2': pfC2_2,
       'pf_c2_3': pfC2_3,
+      'pg_c2_3': pgC2_3,
+
+      'pp_c3_1': ppC3_1,
+      'pp_c3_2': ppC3_2,
       'pp_c3_4': ppC3_4,
+      'pf_c3_1': pfC3_1,
+      'pf_c3_2': pfC3_2,
       'pf_c3_3': pfC3_3,
+      'pg_c3_3': pgC3_3,
+
       'calificacion_curso': calificacionCurso,
       'calificacion_sistema': calificacionSistema,
       'nivel_desempeno': nivelDesempeno,

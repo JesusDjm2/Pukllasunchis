@@ -86,5 +86,29 @@ void main() {
       expect(data.alumnos.first.p1?.calificacionSistema, equals(17));
       expect(data.alumnos.first.p1?.calificacionCurso, equals('Logrado'));
     });
+
+    test('PpdRegistro.conNota y convertirCalificacionCurso calculan reactivamente', () {
+      var reg = const PpdRegistro();
+      // Comp 0: Part 18, Activ 18 => Proceso 18
+      reg = reg.conNota(compIdx: 0, campo: 'participacion', valor: 18, totalCompetencias: 2);
+      reg = reg.conNota(compIdx: 0, campo: 'actividad', valor: 18, totalCompetencias: 2);
+      expect(reg.getPromedioProceso(0), equals(18));
+
+      // Comp 0: Auto 19, Eval 18 => Final 19
+      reg = reg.conNota(compIdx: 0, campo: 'autoevaluacion', valor: 19, totalCompetencias: 2);
+      reg = reg.conNota(compIdx: 0, campo: 'evaluacion', valor: 18, totalCompetencias: 2);
+      expect(reg.getPromedioFinal(0), equals(19));
+      expect(reg.getValoracion(0), equals(19));
+
+      // Comp 1: Part 18, Activ 18, Auto 19, Eval 18 => Valoración 19
+      reg = reg.conNota(compIdx: 1, campo: 'participacion', valor: 18, totalCompetencias: 2);
+      reg = reg.conNota(compIdx: 1, campo: 'actividad', valor: 18, totalCompetencias: 2);
+      reg = reg.conNota(compIdx: 1, campo: 'autoevaluacion', valor: 19, totalCompetencias: 2);
+      reg = reg.conNota(compIdx: 1, campo: 'evaluacion', valor: 18, totalCompetencias: 2);
+
+      expect(reg.calificacionSistema, equals(19));
+      expect(reg.calificacionCurso, equals(3.90));
+      expect(reg.nivelDesempeno, equals('3'));
+    });
   });
 }

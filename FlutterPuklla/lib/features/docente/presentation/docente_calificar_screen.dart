@@ -124,6 +124,34 @@ class _DocenteCalificarScreenState extends ConsumerState<DocenteCalificarScreen>
     mapActual[alumnoId] = actual.copyWith(observaciones: obs.trim().isEmpty ? null : obs.trim());
   }
 
+  void _actualizarNotaPpd({
+    required int alumnoId,
+    required int compIdx,
+    required String campo,
+    required int? valor,
+    required int totalCompetencias,
+  }) {
+    setState(() {
+      final actual = _notasPpd[alumnoId] ?? const PpdRegistro();
+      _notasPpd[alumnoId] = actual.conNota(
+        compIdx: compIdx,
+        campo: campo,
+        valor: valor,
+        totalCompetencias: totalCompetencias,
+      );
+    });
+  }
+
+  void _actualizarObservacionesPpd({
+    required int alumnoId,
+    required String obs,
+  }) {
+    final actual = _notasPpd[alumnoId] ?? const PpdRegistro();
+    _notasPpd[alumnoId] = actual.copyWith(
+      observaciones: obs.trim().isEmpty ? null : obs.trim(),
+    );
+  }
+
   Future<void> _guardarFid(DocenteCalificarData data, int periodoIndex) async {
     final periodoClave = switch (periodoIndex) {
       0 => 'p1',
@@ -339,6 +367,19 @@ class _DocenteCalificarScreenState extends ConsumerState<DocenteCalificarScreen>
                         filtroTexto: _filtroTexto,
                         filtroEstado: _filtroEstado,
                         notasPpd: _notasPpd,
+                        totalCompetencias: totalComps,
+                        onNotaChanged: (alumnoId, compIdx, campo, valor) {
+                          _actualizarNotaPpd(
+                            alumnoId: alumnoId,
+                            compIdx: compIdx,
+                            campo: campo,
+                            valor: valor,
+                            totalCompetencias: totalComps,
+                          );
+                        },
+                        onObservacionesChanged: (alumnoId, obs) {
+                          _actualizarObservacionesPpd(alumnoId: alumnoId, obs: obs);
+                        },
                         onGuardar: () => _guardarPpd(data),
                         guardando: _guardando,
                       )
@@ -815,8 +856,8 @@ class _TarjetaAlumnoFid extends StatefulWidget {
 }
 
 class _TarjetaAlumnoFidState extends State<_TarjetaAlumnoFid> {
-  bool _mostrarObs = false;
   late TextEditingController _obsController;
+  final FocusNode _obsFocusNode = FocusNode();
 
   @override
   void initState() {
@@ -836,6 +877,7 @@ class _TarjetaAlumnoFidState extends State<_TarjetaAlumnoFid> {
   @override
   void dispose() {
     _obsController.dispose();
+    _obsFocusNode.dispose();
     super.dispose();
   }
 
@@ -964,70 +1006,104 @@ class _TarjetaAlumnoFidState extends State<_TarjetaAlumnoFid> {
             const SizedBox(height: 6),
           ],
 
-          // Botón y campo de observaciones
-          Row(
-            children: [
-              PukllaScaleTap(
-                onTap: () => setState(() => _mostrarObs = !_mostrarObs),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
+          // Observaciones Pedagógicas (Siempre visibles y editables directamente)
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: (reg.observaciones != null && reg.observaciones!.trim().isNotEmpty)
+                    ? AppColors.gold.withValues(alpha: isDark ? 0.45 : 0.35)
+                    : PukllaDashboardStyles.borderColor(context),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Icon(
-                      _mostrarObs ? Icons.comment_rounded : Icons.chat_bubble_outline_rounded,
-                      size: 14,
-                      color: (reg.observaciones != null && reg.observaciones!.isNotEmpty)
-                          ? AppColors.gold
-                          : (isDark ? AppColors.darkMuted : const Color(0xFF94A3B8)),
-                    ),
-                    const SizedBox(width: 4),
+                    const Icon(Icons.edit_note_rounded, size: 16, color: AppColors.gold),
+                    const SizedBox(width: 6),
                     Text(
-                      (reg.observaciones != null && reg.observaciones!.isNotEmpty)
-                          ? 'Editar observación'
-                          : 'Agregar observación',
+                      'Observación Pedagógica',
                       style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: (reg.observaciones != null && reg.observaciones!.isNotEmpty)
-                            ? AppColors.gold
-                            : (isDark ? AppColors.darkMuted : const Color(0xFF64748B)),
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w700,
+                        color: isDark ? AppColors.darkText : const Color(0xFF334155),
+                      ),
+                    ),
+                    const Spacer(),
+                    if (reg.valoracionCurso != null)
+                      Text(
+                        'Prom: ${reg.valoracionCurso!.toStringAsFixed(2)}',
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w700,
+                          color: isDark ? AppColors.darkMuted : const Color(0xFF64748B),
+                        ),
+                      ),
+                    const SizedBox(width: 8),
+                    PukllaScaleTap(
+                      onTap: () => _obsFocusNode.requestFocus(),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: AppColors.gold.withValues(alpha: isDark ? 0.25 : 0.15),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.edit, size: 11, color: AppColors.gold),
+                            const SizedBox(width: 4),
+                            Text(
+                              (reg.observaciones != null && reg.observaciones!.trim().isNotEmpty)
+                                  ? 'Editar observación'
+                                  : 'Escribir observación',
+                              style: const TextStyle(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.gold,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ],
                 ),
-              ),
-              const Spacer(),
-              if (reg.valoracionCurso != null)
-                Text(
-                  'Prom: ${reg.valoracionCurso!.toStringAsFixed(2)}',
-                  style: TextStyle(
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w700,
-                    color: isDark ? AppColors.darkMuted : const Color(0xFF64748B),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: _obsController,
+                  focusNode: _obsFocusNode,
+                  onChanged: widget.onObservacionesChanged,
+                  maxLines: 2,
+                  style: TextStyle(fontSize: 12, color: isDark ? AppColors.darkText : const Color(0xFF0F172A)),
+                  decoration: InputDecoration(
+                    hintText: 'Escriba una observación o recomendación pedagógica...',
+                    hintStyle: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    filled: true,
+                    fillColor: isDark ? AppColors.darkSurface : Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: PukllaDashboardStyles.borderColor(context)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: PukllaDashboardStyles.borderColor(context)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: const BorderSide(color: AppColors.gold, width: 1.2),
+                    ),
                   ),
                 ),
-            ],
-          ),
-
-          if (_mostrarObs) ...[
-            const SizedBox(height: 8),
-            TextField(
-              controller: _obsController,
-              onChanged: widget.onObservacionesChanged,
-              maxLines: 2,
-              style: TextStyle(fontSize: 12, color: isDark ? AppColors.darkText : const Color(0xFF0F172A)),
-              decoration: InputDecoration(
-                hintText: 'Escriba una observación o recomendación pedagógica...',
-                hintStyle: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                filled: true,
-                fillColor: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF8FAFC),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: PukllaDashboardStyles.borderColor(context)),
-                ),
-              ),
+              ],
             ),
-          ],
+          ),
         ],
       ),
     );
@@ -1293,14 +1369,17 @@ class _BadgeFase extends StatelessWidget {
 }
 
 // -------------------------------------------------------------
-// VISTA DE CALIFICACIONES PPD
+// VISTA DE CALIFICACIONES PPD (Tarjetas Ergonómicas + Matriz Completa)
 // -------------------------------------------------------------
-class _VistaCalificacionesPpd extends StatelessWidget {
+class _VistaCalificacionesPpd extends StatefulWidget {
   const _VistaCalificacionesPpd({
     required this.data,
     required this.filtroTexto,
     required this.filtroEstado,
     required this.notasPpd,
+    required this.totalCompetencias,
+    required this.onNotaChanged,
+    required this.onObservacionesChanged,
     required this.onGuardar,
     required this.guardando,
   });
@@ -1309,122 +1388,1135 @@ class _VistaCalificacionesPpd extends StatelessWidget {
   final String filtroTexto;
   final String filtroEstado;
   final Map<int, PpdRegistro> notasPpd;
+  final int totalCompetencias;
+  final void Function(int alumnoId, int compIdx, String campo, int? valor) onNotaChanged;
+  final void Function(int alumnoId, String obs) onObservacionesChanged;
   final VoidCallback onGuardar;
   final bool guardando;
+
+  @override
+  State<_VistaCalificacionesPpd> createState() => _VistaCalificacionesPpdState();
+}
+
+class _VistaCalificacionesPpdState extends State<_VistaCalificacionesPpd> {
+  bool _mostrarTabla = false;
 
   @override
   Widget build(BuildContext context) {
     final isDark = PukllaDashboardStyles.isDark(context);
 
-    final alumnosFiltrados = data.alumnos.where((a) {
-      if (filtroTexto.isNotEmpty) {
+    final alumnosFiltrados = widget.data.alumnos.where((a) {
+      if (widget.filtroTexto.isNotEmpty) {
         final nom = a.nombreCompleto.toLowerCase();
         final dni = a.dni?.toLowerCase() ?? '';
-        if (!nom.contains(filtroTexto) && !dni.contains(filtroTexto)) return false;
+        if (!nom.contains(widget.filtroTexto) && !dni.contains(widget.filtroTexto)) return false;
       }
       return true;
     }).toList();
 
     int calificadosCount = 0;
-    for (final a in data.alumnos) {
-      if (notasPpd[a.id]?.calificacionSistema != null) calificadosCount++;
+    for (final a in widget.data.alumnos) {
+      if (widget.notasPpd[a.id]?.calificacionSistema != null) calificadosCount++;
     }
 
     return Column(
       children: [
-        Expanded(
-          child: ListView.separated(
-            padding: const EdgeInsets.fromLTRB(14, 12, 14, 80),
-            itemCount: alumnosFiltrados.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 10),
-            itemBuilder: (context, idx) {
-              final a = alumnosFiltrados[idx];
-              final reg = notasPpd[a.id] ?? const PpdRegistro();
-
-              final tieneNota = reg.calificacionSistema != null;
-              final nota = reg.calificacionSistema ?? 0;
-              final esAprobado = nota >= 11;
-
-              return Container(
-                padding: const EdgeInsets.all(12),
+        // Selector de Modo de Visualización (Tarjetas vs Tabla Matriz)
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.darkSurface : const Color(0xFFF8FAFC),
+            border: Border(bottom: BorderSide(color: PukllaDashboardStyles.borderColor(context))),
+          ),
+          child: Row(
+            children: [
+              Text(
+                'Visualización:',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? AppColors.darkMuted : const Color(0xFF64748B),
+                ),
+              ),
+              const SizedBox(width: 10),
+              _BotonModoVista(
+                icono: Icons.view_agenda_rounded,
+                etiqueta: 'Tarjetas',
+                activo: !_mostrarTabla,
+                onTap: () => setState(() => _mostrarTabla = false),
+              ),
+              const SizedBox(width: 8),
+              _BotonModoVista(
+                icono: Icons.table_chart_rounded,
+                etiqueta: 'Tabla Matriz',
+                activo: _mostrarTabla,
+                onTap: () => setState(() => _mostrarTabla = true),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: isDark ? AppColors.darkSurface : Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: PukllaDashboardStyles.borderColor(context)),
+                  color: const Color(0xFF7E22CE).withValues(alpha: isDark ? 0.25 : 0.12),
+                  borderRadius: BorderRadius.circular(6),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 16,
-                          backgroundColor: const Color(0xFF8B5CF6).withValues(alpha: 0.15),
-                          child: Text(
-                            a.nombreCompleto.isNotEmpty ? a.nombreCompleto[0].toUpperCase() : '?',
-                            style: const TextStyle(fontWeight: FontWeight.w800, color: Color(0xFF8B5CF6), fontSize: 12),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                a.nombreCompleto,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                  color: isDark ? AppColors.darkText : const Color(0xFF0F172A),
-                                ),
-                              ),
-                              if (a.dni != null)
-                                Text('DNI: ${a.dni}', style: TextStyle(fontSize: 11, color: isDark ? AppColors.darkMuted : const Color(0xFF64748B))),
-                            ],
-                          ),
-                        ),
-                        if (tieneNota)
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: esAprobado
-                                  ? const Color(0xFF10B981).withValues(alpha: 0.15)
-                                  : AppColors.danger.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              '$nota / 20',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w900,
-                                color: esAprobado ? const Color(0xFF10B981) : AppColors.danger,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                    if (reg.observaciones != null && reg.observaciones!.isNotEmpty) ...[
-                      const SizedBox(height: 6),
-                      Text(
-                        'Obs: ${reg.observaciones}',
-                        style: TextStyle(fontSize: 11, color: isDark ? AppColors.darkMuted : const Color(0xFF64748B)),
-                      ),
-                    ],
-                  ],
+                child: Text(
+                  '${widget.totalCompetencias} ${widget.totalCompetencias == 1 ? "competencia" : "competencias"}',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF7E22CE),
+                  ),
                 ),
-              );
-            },
+              ),
+            ],
           ),
         ),
 
+        // Cuerpo: Tarjetas o Tabla
+        Expanded(
+          child: alumnosFiltrados.isEmpty
+              ? const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(24),
+                    child: Text('No hay estudiantes que coincidan con la búsqueda.'),
+                  ),
+                )
+              : _mostrarTabla
+                  ? _TablaMatrizPpd(
+                      alumnos: alumnosFiltrados,
+                      competencias: widget.data.competencias,
+                      totalCompetencias: widget.totalCompetencias,
+                      notasPpd: widget.notasPpd,
+                      onNotaChanged: widget.onNotaChanged,
+                      onObservacionesChanged: widget.onObservacionesChanged,
+                    )
+                  : ListView.separated(
+                      padding: const EdgeInsets.fromLTRB(14, 12, 14, 24),
+                      itemCount: alumnosFiltrados.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      itemBuilder: (context, idx) {
+                        final a = alumnosFiltrados[idx];
+                        final reg = widget.notasPpd[a.id] ?? const PpdRegistro();
+
+                        return _TarjetaAlumnoPpd(
+                          alumno: a,
+                          registro: reg,
+                          competencias: widget.data.competencias,
+                          totalCompetencias: widget.totalCompetencias,
+                          onNotaChanged: (compIdx, campo, val) =>
+                              widget.onNotaChanged(a.id, compIdx, campo, val),
+                          onObservacionesChanged: (obs) =>
+                              widget.onObservacionesChanged(a.id, obs),
+                        );
+                      },
+                    ),
+        ),
+
+        // Barra inferior de guardado
         _BarraInferiorGuardar(
           calificadosCount: calificadosCount,
-          totalAlumnos: data.alumnos.length,
-          guardando: guardando,
+          totalAlumnos: widget.data.alumnos.length,
+          guardando: widget.guardando,
           habilitado: true,
-          onGuardar: onGuardar,
+          onGuardar: widget.onGuardar,
         ),
       ],
+    );
+  }
+}
+
+class _BotonModoVista extends StatelessWidget {
+  const _BotonModoVista({
+    required this.icono,
+    required this.etiqueta,
+    required this.activo,
+    required this.onTap,
+  });
+
+  final IconData icono;
+  final String etiqueta;
+  final bool activo;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = PukllaDashboardStyles.isDark(context);
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: activo
+              ? const Color(0xFF7E22CE)
+              : (isDark ? AppColors.darkSurfaceElevated : const Color(0xFFE2E8F0)),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icono,
+              size: 14,
+              color: activo ? Colors.white : (isDark ? AppColors.darkMuted : const Color(0xFF64748B)),
+            ),
+            const SizedBox(width: 5),
+            Text(
+              etiqueta,
+              style: TextStyle(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w700,
+                color: activo ? Colors.white : (isDark ? AppColors.darkMuted : const Color(0xFF475569)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TarjetaAlumnoPpd extends StatelessWidget {
+  const _TarjetaAlumnoPpd({
+    required this.alumno,
+    required this.registro,
+    required this.competencias,
+    required this.totalCompetencias,
+    required this.onNotaChanged,
+    required this.onObservacionesChanged,
+  });
+
+  final DocenteAlumnoCalificacion alumno;
+  final PpdRegistro registro;
+  final List<DocenteCompetenciaInfo> competencias;
+  final int totalCompetencias;
+  final void Function(int compIdx, String campo, int? val) onNotaChanged;
+  final ValueChanged<String> onObservacionesChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = PukllaDashboardStyles.isDark(context);
+    final a = alumno;
+    final reg = registro;
+
+    final tieneNota = reg.calificacionSistema != null;
+    final nota = reg.calificacionSistema ?? 0;
+    final esAprobado = nota >= 11;
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkSurface : Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: tieneNota
+              ? (esAprobado ? const Color(0xFF10B981).withValues(alpha: 0.35) : AppColors.danger.withValues(alpha: 0.35))
+              : PukllaDashboardStyles.borderColor(context),
+          width: tieneNota ? 1.5 : 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Cabecera Alumno + Badges de Resultado
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 18,
+                backgroundColor: const Color(0xFF7E22CE).withValues(alpha: 0.15),
+                child: Text(
+                  a.nombreCompleto.isNotEmpty ? a.nombreCompleto[0].toUpperCase() : '?',
+                  style: const TextStyle(fontWeight: FontWeight.w800, color: Color(0xFF7E22CE), fontSize: 13),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      a.nombreCompleto,
+                      style: TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w700,
+                        color: isDark ? AppColors.darkText : const Color(0xFF0F172A),
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        if (a.dni != null)
+                          Text('DNI: ${a.dni}', style: TextStyle(fontSize: 11, color: isDark ? AppColors.darkMuted : const Color(0xFF64748B))),
+                        if (a.esInhabilitado) ...[
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                            decoration: BoxDecoration(color: AppColors.danger.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(4)),
+                            child: const Text('Inhabilitado', style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w700, color: AppColors.danger)),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              // Badges Sistema / Curso / Desempeño
+              Wrap(
+                spacing: 5,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: tieneNota
+                          ? (esAprobado ? const Color(0xFF10B981).withValues(alpha: 0.15) : AppColors.danger.withValues(alpha: 0.15))
+                          : (isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF1F5F9)),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: tieneNota
+                            ? (esAprobado ? const Color(0xFF10B981) : AppColors.danger)
+                            : PukllaDashboardStyles.borderColor(context),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          tieneNota ? '$nota / 20' : '- / 20',
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w900,
+                            color: tieneNota
+                                ? (esAprobado ? const Color(0xFF10B981) : AppColors.danger)
+                                : (isDark ? AppColors.darkMuted : const Color(0xFF64748B)),
+                          ),
+                        ),
+                        Text(
+                          reg.calificacionCurso != null ? 'Curso: ${reg.calificacionCurso!.toStringAsFixed(2)}' : 'Sin calif.',
+                          style: TextStyle(
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.w700,
+                            color: tieneNota
+                                ? (esAprobado ? const Color(0xFF10B981) : AppColors.danger)
+                                : (isDark ? AppColors.darkMuted : const Color(0xFF64748B)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 12),
+          Divider(height: 1, color: PukllaDashboardStyles.borderColor(context)),
+          const SizedBox(height: 10),
+
+          // Secciones de Competencias
+          for (int cIdx = 0; cIdx < totalCompetencias; cIdx++) ...[
+            _CompetenciaCardPpd(
+              compIndex: cIdx,
+              competenciaNombre: cIdx < competencias.length ? competencias[cIdx].nombre : 'Competencia ${cIdx + 1}',
+              participacion: reg.getParticipacion(cIdx),
+              actividad: reg.getActividad(cIdx),
+              promedioProceso: reg.getPromedioProceso(cIdx),
+              autoevaluacion: reg.getAutoevaluacion(cIdx),
+              evaluacion: reg.getEvaluacion(cIdx),
+              promedioFinal: reg.getPromedioFinal(cIdx),
+              valoracion: reg.getValoracion(cIdx),
+              onNotaChanged: (campo, val) => onNotaChanged(cIdx, campo, val),
+            ),
+            const SizedBox(height: 10),
+          ],
+
+          // Observaciones (Siempre visible y editable directamente)
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: (reg.observaciones != null && reg.observaciones!.trim().isNotEmpty)
+                    ? AppColors.gold.withValues(alpha: isDark ? 0.45 : 0.35)
+                    : PukllaDashboardStyles.borderColor(context),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.edit_note_rounded, size: 16, color: AppColors.gold),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Observación Pedagógica (PPD)',
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w700,
+                        color: isDark ? AppColors.darkText : const Color(0xFF334155),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                _PpdObservacionInput(
+                  observacionInicial: reg.observaciones,
+                  onChanged: onObservacionesChanged,
+                  hint: 'Observaciones para el estudiante (opcional)...',
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CompetenciaCardPpd extends StatelessWidget {
+  const _CompetenciaCardPpd({
+    required this.compIndex,
+    required this.competenciaNombre,
+    required this.participacion,
+    required this.actividad,
+    required this.promedioProceso,
+    required this.autoevaluacion,
+    required this.evaluacion,
+    required this.promedioFinal,
+    required this.valoracion,
+    required this.onNotaChanged,
+  });
+
+  final int compIndex;
+  final String competenciaNombre;
+  final int? participacion;
+  final int? actividad;
+  final int? promedioProceso;
+  final int? autoevaluacion;
+  final int? evaluacion;
+  final int? promedioFinal;
+  final int? valoracion;
+  final void Function(String campo, int? val) onNotaChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = PukllaDashboardStyles.isDark(context);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: PukllaDashboardStyles.borderColor(context)),
+      ),
+      padding: const EdgeInsets.all(10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Título de la Competencia + Valoración Chip
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  competenciaNombre,
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w800,
+                    color: isDark ? AppColors.darkText : const Color(0xFF0F172A),
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withValues(alpha: isDark ? 0.25 : 0.15),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(
+                    color: const Color(0xFF10B981).withValues(alpha: isDark ? 0.5 : 0.3),
+                  ),
+                ),
+                child: Text(
+                  valoracion != null ? 'Valoración: $valoracion' : 'Valoración: -',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF10B981),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+
+          // Bloque 1: Productos de Proceso 40% (Naranja / Ámbar)
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFE5973A).withValues(alpha: isDark ? 0.15 : 0.08),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFFE5973A).withValues(alpha: isDark ? 0.35 : 0.25)),
+            ),
+            child: Row(
+              children: [
+                const SizedBox(
+                  width: 90,
+                  child: Text(
+                    'Proceso 40%',
+                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Color(0xFFD97706)),
+                  ),
+                ),
+                _InputItem(
+                  etiqueta: 'Part.',
+                  valor: participacion,
+                  onChanged: (v) => onNotaChanged('participacion', v),
+                ),
+                const SizedBox(width: 8),
+                _InputItem(
+                  etiqueta: 'Activ.',
+                  valor: actividad,
+                  onChanged: (v) => onNotaChanged('actividad', v),
+                ),
+                const Spacer(),
+                _ChipPromedio(
+                  etiqueta: 'Prom.',
+                  valor: promedioProceso,
+                  color: const Color(0xFFD97706),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 6),
+
+          // Bloque 2: Producto Final 60% (Durazno / Peach)
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFD39F).withValues(alpha: isDark ? 0.20 : 0.18),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: isDark ? 0.40 : 0.30)),
+            ),
+            child: Row(
+              children: [
+                const SizedBox(
+                  width: 90,
+                  child: Text(
+                    'Final 60%',
+                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Color(0xFFB45309)),
+                  ),
+                ),
+                _InputItem(
+                  etiqueta: 'Auto. 40%',
+                  valor: autoevaluacion,
+                  onChanged: (v) => onNotaChanged('autoevaluacion', v),
+                ),
+                const SizedBox(width: 8),
+                _InputItem(
+                  etiqueta: 'Eval. 60%',
+                  valor: evaluacion,
+                  onChanged: (v) => onNotaChanged('evaluacion', v),
+                ),
+                const Spacer(),
+                _ChipPromedio(
+                  etiqueta: 'Prom.',
+                  valor: promedioFinal,
+                  color: const Color(0xFFB45309),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _InputItem extends StatelessWidget {
+  const _InputItem({
+    required this.etiqueta,
+    required this.valor,
+    required this.onChanged,
+  });
+
+  final String etiqueta;
+  final int? valor;
+  final ValueChanged<int?> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          etiqueta,
+          style: const TextStyle(fontSize: 9.5, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
+        ),
+        const SizedBox(height: 2),
+        _PpdNotaInput(valorInicial: valor, onChanged: onChanged),
+      ],
+    );
+  }
+}
+
+class _ChipPromedio extends StatelessWidget {
+  const _ChipPromedio({
+    required this.etiqueta,
+    required this.valor,
+    required this.color,
+  });
+
+  final String etiqueta;
+  final int? valor;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
+      ),
+      child: Column(
+        children: [
+          Text(etiqueta, style: TextStyle(fontSize: 8.5, fontWeight: FontWeight.w700, color: color)),
+          Text(
+            valor != null ? '$valor' : '-',
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: color),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// -------------------------------------------------------------
+// TABLA MATRIZ COMPLETA DE CALIFICACIONES PPD
+// -------------------------------------------------------------
+class _TablaMatrizPpd extends StatelessWidget {
+  const _TablaMatrizPpd({
+    required this.alumnos,
+    required this.competencias,
+    required this.totalCompetencias,
+    required this.notasPpd,
+    required this.onNotaChanged,
+    required this.onObservacionesChanged,
+  });
+
+  final List<DocenteAlumnoCalificacion> alumnos;
+  final List<DocenteCompetenciaInfo> competencias;
+  final int totalCompetencias;
+  final Map<int, PpdRegistro> notasPpd;
+  final void Function(int alumnoId, int compIdx, String campo, int? valor) onNotaChanged;
+  final void Function(int alumnoId, String obs) onObservacionesChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = PukllaDashboardStyles.isDark(context);
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.vertical,
+        padding: const EdgeInsets.fromLTRB(14, 12, 14, 80),
+        child: Container(
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.darkSurface : Colors.white,
+            border: Border.all(color: PukllaDashboardStyles.borderColor(context)),
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Nivel 1 de Cabecera
+              _construirNivel1(isDark),
+              // Nivel 2 de Cabecera (Nombre de Competencias)
+              _construirNivel2(isDark),
+              // Nivel 3 de Cabecera (Sub-columnas)
+              _construirNivel3(isDark),
+
+              // Filas de Alumnos
+              for (int i = 0; i < alumnos.length; i++) ...[
+                _construirFilaAlumno(alumnos[i], i, isDark),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _construirNivel1(bool isDark) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xFF1E293B),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(9)),
+      ),
+      child: Row(
+        children: [
+          _celdaCabecera('#', 40, Colors.white),
+          _celdaCabecera('Alumno', 190, Colors.white),
+          for (int c = 0; c < totalCompetencias; c++) ...[
+            _celdaCabecera('Productos de Proceso 40%', 156, const Color(0xFFE5973A)),
+            _celdaCabecera('Producto Final 60%', 156, const Color(0xFFFFD39F), textColor: const Color(0xFF78350F)),
+            _celdaCabecera('Promedios Generales', 156, const Color(0xFF10B981)),
+          ],
+          _celdaCabecera('Nivel', 65, const Color(0xFFF59E0B)),
+          _celdaCabecera('Curso', 75, const Color(0xFFF59E0B)),
+          _celdaCabecera('Sistema', 75, const Color(0xFFF59E0B)),
+          _celdaCabecera('Observaciones', 250, Colors.white),
+        ],
+      ),
+    );
+  }
+
+  Widget _construirNivel2(bool isDark) {
+    return Container(
+      color: isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9),
+      child: Row(
+        children: [
+          _celdaCabecera('', 40, isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9)),
+          _celdaCabecera('', 190, isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9)),
+          for (int c = 0; c < totalCompetencias; c++) ...[
+            _celdaCabecera(
+              c < competencias.length ? competencias[c].nombre : 'Competencia ${c + 1}',
+              468,
+              isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+              textColor: isDark ? Colors.white : const Color(0xFF0F172A),
+            ),
+          ],
+          _celdaCabecera('', 65, isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9)),
+          _celdaCabecera('', 75, isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9)),
+          _celdaCabecera('', 75, isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9)),
+          _celdaCabecera('', 250, isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9)),
+        ],
+      ),
+    );
+  }
+
+  Widget _construirNivel3(bool isDark) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+        border: Border(bottom: BorderSide(color: isDark ? const Color(0xFF475569) : const Color(0xFFCBD5E1))),
+      ),
+      child: Row(
+        children: [
+          _celdaCabecera('#', 40, Colors.transparent),
+          _celdaCabecera('Apellidos y Nombres', 190, Colors.transparent),
+          for (int c = 0; c < totalCompetencias; c++) ...[
+            // Proceso
+            _celdaSubCol('Part.', 52),
+            _celdaSubCol('Activ.', 52),
+            _celdaSubCol('Prom.', 52, esResaltado: true),
+            // Final
+            _celdaSubCol('Auto.', 52),
+            _celdaSubCol('Eval.', 52),
+            _celdaSubCol('Prom.', 52, esResaltado: true),
+            // Promedios
+            _celdaSubCol('Proc.', 52),
+            _celdaSubCol('Fin.', 52),
+            _celdaSubCol('Valor.', 52, esResaltado: true),
+          ],
+          _celdaSubCol('Nivel', 65),
+          _celdaSubCol('Curso', 75),
+          _celdaSubCol('Sistema', 75),
+          _celdaSubCol('Texto Observación', 250),
+        ],
+      ),
+    );
+  }
+
+  Widget _construirFilaAlumno(DocenteAlumnoCalificacion a, int idx, bool isDark) {
+    final reg = notasPpd[a.id] ?? const PpdRegistro();
+    final tieneNota = reg.calificacionSistema != null;
+    final nota = reg.calificacionSistema ?? 0;
+    final esAprobado = nota >= 11;
+    final esPar = idx % 2 == 0;
+
+    final filaBg = isDark
+        ? (esPar ? AppColors.darkSurface : AppColors.darkSurfaceElevated)
+        : (esPar ? Colors.white : const Color(0xFFF8FAFC));
+
+    return Container(
+      decoration: BoxDecoration(
+        color: filaBg,
+        border: Border(bottom: BorderSide(color: isDark ? AppColors.darkBorder.withValues(alpha: 0.4) : const Color(0xFFE2E8F0))),
+      ),
+      child: Row(
+        children: [
+          // #
+          Container(
+            width: 40,
+            alignment: Alignment.center,
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Text(
+              '${idx + 1}',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: isDark ? AppColors.darkMuted : const Color(0xFF64748B)),
+            ),
+          ),
+
+          // Alumno
+          Container(
+            width: 190,
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  a.nombreCompleto,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: isDark ? AppColors.darkText : const Color(0xFF0F172A),
+                  ),
+                ),
+                if (a.dni != null)
+                  Text(
+                    'DNI: ${a.dni}',
+                    style: TextStyle(fontSize: 10, color: isDark ? AppColors.darkMuted : const Color(0xFF94A3B8)),
+                  ),
+              ],
+            ),
+          ),
+
+          // Competencias
+          for (int c = 0; c < totalCompetencias; c++) ...[
+            // Proceso
+            _celdaInput(52, reg.getParticipacion(c), (v) => onNotaChanged(a.id, c, 'participacion', v)),
+            _celdaInput(52, reg.getActividad(c), (v) => onNotaChanged(a.id, c, 'actividad', v)),
+            _celdaChip(52, reg.getPromedioProceso(c), const Color(0xFFD97706)),
+
+            // Final
+            _celdaInput(52, reg.getAutoevaluacion(c), (v) => onNotaChanged(a.id, c, 'autoevaluacion', v)),
+            _celdaInput(52, reg.getEvaluacion(c), (v) => onNotaChanged(a.id, c, 'evaluacion', v)),
+            _celdaChip(52, reg.getPromedioFinal(c), const Color(0xFFB45309)),
+
+            // Promedios
+            _celdaChip(52, reg.getPromedioProceso(c), isDark ? AppColors.darkMuted : const Color(0xFF64748B)),
+            _celdaChip(52, reg.getPromedioFinal(c), isDark ? AppColors.darkMuted : const Color(0xFF64748B)),
+            _celdaChip(52, reg.getValoracion(c), const Color(0xFF10B981), esNegrita: true),
+          ],
+
+          // Nivel
+          Container(
+            width: 65,
+            alignment: Alignment.center,
+            child: Text(
+              reg.nivelDesempeno ?? '-',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: isDark ? AppColors.darkText : const Color(0xFF0F172A)),
+            ),
+          ),
+
+          // Calif. Curso
+          Container(
+            width: 75,
+            alignment: Alignment.center,
+            child: Text(
+              reg.calificacionCurso != null ? reg.calificacionCurso!.toStringAsFixed(2) : '-',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: isDark ? AppColors.darkText : const Color(0xFF0F172A)),
+            ),
+          ),
+
+          // Calif. Sistema
+          Container(
+            width: 75,
+            alignment: Alignment.center,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+              decoration: BoxDecoration(
+                color: tieneNota
+                    ? (esAprobado ? const Color(0xFF10B981).withValues(alpha: 0.15) : AppColors.danger.withValues(alpha: 0.15))
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                tieneNota ? '$nota' : '-',
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w900,
+                  color: tieneNota
+                      ? (esAprobado ? const Color(0xFF10B981) : AppColors.danger)
+                      : (isDark ? AppColors.darkMuted : const Color(0xFF64748B)),
+                ),
+              ),
+            ),
+          ),
+
+          // Observaciones (Siempre visible y editable en la celda)
+          Container(
+            width: 250,
+            padding: const EdgeInsets.all(6),
+            child: _PpdObservacionInput(
+              observacionInicial: reg.observaciones,
+              onChanged: (obs) => onObservacionesChanged(a.id, obs),
+              maxLines: 2,
+              hint: 'Observaciones...',
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _celdaCabecera(String titulo, double width, Color bg, {Color? textColor}) {
+    return Container(
+      width: width,
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+      color: bg,
+      alignment: Alignment.center,
+      child: Text(
+        titulo,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 11.5,
+          fontWeight: FontWeight.w800,
+          color: textColor ?? (bg == Colors.white ? const Color(0xFF0F172A) : Colors.white),
+        ),
+      ),
+    );
+  }
+
+  Widget _celdaSubCol(String titulo, double width, {bool esResaltado = false}) {
+    return Container(
+      width: width,
+      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
+      alignment: Alignment.center,
+      child: Text(
+        titulo,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: esResaltado ? FontWeight.w900 : FontWeight.w600,
+          color: esResaltado ? const Color(0xFF7E22CE) : const Color(0xFF475569),
+        ),
+      ),
+    );
+  }
+
+  Widget _celdaInput(double width, int? valor, ValueChanged<int?> onChanged) {
+    return Container(
+      width: width,
+      alignment: Alignment.center,
+      padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 4),
+      child: _PpdNotaInput(
+        valorInicial: valor,
+        onChanged: onChanged,
+        width: 44,
+        height: 32,
+      ),
+    );
+  }
+
+  Widget _celdaChip(double width, int? valor, Color color, {bool esNegrita = false}) {
+    return Container(
+      width: width,
+      alignment: Alignment.center,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Text(
+          valor != null ? '$valor' : '-',
+          style: TextStyle(
+            fontSize: 11.5,
+            fontWeight: esNegrita ? FontWeight.w900 : FontWeight.w700,
+            color: color,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// -------------------------------------------------------------
+// INPUTS REUTILIZABLES PARA CALIFICACIONES PPD
+// -------------------------------------------------------------
+class _PpdNotaInput extends StatefulWidget {
+  const _PpdNotaInput({
+    required this.valorInicial,
+    required this.onChanged,
+    this.width = 46,
+    this.height = 34,
+  });
+
+  final int? valorInicial;
+  final ValueChanged<int?> onChanged;
+  final double width;
+  final double height;
+
+  @override
+  State<_PpdNotaInput> createState() => _PpdNotaInputState();
+}
+
+class _PpdNotaInputState extends State<_PpdNotaInput> {
+  late TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.valorInicial != null ? '${widget.valorInicial}' : '');
+  }
+
+  @override
+  void didUpdateWidget(covariant _PpdNotaInput oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.valorInicial != widget.valorInicial) {
+      final nuevoTexto = widget.valorInicial != null ? '${widget.valorInicial}' : '';
+      if (_controller.text != nuevoTexto) {
+        _controller.text = nuevoTexto;
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = PukllaDashboardStyles.isDark(context);
+    return SizedBox(
+      width: widget.width,
+      height: widget.height,
+      child: TextField(
+        controller: _controller,
+        textAlign: TextAlign.center,
+        keyboardType: TextInputType.number,
+        style: TextStyle(
+          fontSize: 12.5,
+          fontWeight: FontWeight.w800,
+          color: isDark ? AppColors.darkText : const Color(0xFF0F172A),
+        ),
+        decoration: InputDecoration(
+          contentPadding: EdgeInsets.zero,
+          filled: true,
+          fillColor: isDark ? AppColors.darkSurface : Colors.white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(6),
+            borderSide: BorderSide(color: PukllaDashboardStyles.borderColor(context)),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(6),
+            borderSide: BorderSide(color: PukllaDashboardStyles.borderColor(context)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(6),
+            borderSide: const BorderSide(color: Color(0xFF7E22CE), width: 1.5),
+          ),
+        ),
+        onChanged: (val) {
+          final trimmed = val.trim();
+          if (trimmed.isEmpty) {
+            widget.onChanged(null);
+            return;
+          }
+          final n = int.tryParse(trimmed);
+          if (n != null && n >= 0 && n <= 20) {
+            widget.onChanged(n);
+          }
+        },
+      ),
+    );
+  }
+}
+
+class _PpdObservacionInput extends StatefulWidget {
+  const _PpdObservacionInput({
+    required this.observacionInicial,
+    required this.onChanged,
+    this.maxLines = 2,
+    this.hint = 'Observaciones (opcional)...',
+  });
+
+  final String? observacionInicial;
+  final ValueChanged<String> onChanged;
+  final int maxLines;
+  final String hint;
+
+  @override
+  State<_PpdObservacionInput> createState() => _PpdObservacionInputState();
+}
+
+class _PpdObservacionInputState extends State<_PpdObservacionInput> {
+  late TextEditingController _controller;
+  final FocusNode _focusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.observacionInicial ?? '');
+  }
+
+  @override
+  void didUpdateWidget(covariant _PpdObservacionInput oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.observacionInicial != widget.observacionInicial &&
+        _controller.text != (widget.observacionInicial ?? '')) {
+      _controller.text = widget.observacionInicial ?? '';
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = PukllaDashboardStyles.isDark(context);
+    return TextField(
+      controller: _controller,
+      focusNode: _focusNode,
+      onChanged: widget.onChanged,
+      maxLines: widget.maxLines,
+      style: TextStyle(
+        fontSize: 12,
+        color: isDark ? AppColors.darkText : const Color(0xFF0F172A),
+      ),
+      decoration: InputDecoration(
+        hintText: widget.hint,
+        hintStyle: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        filled: true,
+        fillColor: isDark ? AppColors.darkSurface : Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: PukllaDashboardStyles.borderColor(context)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: PukllaDashboardStyles.borderColor(context)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Color(0xFF7E22CE), width: 1.2),
+        ),
+      ),
     );
   }
 }
