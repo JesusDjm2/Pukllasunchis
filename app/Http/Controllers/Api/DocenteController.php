@@ -5,12 +5,20 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\DocenteCursoResource;
 use App\Models\Alumno;
+use App\Models\Calificacionesppd;
+use App\Models\Competencia;
 use App\Models\Curso;
 use App\Models\Docente;
 use App\Models\PeriodoActual;
+use App\Models\PeriodoDos;
+use App\Models\PeriodoTres;
+use App\Models\PeriodoUno;
+use App\Models\ppd;
 use App\Models\Sugerencia;
 use App\Models\TaqeSolicitudAyuda;
 use App\Models\Tutoria;
+use App\Models\User;
+use App\Services\AccesoCalificaciones;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
@@ -228,6 +236,353 @@ class DocenteController extends Controller
                 'sugerencias' => $sugerencias,
             ],
         ]);
+    }
+
+    /**
+     * Devuelve los datos necesarios para calificar un curso:
+     * - Información del curso y programa
+     * - Estado de los períodos (si Parcial 1 o Parcial 2 / Desempeño están abiertos)
+     * - Lista de competencias evaluadas en este curso (1 a 3)
+     * - Lista de alumnos con sus calificaciones registradas previamente (FID o PPD)
+     */
+    public function calificaciones(Request $request, $cursoId)
+    {
+        AccesoCalificaciones::autorizarCurso($cursoId);
+
+        $curso = Curso::with('ciclo.programa', 'competencias', 'competenciasSeleccionadas')->findOrFail($cursoId);
+        $esPpd = $this->esPpd($curso);
+        $periodoActual = PeriodoActual::where('actual', true)->first();
+
+        $competencias = ($curso->competencias->count() <= 3 ? $curso->competencias : $curso->competenciasSeleccionadas)->values();
+        if ($esPpd && $competencias->isEmpty()) {
+            $competencias = $curso->competencias->sortBy(fn ($comp) => (int) preg_replace('/\D/', '', $comp->nombre))->values()->take(3);
+        }
+
+        $parcial1Habilitado = ! $periodoActual || $periodoActual->parcial1Habilitado();
+        $parcial2Habilitado = ! $periodoActual || $periodoActual->parcial2DesempenoHabilitado();
+
+        $alumnosRes = [];
+
+        if ($esPpd) {
+            $alumnos = $this->alumnosPpdDelCurso($curso);
+            $notas = Calificacionesppd::where('curso_id', $curso->id)->get();
+            $porPpd = $notas->whereNotNull('ppd_id')->keyBy('ppd_id');
+            $porUser = $notas->whereNotNull('user_id')->keyBy('user_id');
+
+            $alumnosRes = $alumnos->map(function ($u) use ($porPpd, $porUser) {
+                $cal = ($u->alumnoB ? $porPpd->get($u->alumnoB->id) : null) ?? $porUser->get($u->id);
+                return [
+                    'id' => $u->id,
+                    'ppd_id' => $u->alumnoB?->id,
+                    'nombre_completo' => trim($u->apellidos . ', ' . $u->name, ', '),
+                    'dni' => $u->dni,
+                    'es_inhabilitado' => $u->roles->contains('name', 'inhabilitado'),
+                    'no_matriculado' => false,
+                    'calificacion' => $cal ? [
+                        'pp_c1_4' => $cal->pp_c1_4,
+                        'pf_c1_3' => $cal->pf_c1_3,
+                        'pp_c2_4' => $cal->pp_c2_4,
+                        'pf_c2_3' => $cal->pf_c2_3,
+                        'pp_c3_4' => $cal->pp_c3_4,
+                        'pf_c3_3' => $cal->pf_c3_3,
+                        'calificacion_curso' => $cal->calificacion_curso,
+                        'calificacion_sistema' => $cal->calificacion_sistema,
+                        'nivel_desempeno' => $cal->nivel_desempeno,
+                        'observaciones' => $cal->observaciones,
+                    ] : null,
+                ];
+            })->values()->all();
+        } else {
+            [$alumnos] = $this->alumnosFidDelCurso($curso, $periodoActual);
+            $p1Map = PeriodoUno::where('curso_id', $curso->id)->get()->keyBy('alumno_id');
+            $p2Map = PeriodoDos::where('curso_id', $curso->id)->get()->keyBy('alumno_id');
+            $p3Map = PeriodoTres::where('curso_id', $curso->id)->get()->keyBy('alumno_id');
+
+            $alumnosRes = $alumnos->map(function ($a) use ($p1Map, $p2Map, $p3Map, $periodoActual) {
+                $p1 = $p1Map->get($a->id);
+                $p2 = $p2Map->get($a->id);
+                $p3 = $p3Map->get($a->id);
+                $inhabilitado = $a->user && $a->user->hasRole('inhabilitado');
+                $noMatriculado = $periodoActual && ! $inhabilitado && ! $a->matriculaEnPeriodo($periodoActual->id);
+
+                return [
+                    'id' => $a->id,
+                    'nombre_completo' => trim($a->apellidos . ', ' . $a->nombres, ', '),
+                    'dni' => $a->dni,
+                    'es_inhabilitado' => $inhabilitado,
+                    'no_matriculado' => $noMatriculado,
+                    'p1' => $p1 ? [
+                        'valoracion_1' => $p1->valoracion_1 ? (int)$p1->valoracion_1 : null,
+                        'valoracion_2' => $p1->valoracion_2 ? (int)$p1->valoracion_2 : null,
+                        'valoracion_3' => $p1->valoracion_3 ? (int)$p1->valoracion_3 : null,
+                        'valoracion_curso' => $p1->valoracion_curso ? (float)$p1->valoracion_curso : null,
+                        'calificacion_curso' => $p1->calificacion_curso,
+                        'calificacion_sistema' => $p1->calificacion_sistema ? (int)$p1->calificacion_sistema : null,
+                        'observaciones' => $p1->observaciones,
+                    ] : null,
+                    'p2' => $p2 ? [
+                        'valoracion_1' => $p2->valoracion_1 ? (int)$p2->valoracion_1 : null,
+                        'valoracion_2' => $p2->valoracion_2 ? (int)$p2->valoracion_2 : null,
+                        'valoracion_3' => $p2->valoracion_3 ? (int)$p2->valoracion_3 : null,
+                        'valoracion_curso' => $p2->valoracion_curso ? (float)$p2->valoracion_curso : null,
+                        'calificacion_curso' => $p2->calificacion_curso,
+                        'calificacion_sistema' => $p2->calificacion_sistema ? (int)$p2->calificacion_sistema : null,
+                        'observaciones' => $p2->observaciones,
+                    ] : null,
+                    'p3' => $p3 ? [
+                        'valoracion_1' => $p3->valoracion_1 ? (int)$p3->valoracion_1 : null,
+                        'valoracion_2' => $p3->valoracion_2 ? (int)$p3->valoracion_2 : null,
+                        'valoracion_3' => $p3->valoracion_3 ? (int)$p3->valoracion_3 : null,
+                        'valoracion_curso' => $p3->valoracion_curso ? (float)$p3->valoracion_curso : null,
+                        'calificacion_curso' => $p3->calificacion_curso,
+                        'calificacion_sistema' => $p3->calificacion_sistema ? (int)$p3->calificacion_sistema : null,
+                        'observaciones' => $p3->observaciones,
+                    ] : null,
+                ];
+            })->values()->all();
+        }
+
+        return response()->json([
+            'data' => [
+                'curso' => [
+                    'id' => $curso->id,
+                    'nombre' => $curso->nombre,
+                    'area' => $esPpd ? 'ppd' : 'fid',
+                    'es_ppd' => $esPpd,
+                    'ciclo' => $curso->ciclo?->nombre,
+                    'programa' => $curso->ciclo?->programa?->nombre,
+                ],
+                'periodo' => [
+                    'nombre' => $periodoActual?->nombre,
+                    'parcial1_habilitado' => $parcial1Habilitado,
+                    'parcial2_habilitado' => $parcial2Habilitado,
+                ],
+                'competencias' => $competencias->map(fn ($c) => [
+                    'id' => $c->id,
+                    'nombre' => $c->nombre,
+                    'descripcion' => $c->descripcion,
+                ])->values()->all(),
+                'alumnos' => $alumnosRes,
+            ],
+        ]);
+    }
+
+    /**
+     * Guarda las calificaciones desde la app móvil.
+     * En FID: soporta guardar por fase ('p1', 'p2', 'p3').
+     * En PPD: guarda en calificacionesppds.
+     */
+    public function guardarCalificaciones(Request $request, $cursoId)
+    {
+        AccesoCalificaciones::autorizarCurso($cursoId);
+
+        $curso = Curso::with('ciclo.programa', 'competencias', 'competenciasSeleccionadas')->findOrFail($cursoId);
+        $esPpd = $this->esPpd($curso);
+        $periodoActual = PeriodoActual::where('actual', true)->first();
+
+        $competencias = ($curso->competencias->count() <= 3 ? $curso->competencias : $curso->competenciasSeleccionadas)->values();
+        if ($esPpd && $competencias->isEmpty()) {
+            $competencias = $curso->competencias->sortBy(fn ($comp) => (int) preg_replace('/\D/', '', $comp->nombre))->values()->take(3);
+        }
+        $numComps = max(1, $competencias->count());
+
+        $request->validate([
+            'periodo' => 'nullable|string|in:p1,p2,p3,ppd',
+            'alumnos' => 'required|array',
+        ]);
+
+        $periodo = $request->input('periodo', $esPpd ? 'ppd' : 'p1');
+
+        if ($esPpd) {
+            foreach ($request->input('alumnos', []) as $data) {
+                $ppdId = $data['ppd_id'] ?? null;
+                $userId = $data['user_id'] ?? $data['id'] ?? null;
+                if (empty($ppdId) && $userId) {
+                    $ppdRecord = ppd::where('user_id', $userId)->first();
+                    if (! $ppdRecord) {
+                        $userRec = User::find($userId);
+                        if ($userRec && $userRec->email) {
+                            $ppdRecord = ppd::where('email', $userRec->email)->first();
+                            if ($ppdRecord) {
+                                $ppdRecord->user_id = $userId;
+                                $ppdRecord->save();
+                            }
+                        }
+                    }
+                    $ppdId = $ppdRecord?->id;
+                }
+
+                $criterio = $ppdId ? ['curso_id' => $curso->id, 'ppd_id' => $ppdId] : ['curso_id' => $curso->id, 'user_id' => $userId];
+                Calificacionesppd::updateOrCreate(
+                    $criterio,
+                    [
+                        'user_id' => $userId,
+                        'pp_c1_4' => $data['pp_c1_4'] ?? null,
+                        'pf_c1_3' => $data['pf_c1_3'] ?? null,
+                        'pp_c2_4' => $data['pp_c2_4'] ?? null,
+                        'pf_c2_3' => $data['pf_c2_3'] ?? null,
+                        'pp_c3_4' => $data['pp_c3_4'] ?? null,
+                        'pf_c3_3' => $data['pf_c3_3'] ?? null,
+                        'nivel_desempeno' => $data['nivel_desempeno'] ?? null,
+                        'calificacion_curso' => isset($data['calificacion_curso']) ? (string) $data['calificacion_curso'] : null,
+                        'calificacion_sistema' => isset($data['calificacion_sistema']) ? (string) $data['calificacion_sistema'] : null,
+                        'observaciones' => $data['observaciones'] ?? null,
+                    ]
+                );
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Calificaciones PPD guardadas exitosamente.',
+            ]);
+        }
+
+        // FID
+        foreach ($request->input('alumnos', []) as $data) {
+            $alumnoId = $data['alumno_id'] ?? $data['id'] ?? null;
+            if (! $alumnoId) continue;
+
+            $v1 = isset($data['valoracion_1']) && $data['valoracion_1'] !== '' ? (int) $data['valoracion_1'] : null;
+            $v2 = isset($data['valoracion_2']) && $data['valoracion_2'] !== '' ? (int) $data['valoracion_2'] : null;
+            $v3 = isset($data['valoracion_3']) && $data['valoracion_3'] !== '' ? (int) $data['valoracion_3'] : null;
+
+            $validRatings = array_filter([$v1, $v2, $v3], fn ($v) => ! is_null($v));
+            $promedio = count($validRatings) > 0 ? round(array_sum($validRatings) / $numComps, 2) : null;
+            $vigesimal = self::calcularValoracionVigesimal($promedio);
+            $nivel = self::calcularNivelLogro($vigesimal);
+
+            $obs = $data['observaciones'] ?? null;
+
+            if ($periodo === 'p1') {
+                PeriodoUno::updateOrCreate(
+                    ['alumno_id' => $alumnoId, 'curso_id' => $curso->id],
+                    [
+                        'valoracion_1' => $v1,
+                        'valoracion_2' => $v2,
+                        'valoracion_3' => $v3,
+                        'valoracion_curso' => $promedio !== null ? number_format($promedio, 2, '.', '') : null,
+                        'calificacion_curso' => $nivel,
+                        'calificacion_sistema' => $vigesimal !== null ? (string) $vigesimal : null,
+                        'observaciones' => $obs,
+                    ]
+                );
+            } elseif ($periodo === 'p2') {
+                PeriodoDos::updateOrCreate(
+                    ['alumno_id' => $alumnoId, 'curso_id' => $curso->id],
+                    [
+                        'valoracion_1' => $v1,
+                        'valoracion_2' => $v2,
+                        'valoracion_3' => $v3,
+                        'valoracion_curso' => $promedio !== null ? number_format($promedio, 2, '.', '') : null,
+                        'calificacion_curso' => $nivel,
+                        'calificacion_sistema' => $vigesimal !== null ? (string) $vigesimal : null,
+                        'observaciones' => $obs,
+                    ]
+                );
+            } elseif ($periodo === 'p3') {
+                PeriodoTres::updateOrCreate(
+                    ['alumno_id' => $alumnoId, 'curso_id' => $curso->id],
+                    [
+                        'valoracion_1' => $v1,
+                        'valoracion_2' => $v2,
+                        'valoracion_3' => $v3,
+                        'valoracion_curso' => $promedio !== null ? number_format($promedio, 2, '.', '') : null,
+                        'calificacion_curso' => $nivel,
+                        'calificacion_sistema' => $vigesimal !== null ? (string) $vigesimal : null,
+                        'observaciones' => $obs,
+                    ]
+                );
+            }
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Calificaciones guardadas exitosamente.',
+        ]);
+    }
+
+    public static function calcularValoracionVigesimal(?float $valor): ?int
+    {
+        if ($valor === null || $valor <= 0) return null;
+        if ($valor <= 1.144) return 1;
+        if ($valor <= 1.344) return 2;
+        if ($valor <= 1.544) return 3;
+        if ($valor <= 1.744) return 4;
+        if ($valor <= 1.944) return 5;
+        if ($valor <= 2.144) return 6;
+        if ($valor <= 2.344) return 7;
+        if ($valor <= 2.544) return 8;
+        if ($valor <= 2.744) return 9;
+        if ($valor <= 2.944) return 10;
+        if ($valor <= 3.244) return 11;
+        if ($valor <= 3.544) return 12;
+        if ($valor <= 3.744) return 13;
+        if ($valor <= 3.944) return 14;
+        if ($valor <= 4.144) return 15;
+        if ($valor <= 4.344) return 16;
+        if ($valor <= 4.544) return 17;
+        if ($valor <= 4.744) return 18;
+        if ($valor <= 4.944) return 19;
+        if ($valor <= 5.000) return 20;
+        return null;
+    }
+
+    public static function calcularNivelLogro(?int $nota): ?string
+    {
+        if ($nota === null) return null;
+        if ($nota <= 5) return 'Previo al inicio';
+        if ($nota <= 10) return 'Inicio';
+        if ($nota <= 14) return 'En proceso';
+        if ($nota <= 19) return 'Logrado';
+        if ($nota >= 20) return 'Destacado';
+        return null;
+    }
+
+    private function alumnosFidDelCurso(Curso $curso, ?PeriodoActual $periodoActual): array
+    {
+        $filtroFidActivo = function ($q) {
+            $q->whereDoesntHave('roles', fn ($r) => $r->where('name', 'alumnoB'))
+              ->whereHas('roles', fn ($r) => $r->where('name', 'alumno'));
+        };
+
+        $filtroFidInhabilitado = function ($q) {
+            $q->whereDoesntHave('roles', fn ($r) => $r->where('name', 'alumnoB'))
+              ->whereHas('roles', fn ($r) => $r->where('name', 'inhabilitado'))
+              ->where('perfil', '!=', 'Retirado');
+        };
+
+        $alumnosRelacionadosActivos = $curso->alumnosDelPeriodo($periodoActual)
+            ->with('user.roles')
+            ->whereHas('user', $filtroFidActivo)
+            ->get();
+
+        $alumnosRelacionadosInhabilitados = collect();
+        if ($periodoActual) {
+            $alumnosRelacionadosInhabilitados = $curso->alumnos()
+                ->with('user.roles')
+                ->whereHas('user', $filtroFidInhabilitado)
+                ->wherePivot('periodo_actual_id', $periodoActual->id)
+                ->get();
+        }
+
+        $alumnosRelacionados = $alumnosRelacionadosActivos
+            ->merge($alumnosRelacionadosInhabilitados)
+            ->sortBy('apellidos')
+            ->values();
+
+        $alumnosCiclo = $curso->ciclo ? $curso->ciclo->alumnos()
+            ->with('user.roles')
+            ->whereHas('user', $filtroFidActivo)
+            ->orderBy('apellidos')
+            ->get() : collect();
+
+        $alumnos = $alumnosCiclo
+            ->merge($alumnosRelacionados)
+            ->unique('id')
+            ->sortBy('apellidos')
+            ->values();
+
+        return [$alumnos, $alumnosRelacionados];
     }
 
     private function docente(Request $request): Docente

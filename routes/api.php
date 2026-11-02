@@ -127,6 +127,8 @@ Route::prefix('v1')->group(function () {
         Route::middleware('role:docente|tutor|investigador|admin|super-admin|gestor-titulacion|secretaria')->prefix('docente')->group(function () {
             Route::get('/resumen', [DocenteController::class, 'resumen']);
             Route::get('/cursos', [DocenteController::class, 'cursos']);
+            Route::get('/cursos/{curso}/calificaciones', [DocenteController::class, 'calificaciones']);
+            Route::post('/cursos/{curso}/calificaciones', [DocenteController::class, 'guardarCalificaciones']);
             Route::get('/alumnos', [DocenteController::class, 'alumnos']);
             Route::get('/tutor', [DocenteController::class, 'tutorDashboard']);
         });
