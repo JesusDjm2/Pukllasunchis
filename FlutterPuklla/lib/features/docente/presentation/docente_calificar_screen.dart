@@ -1369,7 +1369,7 @@ class _BadgeFase extends StatelessWidget {
 }
 
 // -------------------------------------------------------------
-// VISTA DE CALIFICACIONES PPD (Tarjetas Ergonómicas + Matriz Completa)
+// VISTA DE CALIFICACIONES PPD (Pestañas por Competencia + Matriz Opcional)
 // -------------------------------------------------------------
 class _VistaCalificacionesPpd extends StatefulWidget {
   const _VistaCalificacionesPpd({
@@ -1398,8 +1398,37 @@ class _VistaCalificacionesPpd extends StatefulWidget {
   State<_VistaCalificacionesPpd> createState() => _VistaCalificacionesPpdState();
 }
 
-class _VistaCalificacionesPpdState extends State<_VistaCalificacionesPpd> {
-  bool _mostrarTabla = false;
+class _VistaCalificacionesPpdState extends State<_VistaCalificacionesPpd>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  bool _mostrarTablaMatriz = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(
+      length: widget.totalCompetencias + 1,
+      vsync: this,
+    );
+  }
+
+  @override
+  void didUpdateWidget(covariant _VistaCalificacionesPpd oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.totalCompetencias != widget.totalCompetencias) {
+      _tabController.dispose();
+      _tabController = TabController(
+        length: widget.totalCompetencias + 1,
+        vsync: this,
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1421,58 +1450,93 @@ class _VistaCalificacionesPpdState extends State<_VistaCalificacionesPpd> {
 
     return Column(
       children: [
-        // Selector de Modo de Visualización (Tarjetas vs Tabla Matriz)
+        // Barra Superior: Pestañas de Competencias / Toggle a Matriz
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            color: isDark ? AppColors.darkSurface : const Color(0xFFF8FAFC),
-            border: Border(bottom: BorderSide(color: PukllaDashboardStyles.borderColor(context))),
-          ),
+          color: isDark ? AppColors.darkSurface : Colors.white,
           child: Row(
             children: [
-              Text(
-                'Visualización:',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: isDark ? AppColors.darkMuted : const Color(0xFF64748B),
+              if (!_mostrarTablaMatriz)
+                Expanded(
+                  child: TabBar(
+                    controller: _tabController,
+                    labelColor: const Color(0xFF7E22CE),
+                    unselectedLabelColor: isDark ? AppColors.darkMuted : const Color(0xFF64748B),
+                    indicatorColor: const Color(0xFF7E22CE),
+                    indicatorWeight: 3,
+                    isScrollable: true,
+                    tabs: [
+                      for (int i = 0; i < widget.totalCompetencias; i++)
+                        Tab(
+                          text: i < widget.data.competencias.length
+                              ? widget.data.competencias[i].nombre
+                              : 'Competencia ${i + 1}',
+                        ),
+                      const Tab(text: 'Consolidado'),
+                    ],
+                  ),
+                )
+              else
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    child: Text(
+                      'Matriz Completa de Calificaciones PPD',
+                      style: TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w800,
+                        color: isDark ? AppColors.darkText : const Color(0xFF0F172A),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 10),
-              _BotonModoVista(
-                icono: Icons.view_agenda_rounded,
-                etiqueta: 'Tarjetas',
-                activo: !_mostrarTabla,
-                onTap: () => setState(() => _mostrarTabla = false),
-              ),
-              const SizedBox(width: 8),
-              _BotonModoVista(
-                icono: Icons.table_chart_rounded,
-                etiqueta: 'Tabla Matriz',
-                activo: _mostrarTabla,
-                onTap: () => setState(() => _mostrarTabla = true),
-              ),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF7E22CE).withValues(alpha: isDark ? 0.25 : 0.12),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  '${widget.totalCompetencias} ${widget.totalCompetencias == 1 ? "competencia" : "competencias"}',
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF7E22CE),
+
+              // Botón para alternar entre vista de pestañas y tabla completa tipo Excel
+              Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: InkWell(
+                  onTap: () => setState(() => _mostrarTablaMatriz = !_mostrarTablaMatriz),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: _mostrarTablaMatriz
+                          ? const Color(0xFF7E22CE).withValues(alpha: isDark ? 0.35 : 0.15)
+                          : (isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF1F5F9)),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: _mostrarTablaMatriz
+                            ? const Color(0xFF7E22CE)
+                            : PukllaDashboardStyles.borderColor(context),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          _mostrarTablaMatriz ? Icons.view_agenda_rounded : Icons.table_chart_rounded,
+                          size: 14,
+                          color: _mostrarTablaMatriz ? const Color(0xFF7E22CE) : (isDark ? AppColors.darkMuted : const Color(0xFF64748B)),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          _mostrarTablaMatriz ? 'Ver Pestañas' : 'Ver Matriz',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: _mostrarTablaMatriz ? const Color(0xFF7E22CE) : (isDark ? AppColors.darkMuted : const Color(0xFF475569)),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ],
           ),
         ),
+        Divider(height: 1, color: PukllaDashboardStyles.borderColor(context)),
 
-        // Cuerpo: Tarjetas o Tabla
+        // Contenido Principal
         Expanded(
           child: alumnosFiltrados.isEmpty
               ? const Center(
@@ -1481,7 +1545,7 @@ class _VistaCalificacionesPpdState extends State<_VistaCalificacionesPpd> {
                     child: Text('No hay estudiantes que coincidan con la búsqueda.'),
                   ),
                 )
-              : _mostrarTabla
+              : _mostrarTablaMatriz
                   ? _TablaMatrizPpd(
                       alumnos: alumnosFiltrados,
                       competencias: widget.data.competencias,
@@ -1490,25 +1554,30 @@ class _VistaCalificacionesPpdState extends State<_VistaCalificacionesPpd> {
                       onNotaChanged: widget.onNotaChanged,
                       onObservacionesChanged: widget.onObservacionesChanged,
                     )
-                  : ListView.separated(
-                      padding: const EdgeInsets.fromLTRB(14, 12, 14, 24),
-                      itemCount: alumnosFiltrados.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 12),
-                      itemBuilder: (context, idx) {
-                        final a = alumnosFiltrados[idx];
-                        final reg = widget.notasPpd[a.id] ?? const PpdRegistro();
+                  : TabBarView(
+                      controller: _tabController,
+                      children: [
+                        // Pestaña por cada competencia
+                        for (int cIdx = 0; cIdx < widget.totalCompetencias; cIdx++)
+                          _TabCompetenciaPpd(
+                            compIndex: cIdx,
+                            competencia: cIdx < widget.data.competencias.length ? widget.data.competencias[cIdx] : null,
+                            alumnos: alumnosFiltrados,
+                            notasPpd: widget.notasPpd,
+                            totalCompetencias: widget.totalCompetencias,
+                            onNotaChanged: widget.onNotaChanged,
+                            onObservacionesChanged: widget.onObservacionesChanged,
+                          ),
 
-                        return _TarjetaAlumnoPpd(
-                          alumno: a,
-                          registro: reg,
+                        // Pestaña de Consolidado
+                        _TabConsolidadoPpd(
+                          alumnos: alumnosFiltrados,
                           competencias: widget.data.competencias,
                           totalCompetencias: widget.totalCompetencias,
-                          onNotaChanged: (compIdx, campo, val) =>
-                              widget.onNotaChanged(a.id, compIdx, campo, val),
-                          onObservacionesChanged: (obs) =>
-                              widget.onObservacionesChanged(a.id, obs),
-                        );
-                      },
+                          notasPpd: widget.notasPpd,
+                          onObservacionesChanged: widget.onObservacionesChanged,
+                        ),
+                      ],
                     ),
         ),
 
@@ -1525,117 +1594,56 @@ class _VistaCalificacionesPpdState extends State<_VistaCalificacionesPpd> {
   }
 }
 
-class _BotonModoVista extends StatelessWidget {
-  const _BotonModoVista({
-    required this.icono,
-    required this.etiqueta,
-    required this.activo,
-    required this.onTap,
-  });
-
-  final IconData icono;
-  final String etiqueta;
-  final bool activo;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = PukllaDashboardStyles.isDark(context);
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        decoration: BoxDecoration(
-          color: activo
-              ? const Color(0xFF7E22CE)
-              : (isDark ? AppColors.darkSurfaceElevated : const Color(0xFFE2E8F0)),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icono,
-              size: 14,
-              color: activo ? Colors.white : (isDark ? AppColors.darkMuted : const Color(0xFF64748B)),
-            ),
-            const SizedBox(width: 5),
-            Text(
-              etiqueta,
-              style: TextStyle(
-                fontSize: 11.5,
-                fontWeight: FontWeight.w700,
-                color: activo ? Colors.white : (isDark ? AppColors.darkMuted : const Color(0xFF475569)),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _TarjetaAlumnoPpd extends StatelessWidget {
-  const _TarjetaAlumnoPpd({
-    required this.alumno,
-    required this.registro,
-    required this.competencias,
+// -------------------------------------------------------------
+// PESTAÑA DE UNA COMPETENCIA ESPECÍFICA PPD (Solo 4 notas limpias)
+// -------------------------------------------------------------
+class _TabCompetenciaPpd extends StatelessWidget {
+  const _TabCompetenciaPpd({
+    required this.compIndex,
+    required this.competencia,
+    required this.alumnos,
+    required this.notasPpd,
     required this.totalCompetencias,
     required this.onNotaChanged,
     required this.onObservacionesChanged,
   });
 
-  final DocenteAlumnoCalificacion alumno;
-  final PpdRegistro registro;
-  final List<DocenteCompetenciaInfo> competencias;
+  final int compIndex;
+  final DocenteCompetenciaInfo? competencia;
+  final List<DocenteAlumnoCalificacion> alumnos;
+  final Map<int, PpdRegistro> notasPpd;
   final int totalCompetencias;
-  final void Function(int compIdx, String campo, int? val) onNotaChanged;
-  final ValueChanged<String> onObservacionesChanged;
+  final void Function(int alumnoId, int compIdx, String campo, int? valor) onNotaChanged;
+  final void Function(int alumnoId, String obs) onObservacionesChanged;
 
   @override
   Widget build(BuildContext context) {
     final isDark = PukllaDashboardStyles.isDark(context);
-    final a = alumno;
-    final reg = registro;
+    final desc = competencia?.descripcion;
+    final tieneDesc = desc != null && desc.trim().isNotEmpty;
 
-    final tieneNota = reg.calificacionSistema != null;
-    final nota = reg.calificacionSistema ?? 0;
-    final esAprobado = nota >= 11;
-
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurface : Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: tieneNota
-              ? (esAprobado ? const Color(0xFF10B981).withValues(alpha: 0.35) : AppColors.danger.withValues(alpha: 0.35))
-              : PukllaDashboardStyles.borderColor(context),
-          width: tieneNota ? 1.5 : 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 24),
+      children: [
+        // Banner descriptivo de la Competencia
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            color: const Color(0xFF7E22CE).withValues(alpha: isDark ? 0.20 : 0.08),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: const Color(0xFF7E22CE).withValues(alpha: isDark ? 0.40 : 0.20),
+            ),
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Cabecera Alumno + Badges de Resultado
-          Row(
+          child: Row(
             children: [
-              CircleAvatar(
-                radius: 18,
-                backgroundColor: const Color(0xFF7E22CE).withValues(alpha: 0.15),
-                child: Text(
-                  a.nombreCompleto.isNotEmpty ? a.nombreCompleto[0].toUpperCase() : '?',
-                  style: const TextStyle(fontWeight: FontWeight.w800, color: Color(0xFF7E22CE), fontSize: 13),
+              Container(
+                padding: const EdgeInsets.all(7),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF7E22CE).withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
                 ),
+                child: const Icon(Icons.star_rounded, color: Color(0xFF7E22CE), size: 18),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -1643,297 +1651,590 @@ class _TarjetaAlumnoPpd extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      a.nombreCompleto,
+                      competencia?.nombre ?? 'Competencia ${compIndex + 1}',
                       style: TextStyle(
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
                         color: isDark ? AppColors.darkText : const Color(0xFF0F172A),
                       ),
                     ),
-                    Row(
-                      children: [
-                        if (a.dni != null)
-                          Text('DNI: ${a.dni}', style: TextStyle(fontSize: 11, color: isDark ? AppColors.darkMuted : const Color(0xFF64748B))),
-                        if (a.esInhabilitado) ...[
-                          const SizedBox(width: 6),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                            decoration: BoxDecoration(color: AppColors.danger.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(4)),
-                            child: const Text('Inhabilitado', style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w700, color: AppColors.danger)),
-                          ),
-                        ],
-                      ],
+                    Text(
+                      tieneDesc
+                          ? desc
+                          : 'Proceso 40% (Participación + Actividad) · Final 60% (Autoevaluación + Evaluación)',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: isDark ? AppColors.darkMuted : const Color(0xFF64748B),
+                      ),
                     ),
                   ],
                 ),
               ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
 
-              // Badges Sistema / Curso / Desempeño
-              Wrap(
-                spacing: 5,
+        // Lista de Alumnos para esta competencia
+        for (final a in alumnos) ...[
+          () {
+            final reg = notasPpd[a.id] ?? const PpdRegistro();
+            final valoracion = reg.getValoracion(compIndex);
+
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.darkSurface : Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: valoracion != null
+                      ? (valoracion >= 11
+                          ? const Color(0xFF10B981).withValues(alpha: 0.35)
+                          : AppColors.danger.withValues(alpha: 0.35))
+                      : PukllaDashboardStyles.borderColor(context),
+                  width: valoracion != null ? 1.5 : 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.03),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Cabecera del Alumno + Chip de Valoración
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 17,
+                        backgroundColor: const Color(0xFF7E22CE).withValues(alpha: 0.15),
+                        child: Text(
+                          a.nombreCompleto.isNotEmpty ? a.nombreCompleto[0].toUpperCase() : '?',
+                          style: const TextStyle(fontWeight: FontWeight.w800, color: Color(0xFF7E22CE), fontSize: 12.5),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              a.nombreCompleto,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: isDark ? AppColors.darkText : const Color(0xFF0F172A),
+                              ),
+                            ),
+                            Row(
+                              children: [
+                                if (a.dni != null)
+                                  Text(
+                                    'DNI: ${a.dni}',
+                                    style: TextStyle(fontSize: 10.5, color: isDark ? AppColors.darkMuted : const Color(0xFF64748B)),
+                                  ),
+                                if (a.esInhabilitado) ...[
+                                  const SizedBox(width: 6),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.danger.withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: const Text('Inhabilitado', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: AppColors.danger)),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Valoración de esta competencia
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: valoracion != null
+                              ? (valoracion >= 11
+                                  ? const Color(0xFF10B981).withValues(alpha: 0.15)
+                                  : AppColors.danger.withValues(alpha: 0.15))
+                              : (isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF1F5F9)),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: valoracion != null
+                                ? (valoracion >= 11 ? const Color(0xFF10B981) : AppColors.danger)
+                                : PukllaDashboardStyles.borderColor(context),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            const Text(
+                              'Valoración',
+                              style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: Color(0xFF64748B)),
+                            ),
+                            Text(
+                              valoracion != null ? '$valoracion / 20' : '- / 20',
+                              style: TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w900,
+                                color: valoracion != null
+                                    ? (valoracion >= 11 ? const Color(0xFF10B981) : AppColors.danger)
+                                    : (isDark ? AppColors.darkMuted : const Color(0xFF64748B)),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Bloques de Calificación: Proceso 40% y Final 60%
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final esEstrecho = constraints.maxWidth < 420;
+
+                      final bloqueProceso = Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE5973A).withValues(alpha: isDark ? 0.15 : 0.08),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: const Color(0xFFE5973A).withValues(alpha: isDark ? 0.35 : 0.25)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  'Proceso (40%)',
+                                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Color(0xFFD97706)),
+                                ),
+                                _ChipPromedio(
+                                  etiqueta: 'Prom.',
+                                  valor: reg.getPromedioProceso(compIndex),
+                                  color: const Color(0xFFD97706),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _InputItem(
+                                    etiqueta: 'Participación',
+                                    valor: reg.getParticipacion(compIndex),
+                                    onChanged: (v) => onNotaChanged(a.id, compIndex, 'participacion', v),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: _InputItem(
+                                    etiqueta: 'Actividad',
+                                    valor: reg.getActividad(compIndex),
+                                    onChanged: (v) => onNotaChanged(a.id, compIndex, 'actividad', v),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+
+                      final bloqueFinal = Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFD39F).withValues(alpha: isDark ? 0.20 : 0.18),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: isDark ? 0.40 : 0.30)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  'Final (60%)',
+                                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Color(0xFFB45309)),
+                                ),
+                                _ChipPromedio(
+                                  etiqueta: 'Prom.',
+                                  valor: reg.getPromedioFinal(compIndex),
+                                  color: const Color(0xFFB45309),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _InputItem(
+                                    etiqueta: 'Autoeval. (40%)',
+                                    valor: reg.getAutoevaluacion(compIndex),
+                                    onChanged: (v) => onNotaChanged(a.id, compIndex, 'autoevaluacion', v),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: _InputItem(
+                                    etiqueta: 'Evaluación (60%)',
+                                    valor: reg.getEvaluacion(compIndex),
+                                    onChanged: (v) => onNotaChanged(a.id, compIndex, 'evaluacion', v),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+
+                      if (esEstrecho) {
+                        return Column(
+                          children: [
+                            bloqueProceso,
+                            const SizedBox(height: 8),
+                            bloqueFinal,
+                          ],
+                        );
+                      } else {
+                        return Row(
+                          children: [
+                            Expanded(child: bloqueProceso),
+                            const SizedBox(width: 8),
+                            Expanded(child: bloqueFinal),
+                          ],
+                        );
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Observaciones (Siempre visible y editable directamente)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                    padding: const EdgeInsets.all(9),
                     decoration: BoxDecoration(
-                      color: tieneNota
-                          ? (esAprobado ? const Color(0xFF10B981).withValues(alpha: 0.15) : AppColors.danger.withValues(alpha: 0.15))
-                          : (isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF1F5F9)),
+                      color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF8FAFC),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                        color: tieneNota
-                            ? (esAprobado ? const Color(0xFF10B981) : AppColors.danger)
+                        color: (reg.observaciones != null && reg.observaciones!.trim().isNotEmpty)
+                            ? AppColors.gold.withValues(alpha: isDark ? 0.45 : 0.35)
                             : PukllaDashboardStyles.borderColor(context),
                       ),
                     ),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          tieneNota ? '$nota / 20' : '- / 20',
-                          style: TextStyle(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w900,
-                            color: tieneNota
-                                ? (esAprobado ? const Color(0xFF10B981) : AppColors.danger)
-                                : (isDark ? AppColors.darkMuted : const Color(0xFF64748B)),
-                          ),
+                        Row(
+                          children: [
+                            const Icon(Icons.edit_note_rounded, size: 15, color: AppColors.gold),
+                            const SizedBox(width: 5),
+                            Text(
+                              'Observación Pedagógica',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: isDark ? AppColors.darkText : const Color(0xFF334155),
+                              ),
+                            ),
+                          ],
                         ),
-                        Text(
-                          reg.calificacionCurso != null ? 'Curso: ${reg.calificacionCurso!.toStringAsFixed(2)}' : 'Sin calif.',
-                          style: TextStyle(
-                            fontSize: 9.5,
-                            fontWeight: FontWeight.w700,
-                            color: tieneNota
-                                ? (esAprobado ? const Color(0xFF10B981) : AppColors.danger)
-                                : (isDark ? AppColors.darkMuted : const Color(0xFF64748B)),
-                          ),
+                        const SizedBox(height: 5),
+                        _PpdObservacionInput(
+                          observacionInicial: reg.observaciones,
+                          onChanged: (obs) => onObservacionesChanged(a.id, obs),
+                          hint: 'Escriba una observación o recomendación...',
                         ),
                       ],
                     ),
                   ),
                 ],
               ),
-            ],
-          ),
-
-          const SizedBox(height: 12),
-          Divider(height: 1, color: PukllaDashboardStyles.borderColor(context)),
-          const SizedBox(height: 10),
-
-          // Secciones de Competencias
-          for (int cIdx = 0; cIdx < totalCompetencias; cIdx++) ...[
-            _CompetenciaCardPpd(
-              compIndex: cIdx,
-              competenciaNombre: cIdx < competencias.length ? competencias[cIdx].nombre : 'Competencia ${cIdx + 1}',
-              participacion: reg.getParticipacion(cIdx),
-              actividad: reg.getActividad(cIdx),
-              promedioProceso: reg.getPromedioProceso(cIdx),
-              autoevaluacion: reg.getAutoevaluacion(cIdx),
-              evaluacion: reg.getEvaluacion(cIdx),
-              promedioFinal: reg.getPromedioFinal(cIdx),
-              valoracion: reg.getValoracion(cIdx),
-              onNotaChanged: (campo, val) => onNotaChanged(cIdx, campo, val),
-            ),
-            const SizedBox(height: 10),
-          ],
-
-          // Observaciones (Siempre visible y editable directamente)
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: (reg.observaciones != null && reg.observaciones!.trim().isNotEmpty)
-                    ? AppColors.gold.withValues(alpha: isDark ? 0.45 : 0.35)
-                    : PukllaDashboardStyles.borderColor(context),
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const Icon(Icons.edit_note_rounded, size: 16, color: AppColors.gold),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Observación Pedagógica (PPD)',
-                      style: TextStyle(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w700,
-                        color: isDark ? AppColors.darkText : const Color(0xFF334155),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                _PpdObservacionInput(
-                  observacionInicial: reg.observaciones,
-                  onChanged: onObservacionesChanged,
-                  hint: 'Observaciones para el estudiante (opcional)...',
-                ),
-              ],
-            ),
-          ),
+            );
+          }(),
         ],
-      ),
+      ],
     );
   }
 }
 
-class _CompetenciaCardPpd extends StatelessWidget {
-  const _CompetenciaCardPpd({
-    required this.compIndex,
-    required this.competenciaNombre,
-    required this.participacion,
-    required this.actividad,
-    required this.promedioProceso,
-    required this.autoevaluacion,
-    required this.evaluacion,
-    required this.promedioFinal,
-    required this.valoracion,
-    required this.onNotaChanged,
+// -------------------------------------------------------------
+// PESTAÑA CONSOLIDADO PPD (Resumen general y notas finales)
+// -------------------------------------------------------------
+class _TabConsolidadoPpd extends StatelessWidget {
+  const _TabConsolidadoPpd({
+    required this.alumnos,
+    required this.competencias,
+    required this.totalCompetencias,
+    required this.notasPpd,
+    required this.onObservacionesChanged,
   });
 
-  final int compIndex;
-  final String competenciaNombre;
-  final int? participacion;
-  final int? actividad;
-  final int? promedioProceso;
-  final int? autoevaluacion;
-  final int? evaluacion;
-  final int? promedioFinal;
-  final int? valoracion;
-  final void Function(String campo, int? val) onNotaChanged;
+  final List<DocenteAlumnoCalificacion> alumnos;
+  final List<DocenteCompetenciaInfo> competencias;
+  final int totalCompetencias;
+  final Map<int, PpdRegistro> notasPpd;
+  final void Function(int alumnoId, String obs) onObservacionesChanged;
 
   @override
   Widget build(BuildContext context) {
     final isDark = PukllaDashboardStyles.isDark(context);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: PukllaDashboardStyles.borderColor(context)),
-      ),
-      padding: const EdgeInsets.all(10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Título de la Competencia + Valoración Chip
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 24),
+      children: [
+        // Banner del Consolidado
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            color: const Color(0xFF10B981).withValues(alpha: isDark ? 0.20 : 0.08),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: const Color(0xFF10B981).withValues(alpha: isDark ? 0.40 : 0.20),
+            ),
+          ),
+          child: Row(
             children: [
-              Expanded(
-                child: Text(
-                  competenciaNombre,
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w800,
-                    color: isDark ? AppColors.darkText : const Color(0xFF0F172A),
-                  ),
-                ),
-              ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding: const EdgeInsets.all(7),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withValues(alpha: isDark ? 0.25 : 0.15),
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(
-                    color: const Color(0xFF10B981).withValues(alpha: isDark ? 0.5 : 0.3),
-                  ),
+                  color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
                 ),
-                child: Text(
-                  valoracion != null ? 'Valoración: $valoracion' : 'Valoración: -',
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                    color: Color(0xFF10B981),
-                  ),
+                child: const Icon(Icons.analytics_rounded, color: Color(0xFF10B981), size: 18),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Consolidado de Calificaciones PPD',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        color: isDark ? AppColors.darkText : const Color(0xFF0F172A),
+                      ),
+                    ),
+                    Text(
+                      'Promedio general de competencias hacia la escala de educación superior.',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: isDark ? AppColors.darkMuted : const Color(0xFF64748B),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+        ),
+        const SizedBox(height: 12),
 
-          // Bloque 1: Productos de Proceso 40% (Naranja / Ámbar)
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: const Color(0xFFE5973A).withValues(alpha: isDark ? 0.15 : 0.08),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: const Color(0xFFE5973A).withValues(alpha: isDark ? 0.35 : 0.25)),
-            ),
-            child: Row(
-              children: [
-                const SizedBox(
-                  width: 90,
-                  child: Text(
-                    'Proceso 40%',
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Color(0xFFD97706)),
-                  ),
-                ),
-                _InputItem(
-                  etiqueta: 'Part.',
-                  valor: participacion,
-                  onChanged: (v) => onNotaChanged('participacion', v),
-                ),
-                const SizedBox(width: 8),
-                _InputItem(
-                  etiqueta: 'Activ.',
-                  valor: actividad,
-                  onChanged: (v) => onNotaChanged('actividad', v),
-                ),
-                const Spacer(),
-                _ChipPromedio(
-                  etiqueta: 'Prom.',
-                  valor: promedioProceso,
-                  color: const Color(0xFFD97706),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 6),
+        // Lista de Alumnos en el Consolidado
+        for (final a in alumnos) ...[
+          () {
+            final reg = notasPpd[a.id] ?? const PpdRegistro();
+            final tieneNota = reg.calificacionSistema != null;
+            final nota = reg.calificacionSistema ?? 0;
+            final esAprobado = nota >= 11;
 
-          // Bloque 2: Producto Final 60% (Durazno / Peach)
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFD39F).withValues(alpha: isDark ? 0.20 : 0.18),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: isDark ? 0.40 : 0.30)),
-            ),
-            child: Row(
-              children: [
-                const SizedBox(
-                  width: 90,
-                  child: Text(
-                    'Final 60%',
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Color(0xFFB45309)),
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.darkSurface : Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: tieneNota
+                      ? (esAprobado ? const Color(0xFF10B981).withValues(alpha: 0.35) : AppColors.danger.withValues(alpha: 0.35))
+                      : PukllaDashboardStyles.borderColor(context),
+                  width: tieneNota ? 1.5 : 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.03),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
                   ),
-                ),
-                _InputItem(
-                  etiqueta: 'Auto. 40%',
-                  valor: autoevaluacion,
-                  onChanged: (v) => onNotaChanged('autoevaluacion', v),
-                ),
-                const SizedBox(width: 8),
-                _InputItem(
-                  etiqueta: 'Eval. 60%',
-                  valor: evaluacion,
-                  onChanged: (v) => onNotaChanged('evaluacion', v),
-                ),
-                const Spacer(),
-                _ChipPromedio(
-                  etiqueta: 'Prom.',
-                  valor: promedioFinal,
-                  color: const Color(0xFFB45309),
-                ),
-              ],
-            ),
-          ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Alumno + Notas Finales (Sistema, Curso, Nivel)
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 17,
+                        backgroundColor: const Color(0xFF7E22CE).withValues(alpha: 0.15),
+                        child: Text(
+                          a.nombreCompleto.isNotEmpty ? a.nombreCompleto[0].toUpperCase() : '?',
+                          style: const TextStyle(fontWeight: FontWeight.w800, color: Color(0xFF7E22CE), fontSize: 12.5),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              a.nombreCompleto,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: isDark ? AppColors.darkText : const Color(0xFF0F172A),
+                              ),
+                            ),
+                            if (a.dni != null)
+                              Text(
+                                'DNI: ${a.dni}',
+                                style: TextStyle(fontSize: 10.5, color: isDark ? AppColors.darkMuted : const Color(0xFF64748B)),
+                              ),
+                          ],
+                        ),
+                      ),
+
+                      // Badge Vigesimal Sistema
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: tieneNota
+                              ? (esAprobado ? const Color(0xFF10B981).withValues(alpha: 0.15) : AppColors.danger.withValues(alpha: 0.15))
+                              : (isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF1F5F9)),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: tieneNota
+                                ? (esAprobado ? const Color(0xFF10B981) : AppColors.danger)
+                                : PukllaDashboardStyles.borderColor(context),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              tieneNota ? '$nota / 20' : '- / 20',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w900,
+                                color: tieneNota
+                                    ? (esAprobado ? const Color(0xFF10B981) : AppColors.danger)
+                                    : (isDark ? AppColors.darkMuted : const Color(0xFF64748B)),
+                              ),
+                            ),
+                            Text(
+                              reg.calificacionCurso != null ? 'Curso: ${reg.calificacionCurso!.toStringAsFixed(2)}' : 'Sin calif.',
+                              style: TextStyle(
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.w700,
+                                color: tieneNota
+                                    ? (esAprobado ? const Color(0xFF10B981) : AppColors.danger)
+                                    : (isDark ? AppColors.darkMuted : const Color(0xFF64748B)),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Desglose de Competencias (Chips de Valoración)
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 6,
+                    children: [
+                      for (int c = 0; c < totalCompetencias; c++)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: PukllaDashboardStyles.borderColor(context)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                c < competencias.length ? competencias[c].nombre : 'Comp. ${c + 1}',
+                                style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                ': ${reg.getValoracion(c) ?? "-"}',
+                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Color(0xFF10B981)),
+                              ),
+                            ],
+                          ),
+                        ),
+                      if (reg.nivelDesempeno != null)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppColors.gold.withValues(alpha: isDark ? 0.25 : 0.15),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            'Nivel ${reg.nivelDesempeno}',
+                            style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: AppColors.gold),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Observación Pedagógica (Siempre visible)
+                  Container(
+                    padding: const EdgeInsets.all(9),
+                    decoration: BoxDecoration(
+                      color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: (reg.observaciones != null && reg.observaciones!.trim().isNotEmpty)
+                            ? AppColors.gold.withValues(alpha: isDark ? 0.45 : 0.35)
+                            : PukllaDashboardStyles.borderColor(context),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.edit_note_rounded, size: 15, color: AppColors.gold),
+                            const SizedBox(width: 5),
+                            Text(
+                              'Observación Pedagógica Final',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: isDark ? AppColors.darkText : const Color(0xFF334155),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 5),
+                        _PpdObservacionInput(
+                          observacionInicial: reg.observaciones,
+                          onChanged: (obs) => onObservacionesChanged(a.id, obs),
+                          hint: 'Observaciones para el estudiante (opcional)...',
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }(),
         ],
-      ),
+      ],
     );
   }
 }
