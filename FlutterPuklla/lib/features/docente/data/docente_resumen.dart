@@ -99,6 +99,7 @@ class DocenteResumen {
     required this.incidenciasPendientes,
     required this.notificacionesSinLeer,
     this.totalAlumnos = 0,
+    this.totalMatriculas = 0,
     this.roles = const [],
     this.esTutor = false,
     this.esInvestigador = false,
@@ -126,6 +127,7 @@ class DocenteResumen {
       incidenciasPendientes: _asInt(json['incidencias_pendientes']),
       notificacionesSinLeer: _asInt(json['notificaciones_sin_leer']),
       totalAlumnos: _asInt(json['total_alumnos']),
+      totalMatriculas: _asInt(json['total_matriculas']),
       roles: rolesList,
       esTutor: json['es_tutor'] as bool? ?? false,
       esInvestigador: json['es_investigador'] as bool? ?? false,
@@ -149,6 +151,7 @@ class DocenteResumen {
   final int incidenciasPendientes;
   final int notificacionesSinLeer;
   final int totalAlumnos;
+  final int totalMatriculas;
   final List<String> roles;
   final bool esTutor;
   final bool esInvestigador;

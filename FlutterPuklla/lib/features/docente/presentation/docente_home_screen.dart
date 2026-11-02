@@ -443,8 +443,10 @@ class _KpisSection extends StatelessWidget {
               child: StatCard(
                 icon: Icons.people_alt_outlined,
                 value: '${resumen.totalAlumnos}',
-                label: 'Alumnos en cursos',
-                detail: 'Ver directorio',
+                label: 'Alumnos únicos',
+                detail: resumen.totalMatriculas > resumen.totalAlumnos
+                    ? '${resumen.totalMatriculas} inscripciones'
+                    : 'Ver directorio',
                 color: AppColors.teal,
                 onTap: onVerAlumnos,
               ),

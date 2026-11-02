@@ -87,13 +87,38 @@ class DocenteController extends Controller
             ])->values()->all();
         }
 
-        // Alumnos totales
-        $totalAlumnos = 0;
+        // Alumnos únicos vs total de matrículas/inscripciones
+        $alumnosFidIds = collect();
+        $alumnosPpdIds = collect();
+        $totalMatriculas = 0;
+
         foreach ($cursos as $c) {
-            $totalAlumnos += $this->esPpd($c)
-                ? $this->alumnosPpdCount($c)
-                : $c->alumnosValidosIds()->count();
+            if ($this->esPpd($c)) {
+                $programaId = $c->ciclo?->programa_id;
+                if ($programaId) {
+                    $ppdUsers = User::where('programa_id', $programaId)
+                        ->where(function ($q) {
+                            $q->whereHas('roles', fn ($r) => $r->where('name', 'alumnoB'))
+                              ->orWhere(function ($q2) {
+                                  $q2->whereHas('roles', fn ($r) => $r->where('name', 'inhabilitado'))
+                                      ->where('perfil', '!=', 'Retirado');
+                              });
+                        })
+                        ->where(function ($q) {
+                            $q->whereNull('condicion')->orWhere('condicion', '!=', 'Egresado');
+                        })
+                        ->pluck('id');
+                    $totalMatriculas += $ppdUsers->count();
+                    $alumnosPpdIds = $alumnosPpdIds->merge($ppdUsers);
+                }
+            } else {
+                $fidIds = $c->alumnosValidosIds();
+                $totalMatriculas += $fidIds->count();
+                $alumnosFidIds = $alumnosFidIds->merge($fidIds);
+            }
         }
+
+        $totalAlumnosUnicos = $alumnosFidIds->unique()->count() + $alumnosPpdIds->unique()->count();
 
         return response()->json([
             'data' => [
@@ -105,7 +130,8 @@ class DocenteController extends Controller
                 'incidencias_total' => (int) $incidencias->total,
                 'incidencias_pendientes' => (int) $incidencias->pendientes,
                 'notificaciones_sin_leer' => $request->user()->unreadNotifications()->count(),
-                'total_alumnos' => $totalAlumnos,
+                'total_alumnos' => $totalAlumnosUnicos,
+                'total_matriculas' => $totalMatriculas,
                 'roles' => $roles,
                 'es_tutor' => $esTutor,
                 'es_investigador' => $esInvestigador,

@@ -83,7 +83,12 @@ class _DocenteAlumnosScreenState extends ConsumerState<DocenteAlumnosScreen> {
     }
   }
 
-  void _mostrarFichaCompleta(BuildContext context, DocenteAlumno alumno, DocenteCursoAlumnos curso) {
+  void _mostrarFichaCompleta(
+    BuildContext context,
+    DocenteAlumno alumno,
+    DocenteCursoAlumnos curso, {
+    List<String> otrosCursos = const [],
+  }) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -91,6 +96,7 @@ class _DocenteAlumnosScreenState extends ConsumerState<DocenteAlumnosScreen> {
       builder: (ctx) => _ModalFichaCompletaAlumno(
         alumno: alumno,
         curso: curso,
+        otrosCursos: otrosCursos,
         onLlamar: (tel) => _llamarNumero(context, tel),
         onWhatsapp: (tel, nom) => _abrirWhatsapp(context, tel, nom),
         onEmail: (email) => _enviarCorreo(email),
@@ -145,11 +151,22 @@ class _DocenteAlumnosScreenState extends ConsumerState<DocenteAlumnosScreen> {
               return true;
             }).toList();
 
-            // Total de alumnos en los cursos filtrados
-            int totalAlumnosMostrados = 0;
+            // Total de alumnos únicos vs total de inscripciones para evitar duplicidad de conteo
+            final Set<String> alumnosUnicosKeys = {};
+            final Map<String, List<String>> cursosPorAlumno = {};
+            int totalInscripciones = 0;
+
             for (final c in cursosArea) {
-              totalAlumnosMostrados += c.alumnos.length;
+              totalInscripciones += c.alumnos.length;
+              for (final a in c.alumnos) {
+                final key = (a.dni != null && a.dni!.trim().isNotEmpty)
+                    ? 'dni_${a.dni!.trim()}'
+                    : 'id_${c.esPpd ? "ppd" : "fid"}_${a.id}';
+                alumnosUnicosKeys.add(key);
+                cursosPorAlumno.putIfAbsent(key, () => []).add(c.cursoNombre);
+              }
             }
+            final totalAlumnosUnicos = alumnosUnicosKeys.length;
 
             return ListView(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
@@ -198,7 +215,7 @@ class _DocenteAlumnosScreenState extends ConsumerState<DocenteAlumnosScreen> {
                 ),
                 const SizedBox(height: 14),
 
-                // Filtros de Área (Todos, FID, PPD) y Conteo
+                // Filtros de Área (Todos, FID, PPD) y Conteo Senior (Únicos vs Inscripciones)
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -229,7 +246,9 @@ class _DocenteAlumnosScreenState extends ConsumerState<DocenteAlumnosScreen> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
-                        '$totalAlumnosMostrados estudiantes',
+                        totalInscripciones > totalAlumnosUnicos
+                            ? '$totalAlumnosUnicos alumnos únicos ($totalInscripciones matrículas)'
+                            : '$totalAlumnosUnicos alumnos',
                         style: const TextStyle(
                           fontSize: 11.5,
                           fontWeight: FontWeight.w700,
@@ -246,11 +265,12 @@ class _DocenteAlumnosScreenState extends ConsumerState<DocenteAlumnosScreen> {
                   _AcordeonCurso(
                     curso: curso,
                     filtroTexto: _filtroTexto,
+                    cursosPorAlumno: cursosPorAlumno,
                     debeExpandirInicial: widget.cursoIdInicial == curso.cursoId || _filtroTexto.isNotEmpty,
                     onLlamar: (tel) => _llamarNumero(context, tel),
                     onWhatsapp: (tel, nom) => _abrirWhatsapp(context, tel, nom),
                     onEmail: (email) => _enviarCorreo(email),
-                    onVerFicha: (a) => _mostrarFichaCompleta(context, a, curso),
+                    onVerFicha: (a, otros) => _mostrarFichaCompleta(context, a, curso, otrosCursos: otros),
                   ),
                   const SizedBox(height: 12),
                 ],
@@ -313,6 +333,7 @@ class _AcordeonCurso extends StatelessWidget {
   const _AcordeonCurso({
     required this.curso,
     required this.filtroTexto,
+    this.cursosPorAlumno = const {},
     required this.debeExpandirInicial,
     required this.onLlamar,
     required this.onWhatsapp,
@@ -322,11 +343,12 @@ class _AcordeonCurso extends StatelessWidget {
 
   final DocenteCursoAlumnos curso;
   final String filtroTexto;
+  final Map<String, List<String>> cursosPorAlumno;
   final bool debeExpandirInicial;
   final ValueChanged<String> onLlamar;
   final void Function(String telefono, String nombre) onWhatsapp;
   final ValueChanged<String> onEmail;
-  final ValueChanged<DocenteAlumno> onVerFicha;
+  final void Function(DocenteAlumno alumno, List<String> otrosCursos) onVerFicha;
 
   @override
   Widget build(BuildContext context) {
@@ -436,13 +458,21 @@ class _AcordeonCurso extends StatelessWidget {
               )
             else
               for (final alumno in alumnosFiltrados) ...[
-                _TarjetaAlumnoDirectorio(
-                  alumno: alumno,
-                  onLlamar: onLlamar,
-                  onWhatsapp: onWhatsapp,
-                  onEmail: onEmail,
-                  onVerFicha: () => onVerFicha(alumno),
-                ),
+                () {
+                  final aKey = (alumno.dni != null && alumno.dni!.trim().isNotEmpty)
+                      ? 'dni_${alumno.dni!.trim()}'
+                      : 'id_${curso.esPpd ? "ppd" : "fid"}_${alumno.id}';
+                  final matriculados = cursosPorAlumno[aKey] ?? [];
+
+                  return _TarjetaAlumnoDirectorio(
+                    alumno: alumno,
+                    cursosMatriculadosConDocente: matriculados,
+                    onLlamar: onLlamar,
+                    onWhatsapp: onWhatsapp,
+                    onEmail: onEmail,
+                    onVerFicha: () => onVerFicha(alumno, matriculados),
+                  );
+                }(),
                 const SizedBox(height: 10),
               ],
           ],
@@ -486,6 +516,7 @@ class _MiniBadge extends StatelessWidget {
 class _TarjetaAlumnoDirectorio extends StatelessWidget {
   const _TarjetaAlumnoDirectorio({
     required this.alumno,
+    this.cursosMatriculadosConDocente = const [],
     required this.onLlamar,
     required this.onWhatsapp,
     required this.onEmail,
@@ -493,6 +524,7 @@ class _TarjetaAlumnoDirectorio extends StatelessWidget {
   });
 
   final DocenteAlumno alumno;
+  final List<String> cursosMatriculadosConDocente;
   final ValueChanged<String> onLlamar;
   final void Function(String telefono, String nombre) onWhatsapp;
   final ValueChanged<String> onEmail;
@@ -567,6 +599,35 @@ class _TarjetaAlumnoDirectorio extends StatelessWidget {
                           ),
                       ],
                     ),
+                    if (cursosMatriculadosConDocente.length > 1) ...[
+                      const SizedBox(height: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AppColors.teal.withValues(alpha: isDark ? 0.25 : 0.12),
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(
+                            color: AppColors.teal.withValues(alpha: isDark ? 0.5 : 0.25),
+                            width: 0.8,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.school, size: 11, color: AppColors.teal),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${cursosMatriculadosConDocente.length} cursos contigo',
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.teal,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -770,6 +831,7 @@ class _ModalFichaCompletaAlumno extends StatelessWidget {
   const _ModalFichaCompletaAlumno({
     required this.alumno,
     required this.curso,
+    this.otrosCursos = const [],
     required this.onLlamar,
     required this.onWhatsapp,
     required this.onEmail,
@@ -777,6 +839,7 @@ class _ModalFichaCompletaAlumno extends StatelessWidget {
 
   final DocenteAlumno alumno;
   final DocenteCursoAlumnos curso;
+  final List<String> otrosCursos;
   final ValueChanged<String> onLlamar;
   final void Function(String telefono, String nombre) onWhatsapp;
   final ValueChanged<String> onEmail;
@@ -1016,6 +1079,61 @@ class _ModalFichaCompletaAlumno extends StatelessWidget {
                     ],
                   ),
                 ),
+
+                if (otrosCursos.length > 1) ...[
+                  const SizedBox(height: 16),
+                  Text(
+                    'CURSOS QUE LLEVA CONTIGO (${otrosCursos.length})',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.8,
+                      color: isDark ? AppColors.darkMuted : const Color(0xFF64748B),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: PukllaDashboardStyles.borderColor(context)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        for (final cNombre in otrosCursos)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  cNombre == curso.cursoNombre ? Icons.check_circle : Icons.circle_outlined,
+                                  size: 14,
+                                  color: cNombre == curso.cursoNombre
+                                      ? AppColors.teal
+                                      : (isDark ? AppColors.darkMuted : const Color(0xFF94A3B8)),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    cNombre,
+                                    style: TextStyle(
+                                      fontSize: 12.5,
+                                      fontWeight: cNombre == curso.cursoNombre ? FontWeight.w700 : FontWeight.w500,
+                                      color: isDark ? AppColors.darkText : const Color(0xFF1E293B),
+                                    ),
+                                  ),
+                                ),
+                                if (cNombre == curso.cursoNombre)
+                                  _MiniBadge(texto: 'Actual', isDark: isDark, color: AppColors.teal),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
 
                 const SizedBox(height: 18),
 
