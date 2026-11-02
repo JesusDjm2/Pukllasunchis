@@ -15,8 +15,8 @@ import '../data/docente_alumno.dart';
 
 /// Pantalla completa de Directorio de Estudiantes para el docente.
 /// Agrupa los alumnos por curso en formato acordeón expandible (FID y PPD),
-/// con buscador en tiempo real y botones directos de WhatsApp, llamada y correo
-/// tanto para el número principal como para el de referencia.
+/// con buscador en tiempo real. En la vista de curso muestra el teléfono principal compacto,
+/// y mediante "Ver Ficha" despliega todos los datos del alumno (incluyendo teléfono de referencia).
 class DocenteAlumnosScreen extends ConsumerStatefulWidget {
   const DocenteAlumnosScreen({super.key, this.cursoIdInicial});
 
@@ -81,6 +81,21 @@ class _DocenteAlumnosScreenState extends ConsumerState<DocenteAlumnosScreen> {
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
     }
+  }
+
+  void _mostrarFichaCompleta(BuildContext context, DocenteAlumno alumno, DocenteCursoAlumnos curso) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _ModalFichaCompletaAlumno(
+        alumno: alumno,
+        curso: curso,
+        onLlamar: (tel) => _llamarNumero(context, tel),
+        onWhatsapp: (tel, nom) => _abrirWhatsapp(context, tel, nom),
+        onEmail: (email) => _enviarCorreo(email),
+      ),
+    );
   }
 
   @override
@@ -235,6 +250,7 @@ class _DocenteAlumnosScreenState extends ConsumerState<DocenteAlumnosScreen> {
                     onLlamar: (tel) => _llamarNumero(context, tel),
                     onWhatsapp: (tel, nom) => _abrirWhatsapp(context, tel, nom),
                     onEmail: (email) => _enviarCorreo(email),
+                    onVerFicha: (a) => _mostrarFichaCompleta(context, a, curso),
                   ),
                   const SizedBox(height: 12),
                 ],
@@ -301,6 +317,7 @@ class _AcordeonCurso extends StatelessWidget {
     required this.onLlamar,
     required this.onWhatsapp,
     required this.onEmail,
+    required this.onVerFicha,
   });
 
   final DocenteCursoAlumnos curso;
@@ -309,6 +326,7 @@ class _AcordeonCurso extends StatelessWidget {
   final ValueChanged<String> onLlamar;
   final void Function(String telefono, String nombre) onWhatsapp;
   final ValueChanged<String> onEmail;
+  final ValueChanged<DocenteAlumno> onVerFicha;
 
   @override
   Widget build(BuildContext context) {
@@ -423,6 +441,7 @@ class _AcordeonCurso extends StatelessWidget {
                   onLlamar: onLlamar,
                   onWhatsapp: onWhatsapp,
                   onEmail: onEmail,
+                  onVerFicha: () => onVerFicha(alumno),
                 ),
                 const SizedBox(height: 10),
               ],
@@ -461,24 +480,28 @@ class _MiniBadge extends StatelessWidget {
   }
 }
 
+/// Tarjeta compacta del alumno dentro del curso:
+/// Muestra avatar, nombre, DNI, teléfono principal con Llamar y WhatsApp,
+/// y un botón directo a su Ficha Completa.
 class _TarjetaAlumnoDirectorio extends StatelessWidget {
   const _TarjetaAlumnoDirectorio({
     required this.alumno,
     required this.onLlamar,
     required this.onWhatsapp,
     required this.onEmail,
+    required this.onVerFicha,
   });
 
   final DocenteAlumno alumno;
   final ValueChanged<String> onLlamar;
   final void Function(String telefono, String nombre) onWhatsapp;
   final ValueChanged<String> onEmail;
+  final VoidCallback onVerFicha;
 
   @override
   Widget build(BuildContext context) {
     final isDark = PukllaDashboardStyles.isDark(context);
     final tienePrincipal = alumno.telefono != null && alumno.telefono!.trim().isNotEmpty;
-    final tieneRef = alumno.telefonoReferencia != null && alumno.telefonoReferencia!.trim().isNotEmpty;
     final tieneEmail = alumno.email != null && alumno.email!.trim().isNotEmpty;
 
     return Container(
@@ -493,16 +516,16 @@ class _TarjetaAlumnoDirectorio extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Fila del Alumno: Avatar + Nombre + DNI
+          // Fila del Alumno: Avatar + Nombre + DNI + Botón Ficha
           Row(
             children: [
               CircleAvatar(
-                radius: 18,
+                radius: 17,
                 backgroundColor: AppColors.teal.withValues(alpha: isDark ? 0.28 : 0.15),
                 child: Text(
                   alumno.nombreCompleto.isNotEmpty ? alumno.nombreCompleto[0].toUpperCase() : '?',
                   style: const TextStyle(
-                    fontSize: 13,
+                    fontSize: 12.5,
                     fontWeight: FontWeight.w800,
                     color: AppColors.teal,
                   ),
@@ -547,55 +570,68 @@ class _TarjetaAlumnoDirectorio extends StatelessWidget {
                   ],
                 ),
               ),
+
+              // Botón de Correo Rápido
               if (tieneEmail)
                 IconButton(
                   icon: const Icon(Icons.email_outlined, size: 18, color: AppColors.teal),
                   tooltip: 'Enviar correo a ${alumno.email}',
                   onPressed: () => onEmail(alumno.email!),
                 ),
+
+              // Botón Ver Ficha Completa
+              PukllaScaleTap(
+                onTap: onVerFicha,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4.5),
+                  decoration: BoxDecoration(
+                    color: AppColors.gold.withValues(alpha: isDark ? 0.22 : 0.14),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                      color: AppColors.gold.withValues(alpha: isDark ? 0.40 : 0.25),
+                    ),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.assignment_ind_outlined, size: 14, color: AppColors.gold),
+                      SizedBox(width: 4),
+                      Text(
+                        'Ficha',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.gold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
 
-          if (tienePrincipal || tieneRef) ...[
-            const SizedBox(height: 10),
-            Divider(height: 1, color: PukllaDashboardStyles.borderColor(context)),
-            const SizedBox(height: 8),
+          const SizedBox(height: 8),
 
-            // Bloque de Teléfono Principal
-            if (tienePrincipal)
-              _FilaTelefono(
-                tipo: 'Teléfono Principal',
-                numero: alumno.telefono!,
-                nombre: alumno.nombreCompleto,
-                isDark: isDark,
-                onLlamar: () => onLlamar(alumno.telefono!),
-                onWhatsapp: () => onWhatsapp(alumno.telefono!, alumno.nombreCompleto),
-              ),
-
-            // Bloque de Teléfono de Referencia
-            if (tieneRef) ...[
-              if (tienePrincipal) const SizedBox(height: 6),
-              _FilaTelefono(
-                tipo: 'Teléfono Referencia',
-                numero: alumno.telefonoReferencia!,
-                nombre: alumno.nombreCompleto,
-                isDark: isDark,
-                esReferencia: true,
-                onLlamar: () => onLlamar(alumno.telefonoReferencia!),
-                onWhatsapp: () => onWhatsapp(alumno.telefonoReferencia!, alumno.nombreCompleto),
-              ),
-            ],
-          ] else ...[
-            const SizedBox(height: 6),
+          // En la vista de curso regular mostramos únicamente el teléfono principal para máxima compacidad
+          if (tienePrincipal)
+            _FilaTelefono(
+              tipo: 'Teléfono Principal',
+              numero: alumno.telefono!,
+              nombre: alumno.nombreCompleto,
+              isDark: isDark,
+              onLlamar: () => onLlamar(alumno.telefono!),
+              onWhatsapp: () => onWhatsapp(alumno.telefono!, alumno.nombreCompleto),
+            )
+          else
             Text(
-              'Sin números telefónicos registrados',
+              'Sin teléfono principal registrado',
               style: TextStyle(
                 fontSize: 11,
                 fontStyle: FontStyle.italic,
                 color: isDark ? AppColors.darkMuted : const Color(0xFF94A3B8),
               ),
             ),
-          ],
         ],
       ),
     );
@@ -678,7 +714,7 @@ class _FilaTelefono extends StatelessWidget {
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.phone, size: 14, color: AppColors.teal),
+                  Icon(Icons.phone, size: 13, color: AppColors.teal),
                   SizedBox(width: 4),
                   Text(
                     'Llamar',
@@ -707,7 +743,7 @@ class _FilaTelefono extends StatelessWidget {
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.chat_bubble_outline, size: 14, color: Color(0xFF16A34A)),
+                  Icon(Icons.chat_bubble_outline, size: 13, color: Color(0xFF16A34A)),
                   SizedBox(width: 4),
                   Text(
                     'WhatsApp',
@@ -719,6 +755,346 @@ class _FilaTelefono extends StatelessWidget {
                   ),
                 ],
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Hoja modal de Ficha Completa del Alumno (espejo de la ficha web).
+/// Presenta los 2 números (principal y referencia/familiar) con sus acciones,
+/// datos académicos y enlace a la ficha institucional oficial.
+class _ModalFichaCompletaAlumno extends StatelessWidget {
+  const _ModalFichaCompletaAlumno({
+    required this.alumno,
+    required this.curso,
+    required this.onLlamar,
+    required this.onWhatsapp,
+    required this.onEmail,
+  });
+
+  final DocenteAlumno alumno;
+  final DocenteCursoAlumnos curso;
+  final ValueChanged<String> onLlamar;
+  final void Function(String telefono, String nombre) onWhatsapp;
+  final ValueChanged<String> onEmail;
+
+  Future<void> _abrirFichaOficialWeb() async {
+    final uri = Uri.parse('http://127.0.0.1:8001/docente');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = PukllaDashboardStyles.isDark(context);
+    final tienePrincipal = alumno.telefono != null && alumno.telefono!.trim().isNotEmpty;
+    final tieneRef = alumno.telefonoReferencia != null && alumno.telefonoReferencia!.trim().isNotEmpty;
+    final tieneEmail = alumno.email != null && alumno.email!.trim().isNotEmpty;
+
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.78,
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkSurface : Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.5 : 0.2),
+            blurRadius: 25,
+            offset: const Offset(0, -5),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Barra de arrastre
+          Center(
+            child: Container(
+              width: 44,
+              height: 4.5,
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.darkBorder : Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(3),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Cabecera del Estudiante
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 22,
+                backgroundColor: AppColors.teal.withValues(alpha: isDark ? 0.28 : 0.15),
+                child: Text(
+                  alumno.nombreCompleto.isNotEmpty ? alumno.nombreCompleto[0].toUpperCase() : '?',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.teal,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      alumno.nombreCompleto,
+                      style: TextStyle(
+                        fontSize: 15.5,
+                        fontWeight: FontWeight.w800,
+                        color: isDark ? AppColors.darkText : const Color(0xFF0F172A),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      [
+                        if (alumno.dni != null) 'DNI: ${alumno.dni}',
+                        if (alumno.email != null) alumno.email,
+                      ].join(' · '),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark ? AppColors.darkMuted : const Color(0xFF64748B),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: Icon(Icons.close, size: 20, color: isDark ? AppColors.darkMuted : const Color(0xFF64748B)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Divider(height: 1, color: PukllaDashboardStyles.borderColor(context)),
+          const SizedBox(height: 14),
+
+          Expanded(
+            child: ListView(
+              children: [
+                // Sección Vías de Contacto
+                Text(
+                  'CANALES DE CONTACTO',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.8,
+                    color: isDark ? AppColors.darkMuted : const Color(0xFF64748B),
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                if (tienePrincipal)
+                  _FilaTelefono(
+                    tipo: 'Teléfono Principal del Estudiante',
+                    numero: alumno.telefono!,
+                    nombre: alumno.nombreCompleto,
+                    isDark: isDark,
+                    onLlamar: () => onLlamar(alumno.telefono!),
+                    onWhatsapp: () => onWhatsapp(alumno.telefono!, alumno.nombreCompleto),
+                  )
+                else
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 4),
+                    child: Text('Sin teléfono principal registrado', style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic)),
+                  ),
+
+                const SizedBox(height: 8),
+
+                if (tieneRef)
+                  _FilaTelefono(
+                    tipo: 'Teléfono de Referencia (Emergencia / Familia)',
+                    numero: alumno.telefonoReferencia!,
+                    nombre: alumno.nombreCompleto,
+                    isDark: isDark,
+                    esReferencia: true,
+                    onLlamar: () => onLlamar(alumno.telefonoReferencia!),
+                    onWhatsapp: () => onWhatsapp(alumno.telefonoReferencia!, alumno.nombreCompleto),
+                  )
+                else
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 4),
+                    child: Text('Sin teléfono de referencia registrado', style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic)),
+                  ),
+
+                if (tieneEmail) ...[
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                    decoration: BoxDecoration(
+                      color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: PukllaDashboardStyles.borderColor(context)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.email_outlined, size: 16, color: AppColors.teal),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            alumno.email!,
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              color: isDark ? AppColors.darkText : const Color(0xFF0F172A),
+                            ),
+                          ),
+                        ),
+                        InkWell(
+                          onTap: () => onEmail(alumno.email!),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: AppColors.teal.withValues(alpha: isDark ? 0.25 : 0.12),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: const Text(
+                              'Escribir',
+                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.teal),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+
+                const SizedBox(height: 18),
+
+                // Sección Información Académica
+                Text(
+                  'INFORMACIÓN DEL CURSO',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.8,
+                    color: isDark ? AppColors.darkMuted : const Color(0xFF64748B),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: PukllaDashboardStyles.borderColor(context)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        curso.cursoNombre,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                          color: isDark ? AppColors.darkText : const Color(0xFF0F172A),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 4,
+                        children: [
+                          if (curso.programa != null)
+                            _MiniBadge(texto: curso.programa!, isDark: isDark),
+                          if (curso.ciclo != null)
+                            _MiniBadge(texto: 'Ciclo ${curso.ciclo}', isDark: isDark),
+                          _MiniBadge(
+                            texto: curso.esPpd ? 'Programa PPD' : 'Programa FID',
+                            isDark: isDark,
+                            color: curso.esPpd ? const Color(0xFF7E22CE) : AppColors.teal,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 18),
+
+                // Botón Ficha Institucional Oficial (Web / PDF)
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.gold.withValues(alpha: isDark ? 0.18 : 0.08),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: AppColors.gold.withValues(alpha: isDark ? 0.35 : 0.20),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.gold.withValues(alpha: isDark ? 0.25 : 0.15),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(Icons.picture_as_pdf_outlined, color: AppColors.gold, size: 22),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Ficha de Matrícula Institucional',
+                              style: TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w700,
+                                color: isDark ? AppColors.darkText : const Color(0xFF0F172A),
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Consulta la ficha completa y datos demográficos en la plataforma oficial.',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: isDark ? AppColors.darkMuted : const Color(0xFF64748B),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      PukllaScaleTap(
+                        onTap: _abrirFichaOficialWeb,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [AppColors.gold, Color(0xFFD97706)],
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.open_in_browser_rounded, size: 15, color: Colors.white),
+                              SizedBox(width: 4),
+                              Text(
+                                'Abrir Ficha',
+                                style: TextStyle(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         ],

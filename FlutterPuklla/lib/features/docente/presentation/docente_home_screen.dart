@@ -850,10 +850,10 @@ class _TarjetaCursoSenior extends StatelessWidget {
   final VoidCallback onCalificar;
 
   static const _etiquetas = {
-    'parcial_1': 'Parcial 1',
-    'parcial_2': 'Parcial 2',
-    'desempeno': 'Desempeño',
-    'calificado': 'Calificado',
+    'parcial_1': 'P1',
+    'parcial_2': 'P2',
+    'desempeno': 'Desemp.',
+    'calificado': 'Avance',
   };
 
   @override
@@ -862,7 +862,7 @@ class _TarjetaCursoSenior extends StatelessWidget {
     final accentColor = curso.esPpd ? const Color(0xFF9333EA) : AppColors.teal;
 
     return Container(
-      decoration: PukllaDashboardStyles.cardDecoration(context, radius: 18),
+      decoration: PukllaDashboardStyles.cardDecoration(context, radius: 16),
       clipBehavior: Clip.antiAlias,
       child: IntrinsicHeight(
         child: Row(
@@ -875,7 +875,7 @@ class _TarjetaCursoSenior extends StatelessWidget {
             ),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -891,22 +891,26 @@ class _TarjetaCursoSenior extends StatelessWidget {
                                 curso.nombre,
                                 style: TextStyle(
                                   fontWeight: FontWeight.w800,
-                                  fontSize: 15.5,
-                                  color: isDark ? AppColors.darkText : AppColors.tealDark,
+                                  fontSize: 14.5,
+                                  height: 1.25,
+                                  color: isDark ? AppColors.darkText : const Color(0xFF0F172A),
                                 ),
                               ),
-                              if (curso.ciclo != null || curso.programa != null)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 3),
-                                  child: Text(
-                                    [curso.ciclo, curso.programa].whereType<String>().join(' · '),
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: isDark ? AppColors.darkMuted : const Color(0xFF64748B),
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
+                              const SizedBox(height: 4),
+                              Wrap(
+                                spacing: 6,
+                                runSpacing: 4,
+                                children: [
+                                  if (curso.programa != null)
+                                    _InfoPill(icon: Icons.school_outlined, texto: curso.programa!),
+                                  if (curso.ciclo != null)
+                                    _InfoPill(icon: Icons.repeat, texto: 'Ciclo ${curso.ciclo}'),
+                                  if (curso.creditos > 0)
+                                    _InfoPill(icon: Icons.military_tech_outlined, texto: '${curso.creditos} créd.'),
+                                  if (curso.horas > 0)
+                                    _InfoPill(icon: Icons.access_time, texto: '${curso.horas}h'),
+                                ],
+                              ),
                             ],
                           ),
                         ),
@@ -917,12 +921,7 @@ class _TarjetaCursoSenior extends StatelessWidget {
                             color: curso.esPpd
                                 ? (isDark ? const Color(0xFF581C87).withValues(alpha: 0.4) : const Color(0xFFF3E8FF))
                                 : (isDark ? const Color(0xFF0C4A6E).withValues(alpha: 0.4) : const Color(0xFFE0F2FE)),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: curso.esPpd
-                                  ? (isDark ? const Color(0xFF9333EA).withValues(alpha: 0.4) : const Color(0xFFE9D5FF))
-                                  : (isDark ? const Color(0xFF0284C7).withValues(alpha: 0.4) : const Color(0xFFBAE6FD)),
-                            ),
+                            borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
                             curso.esPpd ? 'PPD' : 'FID',
@@ -938,96 +937,71 @@ class _TarjetaCursoSenior extends StatelessWidget {
                       ],
                     ),
 
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 10),
 
-                    // Chips informativos: Horas, Créditos, Alumnos
-                    Row(
+                    // Fila Compacta de Avance de Notas + Sílabo
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 6,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        if (curso.horas > 0)
-                          _InfoPill(icon: Icons.access_time, texto: '${curso.horas} hrs/sem'),
-                        if (curso.creditos > 0) ...[
-                          const SizedBox(width: 6),
-                          _InfoPill(icon: Icons.military_tech_outlined, texto: '${curso.creditos} créditos'),
-                        ],
-                        const Spacer(),
-                        PukllaScaleTap(
-                          onTap: onVerAlumnos,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                        for (final entrada in curso.progreso.entries)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
                             decoration: BoxDecoration(
-                              color: AppColors.teal.withValues(alpha: isDark ? 0.20 : 0.10),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: AppColors.teal.withValues(alpha: isDark ? 0.35 : 0.20),
-                              ),
+                              color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF1F5F9),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: PukllaDashboardStyles.borderColor(context)),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.people, size: 13, color: AppColors.teal),
-                                const SizedBox(width: 4),
                                 Text(
-                                  '${curso.alumnosCount} alumnos',
-                                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.teal),
+                                  '${_etiquetas[entrada.key] ?? entrada.key}: ',
+                                  style: TextStyle(
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: isDark ? AppColors.darkMuted : const Color(0xFF64748B),
+                                  ),
                                 ),
-                                const SizedBox(width: 2),
-                                const Icon(Icons.chevron_right, size: 14, color: AppColors.teal),
+                                Text(
+                                  '${entrada.value.toStringAsFixed(0)}%',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w800,
+                                    color: entrada.value >= 80
+                                        ? const Color(0xFF10B981)
+                                        : (entrada.value >= 40 ? AppColors.gold : const Color(0xFFEF4444)),
+                                  ),
+                                ),
                               ],
                             ),
                           ),
-                        ),
-                      ],
-                    ),
 
-                    const SizedBox(height: 14),
-                    Divider(height: 1, color: PukllaDashboardStyles.borderColor(context)),
-                    const SizedBox(height: 12),
-
-                    // Barras de progreso de evaluaciones
-                    for (final entrada in curso.progreso.entries)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: _BarraProgresoSenior(
-                          etiqueta: _etiquetas[entrada.key] ?? entrada.key,
-                          valor: entrada.value,
-                        ),
-                      ),
-
-                    const SizedBox(height: 10),
-
-                    // Fila de acciones del curso: Sílabo institucional y Botón Calificar
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // Badge de Sílabo institucional
+                        // Sílabo status pill
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
                           decoration: BoxDecoration(
                             color: curso.silaboListo
                                 ? (isDark ? const Color(0xFF064E3B).withValues(alpha: 0.35) : const Color(0xFF10B981).withValues(alpha: 0.12))
                                 : (isDark ? const Color(0xFF78350F).withValues(alpha: 0.35) : const Color(0xFFF59E0B).withValues(alpha: 0.12)),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: curso.silaboListo
-                                  ? (isDark ? const Color(0xFF059669).withValues(alpha: 0.4) : const Color(0xFFA7F3D0))
-                                  : (isDark ? const Color(0xFFD97706).withValues(alpha: 0.4) : const Color(0xFFFDE68A)),
-                            ),
+                            borderRadius: BorderRadius.circular(6),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
                                 curso.silaboListo ? Icons.check_circle_outline : Icons.error_outline,
-                                size: 14,
+                                size: 12,
                                 color: curso.silaboListo
                                     ? (isDark ? const Color(0xFF34D399) : const Color(0xFF0B7A43))
                                     : (isDark ? const Color(0xFFFBBF24) : const Color(0xFFB45309)),
                               ),
-                              const SizedBox(width: 5),
+                              const SizedBox(width: 4),
                               Text(
-                                curso.silaboListo ? 'Sílabo registrado' : 'Sílabo pendiente',
+                                curso.silaboListo ? 'Sílabo OK' : 'Sílabo pendiente',
                                 style: TextStyle(
-                                  fontSize: 11.5,
+                                  fontSize: 10,
                                   fontWeight: FontWeight.w700,
                                   color: curso.silaboListo
                                       ? (isDark ? const Color(0xFF34D399) : const Color(0xFF0B7A43))
@@ -1037,40 +1011,84 @@ class _TarjetaCursoSenior extends StatelessWidget {
                             ],
                           ),
                         ),
+                      ],
+                    ),
 
-                        // Botón dorado Calificar (espejo del botón de la app web)
-                        PukllaScaleTap(
-                          onTap: onCalificar,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6.5),
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [AppColors.gold, Color(0xFFD97706)],
+                    const SizedBox(height: 12),
+                    Divider(height: 1, color: PukllaDashboardStyles.borderColor(context)),
+                    const SizedBox(height: 10),
+
+                    // Botones Principales Unificados A LA MANO: [Alumnos] y [Calificar]
+                    Row(
+                      children: [
+                        // Botón 1: Ver Alumnos del curso
+                        Expanded(
+                          child: PukllaScaleTap(
+                            onTap: onVerAlumnos,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              decoration: BoxDecoration(
+                                color: AppColors.teal.withValues(alpha: isDark ? 0.20 : 0.10),
+                                borderRadius: BorderRadius.circular(9),
+                                border: Border.all(
+                                  color: AppColors.teal.withValues(alpha: isDark ? 0.40 : 0.25),
+                                ),
                               ),
-                              borderRadius: BorderRadius.circular(8),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppColors.gold.withValues(alpha: 0.30),
-                                  blurRadius: 6,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: const Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.edit_note_rounded, size: 16, color: Colors.white),
-                                SizedBox(width: 5),
-                                Text(
-                                  'Calificar',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w800,
-                                    color: Colors.white,
-                                    letterSpacing: 0.2,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.people_alt_outlined, size: 16, color: AppColors.teal),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    'Alumnos (${curso.alumnosCount})',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.teal,
+                                    ),
                                   ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+
+                        // Botón 2: Calificar
+                        Expanded(
+                          child: PukllaScaleTap(
+                            onTap: onCalificar,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [AppColors.gold, Color(0xFFD97706)],
                                 ),
-                              ],
+                                borderRadius: BorderRadius.circular(9),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.gold.withValues(alpha: 0.30),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.edit_note_rounded, size: 17, color: Colors.white),
+                                  SizedBox(width: 5),
+                                  Text(
+                                    'Calificar',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w800,
+                                      color: Colors.white,
+                                      letterSpacing: 0.2,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
