@@ -428,7 +428,7 @@ class AylluMesaProyectoController extends Controller
             $file = $request->file('archivo_evidencia');
             $archivoOriginal = $file->getClientOriginalName();
             $archivoMime = $file->getClientMimeType();
-            $archivoPath = $file->store('private/ayllu_pi_evidencias/' . $aporte->ciclo_romano);
+            $archivoPath = $file->store('private/ayllu_pi_evidencias/' . $aporte->ciclo_romano, 'local');
         }
 
         $solicitaRevision = $request->boolean('solicitar_revision_compartida');
@@ -629,7 +629,7 @@ class AylluMesaProyectoController extends Controller
         );
 
         abort_unless(
-            $version->archivo_privado_path && Storage::exists($version->archivo_privado_path),
+            $version->archivo_privado_path && Storage::disk('local')->exists($version->archivo_privado_path),
             404,
             'El archivo solicitado no se encuentra disponible en el repositorio seguro.'
         );
@@ -646,7 +646,7 @@ class AylluMesaProyectoController extends Controller
             $request->ip()
         );
 
-        return Storage::download(
+        return Storage::disk('local')->download(
             $version->archivo_privado_path,
             $version->archivo_nombre_original ?: ('evidencia_v' . $version->numero_version . '.dat')
         );

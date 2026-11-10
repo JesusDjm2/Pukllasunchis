@@ -405,8 +405,48 @@ class AylluAuthorizationService
 
         if ((!empty($ctx['esAlumnoFid']) || !empty($ctx['esAlumnoPpd']))
             && $this->estudiantePerteneceACicloRomano($user, $aporte->ciclo_romano, $ctx)
+            && $this->estudianteCorrespondeAProgramaDeAporte($user, $aporte, $ctx)
         ) {
             return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Verifica que el programa del estudiante o sus cursos matriculados correspondan a la agrupación
+     * documental del aporte (evitando que un estudiante de Primaria acceda a fichas operativas de Primaria EIB o Inicial).
+     */
+    public function estudianteCorrespondeAProgramaDeAporte(User $user, AylluPiAporteCurso $aporte, array $ctx): bool
+    {
+        if ($aporte->agrupacion_programa_codigo === 'FORMACION_GENERAL' || $aporte->es_aporte_comun) {
+            return true;
+        }
+
+        if ($aporte->curso_institucional_id && isset($ctx['cursos']) && $ctx['cursos']->contains('id', $aporte->curso_institucional_id)) {
+            return true;
+        }
+
+        $sugeridos = $aporte->correspondencia_sugerida_json['cursos_sugeridos'] ?? [];
+        $cursoIdsCandidatos = collect($sugeridos)->pluck('curso_id')->filter()->values();
+        if ($cursoIdsCandidatos->isNotEmpty() && isset($ctx['cursos']) && $ctx['cursos']->pluck('id')->intersect($cursoIdsCandidatos)->isNotEmpty()) {
+            return true;
+        }
+
+        $prog = $ctx['programa'] ?? null;
+        if ($prog) {
+            $codigoEstudiante = null;
+            if ($prog->esInicial()) {
+                $codigoEstudiante = 'INICIAL';
+            } elseif ($prog->esPrimaria() && $prog->eib) {
+                $codigoEstudiante = 'PRIMARIA_EIB';
+            } elseif ($prog->esPrimaria() && !$prog->eib) {
+                $codigoEstudiante = 'PRIMARIA';
+            }
+
+            if ($codigoEstudiante && $codigoEstudiante === $aporte->agrupacion_programa_codigo) {
+                return true;
+            }
         }
 
         return false;
@@ -584,7 +624,8 @@ class AylluAuthorizationService
             'mesa_docente_ciclo' => $this->perteneceAMesaDocenteDelCiclo($user, $aporte->ciclo_romano, $aporte->ejecucion_id, $ctx),
             'equipo_estudiantes' => $this->puedeAccederEvidenciaEquipo($user, $version, $aporte, $ctx),
             'ciclo_completo' => $this->perteneceAMesaDocenteDelCiclo($user, $aporte->ciclo_romano, $aporte->ejecucion_id, $ctx)
-                || $this->estudiantePerteneceACicloRomano($user, $aporte->ciclo_romano, $ctx),
+                || ($this->estudiantePerteneceACicloRomano($user, $aporte->ciclo_romano, $ctx)
+                    && $this->estudianteCorrespondeAProgramaDeAporte($user, $aporte, $ctx)),
             'comunidad_ayllu' => true,
             default => false,
         };

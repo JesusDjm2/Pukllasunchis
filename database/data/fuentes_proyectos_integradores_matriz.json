@@ -1,5 +1,5 @@
 {
-  "version_manifiesto": "2026.11.01.1",
+  "version_manifiesto": "2026.11.01.2",
   "total_entradas_matriz": 114,
   "total_anomalias_competencias": 9,
   "archivos_fuente": [
@@ -96,36 +96,36 @@
         {
           "orden": 1,
           "titulo": "1. Definición del espacio de exploración",
-          "descripcion": "El tema, la justificación y la identificación de actores claves que ayudarán a construir la reseña descriptiva. Este primer trabajo se registrará en un formato en intranet y, luego de ser revisado por el grupo de docentes encargado, se procede a la retroalimentación.",
-          "plazo_documental": "Inicio del I ciclo (registro en intranet, revisión docente y retroalimentación)",
+          "descripcion": "Definición del espacio de exploración: tema, justificación y actores claves; registro en intranet, revisión docente y retroalimentación.",
+          "plazo_documental": "No se precisa fecha.",
           "fuente": "2020 - 2024 Proyectos integradores.docx (Tabla Proyecto 1) / Copia de 03 Proyectos INTEGRADORES.docx (Tabla Proyecto 1)"
         },
         {
           "orden": 2,
           "titulo": "2. Socialización de observaciones y reajuste",
-          "descripcion": "Presentación de las primeras observaciones recogidas sobre la escuela y el territorio, diálogo con docentes y reajuste del trabajo.",
-          "plazo_documental": "Un mes antes de finalizar el primer semestre (I ciclo)",
+          "descripcion": "Socialización de observaciones y reajuste.",
+          "plazo_documental": "Un mes antes de finalizar el primer semestre.",
           "fuente": "2020 - 2024 Proyectos integradores.docx / Copia de 03 Proyectos INTEGRADORES.docx"
         },
         {
           "orden": 3,
           "titulo": "3. Sustentación de la propuesta",
-          "descripcion": "Sustentación del avance del primer semestre ante el equipo docente.",
-          "plazo_documental": "Sin fecha precisa consignada en la fuente documental",
+          "descripcion": "Sustentación de la propuesta.",
+          "plazo_documental": "No se precisa fecha.",
           "fuente": "2020 - 2024 Proyectos integradores.docx / Copia de 03 Proyectos INTEGRADORES.docx"
         },
         {
           "orden": 4,
-          "titulo": "4. Socialización de los avances",
-          "descripcion": "Presentación intermedia del desarrollo descriptivo y narrativo en el segundo ciclo del año.",
-          "plazo_documental": "A mediados del siguiente semestre (II ciclo)",
+          "titulo": "4. Socialización de avances",
+          "descripcion": "Socialización de avances.",
+          "plazo_documental": "A mediados del siguiente semestre.",
           "fuente": "2020 - 2024 Proyectos integradores.docx / Copia de 03 Proyectos INTEGRADORES.docx"
         },
         {
           "orden": 5,
-          "titulo": "5. Entrega final del proyecto anual",
-          "descripcion": "Entrega final e integración del Mapa parlante e informe descriptivo/narrativo del territorio de la Institución Educativa.",
-          "plazo_documental": "Tres semanas antes de concluir el II ciclo",
+          "titulo": "5. Entrega final",
+          "descripcion": "Entrega final.",
+          "plazo_documental": "Tres semanas antes de concluir el II ciclo.",
           "fuente": "2020 - 2024 Proyectos integradores.docx / Copia de 03 Proyectos INTEGRADORES.docx"
         }
       ],
@@ -177,36 +177,36 @@
         {
           "orden": 1,
           "titulo": "1. Definición del espacio de exploración",
-          "descripcion": "El tema, la justificación y la identificación de actores claves que ayudarán a construir la reseña descriptiva. Este primer trabajo se registrará en un formato en intranet y, luego de ser revisado por el grupo de docentes encargado, se procede a la retroalimentación.",
-          "plazo_documental": "Inicio del I ciclo (registro en intranet, revisión docente y retroalimentación)",
+          "descripcion": "Definición del espacio de exploración: tema, justificación y actores claves; registro en intranet, revisión docente y retroalimentación.",
+          "plazo_documental": "No se precisa fecha.",
           "fuente": "2020 - 2024 Proyectos integradores.docx (Tabla Proyecto 1) / Copia de 03 Proyectos INTEGRADORES.docx (Tabla Proyecto 1)"
         },
         {
           "orden": 2,
           "titulo": "2. Socialización de observaciones y reajuste",
-          "descripcion": "Presentación de las primeras observaciones recogidas sobre la escuela y el territorio, diálogo con docentes y reajuste del trabajo.",
-          "plazo_documental": "Un mes antes de finalizar el primer semestre (I ciclo)",
+          "descripcion": "Socialización de observaciones y reajuste.",
+          "plazo_documental": "Un mes antes de finalizar el primer semestre.",
           "fuente": "2020 - 2024 Proyectos integradores.docx / Copia de 03 Proyectos INTEGRADORES.docx"
         },
         {
           "orden": 3,
           "titulo": "3. Sustentación de la propuesta",
-          "descripcion": "Sustentación del avance del primer semestre ante el equipo docente.",
-          "plazo_documental": "Sin fecha precisa consignada en la fuente documental",
+          "descripcion": "Sustentación de la propuesta.",
+          "plazo_documental": "No se precisa fecha.",
           "fuente": "2020 - 2024 Proyectos integradores.docx / Copia de 03 Proyectos INTEGRADORES.docx"
         },
         {
           "orden": 4,
-          "titulo": "4. Socialización de los avances",
-          "descripcion": "Presentación intermedia del desarrollo descriptivo y narrativo en el segundo ciclo del año.",
-          "plazo_documental": "A mediados del siguiente semestre (II ciclo)",
+          "titulo": "4. Socialización de avances",
+          "descripcion": "Socialización de avances.",
+          "plazo_documental": "A mediados del siguiente semestre.",
           "fuente": "2020 - 2024 Proyectos integradores.docx / Copia de 03 Proyectos INTEGRADORES.docx"
         },
         {
           "orden": 5,
-          "titulo": "5. Entrega final del proyecto anual",
-          "descripcion": "Entrega final e integración del Mapa parlante e informe descriptivo/narrativo del territorio de la Institución Educativa.",
-          "plazo_documental": "Tres semanas antes de concluir el II ciclo",
+          "titulo": "5. Entrega final",
+          "descripcion": "Entrega final.",
+          "plazo_documental": "Tres semanas antes de concluir el II ciclo.",
           "fuente": "2020 - 2024 Proyectos integradores.docx / Copia de 03 Proyectos INTEGRADORES.docx"
         }
       ],
@@ -237,36 +237,36 @@
         {
           "orden": 1,
           "titulo": "1. Definición del espacio de exploración",
-          "descripcion": "El tema, la justificación y la identificación de actores claves que ayudarán a construir la reseña descriptiva. Este primer trabajo se registrará en un formato en intranet y, luego de ser revisado por el grupo de docentes encargado, se procede a la retroalimentación.",
-          "plazo_documental": "Inicio del I ciclo (registro en intranet, revisión docente y retroalimentación)",
+          "descripcion": "Definición del espacio de exploración: tema, justificación y actores claves; registro en intranet, revisión docente y retroalimentación.",
+          "plazo_documental": "No se precisa fecha.",
           "fuente": "2020 - 2024 Proyectos integradores.docx (Tabla Proyecto 1) / Copia de 03 Proyectos INTEGRADORES.docx (Tabla Proyecto 1)"
         },
         {
           "orden": 2,
           "titulo": "2. Socialización de observaciones y reajuste",
-          "descripcion": "Presentación de las primeras observaciones recogidas sobre la escuela y el territorio, diálogo con docentes y reajuste del trabajo.",
-          "plazo_documental": "Un mes antes de finalizar el primer semestre (I ciclo)",
+          "descripcion": "Socialización de observaciones y reajuste.",
+          "plazo_documental": "Un mes antes de finalizar el primer semestre.",
           "fuente": "2020 - 2024 Proyectos integradores.docx / Copia de 03 Proyectos INTEGRADORES.docx"
         },
         {
           "orden": 3,
           "titulo": "3. Sustentación de la propuesta",
-          "descripcion": "Sustentación del avance del primer semestre ante el equipo docente.",
-          "plazo_documental": "Sin fecha precisa consignada en la fuente documental",
+          "descripcion": "Sustentación de la propuesta.",
+          "plazo_documental": "No se precisa fecha.",
           "fuente": "2020 - 2024 Proyectos integradores.docx / Copia de 03 Proyectos INTEGRADORES.docx"
         },
         {
           "orden": 4,
-          "titulo": "4. Socialización de los avances",
-          "descripcion": "Presentación intermedia del desarrollo descriptivo y narrativo en el segundo ciclo del año.",
-          "plazo_documental": "A mediados del siguiente semestre (II ciclo)",
+          "titulo": "4. Socialización de avances",
+          "descripcion": "Socialización de avances.",
+          "plazo_documental": "A mediados del siguiente semestre.",
           "fuente": "2020 - 2024 Proyectos integradores.docx / Copia de 03 Proyectos INTEGRADORES.docx"
         },
         {
           "orden": 5,
-          "titulo": "5. Entrega final del proyecto anual",
-          "descripcion": "Entrega final e integración del Mapa parlante e informe descriptivo/narrativo del territorio de la Institución Educativa.",
-          "plazo_documental": "Tres semanas antes de concluir el II ciclo",
+          "titulo": "5. Entrega final",
+          "descripcion": "Entrega final.",
+          "plazo_documental": "Tres semanas antes de concluir el II ciclo.",
           "fuente": "2020 - 2024 Proyectos integradores.docx / Copia de 03 Proyectos INTEGRADORES.docx"
         }
       ],

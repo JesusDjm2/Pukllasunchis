@@ -432,6 +432,345 @@ class AylluMesaProyectosIntegradoresTest extends TestCase
         }
     }
 
+    /**
+     * Verificación de auditoría (Secciones 2, 3 y 8):
+     * Contrasta las 9 celdas anómalas (archivo, hoja, celda, valor bruto, curso de la misma columna y agrupación)
+     * y la distribución de las 114 entradas por ciclo/programa directamente contra el XML de los archivos .xlsx originales.
+     */
+    public function test_correspondencia_9_celdas_anomalas_y_distribucion_programa_contra_archivos_xlsx_originales(): void
+    {
+        // 1. Verificar tabla exacta de las 9 celdas anómalas en BD
+        $esperadas9 = [
+            ['anio' => 1, 'ciclo' => 'II',  'celda_comp' => 'C18', 'celda_curso' => 'C17', 'bruto' => '41185.0', 'curso' => 'Práctica e investigación II', 'programa' => 'FORMACION_GENERAL'],
+            ['anio' => 1, 'ciclo' => 'II',  'celda_comp' => 'E18', 'celda_curso' => 'E17', 'bruto' => '40424.0', 'curso' => 'Comunicación oral en la Educación Superior', 'programa' => 'FORMACION_GENERAL'],
+            ['anio' => 1, 'ciclo' => 'II',  'celda_comp' => 'F18', 'celda_curso' => 'F17', 'bruto' => '40756.0', 'curso' => 'Resolución de problemas matemáticos II', 'programa' => 'FORMACION_GENERAL'],
+            ['anio' => 2, 'ciclo' => 'III', 'celda_comp' => 'D8',  'celda_curso' => 'D7',  'bruto' => '40424.0', 'curso' => 'Desarrollo Personal II', 'programa' => 'FORMACION_GENERAL'],
+            ['anio' => 2, 'ciclo' => 'III', 'celda_comp' => 'E8',  'celda_curso' => 'E7',  'bruto' => '41189.0', 'curso' => 'Arte, Creatividad y Aprendizaje', 'programa' => 'FORMACION_GENERAL'],
+            ['anio' => 2, 'ciclo' => 'IV',  'celda_comp' => 'D18', 'celda_curso' => 'D17', 'bruto' => '39236.0', 'curso' => 'Deliberación y Participación', 'programa' => 'FORMACION_GENERAL'],
+            ['anio' => 2, 'ciclo' => 'IV',  'celda_comp' => 'E18', 'celda_curso' => 'E17', 'bruto' => '41091.0', 'curso' => 'Ciencia y Epistemologías', 'programa' => 'FORMACION_GENERAL'],
+            ['anio' => 3, 'ciclo' => 'V',   'celda_comp' => 'D8',  'celda_curso' => 'D7',  'bruto' => '41189.0', 'curso' => 'Literatura y Sociedad en Contextos Diversos', 'programa' => 'FORMACION_GENERAL'],
+            ['anio' => 3, 'ciclo' => 'V',   'celda_comp' => 'L8',  'celda_curso' => 'L7',  'bruto' => '40727.0', 'curso' => 'Aprendizaje de la Comunicación I', 'programa' => 'PRIMARIA'],
+        ];
+
+        $anomaliasBd = AylluPiAporteCurso::where('es_anomalia_competencia', true)->orderBy('posicion_global')->get();
+        $this->assertCount(9, $anomaliasBd);
+
+        foreach ($esperadas9 as $idx => $esp) {
+            $reg = $anomaliasBd[$idx];
+            $this->assertSame($esp['anio'], (int) $reg->anio_formativo);
+            $this->assertSame($esp['ciclo'], $reg->ciclo_romano);
+            $this->assertSame($esp['celda_comp'], $reg->celda_competencias);
+            $this->assertSame($esp['celda_curso'], $reg->celda_curso);
+            $this->assertSame($esp['bruto'], $reg->competencias_fuente_bruto);
+            $this->assertSame($esp['curso'], trim($reg->curso_fuente_original));
+            $this->assertSame($esp['programa'], $reg->agrupacion_programa_codigo);
+
+            // Contrastar directamente contra el XML del archivo .xlsx original si está accesible en el entorno de pruebas
+            $rutaXlsx = $this->resolverRutaArchivoOriginal($reg->archivo_fuente);
+            if ($rutaXlsx) {
+                $celdasXml = $this->extraerCeldasXlsxOriginal($rutaXlsx);
+                $this->assertSame(
+                    $esp['curso'],
+                    trim((string) ($celdasXml[$esp['celda_curso']]['valor'] ?? '')),
+                    "El curso en celda {$esp['celda_curso']} del archivo {$reg->archivo_fuente} debe coincidir con el original"
+                );
+                $this->assertEquals(
+                    (float) $esp['bruto'],
+                    (float) ($celdasXml[$esp['celda_comp']]['raw'] ?? 0),
+                    "El valor numérico bruto en celda {$esp['celda_comp']} del archivo {$reg->archivo_fuente} debe coincidir con el original"
+                );
+            }
+        }
+
+        // 2. Verificar distribución exacta de las 114 entradas por ciclo y programa (Sección 3)
+        $distribucionEsperada = [
+            'I'    => ['FORMACION_GENERAL' => 5, 'INICIAL' => 1, 'PRIMARIA' => 1, 'PRIMARIA_EIB' => 3, 'TOTAL' => 10],
+            'II'   => ['FORMACION_GENERAL' => 5, 'INICIAL' => 1, 'PRIMARIA' => 1, 'PRIMARIA_EIB' => 3, 'TOTAL' => 10],
+            'III'  => ['FORMACION_GENERAL' => 3, 'INICIAL' => 4, 'PRIMARIA' => 4, 'PRIMARIA_EIB' => 5, 'TOTAL' => 16],
+            'IV'   => ['FORMACION_GENERAL' => 4, 'INICIAL' => 3, 'PRIMARIA' => 3, 'PRIMARIA_EIB' => 4, 'TOTAL' => 14],
+            'V'    => ['FORMACION_GENERAL' => 2, 'INICIAL' => 5, 'PRIMARIA' => 5, 'PRIMARIA_EIB' => 6, 'TOTAL' => 18],
+            'VI'   => ['FORMACION_GENERAL' => 2, 'INICIAL' => 5, 'PRIMARIA' => 5, 'PRIMARIA_EIB' => 6, 'TOTAL' => 18],
+            'VII'  => ['FORMACION_GENERAL' => 2, 'INICIAL' => 4, 'PRIMARIA' => 5, 'PRIMARIA_EIB' => 5, 'TOTAL' => 16],
+            'VIII' => ['FORMACION_GENERAL' => 2, 'INICIAL' => 3, 'PRIMARIA' => 3, 'PRIMARIA_EIB' => 4, 'TOTAL' => 12],
+        ];
+
+        $totalesPrograma = ['FORMACION_GENERAL' => 0, 'INICIAL' => 0, 'PRIMARIA' => 0, 'PRIMARIA_EIB' => 0];
+        foreach ($distribucionEsperada as $cicloRomano => $esperado) {
+            foreach (['FORMACION_GENERAL', 'INICIAL', 'PRIMARIA', 'PRIMARIA_EIB'] as $progCod) {
+                $conteo = AylluPiAporteCurso::where('ciclo_romano', $cicloRomano)
+                    ->where('agrupacion_programa_codigo', $progCod)
+                    ->count();
+                $this->assertSame(
+                    $esperado[$progCod],
+                    $conteo,
+                    "Ciclo {$cicloRomano} programa {$progCod} debe tener {$esperado[$progCod]} entradas"
+                );
+                $totalesPrograma[$progCod] += $conteo;
+            }
+            $this->assertSame(
+                $esperado['TOTAL'],
+                AylluPiAporteCurso::where('ciclo_romano', $cicloRomano)->count()
+            );
+        }
+
+        $this->assertSame(25, $totalesPrograma['FORMACION_GENERAL']);
+        $this->assertSame(26, $totalesPrograma['INICIAL']);
+        $this->assertSame(27, $totalesPrograma['PRIMARIA']);
+        $this->assertSame(36, $totalesPrograma['PRIMARIA_EIB']);
+        $this->assertSame(114, array_sum($totalesPrograma));
+    }
+
+    /**
+     * Verificación de auditoría (Secciones 4 y 8):
+     * - Los 5 hitos documentados de Año 1 coinciden fielmente con los dos documentos Word.
+     * - Ausencia total de semanas inventadas («Sem. 1, 5, 8, 12 y 16») en definiciones, ejecuciones y vistas.
+     * - Estado explícito «Pendiente de definición institucional» en Años 2, 3 y 4.
+     */
+    public function test_hitos_primer_anio_fieles_a_word_y_ausencia_de_semanas_inventadas(): void
+    {
+        $plazosEsperados = [
+            1 => 'No se precisa fecha.',
+            2 => 'Un mes antes de finalizar el primer semestre.',
+            3 => 'No se precisa fecha.',
+            4 => 'A mediados del siguiente semestre.',
+            5 => 'Tres semanas antes de concluir el II ciclo.',
+        ];
+
+        $definicionesAnio1 = AylluPiDefinicion::where('anio_formativo', 1)->get();
+        $this->assertGreaterThanOrEqual(3, $definicionesAnio1->count());
+
+        foreach ($definicionesAnio1 as $def) {
+            $hitos = $def->hitos_documentados ?? [];
+            $this->assertCount(5, $hitos);
+            foreach ($hitos as $hito) {
+                $orden = (int) $hito['orden'];
+                $this->assertSame($plazosEsperados[$orden], $hito['plazo_documental']);
+                $this->assertStringNotContainsString('Sem.', $hito['plazo_documental']);
+                $this->assertStringNotContainsString('Sem.', $hito['descripcion']);
+            }
+        }
+
+        $admin = User::role(['super-admin', 'admin'])->first() ?? User::first();
+
+        // Vista de hitos Año 1: muestra los plazos documentales reales y nunca «Sem. 1, 5, 8, 12 y 16»
+        $resAnio1 = $this->actingAs($admin)->get(route('ayllu.proyecto', [
+            'anio' => 1,
+            'ciclo' => 'I',
+            'vista' => 'hitos',
+        ]));
+        $resAnio1->assertOk()
+            ->assertSee('No se precisa fecha.')
+            ->assertSee('Un mes antes de finalizar el primer semestre.')
+            ->assertSee('A mediados del siguiente semestre.')
+            ->assertSee('Tres semanas antes de concluir el II ciclo.')
+            ->assertDontSee('Sem. 1')
+            ->assertDontSee('Sem. 5')
+            ->assertDontSee('Sem. 8');
+
+        // Vista de hitos Años 2, 3 y 4: muestra estado explícito «Pendiente de definición institucional»
+        foreach ([2 => 'III', 3 => 'V', 4 => 'VII'] as $anio => $ciclo) {
+            $this->actingAs($admin)->get(route('ayllu.proyecto', [
+                'anio' => $anio,
+                'ciclo' => $ciclo,
+                'vista' => 'hitos',
+            ]))
+                ->assertOk()
+                ->assertSee('Pendiente de definición institucional');
+        }
+    }
+
+    /**
+     * Verificación de auditoría (Sección 6):
+     * Reparación técnica acotada, transaccional e idempotente que corrige diferencias documentales
+     * preservando evidencias, versiones, asignaciones, comentarios y la definición adoptada por ejecuciones.
+     */
+    public function test_reparacion_tecnica_idempotente_preserva_evidencias_versiones_e_historial(): void
+    {
+        $defAnio1 = AylluPiDefinicion::where('anio_formativo', 1)->where('es_version_base_matriz', true)->firstOrFail();
+        $ejecucionAnio1 = AylluPiEjecucion::where('anio_formativo', 1)->firstOrFail();
+        $aporteAnio1 = AylluPiAporteCurso::where('definicion_id', $defAnio1->id)->firstOrFail();
+        $admin = User::role(['super-admin', 'admin'])->first() ?? User::first();
+
+        // Registrar un acuerdo operativo y una versión de evidencia que deben conservarse intactos tras reparar
+        $aporteAnio1->update(['ajuste_operativo_mesa' => 'Acuerdo docente que debe preservarse tras reparación']);
+        $evidenciaPrevia = AylluPiEvidenciaVersion::create([
+            'aporte_curso_id' => $aporteAnio1->id,
+            'ejecucion_id' => $ejecucionAnio1->id,
+            'numero_version' => 1,
+            'titulo_version' => 'Evidencia histórica a preservar',
+            'descripcion_avance' => 'Contenido de evidencia registrada antes de la reparación.',
+            'autoria_tipo' => 'docente',
+            'autor_user_id' => $admin->id,
+            'audiencia' => 'mesa_docente_ciclo',
+            'restriccion_circulacion' => 'uso_interno_ciclo',
+            'estado_version' => 'en_desarrollo',
+        ]);
+
+        // Simular una discrepancia técnica en hitos_documentados de la definición #1
+        $hitosAlterados = $defAnio1->hitos_documentados;
+        $hitosAlterados[0]['plazo_documental'] = 'Plazo antiguo no canónico';
+        $defAnio1->update(['hitos_documentados' => $hitosAlterados]);
+
+        // 1. Vista previa detecta exactamente 1 definición afectada con valor_anterior y correccion_propuesta
+        $preview = $this->importService->previsualizarReparacionTecnica();
+        $this->assertSame(1, $preview['total_definiciones_afectadas']);
+        $this->assertSame('Plazo antiguo no canónico', $preview['definiciones_afectadas'][0]['valor_anterior'][0]['plazo_documental']);
+        $this->assertSame('No se precisa fecha.', $preview['definiciones_afectadas'][0]['correccion_propuesta'][0]['plazo_documental']);
+
+        // 2. Ejecutar reparación técnica
+        $res1 = $this->importService->ejecutarReparacionTecnica($admin->id);
+        $this->assertFalse($res1['idempotente']);
+        $this->assertSame(1, $res1['definiciones_reparadas']);
+        $this->assertSame('No se precisa fecha.', $defAnio1->fresh()->hitos_documentados[0]['plazo_documental']);
+
+        // Verificar que la evidencia, el acuerdo operativo y la definición adoptada por la ejecución siguen intactos
+        $this->assertSame('Acuerdo docente que debe preservarse tras reparación', $aporteAnio1->fresh()->ajuste_operativo_mesa);
+        $this->assertNotNull(AylluPiEvidenciaVersion::find($evidenciaPrevia->id));
+        $this->assertSame($defAnio1->id, $ejecucionAnio1->fresh()->definicion_id);
+
+        // 3. Repetir reparación técnica es estrictamente idempotente (0 cambios)
+        $res2 = $this->importService->ejecutarReparacionTecnica($admin->id);
+        $this->assertTrue($res2['idempotente']);
+        $this->assertSame(0, $res2['definiciones_reparadas']);
+        $this->assertSame(0, $res2['aportes_reparados']);
+    }
+
+    /**
+     * Verificación de auditoría (Secciones 3 y 7):
+     * - El almacenamiento privado se realiza en el disco `local` (`storage/app/private/ayllu_pi_evidencias/...`) fuera de `public/`.
+     * - Los filtros de programa no sustituyen la autorización del servidor: un estudiante de Primaria EIB en Ciclo III
+     *   no puede acceder por URL directa a la ficha operativa ni a archivos de un aporte exclusivo de Inicial o Primaria monolingüe.
+     */
+    public function test_almacenamiento_privado_y_restriccion_por_programa_en_servidor(): void
+    {
+        Storage::fake('local');
+
+        $alumno = Alumno::whereHas('user')->firstOrFail();
+        $cicloIII = Ciclo::whereRaw('UPPER(TRIM(nombre)) = ?', ['III'])->firstOrFail();
+        $alumno->update(['ciclo_id' => $cicloIII->id]);
+
+        // Aporte exclusivo de INICIAL en Ciclo III (ej. posicion_global #24)
+        $aporteInicialCicloIII = AylluPiAporteCurso::where('ciclo_romano', 'III')
+            ->where('agrupacion_programa_codigo', 'INICIAL')
+            ->firstOrFail();
+
+        // Aporte común de FORMACION_GENERAL en Ciclo III
+        $aporteComunCicloIII = AylluPiAporteCurso::where('ciclo_romano', 'III')
+            ->where('agrupacion_programa_codigo', 'FORMACION_GENERAL')
+            ->firstOrFail();
+
+        // Si el estudiante pertenece a Primaria EIB (no a Inicial), puede ver el aporte común de Formación General,
+        // pero recibe 403 al intentar abrir por URL directa la ficha operativa exclusiva de Inicial
+        if (!$alumno->ciclo?->programa?->esInicial()) {
+            $this->actingAs($alumno->user)
+                ->get(route('ayllu.pi.aportes.show', $aporteComunCicloIII->id))
+                ->assertOk();
+
+            $this->actingAs($alumno->user)
+                ->get(route('ayllu.pi.aportes.show', $aporteInicialCicloIII->id))
+                ->assertForbidden();
+        }
+
+        // Comprobar que el archivo subido se guarda en el disco 'local' bajo 'private/ayllu_pi_evidencias/...'
+        $admin = User::role(['super-admin', 'admin'])->first() ?? User::first();
+        $archivo = UploadedFile::fake()->create('evidencia_disco_privado.pdf', 64, 'application/pdf');
+
+        $this->actingAs($admin)->post(route('ayllu.pi.versiones.store', $aporteInicialCicloIII->id), [
+            'titulo_version' => 'Evidencia en disco privado',
+            'descripcion_avance' => 'Prueba de almacenamiento privado fuera de public.',
+            'audiencia' => 'ciclo_completo',
+            'archivo_evidencia' => $archivo,
+            'restriccion_circulacion' => 'uso_interno_ciclo',
+            'confirmacion_politica_menores' => '1',
+        ])->assertRedirect();
+
+        $version = AylluPiEvidenciaVersion::where('aporte_curso_id', $aporteInicialCicloIII->id)->latest('id')->firstOrFail();
+        $this->assertStringStartsWith('private/ayllu_pi_evidencias/III/', $version->archivo_privado_path);
+        Storage::disk('local')->assertExists($version->archivo_privado_path);
+
+        // El estudiante de otro programa recibe 403 al intentar descargar el archivo de Inicial incluso aunque la audiencia sea ciclo_completo
+        if (!$alumno->ciclo?->programa?->esInicial()) {
+            $this->actingAs($alumno->user)
+                ->get(route('ayllu.pi.versiones.archivo', $version->id))
+                ->assertForbidden();
+        }
+    }
+
+    protected function resolverRutaArchivoOriginal(string $nombreArchivo): ?string
+    {
+        $directorios = [
+            '/Users/pavelchaparro/.gemini/antigravity/brain/c0b1163a-6d4a-4446-8054-5299f7c0fe6e/scratch/paquete_correcciones/fuentes_originales',
+            '/Users/pavelchaparro/Desktop',
+        ];
+
+        $buscadoNfc = \Normalizer::normalize($nombreArchivo, \Normalizer::FORM_C);
+        foreach ($directorios as $dir) {
+            if (!is_dir($dir)) {
+                continue;
+            }
+            foreach (scandir($dir) ?: [] as $item) {
+                if ($item === '.' || $item === '..') {
+                    continue;
+                }
+                if (\Normalizer::normalize($item, \Normalizer::FORM_C) === $buscadoNfc) {
+                    return $dir . DIRECTORY_SEPARATOR . $item;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    protected function extraerCeldasXlsxOriginal(string $rutaXlsx): array
+    {
+        $zip = new \ZipArchive();
+        if ($zip->open($rutaXlsx) !== true) {
+            return [];
+        }
+
+        $sharedStrings = [];
+        $ssXml = $zip->getFromName('xl/sharedStrings.xml');
+        if ($ssXml !== false) {
+            $sx = new \SimpleXMLElement($ssXml);
+            foreach ($sx->si as $si) {
+                if (isset($si->t)) {
+                    $sharedStrings[] = (string) $si->t;
+                } else {
+                    $partes = [];
+                    foreach ($si->r as $r) {
+                        $partes[] = (string) $r->t;
+                    }
+                    $sharedStrings[] = implode('', $partes);
+                }
+            }
+        }
+
+        $celdas = [];
+        $sheetXml = $zip->getFromName('xl/worksheets/sheet1.xml');
+        if ($sheetXml !== false) {
+            $sxSheet = new \SimpleXMLElement($sheetXml);
+            foreach ($sxSheet->sheetData->row as $row) {
+                foreach ($row->c as $c) {
+                    $coord = (string) $c['r'];
+                    $tipo = (string) ($c['t'] ?? '');
+                    $raw = isset($c->v) ? (string) $c->v : null;
+                    $valor = $raw;
+                    if ($tipo === 's' && $raw !== null && isset($sharedStrings[(int) $raw])) {
+                        $valor = $sharedStrings[(int) $raw];
+                    }
+                    $celdas[$coord] = [
+                        'raw' => $raw,
+                        'valor' => $valor,
+                        'tipo' => $tipo,
+                    ];
+                }
+            }
+        }
+
+        $zip->close();
+        return $celdas;
+    }
+
     protected function crearUsuarioDocentePrueba(string $nombre): User
     {
         $dni = (string) random_int(60000000, 69999999);

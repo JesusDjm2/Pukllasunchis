@@ -523,4 +523,248 @@ class AylluPiImportService
 
         return $s;
     }
+
+    protected function normalizarEstructuraJson(mixed $valor): string
+    {
+        $ordenar = function (mixed $item) use (&$ordenar): mixed {
+            if (!is_array($item)) {
+                return $item;
+            }
+            if (!array_is_list($item)) {
+                ksort($item);
+            }
+            foreach ($item as $k => $v) {
+                $item[$k] = $ordenar($v);
+            }
+            return $item;
+        };
+
+        return json_encode($ordenar($valor), JSON_UNESCAPED_UNICODE);
+    }
+
+    /**
+     * Genera una vista previa de los registros persistidos que requieren corrección técnica
+     * de correspondencia documental (hitos de Año 1, asociación celda-curso o agrupación de programa),
+     * distinguiéndola de modificaciones académicas pendientes de validación institucional.
+     */
+    public function previsualizarReparacionTecnica(?array $overridePayload = null): array
+    {
+        $payload = $this->cargarManifiesto($overridePayload);
+        $definicionesManifest = collect($payload['definiciones_proyectos'] ?? []);
+        $entradasManifest = collect($payload['entradas_matriz'] ?? []);
+
+        $definicionesAfectadas = [];
+        foreach (AylluPiDefinicion::orderBy('id')->get() as $def) {
+            $defFuente = $definicionesManifest->first(function (array $d) use ($def) {
+                return (int) $d['anio_formativo'] === (int) $def->anio_formativo
+                    && (string) $d['codigo_fuente'] === (string) $def->codigo_fuente;
+            });
+
+            if (!$defFuente) {
+                continue;
+            }
+
+            $hitosEsperados = (int) $def->anio_formativo === 1
+                ? ($defFuente['hitos_documentados'] ?? null)
+                : null;
+
+            $actualNorm = $this->normalizarEstructuraJson($def->hitos_documentados);
+            $esperadoNorm = $this->normalizarEstructuraJson($hitosEsperados);
+
+            if ($actualNorm !== $esperadoNorm) {
+                $definicionesAfectadas[] = [
+                    'entidad' => 'ayllu_pi_definiciones',
+                    'id' => $def->id,
+                    'anio_formativo' => $def->anio_formativo,
+                    'version_numero' => $def->version_numero,
+                    'codigo_fuente' => $def->codigo_fuente,
+                    'archivo_origen' => $def->archivo_origen,
+                    'tipo_correccion' => 'correccion_tecnica_hitos_documentados',
+                    'valor_anterior' => $def->hitos_documentados,
+                    'correccion_propuesta' => $hitosEsperados,
+                ];
+            }
+        }
+
+        $aportesAfectados = [];
+        foreach (AylluPiAporteCurso::orderBy('posicion_global')->get() as $aporte) {
+            $entry = $entradasManifest->first(function (array $e) use ($aporte) {
+                return (int) $e['anio_formativo'] === (int) $aporte->anio_formativo
+                    && (string) $e['ciclo_romano'] === (string) $aporte->ciclo_romano
+                    && (string) $e['celda_curso'] === (string) $aporte->celda_curso;
+            });
+
+            if (!$entry) {
+                continue;
+            }
+
+            $diferencias = [];
+            if ($aporte->curso_fuente_original !== $entry['curso_original']) {
+                $diferencias['curso_fuente_original'] = [
+                    'anterior' => $aporte->curso_fuente_original,
+                    'propuesto' => $entry['curso_original'],
+                ];
+            }
+            if ($aporte->agrupacion_programa_codigo !== $entry['agrupacion_programa_codigo']) {
+                $diferencias['agrupacion_programa_codigo'] = [
+                    'anterior' => $aporte->agrupacion_programa_codigo,
+                    'propuesto' => $entry['agrupacion_programa_codigo'],
+                ];
+            }
+            if ($aporte->celda_competencias !== ($entry['celda_competencias'] ?? null)) {
+                $diferencias['celda_competencias'] = [
+                    'anterior' => $aporte->celda_competencias,
+                    'propuesto' => $entry['celda_competencias'] ?? null,
+                ];
+            }
+            if ($aporte->competencias_fuente_bruto !== $entry['competencias_bruto']) {
+                $diferencias['competencias_fuente_bruto'] = [
+                    'anterior' => $aporte->competencias_fuente_bruto,
+                    'propuesto' => $entry['competencias_bruto'],
+                ];
+            }
+
+            if (!empty($diferencias)) {
+                $aportesAfectados[] = [
+                    'entidad' => 'ayllu_pi_aportes_curso',
+                    'id' => $aporte->id,
+                    'posicion_global' => $aporte->posicion_global,
+                    'anio_formativo' => $aporte->anio_formativo,
+                    'ciclo_romano' => $aporte->ciclo_romano,
+                    'archivo_fuente' => $aporte->archivo_fuente,
+                    'celda_curso' => $aporte->celda_curso,
+                    'tipo_correccion' => 'correccion_tecnica_correspondencia_celda_programa',
+                    'diferencias' => $diferencias,
+                ];
+            }
+        }
+
+        return [
+            'version_manifiesto' => $payload['version_manifiesto'] ?? '2026.11.01.2',
+            'codigo_lote_canonico' => $this->calcularCodigoLote($payload),
+            'total_definiciones_afectadas' => count($definicionesAfectadas),
+            'total_aportes_afectados' => count($aportesAfectados),
+            'definiciones_afectadas' => $definicionesAfectadas,
+            'aportes_afectados' => $aportesAfectados,
+        ];
+    }
+
+    /**
+     * Aplica de forma acotada, transaccional e idempotente las correcciones técnicas sobre
+     * los registros persistidos, preservando íntegramente evidencias, versiones, asignaciones,
+     * comentarios, fechas operativas e historial.
+     */
+    public function ejecutarReparacionTecnica(?int $actorUserId = null, ?array $overridePayload = null): array
+    {
+        $payload = $this->cargarManifiesto($overridePayload);
+        $preview = $this->previsualizarReparacionTecnica($payload);
+
+        if ($preview['total_definiciones_afectadas'] === 0 && $preview['total_aportes_afectados'] === 0) {
+            return [
+                'idempotente' => true,
+                'definiciones_reparadas' => 0,
+                'aportes_reparados' => 0,
+                'preview' => $preview,
+            ];
+        }
+
+        return DB::transaction(function () use ($payload, $preview, $actorUserId) {
+            $definicionesManifest = collect($payload['definiciones_proyectos'] ?? []);
+            $entradasManifest = collect($payload['entradas_matriz'] ?? []);
+
+            $definicionesReparadas = 0;
+            foreach ($preview['definiciones_afectadas'] as $item) {
+                $def = AylluPiDefinicion::find($item['id']);
+                if (!$def) {
+                    continue;
+                }
+
+                $defData = $definicionesManifest->first(function (array $d) use ($def) {
+                    return (int) $d['anio_formativo'] === (int) $def->anio_formativo
+                        && (string) $d['codigo_fuente'] === (string) $def->codigo_fuente;
+                });
+
+                $entradasAnio = [];
+                if (!empty($def->es_version_base_matriz)) {
+                    $entradasAnio = array_values(array_filter(
+                        $payload['entradas_matriz'] ?? [],
+                        fn (array $e) => (int) $e['anio_formativo'] === (int) $def->anio_formativo
+                    ));
+                }
+
+                $nuevoHash = hash('sha256', json_encode([
+                    'def' => $defData,
+                    'entradas' => $entradasAnio,
+                ], JSON_UNESCAPED_UNICODE));
+
+                $def->update([
+                    'hitos_documentados' => $item['correccion_propuesta'],
+                    'hash_contenido' => $nuevoHash,
+                ]);
+                $definicionesReparadas++;
+            }
+
+            $aportesReparados = 0;
+            foreach ($preview['aportes_afectados'] as $item) {
+                $aporte = AylluPiAporteCurso::find($item['id']);
+                if (!$aporte) {
+                    continue;
+                }
+
+                $entry = $entradasManifest->first(function (array $e) use ($aporte) {
+                    return (int) $e['anio_formativo'] === (int) $aporte->anio_formativo
+                        && (string) $e['ciclo_romano'] === (string) $aporte->ciclo_romano
+                        && (string) $e['celda_curso'] === (string) $aporte->celda_curso;
+                });
+
+                if ($entry) {
+                    $aporte->update([
+                        'curso_fuente_original' => $entry['curso_original'],
+                        'curso_fuente_normalizado' => $entry['curso_normalizado'],
+                        'agrupacion_programa_original' => $entry['agrupacion_programa_original'],
+                        'agrupacion_programa_codigo' => $entry['agrupacion_programa_codigo'],
+                        'es_aporte_comun' => $entry['agrupacion_programa_codigo'] === 'FORMACION_GENERAL',
+                        'celda_competencias' => $entry['celda_competencias'] ?? null,
+                        'competencias_fuente_bruto' => $entry['competencias_bruto'],
+                        'competencias_fuente_mostrar' => $entry['competencias_mostrar'],
+                        'competencias_formato_excel' => $entry['competencias_formato_excel'],
+                        'es_anomalia_competencia' => !empty($entry['es_anomalia_competencia']),
+                        'detalle_anomalia_competencia' => $entry['detalle_anomalia_competencia'],
+                    ]);
+                    $aportesReparados++;
+                }
+            }
+
+            // Sincronizar código de lote e información de versión en el lote confirmado activo
+            $loteActivo = AylluPiLoteImportacion::where('estado', 'confirmado')->latest('id')->first();
+            if ($loteActivo) {
+                $loteActivo->update([
+                    'codigo_lote' => $preview['codigo_lote_canonico'],
+                    'version_manifiesto' => $preview['version_manifiesto'],
+                ]);
+            }
+
+            AylluPiAuditoriaEvento::create([
+                'accion' => 'reparacion_tecnica_correspondencia_aplicada',
+                'entidad_tipo' => 'ayllu_pi_definiciones',
+                'entidad_id' => $loteActivo?->id,
+                'actor_user_id' => $actorUserId,
+                'metadatos' => [
+                    'version_manifiesto' => $preview['version_manifiesto'],
+                    'definiciones_reparadas' => $definicionesReparadas,
+                    'aportes_reparados' => $aportesReparados,
+                    'detalle_definiciones' => $preview['definiciones_afectadas'],
+                    'detalle_aportes' => $preview['aportes_afectados'],
+                ],
+                'created_at' => now(),
+            ]);
+
+            return [
+                'idempotente' => false,
+                'definiciones_reparadas' => $definicionesReparadas,
+                'aportes_reparados' => $aportesReparados,
+                'preview' => $preview,
+            ];
+        });
+    }
 }

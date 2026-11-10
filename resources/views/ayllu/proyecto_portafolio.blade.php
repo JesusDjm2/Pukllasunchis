@@ -913,12 +913,15 @@
             @endif
         @else
             <div class="p-3 rounded mb-3" style="background: #fff8eb; border-left: 4px solid #d97706;">
-                <h4 class="h6 font-weight-bold mb-1" style="color: #7c2d12;">
-                    <i class="fas fa-info-circle mr-1"></i>
-                    Nota de fidelidad documental (Año {{ $anioFormativo }} · Ciclos {{ implode('–', $ciclosDelAnio) }})
-                </h4>
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-1">
+                    <h4 class="h6 font-weight-bold mb-0" style="color: #7c2d12;">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Estado de hitos documentales · Año {{ $anioFormativo }} (Ciclos {{ implode('–', $ciclosDelAnio) }})
+                    </h4>
+                    <span class="badge badge-warning text-dark font-weight-bold">Pendiente de definición institucional</span>
+                </div>
                 <p class="small mb-0" style="color: #4b5563;">
-                    En las fuentes documentales («2020 - 2024 Proyectos integradores.docx» y «Copia de 03 Proyectos INTEGRADORES.docx»), la secuencia de cinco fases con plazos relativos está documentada únicamente para el <strong>Proyecto Integrador 1 (Ciclos I–II)</strong>. Conforme a los principios de integridad curricular, dicha secuencia no se copia ni se presenta como calendario documentado de los Años 2, 3 o 4. La mesa docente del Año {{ $anioFormativo }} acuerda sus fechas operativas en la pestaña de Bitácora y Articulación.
+                    En las fuentes documentales («2020 - 2024 Proyectos integradores.docx» y «Copia de 03 Proyectos INTEGRADORES.docx»), la secuencia de cinco hitos con plazos relativos está documentada únicamente para el <strong>Proyecto Integrador 1 (Ciclos I–II)</strong> (`hitos_documentados === null` en Años 2, 3 y 4). Conforme a los principios de integridad curricular, no se atribuyen hitos fechados a los documentos cuando no los contienen. Cuando Coordinación Académica apruebe hitos para el Año {{ $anioFormativo }}, se incorporarán mediante una nueva versión trazable en <code>ayllu_pi_definiciones</code> sin alterar el registro histórico.
                 </p>
             </div>
         @endif
