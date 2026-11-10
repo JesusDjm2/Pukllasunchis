@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\Response;
 use ZipArchive;
 
 /**
- * Archivos de Taq'e guardados en Drive: ver, descargar (uno o en ZIP por
+ * Archivos de Investigaciones guardados en Drive: ver, descargar (uno o en ZIP por
  * grupo) y borrar. Compartido por el alumno (TaqeController), el
  * Investigador y el Super Admin — cada controlador hace su propio chequeo de
  * permisos ANTES de llamar a estos métodos.
@@ -120,7 +120,7 @@ trait ArchivosTaqe
                 }
                 $contenido = $resultado['body']->getContents();
             } catch (\Throwable $e) {
-                Log::warning("Taq'e ZIP grupo {$grupo->id}: no se pudo leer el trabajo {$trabajo->id}: ".$e->getMessage());
+                Log::warning("Investigaciones ZIP grupo {$grupo->id}: no se pudo leer el trabajo {$trabajo->id}: ".$e->getMessage());
                 $fallidos[] = $trabajo->nombre;
 
                 continue;
@@ -154,7 +154,7 @@ trait ArchivosTaqe
     {
         // Un enlace no tiene archivo en Drive que borrar.
         if ($trabajo->archivo && ! $this->drive()->delete($trabajo->archivo)) {
-            Log::warning("Taq'e: el trabajo {$trabajo->id} se eliminó pero su archivo {$trabajo->archivo} quedó en Drive.");
+            Log::warning("Investigaciones: el trabajo {$trabajo->id} se eliminó pero su archivo {$trabajo->archivo} quedó en Drive.");
         }
         $trabajo->delete();
     }

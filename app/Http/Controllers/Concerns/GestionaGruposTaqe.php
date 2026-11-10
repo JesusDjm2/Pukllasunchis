@@ -10,7 +10,7 @@ use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Collection;
 
 /**
- * Reglas de elegibilidad de integrantes para grupos Taq'e, compartidas entre
+ * Reglas de elegibilidad de integrantes para grupos de Investigaciones, compartidas entre
  * el autoservicio del alumno (TaqeController) y la gestión institucional del
  * Super Admin (TaqeSuperAdminController) — deben mantenerse en un solo lugar
  * porque son las que garantizan que nadie quede en dos grupos aceptados en el
@@ -20,7 +20,7 @@ use Illuminate\Support\Collection;
 trait GestionaGruposTaqe
 {
     /**
-     * Alumnos "disponibles" para armar/ampliar un grupo Taq'e de este curso:
+     * Alumnos "disponibles" para armar/ampliar un grupo de Investigaciones de este curso:
      * matriculados (o del mismo ciclo si no hay asignación explícita),
      * excluyendo a quien ya esté aceptado en algún grupo del periodo y a
      * cualquier alumno inhabilitado. $excluirAlumnoId saca opcionalmente a un
@@ -45,13 +45,13 @@ trait GestionaGruposTaqe
                 ->get(['id', 'user_id', 'ciclo_id', 'nombres', 'apellidos', 'dni']);
         }
 
-        // Un alumno pertenece a un solo grupo Taq'e por periodo: quien ya está aceptado en uno
+        // Un alumno pertenece a un solo grupo de Investigaciones por periodo: quien ya está aceptado en uno
         // (de cualquier curso) no aparece como compañero disponible.
         $comprometidos = $this->alumnoIdsConGrupoEnPeriodo($periodoActual->id);
         $compañeros = $compañeros->reject(fn ($a) => $comprometidos->contains($a->id));
 
         // Ningún alumno inhabilitado (retirado, licencia, deuda, etc.) puede
-        // aparecer como compañero disponible para armar un grupo Taq'e.
+        // aparecer como compañero disponible para armar un grupo de Investigaciones.
         $compañeros = $compañeros->load('user.roles', 'ciclo')
             ->reject(fn ($a) => (bool) $a->user?->roles->contains('name', 'inhabilitado'));
 
@@ -74,7 +74,7 @@ trait GestionaGruposTaqe
     private function bloquearSiPeriodoCerrado(TaqeGrupo $grupo): void
     {
         if ($this->grupoDePeriodoCerrado($grupo)) {
-            throw new HttpResponseException(back()->with('error', "Ese grupo Taq'e es de un periodo anterior: queda como archivo de solo lectura."));
+            throw new HttpResponseException(back()->with('error', "Ese grupo de Investigaciones es de un periodo anterior: queda como archivo de solo lectura."));
         }
     }
 
@@ -112,7 +112,7 @@ trait GestionaGruposTaqe
             ->pluck('alumnos.id');
     }
 
-    /** IDs de alumnos ya aceptados en algún grupo Taq'e del periodo (regla: un grupo por alumno y periodo). */
+    /** IDs de alumnos ya aceptados en algún grupo de Investigaciones del periodo (regla: un grupo por alumno y periodo). */
     private function alumnoIdsConGrupoEnPeriodo(int $periodoActualId): Collection
     {
         return TaqeGrupo::where('periodo_actual_id', $periodoActualId)

@@ -1,483 +1,365 @@
 @extends('layouts.home')
+
 @section('metas')
     @php $titulo = 'Proceso de Titulación'; @endphp
-    <title>{{ $titulo }} - EESPP Pukllasunchis </title>
+    <title>{{ $titulo }} - EESPP Pukllasunchis</title>
     <meta name="description"
-        content="La admisión en la Escuela de Educación Superior Privada Pukllasunchis se realiza una vez al año, a través de un proceso de evaluación.">
-    <meta name="keywords" content="{{ $titulo }}, Escuela Pukllasuchis, EESP PUkllasunchis">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+        content="Guía oficial del proceso de titulación y grados académicos en la EESPP Pukllasunchis: Plan de Trabajo (PTI), Trabajo de Investigación (Bachillerato), Tesis (Licenciatura), trámites presenciales y extraordinarios.">
+    <meta name="keywords" content="{{ $titulo }}, Titulación Pukllasunchis, Bachiller Educacion, Licenciatura Educacion, PTI, Tesis Pukllasunchis, Cusco">
+    <link rel="stylesheet" href="{{ asset('css/pk-tramites-titulacion.css') }}">
 @endsection
+
 @section('contenido')
-    <style>
-        .modal {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: white;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-            padding: 20px;
-            z-index: 2000;
-            width: 80%;
-            margin: 1em auto;
-            height: 80vh;
-            overflow-y: auto;
-        }
-
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            /* Fondo oscuro */
-            z-index: 1999;
-            /* Un poco menor que el modal */
-        }
-
-        .modal-header {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 15px;
-        }
-
-        .modal-body {
-            font-size: 14px;
-            margin-bottom: 15px;
-        }
-
-        .modal-body li {
-            margin-bottom: 12px;
-        }
-
-        .modal-body .span {
-            background: #cd9244;
-            border-radius: 50%;
-            padding: 3px 10px;
-            color: #fff;
-            margin-right: 5px;
-            position: relative;
-            /* Necesario para ::after */
-        }
-
-        .modal-body .span::after {
-            content: '';
-            display: block;
-            width: 2px;
-            height: 20px;
-            background: #cd9244;
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        .modal-body ul li:last-child .span::after {
-            display: none;
-        }
-
-        @media (max-width: 768px) {
-
-            .modal-body .span::after {
-                display: none;
-            }
-        }
-
-
-        .modal-close {
-            background-color: #38496b;
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            display: inline-block;
-            margin-top: 10px;
-        }
-    </style>
     <div class="bradcam_area biblioteca bradcam_overlay">
         <div class="container">
             <div class="row">
                 <div class="col-lg-12">
                     <div class="bradcam_text">
                         <h3 class="tituloAnimado">{{ $titulo }}</h3>
-                        <p class="slideUp"><a href="{{ route('index') }}">Inicio /</a>Trámites / {{ $titulo }}</p>
+                        <p class="slideUp">
+                            <a href="{{ route('index') }}">Inicio /</a>
+                            <a href="{{ route('tramiteTitulacion') }}">Trámites /</a>
+                            {{ $titulo }}
+                        </p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="container pt-5 pb-5">
+
+    <div class="container pt-5 pb-5 pk-titula-wrapper">
         <div class="row">
             @include('tramites.titulacion.tramites-lateral')
+
             <div class="col-lg-9">
-                <h2 class="linea-debajo">{{ $titulo }}</h2>
-                <h3>Grado de bachiller</h3>
-                <p>El grado de bachiller es el reconocimiento de la formación educativa y académica que se otorga al
-                    egresado de una EESP al haber culminado un PE o un PPD de manera satisfactoria y cumplido con los
-                    requisitos establecidos para tal fin.
+                <!-- Título Oficial con Estilo del Sitio -->
+                <div class="pk-badge-wrapper">
+                    <span class="pk-badge-subtitulo">
+                        <i class="fa fa-graduation-cap"></i> Portal Institucional de Titulación
+                    </span>
+                </div>
+                <h2 class="linea-debajo">Ruta del Egresado: De la Investigación al Título Profesional</h2>
+                <p class="pk-titula-lead">
+                    Conoce las etapas formativas normadas por la Ley N° 30512 y las directivas de la EESPP Pukllasunchis para la elaboración de tu trabajo de investigación, la obtención del <strong>Grado de Bachiller</strong> y la sustentación del <strong>Título Profesional de Licenciado en Educación</strong>.
                 </p>
-                <div class="row justify-content-center align-items-center fichas mt-4">
-                    <div class="col-lg-12 mb-4">
-                        <h3>Inicia tu trámite aquí:</h3>
+
+                <!-- Visual Roadmap Stepper -->
+                <div class="pk-roadmap-card">
+                    <div class="pk-roadmap-title">
+                        <h3><i class="fa fa-route text-warning"></i> Fases del Proceso de Graduación</h3>
+                        <span class="badge-total"><i class="fa fa-circle-check text-success me-1"></i> 3 Fases Académicas</span>
                     </div>
-                    <div class="col-lg-4 col-6 text-center">
-                        <div class="card">
-                            <a href="{{ route('plan') }}" target="_blank">
-                                <div style="height: 100px">
-                                    <img height="100%"
-                                        src="{{ asset('img/min/Trabajo-de-investigacion-EESPukllasunchis.png') }}"
-                                        alt="Ficha de Inscrición Pukllasunchis">
-                                </div>
-                                <p class="text-center">Plan de trabajo de <br>investigación</p>
+
+                    <div class="pk-stepper-grid">
+                        <!-- Paso 1 -->
+                        <div class="pk-step-box">
+                            <div class="pk-step-box-header">
+                                <div class="pk-step-num">1</div>
+                                <span class="pk-step-tag">Fase 1 · VIII Ciclo</span>
+                            </div>
+                            <h4>Plan de Trabajo (PTI)</h4>
+                            <p>
+                                Propuesta de investigación vinculada a la práctica docente, pago en Caja Cusco, formulación y aprobación por R.D. con asignación de asesor.
+                            </p>
+                            <a href="{{ route('plan') }}" class="pk-step-link">
+                                Ver requisitos y formatos <i class="fa fa-arrow-right"></i>
                             </a>
                         </div>
-                    </div>
-                    <div class="col-lg-4 col-6 text-center">
-                        <div class="card">
-                            <a href="{{ route('tinvestigacion') }}" target="_blank">
-                                <div style="height: 100px">
-                                    <img height="100%" src="{{ asset('img/min/Bachillerato-Pukllasunchis.png') }}"
-                                        alt="">
-                                </div>
-                                <p class="text-center">Bachillerato <br>Trabajo de Investigación</p>
+
+                        <!-- Paso 2 -->
+                        <div class="pk-step-box active">
+                            <div class="pk-step-box-header">
+                                <div class="pk-step-num">2</div>
+                                <span class="pk-step-tag">Fase 2 · IX y X Ciclo</span>
+                            </div>
+                            <h4>Trabajo de Inv. (TI)</h4>
+                            <p>
+                                Redacción progresiva, reporte de originalidad Turnitin (máx. 20%), dictaminantes, exposición pública, repositorio y Grado de Bachiller SUNEDU.
+                            </p>
+                            <a href="{{ route('tinvestigacion') }}" class="pk-step-link">
+                                Ver proceso de Bachillerato <i class="fa fa-arrow-right"></i>
                             </a>
                         </div>
-                    </div>
-                    <div class="col-lg-4 col-6 text-center">
-                        <div class="card">
-                            <a href="{{ route('tesis') }}" target="_blank">
-                                <div style="height: 100px">
-                                    <img height="100%" src="{{ asset('img/min/Tesis-Pukllasunchis.png') }}"
-                                        alt="">
-                                </div>
-                                <p class="text-center">Tesis <br>Licenciatura</p>
+
+                        <!-- Paso 3 -->
+                        <div class="pk-step-box">
+                            <div class="pk-step-box-header">
+                                <div class="pk-step-num">3</div>
+                                <span class="pk-step-tag">Fase 3 · Licenciatura</span>
+                            </div>
+                            <h4>Tesis Profesional</h4>
+                            <p>
+                                Profundización y rigor metodológico para bachilleres. Sustentación formal ante jurado calificador, emisión de diploma y registro oficial ante SUNEDU.
+                            </p>
+                            <a href="{{ route('tesis') }}" class="pk-step-link">
+                                Ver proceso de Tesis <i class="fa fa-arrow-right"></i>
                             </a>
                         </div>
                     </div>
                 </div>
-                <h2 class="mt-4 linea-debajo">Requisitos para solicitar el grado de bachiller:</h2>
+
+                <!-- Grid de Módulos Específicos -->
+                <h3 class="mt-4 mb-3">Módulos y Trámites del Proceso</h3>
+
+                <div class="pk-cards-grid">
+                    <!-- PTI -->
+                    <a href="{{ route('plan') }}" class="pk-card-tramite">
+                        <div class="pk-card-tramite__top">
+                            <div class="pk-card-tramite__icon">
+                                <i class="fa fa-file-signature"></i>
+                            </div>
+                            <span class="pk-card-tramite__badge badge-gold">Fase 1</span>
+                        </div>
+                        <h4>Plan de Trabajo (PTI)</h4>
+                        <p>
+                            Descarga de formatos (.docx), Guía de Investigación 2025, pago ordinario (Cód. 10) y solicitud de Carta de Aplicación en Intranet.
+                        </p>
+                        <div class="pk-card-tramite__action">
+                            <span>Ingresar a PTI</span> <i class="fa fa-arrow-right"></i>
+                        </div>
+                    </a>
+
+                    <!-- TI -->
+                    <a href="{{ route('tinvestigacion') }}" class="pk-card-tramite">
+                        <div class="pk-card-tramite__top">
+                            <div class="pk-card-tramite__icon">
+                                <i class="fa fa-book-bookmark"></i>
+                            </div>
+                            <span class="pk-card-tramite__badge badge-primary">Fase 2</span>
+                        </div>
+                        <h4>Trabajo de Investigación</h4>
+                        <p>
+                            Formato oficial de TI, carátulas FID/PPD, revisión Turnitin, asignación de fecha de exposición y trámite de Bachiller SUNEDU.
+                        </p>
+                        <div class="pk-card-tramite__action">
+                            <span>Ingresar a TI</span> <i class="fa fa-arrow-right"></i>
+                        </div>
+                    </a>
+
+                    <!-- Tesis -->
+                    <a href="{{ route('tesis') }}" class="pk-card-tramite">
+                        <div class="pk-card-tramite__top">
+                            <div class="pk-card-tramite__icon">
+                                <i class="fa fa-award"></i>
+                            </div>
+                            <span class="pk-card-tramite__badge badge-primary">Fase 3</span>
+                        </div>
+                        <h4>Tesis de Licenciatura</h4>
+                        <p>
+                            Estructura de tesis, dictamen, fecha de sustentación con jurado calificador, R.D. aprobatoria y registro del Título Profesional.
+                        </p>
+                        <div class="pk-card-tramite__action">
+                            <span>Ingresar a Tesis</span> <i class="fa fa-arrow-right"></i>
+                        </div>
+                    </a>
+
+                    <!-- Presenciales -->
+                    <a href="{{ route('tramites') }}" class="pk-card-tramite">
+                        <div class="pk-card-tramite__top">
+                            <div class="pk-card-tramite__icon">
+                                <i class="fa fa-building-columns"></i>
+                            </div>
+                            <span class="pk-card-tramite__badge">Presencial</span>
+                        </div>
+                        <h4>Trámites Presenciales</h4>
+                        <p>
+                            Armado de expediente de graduación (FID / PPD), descarga de FUT, certificados de estudios superiores y constancias de no deudor.
+                        </p>
+                        <div class="pk-card-tramite__action">
+                            <span>Ver requisitos presenciales</span> <i class="fa fa-arrow-right"></i>
+                        </div>
+                    </a>
+
+                    <!-- Extraordinarios -->
+                    <a href="{{ route('extraordinarios') }}" class="pk-card-tramite">
+                        <div class="pk-card-tramite__top">
+                            <div class="pk-card-tramite__icon">
+                                <i class="fa fa-receipt"></i>
+                            </div>
+                            <span class="pk-card-tramite__badge">Extraordinarios</span>
+                        </div>
+                        <h4>Trámites Extraordinarios</h4>
+                        <p>
+                            Cambio de tema o asesor, disolución de grupo, ampliación de plazo, anulación de R.D. y solicitud de asesorías adicionales por sesión.
+                        </p>
+                        <div class="pk-card-tramite__action">
+                            <span>Ver conceptos y costos</span> <i class="fa fa-arrow-right"></i>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Marco Normativo y Requisitos Académicos -->
+                <h2 class="mt-4 linea-debajo">Requisitos para el Grado de Bachiller:</h2>
                 <ul class="listasCuerpo">
                     <li>Solicitud dirigida al Director General de la EESP.</li>
-                    <li>Certificado que acredite estudios por un mínimo de diez (10) ciclos académicos y la aprobación de un
-                        mínimo de doscientos (200) créditos del PE o del PPD docente correspondiente</li>
-                    <li>Aprobar el trabajo de investigación es requisito para optar al grado de bachiller. </li>
-                    <li>Documento que acredite conocimiento de un idioma extranjero o de una lengua originaria:
-                        En caso de un idioma extranjero, el egresado debe acreditar mediante un certificado expedido por una
-                        institución oficial nacional o internacional como mínimo el nivel A2 del MCER (básico).</li>
-                </ul>
-                <p class="generic-blockquote mt-4">
-                    <strong>Niveles de inglés A (usuario básico)</strong><br>
-                    <strong>Test de inglés A2:</strong> Es capaz de comprender frases y expresiones de uso frecuente
-                    relacionadas con áreas de experiencia que le son especialmente relevantes (información básica sobre sí
-                    mismo y su familia, compras, lugares de interés, ocupaciones, etc.). Sabe comunicarse a la hora de
-                    llevar a cabo tareas simples y cotidianas que no requieran más que intercambios sencillos y directos de
-                    información sobre cuestiones que le son conocidas o habituales. Sabe describir en términos sencillos
-                    aspectos de su pasado y su entorno, así como cuestiones relacionadas con sus necesidades inmediatas.<br>
-                    <a href="https://tracktest.eu/es/niveles-de-ingles-mcer-cefr/#Ingl%C3%A9susuariobasico" target="_blanck"
-                        style="color: #ff5e13"><strong>Niveles de inglés MCER (CEFR)</strong></a>
-                </p>
-                <p>
-                    Si optas por una lengua originaria, deberás remitir a los niveles de desarrollo de competencias
-                    comunicativas de los DCBN para Educación Inicial Intercultural Bilingüe o Educación Primaria
-                    Intercultural Bilingüe.
-                </p>
-                <h3 class="mt-4">Trabajo de investigación para obtener el grado de bachiller</h3>
-                <p>La aprobación del trabajo de investigación es una condición para optar el grado de bachiller.
-                    <br> <br>
-                    La aprobación del trabajo de investigación es condición para optar el grado de bachiller. Este trabajo
-                    se vincula con los ejes del plan de estudios y demuestra el dominio general de los aspectos centrales
-                    del currículo, desarrollando aptitudes y habilidades alineadas al perfil de egreso.
-                    El tema debe ser preciso y estar relacionado con situaciones de la realidad educativa, preferentemente
-                    vinculadas al programa de estudios cursado.<br>
-                    Actividades sugeridas para su desarrollo:
-                <ul class="listasCuerpo">
-                    <li>Revisión de literatura actualizada.</li>
-                    <li>Diseño y aplicación de una metodología para el análisis de la información recolectada.</li>
-                    <li>Exposición de resultados.</li>
-                </ul>
-                El trabajo es de elaboración progresiva por parte del estudiante. En la FID, se desarrolla dentro del
-                componente de práctica e investigación del plan de estudios. La institución designa un docente idóneo para
-                el acompañamiento.
-                </p>
-                <h2 class="mt-4 linea-debajo">Título profesional de licenciado en educación </h2>
-                <p>
-                    Es el reconocimiento que obtiene el bachiller luego de haber aprobado una tesis o trabajo de suficiencia
-                    profesional.
-                </p>
-                <h3 class="mt-4">Requisitos para solicitar el Título de licenciado en educación: </h3>
-                <ul class="listasCuerpo">
-                    <li>Solicitud dirigida al Director General de la EESP.</li>
-                    <li>Documento que acredite contar con el grado de bachiller en el Registro Nacional de Grados y Títulos
-                        de la SUNEDU.</li>
-                    <li>Documento que acredite la aprobación de la sustentación de tesis o del trabajo de suficiencia
-                        profesional.</li>
-                </ul>
-                <h2 class="linea-debajo">Título de segunda especialidad profesional </h2>
-                <p>Es el reconocimiento que se obtiene al haber realizado una especialidad profesional.
-                </p>
-                <h3 class="mt-4">Requisitos</h3>
-                <ul class="listasCuerpo">
-                    <li> Solicitud dirigida al Director General de la EESP.</li>
-                    <li>Documento que acredite contar con el grado de bachiller en el Registro Nacional de Grados y Títulos
-                        de la SUNEDU.</li>
-                    <li>Documento que acredite la aprobación de la sustentación de tesis o del trabajo de suficiencia
-                        profesional.</li>
-                    <li>Documento que acredite contar con título de licenciado u otro título profesional debidamente
-                        registrado y que sea afín o equivalente a la especialidad. La equivalencia la determina la EESP en
-                        su RI.</li>
-                    <li>Certificado de estudios que acredite una duración mínima de dos (2) semestres académicos y un
-                        contenido mínimo de cuarenta (40) créditos.</li>
-                    <li>Documento que acredite la aprobación de la sustentación de tesis o del trabajo o académico.</li>
+                    <li>Certificado que acredite estudios por un mínimo de diez (10) ciclos académicos y la aprobación de un mínimo de doscientos (200) créditos del PE o del PPD docente correspondiente.</li>
+                    <li>Aprobar el trabajo de investigación es requisito para optar al grado de bachiller.</li>
+                    <li>Documento que acredite conocimiento de un idioma extranjero (mínimo nivel A2 del MCER) o de una lengua originaria según los DCBN para Educación Inicial y Primaria Intercultural Bilingüe (EIB).</li>
                 </ul>
 
-                <!-----Acordion ejemplo----------->
-                <div class="accordion mt-4" id="accordionExample">
+                <p class="generic-blockquote mt-4">
+                    <strong>Niveles de inglés A (usuario básico)</strong><br>
+                    <strong>Test de inglés A2:</strong> Es capaz de comprender frases y expresiones de uso frecuente relacionadas con áreas de experiencia que le son especialmente relevantes. Sabe comunicarse a la hora de llevar a cabo tareas simples y cotidianas que no requieran más que intercambios sencillos y directos de información.<br>
+                    <a href="https://tracktest.eu/es/niveles-de-ingles-mcer-cefr/#Ingl%C3%A9susuariobasico" target="_blank" style="color: #ff5e13">
+                        <strong>Niveles de inglés MCER (CEFR)</strong>
+                    </a>
+                </p>
+
+                <h2 class="mt-4 linea-debajo">Título Profesional de Licenciado en Educación</h2>
+                <p>
+                    Es el reconocimiento que obtiene el bachiller luego de haber aprobado una tesis o trabajo de suficiencia profesional ante el jurado calificador correspondiente.
+                </p>
+
+                <h3 class="mt-4">Requisitos para solicitar el Título de Licenciado:</h3>
+                <ul class="listasCuerpo">
+                    <li>Solicitud dirigida al Director General de la EESP.</li>
+                    <li>Documento que acredite contar con el grado de bachiller en el Registro Nacional de Grados y Títulos de la SUNEDU.</li>
+                    <li>Documento que acredite la aprobación de la sustentación de tesis o del trabajo de suficiencia profesional.</li>
+                </ul>
+
+                <h2 class="mt-4 linea-debajo">Título de Segunda Especialidad Profesional</h2>
+                <p>
+                    Es el reconocimiento que se obtiene al haber culminado un programa formativo de especialidad con una duración mínima de dos (2) semestres académicos y cuarenta (40) créditos.
+                </p>
+
+                <!-- Acordeón de Trámites Administrativos -->
+                <h3 class="mt-4 linea-debajo">Procedimientos Administrativos de Grados y Títulos</h3>
+
+                <div class="accordion pk-accordion" id="accordionTitulacionHub">
+                    <!-- Duplicado -->
                     <div class="accordion-item">
-                        <h2 class="accordion-header" id="duplicado">
-                            <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                                data-bs-target="#collapseDuplicado" aria-expanded="true" aria-controls="collapseDuplicado">
-                                Duplicado de Grado y Títulos
+                        <h2 class="accordion-header" id="headingDuplicado">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#collapseDuplicado" aria-expanded="false" aria-controls="collapseDuplicado">
+                                Duplicado de Grados y Títulos
                             </button>
                         </h2>
-                        <div id="collapseDuplicado" class="accordion-collapse collapse show" aria-labelledby="duplicado"
-                            data-bs-parent="#accordionExample">
+                        <div id="collapseDuplicado" class="accordion-collapse collapse" aria-labelledby="headingDuplicado"
+                            data-bs-parent="#accordionTitulacionHub">
                             <div class="accordion-body">
-                                <p>Previo a la entrega del diploma y cumplidos todos los requisitos para optar el grado o
-                                    título, el interesado podrá solicitar a la EESP la expedición de una constancia en
-                                    trámite de dicho documento.
-                                </p>
-                                <h3 class="mt-4">Requisito:</h3>
-                                <ul class="listasCuerpo">
-                                    <li> Solicitud dirigida al Director General de la EES.</li>
-                                    <li>Declaración jurada de pérdida, robo y/o deterioro.</li>
-                                </ul>
                                 <p>
-                                    El duplicado del diploma de grado académico o título profesional anula automáticamente
-                                    el diploma
-                                    original.<br><br>
-                                    Las instituciones realizan ante la SUNEDU los procedimientos de anulación de la
-                                    inscripción en el
-                                    Registro Nacional y la posterior inscripción de datos consignados en el duplicado del
-                                    diploma, de
-                                    acuerdo con la normativa emitida para tal fin.
+                                    El duplicado del diploma anula de forma automática el diploma original. La institución tramita ante SUNEDU la anulación de la inscripción previa y la posterior actualización de datos consignados en el duplicado.
                                 </p>
+                                <h5>Requisitos:</h5>
+                                <ul class="listasCuerpo">
+                                    <li>Solicitud dirigida al Director General de la EESP.</li>
+                                    <li>Declaración jurada de pérdida, robo y/o deterioro.</li>
+                                    <li>Comprobante de pago por derechos de tramitación en Caja Cusco.</li>
+                                </ul>
                             </div>
                         </div>
                     </div>
+
+                    <!-- Emisión -->
                     <div class="accordion-item">
-                        <h2 class="accordion-header" id="headingOne">
+                        <h2 class="accordion-header" id="headingEmision">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                                data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                data-bs-target="#collapseEmision" aria-expanded="false" aria-controls="collapseEmision">
                                 Emisión de Grados y Títulos
                             </button>
                         </h2>
-                        <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne"
-                            data-bs-parent="#accordionExample">
+                        <div id="collapseEmision" class="accordion-collapse collapse" aria-labelledby="headingEmision"
+                            data-bs-parent="#accordionTitulacionHub">
                             <div class="accordion-body">
-                                <p>En lo correspondiente a la emisión de duplicado de grado, esta se regirá por la normativa
-                                    establecida por
-                                    el MINEDU. Los requisitos para la emisión de títulos se detallan:
-                                </p>
-                                <ul class="listasCuerpo">
-                                    <li> Solicitud dirigida al Director General de la EES.</li>
-                                    <li>Declaración jurada de pérdida, robo y/o deterioro.</li>
-                                </ul>
                                 <p>
-                                    El duplicado del diploma de grado académico o título profesional anula automáticamente
-                                    el diploma
-                                    original.<br><br>
-                                    Las instituciones realizan ante la SUNEDU los procedimientos de anulación de la
-                                    inscripción en el
-                                    Registro Nacional y la posterior inscripción de datos consignados en el duplicado del
-                                    diploma, de
-                                    acuerdo con la normativa emitida para tal fin.
+                                    La emisión de diplomas se rige por la normativa establecida por el MINEDU y SUNEDU. El egresado formaliza su solicitud mediante formulario virtual y acude de manera presencial para la firma del libro de actas correspondiente antes de la remisión del expediente a SUNEDU.
                                 </p>
                             </div>
                         </div>
                     </div>
+
+                    <!-- Rectificación -->
                     <div class="accordion-item">
-                        <h2 class="accordion-header" id="headingTwo">
+                        <h2 class="accordion-header" id="headingRectificacion">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                                data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                                Rectificación del Diploma de Bachiller, Título de Licenciado
+                                data-bs-target="#collapseRectificacion" aria-expanded="false" aria-controls="collapseRectificacion">
+                                Rectificación de Diploma de Bachiller o Título de Licenciado
                             </button>
                         </h2>
-                        <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo"
-                            data-bs-parent="#accordionExample">
+                        <div id="collapseRectificacion" class="accordion-collapse collapse" aria-labelledby="headingRectificacion"
+                            data-bs-parent="#accordionTitulacionHub">
                             <div class="accordion-body">
                                 <p>
-                                    Los requisitos para el caso de rectificación de nombres o apellidos en diploma de
-                                    bachiller, título de
-                                    licenciado:
+                                    Aplica para casos de rectificación de nombres, apellidos o correcciones de datos académicos:
                                 </p>
                                 <ul class="listasCuerpo">
-                                    <li>Solicitud dirigida al Director General del instituto, describiendo el error que se
-                                        desea rectificar.
-                                    </li>
-                                    <li>Documento que acredite el nombre o apellido y/o dato académico por ser rectificado.
-                                    </li>
+                                    <li>Solicitud dirigida al Director General describiendo de forma clara el error a rectificar.</li>
+                                    <li>Documento oficial que acredite el dato correcto por rectificar (partida de nacimiento o DNI).</li>
+                                    <li>El pago por derechos de tramitación no aplica si la institución incurrió en error involuntario al emitir el diploma.</li>
                                 </ul>
-                                <p>
-                                    La rectificación por causal de error en dato académico se regula en el RI de la
-                                    institución.<br><br>
-                                    El pago por los derechos de tramitación no aplica para los casos en los que institución
-                                    incurra en error
-                                    al momento de emitir el diploma de bachiller o título de licenciado.<br><br>
-                                    La rectificación del diploma de bachiller o título profesional de licenciado se aprueba
-                                    mediante
-                                    resolución directoral.<br><br>
-                                    Las instituciones realizan ante la SUNEDU los procedimientos de corrección de datos en
-                                    el Registro
-                                    Nacional de Grados y Títulos producidos por diferente causal, de acuerdo con la
-                                    normativa emitida para
-                                    tal fin.
-                                </p>
                             </div>
                         </div>
                     </div>
+
+                    <!-- Constancias y Certificados -->
                     <div class="accordion-item">
-                        <h2 class="accordion-header" id="headingThree">
+                        <h2 class="accordion-header" id="headingCertificados">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                                data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                                Constancias y Certificados
+                                data-bs-target="#collapseCertificados" aria-expanded="false" aria-controls="collapseCertificados">
+                                Constancias y Certificados Oficiales
                             </button>
                         </h2>
-                        <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree"
-                            data-bs-parent="#accordionExample">
+                        <div id="collapseCertificados" class="accordion-collapse collapse" aria-labelledby="headingCertificados"
+                            data-bs-parent="#accordionTitulacionHub">
                             <div class="accordion-body">
                                 <p>
-                                    La certificación es el proceso mediante el cual el interesado es informado sobre su
-                                    situación académica
-                                    al término de un periodo de estudios.<br><br>
-
-                                    La constancia de egresado es el documento expedido por la institución que acredita la
-                                    culminación de un
-                                    Período Formativo.<br><br>
-
-                                    Requisitos para solicitar la constancia de egresado:
+                                    <strong>Constancia de Egresado:</strong> Acredita la culminación satisfactoria de todos los periodos formativos del plan de estudios. Requiere solicitud formal, certificado de estudios y contar con la constancia de no deudor.
                                 </p>
-                                <ul class="listasCuerpo">
-                                    <li>Solicitud dirigida al Director General de la institución, la cual debe contener:
-                                        Nombres y apellidos
-                                        completos - Número de DNI o carné de extranjería - Denominación del PF - Periodo de
-                                        ejecución -
-                                        Fecha de culminación del programa cursado.
-                                    </li>
-                                    <li>Certificado de estudios de programas formativos.</li>
-                                </ul>
                                 <p>
-                                    La rectificación por causal de error en dato académico se regula en el RI de la
-                                    institución.<br><br>
-
-                                    El pago por los derechos de tramitación no aplica para los casos en los que institución
-                                    incurra en error
-                                    al momento de emitir el diploma de bachiller o título de licenciado.<br><br>
-
-                                    La rectificación del diploma de bachiller o título profesional de licenciado se aprueba
-                                    mediante
-                                    resolución directoral.<br><br>
-
-                                    Las instituciones realizan ante la SUNEDU los procedimientos de corrección de datos en
-                                    el Registro
-                                    Nacional de Grados y Títulos producidos por diferente causal, de acuerdo con la
-                                    normativa emitida para
-                                    tal fin.<br><br>
-
-                                    El certificado de estudios es el documento emitido por la institución a solicitud del
-                                    interesado.
-                                    Contiene los resultados del proceso de evaluación realizado durante el periodo
-                                    formativo.<br><br>
-
-                                    Requisitos para solicitar el certificado de estudios:<br><br>
-                                </p>
-                                <ul class="listasCuerpo">
-                                    <li>Solicitud dirigida al Director General de la institución, la cual debe contener:
-                                        Nombres y apellidos
-                                        completos - Número de DNI o carné de extranjería - Denominación del PF - Periodo de
-                                        ejecución -
-                                        Fecha de culminación del programa cursado.</li>
-                                </ul>
-                                <p>
-                                    La institución emite los certificados de estudios con base en la información contenida
-                                    en las actas de
-                                    evaluación respectivas.<br><br>
-
-                                    La certificación se tramita y recaba en la institución en la que se han realizado los
-                                    estudios. En caso
-                                    de que la institución se encuentre cerrada, el interesado solicita el certificado de
-                                    estudios a la DRE o
-                                    la que haga sus veces para su atención.<br><br>
-
-                                    La rectificación del certificado de estudios se rige por lo establecido en el artículo
-                                    45 del Reglamento
-                                    de la Ley N° 30512. El certificado de estudios es generado por el SIA.
+                                    <strong>Certificado de Estudios Superiores:</strong> Documento oficial emitido con base en las actas de evaluación académica de cada semestre cursado.
                                 </p>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-    <!-- Pop-up Modal -->
-    <div class="modal-overlay" id="modalOverlay"></div>
-    <div class="modal" id="modal">
-        <div class="modal-header text-center">
-            <h4 class="mx-auto font-weight-bold">¿Cómo pagar en Caja Cusco?</h4>
-        </div>
-        <div class="modal-body">
-            <p class="font-weight-bold">Todos los pagos del proceso de titulación son pagos ordinarios. <small
-                    class="text-danger">
-                    <i class="font-weight-bold">(No se considera pago ordinario matriculas ni cuotas semestrales.)</i>
-                </small></p>
 
-            <ul>
-                <li> <span class="span">1</span>
-                    Acercarse a las oficinas de <span class="text-danger font-weight-bold">Caja Cusco</span> e indicar que
-                    realizarás un pago ordinario de la Asociación
-                    Pukllasunchis.
-                </li>
-                <li><span class="span">2</span>
-                    Indicar el concepto y código de pago y Periodo 2026-I<a class="text-primary" target="_blank"
-                        href="{{ asset('pdf/Conceptos-ordinarios-caja-cusco-2026-2.pdf') }}"> Ver PDF para
-                        pagos<small><i class="fa fa-eye"></i></small></a>
-                </li>
-                <li><span class="span">3</span>
-                    Indicar en ventanilla el número de DNI y nombre del estudiante.
-                </li>
-                <li><span class="span">4</span>
-                    <strong>NO</strong> es necesario enviar el voucher ya que en el lapso de <strong>2 días hábiles</strong>
-                    le llegará la boleta electrónica
-                    emitida por la EESPP a tu correo institucional.
-                </li>
-                <li><span class="span">5</span>
-                    Con esta boleta electrónica podrás realizar tu trámite correspondiente.
-                </li>
-            </ul>
-            <div class="mx-auto text-center mt-3" style="width: 100%;">
-                <button class="btn btn-sm btn-primary" onclick="closeModal()">Cerrar</button>
+                <!-- Caja Cusco Callout Card -->
+                <div class="pk-caja-cusco-card">
+                    <div class="pk-caja-cusco-header">
+                        <div class="pk-caja-icon">
+                            <i class="fa fa-university"></i>
+                        </div>
+                        <div>
+                            <h3>Instrucciones de Pago en Caja Cusco</h3>
+                            <p>Todos los derechos del proceso de titulación corresponden a pagos ordinarios en ventanilla.</p>
+                        </div>
+                    </div>
+
+                    <div class="pk-caja-alert">
+                        <i class="fa fa-triangle-exclamation text-warning"></i>
+                        <span><strong>Importante:</strong> No se consideran pagos ordinarios las matrículas ni cuotas semestrales. Estos conceptos son exclusivos de trámites de titulación e investigación.</span>
+                    </div>
+
+                    <div class="pk-caja-points">
+                        <div class="pk-caja-point-item">
+                            <div class="pk-point-num">1</div>
+                            <p>Acércate a ventanilla en cualquier agencia a nivel nacional e indica <strong>PAGO ORDINARIO</strong> de la <strong>ASOCIACIÓN PUKLLASUNCHIS</strong>.</p>
+                        </div>
+                        <div class="pk-caja-point-item">
+                            <div class="pk-point-num">2</div>
+                            <p>Indica el <strong>concepto y código de pago</strong> de tu trámite (PTI, Turnitin, dictamen, exposición o repositorio).</p>
+                        </div>
+                        <div class="pk-caja-point-item">
+                            <div class="pk-point-num">3</div>
+                            <p>Proporciona el <strong>DNI</strong> y el nombre y apellidos completos del estudiante graduando.</p>
+                        </div>
+                        <div class="pk-caja-point-item">
+                            <div class="pk-point-num">4</div>
+                            <p><strong>No necesitas enviar el voucher:</strong> en un lapso de 2 días hábiles recibirás tu boleta electrónica en tu correo institucional.</p>
+                        </div>
+                    </div>
+
+                    <div class="pk-caja-footer">
+                        <a href="javascript:void(0)" onclick="openPagoModal(event)" class="text-primary font-weight-bold" style="font-size: 14.5px;">
+                            <i class="fa fa-circle-info me-1"></i> Ver guía interactiva paso a paso
+                        </a>
+                        <a href="{{ asset('pdf/Conceptos-ordinarios-caja-cusco-2026-2.pdf') }}" target="_blank" class="pk-btn-caja-pdf">
+                            <i class="fa fa-file-pdf"></i> Descargar PDF de Conceptos Oficiales
+                        </a>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
-    <script>
-        // Función para abrir el modal
-        function openModal() {
-            document.getElementById('modal').style.display = 'block';
-            document.getElementById('modalOverlay').style.display = 'block';
-        }
-        // Función para cerrar el modal
-        function closeModal() {
-            document.getElementById('modal').style.display = 'none';
-            document.getElementById('modalOverlay').style.display = 'none';
-        }
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous">
-    </script>
 @endsection

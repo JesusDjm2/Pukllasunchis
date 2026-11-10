@@ -86,14 +86,19 @@ class DocenteCOntroller extends Controller
     public function asignar($id)
     {
         $user = User::findOrFail($id);
-
         $docente = $user->docente;
+        abort_unless($docente, 404, 'Este usuario no tiene ficha de docente.');
 
-        $programas = Programa::all();
-        $ciclos = Ciclo::all();
-        $cursos = Curso::all();
+        $docente->load(['cursos.ciclo.programa']);
 
-        return view('docentes.asignar', compact('docente', 'programas', 'ciclos', 'cursos'));
+        // Catálogo completo (programa › ciclo › curso) con los docentes que ya dictan cada curso;
+        // el filtro por programa, ciclo y texto se hace en la página.
+        $programas = Programa::with(['ciclos' => fn ($q) => $q->orderBy('id'),
+            'ciclos.cursos' => fn ($q) => $q->orderBy('nombre'),
+            'ciclos.cursos.docentes:id,nombre'])
+            ->orderBy('id')->get();
+
+        return view('docentes.asignar', compact('docente', 'programas', 'user'));
     }
 
     /* public function asignarCurso(Request $request, $docenteId)
@@ -118,27 +123,31 @@ class DocenteCOntroller extends Controller
     } */
     public function asignarCurso(Request $request, $docenteId)
     {
+        // Varios cursos a la vez (cursos[]); se sigue aceptando curso_id suelto
+        if ($request->filled('curso_id') && ! $request->has('cursos')) {
+            $request->merge(['cursos' => [$request->curso_id]]);
+        }
         $request->validate([
-            'programa_id' => 'required',
-            'ciclo_id' => 'required',
-            'curso_id' => 'required|exists:cursos,id',
+            'cursos' => 'required|array|min:1',
+            'cursos.*' => 'integer|exists:cursos,id',
+        ], [
+            'cursos.required' => 'Marca al menos un curso para asignar.',
         ]);
 
         $docente = Docente::findOrFail($docenteId);
-        $curso = Curso::findOrFail($request->curso_id);
+        $result = $docente->cursos()->syncWithoutDetaching(array_unique($request->cursos));
+        $nuevos = count($result['attached']);
 
-        // Usamos syncWithoutDetaching
-        $result = $docente->cursos()->syncWithoutDetaching([$curso->id]);
+        // Se queda en la misma página para seguir asignando y ver la lista actualizada
+        $volver = $docente->user_id ? redirect()->route('asignar', $docente->user_id) : redirect()->route('docente.index');
 
-        if (empty($result['attached'])) {
-            return redirect()
-                ->route('docente.index')
-                ->with('error', "El curso {$curso->nombre} ya está asignado a {$docente->nombre}.");
+        if ($nuevos === 0) {
+            return $volver->with('error', 'Los cursos marcados ya estaban asignados a '.$docente->nombre.'.');
         }
 
-        return redirect()
-            ->route('docente.index')
-            ->with('success', "Curso {$curso->nombre} asignado a {$docente->nombre} correctamente.");
+        return $volver->with('success', $nuevos === 1
+            ? 'Se asignó 1 curso a '.$docente->nombre.'.'
+            : "Se asignaron {$nuevos} cursos a {$docente->nombre}.");
     }
 
     public function eliminarCurso(Docente $docente, Curso $curso)
@@ -761,7 +770,7 @@ class DocenteCOntroller extends Controller
     }
 
     /**
-     * Taq'e (Ferias de Investigación): el docente solo observa qué grupos
+     * Investigaciones (Ferias de Investigación): el docente solo observa qué grupos
      * existen en su curso y en qué estado están sus trabajos — no aprueba
      * integrantes ni cambia estados.
      */

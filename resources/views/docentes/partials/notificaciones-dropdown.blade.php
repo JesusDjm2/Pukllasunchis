@@ -3,7 +3,9 @@
      notificación nuevo (icono, color, texto) se agregue en un único lugar. --}}
 @php
     $notiUser = auth()->user();
-    $notiNoLeidasTotal = $notiUser?->unreadNotifications()->count() ?? 0;
+    // Cuentas de área (p. ej. Secretaría, que además tiene rol admin): solo los avisos de su área.
+    $notiFiltro = fn ($q) => \App\Support\NotificacionesPorRol::filtrar($q, $notiUser);
+    $notiNoLeidasTotal = $notiUser ? $notiFiltro($notiUser->unreadNotifications())->count() : 0;
 
     // Prioriza siempre las no leídas (hasta 30, tope razonable para un
     // dropdown) y solo completa con leídas recientes el espacio que sobre
@@ -11,10 +13,10 @@
     // tapada por otras ya vistas, y las leídas de hace meses dejan de
     // aparecer. La lista tiene alto fijo (~5 filas, ver .noti-scroll) con
     // scroll propio para ver el resto sin atender cuando hay más de 5.
-    $notiNoLeidas = $notiUser?->unreadNotifications()->latest()->limit(30)->get() ?? collect();
+    $notiNoLeidas = $notiUser ? $notiFiltro($notiUser->unreadNotifications())->latest()->limit(30)->get() : collect();
     $cupoLeidas = max(0, 5 - $notiNoLeidas->count());
-    $notiLeidasRecientes = $cupoLeidas > 0
-        ? ($notiUser?->readNotifications()->latest()->limit($cupoLeidas)->get() ?? collect())
+    $notiLeidasRecientes = $cupoLeidas > 0 && $notiUser
+        ? $notiFiltro($notiUser->readNotifications())->latest()->limit($cupoLeidas)->get()
         : collect();
     $notiRecientes = $notiNoLeidas->concat($notiLeidasRecientes);
 @endphp
@@ -121,28 +123,28 @@
                         'Tu sugerencia ya fue revisada',
                     ],
                     \App\Notifications\TaqeInvitacionGrupo::class => [
-                        "Invitación Taq'e", 'fa-flask', 'bg-info',
+                        "Invitación de Investigaciones", 'fa-flask', 'bg-info',
                         'Te sumaron al grupo "'.($n->data['grupo_nombre'] ?? '').'" — '.($n->data['curso_nombre'] ?? ''),
                     ],
                     \App\Notifications\TaqeMiembroSalio::class => [
-                        "Grupo Taq'e", 'fa-user-minus', 'bg-secondary',
+                        "Grupo de Investigaciones", 'fa-user-minus', 'bg-secondary',
                         ($n->data['alumno_nombre'] ?? 'Un integrante').' salió de "'.($n->data['grupo_nombre'] ?? '').'"'
                             .(($n->data['nuevo_organizador'] ?? false) ? ' — ahora eres el organizador' : ''),
                     ],
                     \App\Notifications\TaqeMiembroAcepto::class => [
-                        "Grupo Taq'e", 'fa-user-plus', 'bg-success',
+                        "Grupo de Investigaciones", 'fa-user-plus', 'bg-success',
                         ($n->data['alumno_nombre'] ?? 'Un compañero').' se unió a "'.($n->data['grupo_nombre'] ?? '').'"',
                     ],
                     \App\Notifications\TaqeIntegranteRetirado::class => [
-                        "Grupo Taq'e", 'fa-user-times', 'bg-danger',
+                        "Grupo de Investigaciones", 'fa-user-times', 'bg-danger',
                         'El organizador te retiró del grupo "'.($n->data['grupo_nombre'] ?? '').'"',
                     ],
                     \App\Notifications\TaqeOrganizadorCambiado::class => [
-                        "Grupo Taq'e", 'fa-crown', 'bg-warning',
+                        "Grupo de Investigaciones", 'fa-crown', 'bg-warning',
                         'Ahora eres el organizador del grupo "'.($n->data['grupo_nombre'] ?? '').'"',
                     ],
                     \App\Notifications\TaqeSolicitudAyudaCreada::class => [
-                        "Solicitud de ayuda Taq'e", 'fa-life-ring', 'bg-warning',
+                        "Solicitud de ayuda de Investigaciones", 'fa-life-ring', 'bg-warning',
                         ($n->data['alumno_nombre'] ?? 'Un alumno').' pidió ayuda ('.($n->data['motivo'] ?? '').') — "'.($n->data['grupo_nombre'] ?? '').'"',
                     ],
                     \App\Notifications\TaqeSolicitudAtendida::class => [
@@ -150,13 +152,22 @@
                         'Tu solicitud sobre "'.($n->data['grupo_nombre'] ?? '').'" ('.($n->data['motivo'] ?? '').') ya fue atendida',
                     ],
                     \App\Notifications\TaqeGrupoEliminado::class => [
-                        "Grupo Taq'e", 'fa-trash-alt', 'bg-danger',
+                        "Grupo de Investigaciones", 'fa-trash-alt', 'bg-danger',
                         'El grupo "'.($n->data['grupo_nombre'] ?? '').'" fue eliminado por un administrador',
                     ],
                     \App\Notifications\TitulacionDatoReportado::class => [
                         'Titulación: dato por revisar', 'fa-user-graduate', 'bg-warning',
                         ($n->data['alumno_nombre'] ?? 'Un egresado').' — "'.($n->data['resumen'] ?? '').'"',
                     ],
+                    \App\Notifications\TitulacionCartaSolicitada::class => [
+                        'Carta de aceptación', 'fa-envelope-open-text', 'bg-info',
+                        ($n->data['alumno_nombre'] ?? 'Un estudiante').' la solicita para «'.($n->data['institucion'] ?? '').'»',
+                    ],
+                    \App\Notifications\TitulacionCartaAtendida::class => match ($n->data['estado'] ?? '') {
+                        'emitida' => ['Carta de aceptación', 'fa-check-circle', 'bg-success', 'Tu carta para «'.($n->data['institucion'] ?? '').'» fue aprobada'],
+                        'enviada' => ['Carta de aceptación', 'fa-inbox', 'bg-info', 'Secretaría recibió tu solicitud: te responderá en 3 días hábiles'],
+                        default => ['Carta de aceptación', 'fa-exclamation-circle', 'bg-warning', 'Tu solicitud fue observada: revísala y envíala de nuevo'],
+                    },
                     default => ['Notificación', 'fa-bell', 'bg-secondary', $n->data['alumno_nombre'] ?? ''],
                 };
                 [$notiLabel, $notiIcono, $notiColor, $notiTexto] = $notiTipo;

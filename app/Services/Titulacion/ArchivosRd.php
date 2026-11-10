@@ -53,6 +53,23 @@ class ArchivosRd
         };
     }
 
+    /**
+     * ¿El PDF lo generó el sistema (y no se subió firmado/escaneado)? No hay columna que lo diga:
+     * los PDF de dompdf llevan «Producer (dompdf … + CPDF)» en sus primeros bytes (en UTF-16).
+     */
+    public static function generadoPorSistema(?string $url): bool
+    {
+        $nombre = self::nombreDesdeUrl($url);
+        $ruta = $nombre ? self::ruta($nombre) : null;
+        if (! $ruta || ! ($f = @fopen($ruta, 'rb'))) {
+            return false;
+        }
+        $inicio = (string) fread($f, 4096);
+        fclose($f);
+
+        return stripos(str_replace("\0", '', $inicio), 'dompdf') !== false;
+    }
+
     public static function ruta(string $nombre): ?string
     {
         if (! preg_match('/^[0-9a-f\-]{36}\.pdf$/i', $nombre) || ! Storage::disk('local')->exists(self::CARPETA.'/'.$nombre)) {

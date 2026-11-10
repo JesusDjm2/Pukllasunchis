@@ -33,6 +33,11 @@
                     <a href="{{ route('rp.actas.editar', $acta) }}" class="al-btn al-btn-claro">
                         <i class="fas fa-pen"></i> Editar
                     </a>
+                    @if (\App\Services\RicardoPalma\BorradorLecturaRp::actaTieneEscaneo($acta->id))
+                        <a href="{{ route('rp.actas.escaneo', $acta) }}" target="_blank" class="al-btn al-btn-claro">
+                            <i class="fas fa-file-pdf"></i> Ver escaneo
+                        </a>
+                    @endif
                     <a href="{{ route('rp.actas.excel', $acta) }}" class="al-btn al-btn-oro">
                         <i class="fas fa-file-excel"></i> Exportar a Excel
                     </a>

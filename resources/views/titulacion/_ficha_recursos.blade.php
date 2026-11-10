@@ -425,4 +425,19 @@
         @keyframes ft-resaltar { 0%, 30% { box-shadow: 0 0 0 3px rgba(78, 115, 223, .45); } 100% { box-shadow: 0 0 0 3px transparent; } }
         @media (prefers-reduced-motion: reduce) { .ft-resaltado { animation: none; } }
     </style>
+    <script>
+        // Carta de aceptación (_paso_carta): «Aprobar» u «Observar» muestra el campo que corresponde.
+        // Delegado: la ficha llega por AJAX y sus <script> no se ejecutan.
+        document.addEventListener('change', function (e) {
+            var r = e.target.closest ? e.target.closest('.js-carta-form input[name="accion"]') : null;
+            if (!r) return;
+            var f = r.closest('form'), obs = r.value === 'observar';
+            f.querySelector('.js-carta-aprobar').hidden = obs;
+            f.querySelector('.js-carta-observar').hidden = !obs;
+            f.querySelector('textarea[name="observacion"]').required = obs;
+            f.querySelector('textarea[name="mensaje"]').required = !obs;
+            var b = f.querySelector('.js-carta-boton');
+            b.textContent = obs ? b.dataset.observar : b.dataset.aprobar;
+        });
+    </script>
 @endonce

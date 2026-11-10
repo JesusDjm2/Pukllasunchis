@@ -20,8 +20,9 @@ class PasosProceso
 {
     /** Etapas: clave => [nombre, hito que la abre (null = siempre), hito que la cierra]. */
     public const ETAPAS = [
-        'pti' => ['Plan de Trabajo de Investigación', null, 'pti_aprobado'],
-        'ti' => ['Trabajo de Investigación · Bachiller', 'pti_aprobado', 'bachiller'],
+        // La carta de aceptación de la IE cierra el PTI: recién con ella se entra al TI · Bachiller (05/11).
+        'pti' => ['Plan de Trabajo de Investigación', null, 'pti_carta'],
+        'ti' => ['Trabajo de Investigación · Bachiller', 'pti_carta', 'bachiller'],
         'tesis' => ['Tesis · Licenciatura', 'bachiller', 'licenciado'],
     ];
 
@@ -59,6 +60,11 @@ class PasosProceso
                     : ($pti ? 'Inscrito, falta la RD de aprobación' : null),
                 'Registre los datos del PTI y genere o adjunte la RD que lo aprueba; aquí también se registran sus ampliaciones.'],
 
+            // Carta de aceptación de la IE (05/11): el estudiante la solicita (Recibida) e Investigación envía
+            // la respuesta de aprobación. Sin ella no se abre el TI · Bachiller (ver el final).
+            ['pti_carta', 'pti', 'Carta de aceptación de la IE', $h('pti_carta'),
+                $h('pti_carta') ? $this->conFecha(Str::limit((string) $avance->hitos['pti_carta']['detalle'], 40), $fecha('pti_carta')) : null,
+                'El estudiante solicita desde su intranet la carta para la Institución Educativa donde investigará; revise la solicitud y envíe la respuesta de aprobación, u obsérvela. Con la aprobación se abre el TI · Bachiller.'],
             ['ti_asesores', 'ti', 'Asesores', $asesoresTi->isNotEmpty() || filled($asesorPrevio),
                 $asesoresTi->isNotEmpty() ? $nombres($asesoresTi) : $asesorPrevio,
                 'Asigne uno o más asesores al trabajo de investigación.'],
@@ -185,6 +191,21 @@ class PasosProceso
         } elseif ($actual === 'tesis_licenciado') {
             $pasos['tesis_licenciado']['estado'] = 'espera';
             $pasos['tesis_licenciado']['espera'] = 'A la espera de SUNEDU';
+        }
+
+        // Carta de aceptación pendiente con el PTI aprobado: es lo que toca (aunque «Asesores» figure hecho
+        // por el asesor del PTI) y el TI sigue cerrado. Su estado sale de la solicitud del estudiante.
+        if ($h('pti_aprobado') && ! $h('pti_carta')) {
+            if ($actual && $actual !== 'pti_carta') {
+                $pasos[$actual]['estado'] = 'pendiente';
+            }
+            $actual = 'pti_carta';
+            $solicitud = $seguimiento->cartasAceptacion->first();
+            [$pasos['pti_carta']['estado'], $pasos['pti_carta']['espera'], $pasos['pti_carta']['resumen']] = match ($solicitud?->estado) {
+                'enviada' => ['actual', null, 'Recibida el '.$solicitud->created_at->format('d/m/Y').': falta enviar la respuesta'],
+                'observada' => ['espera', 'Observada: a la espera de que el estudiante la corrija y la envíe de nuevo', Str::limit($solicitud->institucion, 40)],
+                default => ['espera', 'A la espera de que el estudiante envíe su solicitud', null],
+            };
         }
 
         $this->pasos = $pasos;

@@ -22,6 +22,7 @@
 
 <body>
     <div id="app">
+        @unless (request()->routeIs('login'))
         <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm" style="z-index: 9">
             <div class="container">
                 <a class="navbar-brand" href="{{ url('/') }}">
@@ -72,6 +73,7 @@
                 </div>
             </div>
         </nav>
+        @endunless
         @yield('content')
         
     </div>

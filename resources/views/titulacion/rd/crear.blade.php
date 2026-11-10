@@ -12,15 +12,104 @@
     $rdPrevia = fn ($u) => $u->seguimientoTitulacion?->resoluciones?->firstWhere('tipo', $def['tipo'])?->numero_rd;
 @endphp
 @include('titulacion._rdg_estilos')
+<link rel="stylesheet" href="{{ asset('css/pk-titulacion.css') }}?v={{ filemtime(public_path('css/pk-titulacion.css')) }}">
 
 <div class="container-fluid py-3 rdg">
     <a href="{{ $volver }}" class="small text-muted"><i class="fas fa-arrow-left fa-xs mr-1"></i> Volver a la ficha</a>
     <h4 class="font-weight-bold mt-2 mb-1"><i class="fas fa-file-signature mr-2" style="color:#4e73df;"></i>Generar RD · {{ $def['titulo'] }}</h4>
+    {{-- Datos que identifican el proceso: siempre a la vista al generar cualquier RD. --}}
+    <div class="rdg-clave">
+        @if ($seguimiento->numero_expediente)
+            <span class="tc-exp">Exp. N° {{ $seguimiento->numero_expediente }}</span>
+        @else
+            <span class="tc-exp tc-exp--falta">Sin expediente</span>
+        @endif
+        @include('titulacion._rd_pti_chip', ['seguimiento' => $seguimiento, 'personaId' => $egresado->id])
+    </div>
     <p class="rdg-ayuda mb-3">
         {{ $egresado->apellidos }}, {{ $egresado->name }} · {{ $egresado->programa->nombre ?? 'Sin programa' }}.
         Los datos vienen del sistema: revíselos, abra la <strong>vista previa</strong> y, si todo está bien, <strong>emita</strong>.
         Al emitir, la RD queda registrada para cada integrante marcado, con su PDF.
     </p>
+
+    {{-- RD que ya tiene esta persona: pestaña flotante (derecha, a media altura) que abre un panel lateral.
+         Las generadas por el sistema se ven dentro del panel; las subidas (PDF firmado o Drive), en otra pestaña. --}}
+    @php
+        $rdsPrevias = $seguimiento->resoluciones
+            ->sortByDesc(fn ($r) => ($r->fecha?->format('Ymd') ?? '00000000').str_pad((string) $r->id, 10, '0', STR_PAD_LEFT))
+            ->values();
+    @endphp
+    <button type="button" class="rdp-pestana" id="rdpAbrir" aria-controls="rdpPanel" aria-expanded="false" title="Ver las RD anteriores de {{ $egresado->name }}">
+        <i class="fas fa-history"></i>
+        <span class="rdp-pestana-txt">RD anteriores</span>
+        <span class="rdp-pestana-n">{{ $rdsPrevias->count() }}</span>
+    </button>
+
+    <div class="rdp-fondo" id="rdpFondo" hidden></div>
+    <aside class="rdp-panel" id="rdpPanel" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="rdpTitulo">
+        <header class="rdp-head">
+            <button type="button" class="rdp-icono" id="rdpVolver" title="Volver a la lista" hidden><i class="fas fa-arrow-left"></i></button>
+            <div class="rdp-head-txt">
+                <h5 id="rdpTitulo">RD anteriores</h5>
+                <small id="rdpSub">{{ $egresado->apellidos }}, {{ $egresado->name }} · {{ $rdsPrevias->count() }} {{ $rdsPrevias->count() === 1 ? 'resolución' : 'resoluciones' }}</small>
+            </div>
+            <a href="#" target="_blank" rel="noopener" class="rdp-icono" id="rdpPestanaNueva" title="Abrir en otra pestaña" hidden><i class="fas fa-external-link-alt"></i></a>
+            <button type="button" class="rdp-icono" id="rdpCerrar" title="Cerrar (Esc)"><i class="fas fa-times"></i></button>
+        </header>
+
+        <div class="rdp-cuerpo" id="rdpLista">
+            @forelse ($rdsPrevias as $r)
+                @php
+                    [$icono, $color] = \App\Models\Titulacion\Resolucion::ESTILOS[$r->tipo] ?? ['fa-gavel', 'dark'];
+                    $sistema = $r->archivo && \App\Services\Titulacion\ArchivosRd::generadoPorSistema($r->archivo);
+                    $tipoRd = \App\Models\Titulacion\Resolucion::nombreTipo($r->tipo);
+                    // Los históricos guardan el nombre del archivo ("RD 144 - TI ….pdf"): sin el «RD» repetido.
+                    $numRd = trim(preg_replace('/^\s*RD[\s\-]*/i', '', (string) $r->numero_rd));
+                    if (preg_match('/^(\d{1,4})(?:\s*-\s*((?:19|20)\d{2})\b)?/', $numRd, $mNum)) {
+                        $numRd = $mNum[1].(isset($mNum[2]) ? '-'.$mNum[2] : '');
+                    }
+                @endphp
+                <article class="rdp-item">
+                    <span class="rdp-item-ico text-{{ $color }}"><i class="fas {{ $icono }}"></i></span>
+                    <div class="rdp-item-txt">
+                        <strong>{{ $tipoRd }}</strong>
+                        @if ($numRd !== '')<span class="rdp-item-num" title="{{ $r->numero_rd }}">RD {{ $numRd }}</span>@endif
+                        <small>
+                            <i class="far fa-calendar fa-xs mr-1"></i>{{ $r->fecha?->format('d/m/Y') ?? 'Sin fecha' }}
+                            @if ($r->detalle)<span class="d-block">{{ \Illuminate\Support\Str::limit($r->detalle, 160) }}</span>@endif
+                        </small>
+                    </div>
+                    <div class="rdp-item-accion">
+                        @if (! $r->archivo)
+                            <span class="rdp-sin">Sin documento</span>
+                        @elseif ($sistema)
+                            <a href="{{ $r->archivo }}" class="btn btn-sm btn-primary js-rdp-ver" data-titulo="{{ $tipoRd }}{{ $numRd !== '' ? ' · RD '.$numRd : '' }}">
+                                <i class="fas fa-eye mr-1"></i>Ver
+                            </a>
+                        @else
+                            <a href="{{ $r->archivo }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary" title="Documento subido: se abre en otra pestaña">
+                                <i class="fas fa-external-link-alt mr-1"></i>{{ \App\Services\Titulacion\ArchivosRd::etiqueta($r->archivo) }}
+                            </a>
+                        @endif
+                    </div>
+                </article>
+            @empty
+                <div class="rdp-vacio"><i class="fas fa-folder-open"></i>Todavía no tiene resoluciones registradas.</div>
+            @endforelse
+        </div>
+
+        <div class="rdp-visor" id="rdpVisor" hidden>
+            <div class="rdp-carga" id="rdpCarga"><i class="fas fa-circle-notch fa-spin mr-1"></i> Cargando la RD…</div>
+            <iframe id="rdpFrame" title="Resolución Directoral"></iframe>
+        </div>
+
+        @if ($rdsPrevias->isNotEmpty())
+            <footer class="rdp-pie" id="rdpPie">
+                <span><i class="fas fa-eye fa-xs mr-1"></i>Del sistema: se ven aquí</span>
+                <span><i class="fas fa-external-link-alt fa-xs mr-1"></i>Subidas o Drive: otra pestaña</span>
+            </footer>
+        @endif
+    </aside>
 
     @if ($errors->any())
         <div class="alert alert-danger"><ul class="mb-0">@foreach ($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul></div>
@@ -37,7 +126,12 @@
                     'id' => $u->id,
                     'nombre' => $u->apellidos.', '.$u->name,
                     'dni' => $u->dni ?: '—',
-                    'meta' => trim(($u->condicion === 'Egresado' ? 'Egresado(a)' : '').($u->seguimientoTitulacion?->numero_expediente ? ' · Exp. '.$u->seguimientoTitulacion->numero_expediente : ''), ' ·'),
+                    'meta' => trim(($u->condicion === 'Egresado' ? 'Egresado(a)' : '').($u->seguimientoTitulacion?->numero_expediente ? ' · Exp. '.$u->seguimientoTitulacion->numero_expediente : '')
+                        .($u->seguimientoTitulacion ? (fn ($d) => match ($d['estado']) {
+                            'completa' => ' · RD PTI '.$d['mostrar'],
+                            'incompleta' => ' · RD PTI '.$d['mostrar'].' (falta año)',
+                            default => ' · sin RD de PTI',
+                        })(\App\Services\Titulacion\RdPti::de($u->seguimientoTitulacion)) : ''), ' ·'),
                     'previa' => $rdPrevia($u),
                     'exp' => $u->seguimientoTitulacion?->numero_expediente,
                     'falta' => \App\Services\Titulacion\ReglasProceso::faltaIntegrante($u->seguimientoTitulacion, $def['tipo']),
@@ -337,6 +431,71 @@
         var op = this.selectedOptions[0];
         if (op && op.dataset.nombre) document.getElementById('asesor_nombre').value = op.dataset.nombre;
     });
+
+    // RD anteriores: pestaña flotante → panel lateral con la lista. Las del sistema se ven dentro del
+    // panel (se ensancha); «volver» regresa a la lista. Todo sin salir del formulario.
+    (function () {
+        var panel = document.getElementById('rdpPanel'), fondo = document.getElementById('rdpFondo');
+        var abrirBtn = document.getElementById('rdpAbrir');
+        if (!panel || !abrirBtn) return;
+        // Fuera del contenedor de la página: así nada lo recorta ni lo desplaza.
+        document.body.appendChild(abrirBtn); document.body.appendChild(fondo); document.body.appendChild(panel);
+        var lista = document.getElementById('rdpLista'), visor = document.getElementById('rdpVisor');
+        var frame = document.getElementById('rdpFrame'), carga = document.getElementById('rdpCarga');
+        var titulo = document.getElementById('rdpTitulo'), sub = document.getElementById('rdpSub');
+        var volver = document.getElementById('rdpVolver'), nueva = document.getElementById('rdpPestanaNueva');
+        var pie = document.getElementById('rdpPie');
+        var tituloLista = titulo.textContent, subLista = sub.textContent, ultimoFoco = null;
+
+        function verLista() {
+            panel.classList.remove('is-visor');
+            lista.hidden = false; visor.hidden = true; volver.hidden = true; nueva.hidden = true;
+            if (pie) pie.hidden = false;
+            titulo.textContent = tituloLista; sub.textContent = subLista;
+            frame.src = 'about:blank';
+        }
+        function verRd(href, nombre) {
+            panel.classList.add('is-visor');
+            lista.hidden = true; visor.hidden = false; volver.hidden = false; nueva.hidden = false;
+            if (pie) pie.hidden = true;
+            titulo.textContent = nombre || 'Resolución Directoral'; sub.textContent = 'Generada por el sistema';
+            nueva.href = href;
+            carga.hidden = false; frame.style.visibility = 'hidden';
+            frame.onload = function () { carga.hidden = true; frame.style.visibility = ''; };
+            frame.src = href;
+            volver.focus();
+        }
+        function abrir() {
+            ultimoFoco = document.activeElement;
+            verLista();
+            fondo.hidden = false;
+            requestAnimationFrame(function () { panel.classList.add('is-open'); fondo.classList.add('is-open'); });
+            panel.setAttribute('aria-hidden', 'false'); abrirBtn.setAttribute('aria-expanded', 'true');
+            document.body.classList.add('rdp-abierto');
+            document.getElementById('rdpCerrar').focus();
+        }
+        function cerrar() {
+            panel.classList.remove('is-open'); fondo.classList.remove('is-open');
+            panel.setAttribute('aria-hidden', 'true'); abrirBtn.setAttribute('aria-expanded', 'false');
+            document.body.classList.remove('rdp-abierto');
+            setTimeout(function () { if (!panel.classList.contains('is-open')) { fondo.hidden = true; verLista(); } }, 280);
+            if (ultimoFoco) ultimoFoco.focus();
+        }
+        abrirBtn.addEventListener('click', abrir);
+        document.getElementById('rdpCerrar').addEventListener('click', cerrar);
+        fondo.addEventListener('click', cerrar);
+        volver.addEventListener('click', verLista);
+        lista.addEventListener('click', function (e) {
+            var a = e.target.closest('.js-rdp-ver');
+            if (!a) return;
+            e.preventDefault();
+            verRd(a.href, a.dataset.titulo);
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key !== 'Escape' || !panel.classList.contains('is-open')) return;
+            if (panel.classList.contains('is-visor')) verLista(); else cerrar();
+        });
+    })();
 
     // Emitir registra la RD para todo el grupo: se confirma con el sistema de alertas propio.
     form.addEventListener('submit', function (e) {

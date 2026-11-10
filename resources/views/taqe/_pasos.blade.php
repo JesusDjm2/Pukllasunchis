@@ -1,4 +1,4 @@
-{{-- Avance de un grupo Taq'e en 3 pasos (Equipo → Evidencias → Trabajo final). Común a todas las vistas.
+{{-- Avance de un grupo de Investigaciones en 3 pasos (Equipo → Evidencias → Trabajo final). Común a todas las vistas.
      Espera: $grupo (con alumnos, evidencias y finales cargados). --}}
 @php
     $aceptados = $grupo->alumnos->where('pivot.estado', 'aceptado')->count();

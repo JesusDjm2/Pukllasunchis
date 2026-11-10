@@ -161,17 +161,18 @@
                                 'etiqueta' => 'RD de aprobación', 'res' => $rdDe('PTI'), 'plantilla' => 'aprobacion_pti',
                                 'numeroCampo' => $pti->rd_pti, 'fechaCampo' => $avance->hitos['pti_aprobado']['fecha'],
                             ])
+                            @include('titulacion._rd_pti_completar')
 
                             <div class="tp-subtitulo">Ampliaciones del PTI</div>
                             @forelse ($ampliaciones as $n => $amp)
-                                @include('titulacion._rd_slot', ['etiqueta' => 'Ampliación '.($n + 1).($amp->detalle ? ' · '.\Illuminate\Support\Str::after($amp->detalle, 'ampliado ') : ''), 'res' => $amp, 'plantilla' => null])
+                                @include('titulacion._rd_slot', ['etiqueta' => 'Ampliación '.($n + 1).($amp->detalle ? ' · '.\Illuminate\Support\Str::after($amp->detalle, 'ampliado ') : ''), 'res' => $amp, 'plantilla' => 'extension_plazo_pti'])
                             @empty
                                 @unless ($ampliacionSoloCampo)
                                     <p class="small text-muted mb-1">Sin ampliaciones. Si se otorga una, regístrela abajo: es una RD nueva y la de aprobación se mantiene.</p>
                                 @endunless
                             @endforelse
                             @if ($ampliacionSoloCampo)
-                                @include('titulacion._rd_slot', ['etiqueta' => 'Ampliación', 'res' => null, 'plantilla' => null, 'tipoRd' => 'AmpliacionPti',
+                                @include('titulacion._rd_slot', ['etiqueta' => 'Ampliación', 'res' => null, 'plantilla' => 'extension_plazo_pti', 'tipoRd' => 'AmpliacionPti',
                                     'numeroCampo' => $pti->rd_ampliacion, 'fechaCampo' => $pti->fecha_ampliacion])
                             @endif
                             <details class="tp-mas ft-solo-editor" id="{{ $idPaso('ampliacionpti') }}">
@@ -242,13 +243,17 @@
                         @endif
                         @break
 
+                    @case('pti_carta')
+                        @include('titulacion._paso_carta', ['id' => $idPaso('carta')])
+                        @break
+
                     @case('ti_asesores')
                         @include('titulacion._participantes', ['lista' => $asesoresTi, 'funcion' => 'asesor', 'etapaP' => 'ti', 'idP' => $idPaso('asesores'), 'plano' => true,
                             'asesorPrevio' => $asesoresTi->isEmpty() ? ($pti?->asesorNombre() ?: $tesis?->asesorNombre()) : null])
                         @break
 
                     @case('ti_enlace')
-                        @include('titulacion._paso_enlace', ['etapaEnlace' => 'ti', 'id' => $idPaso('linkti'), 'requiere' => 'pti_aprobado'])
+                        @include('titulacion._paso_enlace', ['etapaEnlace' => 'ti', 'id' => $idPaso('linkti'), 'requiere' => 'pti_carta'])
                         @break
 
                     @case('ti_informe')
@@ -308,7 +313,7 @@
 
                     @case('ti_expo')
                         @include('titulacion._paso_form', [
-                            'id' => $idPaso('expo'), 'plano' => true, 'requiere' => 'pti_aprobado', 'titulo' => 'fecha de exposición', 'hecho' => (bool) $tesis?->fecha_exposicion,
+                            'id' => $idPaso('expo'), 'plano' => true, 'requiere' => 'pti_carta', 'titulo' => 'fecha de exposición', 'hecho' => (bool) $tesis?->fecha_exposicion,
                             'campos' => [['fecha_exposicion', 'Fecha de exposición', 'date', $tesis?->fecha_exposicion?->format('Y-m-d')]],
                         ])
                         @break

@@ -64,6 +64,17 @@ Route::post('/mi-titulacion/reportar', [App\Http\Controllers\MiTitulacionControl
     ->middleware(['auth', 'throttle:5,60'])
     ->name('mi-titulacion.reportar');
 
+// Carta de aceptación de la Institución Educativa (paso después de la RD del PTI): la solicita el
+// propio estudiante con su correo institucional; el archivo lo abren gestores o integrantes del grupo.
+Route::middleware('auth')->group(function () {
+    Route::get('/mi-titulacion/carta-aceptacion', [App\Http\Controllers\Titulacion\CartaAceptacionController::class, 'crear'])
+        ->name('mi-titulacion.carta');
+    Route::post('/mi-titulacion/carta-aceptacion', [App\Http\Controllers\Titulacion\CartaAceptacionController::class, 'enviar'])
+        ->middleware('throttle:30,10')->name('mi-titulacion.carta.enviar');
+    Route::get('/mi-titulacion/carta-aceptacion/{carta}/{cual}', [App\Http\Controllers\Titulacion\CartaAceptacionController::class, 'archivo'])
+        ->whereIn('cual', ['comprobante', 'carta', 'modelo'])->name('mi-titulacion.carta.archivo');
+});
+
 // GET simple para mantener viva la sesión (y el token CSRF) mientras se llena
 // un formulario largo, como el de Sílabos. Un GET no necesita token CSRF y
 // StartSession ya renueva la actividad de la sesión al procesarlo.
@@ -131,10 +142,15 @@ Route::middleware('auth')->group(function () {
     Route::get('ficha-matricula/{alumno}', [AlumnoController::class, 'ficha'])->name('ficha-matricula');
     Route::get('/alumnos/{alumno}/ficha-pdf', [vistasAlumnosController::class, 'exportarFichaPDF'])->name('alumno.ficha.pdf');
 
-    // ── Taq'e (Ferias de Investigación) — alumno ────────────────
+    // ── Investigaciones (Ferias de Investigación) — alumno ────────────────
     Route::prefix('taqe')->name('taqe.')->group(function () {
         Route::get('/', [App\Http\Controllers\TaqeController::class, 'index'])->name('index');
         Route::post('/', [App\Http\Controllers\TaqeController::class, 'store'])->name('store');
+        Route::get('/guia-pdf', function () {
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.instructivo-investigaciones-ciclo2');
+            $pdf->setPaper('a4', 'portrait');
+            return $pdf->stream('Guia_Estudiante_Investigaciones_Ciclo_II.pdf');
+        })->name('guia.pdf');
         Route::get('/curso/{curso}/alumnos', [App\Http\Controllers\TaqeController::class, 'alumnosDelCurso'])->name('alumnosDelCurso');
         Route::post('/{grupo}/responder', [App\Http\Controllers\TaqeController::class, 'responder'])->name('responder');
         Route::post('/{grupo}/salir', [App\Http\Controllers\TaqeController::class, 'salir'])->name('salir');
@@ -244,17 +260,17 @@ Route::middleware('auth')->group(function () {
     Route::match(['get', 'post'], 'docentes/{docente}/cursosPPD/{curso}/calificar', [DocenteCOntroller::class, 'calificarCursoPPD'])->name('competencias.calificar.ppd')->middleware('role:docente|admin|super-admin');
     Route::post('/docentes/blog/{id}', [DocenteCOntroller::class, 'updateBlog'])->name('docentes.updateBlog');
 
-    // ── Taq'e — vista de solo lectura del docente, por curso ────
+    // ── Investigaciones — vista de solo lectura del docente, por curso ────
     Route::get('docentes/{docente}/cursos/{curso}/taqe', [DocenteCOntroller::class, 'verTaqe'])->name('docente.curso.taqe');
 
-    // ── Taq'e — encargados/organizadores de un Proyecto Integrador (proyecto_docente) ────
+    // ── Investigaciones — encargados/organizadores de un Proyecto Integrador (proyecto_docente) ────
     Route::middleware('role:docente|admin|super-admin')->prefix('proyectos-integradores')->name('taqe.proyecto.')->group(function () {
         Route::get('/{proyecto}/taqe', [App\Http\Controllers\TaqeProyectoDocenteController::class, 'index'])->name('index');
         Route::get('/taqe/trabajos/{trabajo}/ver', [App\Http\Controllers\TaqeProyectoDocenteController::class, 'verTrabajo'])->name('trabajos.ver');
         Route::get('/taqe/{grupo}/descargar/{que}', [App\Http\Controllers\TaqeProyectoDocenteController::class, 'descargarZip'])->whereIn('que', ['evidencias', 'final', 'todo'])->name('descargar');
     });
 
-    // ── Taq'e — seguimiento institucional del Investigador ──────
+    // ── Investigaciones — seguimiento institucional del Investigador ──────
     Route::middleware('role:investigador')->prefix('taqe-investigador')->group(function () {
         Route::get('/', [App\Http\Controllers\TaqeInvestigadorController::class, 'index'])->name('taqe.investigador.index');
         Route::post('/solicitudes/{solicitud}/atender', [App\Http\Controllers\TaqeInvestigadorController::class, 'marcarAtendida'])->name('taqe.investigador.solicitudes.atender');
@@ -262,7 +278,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/{grupo}/descargar/{que}', [App\Http\Controllers\TaqeInvestigadorController::class, 'descargarZip'])->whereIn('que', ['evidencias', 'final', 'todo'])->name('taqe.investigador.descargar');
     });
 
-    // ── Taq'e — gestión institucional del Super Admin (control total sobre cualquier grupo) ──
+    // ── Investigaciones — gestión institucional del Super Admin (control total sobre cualquier grupo) ──
     Route::middleware('role:super-admin')->prefix('admin/taqe')->name('admin.taqe.')->group(function () {
         Route::get('/', [App\Http\Controllers\TaqeSuperAdminController::class, 'index'])->name('index');
         Route::get('/{grupo}/alumnos-disponibles', [App\Http\Controllers\TaqeSuperAdminController::class, 'alumnosDisponibles'])->name('alumnosDisponibles');
@@ -623,6 +639,21 @@ Route::middleware('auth')->group(function () {
             Route::post('/egresados/{egresado}/informe-iti', [App\Http\Controllers\Titulacion\EtapaTiController::class, 'informe'])->name('ti.informe');
             Route::post('/egresados/{egresado}/participantes', [App\Http\Controllers\Titulacion\EtapaTiController::class, 'participanteGuardar'])->name('participantes.guardar');
             Route::post('/egresados/{egresado}/correo-jurado', [App\Http\Controllers\Titulacion\EtapaTiController::class, 'correoJurado'])->name('ti.correo-jurado');
+            Route::get('/cartas-aceptacion', [App\Http\Controllers\Titulacion\CartaAceptacionController::class, 'registros'])->name('cartas.index');
+            // Importar las del formulario de Google (Excel de respuestas): subir → vista previa → importar (super-admin).
+            Route::get('/cartas-aceptacion/importar', [App\Http\Controllers\Titulacion\ImportarCartasController::class, 'form'])->name('cartas.importar');
+            Route::post('/cartas-aceptacion/importar', [App\Http\Controllers\Titulacion\ImportarCartasController::class, 'previa'])->name('cartas.importar.previa');
+            Route::get('/cartas-aceptacion/importar/{token}', [App\Http\Controllers\Titulacion\ImportarCartasController::class, 'vista'])->name('cartas.importar.vista');
+            Route::post('/cartas-aceptacion/importar/aplicar', [App\Http\Controllers\Titulacion\ImportarCartasController::class, 'aplicar'])->name('cartas.importar.aplicar');
+            Route::post('/cartas-aceptacion/{carta}/atender', [App\Http\Controllers\Titulacion\CartaAceptacionController::class, 'atender'])->name('cartas.atender');
+            Route::post('/egresados/{egresado}/carta-externa', [App\Http\Controllers\Titulacion\CartaAceptacionController::class, 'registrarExterna'])->name('cartas.externa');
+            // Secretaría corrige el grupo (retiro / incorporación con RD ya emitida): revisar y aplicar.
+            Route::get('/egresados/{egresado}/grupo', [App\Http\Controllers\Titulacion\CambioGrupoController::class, 'editar'])->name('grupo.editar');
+            Route::post('/egresados/{egresado}/grupo', [App\Http\Controllers\Titulacion\CambioGrupoController::class, 'aplicar'])->name('grupo.cambiar');
+            // RD del PTI importada del Excel: completar número y año (Secretaría) y normalizar en bloque (super-admin).
+            Route::post('/egresados/{egresado}/rd-pti', [App\Http\Controllers\Titulacion\RdPtiController::class, 'completar'])->name('rdpti.completar');
+            Route::get('/rd-pti/normalizar', [App\Http\Controllers\Titulacion\RdPtiController::class, 'normalizar'])->name('rdpti.normalizar');
+            Route::post('/rd-pti/normalizar', [App\Http\Controllers\Titulacion\RdPtiController::class, 'aplicar'])->name('rdpti.aplicar');
             Route::post('/egresados/{egresado}/tramite-sustentacion', [App\Http\Controllers\Titulacion\EtapaTesisController::class, 'tramite'])->name('tesis.tramite');
             Route::delete('/participantes/{participante}', [App\Http\Controllers\Titulacion\EtapaTiController::class, 'participanteEliminar'])->name('participantes.eliminar');
             Route::put('/egresados/{egresado}/estado', [App\Http\Controllers\Titulacion\TitulacionController::class, 'actualizarEstado'])->name('estado.actualizar');
@@ -681,6 +712,17 @@ Route::middleware('auth')->group(function () {
             Route::get('/importar', [App\Http\Controllers\RicardoPalma\RpImportacionController::class, 'index'])->name('importar.index');
             Route::post('/importar/acta', [App\Http\Controllers\RicardoPalma\RpImportacionController::class, 'importarActa'])->name('importar.acta');
             Route::get('/importar/plantilla', [App\Http\Controllers\RicardoPalma\RpImportacionController::class, 'descargarPlantilla'])->name('importar.plantilla');
+            // Acta escaneada (PDF) leída con IA y corregida en pantalla
+            Route::post('/importar/escaneo', [App\Http\Controllers\RicardoPalma\RpLecturaController::class, 'subir'])->name('lecturas.subir');
+            Route::get('/lecturas/{lectura}', [App\Http\Controllers\RicardoPalma\RpLecturaController::class, 'editar'])->name('lecturas.editar');
+            Route::get('/lecturas/{lectura}/stream', [App\Http\Controllers\RicardoPalma\RpLecturaController::class, 'stream'])->name('lecturas.stream');
+            Route::get('/lecturas/{lectura}/pdf', [App\Http\Controllers\RicardoPalma\RpLecturaController::class, 'pdf'])->name('lecturas.pdf');
+            Route::put('/lecturas/{lectura}', [App\Http\Controllers\RicardoPalma\RpLecturaController::class, 'autoguardar'])->name('lecturas.autoguardar');
+            Route::post('/lecturas/{lectura}/releer', [App\Http\Controllers\RicardoPalma\RpLecturaController::class, 'releer'])->name('lecturas.releer');
+            Route::post('/lecturas/{lectura}/cargar', [App\Http\Controllers\RicardoPalma\RpLecturaController::class, 'cargar'])->name('lecturas.cargar');
+            Route::delete('/lecturas/borradores/limpiar', [App\Http\Controllers\RicardoPalma\RpLecturaController::class, 'limpiarTodos'])->name('lecturas.limpiar');
+            Route::delete('/lecturas/{lectura}', [App\Http\Controllers\RicardoPalma\RpLecturaController::class, 'descartar'])->name('lecturas.descartar');
+            Route::get('/actas/{acta}/escaneo', [App\Http\Controllers\RicardoPalma\RpLecturaController::class, 'escaneoActa'])->name('actas.escaneo');
         });
 
 }); // fin auth

@@ -1,5 +1,5 @@
 {{--
-    Fila de integrante reutilizable — misma pieza visual en "Mis grupos Taq'e"
+    Fila de integrante reutilizable — misma pieza visual en "Mis grupos de Investigaciones"
     (solo lectura, para todos los miembros), en el modal "Editar integrantes"
     del organizador, y en el panel de gestión del Super Admin
     (taqe/superadmin/index.blade.php).

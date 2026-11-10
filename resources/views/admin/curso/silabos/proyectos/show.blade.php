@@ -19,7 +19,7 @@
                         @endif
                         <span class="al-chip"><i class="fas fa-layer-group"></i>{{ $proyecto->ciclos->count() }} ciclo(s)</span>
                         @if (\App\Models\Proyecto::taqeActivo())
-                            <span class="al-chip"><i class="fas fa-flask"></i>{{ $proyecto->taqe_grupos_count }} grupo(s) Taq'e</span>
+                            <span class="al-chip"><i class="fas fa-flask"></i>{{ $proyecto->taqe_grupos_count }} grupo(s) de Investigaciones</span>
                         @endif
                     </div>
                 </div>
@@ -37,7 +37,7 @@
                 <div class="al-card">
                     <div class="al-card-cab">
                         <span class="al-card-cab-icono"><i class="fas fa-align-left"></i></span>
-                        <div><h2>Descripción</h2><p>{{ \App\Models\Proyecto::taqeActivo() ? "Así la ven los estudiantes en Taq'e." : 'Tal como se muestra en los sílabos.' }}</p></div>
+                        <div><h2>Descripción</h2><p>{{ \App\Models\Proyecto::taqeActivo() ? "Así la ven los estudiantes en Investigaciones." : 'Tal como se muestra en los sílabos.' }}</p></div>
                     </div>
                     <div class="al-card-cuerpo pi-descripcion-completa">{!! $proyecto->descripcionHtml() !!}</div>
                 </div>

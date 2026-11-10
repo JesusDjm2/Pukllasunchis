@@ -1,63 +1,72 @@
-{{-- RD de Cambio de tema de investigación: anula la aprobación del PTI anterior y aprueba el
-     nuevo. Texto del modelo oficial; variables desde ResolucionDirectoralController::datosPdf(). --}}
+{{-- RD de Cambio de tema de investigación: modifica ÚNICAMENTE la denominación del PTI aprobado y
+     ratifica todo lo demás de esa RD. Texto del modelo oficial (nov. 2026); variables desde
+     ResolucionDirectoralController::datosPdf(). --}}
 @extends('titulacion.rd.pdf.membrete')
 
 @section('titulo', 'RD '.$numero.'-'.$anio.' Cambio de tema')
 
+{{-- Esta RD va siempre en UNA hoja: interlineado y espacios algo más ajustados que el resto. --}}
+@section('estilos')
+    body { line-height: 1.2; }
+    .lema, .titulo-rd, .fecha-rd { margin-bottom: .45em; }
+    .seccion { margin: .35em 0 .2em; }
+    p { margin-bottom: .3em; }
+    .firma { margin-top: .45em; }
+@endsection
+
 @php
-    $quien = $g['art'].' '.$g['estudiante'];
-    $rd = 'Resolución Directoral Nº '.$rdReferida.'-DG/EESP-“PUKLLASUNCHIS”-CUSCO';
+    $art = $g['art'];
+    $quien = $art.' '.$g['estudiante'];
+    $de = match ($art) { 'el' => 'del', 'la' => 'de la', 'los' => 'de los', default => 'de las' };
+    $deQuien = $de.' '.$g['estudiante'];
+    $rd = 'Resolución Directoral N.° '.$rdReferida.'-DG/EESP-“PUKLLASUNCHIS”-CUSCO';
+    $rdCorta = 'RD Nº '.$rdReferida.'-DG/EESP-“PUKLLASUNCHIS”-CUSCO';
+    $femenino = in_array($art, ['la', 'las'], true);
+    $alumnos = $g['plural'] ? ($femenino ? 'las estudiantes' : 'los estudiantes') : ($femenino ? 'la estudiante' : 'el estudiante');
 @endphp
 
 @section('cuerpo')
     <div class="seccion">VISTO:</div>
     <p>
         La solicitud
-        @if ($expedientes !== '') y {{ $variosExpedientes ? 'Expedientes' : 'Expediente' }} Nº {{ $expedientes }} @endif
-        presentado{{ $variosExpedientes ? 's' : '' }} por {{ $quien }} <strong>{{ $nombres }}</strong> de la Escuela de Educación Superior Pedagógica
-        Pukllasunchis, solicitando el cambio de tema del Plan de Trabajo de Investigación (PTI) aprobado mediante
-        {{ $rd }}, así como la propuesta de un nuevo tema para su correspondiente aprobación.
+        @if ($expedientes !== '') y {{ $variosExpedientes ? 'expedientes' : 'expediente' }} Nº {{ $expedientes }} @endif
+        presentado{{ $variosExpedientes ? 's' : '' }} por {{ $quien }} <strong>{{ $nombres }}</strong> de la Escuela de Educación Superior
+        Pedagógica Pukllasunchis, solicitando el cambio de tema del Plan de Trabajo de Investigación (PTI) aprobado mediante
+        Resolución Directoral Nº {{ $rdReferida }}-DG/EESP-“PUKLLASUNCHIS”-CUSCO, así como la propuesta de un nuevo tema para su
+        correspondiente aprobación.
     </p>
 
     <div class="seccion">CONSIDERANDO:</div>
     <p>
-        Que mediante RD Nº {{ $rdReferida }}-DG/EESP-“PUKLLASUNCHIS”-CUSCO se aprobó el Plan de Trabajo de Investigación
-        de {{ $quien }} <strong>{{ $nombres }}</strong> con tema que ahora requiere ser modificado por razones académicas
-        y personales justificadas.
+        Que mediante {{ $rdCorta }}@if ($fechaRdReferida), de fecha {{ \App\Services\Titulacion\PlantillasRd::fechaLarga($fechaRdReferida) }} del {{ $fechaRdReferida->year }}@endif,
+        se aprobó el Plan de Trabajo de Investigación {{ $deQuien }} <strong>{{ $nombres }}</strong>;
     </p>
     <p>
-        Que, {{ $quien }} {{ $g['ha'] }} presentado su solicitud formal, sustentando la necesidad de modificar el tema de
-        investigación, la cual ha sido revisada y avalada por el asesor asignado y el Comité de Investigación de la
-        institución.
-    </p>
-    <p>
-        Que, la Escuela de Educación Superior Pedagógica Pukllasunchis promueve la investigación pertinente y
-        contextualizada, garantizando que los temas de investigación respondan a las necesidades académicas y
-        formativas de sus estudiantes.
+        Que, mediante solicitud formal de visto, {{ $quien }} {{ $nombres }} sustenta{{ $g['n'] }} la necesidad de reorientar
+        el tema de investigación por razones académicas y metodológicas justificadas; contando con la opinión favorable y aval
+        del asesor asignado y la conformidad del Comité de Investigación Institucional;
     </p>
     <p>
         Que, de conformidad con los Lineamientos Académicos Generales (LAG) para las Escuelas de Educación Superior
-        Pedagógica Públicas y Privadas, Ley Nº 30512, su Reglamento, la Resolución Viceministerial Nº 178-2018-MINEDU,
-        y el Reglamento de Investigación RD Nº 067-2021-DG/EESP-PUKLLASUNCHIS y demás normas conferidas;
+        Pedagógica Públicas y Privadas, la Ley N.° 30512, su Reglamento, la Resolución Viceministerial N.° 178-2018-MINEDU,
+        el Reglamento de Investigación actualizado con Resolución Directoral N.° 035-2025-DG/EESP-PUKLLASUNCHIS y demás
+        normas conferidas;
     </p>
 
     <div class="seccion">SE RESUELVE:</div>
     <p>
-        <strong>PRIMERO:</strong> Anular la aprobación del Plan de Trabajo de Investigación (PTI) de {{ $quien }}
-        <strong>{{ $nombres }}</strong>, correspondiente al tema aprobado mediante RD Nº {{ $rdReferida }}-DG/EESP-“PUKLLASUNCHIS”-CUSCO.
+        <strong>PRIMERO: MODIFICAR ÚNICAMENTE</strong> la denominación del Plan de Trabajo de Investigación (PTI)
+        {{ $deQuien }} <strong>{{ $nombres }}</strong>, el cual fue aprobado en el artículo primero de la {{ $rd }}; el cual,
+        a partir de la emisión de la presente resolución, quedará redactado con el siguiente título:
+        “<strong><em>{{ $tituloNuevo }}</em></strong>”.
     </p>
     <p>
-        <strong>SEGUNDO: APROBAR</strong> el nuevo Plan de Trabajo de Investigación (PTI) de {{ $quien }} titulado:
-        <strong>“{{ $tituloNuevo }}”</strong>.
+        <strong>SEGUNDO: RATIFICAR</strong> e inalterables todos los demás extremos de la {{ $rd }}, manteniendo plenamente
+        su vigencia las disposiciones relativas a la designación del docente asesor, los plazos de vigencia estipulados y las
+        responsabilidades asignadas.
     </p>
     <p>
-        <strong>TERCERO:</strong> Disponer que el Comité de Investigación y los asesores asignados brinden el
-        acompañamiento necesario para la ejecución del nuevo Plan de Trabajo de Investigación, conforme a los
-        lineamientos institucionales y normativos vigentes.
-    </p>
-    <p>
-        <strong>CUARTO:</strong> Encargar a la Unidad de Secretaría Académica la notificación de la presente resolución
-        {{ $g['a_art'] }} {{ $g['estudiante'] }}, al Comité de Investigación y a los asesores asignados para los fines
-        correspondientes.
+        <strong>TERCERO: DISPONER</strong> que la Jefatura de la Unidad de Investigación dé a conocer la presente resolución
+        al docente asesor y {{ $g['a_art'] === 'al' ? 'al estudiante' : 'a '.$alumnos }} para que den estricto cumplimiento a la misma.
     </p>
 @endsection

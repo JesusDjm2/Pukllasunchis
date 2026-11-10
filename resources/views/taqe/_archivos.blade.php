@@ -1,5 +1,5 @@
 {{--
-    Evidencias (izquierda) y trabajo final (derecha) de un grupo Taq'e para docente, Investigador y Super Admin:
+    Evidencias (izquierda) y trabajo final (derecha) de un grupo de Investigaciones para docente, Investigador y Super Admin:
     las mismas dos columnas y filas (taqe/_fila-archivo) que ve el alumno, con el visor emergente (taqe/_visor).
     Parámetros: $grupo (con finales.subidoPor y evidencias.subidoPor cargados),
     $rutaVer (name de ruta {trabajo}/ver; null = solo nombres y enlaces, p. ej. docente),

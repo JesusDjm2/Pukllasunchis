@@ -61,6 +61,13 @@ return [
         ]),
     ],
 
+    // Lectura de actas escaneadas (Ricardo Palma) con la API de Gemini.
+    // GEMINI_MODEL: uno o varios modelos separados por coma; si uno está saturado se prueba el siguiente.
+    'gemini' => [
+        'key' => env('GEMINI_API_KEY'),
+        'model' => env('GEMINI_MODEL', 'gemini-3.5-flash,gemini-3.6-flash,gemini-3.5-flash-lite,gemini-3-flash-preview'),
+    ],
+
     'titulacion' => [
         // Correo de la Unidad de Investigación: las respuestas de los
         // egresados a los avisos de vencimiento del PTI llegan aquí

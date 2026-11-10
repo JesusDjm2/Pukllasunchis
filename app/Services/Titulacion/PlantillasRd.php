@@ -49,7 +49,7 @@ class PlantillasRd
         ],
         'cambio_tema' => [
             'titulo' => 'Cambio de tema de investigación', 'tipo' => 'CambioTema', 'etapa' => 'otros', 'vista' => 'titulacion.rd.pdf.cambio-tema',
-            'campos' => ['expedientes', 'rd_referida' => 'RD que aprobó el PTI anterior', 'titulo_nuevo'],
+            'campos' => ['expedientes', 'rd_referida' => 'RD que aprobó el PTI', 'fecha_rd_referida', 'titulo_nuevo'],
             'iniciales' => self::INICIALES_INVESTIGACION, 'cierre' => 'simple',
         ],
         'cambio_asesor' => [
@@ -72,6 +72,12 @@ class PlantillasRd
                 'asesor_designado', 'asesor_anterior_cargo' => 'Es', 'rd_reglamento'],
             'iniciales' => self::INICIALES_INVESTIGACION, 'cierre' => 'formal',
         ],
+        'extension_plazo_pti' => [
+            'titulo' => 'Extensión de plazo de PTI', 'tipo' => 'AmpliacionPti', 'etapa' => 'otros', 'vista' => 'titulacion.rd.pdf.extension-plazo-pti',
+            'campos' => ['expedientes', 'numero_informe', 'rd_referida' => 'RD que aprobó el PTI (se amplía plazo)', 'fecha_rd_referida', 'titulo',
+                'plazo_ampliacion' => 'Plazo de ampliación otorgado', 'nueva_fecha_limite' => 'Nueva fecha límite (opcional)'],
+            'iniciales' => self::INICIALES_INVESTIGACION, 'cierre' => 'simple',
+        ],
     ];
 
     /** Plantillas que cambian quién integra el grupo: la concordancia sale de la ficha de cada persona. */
@@ -87,6 +93,8 @@ class PlantillasRd
         'texto_adicional' => ['Texto adicional en el artículo PRIMERO (opcional)', 'area', false],
         'rd_referida' => ['RD referida', 'texto', true],
         'fecha_rd_referida' => ['Fecha de esa RD', 'fecha', true],
+        'plazo_ampliacion' => ['Plazo de ampliación (ej. 30 días calendario, 3 meses)', 'texto', true],
+        'nueva_fecha_limite' => ['Nueva fecha límite (opcional)', 'fecha', false],
         'asesor_anterior' => ['Asesor(a) anterior (como irá en la RD)', 'texto', true],
         'asesor_anterior_cargo' => ['Era', 'cargo', true],
         'acompanante' => ['Asesor(a) acompañante (opcional: va al final del artículo SEGUNDO)', 'texto', false],

@@ -7,7 +7,7 @@
 @endphp
 @extends($layout)
 
-@section('titulo', "Taq'e — " . $proyecto->nombre)
+@section('titulo', "Investigaciones — " . $proyecto->nombre)
 
 @section('contenido')
     {{-- Mismo diseño que la vista del alumno (memoria: feedback_diseno_unificado). Solo lectura. --}}
@@ -18,7 +18,7 @@
         <section class="al-hero">
             <div class="al-hero-fila">
                 <div class="al-hero-texto">
-                    <div class="al-kicker"><i class="fas fa-project-diagram"></i> Taq'e · Proyecto Integrador</div>
+                    <div class="al-kicker"><i class="fas fa-project-diagram"></i> Investigaciones · Proyecto Integrador</div>
                     <h1>{{ $proyecto->nombre }}</h1>
                     <div class="al-chips">
                         @if ($proyecto->producto)
@@ -34,6 +34,9 @@
                     </div>
                 </div>
                 <div class="al-hero-acciones">
+                    <a href="{{ route('taqe.guia.pdf') }}" target="_blank" class="al-btn al-btn-oro">
+                        <i class="fas fa-file-pdf"></i> Guía alumnos (PDF)
+                    </a>
                     @if ($rol === 'admin')
                         <a href="{{ route('proyectos.show', $proyecto) }}" class="al-btn al-btn-claro"><i class="fas fa-arrow-left"></i> Proyecto</a>
                     @elseif ($usuario->docente)
@@ -61,7 +64,7 @@
                 'rutaZip' => 'taqe.proyecto.descargar',
             ])
         @empty
-            <div class="al-card"><div class="al-vacio"><i class="fas fa-flask"></i>Aún no hay grupos Taq'e en este Proyecto Integrador.</div></div>
+            <div class="al-card"><div class="al-vacio"><i class="fas fa-flask"></i>Aún no hay grupos de Investigaciones en este Proyecto Integrador.</div></div>
         @endforelse
     </div>
 

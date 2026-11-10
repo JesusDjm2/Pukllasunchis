@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 /**
  * CRUD de Proyectos Integradores (solo admin y super-admin, ver routes/admin.php). Cada ciclo tiene a
  * lo más un proyecto (ciclos.proyecto_id): asignar un ciclo aquí lo saca del proyecto que tuviera.
- * El sílabo y Taq'e leen esta misma relación.
+ * El sílabo y Investigaciones leen esta misma relación.
  */
 class ProyectoController extends Controller
 {
@@ -89,7 +89,7 @@ class ProyectoController extends Controller
         DB::transaction(function () use ($proyecto) {
             // ciclos.proyecto_id no tiene clave foránea: sin esto quedaban apuntando a un proyecto borrado.
             $proyecto->ciclos()->update(['proyecto_id' => null]);
-            $proyecto->delete(); // los grupos Taq'e quedan sin proyecto (FK SET NULL), no se borran
+            $proyecto->delete(); // los grupos de Investigaciones quedan sin proyecto (FK SET NULL), no se borran
         });
 
         return redirect()->route('proyectos.index')->with('warning',

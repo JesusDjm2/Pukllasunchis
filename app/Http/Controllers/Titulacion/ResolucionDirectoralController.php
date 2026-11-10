@@ -357,6 +357,8 @@ class ResolucionDirectoralController extends Controller
             // En el cambio de asesor, el nuevo se elige; el vigente pasa a «anterior».
             'asesor' => $plantilla === 'cambio_asesor' ? null : $pti?->asesorValor(),
             'asesor_nombre' => $plantilla === 'cambio_asesor' ? '' : $this->nombrePropio($pti?->asesorNombre()),
+            'plazo_ampliacion' => '30 días calendario',
+            'nueva_fecha_limite' => $pti?->fecha_vencimiento ? Carbon::parse($pti->fecha_vencimiento)->addDays(30)->toDateString() : '',
             'asesor_cargo' => 'Asesor',
             'asesor_anterior' => $this->nombrePropio($asesorActual),
             'asesor_anterior_cargo' => 'Asesor',
@@ -425,6 +427,17 @@ class ResolucionDirectoralController extends Controller
 
         if ($tipo === 'CambioTema' && ($pti = $seguimiento->pti()->first())) {
             $pti->update(['titulo' => $data['titulo_nuevo']]);
+
+            return;
+        }
+
+        if ($tipo === 'AmpliacionPti' && ($pti = $seguimiento->pti()->first())) {
+            $pti->rd_ampliacion = $numeroRd;
+            $pti->fecha_ampliacion = $fecha->toDateString();
+            if (filled($data['nueva_fecha_limite'] ?? null)) {
+                $pti->vencimiento_ampliado = $data['nueva_fecha_limite'];
+            }
+            $pti->save();
 
             return;
         }
@@ -501,6 +514,8 @@ class ResolucionDirectoralController extends Controller
             'informe' => filled($data['numero_informe'] ?? null) ? str_pad($data['numero_informe'], 3, '0', STR_PAD_LEFT) : '',
             'titulo' => trim((string) ($data['titulo'] ?? ''), " \"“”"),
             'tituloNuevo' => trim((string) ($data['titulo_nuevo'] ?? ''), " \"“”"),
+            'plazoAmpliacion' => trim((string) ($data['plazo_ampliacion'] ?? '')),
+            'nuevaFechaLimite' => filled($data['nueva_fecha_limite'] ?? null) ? Carbon::parse($data['nueva_fecha_limite']) : null,
             'asesorCargo' => $data['asesor_cargo'] ?? 'Asesor',
             'asesorNombre' => $data['asesor_nombre'] ?? '',
             'textoAdicional' => trim((string) ($data['texto_adicional'] ?? '')),

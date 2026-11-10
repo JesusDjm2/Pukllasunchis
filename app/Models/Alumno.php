@@ -72,7 +72,7 @@ class Alumno extends Model
         return $this->hasMany(Matricula::class);
     }
 
-    /** Grupos Taq'e donde este alumno es integrante (cualquier estado: pendiente/aceptado/rechazado). */
+    /** Grupos de Investigaciones donde este alumno es integrante (cualquier estado: pendiente/aceptado/rechazado). */
     public function taqeGrupos()
     {
         return $this->belongsToMany(TaqeGrupo::class, 'taqe_grupo_alumno')
@@ -80,7 +80,7 @@ class Alumno extends Model
             ->withTimestamps();
     }
 
-    /** Grupos Taq'e creados por este alumno. */
+    /** Grupos de Investigaciones creados por este alumno. */
     public function taqeGruposCreados()
     {
         return $this->hasMany(TaqeGrupo::class, 'creador_alumno_id');

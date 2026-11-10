@@ -9,7 +9,7 @@ use App\Models\Titulacion\Tesis;
  * Orden obligatorio del proceso de titulación: nada se registra antes de que esté logrado
  * el paso anterior (no se puede subir la RD de la Tesis si recién se inscribió el PTI).
  *
- *   PTI inscrito → PTI aprobado (RD) → Enlace del TI aprobado → TI expuesto → TI aprobado (RD) → TI en Repositorio → Bachiller (SUNEDU)
+ *   PTI inscrito → PTI aprobado (RD) → Carta de aceptación de la IE → Enlace del TI aprobado → TI expuesto → TI aprobado (RD) → TI en Repositorio → Bachiller (SUNEDU)
  *   → Tesis sustentada → Enlace de la Tesis aprobado → Tesis aprobada (RD) → Licenciado (SUNEDU)
  *
  * Lo ya registrado se puede corregir siempre (los datos importados de secretaría tienen
@@ -39,7 +39,7 @@ class ReglasProceso
 
     /** Hito que debe estar logrado para registrar cada dato de TI/Tesis. */
     public const REQUISITO_CAMPO = [
-        'fecha_exposicion' => 'pti_aprobado',
+        'fecha_exposicion' => 'pti_carta',
         'rd_ti' => ['ti_expuesto', 'ti_enlace'],
         'url_repositorio_ti' => 'ti_aprobado',
         'fecha_bachiller_sunedu' => 'ti_repositorio',
@@ -54,8 +54,8 @@ class ReglasProceso
         'titulo_sunedu' => 'tesis_aprobada',
         'link_tesis' => 'bachiller',
         'link_tesis_estado' => 'bachiller',
-        'link_ti' => 'pti_aprobado',
-        'link_ti_estado' => 'pti_aprobado',
+        'link_ti' => 'pti_carta',
+        'link_ti_estado' => 'pti_carta',
         'licenciatura_escuela' => 'tesis_aprobada',
         'fecha_licenciatura_escuela' => 'tesis_aprobada',
     ];
@@ -103,7 +103,7 @@ class ReglasProceso
     }
 
     /** Actas: exposición del TI / sustentación de la Tesis. */
-    public const REQUISITO_ACTA = ['expo' => 'pti_aprobado', 'tesis' => 'bachiller'];
+    public const REQUISITO_ACTA = ['expo' => 'pti_carta', 'tesis' => 'bachiller'];
 
     /**
      * null si el hito (o todos los hitos de la lista) está logrado; si no, el texto

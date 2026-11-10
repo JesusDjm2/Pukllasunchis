@@ -1,437 +1,323 @@
 @extends('layouts.home')
+
 @section('metas')
-    @php $titulo = 'Procesos de trámites'; @endphp
-    <title>{{ $titulo }} - EESPP Pukllasunchis </title>
+    @php $titulo = 'Trámites Presenciales y Armado de Expediente'; @endphp
+    <title>{{ $titulo }} - EESPP Pukllasunchis</title>
     <meta name="description"
-        content="La admisión en la Escuela de Educación Superior Privada Pukllasunchis se realiza una vez al año, a través de un proceso de evaluación.">
-    <meta name="keywords" content="{{ $titulo }}, Escuela Pukllasuchis, EESP PUkllasunchis">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+        content="Requisitos y procedimientos para trámites presenciales, descarga del FUT y armado de expediente de graduación en la EESPP Pukllasunchis.">
+    <meta name="keywords" content="{{ $titulo }}, Expediente Titulacion Pukllasunchis, FUT Pukllasunchis, Tramites Presenciales">
+    <link rel="stylesheet" href="{{ asset('css/pk-tramites-titulacion.css') }}">
 @endsection
+
 @section('contenido')
-    <style>
-        .modal {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: white;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-            padding: 20px;
-            z-index: 2000;
-            width: 80%;
-            margin: 1em auto;
-            height: 80vh;
-            overflow-y: auto;
-        }
-
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            z-index: 1999;
-        }
-
-        .modal-header {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 15px;
-        }
-
-        .modal-body {
-            font-size: 14px;
-            margin-bottom: 15px;
-        }
-
-        .modal-body li {
-            margin-bottom: 12px;
-        }
-
-        .modal-body .span {
-            background: #cd9244;
-            border-radius: 50%;
-            padding: 3px 10px;
-            color: #fff;
-            margin-right: 5px;
-            position: relative;
-        }
-
-        .modal-body .span::after {
-            content: '';
-            display: block;
-            width: 2px;
-            height: 20px;
-            background: #cd9244;
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        .modal-body ul li:last-child .span::after {
-            display: none;
-        }
-
-        .listanueva li {
-            list-style: decimal !important;
-            margin-left: 1.6em;
-            line-height: 2em;
-            font-weight: 300;
-        }
-
-        @media (max-width: 768px) {
-
-            .modal-body .span::after {
-                display: none;
-            }
-        }
-
-        .modal-close {
-            background-color: #38496b;
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            display: inline-block;
-            margin-top: 10px;
-        }
-    </style>
     <div class="bradcam_area tramites bradcam_overlay">
         <div class="container">
             <div class="row">
                 <div class="col-lg-12">
                     <div class="bradcam_text">
                         <h3 class="tituloAnimado">{{ $titulo }}</h3>
-                        <p class="slideUp"><a href="{{ route('index') }}">Inicio /</a>Trámites / {{ $titulo }}</p>
+                        <p class="slideUp">
+                            <a href="{{ route('index') }}">Inicio /</a>
+                            <a href="{{ route('tramiteTitulacion') }}">Trámites /</a>
+                            {{ $titulo }}
+                        </p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="container pt-5 pb-5">
+
+    <div class="container pt-5 pb-5 pk-titula-wrapper">
         <div class="row">
             @include('tramites.titulacion.tramites-lateral')
+
             <div class="col-lg-9">
-                <h3 class="linea-debajo"> Trámites Presenciales</h3>
+                <!-- Título Oficial con Estilo del Sitio -->
+                <div class="pk-badge-wrapper">
+                    <span class="pk-badge-subtitulo">
+                        <i class="fa fa-building-columns"></i> Secretaría Académica · Trámites Presenciales
+                    </span>
+                </div>
+                <h2 class="linea-debajo">Trámites Presenciales y Armado de Expediente</h2>
                 <p>
-                    Los siguientes trámites forman parte del proceso de titulación y se deben realizar de manera presencial
-                    por los requisitos que se necesitan presentar.
+                    Los siguientes procedimientos forman parte del proceso de graduación y titulación y se realizan de manera presencial en la Secretaría Académica de la Escuela para la validación y cotejo de documentos originales físicos.
                 </p>
-                <div class="row justify-content-center align-items-center fichas mt-4" id="derecho">
-                    <div class="col-lg-4 col-6 text-center">
-                        <div class="card">
-                            <a href="{{ asset('pdf/fut.docx') }}" target="_blank">
-                                <div style="height: 100px">
-                                    <img height="100%" src="{{ asset('img/min/Ficha-de-inscripcion-Pukllasunchis.png') }}"
-                                        alt="">
+
+                <!-- Featured Download Card: FUT -->
+                <div class="card border-0 mb-4" id="derecho" style="background: #fdfaf6; border: 1px solid var(--pk-slate-200) !important; border-radius: 8px; box-shadow: var(--pk-shadow-sm);">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <div style="width: 48px; height: 48px; border-radius: 8px; background: #263552; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.35rem; flex-shrink: 0;">
+                                    <i class="fa fa-file-lines"></i>
                                 </div>
-                                <p class="text-center">Descargar FUT</p>
+                                <div>
+                                    <h4 class="mb-1" style="font-size: 18px; color: #1F1F1F;">
+                                        Formulario Único de Trámite (FUT Oficial)
+                                    </h4>
+                                    <p class="mb-0" style="font-size: 14px; line-height: 22px; color: #666; text-align: left;">
+                                        Documento base requerido para toda solicitud presencial o gestión administrativa en secretaría.
+                                    </p>
+                                </div>
+                            </div>
+                            <a href="{{ asset('pdf/fut.docx') }}" target="_blank" class="btn text-white px-4 py-2" style="background: #263552; border-radius: 6px; font-weight: 500; font-size: 14px;">
+                                <i class="fa fa-download me-2"></i> Descargar FUT (.docx)
                             </a>
                         </div>
                     </div>
-                </div><br>
-                <h3 class="linea-debajo mb-4">Armado de expediente de graduación</h3>
-                {{-- Prueba con Acordeon --}}
-                <div id="accordion" class="collapseBolsa">
-                    <div class="card">
-                        <div class="card-header" id="headingOne">
-                            <h5 class="mb-0">
-                                <button class="btn btn-link" data-toggle="collapse" data-target="#collapseOne"
-                                    aria-expanded="true" aria-controls="collapseOne" onclick="toggleArrow('arrowOne')">
-                                    <span id="arrowOne" class="arrow fa fa-caret-down fa-sm"></span>
-                                    Para estudiantes de formación inicial Docente (5 años).
+                </div>
+
+                <!-- Armado de Expediente Accordion -->
+                <div class="mt-4">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h3 class="mb-0" style="font-size: 22px;">
+                            <i class="fa fa-folder-tree text-warning me-2"></i> Armado de Expediente de Graduación
+                        </h3>
+                        <span class="pk-badge-fee">
+                            Costo: S/ 500.00 · Código: 18
+                        </span>
+                    </div>
+                    <p>
+                        Selecciona tu modalidad de estudios para revisar la relación completa de documentos externos e institucionales a presentar:
+                    </p>
+
+                    <div class="accordion pk-accordion" id="accordionExpediente">
+                        <!-- Opción FID (5 años) -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingFID">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapseFID" aria-expanded="true" aria-controls="collapseFID">
+                                    <i class="fa fa-graduation-cap me-2 text-primary"></i> Para Estudiantes de Formación Inicial Docente — FID (5 años)
                                 </button>
-                            </h5>
-                        </div>
-                        <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
-                            <div class="card-body">
-                                <div class="row">
-                                    <p>
-                                        Este trámite permite armar el Expediente de Graduación y tiene un costo de S/500
-                                        soles. Se deben
-                                        entregar los siguientes documentos:
-                                    </p>
-                                    <h5>Documentos externos a presentar en la Institución: </h5>
-                                    <ul class="listanueva">
-                                        <li>Dos fotocopias de DNI ampliado y legalizado. </li>
-                                        <li>Partida de nacimiento original.</li>
-                                        <li>Certificado de estudios de secundaria original.
+                            </h2>
+                            <div id="collapseFID" class="accordion-collapse collapse show" aria-labelledby="headingFID"
+                                data-bs-parent="#accordionExpediente">
+                                <div class="accordion-body">
+                                    <div class="row g-4">
+                                        <div class="col-md-6">
+                                            <h5 class="pb-2 border-bottom">
+                                                <i class="fa fa-id-card-clip text-warning me-1"></i> Documentos Externos a Presentar:
+                                            </h5>
+                                            <ul class="list-unstyled ms-2 mt-2" style="font-size: 14.5px; line-height: 24px;">
+                                                <li class="mb-2"><i class="fa fa-check text-success me-2"></i> Dos (2) fotocopias de DNI ampliado y legalizado notarialmente.</li>
+                                                <li class="mb-2"><i class="fa fa-check text-success me-2"></i> Partida de nacimiento original (vigente).</li>
+                                                <li class="mb-2"><i class="fa fa-check text-success me-2"></i> Certificado de estudios secundarios original.</li>
+                                                <li class="mb-2"><i class="fa fa-check text-success me-2"></i> Ocho (8) fotos tamaño pasaporte a color, fondo blanco, con terno y en papel mate (4 cm x 5 cm).</li>
+                                                <li class="mb-2">
+                                                    <i class="fa fa-check text-success me-2"></i> Documento acreditando dominio de idioma extranjero (mínimo nivel <strong>A2</strong> del MCER) o lengua originaria según DCBN EIB.
+                                                </li>
+                                            </ul>
+                                        </div>
 
-                                        </li>
-                                        <li>8 Fotos tamaño pasaporte fondo blanco, con terno y en papel mate, medidas: 4cm x
-                                            5cm.</li>
-                                        <li>Documento que acredite conocimiento de idioma A2/ lengua originaria primaria EIB
-                                            <p class="generic-blockquote mt-4">
-                                                <strong>Niveles de inglés A (usuario básico)</strong><br>
-                                                <strong>Test de inglés A2:</strong> Es capaz de comprender frases y
-                                                expresiones
-                                                de uso frecuente
-                                                relacionadas con áreas de experiencia que le son especialmente relevantes
-                                                (información básica sobre sí
-                                                mismo y su familia, compras, lugares de interés, ocupaciones, etc.). Sabe
-                                                comunicarse a la hora de
-                                                llevar a cabo tareas simples y cotidianas que no requieran más que
-                                                intercambios
-                                                sencillos y directos de
-                                                información sobre cuestiones que le son conocidas o habituales. Sabe
-                                                describir
-                                                en términos sencillos
-                                                aspectos de su pasado y su entorno, así como cuestiones relacionadas con sus
-                                                necesidades inmediatas.<br>
-                                                <a href="https://tracktest.eu/es/niveles-de-ingles-mcer-cefr/#Ingl%C3%A9susuariobasico"
-                                                    target="_blanck" style="color: #ff5e13"><strong>Niveles de inglés MCER
-                                                        (CEFR)</strong></a><br>
-                                                <i>De acuerdo a lo establecido en los LAG de la ley N° 30512</i>
-                                            </p>
-                                        </li>
+                                        <div class="col-md-6">
+                                            <h5 class="pb-2 border-bottom">
+                                                <i class="fa fa-building-circle-check text-primary me-1"></i> Documentos Tramitados en la Escuela:
+                                            </h5>
+                                            <ul class="list-unstyled ms-2 mt-2" style="font-size: 14.5px; line-height: 24px;">
+                                                <li class="mb-2"><i class="fa fa-check text-primary me-2"></i> FUT debidamente completado y firmado.</li>
+                                                <li class="mb-2"><i class="fa fa-check text-primary me-2"></i> Certificado de estudios superiores (30 días hábiles · Cód: 8 · S/ 50.00 por ciclo).</li>
+                                                <li class="mb-2"><i class="fa fa-check text-primary me-2"></i> Copia de R.D. de aprobación de prácticas preprofesionales (Cód: 30 · S/ 50.00).</li>
+                                                <li class="mb-2"><i class="fa fa-check text-primary me-2"></i> Carta de aceptación de la I.E. donde se ejecutó la investigación (original).</li>
+                                                <li class="mb-2"><i class="fa fa-check text-primary me-2"></i> Constancia de no deudor original (Cód: 28 · S/ 30.00).</li>
+                                                <li class="mb-2"><i class="fa fa-check text-primary me-2"></i> Constancia de egresado original (Cód: 9 · S/ 50.00).</li>
+                                                <li class="mb-2"><i class="fa fa-check text-primary me-2"></i> Constancia de primera matrícula (Cód: 29 · S/ 50.00).</li>
+                                                <li class="mb-2"><i class="fa fa-check text-primary me-2"></i> R.D. de aprobación de PTI y asignación de asesor (original).</li>
+                                                <li class="mb-2"><i class="fa fa-check text-primary me-2"></i> Informe de Trabajo de Investigación Apto (original).</li>
+                                                <li class="mb-2"><i class="fa fa-check text-primary me-2"></i> Comprobante de pago original por derecho de obtención de grado de Bachiller (Cód: 18 · S/ 500.00).</li>
+                                            </ul>
+                                        </div>
+                                    </div>
 
-
-
-                                    </ul>
-                                    <h5 class="mt-3">Documentos a tramitar con la Institución: </h5>
-                                    <ul class="listanueva">
-                                        <li>FUT debidamente llenado. Puedes solicitarlo en la oficina de secretaría o
-                                            descargarlo de la página web.
-                                            <small>
-                                                <a href="{{ asset('pdf/fut.docx') }}" class="text-primary">
-                                                    Descargar <i class="fa fa-arrow-down"></i>
-                                                </a>
-                                            </small>
-                                        </li>
-                                        <li>Certificado de estudios superiores, la duranción del trámite es de 30 días
-                                            hábiles.
-                                            <small class="text-info">Codigo: 8 | Concepto: Certificado estudios por Ciclo |
-                                                Precio: s/50.00 </small>
-                                        </li>
-
-                                        <li>Una copia de RD de haber aprobado las prácticas pre profesionales. <small
-                                                class="text-info">Codigo: 30 | Concepto: RD DE APROBACION DE PRACTICAS |
-                                                Monto:
-                                                s/50.00</small>
-                                        </li>
-                                        <li>Carta de aceptación de la I.E. donde se realiza la investigación, original.
-                                            <small class="text-info">Solicitar modelo en secretaría</small>
-                                        </li>
-                                        <li>Constancia de no deudor original.
-                                            <small class="text-info">Codigo: 28 | Concepto: Constacia de no deudor | Monto:
-                                                s/ 30.00</small>, luego de ello solicitar la constancia con el área de
-                                            Cobranzas.
-                                        </li>
-                                        <li>Constancia de egresado original.
-                                            <small class="text-info">Codigo: 9 | Concepto: Constacia de Egresado | Monto: s/
-                                                50.00</small>
-                                        </li>
-                                        <li>Constancia de primera matrícula.
-                                            <small class="text-info">Codigo: 29 | Concepto: Constacia de 1ra matrícula |
-                                                Monto: s/ 50.00</small>
-                                        </li>
-                                        <li>Resolución Directoral de Aprobación de PTI y asignación de asesor original.
-                                            <small class="text-info">Codigo: 10 | Concepto: Aprobación de PTI y asesor |
-                                                Monto: s/ 50.00</small>
-                                        </li>
-                                        <li>Informe de Trabajo de Investigación Apto original.</li>
-
-                                        <li>Comprobante de pago por Derecho de obtención de grado de Bachiller original.
-                                            <small class="text-info">Codigo: 18 | Concepto: Armado de expediente de
-                                                Titulación | Monto: s/ 500.00</small>
-                                        </li>
-                                    </ul>
-                                    <h5 class="mt-3">
-                                        Como resultado de este trámite obtendrás una Carta de aceptación de Expediente de
-                                        Graduación completo.
-                                    </h5>
+                                    <div class="pk-milestone-result mt-3">
+                                        <i class="fa fa-circle-check"></i>
+                                        <span><strong>Resultado del trámite:</strong> Recepción de la <em>Carta de Aceptación de Expediente de Graduación Completo</em> para la prosecución de tu grado académico.</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="card">
-                        <div class="card-header" id="headingTwo">
-                            <h5 class="mb-0">
-                                <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseTwo"
-                                    aria-expanded="false" aria-controls="collapseTwo" onclick="toggleArrow('arrowTwo')">
-                                    <span id="arrowTwo" class="arrow fa fa-caret-down fa-sm"></span>
-                                    Para estudiantes de Profesionalización Docente (1 año).
+                        <!-- Opción PPD (1 año) -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingPPD">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapsePPD" aria-expanded="false" aria-controls="collapsePPD">
+                                    <i class="fa fa-user-check me-2 text-warning"></i> Para Estudiantes de Profesionalización Docente — PPD (1 año)
                                 </button>
-                            </h5>
-                        </div>
-                        <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
-                            <div class="card-body">
-                                <div class="row">
-                                    <h5>Documentos externos a presentar en la Institución: </h5>
-                                    <ul class="listanueva">
-                                        <li>Dos fotocopias de DNI ampliado y legalizado. </li>
-                                        <li>Cuatro (4) Fotos tamaño pasaporte fondo blanco, con terno y en papel mate,
-                                            medidas: 4cm x 5cm.</li>
-                                        <li>Documento que acredite conocimiento de idioma A2/ lengua originaria primaria EIB.
-                                            <p class="generic-blockquote mt-4">
-                                                <strong>Niveles de inglés A (usuario básico)</strong><br>
-                                                <strong>Test de inglés A2:</strong> Es capaz de comprender frases y
-                                                expresiones
-                                                de uso frecuente
-                                                relacionadas con áreas de experiencia que le son especialmente relevantes
-                                                (información básica sobre sí
-                                                mismo y su familia, compras, lugares de interés, ocupaciones, etc.). Sabe
-                                                comunicarse a la hora de
-                                                llevar a cabo tareas simples y cotidianas que no requieran más que
-                                                intercambios
-                                                sencillos y directos de
-                                                información sobre cuestiones que le son conocidas o habituales. Sabe
-                                                describir
-                                                en términos sencillos
-                                                aspectos de su pasado y su entorno, así como cuestiones relacionadas con sus
-                                                necesidades inmediatas.<br>
-                                                <a href="https://tracktest.eu/es/niveles-de-ingles-mcer-cefr/#Ingl%C3%A9susuariobasico"
-                                                    target="_blanck" style="color: #ff5e13"><strong>Niveles de inglés MCER
-                                                        (CEFR)</strong></a><br>
-                                                <i>De acuerdo a lo establecido en los LAG de la ley N° 30512</i>
-                                            </p>
-                                        </li>
-                                    </ul>
-                                    <h5 class="mt-3">Documentos a tramitar con la Institución: </h5>
-                                    <ul class="listanueva">
-                                        <li>Pago por derecho de expediente de de graduación. → s/500.00 </li>
-                                        <li>Carta de aceptación de la I.E. donde se realiza la investigación, original.
-                                            <small class="text-info">Solicitar modelo en secretaría</small>
-                                        </li>
-                                        <li>Constancia de no deudor original.
-                                            <small class="text-info">Codigo: 28 | Concepto: Constacia de no deudor | Monto:
-                                                s/ 30.00</small>, luego de ello solicitar la constancia con el área de
-                                            Cobranzas.
-                                        </li>
-                                        <li>Constancia de egresado original.
-                                            <small class="text-info">Codigo: 9 | Concepto: Constacia de Egresado | Monto: s/
-                                                50.00</small>
-                                        </li>
-                                        <li>Constancia de primera matrícula.
-                                            <small class="text-info">Codigo: 29 | Concepto: Constacia de 1ra matrícula |
-                                                Monto: s/ 50.00</small>
-                                        </li>
-                                        <li>Certificado original de Estudios Superiores:
-                                            <ul>
-                                                <li style="list-style: disc!important">Para estudiantes provenientes de
-                                                    Institutos (IESP): Certificado
-                                                    de Estudios original, visado por la DREC.
-                                                </li>
-                                                <li style="list-style: disc!important">Para estudiantes provenientes de
-                                                    Universidad. Legalizado por notaria oFedatado por la misma Universidad.
-                                                </li>
-                                                <li style="list-style: disc!important">
-                                                    Si este documento ya está en tu expediente de ingreso, no es necesario
-                                                    volver a presentarlo.
+                            </h2>
+                            <div id="collapsePPD" class="accordion-collapse collapse" aria-labelledby="headingPPD"
+                                data-bs-parent="#accordionExpediente">
+                                <div class="accordion-body">
+                                    <div class="row g-4">
+                                        <div class="col-md-6">
+                                            <h5 class="pb-2 border-bottom">
+                                                <i class="fa fa-id-card-clip text-warning me-1"></i> Documentos Externos a Presentar:
+                                            </h5>
+                                            <ul class="list-unstyled ms-2 mt-2" style="font-size: 14.5px; line-height: 24px;">
+                                                <li class="mb-2"><i class="fa fa-check text-success me-2"></i> Dos (2) fotocopias de DNI ampliado y legalizado.</li>
+                                                <li class="mb-2"><i class="fa fa-check text-success me-2"></i> Cuatro (4) fotos tamaño pasaporte a color, fondo blanco, terno y papel mate (4 cm x 5 cm).</li>
+                                                <li class="mb-2"><i class="fa fa-check text-success me-2"></i> Documento acreditando conocimiento de idioma A2 o lengua originaria.</li>
+                                                <li class="mb-2">
+                                                    <i class="fa fa-check text-success me-2"></i> Certificado original de estudios superiores:
+                                                    <ul class="mt-1 ps-3 text-muted">
+                                                        <li>Procedentes de IESP: original visado por la DREC.</li>
+                                                        <li>Procedentes de Universidad: legalizado por notario o fedatado por la universidad de origen.</li>
+                                                        <li><em>(Si ya obra en el expediente de ingreso, no es necesario volver a presentarlo).</em></li>
+                                                    </ul>
                                                 </li>
                                             </ul>
-                                        </li>
-                                        <li>Resolución Directoral de Aprobación de PTI y asignación de asesor original.
-                                            <small class="text-info">Codigo: 10 | Concepto: Aprobación de PTI y asesor |
-                                                Monto: s/ 50.00</small>
-                                        </li>
-                                        <li>Informe de Trabajo de Investigación Apto original.</li>
-                                        <li>Resolución Directoral de aprobación de Trabajo de Investigación original.
-                                            <small class="text-info">Codigo: 10 | Concepto: RD de Aprobación TI | Monto: s/
-                                                50.00</small>
-                                        </li>
-                                        <li>Comprobante de pago por Derecho de obtención de grado de Bachiller original.
-                                            <small class="text-info">Codigo: 18 | Concepto: Armado de expediente de
-                                                Titulación | Monto: s/ 500.00</small>
-                                        </li>
-                                    </ul>
-                                    <h5 class="mt-">
-                                        Como resultado de este trámite obtendrás una Carta de aceptación de Expediente de
-                                        Graduación completo.
-                                    </h5>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <h5 class="pb-2 border-bottom">
+                                                <i class="fa fa-building-circle-check text-primary me-1"></i> Documentos Tramitados en la Escuela:
+                                            </h5>
+                                            <ul class="list-unstyled ms-2 mt-2" style="font-size: 14.5px; line-height: 24px;">
+                                                <li class="mb-2"><i class="fa fa-check text-primary me-2"></i> FUT debidamente llenado y firmado.</li>
+                                                <li class="mb-2"><i class="fa fa-check text-primary me-2"></i> Certificado de estudios superiores del programa PPD (Cód: 8 · S/ 50.00 por ciclo).</li>
+                                                <li class="mb-2"><i class="fa fa-check text-primary me-2"></i> Carta de aceptación de la institución educativa sede de investigación (original).</li>
+                                                <li class="mb-2"><i class="fa fa-check text-primary me-2"></i> Constancia de no deudor original (Cód: 28 · S/ 30.00).</li>
+                                                <li class="mb-2"><i class="fa fa-check text-primary me-2"></i> Constancia de egresado original (Cód: 9 · S/ 50.00).</li>
+                                                <li class="mb-2"><i class="fa fa-check text-primary me-2"></i> Constancia de primera matrícula (Cód: 29 · S/ 50.00).</li>
+                                                <li class="mb-2"><i class="fa fa-check text-primary me-2"></i> Informe de Trabajo de Investigación Apto (original).</li>
+                                                <li class="mb-2"><i class="fa fa-check text-primary me-2"></i> R.D. de aprobación de Trabajo de Investigación (original).</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    <div class="pk-milestone-result mt-3">
+                                        <i class="fa fa-circle-check"></i>
+                                        <span><strong>Resultado del trámite:</strong> Emisión de la <em>Carta de Aceptación de Expediente de Graduación Completo</em>.</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <h3 class="mt-4"> Carta de presentación para solicitar autorización de investigación:</h3>
-                <p>Este trámite permite que el estudiante pueda solicitar la autorización de realizar la investigación en
-                    una I.E. Tiene un costo de S/10 soles. Se deben entregar los siguientes documentos:</p>
-                <p>
-                    1. FUT debidamente llenado. Puedes solicitarlo en la oficina de secretaría o descargarlo de la página
-                    web.
-                    <br>
-                    En el FUT se deben especificar los siguientes datos:
-                </p>
-                <ul class="listasCuerpo">
-                    <li>Nombre de la Institución Educativa</li>
-                    <li>Nombre de Director de la I.E.</li>
-                    <li>Ubicación de la Institución Educativa</li>
-                    <li>Título de la Investigación</li>
-                </ul>
-                <p>2. Comprobante de pago por Carta de presentación.<br>
-                    Como resultado de este trámite obtendrás una Carta de presentación para solicitar autorización de
-                    investigación. La I.E. deberá entregarte una Carta de aceptación para realizar la investigación.</p>
+                <!-- Otros Trámites Presenciales Específicos -->
+                <div class="mt-5">
+                    <h3 class="mb-3" style="font-size: 22px;">
+                        <i class="fa fa-stamp text-warning me-2"></i> Constancias y Certificados Individuales
+                    </h3>
 
-                <h3 class="mt-4">Constancia de No Deudor:</h3>
-                <p>Este trámite permite demostrar que el estudiante no tiene ninguna deuda, de pensiones de estudios,
-                    libros, materiales u otros, con la institución. Tiene un costo de S/30 soles. Se deben entregar los
-                    siguientes documentos:
-                </p>
-                <ul class="listasCuerpo">
-                    <li>FUT debidamente llenado. Puedes solicitarlo en la oficina de secretaría o descargarlo de la página
-                        web.</li>
-                    <li>Comprobante de pago por Constancia de No Deudor.</li>
-                </ul>
-                <p>
-                    Como resultado de este trámite obtendrás una Constancia de No Deudor.
-                </p>
-                <h3 class="mt-4">Constancia de Egresado:</h3>
-                <p>
-                    Este trámite permite demostrar que el estudiante ha culminado satisfactoriamente todos los ciclos
-                    académicos. Tiene un costo de S/50 soles. Se deben entregar los siguientes documentos:
-                </p>
-                <ul class="listasCuerpo">
-                    <li>FUT debidamente llenado. Puedes solicitarlo en la oficina de secretaría o descargarlo de la página
-                        web.</li>
-                    <li>Dos fotos tamaño carné, en fondo blanco y con terno.</li>
-                    <li>Comprobante de pago por Constancia de Egresado.</li>
-                    <li>Constancia de egresado se obtiene presentando la Constancia de No Deudor</li>
-                </ul>
-                <p>
-                    Como resultado de este trámite obtendrás una Constancia de Egresado.
-                </p>
-                <h3 class="mt-4">Certificado de Estudios Superiores:</h3>
-                <p>
-                    Este trámite permite demostrar que el estudiante ha culminado satisfactoriamente todos los ciclos
-                    académicos. Tiene un costo de S/50 soles por ciclo académico cursado. Se deben entregar los siguientes
-                    documentos:
-                </p>
-                <ul class="listasCuerpo">
-                    <li>FUT debidamente llenado. Puedes solicitarlo en la oficina de secretaría o descargarlo de la página
-                        web.</li>
-                    <li>Seis fotos tamaño pasaporte, en fondo blanco y con terno.</li>
-                    <li>Comprobante de pago por Certificado de Estudios Superiores.</li>
-                </ul>
-                <p> Como resultado de este trámite obtendrás los Certificados de Estudios Superiores.</p>
+                    <div class="row g-3">
+                        <!-- Carta de Presentación -->
+                        <div class="col-md-6">
+                            <div class="p-3 bg-white rounded-3 border h-100 shadow-sm">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <h5 class="mb-0" style="font-size: 16px;">Carta de Presentación para I.E.</h5>
+                                    <span class="badge bg-light text-dark border">S/ 10.00</span>
+                                </div>
+                                <p class="mb-2" style="font-size: 14px; line-height: 22px;">
+                                    Permite solicitar a la I.E. la autorización para realizar la investigación de campo.
+                                </p>
+                                <ul class="list-unstyled ms-1 text-muted" style="font-size: 13.5px; line-height: 20px;">
+                                    <li>• Presentar FUT con datos de la I.E., Director, ubicación y título del TI.</li>
+                                    <li>• Comprobante de pago ordinario en Caja Cusco.</li>
+                                </ul>
+                            </div>
+                        </div>
 
-                <h3 class="mt-4">Pagos para la realización de los Trámites Presenciales </h3>
-                <p>SOLO SE PUEDEN PAGAR EN VENTANILLAS de cualquier agencia a nivel nacional.</p>
-                <ul class="listasDecimal">
-                    <li>Cliente debe indicar PAGO ORDINARIO de la ASOCIACION PUKLLASUNCHIS – EESPP</li>
-                    <li>Cliente debe indicar el concepto a pagar ejemplo: Aprobación de PTI, Cambio de tema, cambio de
-                        asesor, disolucion de grupo, extensión de plazo.</li>
-                    <li>El representante del servicio realizará la búsqueda y le indicará el monto del concepto ordinario
-                        para la validación del cliente</li>
-                    <li>Finalmente el Cliente deberá dictar el código(DNI), el nombre y apellidos completos del alumno.</li>
-                </ul>
-                <p>
-                    Estos pagos ordinarios SOLO SE PUEDEN PAGAR EN VENTANILLAS de cualquier agencia a nivel nacional.
-                </p>
+                        <!-- Constancia de No Deudor -->
+                        <div class="col-md-6">
+                            <div class="p-3 bg-white rounded-3 border h-100 shadow-sm">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <h5 class="mb-0" style="font-size: 16px;">Constancia de No Deudor</h5>
+                                    <span class="badge bg-light text-dark border">S/ 30.00 · Cód: 28</span>
+                                </div>
+                                <p class="mb-2" style="font-size: 14px; line-height: 22px;">
+                                    Acredita no registrar deudas por pensiones, libros o materiales en la institución.
+                                </p>
+                                <ul class="list-unstyled ms-1 text-muted" style="font-size: 13.5px; line-height: 20px;">
+                                    <li>• Presentar FUT debidamente completado.</li>
+                                    <li>• Comprobante de pago y validación con el área de Cobranzas.</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Constancia de Egresado -->
+                        <div class="col-md-6">
+                            <div class="p-3 bg-white rounded-3 border h-100 shadow-sm">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <h5 class="mb-0" style="font-size: 16px;">Constancia de Egresado</h5>
+                                    <span class="badge bg-light text-dark border">S/ 50.00 · Cód: 9</span>
+                                </div>
+                                <p class="mb-2" style="font-size: 14px; line-height: 22px;">
+                                    Acredita la culminación satisfactoria de todos los periodos formativos cursados.
+                                </p>
+                                <ul class="list-unstyled ms-1 text-muted" style="font-size: 13.5px; line-height: 20px;">
+                                    <li>• Dos (2) fotos tamaño carné en fondo blanco con terno.</li>
+                                    <li>• Constancia de no deudor aprobada previamente.</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Certificados de Estudios Superiores -->
+                        <div class="col-md-6">
+                            <div class="p-3 bg-white rounded-3 border h-100 shadow-sm">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <h5 class="mb-0" style="font-size: 16px;">Certificado de Estudios Superiores</h5>
+                                    <span class="badge bg-light text-dark border">S/ 50.00/ciclo · Cód: 8</span>
+                                </div>
+                                <p class="mb-2" style="font-size: 14px; line-height: 22px;">
+                                    Documento oficial con notas por cada semestre académico (duración: 30 días hábiles).
+                                </p>
+                                <ul class="list-unstyled ms-1 text-muted" style="font-size: 13.5px; line-height: 20px;">
+                                    <li>• Seis (6) fotos tamaño pasaporte con fondo blanco y terno.</li>
+                                    <li>• FUT y comprobante de pago por cada ciclo académico a certificar.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Caja Cusco Callout Card -->
+                <div class="pk-caja-cusco-card">
+                    <div class="pk-caja-cusco-header">
+                        <div class="pk-caja-icon">
+                            <i class="fa fa-university"></i>
+                        </div>
+                        <div>
+                            <h3>Pagos para Trámites Presenciales en Caja Cusco</h3>
+                            <p>Realiza tus abonos exclusivamente mediante pago ordinario en ventanilla.</p>
+                        </div>
+                    </div>
+
+                    <div class="pk-caja-alert">
+                        <i class="fa fa-triangle-exclamation text-warning"></i>
+                        <span>Los pagos ordinarios <strong>SOLO SE PAGAN EN VENTANILLAS</strong> de Caja Cusco a nivel nacional.</span>
+                    </div>
+
+                    <div class="pk-caja-points">
+                        <div class="pk-caja-point-item">
+                            <div class="pk-point-num">1</div>
+                            <p>Indica en ventanilla: <strong>PAGO ORDINARIO</strong> de la <strong>ASOCIACIÓN PUKLLASUNCHIS - EESPP</strong>.</p>
+                        </div>
+                        <div class="pk-caja-point-item">
+                            <div class="pk-point-num">2</div>
+                            <p>Indica el concepto exacto a pagar (ejemplo: Armado de expediente de Titulación: Cód. 18, Constancia no deudor: Cód. 28, etc.).</p>
+                        </div>
+                        <div class="pk-caja-point-item">
+                            <div class="pk-point-num">3</div>
+                            <p>Dicta el número de <strong>DNI</strong> y los nombres y apellidos completos del alumno.</p>
+                        </div>
+                        <div class="pk-caja-point-item">
+                            <div class="pk-point-num">4</div>
+                            <p>Adjunta la boleta electrónica emitida por la EESPP al momento de ingresar tu trámite presencial en Secretaría.</p>
+                        </div>
+                    </div>
+
+                    <div class="pk-caja-footer">
+                        <a href="javascript:void(0)" onclick="openPagoModal(event)" class="text-primary font-weight-bold" style="font-size: 14px;">
+                            <i class="fa fa-circle-info me-1"></i> Ver instructivo ilustrado de Caja Cusco
+                        </a>
+                        <a href="{{ asset('pdf/Conceptos-ordinarios-caja-cusco-2026-2.pdf') }}" target="_blank" class="pk-btn-caja-pdf">
+                            <i class="fa fa-file-pdf"></i> Ver PDF de conceptos de pago
+                        </a>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous">
-    </script>
 @endsection

@@ -194,7 +194,7 @@
                             @foreach ($proyectos as $pi)
                                 @php $url = Route::has('taqe.proyecto.index') ? route('taqe.proyecto.index', $pi) : null; @endphp
                                 @if ($url)
-                                    <a href="{{ $url }}" class="pf-enlace" title="Ver los grupos Taq'e de este proyecto">
+                                    <a href="{{ $url }}" class="pf-enlace" title="Ver los grupos de Investigaciones de este proyecto">
                                 @else
                                     <div class="pf-enlace">
                                 @endif

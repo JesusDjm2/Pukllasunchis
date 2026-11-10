@@ -1,5 +1,5 @@
 {{--
-    Una fila de archivo o enlace de Taq'e — la MISMA en alumno, docente, Investigador y Super Admin.
+    Una fila de archivo o enlace de Investigaciones — la MISMA en alumno, docente, Investigador y Super Admin.
     Espera: $trabajo (con subidoPor cargado). Opcionales:
       $rutaVer      name de la ruta {trabajo}/ver (null = sin vista previa ni descarga, p. ej. docente)
       $urlMover     URL POST para pasar al trabajo final / devolver a evidencias (alumnos)

@@ -176,6 +176,9 @@
                         @endhasanyrole
                     @endrole
 
+                    {{-- ── Fecha y hora en tiempo real (Cusco, GMT-5) ── --}}
+                    @include('layouts.partials.reloj-topbar')
+
                     {{-- Navegación derecha --}}
                     <ul class="navbar-nav ml-auto align-items-center">
                         <li class="nav-item d-flex align-items-center">

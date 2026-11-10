@@ -57,9 +57,10 @@ return [
             'titulo' => 'Solicitar la carta de aplicación del TI',
             'opcional' => 'Hazlo apenas tengas tu PTI aprobado, antes de aplicar tu investigación.',
             'pago' => ['10.00', '31', 'Carta de presentación para INV'],
-            'pasos' => ['Haz el pago en Caja Cusco (pago ordinario).', 'Llena el formulario.'],
-            'formulario' => ['Formulario de carta de aplicación', 'https://docs.google.com/forms/d/e/1FAIpQLSe9QSB57MVyK2xsyLRK5p7UAO_iWE0hYj4V_q0LQcZE32W3Qg/viewform'],
-            'resultado' => 'Recibirás la carta de aplicación del Trabajo de Investigación y una carta modelo de aceptación.',
+            'pasos' => ['Haz el pago en Caja Cusco (pago ordinario).', 'Llena el formulario del sistema con tu correo institucional y adjunta el comprobante (no voucher).'],
+            // Formulario propio del sistema (06/11); reemplaza al de Google.
+            'formulario' => ['Formulario de carta de aplicación', 'mi-titulacion.carta'],
+            'resultado' => 'Secretaría te responde en 3 días hábiles con la carta de presentación y una carta modelo de aceptación, por correo y en tu intranet.',
         ],
         'turnitin' => [
             'titulo' => 'Solicitar la revisión de originalidad (Turnitin)',

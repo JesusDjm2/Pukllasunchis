@@ -11,7 +11,7 @@
     use App\Services\Titulacion\VigenciaPti;
     use App\Services\Titulacion\Expediente;
 
-    $seguimiento->loadMissing(['pti.asesor', 'pti.asesorExterno', 'ptis', 'tesis.asesor', 'tesis.asesorExterno', 'actas', 'resoluciones']);
+    $seguimiento->loadMissing(['pti.asesor', 'pti.asesorExterno', 'ptis', 'tesis.asesor', 'tesis.asesorExterno', 'actas', 'resoluciones', 'cartasAceptacion']);
     $pti = $seguimiento->pti;
     $tesis = $seguimiento->tesis;
     $fmt = fn ($f) => $f ? $f->format('d/m/Y') : null;
@@ -51,6 +51,13 @@
             <i class="fas fa-user-graduate mr-2 text-primary"></i>Mi proceso de titulación
             @if ($seguimiento->numero_expediente)
                 <span class="text-muted small font-weight-normal ml-1">· Expediente {{ Expediente::mostrar($seguimiento->numero_expediente) }}</span>
+            @endif
+            {{-- La RD que aprueba su PTI, solo si el dato está completo (los importados del Excel se completan antes). --}}
+            @php $rdPtiAlumno = \App\Services\Titulacion\RdPti::de($seguimiento); @endphp
+            @if ($rdPtiAlumno['estado'] === 'completa')
+                <span class="text-muted small font-weight-normal ml-1">· RD de aprobación del PTI
+                    @if ($rdPtiAlumno['enlace'])<a href="{{ $rdPtiAlumno['enlace'] }}" target="_blank" rel="noopener">N° {{ $rdPtiAlumno['mostrar'] }}</a>@else N° {{ $rdPtiAlumno['mostrar'] }}@endif
+                </span>
             @endif
         </span>
         <span class="badge badge-{{ AvanceTitulacion::badge($estadoClave) }}">{{ $avance->estadoNombre() }}</span>
@@ -104,6 +111,31 @@
                     <div class="mt-siguiente__texto">Completaste tu proceso: tu título de Licenciado está inscrito en SUNEDU.</div>
                 </div>
             </div>
+        @endif
+
+        {{-- ── Carta de aceptación de la IE: se pide después de la RD del PTI (vista propia) ── --}}
+        @php
+            $cartaUltima = $seguimiento->cartasAceptacion->first();
+            // Con el PTI aprobado. Si no la pidió pero se da por cumplida (ya estaba en el TI), no se ofrece.
+            $mostrarCarta = $avance->hitos['pti_aprobado']['logrado'] && ($cartaUltima || ! $avance->hitos['pti_carta']['logrado']);
+        @endphp
+        @if ($mostrarCarta)
+            @php
+                [$cartaClase, $cartaIcono, $cartaTexto, $cartaBoton] = match ($cartaUltima?->estado) {
+                    'emitida' => ['is-ok', 'fa-check-circle', 'Tu carta para «'.\Illuminate\Support\Str::limit($cartaUltima->institucion, 60).'» fue aprobada: ya continúas con el Bachiller.', 'Ver respuesta'],
+                    'enviada' => ['is-info', 'fa-inbox', 'Secretaría recibió tu solicitud: te responderá en 3 días hábiles.', 'Ver mi solicitud'],
+                    'observada' => ['is-warn', 'fa-exclamation-circle', 'Secretaría observó tu solicitud: corrígela y envíala de nuevo.', 'Corregir y enviar'],
+                    default => ['', 'fa-envelope-open-text', 'Con tu PTI aprobado, solicita la carta para la Institución Educativa donde harás tu investigación.', 'Solicitar carta'],
+                };
+            @endphp
+            <a href="{{ route('mi-titulacion.carta') }}" class="mt-carta {{ $cartaClase }}">
+                <span class="mt-carta__icono"><i class="fas {{ $cartaIcono }}"></i></span>
+                <span class="mt-carta__texto">
+                    <span class="mt-carta__kicker">Carta de aceptación de la Institución Educativa</span>
+                    <span>{{ $cartaTexto }}</span>
+                </span>
+                <span class="mt-carta__boton">{{ $cartaBoton }} <i class="fas fa-arrow-right fa-xs ml-1"></i></span>
+            </a>
         @endif
 
         {{-- ── Qué hacer ahora: solo los trámites del tramo en curso ── --}}
@@ -180,7 +212,7 @@
                                             {{ collect([$hito['detalle'], $fmt($hito['fecha'])])->filter()->implode(' · ') }}
                                         </span>
                                         @if ($hito['enlace'])
-                                            <a href="{{ $hito['enlace'] }}" target="_blank" rel="noopener" class="mt-hito__pdf"><i class="fas fa-file-pdf"></i> Ver RD</a>
+                                            <a href="{{ $hito['enlace'] }}" target="_blank" rel="noopener" class="mt-hito__pdf"><i class="fas fa-file-pdf"></i> {{ $hito['clave'] === 'pti_carta' ? 'Ver carta' : ($hito['clave'] === 'ti_repositorio' ? 'Ver' : 'Ver RD') }}</a>
                                         @endif
                                     @elseif ($hito['situacion'] === 'actual')
                                         <span class="mt-hito__meta mt-hito__meta--actual">Siguiente paso</span>
@@ -318,6 +350,24 @@
         .mt-etapa__guia { font-size: .78rem; }
 
         .mt-hito__pdf { font-size: .75rem; font-weight: 600; white-space: nowrap; }
+
+        .mt-carta { display: flex; align-items: center; gap: .85rem; flex-wrap: wrap; padding: .8rem 1rem; margin-bottom: 1rem; border-radius: .6rem; border: 1px solid #f3d9b5; background: #fff8ee; color: #1e293b; text-decoration: none !important; transition: box-shadow .15s, transform .15s; }
+        .mt-carta:hover { box-shadow: 0 6px 18px rgba(205, 146, 68, .22); transform: translateY(-1px); color: #1e293b; }
+        .mt-carta__icono { width: 2.2rem; height: 2.2rem; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: #cd9244; color: #fff; }
+        .mt-carta__texto { flex: 1; min-width: 12rem; display: flex; flex-direction: column; font-size: .86rem; }
+        .mt-carta__kicker { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: #b9823b; }
+        .mt-carta__boton { font-size: .8rem; font-weight: 700; color: #fff; background: #cd9244; padding: .4rem .85rem; border-radius: 8px; white-space: nowrap; }
+        .mt-carta.is-ok { background: #e8f8f1; border-color: #a7e3c8; }
+        .mt-carta.is-ok .mt-carta__icono, .mt-carta.is-ok .mt-carta__boton { background: #1cc88a; }
+        .mt-carta.is-ok .mt-carta__kicker { color: #13855c; }
+        .mt-carta.is-info { background: #eef2ff; border-color: #c7d2fe; }
+        .mt-carta.is-info .mt-carta__icono, .mt-carta.is-info .mt-carta__boton { background: #4e73df; }
+        .mt-carta.is-info .mt-carta__kicker { color: #4e73df; }
+        .mt-carta.is-warn { background: #fff8e6; border-color: #f6c23e; }
+        .mt-carta.is-warn .mt-carta__icono, .mt-carta.is-warn .mt-carta__boton { background: #d39e00; }
+        .dark-mode .mt-card .mt-carta, .dim-mode .mt-card .mt-carta { background: rgba(205, 146, 68, .12); border-color: rgba(205, 146, 68, .35); color: inherit; }
+        .dark-mode .mt-card .mt-carta.is-ok, .dim-mode .mt-card .mt-carta.is-ok { background: rgba(28, 200, 138, .12); border-color: rgba(28, 200, 138, .35); }
+        .dark-mode .mt-card .mt-carta.is-info, .dim-mode .mt-card .mt-carta.is-info { background: rgba(78, 115, 223, .14); border-color: rgba(78, 115, 223, .35); }
 
         .mt-reporte { margin-top: .75rem; padding-top: .75rem; border-top: 1px dashed #e3e6f0; font-size: .85rem; }
         .mt-reporte summary { cursor: pointer; color: #4e73df; font-weight: 600; outline: none; }

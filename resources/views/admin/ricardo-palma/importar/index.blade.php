@@ -22,7 +22,7 @@
                 </div>
                 <div class="al-hero-acciones">
                     <a href="{{ route('rp.importar.plantilla') }}" class="al-btn al-btn-oro">
-                        <i class="fas fa-download"></i> Descargar Plantilla Excel
+                        <i class="fas fa-download"></i> Descargar plantilla del acta
                     </a>
                 </div>
             </div>
@@ -40,6 +40,88 @@
                 <div>{{ Session::get('error') }}</div>
             </div>
         @endif
+        @if (Session::has('success'))
+            <div class="al-aviso is-ok mb-3">
+                <i class="fas fa-check-circle"></i>
+                <div>{{ Session::get('success') }}</div>
+            </div>
+        @endif
+        @if ($errors->any())
+            <div class="al-aviso is-mal mb-3">
+                <i class="fas fa-times-circle"></i>
+                <div>@foreach ($errors->all() as $e) <div>{{ $e }}</div> @endforeach</div>
+            </div>
+        @endif
+
+        {{-- Acta escaneada: la IA la lee y se corrige en pantalla antes de cargarla --}}
+        <div class="al-card mb-4">
+            <div class="al-card-cab">
+                <div class="al-card-cab-icono">
+                    <i class="fas fa-file-pdf"></i>
+                </div>
+                <div>
+                    <h2>Subir acta escaneada (PDF)</h2>
+                    <p>La IA lee el acta y la muestra en una tabla editable junto al escaneo. Nada se guarda hasta que la revises y la cargues.</p>
+                </div>
+            </div>
+            <div class="al-card-cuerpo">
+                @if ($iaConfigurada)
+                    <form action="{{ route('rp.lecturas.subir') }}" method="POST" enctype="multipart/form-data" class="d-flex flex-wrap align-items-center js-rp-subir-escaneo" style="gap: .75rem;">
+                        @csrf
+                        <input type="file" name="escaneo" class="al-campo p-2" accept="application/pdf,.pdf" required style="height: auto; flex: 1 1 280px;">
+                        <button type="submit" class="al-btn al-btn-oro py-2">
+                            <i class="fas fa-magic"></i> Leer acta con IA
+                        </button>
+                    </form>
+                    <div class="al-suave mt-2" style="font-size: .78rem;">
+                        Un acta por PDF (todas sus páginas), escaneada a color y a 300 ppp. Máximo 14 MB. La lectura tarda entre 1 y 2 minutos.
+                    </div>
+                @else
+                    <div class="al-aviso is-mal mb-0">
+                        <i class="fas fa-key"></i>
+                        <div>Falta configurar <code>GEMINI_API_KEY</code> en el archivo <code>.env</code> del servidor para leer actas escaneadas.</div>
+                    </div>
+                @endif
+
+                @if ($borradores)
+                    <div class="d-flex flex-wrap align-items-center justify-content-between mt-3 mb-2" style="gap: .5rem;">
+                        <div class="rp-resultado-titulo m-0">Actas escaneadas sin cargar ({{ count($borradores) }})</div>
+                        <form method="POST" action="{{ route('rp.lecturas.limpiar') }}" onsubmit="return confirm('¿Seguro que deseas eliminar todos los borradores pendientes de escaneo?');" class="m-0">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="al-btn al-btn-sm al-btn-claro text-danger" title="Eliminar todos los borradores no cargados">
+                                <i class="fas fa-trash-alt"></i> Eliminar todos los borradores
+                            </button>
+                        </form>
+                    </div>
+                    <div class="rp-borradores">
+                        @foreach ($borradores as $b)
+                            <div class="rp-borrador">
+                                <i class="fas fa-file-pdf al-suave"></i>
+                                <strong>{{ $b['archivo'] ?? 'escaneo.pdf' }}</strong>
+                                <span class="al-suave">{{ $b['titulo'] ?: 'Sin encabezado' }} · {{ $b['alumnos'] }} alumno(s)</span>
+                                <span class="al-suave">{{ $b['usuario'] ?? '' }} · {{ \Illuminate\Support\Carbon::parse($b['actualizado'])->format('d/m/Y H:i') }}</span>
+                                @if (! empty($b['error_lectura']))
+                                    <span class="al-badge is-mal" title="{{ $b['error_lectura'] }}">La IA no pudo leerla</span>
+                                @endif
+                                <div class="rp-borrador-acciones">
+                                    <a href="{{ route('rp.lecturas.editar', $b['id']) }}" class="al-btn al-btn-sm al-btn-claro">
+                                        <i class="fas fa-pen"></i> Seguir corrigiendo
+                                    </a>
+                                    <form method="POST" action="{{ route('rp.lecturas.descartar', $b['id']) }}" onsubmit="return confirm('¿Eliminar este borrador?');" class="d-inline m-0">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="al-btn al-btn-sm al-btn-claro text-danger" title="Eliminar este borrador">
+                                            <i class="fas fa-trash-alt"></i> Borrar
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+            </div>
+        </div>
 
         <div class="row">
             {{-- Formulario de Subida --}}
@@ -70,7 +152,8 @@
                             <div class="al-aviso is-info mb-4">
                                 <i class="fas fa-info-circle"></i>
                                 <div style="font-size: .82rem; line-height: 1.4;">
-                                    <strong>Formato flexible:</strong> Puedes utilizar las tablas extraídas por IA a partir de escaneos o la plantilla descargable con las columnas requeridas (PERIODO, PROGRAMA, SEMESTRE, NRO_MATRICULA, APELLIDOS, NOMBRES, CURSO, NOTA).
+                                    <strong>Se reconocen dos formatos:</strong> la plantilla con forma de acta (recomendada) y la tabla de una fila por alumno y curso
+                                    (<a href="{{ route('rp.importar.plantilla', ['formato' => 'filas']) }}">descargar plantilla por filas</a>), útil para tablas extraídas con IA.
                                 </div>
                             </div>
 
@@ -90,11 +173,23 @@
                             <i class="fas fa-list-ol"></i>
                         </div>
                         <div>
-                            <h2>Guía de Columnas de la Plantilla</h2>
-                            <p>Estructura de datos admitida para la carga</p>
+                            <h2>Cómo llenar la plantilla del acta</h2>
+                            <p>Tiene la misma forma que el acta física escaneada</p>
                         </div>
                     </div>
-                    <div class="al-tabla-marco">
+                    <div class="al-card-cuerpo" style="font-size: .85rem; line-height: 1.5;">
+                        <ol class="pl-3 mb-3">
+                            <li><strong>Encabezado:</strong> año académico (<code>1997-II</code>), semestre (<code>DÉCIMO</code>, <code>X</code> o <code>10</code>), fecha del acta, especialidad, turno y sección. El n.º de acta es opcional.</li>
+                            <li><strong>Asignaturas:</strong> el nombre de cada una en su columna (1 a 15), en el orden del acta, y debajo sus <strong>créditos</strong>.</li>
+                            <li><strong>Alumnos:</strong> una fila por alumno, como en el acta: matrícula y <code>APELLIDOS,Nombres</code> (separados por coma). En las casillas se escribe el <strong>puntaje</strong> tal como figura (ej.: <code>196</code> = nota 14 × 14 créditos); si el acta trae notas, se cambia «Casillas con» a <em>NOTA</em>.</li>
+                            <li><strong>Cotejar:</strong> puntaje total, créditos y promedio se calculan solos (truncado a 2 decimales, como el acta). Si no coinciden con el escaneo, hay una casilla mal copiada. En naranja: puntaje que no se divide exacto entre los créditos.</li>
+                            <li>Las observaciones que empiezan con <code>RETIRADO/A</code> o <code>LICENCIA</code> marcan al alumno así. Sexo y DNI (no están en el acta) son opcionales.</li>
+                        </ol>
+                        <p class="al-suave mb-0">Puedes copiar la hoja <code>ACTA</code> dentro del mismo archivo para cargar varias actas a la vez. Si vuelves a cargar una acta, sus notas se actualizan.</p>
+                    </div>
+                    <details class="px-3 pb-3">
+                        <summary class="al-suave" style="cursor: pointer; font-size: .82rem;">Columnas de la plantilla por filas (formato anterior)</summary>
+                    <div class="al-tabla-marco mt-2">
                         <table class="al-tabla">
                             <thead>
                                 <tr>
@@ -182,6 +277,7 @@
                             </tbody>
                         </table>
                     </div>
+                    </details>
                 </div>
             </div>
         </div>
@@ -252,3 +348,7 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    <script src="{{ asset('js/rp-lector.js') }}?v={{ @filemtime(public_path('js/rp-lector.js')) }}"></script>
+@endpush

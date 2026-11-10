@@ -1,511 +1,413 @@
 @extends('layouts.home')
+
 @section('metas')
-    @php $titulo = 'Trabajo de Investigación (TI)'; @endphp
-    <title>{{ $titulo }} - EESPP Pukllasunchis </title>
+    @php $titulo = 'Trabajo de Investigación (TI) - Bachillerato'; @endphp
+    <title>{{ $titulo }} - EESPP Pukllasunchis</title>
     <meta name="description"
-        content="La admisión en la Escuela de Educación Superior Privada Pukllasunchis se realiza una vez al año, a través de un proceso de evaluación.">
-    <meta name="keywords" content="{{ $titulo }}, Escuela Pukllasuchis, EESP PUkllasunchis">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+        content="Ruta oficial y requisitos para el desarrollo del Trabajo de Investigación (TI) y la obtención del Grado de Bachiller en Educación en la EESPP Pukllasunchis.">
+    <meta name="keywords" content="{{ $titulo }}, Bachiller Pukllasunchis, TI Pukllasunchis, Investigacion Educacion">
+    <link rel="stylesheet" href="{{ asset('css/pk-tramites-titulacion.css') }}">
 @endsection
+
 @section('contenido')
-    <style>
-        .modal {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: white;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-            padding: 20px;
-            z-index: 2000;
-            width: 80%;
-            margin: 1em auto;
-            height: 80vh;
-            overflow-y: auto;
-        }
-
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            /* Fondo oscuro */
-            z-index: 1999;
-            /* Un poco menor que el modal */
-        }
-
-        .modal-header {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 15px;
-        }
-
-        .modal-body {
-            font-size: 14px;
-            margin-bottom: 15px;
-        }
-
-        .modal-body li {
-            margin-bottom: 12px;
-        }
-
-        .modal-body .span {
-            background: #cd9244;
-            border-radius: 50%;
-            padding: 3px 10px;
-            color: #fff;
-            margin-right: 5px;
-            position: relative;
-            /* Necesario para ::after */
-        }
-
-        .modal-body .span::after {
-            content: '';
-            display: block;
-            width: 2px;
-            height: 20px;
-            background: #cd9244;
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        .modal-body ul li:last-child .span::after {
-            display: none;
-        }
-
-        @media (max-width: 768px) {
-
-            .modal-body .span::after {
-                display: none;
-            }
-        }
-
-
-        .modal-close {
-            background-color: #38496b;
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            display: inline-block;
-            margin-top: 10px;
-        }
-    </style>
     <div class="bradcam_area tramites bradcam_overlay">
         <div class="container">
             <div class="row">
                 <div class="col-lg-12">
                     <div class="bradcam_text">
                         <h3 class="tituloAnimado">{{ $titulo }}</h3>
-                        <p class="slideUp"><a href="{{ route('index') }}">Inicio /</a>Trámites / {{ $titulo }}</p>
+                        <p class="slideUp">
+                            <a href="{{ route('index') }}">Inicio /</a>
+                            <a href="{{ route('tramiteTitulacion') }}">Trámites /</a>
+                            {{ $titulo }}
+                        </p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="container pt-5 pb-5">
+
+    <div class="container pt-5 pb-5 pk-titula-wrapper">
         <div class="row">
             @include('tramites.titulacion.tramites-lateral')
+
             <div class="col-lg-9">
-                <h2 class="linea-debajo" id="planTrabajo">{{ $titulo }}
-                </h2>
-                <p>
-                    Tiene relación con los principales ejes planteados en el plan de estudios, el graduando debe demostrar
-                    que domina los aspectos desarrollados en el currículo. El TI supone el desarrollo de aptitudes y
-                    habilidades relacionadas con el perfil de egreso y el planteamiento de un tema preciso a analizar
-                    relacionado con situaciones detectadas en la realidad educativa. El desarrollo del TI incluye la
-                    revisión de la literatura actualizada, una metodología de análisis de la información recolectada y una
-                    exposición de resultados. Conduce a la obtención del Grado de Bachiller en Educación. El TI se elabora
-                    de forma progresiva desde el IX ciclo y se debe cumplir con la estructura solicitada por la escuela en
-                    su guía de investigación.
-                </p>
-                <div class="row justify-content-center align-items-center fichas mt-4">
-                    <div class="col-lg-4 col-6 text-center mb-3">
-                        <div class="card">
-                            <a href="{{ asset('pdf/FormatoTI.docx') }}" target="_blank">
-                                <div style="height: 100px">
-                                    <img height="100%" src="{{ asset('img/min/Bachillerato-Pukllasunchis.png') }}"
-                                        alt="">
-                                </div>
-                                <p class="text-center">Formato de TI</p>
-                                <p class="text-center"><i class="fa fa-arrow-circle-right fa-lg"></i></p>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-6 text-center mb-3">
-                        <div class="card">
-                            <a href="{{ asset('pdf/CaratulaTI-2025.docx') }}" target="_blank">
-                                <div style="height: 100px">
-                                    <img height="100%" src="{{ asset('img/min/caratula.png') }}" alt="">
-                                </div>
-                                <p class="text-center">Caratula TI (FID)</p>
-                                <p class="text-center"><i class="fa fa-arrow-circle-right fa-lg"></i></p>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-6 text-center mb-3">
-                        <div class="card">
-                            <a href="{{ asset('pdf/CaratulaTI-2025 PPD.docx') }}" target="_blank">
-                                <div style="height: 100px">
-                                    <img height="100%" src="{{ asset('img/min/caratula.png') }}" alt="">
-                                </div>
-                                <p class="text-center">Caratula TI (PPD)</p>
-                                <p class="text-center"><i class="fa fa-arrow-circle-right fa-lg"></i></p>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-6 text-center mb-3">
-                        <div class="card">
-                            <a href="{{ asset('pdf/Guia-Trabajo-de-Investigacion.pdf') }}" target="_blank">
-                                <div style="height: 100px">
-                                    <img height="100%"
-                                        src="{{ asset('img/min/Trabajo-de-investigacion-EESPukllasunchis.png') }}"
-                                        alt="">
-                                </div>
-                                <p class="text-center">Guía de <br>Investigación</p>
-                                <p class="text-center"><i class="fa fa-arrow-circle-right fa-lg"></i></p>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-6 text-center mb-3">
-                        <div class="card">
-                            <a href="{{ asset('pdf/Guia-de-Investigacion-2025.pdf') }}" target="_blank">
-                                <div style="height: 100px">
-                                    <img height="100%" src="{{ asset('img/min/Tesis-Pukllasunchis.png') }}"
-                                        alt="">
-                                </div>
-                                <p class="text-center">Guía de <br>Redacción</p>
-                                <p class="text-center"><i class="fa fa-arrow-circle-right fa-lg"></i></p>
-                            </a>
-                        </div>
-                    </div>
+                <!-- Título Oficial con Estilo del Sitio -->
+                <div class="pk-badge-wrapper">
+                    <span class="pk-badge-subtitulo">
+                        <i class="fa fa-book-bookmark"></i> Fase 2 · Grado de Bachiller en Educación
+                    </span>
                 </div>
-                <br><br>
-                <h3 class="mt-4 scroolOk linea-debajo">Requisitos para la obtención del Grado de Bachiller:</h3>
+                <h2 class="linea-debajo">Trabajo de Investigación (TI)</h2>
                 <p>
-                    Una vez terminado el Trabajo de Investigación, para la obtención del Grado de Bachiller se siguen estos
-                    pasos:
+                    Tiene relación con los principales ejes planteados en el plan de estudios, el graduando debe demostrar que domina los aspectos desarrollados en el currículo. El TI supone el desarrollo de aptitudes y habilidades relacionadas con el perfil de egreso y el planteamiento de un tema preciso a analizar relacionado con situaciones detectadas en la realidad educativa. El desarrollo del TI incluye la revisión de la literatura actualizada, una metodología de análisis de la información recolectada y una exposición de resultados. Conduce a la obtención del Grado de Bachiller en Educación. El TI se elabora de forma progresiva desde el IX ciclo y se debe cumplir con la estructura solicitada por la escuela en su guía de investigación.
                 </p>
-                <ul class="listasDecimal">
-                    <li>Solicitar revisión de originalidad (Turnitin):
-                        <ul>
-                            <li>Hacer el pago correspondiente por derecho de revisión de originalidad ( Turnitin) en las
-                                oficinas de Caja Cusco. <small class="text-info">Monto: s/25.00 | Código: 16 | Concepto:
-                                    Revisión Turnitin de TI</small></li>
-                            <li>Llenar <a
-                                    href="https://docs.google.com/forms/d/e/1FAIpQLSc1Bam9QlzjkT66NYeKMxS-xyoU4MchYtYiGCMmtvKVbHiCjg/viewform"
-                                    target="_blank" class="text-primary"> FORMULARIO DE REVISIÓN DE ORIGINALIDAD. <i
-                                        class="fa fa-external-link"></i></a></li>
-                            <li>Adjuntar:
-                                <ul>
-                                    <li>Versión final del TI en formato WORD</li>
-                                    <li>Comprobante de pago por derecho de revisión de originalidad</li>
-                                    <li>Este pago tiene el tiempo de duración de una semana.</li>
-                                </ul>
-                            </li>
 
-                            <li>
-                                👉Como resultado de este trámite, recibirás en tu correo institucional el Reporte de
-                                originalidad (Turnitin), en un plazo no mayor a 10 días hábiles.
-                                Con el pago que usted realiza puede hacer 1 revisión de originalidad en un plazo no
-                                mayor a 5 días hábiles.
+                <!-- Deck de Formatos y Guías Oficiales -->
+                <h3 class="mt-4">Formatos y Carátulas Oficiales</h3>
+                <div class="pk-downloads-deck">
+                    <!-- Formato TI -->
+                    <a href="{{ asset('pdf/FormatoTI.docx') }}" target="_blank" class="pk-download-card">
+                        <div class="pk-download-card__icon-wrapper">
+                            <div class="pk-download-card__icon word">
+                                <i class="fa fa-file-word"></i>
+                            </div>
+                            <span class="pk-download-card__tag">Word (.docx)</span>
+                        </div>
+                        <h5>Formato de TI Oficial</h5>
+                        <p>Estructura general con capítulos, tablas e índices normalizados.</p>
+                        <span class="pk-download-card__btn">
+                            <i class="fa fa-download"></i> Descargar Formato
+                        </span>
+                    </a>
 
-                            </li>
-                            <small style="color: #000; font-style: italic;">Nota: el porcentaje máximo para aprobar el
-                                reporte de originalidad debe ser 20%, de lo contrario, debe corregir el documento y
-                                solicitar nuevamente la revisión. </small>
-                            {{--  <li>
-                                    <p class="text-info"></p>
-                                </li> --}}
-                        </ul>
-                    </li>
-                    <li>Solicitar la revisión del TI por asesor/a:
-                        <ul>
-                            <li>Hacer el pago por derecho de revisión del TI en las oficinas de Caja Cusco.
-                                <small class="text-info">Monto: s/100.00 | Código: 15 | Concepto: Revisión de Trabajo de
-                                    Investigación</small>
-                            </li>
-                            <li>Llenar <a
-                                    href="https://docs.google.com/forms/d/e/1FAIpQLSfr-AXQ-NLEpO_2PGr8E8MVvHp8Cw8ook1hfqVB_WFlYpRw1Q/viewform"
-                                    target="_blank" class="text-primary"> FORMULARIO DE REVISIÓN DE TI.</a></li>
-                            <li>Adjuntar:
-                                <ul>
-                                    <li>Trabajo de Investigación en formato WORD</li>
-                                    <li>Reporte de originalidad Turnitin (con máximo 20% de similitud en Turnitin)</li>
-                                    <li>Comprobante de pago por derecho de revisión del TI</li>
-                                </ul>
-                            </li>
-                            <li>
-                                <span class="text-info ">
-                                    👉 Como resultado de este trámite, recibirás en tu correo institucional el Informe de TI
-                                    apto,
-                                    en un plazo no mayor a 30 días hábiles.
-                                </span>
-                            </li>
-                        </ul>
-                    </li>
-                    <li>Solicitar fecha de exposición de TI:
-                        <ul>
-                            <li>Hacer el pago para solicitar fecha de exposición de TI <small class="text-info">Monto:
-                                    s/50.00 | Código: 55 | Concepto: Fecha de
-                                    Exposición de TI</small></li>
-                            <li>Llenar <a
-                                    href="https://docs.google.com/forms/d/e/1FAIpQLSfyasqxxCR72v7aSnmtpISOedxYQzqV11igfLnegIr_biXIew/viewform"
-                                    target="_blank" class="text-primary"> FORMULARIO DE SOLICITUD DE FECHA DE EXPOSICIÓN DE
-                                    TI.</a> </li>
-                            <li>Adjuntar:
-                                <ul>
-                                    <li>Informe de TI apto en formato PDF</li>
-                                    <li>Diapositivas para exposición de TI en formato PPT</li>
-                                </ul>
-                            </li>
-                            <li>Este tramite va de frente a tu armado de expediente de titulación.</li>
-                        </ul>
-                    </li>
-                    <li>Después de la exposición del TI, solicitar RD de aprobación del TI:
-                        <ul>
-                            <li>Hacer el pago por derecho de RD de aprobación del TI en las oficinas de
-                                Caja Cusco. <small class="text-info">Monto: s/50.00 | Código: 17 | Concepto: RD de
-                                    aprobación de TI</small></li>
-                            <li>Llenar <a
-                                    href="https://docs.google.com/forms/d/e/1FAIpQLSeGQ3XQAjWD2IPRUQnHIGfreOzNmgs-GceyKXgaGPsRg4EngQ/viewform"
-                                    target="_blank" class="text-primary"> FORMULARIO DE APROBACIÓN DE TI.</a></li>
-                            <li>Adjuntar:
-                                <ul>
-                                    <li>Informe de TI apto en formato PDF</li>
-                                    <li>Acta de aprobación de TI en formato PDF</li>
-                                    <li>Comprobante de pago por derecho de RD de aprobación del TI</li>
-                                </ul>
-                            </li>
-                            <li>
-                                <span class="text-info">
-                                    👉 Como resultado de este trámite, recibirás en tu correo institucional la RD de
-                                    aprobación del
-                                    TI el día lunes de la semana próxima a la que pidió su solicitud.</span>
-                            </li>
-                        </ul>
-                    </li>
-                    <li>Armar expediente de graduación:
-                        <ul>
-                            <li>Este trámite solo se realiza de manera presencial en la oficina de secretaría de la EESP
-                                Pukllasunchis. <a href="{{ route('tramites') }}#derecho"> <small class="text-primary">
-                                        Ir a trámite
-                                        <i class="fa fa-external-link"></i> </small> | <small class="text-info">
-                                        Monto: s/500.00
-                                        | Código: 18 | Concepto: Armar expediente de titulación</small></a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li>Solicitar registro de TI en repositorio institucional:
-                        <ul>
-                            <li>Hacer el pago por derecho de registro de TI en repositorio institucional en
-                                las oficinas de Caja Cusco. <small class="text-info">Monto: s/50.00 | Código: 19 |
-                                    Concepto: Registro de TI al repositorio</small></li>
-                            <li>Descargar, completar y firmar la <a href="{{ asset('pdf/Autorizacion-Puklla.docx') }}"
-                                    target="_blank" class="text-primary"> AUTORIZACIÓN DE REGISTRO EN
-                                    REPOSITORIO.</a></li>
-                            <li>Descargar, completar y firmar la <a
-                                    href="{{ asset('pdf/Declaración-jurada-de-autenticidad.docx') }}" target="_blank"
-                                    class="text-primary"> Declaración jurada de autenticidad</a></li>
-                            <li>Llenar <a
-                                    href="https://docs.google.com/forms/d/e/1FAIpQLScT8tet1JGXD9XT8psVS5XR15L4gdwZsVwGktL5Bbl4eSoRjQ/viewform"
-                                    target="_blank" class="text-primary">FORMULARIO DE REGISTRO EN REPOSITORIO.</a> </li>
-                            <li>Adjuntar:
-                                <ul>
-                                    <li>Enlace a la versión final del TI en formato WORD</li>
-                                    <li>Formato de autorización de depósito en repositorio en formato WORD</li>
-                                    <li>Declaración Jurada de autenticidad en formato WORD</li>
-                                    <li>Comprobante de pago por derecho de registro en repositorio institucional</li>
-                                </ul>
-                            </li>
-                            <li>Si es que el TI no tiene ninguna observación, recibirás en tu correo institucional el URL de
-                                registro del TI en el repositorio institucional</li>
-                            <li>
-                                <span class="text-info">
-                                    👉 Este trámite tiene un lapso de duración de 30 días hábiles.
-                                </span>
-                            </li>
-                        </ul>
-                    </li>
-                    <li>Solicitar emisión de diploma de grado de bachiller previo pago de s/400.00 en las oficinas de <span
-                            class="text-danger font-weight-bold">Caja Cusco:</span>
-                        <ul>
-                            <li>Este trámite solo se realiza de manera virtual.</li>
-                            <li> Llena el <a href="https://forms.gle/oVAax2L4GiaPGTWp9" class="text-primary">FORMULARIO DE
-                                    SOLICITUD DE EMISIÓN DE DIPLOMA</a></li>
-                            <li>Adjuntar la boleta de pago correspondiente.</li>
-                            <span class="text-dark" style="font-weight: 400">Una vez ingresada la solicitud, se le informará oportunamente la fecha en la que deberá
-                                acudir de forma presencial para la firma del acta correspondiente.
-                                <small class="text-info">Monto:
-                                    s/400.00 | Código: 22 | Concepto: Emisión Diploma de Bachiller</small>
-                                <br>
-                                </span>
-                            <span class="text-info" style="font-weight: 400">
-                                👉 Este trámite tiene un lapso de duración de 15 días hábiles.
-                            </span>
+                    <!-- Carátula FID -->
+                    <a href="{{ asset('pdf/CaratulaTI-2025.docx') }}" target="_blank" class="pk-download-card">
+                        <div class="pk-download-card__icon-wrapper">
+                            <div class="pk-download-card__icon word">
+                                <i class="fa fa-file-word"></i>
+                            </div>
+                            <span class="pk-download-card__tag">Carátula FID</span>
+                        </div>
+                        <h5>Carátula TI (5 años)</h5>
+                        <p>Para estudiantes de Formación Inicial Docente Regular.</p>
+                        <span class="pk-download-card__btn">
+                            <i class="fa fa-download"></i> Descargar Carátula
+                        </span>
+                    </a>
 
-                        </ul>
-                    </li>
-                    <li>Solicitar registro e inscripción de grado de bachiller previo pago de s/200.00 en las oficinas de
-                        <span class="text-danger font-weight-bold">Caja Cusco:</span>
+                    <!-- Carátula PPD -->
+                    <a href="{{ asset('pdf/CaratulaTI-2025 PPD.docx') }}" target="_blank" class="pk-download-card">
+                        <div class="pk-download-card__icon-wrapper">
+                            <div class="pk-download-card__icon word">
+                                <i class="fa fa-file-word"></i>
+                            </div>
+                            <span class="pk-download-card__tag">Carátula PPD</span>
+                        </div>
+                        <h5>Carátula TI (1 año)</h5>
+                        <p>Para egresados del Programa de Profesionalización Docente.</p>
+                        <span class="pk-download-card__btn">
+                            <i class="fa fa-download"></i> Descargar Carátula
+                        </span>
+                    </a>
 
+                    <!-- Guía de TI -->
+                    <a href="{{ asset('pdf/Guia-Trabajo-de-Investigacion.pdf') }}" target="_blank" class="pk-download-card">
+                        <div class="pk-download-card__icon-wrapper">
+                            <div class="pk-download-card__icon pdf">
+                                <i class="fa fa-file-pdf"></i>
+                            </div>
+                            <span class="pk-download-card__tag">PDF Guía</span>
+                        </div>
+                        <h5>Guía de Elaboración TI</h5>
+                        <p>Criterios metodológicos, recolección de datos y análisis empírico.</p>
+                        <span class="pk-download-card__btn">
+                            <i class="fa fa-download"></i> Descargar Guía
+                        </span>
+                    </a>
 
-                        <p>
-                            Este trámite permite que el Grado de Bachiller sea reconocido
-                            oficialmente en SUNEDU. Se deben entregar los siguientes documentos:
-                        </p>
-                        <ul>
-                            <li>Pagar en Caja Cusco con el siguiente concepto: <small class="text-info">Monto:
-                                    s/200.00 | Código: 20 | Concepto: Inscripción Bachiller a SUNEDU</small></li>
-                            <li>Llenar formulario de inscripción de grado de bachiller.<small><a class="text-primary"
-                                        target="_blank" href="https://forms.gle/L7WHbS67NKYnWug69"> Formulario <i
-                                            class="fa fa-external-link"></i> (Solo permite llenar con correo
-                                        institucional)</a></small></li>
-                            <li>Comprobante de pago por Inscripción del Grado de Bachiller.</li>
-                            <li>
-                                <span class="text-info">
-                                    👉 Este proceso concluye aproximadamente 30 días hábiles después de haber realizado el
-                                    pago correspondiente y haber completado el proceso.
-                                </span>
-                            </li>
-                        </ul>
-                    </li>
-                </ul><br>
+                    <!-- Guía de Redacción -->
+                    <a href="{{ asset('pdf/Guia-de-Investigacion-2025.pdf') }}" target="_blank" class="pk-download-card">
+                        <div class="pk-download-card__icon-wrapper">
+                            <div class="pk-download-card__icon pdf">
+                                <i class="fa fa-file-pdf"></i>
+                            </div>
+                            <span class="pk-download-card__tag">PDF 2025-2026</span>
+                        </div>
+                        <h5>Guía de Redacción Académica</h5>
+                        <p>Normas APA 7ma edición y directivas tipográficas de la institución.</p>
+                        <span class="pk-download-card__btn">
+                            <i class="fa fa-download"></i> Descargar Guía
+                        </span>
+                    </a>
+                </div>
 
-                <h2 class="mt-4 linea-debajo" id="investigacion">Documentos para el proceso de obtención del
-                    Grado de Bachiller </h2>
-                <div class="row justify-content-center align-items-center fichas mt-4">
-                    <div class="col-lg-12 mb-4">
-                    </div>
-                    <div class="col-lg-4 col-6 text-center">
-                        <div class="card">
+                <!-- Hitos Paso a Paso TI -->
+                <h3 class="mt-4 linea-debajo">Requisitos para la Obtención del Grado de Bachiller:</h3>
+                <p>
+                    Una vez terminado el Trabajo de Investigación, para la obtención del Grado de Bachiller se siguen estos pasos:
+                </p>
+
+                <div class="pk-milestones-timeline">
+                    <!-- Hito 1: Turnitin -->
+                    <div class="pk-milestone-item">
+                        <div class="pk-milestone-item__bullet">1</div>
+                        <div class="pk-milestone-header">
+                            <h4>Revisión de Originalidad (Turnitin)</h4>
+                            <div class="pk-milestone-meta">
+                                <span class="pk-badge-fee"><i class="fa fa-receipt"></i> S/ 25.00</span>
+                                <span class="pk-badge-time"><i class="fa fa-tag"></i> Código: 16</span>
+                                <span class="pk-badge-time"><i class="fa fa-clock"></i> Hasta 10 días hábiles</span>
+                            </div>
+                        </div>
+                        <div class="pk-milestone-content">
+                            <p>
+                                Envía la versión culminada de tu Trabajo de Investigación para la verificación de originalidad y porcentaje de coincidencias.
+                            </p>
+                            <ul>
+                                <li>Versión final del TI en formato editable <strong>WORD (.docx)</strong>.</li>
+                                <li>Comprobante de pago ordinario en Caja Cusco (Concepto: <em>Revisión Turnitin de TI | Código: 16</em>).</li>
+                            </ul>
+                            <div class="pk-milestone-notice">
+                                <i class="fa fa-circle-exclamation"></i>
+                                <span><strong>Criterio de Aprobación:</strong> El porcentaje máximo de similitud permitido es del <strong>20%</strong>. Si supera dicho límite, deberás subsanar las citas y solicitar una nueva revisión.</span>
+                            </div>
+                            <div class="pk-milestone-result">
+                                <i class="fa fa-check-circle"></i>
+                                <span>Recibirás el Reporte Oficial Turnitin en tu correo institucional en un plazo no mayor a 10 días hábiles. El pago cubre 1 revisión dentro de 5 días hábiles posteriores.</span>
+                            </div>
                             <a href="https://docs.google.com/forms/d/e/1FAIpQLSc1Bam9QlzjkT66NYeKMxS-xyoU4MchYtYiGCMmtvKVbHiCjg/viewform"
-                                target="_blank">
-                                <div style="height: 100px">
-                                    <img height="100%" src="{{ asset('img/min/revision.png') }}"
-                                        alt="Ficha de Inscrición Pukllasunchis">
-                                </div>
-                                <p class="text-center">Revisión de <br>Originalidad</p>
+                               target="_blank" class="pk-btn-form-cta">
+                                <i class="fa fa-arrow-up-right-from-square"></i> Abrir Formulario de Turnitin
                             </a>
                         </div>
                     </div>
-                    <div class="col-lg-4 col-6 text-center">
-                        <div class="card">
+
+                    <!-- Hito 2: Revisión por Asesor / Dictaminante -->
+                    <div class="pk-milestone-item">
+                        <div class="pk-milestone-item__bullet">2</div>
+                        <div class="pk-milestone-header">
+                            <h4>Revisión de TI por Asesor / Dictaminantes</h4>
+                            <div class="pk-milestone-meta">
+                                <span class="pk-badge-fee"><i class="fa fa-receipt"></i> S/ 100.00</span>
+                                <span class="pk-badge-time"><i class="fa fa-tag"></i> Código: 15</span>
+                                <span class="pk-badge-time"><i class="fa fa-clock"></i> Hasta 30 días hábiles</span>
+                            </div>
+                        </div>
+                        <div class="pk-milestone-content">
+                            <p>
+                                Evaluación de fondo y coherencia teórico-metodológica realizada por el equipo de docentes dictaminantes designados.
+                            </p>
+                            <ul>
+                                <li>Trabajo de Investigación en formato WORD.</li>
+                                <li>Reporte de originalidad Turnitin adjunto (máx. 20% de similitud).</li>
+                                <li>Comprobante de pago ordinario (Concepto: <em>Revisión de Trabajo de Investigación | Código: 15</em>).</li>
+                            </ul>
+                            <div class="pk-milestone-result">
+                                <i class="fa fa-check-circle"></i>
+                                <span>Como resultado, recibirás en tu correo institucional el <strong>Informe de TI Apto</strong> para pasar a la sustentación pública.</span>
+                            </div>
                             <a href="https://docs.google.com/forms/d/e/1FAIpQLSfr-AXQ-NLEpO_2PGr8E8MVvHp8Cw8ook1hfqVB_WFlYpRw1Q/viewform"
-                                target="_blank">
-                                <div style="height: 100px">
-                                    <img height="100%"
-                                        src="{{ asset('img/min/Trabajo-de-investigacion-EESPukllasunchis.png') }}"
-                                        alt="">
-                                </div>
-                                <p class="text-center">Formulario de<br><small> Revisión de TI</small></p>
+                               target="_blank" class="pk-btn-form-cta">
+                                <i class="fa fa-arrow-up-right-from-square"></i> Abrir Formulario de Revisión de TI
                             </a>
                         </div>
                     </div>
-                    <div class="col-lg-4 col-6 text-center">
-                        <div class="card">
+
+                    <!-- Hito 3: Fecha de Exposición -->
+                    <div class="pk-milestone-item">
+                        <div class="pk-milestone-item__bullet">3</div>
+                        <div class="pk-milestone-header">
+                            <h4>Solicitud de Fecha de Exposición Pública de TI</h4>
+                            <div class="pk-milestone-meta">
+                                <span class="pk-badge-fee"><i class="fa fa-receipt"></i> S/ 50.00</span>
+                                <span class="pk-badge-time"><i class="fa fa-tag"></i> Código: 55</span>
+                            </div>
+                        </div>
+                        <div class="pk-milestone-content">
+                            <p>
+                                Fijación formal de la fecha y hora de la exposición pública de resultados ante el jurado calificador.
+                            </p>
+                            <ul>
+                                <li>Informe de TI Apto en formato PDF emitido por los dictaminantes.</li>
+                                <li>Diapositivas para la exposición en formato PPT o PDF.</li>
+                                <li>Comprobante de pago (Concepto: <em>Fecha de Exposición de TI | Código: 55</em>).</li>
+                            </ul>
                             <a href="https://docs.google.com/forms/d/e/1FAIpQLSfyasqxxCR72v7aSnmtpISOedxYQzqV11igfLnegIr_biXIew/viewform"
-                                target="_blank">
-                                <div style="height: 100px">
-                                    <img height="100%" src="{{ asset('img/min/Tesis-Pukllasunchis.png') }}"
-                                        alt="">
-                                </div>
-                                <p class="text-center">Solicitud de <br>Exposición</p>
+                               target="_blank" class="pk-btn-form-cta">
+                                <i class="fa fa-arrow-up-right-from-square"></i> Solicitar Fecha de Exposición
                             </a>
                         </div>
                     </div>
-                </div>
-                <div class="row justify-content-center align-items-center fichas mt-4">
-                    <div class="col-lg-12 mb-4">
-                    </div>
-                    <div class="col-lg-4 col-6 text-center">
-                        <div class="card">
+
+                    <!-- Hito 4: RD Aprobación TI -->
+                    <div class="pk-milestone-item">
+                        <div class="pk-milestone-item__bullet">4</div>
+                        <div class="pk-milestone-header">
+                            <h4>Resolución Directoral (R.D.) de Aprobación de TI</h4>
+                            <div class="pk-milestone-meta">
+                                <span class="pk-badge-fee"><i class="fa fa-receipt"></i> S/ 50.00</span>
+                                <span class="pk-badge-time"><i class="fa fa-tag"></i> Código: 17</span>
+                            </div>
+                        </div>
+                        <div class="pk-milestone-content">
+                            <p>
+                                Luego de sustentar y aprobar la exposición, se gestiona la emisión de la R.D. institucional que formaliza la aprobación del Trabajo de Investigación.
+                            </p>
+                            <ul>
+                                <li>Informe de TI Apto en formato PDF.</li>
+                                <li>Acta de Aprobación de Exposición de TI suscrita por el jurado.</li>
+                                <li>Comprobante de pago (Concepto: <em>RD de Aprobación de TI | Código: 17</em>).</li>
+                            </ul>
+                            <div class="pk-milestone-result">
+                                <i class="fa fa-check-circle"></i>
+                                <span>Recibirás la R.D. en tu correo institucional el día lunes de la semana siguiente a la presentación formal de la solicitud.</span>
+                            </div>
                             <a href="https://docs.google.com/forms/d/e/1FAIpQLSeGQ3XQAjWD2IPRUQnHIGfreOzNmgs-GceyKXgaGPsRg4EngQ/viewform"
-                                target="_blank">
-                                <div style="height: 100px">
-                                    <img height="100%" src="{{ asset('img/min/Abrobacion.png') }}"
-                                        alt="Ficha de Inscrición Pukllasunchis">
-                                </div>
-                                <p class="text-center">Formulario de <br> aprobación de TI</p>
+                               target="_blank" class="pk-btn-form-cta">
+                                <i class="fa fa-arrow-up-right-from-square"></i> Solicitar R.D. de Aprobación de TI
                             </a>
                         </div>
                     </div>
-                    <div class="col-lg-4 col-6 text-center">
-                        <div class="card">
-                            <a href="{{ asset('pdf/Autorizacion-Puklla.docx') }}" target="_blank">
-                                <div style="height: 100px">
-                                    <img height="100%" src="{{ asset('img/min/flujigrama.webp') }}" alt="">
-                                </div>
-                                <p class="text-center">Autorización de <br>depósito en RI</p>
+
+                    <!-- Hito 5: Armado de Expediente -->
+                    <div class="pk-milestone-item">
+                        <div class="pk-milestone-item__bullet">5</div>
+                        <div class="pk-milestone-header">
+                            <h4>Armado de Expediente de Graduación (Presencial)</h4>
+                            <div class="pk-milestone-meta">
+                                <span class="pk-badge-fee"><i class="fa fa-receipt"></i> S/ 500.00</span>
+                                <span class="pk-badge-time"><i class="fa fa-tag"></i> Código: 18</span>
+                            </div>
+                        </div>
+                        <div class="pk-milestone-content">
+                            <p>
+                                Presentación física y verificación integral de la documentación del estudiante en la Secretaría Académica de la institución.
+                            </p>
+                            <div class="pk-milestone-notice">
+                                <i class="fa fa-info-circle"></i>
+                                <span>Este trámite es de naturaleza presencial en ventanilla de Secretaría. Incluye la revisión de certificados oficiales, partida de nacimiento, constancia de no deudor y fotografías tamaño pasaporte.</span>
+                            </div>
+                            <a href="{{ route('tramites') }}#derecho" class="pk-btn-form-cta">
+                                <i class="fa fa-building-columns"></i> Ver Requisitos de Expediente Presencial
                             </a>
                         </div>
                     </div>
-                    <div class="col-lg-4 col-6 text-center">
-                        <div class="card">
+
+                    <!-- Hito 6: Repositorio Institucional -->
+                    <div class="pk-milestone-item">
+                        <div class="pk-milestone-item__bullet">6</div>
+                        <div class="pk-milestone-header">
+                            <h4>Registro en el Repositorio Institucional Digital</h4>
+                            <div class="pk-milestone-meta">
+                                <span class="pk-badge-fee"><i class="fa fa-receipt"></i> S/ 50.00</span>
+                                <span class="pk-badge-time"><i class="fa fa-tag"></i> Código: 19</span>
+                                <span class="pk-badge-time"><i class="fa fa-clock"></i> 30 días hábiles</span>
+                            </div>
+                        </div>
+                        <div class="pk-milestone-content">
+                            <p>
+                                Depósito oficial de la producción académica en el Repositorio Digital de Acceso Abierto de la EESPP Pukllasunchis.
+                            </p>
+                            <div class="row g-2 mb-3">
+                                <div class="col-sm-6">
+                                    <a href="{{ asset('pdf/Autorizacion-Puklla.docx') }}" target="_blank" class="btn btn-sm btn-outline-primary w-100 text-start py-2">
+                                        <i class="fa fa-download me-1"></i> Autorización de Repositorio (.docx)
+                                    </a>
+                                </div>
+                                <div class="col-sm-6">
+                                    <a href="{{ asset('pdf/Declaración-jurada-de-autenticidad.docx') }}" target="_blank" class="btn btn-sm btn-outline-primary w-100 text-start py-2">
+                                        <i class="fa fa-download me-1"></i> Declaración de Autenticidad (.docx)
+                                    </a>
+                                </div>
+                            </div>
+                            <ul>
+                                <li>Enlace o archivo de la versión definitiva del TI en WORD.</li>
+                                <li>Formato de Autorización de Depósito y Declaración Jurada firmados.</li>
+                                <li>Comprobante de pago (Concepto: <em>Registro de TI al repositorio | Código: 19</em>).</li>
+                            </ul>
+                            <div class="pk-milestone-result">
+                                <i class="fa fa-check-circle"></i>
+                                <span>Al no registrar observaciones, recibirás el identificador permanente (URL Handle) de registro oficial en el repositorio.</span>
+                            </div>
                             <a href="https://docs.google.com/forms/d/e/1FAIpQLScT8tet1JGXD9XT8psVS5XR15L4gdwZsVwGktL5Bbl4eSoRjQ/viewform"
-                                target="_blank">
-                                <div style="height: 100px">
-                                    <img height="100%"
-                                        src="{{ asset('img/min/Ficha-de-inscripcion-Pukllasunchis.png') }}"
-                                        alt="">
-                                </div>
-                                <p class="text-center">Registro de <br>Repositorio</p>
+                               target="_blank" class="pk-btn-form-cta">
+                                <i class="fa fa-arrow-up-right-from-square"></i> Registrar en Repositorio
                             </a>
                         </div>
                     </div>
-                </div>
-                <div class="row justify-content-center align-items-center fichas mt-4">
-                    <div class="col-lg-12 mb-4">
-                    </div>
-                    <div class="col-lg-4 col-6 text-center">
-                        <div class="card">
-                            <a href="{{ route('tramites') }}" target="_blank">
-                                <div style="height: 100px">
-                                    <img class="mt-3" height="80%" src="{{ asset('img/min/anulacion-rd.png') }}"
-                                        alt="Ficha de Inscrición Pukllasunchis">
-                                </div>
-                                <p class="text-center">Anulación de (RD) Plan de<br> trabajo de Investigfacion.</p>
-                            </a>
+
+                    <!-- Hito 7: Emisión de Diploma e Inscripción SUNEDU -->
+                    <div class="pk-milestone-item">
+                        <div class="pk-milestone-item__bullet">7</div>
+                        <div class="pk-milestone-header">
+                            <h4>Emisión de Diploma e Inscripción en SUNEDU</h4>
+                            <div class="pk-milestone-meta">
+                                <span class="pk-badge-fee"><i class="fa fa-receipt"></i> S/ 400.00 + S/ 200.00</span>
+                                <span class="pk-badge-time"><i class="fa fa-tag"></i> Códs: 22 y 20</span>
+                            </div>
                         </div>
-                    </div>
-                </div>
-                <div class="row mb-3 mt-4">
-                    <div class="col-lg-12">
-                        <h2 class="mt-3">Para pagos Ordinarios:</h2>
-                        <p>
-                            Los pagos ordinarios <strong>SOLO SE PUEDEN PAGAR EN VENTANILLAS</strong> de cualquier agencia a
-                            nivel nacional de CAJA CUSCO. <a class="text-primary" target="_blank"
-                                href="{{ asset('pdf/Conceptos-ordinarios-caja-cusco-2026-2.pdf') }}">Ver PDF
-                                para
-                                pagos<small><i class="fa fa-eye"></i></small></a>
-                        </p>
+                        <div class="pk-milestone-content">
+                            <p>
+                                Fase final que culmina con la entrega de tu diploma oficial y su reconocimiento ante la Superintendencia Nacional de Educación Superior Universitaria (SUNEDU).
+                            </p>
+
+                            <!-- Sub-etapa A: Emisión Diploma -->
+                            <div class="p-3 bg-light rounded-3 border mb-3">
+                                <h5 class="font-weight-bold text-dark mb-1">
+                                    <i class="fa fa-stamp text-primary me-2"></i> A. Emisión de Diploma de Grado de Bachiller
+                                </h5>
+                                <p class="text-muted mb-2" style="font-size: 14px;">
+                                    Pago ordinario de <strong>S/ 400.00</strong> (Concepto: <em>Emisión Diploma de Bachiller | Código: 22</em>). Plazo: 15 días hábiles. Se te citará presencialmente para la firma del libro de actas.
+                                </p>
+                                <a href="https://forms.gle/oVAax2L4GiaPGTWp9" target="_blank" class="btn btn-sm btn-outline-dark">
+                                    <i class="fa fa-file-signature me-1"></i> Formulario de Solicitud de Emisión de Diploma
+                                </a>
+                            </div>
+
+                            <!-- Sub-etapa B: Inscripción SUNEDU -->
+                            <div class="p-3 bg-light rounded-3 border">
+                                <h5 class="font-weight-bold text-dark mb-1">
+                                    <i class="fa fa-award text-success me-2"></i> B. Registro e Inscripción ante SUNEDU
+                                </h5>
+                                <p class="text-muted mb-2" style="font-size: 14px;">
+                                    Pago ordinario de <strong>S/ 200.00</strong> (Concepto: <em>Inscripción Bachiller a SUNEDU | Código: 20</em>). Duración: 30 días hábiles posteriores a la firma.
+                                </p>
+                                <a href="https://forms.gle/L7WHbS67NKYnWug69" target="_blank" class="btn btn-sm btn-outline-dark">
+                                    <i class="fa fa-globe me-1"></i> Formulario de Inscripción en SUNEDU (Correo institucional)
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <p class="generic-blockquote">
-                    <strong>OJO:</strong><br>
-                    - Cliente debe indicar <span class="text-danger font-weight-bold">PAGO ORDINARIO</span> de la
-                    <span class="text-danger font-weight-bold">ASOCIACIÓN PUKLLASUNCHIS - EESPP</span><br>
-                    - Cliente debe indicar el concepto a pagar (ejemplo: Aprobación de PTI, Cambio de tema, cambio de
-                    asesor, disolucion de grupo, extensión de plazo.<br>
-                    - El representante del servicio realizará la búsqueda y le indicará el monto del concepto ordinario para
-                    la validación del cliente.<br>
-                    - Finalmente el Cliente deberá dictar el código (DNI), el nombre y apellidos completos del
-                    alumno.
-                </p>
+                <!-- Caja Cusco Callout Card -->
+                <div class="pk-caja-cusco-card">
+                    <div class="pk-caja-cusco-header">
+                        <div class="pk-caja-icon">
+                            <i class="fa fa-university"></i>
+                        </div>
+                        <div>
+                            <h3>Pagos del Proceso de Bachillerato en Caja Cusco</h3>
+                            <p>Realiza tus abonos exclusivamente mediante pago ordinario en ventanilla.</p>
+                        </div>
+                    </div>
+
+                    <div class="pk-caja-alert">
+                        <i class="fa fa-triangle-exclamation text-warning"></i>
+                        <span>Recuerda que para adjuntar tus comprobantes a los formularios debes esperar tu <strong>boleta electrónica institucional</strong> (llega en 2 días hábiles), no el voucher impreso del banco.</span>
+                    </div>
+
+                    <div class="pk-caja-points">
+                        <div class="pk-caja-point-item">
+                            <div class="pk-point-num">1</div>
+                            <p>Indica en ventanilla: <strong>PAGO ORDINARIO</strong> de la <strong>ASOCIACIÓN PUKLLASUNCHIS - EESPP</strong>.</p>
+                        </div>
+                        <div class="pk-caja-point-item">
+                            <div class="pk-point-num">2</div>
+                            <p>Indica el concepto exacto y código (Turnitin: 16, Revisión TI: 15, Exposición: 55, RD: 17, Repositorio: 19).</p>
+                        </div>
+                        <div class="pk-caja-point-item">
+                            <div class="pk-point-num">3</div>
+                            <p>Dicta el número de <strong>DNI</strong> y los nombres y apellidos completos del estudiante.</p>
+                        </div>
+                        <div class="pk-caja-point-item">
+                            <div class="pk-point-num">4</div>
+                            <p>Guarda la boleta electrónica PDF emitida por la EESPP que llegará a tu correo institucional.</p>
+                        </div>
+                    </div>
+
+                    <div class="pk-caja-footer">
+                        <a href="javascript:void(0)" onclick="openPagoModal(event)" class="text-primary font-weight-bold" style="font-size: 14.5px;">
+                            <i class="fa fa-circle-info me-1"></i> Ver instructivo ilustrado de Caja Cusco
+                        </a>
+                        <a href="{{ asset('pdf/Conceptos-ordinarios-caja-cusco-2026-2.pdf') }}" target="_blank" class="pk-btn-caja-pdf">
+                            <i class="fa fa-file-pdf"></i> Ver PDF de conceptos de pago
+                        </a>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous">
-    </script>
 @endsection

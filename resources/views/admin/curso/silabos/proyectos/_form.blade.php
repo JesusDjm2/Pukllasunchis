@@ -31,7 +31,7 @@
                     class="form-control @error('producto') is-invalid @enderror" value="{{ old('producto', $proyecto->producto) }}"
                     placeholder="Ej.: Mapa parlante y tríptico descriptivo del territorio sagrado…">
                 @error('producto')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                <small>Lo que entregan los estudiantes. Se muestra en el sílabo{{ \App\Models\Proyecto::taqeActivo() ? " y en Taq'e" : '' }}.</small>
+                <small>Lo que entregan los estudiantes. Se muestra en el sílabo{{ \App\Models\Proyecto::taqeActivo() ? " y en Investigaciones" : '' }}.</small>
             </div>
         </div>
 
@@ -39,14 +39,14 @@
             <label for="descripcion">Descripción del proyecto *</label>
             <textarea id="descripcion" name="descripcion" rows="8" class="form-control @error('descripcion') is-invalid @enderror">{{ old('descripcion', $proyecto->exists ? $proyecto->descripcionHtml() : '') }}</textarea>
             @error('descripcion')<div class="invalid-feedback">{{ $message }}</div>@enderror
-            <small>Texto enriquecido: negritas, listas, enlaces. Se muestra en la Sección III de los sílabos{{ \App\Models\Proyecto::taqeActivo() ? " y a los estudiantes en Taq'e" : '' }}.</small>
+            <small>Texto enriquecido: negritas, listas, enlaces. Se muestra en la Sección III de los sílabos{{ \App\Models\Proyecto::taqeActivo() ? " y a los estudiantes en Investigaciones" : '' }}.</small>
         </div>
 
         <div class="pi-campo mb-0">
             <label>Ciclos que trabajan este proyecto</label>
             <div class="al-aviso is-info mb-2"><i class="fas fa-info-circle"></i>
                 <div>Cada ciclo tiene un solo Proyecto Integrador. Si eliges un ciclo que ya tiene otro, <strong>pasa a este</strong>.
-                    @if (\App\Models\Proyecto::taqeActivo()) Un alumno solo puede formar grupos Taq'e en el proyecto de su ciclo. @endif</div>
+                    @if (\App\Models\Proyecto::taqeActivo()) Un alumno solo puede formar grupos de Investigaciones en el proyecto de su ciclo. @endif</div>
             </div>
             @foreach ($ciclos as $programa => $lista)
                 <div class="pi-programa">
@@ -79,7 +79,7 @@
             <label for="pi-buscar-docente">Encargados y organizadores</label>
             <div class="al-aviso is-info mb-2"><i class="fas fa-user-tie"></i>
                 <div>Además de los docentes de cada curso, estos docentes acompañan y organizan el proyecto.
-                    @if (\App\Models\Proyecto::taqeActivo()) Ven todos sus grupos Taq'e, con evidencias y trabajos finales. @endif
+                    @if (\App\Models\Proyecto::taqeActivo()) Ven todos sus grupos de Investigaciones, con evidencias y trabajos finales. @endif
                     Deja en <strong>—</strong> a quien no participa.</div>
             </div>
             @error('docentes.*')<div class="al-aviso is-mal mb-2"><i class="fas fa-times-circle"></i><div>{{ $message }}</div></div>@enderror

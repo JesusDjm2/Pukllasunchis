@@ -1,5 +1,5 @@
 {{--
-    Estilos de Taq'e compartidos por todas sus vistas: viven en public/css/pk-taqe.css.
+    Estilos de Investigaciones compartidos por todas sus vistas: viven en public/css/pk-taqe.css.
     Se apoyan en el sistema .al-ui (alumnos/partials/ui): incluir ambos.
 --}}
 @once

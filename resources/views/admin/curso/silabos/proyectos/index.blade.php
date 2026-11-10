@@ -22,7 +22,7 @@
                 <div class="al-hero-texto">
                     <div class="al-kicker"><i class="fas fa-project-diagram"></i> Gestión académica</div>
                     <h1>Proyectos Integradores</h1>
-                    <p class="al-hero-sub">Cada ciclo trabaja un Proyecto Integrador. Es el que aparece en los sílabos{{ \App\Models\Proyecto::taqeActivo() ? " y el que define en qué proyecto forma sus grupos Taq'e cada alumno" : '' }}.</p>
+                    <p class="al-hero-sub">Cada ciclo trabaja un Proyecto Integrador. Es el que aparece en los sílabos{{ \App\Models\Proyecto::taqeActivo() ? " y el que define en qué proyecto forma sus grupos de Investigaciones cada alumno" : '' }}.</p>
                 </div>
                 <div class="al-hero-acciones">
                     <a href="{{ route('proyectos.create') }}" class="al-btn al-btn-oro"><i class="fas fa-plus"></i> Nuevo proyecto</a>
@@ -35,7 +35,7 @@
         @php $sinProyecto = \App\Models\Ciclo::whereNull('proyecto_id')->where('nombre', 'not like', 'Egresados%')->with('programa')->get(); @endphp
         @if ($sinProyecto->isNotEmpty())
             <div class="al-aviso is-warn"><i class="fas fa-exclamation-triangle"></i>
-                <div><strong>{{ $sinProyecto->count() }} ciclo(s) activo(s) sin Proyecto Integrador.</strong> {{ \App\Models\Proyecto::taqeActivo() ? "Sus alumnos no pueden formar grupos Taq'e y sus" : 'Sus' }} sílabos no muestran proyecto:
+                <div><strong>{{ $sinProyecto->count() }} ciclo(s) activo(s) sin Proyecto Integrador.</strong> {{ \App\Models\Proyecto::taqeActivo() ? "Sus alumnos no pueden formar grupos de Investigaciones y sus" : 'Sus' }} sílabos no muestran proyecto:
                     <div class="d-flex flex-wrap mt-1" style="gap:.3rem;">
                         @foreach ($sinProyecto as $c)
                             <span class="al-badge is-warn">{{ $c->programa->nombre ?? '—' }} · {{ $c->nombre }}</span>
@@ -62,7 +62,7 @@
                             <span class="al-badge is-warn"><i class="fas fa-exclamation-triangle"></i> Sin ciclos</span>
                         @endif
                         @if (\App\Models\Proyecto::taqeActivo())
-                            <span class="al-badge is-muted" title="Grupos Taq'e en este proyecto"><i class="fas fa-flask"></i> {{ $proyecto->taqe_grupos_count }}</span>
+                            <span class="al-badge is-muted" title="Grupos de Investigaciones en este proyecto"><i class="fas fa-flask"></i> {{ $proyecto->taqe_grupos_count }}</span>
                         @endif
                     </div>
                 </div>

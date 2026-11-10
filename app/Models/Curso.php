@@ -82,7 +82,7 @@ class Curso extends Model
         return $this->hasMany(Silabo::class, 'curso_id');
     }
 
-    /** Grupos Taq'e (Ferias de Investigación) formados dentro de este curso. */
+    /** Grupos de Investigaciones (Ferias de Investigación) formados dentro de este curso. */
     public function taqeGrupos()
     {
         return $this->hasMany(TaqeGrupo::class, 'curso_id');

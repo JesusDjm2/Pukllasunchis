@@ -1,489 +1,391 @@
 @extends('layouts.home')
+
 @section('metas')
-    @php $titulo = 'Trámites Tesis'; @endphp
-    <title>{{ $titulo }} - EESPP Pukllasunchis </title>
+    @php $titulo = 'Tesis - Licenciatura en Educación'; @endphp
+    <title>{{ $titulo }} - EESPP Pukllasunchis</title>
     <meta name="description"
-        content="La admisión en la Escuela de Educación Superior Privada Pukllasunchis se realiza una vez al año, a través de un proceso de evaluación.">
-    <meta name="keywords" content="{{ $titulo }}, Escuela Pukllasuchis, EESP PUkllasunchis">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+        content="Ruta oficial y requisitos para el desarrollo de la Tesis Profesional y la obtención del Título de Licenciado en Educación en la EESPP Pukllasunchis.">
+    <meta name="keywords" content="{{ $titulo }}, Tesis Pukllasunchis, Titulo Licenciado Educacion, Sustentacion Tesis Cusco">
+    <link rel="stylesheet" href="{{ asset('css/pk-tramites-titulacion.css') }}">
 @endsection
+
 @section('contenido')
-    <style>
-        .modal {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: white;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-            padding: 20px;
-            z-index: 2000;
-            width: 80%;
-            margin: 1em auto;
-            height: 80vh;
-            overflow-y: auto;
-        }
-
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            /* Fondo oscuro */
-            z-index: 1999;
-            /* Un poco menor que el modal */
-        }
-
-        .modal-header {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 15px;
-        }
-
-        .modal-body {
-            font-size: 14px;
-            margin-bottom: 15px;
-        }
-
-        .modal-body li {
-            margin-bottom: 12px;
-        }
-
-        .modal-body .span {
-            background: #cd9244;
-            border-radius: 50%;
-            padding: 3px 10px;
-            color: #fff;
-            margin-right: 5px;
-            position: relative;
-            /* Necesario para ::after */
-        }
-
-        .modal-body .span::after {
-            content: '';
-            display: block;
-            width: 2px;
-            height: 20px;
-            background: #cd9244;
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        .modal-body ul li:last-child .span::after {
-            display: none;
-        }
-
-        @media (max-width: 768px) {
-
-            .modal-body .span::after {
-                display: none;
-            }
-        }
-
-
-        .modal-close {
-            background-color: #38496b;
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            display: inline-block;
-            margin-top: 10px;
-        }
-    </style>
     <div class="bradcam_area tramites bradcam_overlay">
         <div class="container">
             <div class="row">
                 <div class="col-lg-12">
                     <div class="bradcam_text">
                         <h3 class="tituloAnimado">{{ $titulo }}</h3>
-                        <p class="slideUp"><a href="{{ route('index') }}">Inicio /</a>Trámites / {{ $titulo }}</p>
+                        <p class="slideUp">
+                            <a href="{{ route('index') }}">Inicio /</a>
+                            <a href="{{ route('tramiteTitulacion') }}">Trámites /</a>
+                            {{ $titulo }}
+                        </p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="container pt-5 pb-5">
+
+    <div class="container pt-5 pb-5 pk-titula-wrapper">
         <div class="row">
             @include('tramites.titulacion.tramites-lateral')
+
             <div class="col-lg-9">
-                <h2 class="mt-4 scroolOk linea-debajo" id="tesis">Tesis</h2>
+                <!-- Título Oficial con Estilo del Sitio -->
+                <div class="pk-badge-wrapper">
+                    <span class="pk-badge-subtitulo">
+                        <i class="fa fa-award"></i> Fase 3 · Título Profesional de Licenciado en Educación
+                    </span>
+                </div>
+                <h2 class="linea-debajo">Tesis de Licenciatura</h2>
                 <p>
-                    La tesis es el documento culminante que llevas adelante como bachiller para alcanzar tu grado de
-                    Licenciado. En ella demuestras la aplicación avanzada del Trabajo de Investigación: planteas un problema
-                    educativo relevante (preferiblemente surgido de tu práctica docente) y lo analizas con rigor académico,
-                    siguiendo la estructura establecida en nuestra Guía de Investigación. <br><br>
-                    Tu tesis no solo valida tus competencias profesionales, sino que refleja tu compromiso con la mejora
-                    educativa en escenarios reales. La sustentación de este trabajo es tan importante como el documento
-                    mismo, ya que completa el proceso formal de titulación.
+                    La tesis es el documento culminante que llevas adelante como bachiller para alcanzar tu grado de Licenciado. En ella demuestras la aplicación avanzada del Trabajo de Investigación: planteas un problema educativo relevante (preferiblemente surgido de tu práctica docente) y lo analizas con rigor académico, siguiendo la estructura establecida en nuestra Guía de Investigación. La sustentación de este trabajo es tan importante como el documento mismo, ya que completa el proceso formal de titulación.
                 </p>
-                <div class="row justify-content-center align-items-center fichas mt-4">
-                    <div class="col-lg-12 mb-4">
-                    </div>
-                    <div class="col-lg-4 mb-3 col-6 text-center">
-                        <div class="card">
-                            <a href="{{ asset('pdf/FormatoTesis.docx') }}" target="_blank">
-                                <div style="height: 100px">
-                                    <img height="100%"
-                                        src="{{ asset('img/min/Trabajo-de-investigacion-EESPukllasunchis.png') }}"
-                                        alt="Ficha de Inscrición Pukllasunchis">
-                                </div>
-                                <p class="text-center">Formato de Tesis</p>
-                                <p class="text-center"><i class="fa fa-arrow-circle-right fa-lg"></i></p>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 mb-3 col-6 text-center">
-                        <div class="card">
-                            <a href="{{ asset('pdf/CaratulaTesis-2025.docx') }}" target="_blank">
-                                <div style="height: 100px">
-                                    <img height="100%" src="{{ asset('img/min/caratula.png') }}" alt="">
-                                </div>
-                                <p class="text-center">Caratula Tesis (FID)</p>
-                                <p class="text-center"><i class="fa fa-arrow-circle-right fa-lg"></i></p>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 mb-3 col-6 text-center">
-                        <div class="card">
-                            <a href="{{ asset('pdf/CaratulaTesis-2025-PPD.docx') }}" target="_blank">
-                                <div style="height: 100px">
-                                    <img height="100%" src="{{ asset('img/min/caratula.png') }}" alt="">
-                                </div>
-                                <p class="text-center">Caratula Tesis (PPD)</p>
-                                <p class="text-center"><i class="fa fa-arrow-circle-right fa-lg"></i></p>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 mb-3 col-6 text-center">
-                        <div class="card">
-                            <a href="{{ asset('pdf/Guia-de-Elaboracion-de-Tesis.pdf') }}" target="_blank">
-                                <div style="height: 100px">
-                                    <img height="100%" src="{{ asset('img/min/Tesis-Pukllasunchis.png') }}"
-                                        alt="">
-                                </div>
-                                <p class="text-center">Guía de Elaboración<br> de Tesis</p>
-                                <p class="text-center"><i class="fa fa-arrow-circle-right fa-lg"></i></p>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 mb-3 col-6 text-center">
-                        <div class="card">
-                            <a href="{{ asset('pdf/Guia-de-Investigacion-2025.pdf') }}" target="_blank">
-                                <div style="height: 100px">
-                                    <img height="100%" src="{{ asset('img/min/Bachillerato-Pukllasunchis.png') }}"
-                                        alt="">
-                                </div>
-                                <p class="text-center">Guía de <br>Redacción</p>
-                                <p class="text-center"><i class="fa fa-arrow-circle-right fa-lg"></i></p>
-                            </a>
-                        </div>
-                    </div>
-                </div><br>
 
-                <h3>Requisitos para la obtención del Título de Licenciado: </h3>
-                <p>Una vez terminada la Tesis, para la obtención del Título de Licenciado se siguen estos pasos:
+                <!-- Deck de Formatos y Guías Oficiales -->
+                <h3 class="mt-4">Formatos y Carátulas Oficiales de Tesis</h3>
+                <div class="pk-downloads-deck">
+                    <!-- Formato Tesis -->
+                    <a href="{{ asset('pdf/FormatoTesis.docx') }}" target="_blank" class="pk-download-card">
+                        <div class="pk-download-card__icon-wrapper">
+                            <div class="pk-download-card__icon word">
+                                <i class="fa fa-file-word"></i>
+                            </div>
+                            <span class="pk-download-card__tag">Word (.docx)</span>
+                        </div>
+                        <h5>Formato Oficial de Tesis</h5>
+                        <p>Estructura normalizada con preliminares, cuerpo y anexos.</p>
+                        <span class="pk-download-card__btn">
+                            <i class="fa fa-download"></i> Descargar Formato
+                        </span>
+                    </a>
+
+                    <!-- Carátula FID -->
+                    <a href="{{ asset('pdf/CaratulaTesis-2025.docx') }}" target="_blank" class="pk-download-card">
+                        <div class="pk-download-card__icon-wrapper">
+                            <div class="pk-download-card__icon word">
+                                <i class="fa fa-file-word"></i>
+                            </div>
+                            <span class="pk-download-card__tag">Carátula FID</span>
+                        </div>
+                        <h5>Carátula Tesis (5 años)</h5>
+                        <p>Para egresados de Formación Inicial Docente Regular.</p>
+                        <span class="pk-download-card__btn">
+                            <i class="fa fa-download"></i> Descargar Carátula
+                        </span>
+                    </a>
+
+                    <!-- Carátula PPD -->
+                    <a href="{{ asset('pdf/CaratulaTesis-2025-PPD.docx') }}" target="_blank" class="pk-download-card">
+                        <div class="pk-download-card__icon-wrapper">
+                            <div class="pk-download-card__icon word">
+                                <i class="fa fa-file-word"></i>
+                            </div>
+                            <span class="pk-download-card__tag">Carátula PPD</span>
+                        </div>
+                        <h5>Carátula Tesis (1 año)</h5>
+                        <p>Para egresados de Profesionalización Docente.</p>
+                        <span class="pk-download-card__btn">
+                            <i class="fa fa-download"></i> Descargar Carátula
+                        </span>
+                    </a>
+
+                    <!-- Guía de Tesis -->
+                    <a href="{{ asset('pdf/Guia-de-Elaboracion-de-Tesis.pdf') }}" target="_blank" class="pk-download-card">
+                        <div class="pk-download-card__icon-wrapper">
+                            <div class="pk-download-card__icon pdf">
+                                <i class="fa fa-file-pdf"></i>
+                            </div>
+                            <span class="pk-download-card__tag">PDF Guía</span>
+                        </div>
+                        <h5>Guía de Elaboración de Tesis</h5>
+                        <p>Lineamientos de investigación, sustento empírico y jurado.</p>
+                        <span class="pk-download-card__btn">
+                            <i class="fa fa-download"></i> Descargar Guía
+                        </span>
+                    </a>
+
+                    <!-- Guía de Redacción -->
+                    <a href="{{ asset('pdf/Guia-de-Investigacion-2025.pdf') }}" target="_blank" class="pk-download-card">
+                        <div class="pk-download-card__icon-wrapper">
+                            <div class="pk-download-card__icon pdf">
+                                <i class="fa fa-file-pdf"></i>
+                            </div>
+                            <span class="pk-download-card__tag">PDF 2025-2026</span>
+                        </div>
+                        <h5>Guía de Redacción Académica</h5>
+                        <p>Normas APA 7ma edición y directivas de edición institucional.</p>
+                        <span class="pk-download-card__btn">
+                            <i class="fa fa-download"></i> Descargar Guía
+                        </span>
+                    </a>
+                </div>
+
+                <!-- Hitos Paso a Paso Tesis -->
+                <h3 class="mt-4 linea-debajo">Requisitos para la Obtención del Título de Licenciado:</h3>
+                <p>
+                    Una vez terminada la Tesis, para la obtención del Título de Licenciado se siguen estos pasos:
                 </p>
-                <ul class="listasDecimal">
-                    <li> Solicitar revisión de originalidad (Turnitin):
-                        <ul>
-                            <li>Hacer el pago correspondiente por derecho de revisión de originalidad (Turnitin)
-                                <strong>como pago ordinario</strong> en las
-                                oficinas de Caja Cusco. <small class="text-info">(Concepto: REVISION TURNITIN DE TESIS /
-                                    Codigo: 37 / Costo: s/25.00)</small>
-                            </li>
-                            <li>Llenar <a
-                                    href="https://docs.google.com/forms/d/e/1FAIpQLSc1Bam9QlzjkT66NYeKMxS-xyoU4MchYtYiGCMmtvKVbHiCjg/viewform"
-                                    target="_blank" class="text-primary"> FORMULARIO DE REVISIÓN DE ORIGINALIDAD.</a></li>
-                            <li>Adjuntar:
-                                <ul>
-                                    <li>Versión final de la Tesis en formato WORD <br>
-                                        &nbsp;&nbsp;
-                                        NOTA: Si tu tesis es continuidad de un TI con el que obtuviste el grado de
-                                        bachiller, para la revisión preliminar de originalidad <strong>deberás excluir
-                                            únicamente la
-                                            sección "Base Teórica".</strong> La versión oficial de la tesis deberá
-                                        presentarse íntegra
-                                        en las etapas posteriores, conforme al artículo 94 del Reglamento de Investigación.
-                                    </li>
-                                    <li>Comprobante de pago por derecho de revisión de originalidad</li>
-                                    <li>Este pago tiene el tiempo de duración de una semana.</li>
-                                </ul>
-                            </li>
 
-                            <li>Como resultado de este trámite, recibirás en tu correo institucional el Reporte de
-                                originalidad (Turnitin), en un plazo no mayor a 10 días hábiles. Con el pago que usted
-                                realiza puede hacer 1 revisión de originalidad en un plazo no mayor a 5 días hábiles.</li>
-                            <small style="color: #000; font-style: italic;">Nota: el porcentaje máximo para aprobar el
-                                reporte de originalidad debe ser 20%, de lo contrario, debe corregir el documento y
-                                solicitar nuevamente la revisión. </small>
-                        </ul>
-                    </li>
-                    <li>Solicitar la revisión de la Tesis (Dictaminantes):
-                        <ul>
-                            <li> Hacer el pago de S/100 soles por derecho de revisión de Tesis en las oficinas de
-                                Caja Cusco. <small class="text-info">(Concepto: REVISIÓN DE TESIS /
-                                    Codigo: 32 / Costo: s/100.00)</small></li>
-                            <li>Llenar <a
-                                    href="https://docs.google.com/forms/d/e/1FAIpQLSfU1nSpAs5WnyxP6rcmsQ8DIZlwetYSLyWRTqJ1srFtVCo5HQ/viewform"
-                                    target="_blank" class="text-primary"> FORMULARIO DE REVISIÓN DE TESIS.</a></li>
-                            <li>Adjuntar:
-                                <ul>
-                                    <li>Tesis en formato WORD</li>
-                                    <li>Reporte de originalidad Turnitin (con máximo 20% de similitud en Turnitin)</li>
-                                    <li>Comprobante de pago por derecho de revisión de Tesis</li>
-                                </ul>
-                            </li>
-                            <li>Como resultado de este trámite, recibirás en tu correo institucional el Informe de Tesis
-                                apta, en un plazo no mayor a 60 días hábiles.</li>
-                        </ul>
-                    </li>
-                    <li>Solicitar sustentación de Tesis:
-                        <ul>
-                            <li> Hacer el pago por derecho de RD de sustentación de Tesis en las oficinas de
-                                Caja Cusco. <small class="text-info">(Concepto: Fecha de sustentación de Tesis /
-                                    Codigo: 21 / Costo: s/100.00)</small></li>
-                            <li>Llenar <a
-                                    href="https://docs.google.com/forms/d/e/1FAIpQLSf4DRlwjTV-vK5FVud94tUxTHi8h61brejjn9bzxBpv7ouqpQ/viewform"
-                                    target="_blank" class="text-primary"> FORMULARIO DE ASIGNACIÓN DE FECHA DE
-                                    SUSTENTACIÓN.</a></li>
-                            <li>Adjuntar:
-                                <ul>
-                                    <li>Informe de Tesis apta en formato WORD</li>
-                                    <li>Reporte de originalidad Turnitin (con m�ximo 20% de similitud en Turnitin)</li>
-                                    <li>Versi�n final de la Tesis en formato WORD </li>
-                                    <li>Diapositivas para sustentación de Tesis en formato PPT</li>
-                                    <li>Constancia de inscripción en SUNEDU del diploma de Bachiller en formato PDF
-                                    </li>
-                                    <li>Comprobante de pago por derecho de sustentación de Tesis</li>
-                                </ul>
-                            </li>
-                        </ul>
-                    </li>
-                    <li> Solicitar Resolución Directoral (RD) de aprobación de sustentación
-                        <ul>
-                            <li>Solicitar Resolución Directoral (RD) de aprobación de sustentación.
-                                <small class="text-info">(Concepto: RD de aprobación de Tesis /
-                                    Codigo: 33 / Costo: s/50.00)</small>
-                            </li>
-                            <li>Hacer el pago de S/50 soles por derecho de RD de aprobación de sustentación de Tesis en las
-                                oficinas de Caja Cusco.</li>
-                            <li>Llenar el formulario de <a
-                                    href="https://docs.google.com/forms/d/e/1FAIpQLSc8k02uEAuRt9OdrGpj1Xe6OIBdXXCZ2j7pNToBxhdktq_smQ/viewform"
-                                    target="_blank" class="text-primary">Resolución de aprobación de Sustentación de
-                                    Tesis</a>
-                            </li>
-                            <li> Acta de sustentación</li>
-                            <li>Informe de apto</li>
-                            <li>Comprobante de pago</li>
-                            <li>Tras completar este trámite, recibirás en tu correo institucional la RD de aprobación de la
-                                Sustentación de Tesis el lunes de la semana siguiente a la presentación de tu solicitud.
-                            </li>
-                        </ul>
-                    </li>
-
-                    </li>
-                    <li>Solicitar registro de Tesis en repositorio institucional:
-                        <ul>
-                            <li>Hacer el pago por derecho de registro de Tesis en repositorio institucional en
-                                las oficinas de Caja Cusco. <small class="text-info">(Concepto: Registro de Tesis en
-                                    repositorio /
-                                    Codigo: 34 / Costo: s/50.00)</small></li>
-                            <li>Descargar, completar y firmar la <a href="{{ asset('pdf/Autorizacion-Puklla.docx') }}"
-                                    target="_blank" class="text-primary"> AUTORIZACIÓN DE REGISTRO EN
-                                    REPOSITORIO.</a></li>
-                            <li>Descargar, completar y firmar la <a
-                                    href="{{ asset('pdf/Declaración-jurada-de-autenticidad.docx') }}" target="_blank"
-                                    class="text-primary"> Declaración jurada de autenticidad</a></li>
-                            <li>Llenar <a
-                                    href="https://docs.google.com/forms/d/e/1FAIpQLScT8tet1JGXD9XT8psVS5XR15L4gdwZsVwGktL5Bbl4eSoRjQ/viewform"
-                                    target="_blank" class="text-primary">FORMULARIO DE REGISTRO EN REPOSITORIO.</a> </li>
-                            <li>Adjuntar:
-                                <ul>
-                                    <li>Enlace a la versión final del Tesis en formato WORD</li>
-                                    <li>Formato de autorización de depósito en repositorio en formato WORD</li>
-                                    <li>Declaración Jurada de autenticidad en formato WORD</li>
-                                    <li>Comprobante de pago por derecho de registro en repositorio institucional</li>
-                                </ul>
-                            </li>
-                            <li>Si es que el Tesis no tiene ninguna observación, recibirás en tu correo institucional el URL
-                                de
-                                registro del Tesis en el repositorio institucional</li>
-                            <li>
-                                <span class="text-info">
-                                    👉 Este trámite tiene un lapso de duración de 30 días hábiles.
-                                </span>
-                            </li>
-                        </ul>
-                    </li>
-                    <li>Solicitar emisión de diploma de Licenciado previo pago de s/400.00 en las oficinas de <span
-                            class="text-danger font-weight-bold">Caja Cusco:</span>
-                        <ul>
-                            <li>Este trámite solo se realiza de manera virtual. </li>
-                            <li> <a href="https://forms.gle/oVAax2L4GiaPGTWp9" class="text-primary">FORMULARIO DE
-                                SOLICITUD DE EMISIÓN DE DIPLOMA</a></li>
-                            <li>Adjuntar la boleta de pago correspondiente.</li>
-                            <span class="text-dark" style="font-weight: 400">Una vez ingresada la solicitud, se le informará oportunamente la fecha en la que deberá
-                                acudir de forma presencial para la firma del acta correspondiente.</span>
-                                <small class="text-info" style="font-weight: 400">(Concepto: Emisión título de Licenciado /
-                                Codigo: 35 / Costo: s/400.00)</small>
-                            <br>
-                            <span class="text-info" style="font-weight: 400">
-                                👉 Este trámite tiene un lapso de duración de 15 días hábiles.
-                            </span>
-                        </ul>
-                    </li>
-                    <li>Solicitar registro e inscripción de Diploma de Licenciado previo pago de s/200.00 en las oficinas de
-                        <span class="text-danger font-weight-bold">Caja Cusco:</span>
-                        <p>
-                            Este trámite permite que el Título de Licenciado sea reconocido oficialmente en SUNEDU. Se deben
-                            entregar los siguientes documentos:
-                        </p>
-                        <ul>
-                            <li>Pagar en Caja Cusco con el sigiente concepto: <small class="text-info">(Concepto:
-                                    Inscripción título a SUNEDU /
-                                    Codigo: 36 / Costo: s/200.00)</small></li>
-                        </ul>
-
-
-                        <ul class="listasCuerpo">
-                            <li>FUT debidamente llenado. Puedes solicitarlo en la oficina de secretaría o descargarlo de la
-                                página
-                                web. <small><a class="text-primary" target="_blank"
-                                        href="https://forms.gle/L7WHbS67NKYnWug69">Formulario <i
-                                            class="fa fa-external-link"></i> (Solo permite llenar con correo
-                                        institucional)</a></small></li>
-
-                            <li>Comprobante de pago por Inscripción de Título de Licenciado.</li>
-                            <li>
-                                <span class="text-info">
-                                    👉 Este proceso concluye aproximadamente 30 días hábiles después de haber realizado el
-                                    pago correspondiente y haber completado el proceso.
-                                </span>
-                            </li>
-                        </ul>
-                    </li>
-                </ul>
-                <h3 class="linea-debajo">Documentos para el proceso de obtención del Título de Licenciado </h3>
-                <div class="row justify-content-center align-items-center fichas mt-4">
-                    <div class="col-lg-12 mb-4">
-                    </div>
-                    <div class="col-lg-4 col-6 text-center">
-                        <div class="card">
+                <div class="pk-milestones-timeline">
+                    <!-- Hito 1: Turnitin Tesis -->
+                    <div class="pk-milestone-item">
+                        <div class="pk-milestone-item__bullet">1</div>
+                        <div class="pk-milestone-header">
+                            <h4>Revisión de Originalidad (Turnitin de Tesis)</h4>
+                            <div class="pk-milestone-meta">
+                                <span class="pk-badge-fee"><i class="fa fa-receipt"></i> S/ 25.00</span>
+                                <span class="pk-badge-time"><i class="fa fa-tag"></i> Código: 37</span>
+                                <span class="pk-badge-time"><i class="fa fa-clock"></i> Hasta 10 días hábiles</span>
+                            </div>
+                        </div>
+                        <div class="pk-milestone-content">
+                            <p>
+                                Evaluación de similitud y originalidad académica de la versión culminada de la tesis profesional.
+                            </p>
+                            <ul>
+                                <li>Versión final de la Tesis en formato <strong>WORD (.docx)</strong>.</li>
+                                <li>Comprobante de pago (Concepto: <em>REVISION TURNITIN DE TESIS | Código: 37</em>).</li>
+                            </ul>
+                            <div class="pk-milestone-notice">
+                                <i class="fa fa-circle-exclamation"></i>
+                                <span><strong>Regla de Exclusión (Art. 94):</strong> Si tu tesis es continuidad del TI con el que obtuviste tu bachiller, para la revisión preliminar de originalidad <strong>deberás excluir únicamente la sección "Base Teórica"</strong>. La versión oficial definitiva deberá presentarse íntegra en las etapas posteriores.</span>
+                            </div>
+                            <div class="pk-milestone-result">
+                                <i class="fa fa-check-circle"></i>
+                                <span>Porcentaje máximo permitido: <strong>20%</strong>. Recibirás tu reporte oficial por correo en un plazo no mayor a 10 días hábiles.</span>
+                            </div>
                             <a href="https://docs.google.com/forms/d/e/1FAIpQLSc1Bam9QlzjkT66NYeKMxS-xyoU4MchYtYiGCMmtvKVbHiCjg/viewform"
-                                target="_blank">
-                                <div style="height: 100px">
-                                    <img height="100%" src="{{ asset('img/min/revision.png') }}"
-                                        alt="Ficha de Inscrición Pukllasunchis">
-                                </div>
-                                <p class="text-center">Revisión de <br>Originalidad</p>
+                               target="_blank" class="pk-btn-form-cta">
+                                <i class="fa fa-arrow-up-right-from-square"></i> Formulario de Turnitin Tesis
                             </a>
                         </div>
                     </div>
-                    <div class="col-lg-4 col-6 text-center">
-                        <div class="card">
-                            <a href="https://docs.google.com/forms/d/e/1FAIpQLSfU1nSpAs5WnyxP6rcmsQ8DIZlwetYSLyWRTqJ1srFtVCo5HQ/viewform"
-                                target="_blank">
-                                <div style="height: 100px">
-                                    <img height="100%"
-                                        src="{{ asset('img/min/Trabajo-de-investigacion-EESPukllasunchis.png') }}"
-                                        alt="">
-                                </div>
-                                <p class="text-center">Solicitud de Dictaminantes<br><small> Revisión de tesis</small></p>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-6 text-center">
-                        <div class="card">
-                            <a href="https://docs.google.com/forms/d/e/1FAIpQLSf4DRlwjTV-vK5FVud94tUxTHi8h61brejjn9bzxBpv7ouqpQ/viewform"
-                                target="_blank">
-                                <div style="height: 100px">
-                                    <img height="100%" src="{{ asset('img/min/Tesis-Pukllasunchis.png') }}"
-                                        alt="">
-                                </div>
-                                <p class="text-center">Solicitud de <br>Sustentación</p>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                <div class="row justify-content-center align-items-center fichas mt-4">
-                    <div class="col-lg-12 mb-4">
-                    </div>
-                    <div class="col-lg-4 col-6 text-center">
-                        <div class="card">
-                            <a href="https://docs.google.com/forms/d/e/1FAIpQLSc8k02uEAuRt9OdrGpj1Xe6OIBdXXCZ2j7pNToBxhdktq_smQ/viewform"
-                                target="_blank">
-                                <div style="height: 100px">
-                                    <img height="100%" src="{{ asset('img/min/Abrobacion.png') }}"
-                                        alt="Ficha de Inscrición Pukllasunchis">
-                                </div>
-                                <p class="text-center">RD Aprobación <br> de Tesis</p>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-6 text-center">
-                        <div class="card">
-                            <a href="{{ asset('pdf/Autorizacion-Puklla.docx') }}" target="_blank">
-                                <div style="height: 100px">
-                                    <img height="100%" src="{{ asset('img/min/flujigrama.webp') }}" alt="">
-                                </div>
-                                <p class="text-center">Autorización de <br>Repositorio</p>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-6 text-center">
-                        <div class="card">
-                            <a href="https://docs.google.com/forms/d/e/1FAIpQLScT8tet1JGXD9XT8psVS5XR15L4gdwZsVwGktL5Bbl4eSoRjQ/viewform"
-                                target="_blank">
-                                <div style="height: 100px">
-                                    <img height="100%"
-                                        src="{{ asset('img/min/Ficha-de-inscripcion-Pukllasunchis.png') }}"
-                                        alt="">
-                                </div>
-                                <p class="text-center">Registro de <br>Repositorio</p>
-                            </a>
-                        </div>
-                    </div>
-                </div><br>
 
-                <div class="row mb-3 mt-4">
-                    <div class="col-lg-12">
-                        <h3>Pagos para la Obtención del Título de Licenciado </h3>
-                        <p>La EESPP Pukllasunchis ha establecido el siguiente medio de pago: </p>
-                        <p>
-                            Los pagos ordinarios <strong>SOLO SE PUEDEN PAGAR EN VENTANILLAS</strong> de cualquier agencia a
-                            nivel nacional de CAJA CUSCO. <a class="text-primary" target="_blank"
-                                href="{{ asset('pdf/Conceptos-ordinarios-caja-cusco-2026-2.pdf') }}">Ver PDF
-                                para
-                                pagos<small><i class="fa fa-eye"></i></small></a>
-                        </p>
+                    <!-- Hito 2: Dictaminantes -->
+                    <div class="pk-milestone-item">
+                        <div class="pk-milestone-item__bullet">2</div>
+                        <div class="pk-milestone-header">
+                            <h4>Revisión de Tesis por Docentes Dictaminantes</h4>
+                            <div class="pk-milestone-meta">
+                                <span class="pk-badge-fee"><i class="fa fa-receipt"></i> S/ 100.00</span>
+                                <span class="pk-badge-time"><i class="fa fa-tag"></i> Código: 32</span>
+                                <span class="pk-badge-time"><i class="fa fa-clock"></i> Hasta 60 días hábiles</span>
+                            </div>
+                        </div>
+                        <div class="pk-milestone-content">
+                            <p>
+                                Dictamen de contenido y rigurosidad científica a cargo de la comisión de docentes evaluadores.
+                            </p>
+                            <ul>
+                                <li>Tesis completa en formato WORD.</li>
+                                <li>Reporte de originalidad Turnitin adjunto (≤ 20% de similitud).</li>
+                                <li>Comprobante de pago (Concepto: <em>REVISIÓN DE TESIS | Código: 32</em>).</li>
+                            </ul>
+                            <div class="pk-milestone-result">
+                                <i class="fa fa-check-circle"></i>
+                                <span>Como resultado, recibirás en tu correo institucional el <strong>Informe de Tesis Apta</strong> para solicitar fecha de sustentación.</span>
+                            </div>
+                            <a href="https://docs.google.com/forms/d/e/1FAIpQLSfU1nSpAs5WnyxP6rcmsQ8DIZlwetYSLyWRTqJ1srFtVCo5HQ/viewform"
+                               target="_blank" class="pk-btn-form-cta">
+                                <i class="fa fa-arrow-up-right-from-square"></i> Solicitar Revisión de Dictaminantes
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Hito 3: Sustentación -->
+                    <div class="pk-milestone-item">
+                        <div class="pk-milestone-item__bullet">3</div>
+                        <div class="pk-milestone-header">
+                            <h4>Asignación de Fecha y Hora de Sustentación</h4>
+                            <div class="pk-milestone-meta">
+                                <span class="pk-badge-fee"><i class="fa fa-receipt"></i> S/ 100.00</span>
+                                <span class="pk-badge-time"><i class="fa fa-tag"></i> Código: 21</span>
+                            </div>
+                        </div>
+                        <div class="pk-milestone-content">
+                            <p>
+                                Fijación formal de la fecha del acto público de defensa de tesis ante el jurado calificador designado.
+                            </p>
+                            <ul>
+                                <li>Informe de Tesis Apta en formato WORD o PDF.</li>
+                                <li>Reporte Turnitin aprobado (máximo 20% de similitud).</li>
+                                <li>Versión final de la Tesis en WORD y Diapositivas en PPT.</li>
+                                <li><strong>Constancia de inscripción en SUNEDU del diploma de Bachiller en formato PDF.</strong></li>
+                                <li>Comprobante de pago (Concepto: <em>Fecha de sustentación de Tesis | Código: 21</em>).</li>
+                            </ul>
+                            <a href="https://docs.google.com/forms/d/e/1FAIpQLSf4DRlwjTV-vK5FVud94tUxTHi8h61brejjn9bzxBpv7ouqpQ/viewform"
+                               target="_blank" class="pk-btn-form-cta">
+                                <i class="fa fa-arrow-up-right-from-square"></i> Solicitar Fecha de Sustentación
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Hito 4: RD Aprobación Sustentación -->
+                    <div class="pk-milestone-item">
+                        <div class="pk-milestone-item__bullet">4</div>
+                        <div class="pk-milestone-header">
+                            <h4>Resolución Directoral (R.D.) de Aprobación de Sustentación</h4>
+                            <div class="pk-milestone-meta">
+                                <span class="pk-badge-fee"><i class="fa fa-receipt"></i> S/ 50.00</span>
+                                <span class="pk-badge-time"><i class="fa fa-tag"></i> Código: 33</span>
+                            </div>
+                        </div>
+                        <div class="pk-milestone-content">
+                            <p>
+                                Formalización legal e institucional de la aprobación de la defensa de la tesis profesional.
+                            </p>
+                            <ul>
+                                <li>Acta oficial de sustentación firmada por los miembros del jurado.</li>
+                                <li>Informe de tesis apta.</li>
+                                <li>Comprobante de pago (Concepto: <em>RD de aprobación de Tesis | Código: 33</em>).</li>
+                            </ul>
+                            <div class="pk-milestone-result">
+                                <i class="fa fa-check-circle"></i>
+                                <span>Recibirás tu Resolución Directoral en el correo institucional el día lunes de la semana siguiente a la presentación de la solicitud.</span>
+                            </div>
+                            <a href="https://docs.google.com/forms/d/e/1FAIpQLSc8k02uEAuRt9OdrGpj1Xe6OIBdXXCZ2j7pNToBxhdktq_smQ/viewform"
+                               target="_blank" class="pk-btn-form-cta">
+                                <i class="fa fa-arrow-up-right-from-square"></i> Solicitar R.D. de Sustentación
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Hito 5: Repositorio Digital -->
+                    <div class="pk-milestone-item">
+                        <div class="pk-milestone-item__bullet">5</div>
+                        <div class="pk-milestone-header">
+                            <h4>Depósito de Tesis en Repositorio Institucional</h4>
+                            <div class="pk-milestone-meta">
+                                <span class="pk-badge-fee"><i class="fa fa-receipt"></i> S/ 50.00</span>
+                                <span class="pk-badge-time"><i class="fa fa-tag"></i> Código: 34</span>
+                                <span class="pk-badge-time"><i class="fa fa-clock"></i> 30 días hábiles</span>
+                            </div>
+                        </div>
+                        <div class="pk-milestone-content">
+                            <p>
+                                Indexación y preservación digital de la tesis en el Repositorio de la Escuela y la Red Nacional ALICIA-CONCYTEC.
+                            </p>
+                            <div class="row g-2 mb-3">
+                                <div class="col-sm-6">
+                                    <a href="{{ asset('pdf/Autorizacion-Puklla.docx') }}" target="_blank" class="btn btn-sm btn-outline-primary w-100 text-start py-2">
+                                        <i class="fa fa-download me-1"></i> Autorización de Repositorio (.docx)
+                                    </a>
+                                </div>
+                                <div class="col-sm-6">
+                                    <a href="{{ asset('pdf/Declaración-jurada-de-autenticidad.docx') }}" target="_blank" class="btn btn-sm btn-outline-primary w-100 text-start py-2">
+                                        <i class="fa fa-download me-1"></i> Declaración de Autenticidad (.docx)
+                                    </a>
+                                </div>
+                            </div>
+                            <ul>
+                                <li>Versión final corregida de la tesis en WORD.</li>
+                                <li>Autorización de depósito y Declaración Jurada firmadas.</li>
+                                <li>Comprobante de pago (Concepto: <em>Registro de Tesis en repositorio | Código: 34</em>).</li>
+                            </ul>
+                            <div class="pk-milestone-result">
+                                <i class="fa fa-check-circle"></i>
+                                <span>Al no registrar observaciones metodológicas o formales, recibirás el enlace permanente (URL Handle) de registro institucional.</span>
+                            </div>
+                            <a href="https://docs.google.com/forms/d/e/1FAIpQLScT8tet1JGXD9XT8psVS5XR15L4gdwZsVwGktL5Bbl4eSoRjQ/viewform"
+                               target="_blank" class="pk-btn-form-cta">
+                                <i class="fa fa-arrow-up-right-from-square"></i> Registrar Tesis en Repositorio
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Hito 6 y 7: Emisión e Inscripción SUNEDU -->
+                    <div class="pk-milestone-item">
+                        <div class="pk-milestone-item__bullet">6</div>
+                        <div class="pk-milestone-header">
+                            <h4>Emisión de Título de Licenciado e Inscripción ante SUNEDU</h4>
+                            <div class="pk-milestone-meta">
+                                <span class="pk-badge-fee"><i class="fa fa-receipt"></i> S/ 400.00 + S/ 200.00</span>
+                                <span class="pk-badge-time"><i class="fa fa-tag"></i> Códs: 35 y 36</span>
+                            </div>
+                        </div>
+                        <div class="pk-milestone-content">
+                            <p>
+                                Procedimiento final de emisión del diploma oficial de Licenciado en Educación y su reconocimiento en el Registro Nacional de SUNEDU.
+                            </p>
+
+                            <!-- Sub A: Emisión -->
+                            <div class="p-3 bg-light rounded-3 border mb-3">
+                                <h5 class="font-weight-bold text-dark mb-1">
+                                    <i class="fa fa-stamp text-primary me-2"></i> A. Solicitud de Emisión de Diploma de Licenciado
+                                </h5>
+                                <p class="text-muted mb-2" style="font-size: 14px;">
+                                    Pago ordinario de <strong>S/ 400.00</strong> (Concepto: <em>Emisión título de Licenciado | Código: 35</em>). Plazo: 15 días hábiles. Se te notificará la fecha para acudir a la firma presencial del libro de títulos.
+                                </p>
+                                <a href="https://forms.gle/oVAax2L4GiaPGTWp9" target="_blank" class="btn btn-sm btn-outline-dark">
+                                    <i class="fa fa-file-signature me-1"></i> Formulario de Emisión de Diploma
+                                </a>
+                            </div>
+
+                            <!-- Sub B: SUNEDU -->
+                            <div class="p-3 bg-light rounded-3 border">
+                                <h5 class="font-weight-bold text-dark mb-1">
+                                    <i class="fa fa-globe text-success me-2"></i> B. Registro e Inscripción de Título en SUNEDU
+                                </h5>
+                                <p class="text-muted mb-2" style="font-size: 14px;">
+                                    Pago ordinario de <strong>S/ 200.00</strong> (Concepto: <em>Inscripción título a SUNEDU | Código: 36</em>). Culmina en aprox. 30 días hábiles tras la remisión del expediente por Secretaría.
+                                </p>
+                                <a href="https://forms.gle/L7WHbS67NKYnWug69" target="_blank" class="btn btn-sm btn-outline-dark">
+                                    <i class="fa fa-award me-1"></i> Formulario de Inscripción en SUNEDU (Correo institucional)
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <p class="generic-blockquote">
-                    <strong>OJO:</strong><br>
-                    - Cliente debe indicar <span class="text-danger font-weight-bold">PAGO ORDINARIO</span> de la
-                    <span class="text-danger font-weight-bold">ASOCIACIÓN PUKLLASUNCHIS - EESPP</span><br>
-                    - Cliente debe indicar el concepto a pagar (ejemplo: Aprobación de PTI, Cambio de tema, cambio de
-                    asesor, disolucion de grupo, extensión de plazo.<br>
-                    - El representante del servicio realizará la búsqueda y le indicará el monto del concepto ordinario para
-                    la validación del cliente.<br>
-                    - Finalmente el Cliente deberá dictar el código (DNI), el nombre y apellidos completos del
-                    alumno.
-                </p>
+
+                <!-- Caja Cusco Callout Card -->
+                <div class="pk-caja-cusco-card">
+                    <div class="pk-caja-cusco-header">
+                        <div class="pk-caja-icon">
+                            <i class="fa fa-university"></i>
+                        </div>
+                        <div>
+                            <h3>Pagos del Proceso de Licenciatura en Caja Cusco</h3>
+                            <p>Realiza tus abonos exclusivamente mediante pago ordinario en ventanilla.</p>
+                        </div>
+                    </div>
+
+                    <div class="pk-caja-alert">
+                        <i class="fa fa-triangle-exclamation text-warning"></i>
+                        <span>Recuerda que para adjuntar tus comprobantes a los formularios debes esperar tu <strong>boleta electrónica institucional</strong> (llega en 2 días hábiles), no el voucher impreso del banco.</span>
+                    </div>
+
+                    <div class="pk-caja-points">
+                        <div class="pk-caja-point-item">
+                            <div class="pk-point-num">1</div>
+                            <p>Indica en ventanilla: <strong>PAGO ORDINARIO</strong> de la <strong>ASOCIACIÓN PUKLLASUNCHIS - EESPP</strong>.</p>
+                        </div>
+                        <div class="pk-caja-point-item">
+                            <div class="pk-point-num">2</div>
+                            <p>Indica el concepto exacto y código (Turnitin Tesis: 37, Dictamen: 32, Sustentación: 21, RD: 33, Repositorio: 34).</p>
+                        </div>
+                        <div class="pk-caja-point-item">
+                            <div class="pk-point-num">3</div>
+                            <p>Dicta el número de <strong>DNI</strong> y los nombres y apellidos completos del estudiante graduando.</p>
+                        </div>
+                        <div class="pk-caja-point-item">
+                            <div class="pk-point-num">4</div>
+                            <p>Guarda la boleta electrónica PDF oficial emitida por la EESPP que llegará a tu correo institucional.</p>
+                        </div>
+                    </div>
+
+                    <div class="pk-caja-footer">
+                        <a href="javascript:void(0)" onclick="openPagoModal(event)" class="text-primary font-weight-bold" style="font-size: 14.5px;">
+                            <i class="fa fa-circle-info me-1"></i> Ver instructivo ilustrado de Caja Cusco
+                        </a>
+                        <a href="{{ asset('pdf/Conceptos-ordinarios-caja-cusco-2026-2.pdf') }}" target="_blank" class="pk-btn-caja-pdf">
+                            <i class="fa fa-file-pdf"></i> Ver PDF de conceptos de pago
+                        </a>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
-    <!-- Pop-up Modal -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous">
-    </script>
 @endsection

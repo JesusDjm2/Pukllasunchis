@@ -418,6 +418,138 @@ body.dim-mode .adm-home-btn:focus {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   WIDGET DE FECHA Y HORA INSTITUCIONAL (CUSCO, PERÚ - GMT-5) — Topbar
+   Ubicado al lado del botón "Página principal"
+   ═══════════════════════════════════════════════════════════════════════════ */
+.topbar-clock-widget {
+    display: inline-flex;
+    align-items: center;
+    gap: .48rem;
+    padding: .3rem .78rem .3rem .68rem;
+    border-radius: 999px;
+    background: rgba(248, 250, 252, .88);
+    border: 1.5px solid rgba(203, 213, 225, .8);
+    box-shadow: 0 1px 3px rgba(15, 23, 42, .04), inset 0 1px 0 rgba(255, 255, 255, .7);
+    line-height: 1.2;
+    transition: all .2s ease;
+    user-select: none;
+}
+.topbar-clock-widget:hover {
+    border-color: rgba(148, 163, 184, .9);
+    background: #ffffff;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, .08);
+}
+.topbar-clock-indicator {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.topbar-clock-icon {
+    font-size: .82rem;
+    color: #64748b;
+}
+.topbar-clock-pulse {
+    position: absolute;
+    bottom: -1px;
+    right: -2px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #10b981;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, .7);
+    animation: topbarClockPulse 2s infinite;
+}
+@keyframes topbarClockPulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, .7);
+    }
+    70% {
+        box-shadow: 0 0 0 5px rgba(16, 185, 129, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    }
+}
+.topbar-clock-body {
+    display: inline-flex;
+    align-items: center;
+    gap: .34rem;
+}
+.topbar-clock-date {
+    font-size: .78rem;
+    font-weight: 600;
+    color: #475569;
+    letter-spacing: -.01em;
+}
+.topbar-clock-sep {
+    font-size: .8rem;
+    font-weight: 800;
+    color: #cbd5e1;
+}
+.topbar-clock-time {
+    font-size: .82rem;
+    font-weight: 700;
+    color: #1e293b;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: .02em;
+}
+.topbar-clock-zone {
+    font-size: .63rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    padding: .1rem .42rem;
+    border-radius: 4px;
+    background: rgba(51, 68, 90, .08);
+    color: #33445a;
+    margin-left: .15rem;
+}
+
+/* ── Modo Oscuro ── */
+body.dark-mode .topbar-clock-widget {
+    background: rgba(30, 41, 59, .75);
+    border-color: rgba(71, 85, 105, .6);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .3), inset 0 1px 0 rgba(255, 255, 255, .05);
+}
+body.dark-mode .topbar-clock-widget:hover {
+    background: rgba(30, 41, 59, .95);
+    border-color: rgba(148, 163, 184, .6);
+}
+body.dark-mode .topbar-clock-icon {
+    color: #94a3b8;
+}
+body.dark-mode .topbar-clock-date {
+    color: #94a3b8;
+}
+body.dark-mode .topbar-clock-sep {
+    color: #475569;
+}
+body.dark-mode .topbar-clock-time {
+    color: #f1f5f9;
+}
+body.dark-mode .topbar-clock-zone {
+    background: rgba(242, 200, 142, .15);
+    color: #f2c88e;
+}
+
+/* ── Modo Tenue (Dim Mode) ── */
+body.dim-mode .topbar-clock-widget {
+    background: rgba(30, 41, 59, .7);
+    border-color: rgba(71, 85, 105, .5);
+}
+body.dim-mode .topbar-clock-date {
+    color: #94a3b8;
+}
+body.dim-mode .topbar-clock-time {
+    color: #e2e8f0;
+}
+body.dim-mode .topbar-clock-zone {
+    background: rgba(242, 200, 142, .12);
+    color: #f2c88e;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    RESPONSIVE
    ═══════════════════════════════════════════════════════════════════════════ */
 

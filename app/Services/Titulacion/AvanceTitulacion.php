@@ -4,6 +4,7 @@ namespace App\Services\Titulacion;
 
 use App\Models\Titulacion\SeguimientoTitulacion;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 
 /**
  * Avance real del proceso de titulación, calculado SOLO a partir de los datos
@@ -89,6 +90,13 @@ class AvanceTitulacion
         $rdTesis = $rd('Tesis');
         $actaExpo = $acta('expo');
         $actaTesis = $acta('tesis');
+        $cartaEmitida = $seguimiento->cartasAceptacion->firstWhere('estado', 'emitida');
+        // Quien ya entró al TI antes de que existiera el trámite (asesor del TI, enlace, exposición, RD…)
+        // no queda trabado por la carta: se da por cumplida.
+        $yaEnTi = filled($tesis?->link_ti) || $tesis?->fecha_exposicion || $actaExpo || filled($tesis?->rd_ti) || $rdTi
+            || filled($tesis?->url_repositorio_ti) || $tesis?->fecha_bachiller_sunedu || filled($tesis?->bachiller_sunedu)
+            || $tesis?->fecha_sustentacion || $actaTesis || filled($tesis?->rd_tesis) || $rdTesis || filled($pti?->link_iti)
+            || $seguimiento->participantes->contains(fn ($p) => $p->etapa === 'ti');
 
         $hitos = [
             $this->hito('pti_inscrito', 'pti', 'PTI inscrito',
@@ -100,6 +108,13 @@ class AvanceTitulacion
                 filled($pti?->rd_pti) || $rdPti,
                 $rdPti?->fecha, $pti?->rd_pti ?: $rdPti?->numero_rd,
                 'Obtener la RD que aprueba el PTI.'),
+            // Carta de aceptación de la IE (desde el 05/11): la solicita el estudiante (Recibida) e Investigación
+            // envía la respuesta de aprobación. Cierra la etapa PTI: sin ella no se entra al TI · Bachiller.
+            $this->hito('pti_carta', 'pti', 'Carta de aceptación de la Institución Educativa',
+                $cartaEmitida || $yaEnTi,
+                $cartaEmitida?->atendido_en,
+                $cartaEmitida ? Str::limit($cartaEmitida->institucion, 60) : ($yaEnTi ? 'Antes del trámite en el sistema' : null),
+                'Solicitar la carta de aceptación de la Institución Educativa donde harás tu investigación.'),
             // Enlace del TI que el estudiante comparte y el asesor aprueba (desde el 29/10). Un
             // enlace sin estado de un TI que ya tiene su RD se da por aprobado (registros anteriores).
             $this->hito('ti_enlace', 'ti', 'Enlace del TI aprobado por el asesor',
@@ -149,7 +164,7 @@ class AvanceTitulacion
         ];
 
         // Enlace al PDF de la RD (titulacion_resoluciones.archivo), si se tiene.
-        $enlaces = ['pti_aprobado' => $rdPti?->archivo, 'ti_aprobado' => $rdTi?->archivo, 'ti_repositorio' => $tesis?->url_repositorio_ti, 'tesis_aprobada' => $rdTesis?->archivo];
+        $enlaces = ['pti_carta' => $cartaEmitida?->carta ? route('mi-titulacion.carta.archivo', [$cartaEmitida->id, 'carta']) : null, 'pti_aprobado' => $rdPti?->archivo, 'ti_aprobado' => $rdTi?->archivo, 'ti_repositorio' => $tesis?->url_repositorio_ti, 'tesis_aprobada' => $rdTesis?->archivo];
 
         $this->hitos = collect($hitos)
             ->map(fn ($h) => $h + ['enlace' => filled($enlaces[$h['clave']] ?? null) ? $enlaces[$h['clave']] : null])
@@ -193,7 +208,7 @@ class AvanceTitulacion
      */
     public function etapas(): array
     {
-        $cierre = ['pti' => 'pti_aprobado', 'ti' => 'bachiller', 'tesis' => 'licenciado'];
+        $cierre = ['pti' => 'pti_carta', 'ti' => 'bachiller', 'tesis' => 'licenciado'];
         $resultado = [];
         $anteriorCompleta = true;
 

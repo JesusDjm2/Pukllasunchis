@@ -21,7 +21,7 @@ class TaqeInvestigadorController extends Controller
 
     /**
      * Seguimiento institucional: el Investigador ve y filtra TODOS los
-     * grupos Taq'e, sin poder editarlos (solo el propio grupo gestiona sus
+     * grupos de Investigaciones, sin poder editarlos (solo el propio grupo gestiona sus
      * integrantes/trabajos) — pero sí puede ver y descargar sus archivos (uno
      * por uno o en ZIP) y marcar como atendidas las solicitudes de ayuda
      * (ver marcarAtendida()).
@@ -92,7 +92,7 @@ class TaqeInvestigadorController extends Controller
             try {
                 $solicitud->alumno->user->notify(new TaqeSolicitudAtendida($solicitud));
             } catch (\Throwable $e) {
-                Log::warning("Notificación de solicitud atendida Taq'e a alumno {$solicitud->alumno_id}: ".$e->getMessage());
+                Log::warning("Notificación de solicitud atendida de Investigaciones a alumno {$solicitud->alumno_id}: ".$e->getMessage());
             }
         }
 

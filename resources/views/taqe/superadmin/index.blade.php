@@ -1,6 +1,6 @@
 @extends('layouts.superadmin')
 
-@section('titulo', "Taq'e — Gestión")
+@section('titulo', "Investigaciones — Gestión")
 
 @section('contenido')
     {{-- Mismo diseño que la vista del alumno (memoria: feedback_diseno_unificado). --}}
@@ -12,7 +12,7 @@
         <section class="al-hero">
             <div class="al-hero-fila">
                 <div class="al-hero-texto">
-                    <div class="al-kicker"><i class="fas fa-flask"></i> Taq'e · Gestión interna</div>
+                    <div class="al-kicker"><i class="fas fa-flask"></i> Investigaciones · Gestión interna</div>
                     <h1>Grupos de investigación</h1>
                     <p class="al-hero-sub">Supervisa y gestiona cualquier grupo de la institución: agrega o retira integrantes, revisa y descarga sus archivos, o elimina un grupo completo.</p>
                 </div>
@@ -43,7 +43,7 @@
                 'superAdmin' => true,
             ])
         @empty
-            <div class="al-card"><div class="al-vacio"><i class="fas fa-flask"></i>No hay grupos Taq'e con estos filtros.</div></div>
+            <div class="al-card"><div class="al-vacio"><i class="fas fa-flask"></i>No hay grupos de Investigaciones con estos filtros.</div></div>
         @endforelse
     </div>
 

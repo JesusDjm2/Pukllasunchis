@@ -42,6 +42,61 @@
     .rdg-numero span { font-size:.82rem; color:var(--rdg-muted); white-space:nowrap; }
     .rdg-acciones { position:sticky; bottom:0; display:flex; flex-wrap:wrap; gap:.5rem; align-items:center; padding:.8rem 1.15rem; background:var(--rdg-card); border:1px solid var(--rdg-border); border-radius:14px; box-shadow:0 -6px 20px rgba(15,23,42,.08); }
 
+    /* RD anteriores (pantalla de generar RD): pestaña flotante a media altura + panel lateral (drawer). */
+    .rdp-pestana, .rdp-panel { --rdp-card:#fff; --rdp-soft:#f8fafc; --rdp-border:#e5e7eb; --rdp-text:#1e293b; --rdp-muted:#64748b; --rdp-acento:#4e73df; }
+    .dark-mode .rdp-pestana, .dark-mode .rdp-panel { --rdp-card:#161b22; --rdp-soft:rgba(255,255,255,.04); --rdp-border:rgba(255,255,255,.1); --rdp-text:#e6edf3; --rdp-muted:#8b949e; --rdp-acento:#818cf8; }
+    .dim-mode .rdp-pestana, .dim-mode .rdp-panel { --rdp-card:var(--lm-superficie); --rdp-soft:rgba(255,255,255,.04); --rdp-border:var(--lm-borde); --rdp-text:var(--lm-texto); --rdp-muted:var(--lm-suave); --rdp-acento:var(--lm-lavanda-claro, #a5b4fc); }
+
+    .rdp-pestana { position:fixed; right:0; top:50vh; transform:translateY(-50%); z-index:1040;
+        display:flex; flex-direction:column; align-items:center; gap:.55rem; padding:.9rem .5rem .75rem;
+        border:0; border-radius:14px 0 0 14px; cursor:pointer; color:#fff;
+        background:linear-gradient(180deg, #5a7ff0 0%, #4e73df 55%, #3b5bc4 100%);
+        box-shadow:-6px 8px 24px rgba(30,58,138,.28), inset 1px 0 0 rgba(255,255,255,.18);
+        transition:padding-right .18s ease, box-shadow .18s ease, opacity .2s; }
+    .rdp-pestana:hover, .rdp-pestana:focus-visible { padding-right:.85rem; box-shadow:-10px 10px 30px rgba(30,58,138,.38), inset 1px 0 0 rgba(255,255,255,.22); outline:none; }
+    .rdp-pestana:focus-visible { box-shadow:0 0 0 3px rgba(78,115,223,.35), -10px 10px 30px rgba(30,58,138,.38); }
+    .rdp-pestana i { font-size:.95rem; }
+    .rdp-pestana-txt { writing-mode:vertical-rl; transform:rotate(180deg); font-size:.72rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+    .rdp-pestana-n { min-width:22px; height:22px; padding:0 .3rem; border-radius:999px; background:#fff; color:#3b5bc4; font-size:.7rem; font-weight:800; display:inline-flex; align-items:center; justify-content:center; }
+    body.rdp-abierto .rdp-pestana { opacity:0; pointer-events:none; }
+
+    .rdp-fondo { position:fixed; inset:0; z-index:1060; background:rgba(15,23,42,.45); opacity:0; transition:opacity .25s ease; }
+    .rdp-fondo.is-open { opacity:1; }
+    .rdp-panel { position:fixed; top:0; right:0; bottom:0; z-index:1070; width:min(480px, 94vw);
+        display:flex; flex-direction:column; background:var(--rdp-card); color:var(--rdp-text);
+        box-shadow:-20px 0 50px rgba(15,23,42,.25); transform:translateX(100%); visibility:hidden;
+        transition:transform .25s ease, width .25s ease, visibility 0s linear .25s; }
+    .rdp-panel.is-open { transform:none; visibility:visible; transition:transform .25s ease, width .25s ease; }
+    .rdp-panel.is-visor { width:min(1000px, 94vw); }
+    .rdp-head { display:flex; align-items:center; gap:.5rem; padding:.8rem 1rem; border-bottom:1px solid var(--rdp-border); }
+    .rdp-head-txt { flex:1; min-width:0; }
+    .rdp-head h5 { margin:0; font-size:.98rem; font-weight:800; color:var(--rdp-text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .rdp-head small { display:block; font-size:.72rem; color:var(--rdp-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .rdp-icono { width:32px; height:32px; flex-shrink:0; border:0; border-radius:8px; background:transparent; color:var(--rdp-muted); display:inline-flex; align-items:center; justify-content:center; cursor:pointer; text-decoration:none; }
+    .rdp-icono:hover { background:var(--rdp-soft); color:var(--rdp-text); text-decoration:none; }
+    .rdp-icono[hidden] { display:none; }
+    .rdp-cuerpo { flex:1; overflow-y:auto; padding:.75rem; display:flex; flex-direction:column; gap:.55rem; }
+    .rdp-item { display:flex; align-items:flex-start; gap:.7rem; padding:.7rem .75rem; border:1px solid var(--rdp-border); border-radius:12px; background:var(--rdp-soft); }
+    .rdp-item-ico { width:34px; height:34px; flex-shrink:0; border-radius:9px; display:flex; align-items:center; justify-content:center; background:var(--rdp-card); border:1px solid var(--rdp-border); }
+    .rdp-item-txt { flex:1; min-width:0; font-size:.84rem; line-height:1.3; }
+    .rdp-item-txt strong { display:block; }
+    .rdp-item-num { display:inline-block; max-width:100%; margin:.2rem 0 .15rem; padding:.05rem .45rem; border-radius:6px; background:rgba(78,115,223,.1); color:var(--rdp-acento); font-size:.72rem; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; vertical-align:top; }
+    .rdp-item-txt small { display:block; color:var(--rdp-muted); font-size:.72rem; }
+    .rdp-item-accion { flex-shrink:0; align-self:center; }
+    .rdp-item-accion .btn { white-space:nowrap; }
+    .rdp-sin { font-size:.72rem; color:var(--rdp-muted); font-style:italic; }
+    .rdp-vacio { margin:auto; text-align:center; color:var(--rdp-muted); font-size:.85rem; padding:2rem 1rem; }
+    .rdp-vacio i { display:block; font-size:1.8rem; margin-bottom:.5rem; opacity:.5; }
+    .rdp-visor { flex:1; position:relative; display:flex; background:#525659; }
+    .rdp-visor[hidden] { display:none; }
+    .rdp-visor iframe { flex:1; width:100%; border:0; }
+    .rdp-carga { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#e5e7eb; font-size:.85rem; }
+    .rdp-carga[hidden] { display:none; }
+    .rdp-pie { display:flex; flex-wrap:wrap; gap:.3rem 1rem; padding:.55rem 1rem; border-top:1px solid var(--rdp-border); font-size:.7rem; color:var(--rdp-muted); }
+    .rdp-pie[hidden] { display:none; }
+    @media (max-width: 575.98px) { .rdp-panel, .rdp-panel.is-visor { width:100vw; } }
+    @media (prefers-reduced-motion: reduce) { .rdp-panel, .rdp-fondo, .rdp-pestana { transition:none; } }
+
     /* Calendario de fechas (flatpickr): campo con icono, botón «Hoy» y temas oscuro / tenue. */
     .rdg .rdg-fecha-visible { cursor:pointer; padding-right:2rem; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 448 512' fill='%2364748b'%3E%3Cpath d='M152 64h144V24a24 24 0 0 1 48 0v40h40a64 64 0 0 1 64 64v320a64 64 0 0 1-64 64H64a64 64 0 0 1-64-64V128a64 64 0 0 1 64-64h40V24a24 24 0 0 1 48 0zM48 192v256a16 16 0 0 0 16 16h320a16 16 0 0 0 16-16V192z'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right .6rem center; background-size:.85rem; }
     .flatpickr-calendar { font-family:inherit; }

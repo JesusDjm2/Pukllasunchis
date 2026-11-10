@@ -1,5 +1,5 @@
 {{--
-    Formulario para agregar un ARCHIVO o un ENLACE a un grupo Taq'e, como evidencia o directo al trabajo
+    Formulario para agregar un ARCHIVO o un ENLACE a un grupo de Investigaciones, como evidencia o directo al trabajo
     final. El selector Archivo/Enlace cambia los campos solo con CSS (:has), sin JavaScript; el servidor
     valida cuál corresponde. Espera: $grupo, $destino ('evidencia'|'final').
 --}}
