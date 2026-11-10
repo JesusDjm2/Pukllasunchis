@@ -653,6 +653,43 @@
     color: #ffffff !important;
 }
 
+.pk-btn-download-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13.5px;
+    font-weight: 500;
+    text-decoration: none !important;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+.pk-btn-download-action.word {
+    background: #eff6ff;
+    color: #1d4ed8 !important;
+    border-color: #bfdbfe;
+}
+.pk-btn-download-action.word:hover {
+    background: #2563eb;
+    color: #ffffff !important;
+    border-color: #2563eb;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+.pk-btn-download-action.pdf {
+    background: #fef2f2;
+    color: #b91c1c !important;
+    border-color: #fecaca;
+}
+.pk-btn-download-action.pdf:hover {
+    background: #dc2626;
+    color: #ffffff !important;
+    border-color: #dc2626;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+}
+
 /* ═════════════════════════════════════════════════════════
    6. CAJA CUSCO CALLOUT CARD
    ═════════════════════════════════════════════════════════ */
