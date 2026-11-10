@@ -35,12 +35,12 @@
                 <!-- Título Oficial con Estilo del Sitio -->
                 <div class="pk-badge-wrapper">
                     <span class="pk-badge-subtitulo">
-                        <i class="fa fa-file-signature"></i> Fase 1 · VIII Ciclo de Formación Docente
+                        <i class="fa fa-file-signature"></i> Fase 1 · Plan de Trabajo de Investigación
                     </span>
                 </div>
                 <h2 class="linea-debajo">Plan de Trabajo de Investigación (PTI)</h2>
                 <p>
-                    Propuesta formal de investigación que formulan los estudiantes al culminar el VIII ciclo sobre una problemática educativa identificada en la práctica profesional, priorizando contextos andinos y amazónicos. Es el primer paso indispensable para iniciar la titulación y obtener asesor/a institucional.
+                    Propuesta formal de investigación que formulan los estudiantes sobre una problemática educativa identificada en la práctica profesional, priorizando contextos andinos y amazónicos. Es el primer paso indispensable para iniciar la titulación y obtener asesor/a institucional.
                 </p>
 
                 <!-- Deck de Formatos y Guías Oficiales -->

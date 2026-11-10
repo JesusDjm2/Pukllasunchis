@@ -55,7 +55,7 @@
                         <div class="pk-step-box">
                             <div class="pk-step-box-header">
                                 <div class="pk-step-num">1</div>
-                                <span class="pk-step-tag">Fase 1 · VIII Ciclo</span>
+                                <span class="pk-step-tag">Fase 1 · Plan de Trabajo</span>
                             </div>
                             <h4>Plan de Trabajo (PTI)</h4>
                             <p>
@@ -70,7 +70,7 @@
                         <div class="pk-step-box active">
                             <div class="pk-step-box-header">
                                 <div class="pk-step-num">2</div>
-                                <span class="pk-step-tag">Fase 2 · IX y X Ciclo</span>
+                                <span class="pk-step-tag">Fase 2 · Grado de Bachiller</span>
                             </div>
                             <h4>Trabajo de Inv. (TI)</h4>
                             <p>

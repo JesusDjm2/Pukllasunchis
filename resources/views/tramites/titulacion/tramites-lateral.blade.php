@@ -55,9 +55,13 @@
         <div class="pk-sidebar-support">
             <h6><i class="fa fa-headset text-warning"></i> Mesa de Ayuda</h6>
             <p>¿Dudas con tu expediente o estado de trámite?</p>
-            <p class="mb-1"><strong>Secretaría Académica</strong></p>
-            <a href="mailto:mesadepartes@eesppukllasunchis.edu.pe" class="pk-support-email">
-                <i class="fa fa-envelope me-1"></i> mesadepartes@eesppukllasunchis.edu.pe
+            <p class="mb-1"><strong>Área de Investigación</strong></p>
+            <a href="https://wa.me/51972577170" target="_blank" rel="noopener">
+                <i class="fa-brands fa-whatsapp me-1"></i> +51 972 577 170
+            </a>
+            <p class="mb-1 mt-2"><strong>Secretaría Académica</strong></p>
+            <a href="https://wa.me/51969572566" target="_blank" rel="noopener">
+                <i class="fa-brands fa-whatsapp me-1"></i> +51 969 572 566
             </a>
             <p class="mt-2 text-muted mb-0" style="font-size: 12px;">
                 <i class="fa fa-clock me-1"></i> Lun a Vie: 8:00 am - 5:00 pm

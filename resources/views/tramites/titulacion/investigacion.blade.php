@@ -40,7 +40,7 @@
                 </div>
                 <h2 class="linea-debajo">Trabajo de Investigación (TI)</h2>
                 <p>
-                    Tiene relación con los principales ejes planteados en el plan de estudios, el graduando debe demostrar que domina los aspectos desarrollados en el currículo. El TI supone el desarrollo de aptitudes y habilidades relacionadas con el perfil de egreso y el planteamiento de un tema preciso a analizar relacionado con situaciones detectadas en la realidad educativa. El desarrollo del TI incluye la revisión de la literatura actualizada, una metodología de análisis de la información recolectada y una exposición de resultados. Conduce a la obtención del Grado de Bachiller en Educación. El TI se elabora de forma progresiva desde el IX ciclo y se debe cumplir con la estructura solicitada por la escuela en su guía de investigación.
+                    Tiene relación con los principales ejes planteados en el plan de estudios, el graduando debe demostrar que domina los aspectos desarrollados en el currículo. El TI supone el desarrollo de aptitudes y habilidades relacionadas con el perfil de egreso y el planteamiento de un tema preciso a analizar relacionado con situaciones detectadas en la realidad educativa. El desarrollo del TI incluye la revisión de la literatura actualizada, una metodología de análisis de la información recolectada y una exposición de resultados. Conduce a la obtención del Grado de Bachiller en Educación. El TI se elabora de forma progresiva y se debe cumplir con la estructura solicitada por la escuela en su guía de investigación.
                 </p>
 
                 <!-- Deck de Formatos y Guías Oficiales -->
