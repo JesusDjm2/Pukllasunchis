@@ -109,7 +109,7 @@
                         </ul>
                     </li>
                     <li>Por <strong><span class="text-danger">Aplicativo móvil WAYKI APP</span></strong> para clientes que
-                        tienen una cuenta de ahorros y tarjeta en la Caja Cusco:
+                        tienen una cuenta de ahorros y tarjeta en la <strong style="color: #d3141b;">Caja Cusco</strong>:
                         <ul>
                             <li>Revisar la guía de pago en <strong><span class="text-danger"><a
                                             href="https://www.cmac-cusco.com.pe/" rel="no-follow" title="Seguir enlace" target="_blank">

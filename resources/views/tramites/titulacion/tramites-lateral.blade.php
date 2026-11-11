@@ -47,7 +47,7 @@
             <li>
                 <a href="#" onclick="openPagoModal(event)" class="pk-nav-caja-cusco">
                     <i class="fa fa-caret-right fa-sm"></i>
-                    <span>¿Cómo pagar en Caja Cusco?</span>
+                    <span>¿Cómo pagar en <strong class="caja-cusco-brand" style="color: #d3141b;">Caja Cusco</strong>?</span>
                 </a>
             </li>
         </ul>
@@ -71,11 +71,54 @@
 </div>
 
 <style>
-/* ── Menú Lateral de Trámites (Animaciones Modernas) ────── */
-.pegajoso.desktop {
-    position: sticky;
-    top: 6.5rem;
-    z-index: 10;
+/* ── Menú Lateral de Trámites (Animaciones Modernas y Sticky) ────── */
+html:has(.pk-titula-wrapper),
+body:has(.pk-titula-wrapper),
+html:has(.pegajoso),
+body:has(.pegajoso) {
+    overflow-x: clip !important;
+}
+
+@supports not (selector(:has(*))) {
+    html, body {
+        overflow-x: clip !important;
+    }
+}
+
+@media (min-width: 992px) {
+    .pk-titula-wrapper .col-lg-3 {
+        position: relative;
+    }
+
+    .pegajoso.desktop {
+        position: -webkit-sticky !important;
+        position: sticky !important;
+        top: 6.5rem !important;
+        z-index: 20 !important;
+        max-height: calc(100vh - 7.5rem);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(205, 146, 68, 0.4) transparent;
+        padding-right: 4px;
+    }
+
+    .pegajoso.desktop::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .pegajoso.desktop::-webkit-scrollbar-thumb {
+        background: rgba(205, 146, 68, 0.4);
+        border-radius: 4px;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .pegajoso.desktop {
+        position: static !important;
+        max-height: none !important;
+        overflow-y: visible !important;
+    }
 }
 
 .pegajoso .submenu2,
@@ -473,33 +516,32 @@
         <div class="pago-modal__icon-badge">
             <i class="fa fa-university"></i>
         </div>
-        <h4 id="pagoModalTitle">¿Cómo pagar en Caja Cusco?</h4>
+        <h4 id="pagoModalTitle">¿Cómo pagar en <span style="color: #ffcccc; font-weight: 700;">Caja Cusco</span>?</h4>
         <p class="pago-modal__subtitle">Proceso de pago ordinario &mdash; Titulación</p>
     </div>
 
     <div class="pago-modal__body">
         <div class="pago-modal__alert">
             <i class="fa fa-exclamation-triangle"></i>
-            <span>Todos los pagos del proceso de titulación son <strong>pagos ordinarios</strong>.
-                No se considera pago ordinario matrículas ni cuotas semestrales.</span>
+            <span>Todos los pagos del proceso de titulación son <strong>pagos ordinarios</strong> en ventanillas de <strong class="caja-cusco-brand" style="color:#d3141b;">Caja Cusco</strong>. Para evitar confusiones en ventanilla, debes indicar obligatoriamente: <strong>Concepto exacto</strong>, <strong>Código</strong> y <strong>Monto</strong>.</span>
         </div>
 
         <ul class="pago-steps">
             <li class="pago-step">
                 <div class="pago-step__num">1</div>
                 <div class="pago-step__content">
-                    Acércate a las oficinas de <strong style="color:#c0392b">Caja Cusco</strong> (cualquier agencia a nivel nacional)
+                    Acércate a las oficinas de <strong class="caja-cusco-brand" style="color:#d3141b">Caja Cusco</strong> (cualquier agencia a nivel nacional)
                     e indica en ventanilla que realizarás un <strong>pago ordinario</strong> a nombre de la <strong>Asociación Pukllasunchis - EESPP</strong>.
                 </div>
             </li>
             <li class="pago-step">
                 <div class="pago-step__num">2</div>
                 <div class="pago-step__content">
-                    Indica el <strong>concepto y código de pago</strong> correspondiente a tu trámite.
+                    Indica obligatoriamente al cajero los 3 datos de tu trámite: <strong>1. Concepto exacto</strong>, <strong>2. Código numérico</strong> y <strong>3. Monto a pagar</strong>.
                     <br>
                     <a class="pago-pdf-btn" target="_blank"
                         href="{{ asset('pdf/Conceptos-ordinarios-caja-cusco-2026-2.pdf') }}">
-                        <i class="fa fa-file-pdf"></i> Ver PDF de conceptos de pago
+                        <i class="fa fa-file-pdf"></i> Ver PDF oficial de conceptos de pago
                     </a>
                 </div>
             </li>
@@ -513,16 +555,16 @@
             <li class="pago-step">
                 <div class="pago-step__num">4</div>
                 <div class="pago-step__content">
-                    <strong>No es necesario enviar el voucher.</strong>
-                    En el lapso de <strong>2 días hábiles</strong> recibirás la boleta electrónica
+                    <strong>No subas el voucher impreso al formulario.</strong>
+                    En el lapso de <strong>2 días hábiles</strong> recibirás la <strong>Boleta Electrónica Oficial</strong>
                     emitida por la EESPP en tu correo institucional.
                 </div>
             </li>
             <li class="pago-step">
                 <div class="pago-step__num">5</div>
                 <div class="pago-step__content">
-                    Con esa boleta electrónica podrás iniciar o continuar
-                    tu <strong>trámite correspondiente</strong> en el formulario respectivo.
+                    Con esa <strong>boleta electrónica</strong> oficial podrás iniciar o continuar
+                    tu trámite subiéndola al formulario virtual respectivo.
                 </div>
             </li>
         </ul>

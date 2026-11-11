@@ -93,7 +93,7 @@
                 </p>
                 <p><strong>2. Pagar por derecho de matrícula</strong><br>
                     El pago de <strong> Matrículas</strong> y <strong>Cuotas</strong> se realizará en la agencia de <strong
-                        class="text-danger">Caja Cusco</strong> en las siguientes modalidades:
+                        class="text-danger" style="color: #d3141b !important;">Caja Cusco</strong> en las siguientes modalidades:
                 </p>
                 <ul class="listasCuerpo">
                     <li><strong>En ventanilla</strong> de las agencias de CMAC CUSCO a nivel nacional:
@@ -113,7 +113,7 @@
                         </ul>
                     </li>
                     <li>Por <strong><span class="text-danger">Aplicativo móvil WAYKI APP</span></strong> para clientes que
-                        tienen una cuenta de ahorros y tarjeta en la Caja Cusco:
+                        tienen una cuenta de ahorros y tarjeta en la <strong style="color: #d3141b;">Caja Cusco</strong>:
                         <ul>
                             <li>Revisar la guía de pago en <strong><span class="text-danger"><a
                                             href="https://www.cmac-cusco.com.pe/" rel="no-follow" title="Seguir enlace" target="_blank">

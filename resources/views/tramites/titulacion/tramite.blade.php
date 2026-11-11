@@ -213,7 +213,7 @@
                                 </p>
                                 <ul class="list-unstyled ms-1 text-muted" style="font-size: 13.5px; line-height: 20px;">
                                     <li>• Presentar FUT con datos de la I.E., Director, ubicación y título del TI.</li>
-                                    <li>• Comprobante de pago ordinario en Caja Cusco.</li>
+                                    <li>• Comprobante de pago ordinario en <strong class="caja-cusco-brand" style="color: #d3141b;">Caja Cusco</strong>.</li>
                                 </ul>
                             </div>
                         </div>
@@ -278,14 +278,14 @@
                             <i class="fa fa-university"></i>
                         </div>
                         <div>
-                            <h3>Pagos para Trámites Presenciales en Caja Cusco</h3>
+                            <h3>Pagos para Trámites Presenciales en <span class="caja-cusco-brand" style="color: #d3141b;">Caja Cusco</span></h3>
                             <p>Realiza tus abonos exclusivamente mediante pago ordinario en ventanilla.</p>
                         </div>
                     </div>
 
                     <div class="pk-caja-alert">
                         <i class="fa fa-triangle-exclamation text-warning"></i>
-                        <span>Los pagos ordinarios <strong>SOLO SE PAGAN EN VENTANILLAS</strong> de Caja Cusco a nivel nacional.</span>
+                        <span>Los pagos ordinarios <strong>SOLO SE PAGAN EN VENTANILLAS</strong> de <strong class="caja-cusco-brand" style="color: #d3141b;">Caja Cusco</strong> a nivel nacional.</span>
                     </div>
 
                     <div class="pk-caja-points">
@@ -295,7 +295,7 @@
                         </div>
                         <div class="pk-caja-point-item">
                             <div class="pk-point-num">2</div>
-                            <p>Indica el concepto exacto a pagar (ejemplo: Armado de expediente de Titulación: Cód. 18, Constancia no deudor: Cód. 28, etc.).</p>
+                            <p>Indica obligatoriamente los 3 datos: <strong>Concepto exacto</strong>, <strong>Código numérico</strong> y <strong>Monto</strong> a pagar (ejemplo: Armado de expediente de Titulación: Cód. 18 - S/ 500.00, Constancia no deudor: Cód. 28 - S/ 10.00, etc.).</p>
                         </div>
                         <div class="pk-caja-point-item">
                             <div class="pk-point-num">3</div>
@@ -309,7 +309,7 @@
 
                     <div class="pk-caja-footer">
                         <a href="javascript:void(0)" onclick="openPagoModal(event)" class="text-primary font-weight-bold" style="font-size: 14px;">
-                            <i class="fa fa-circle-info me-1"></i> Ver instructivo ilustrado de Caja Cusco
+                            <i class="fa fa-circle-info me-1"></i> Ver instructivo ilustrado de <strong class="caja-cusco-brand" style="color: #d3141b;">Caja Cusco</strong>
                         </a>
                         <a href="{{ asset('pdf/Conceptos-ordinarios-caja-cusco-2026-2.pdf') }}" target="_blank" class="pk-btn-caja-pdf">
                             <i class="fa fa-file-pdf"></i> Ver PDF de conceptos de pago

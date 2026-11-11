@@ -40,13 +40,13 @@
                 </div>
                 <h2 class="linea-debajo">Trámites Extraordinarios de Titulación</h2>
                 <p>
-                    Durante el proceso de investigación y titulación pueden suscitarse imprevistos de orden metodológico, temporal o de conformación de equipos. La normativa institucional contempla los siguientes procedimientos extraordinarios para regularizar tu situación académica mediante formularios virtuales y abonos ordinarios en Caja Cusco.
+                    Durante el proceso de investigación y titulación pueden suscitarse imprevistos de orden metodológico, temporal o de conformación de equipos. La normativa institucional contempla los siguientes procedimientos extraordinarios para regularizar tu situación académica mediante formularios virtuales y abonos ordinarios en <strong class="caja-cusco-brand" style="color: #d3141b;">Caja Cusco</strong>.
                 </p>
 
                 <!-- Tabla Resumen de Conceptos -->
                 <div class="d-flex align-items-center justify-content-between mb-2">
                     <h3 class="mb-0" style="font-size: 21px;">
-                        <i class="fa fa-table-list text-warning me-2"></i> Tarifario y Conceptos Ordinarios (Caja Cusco)
+                        <i class="fa fa-table-list text-warning me-2"></i> Tarifario y Conceptos Ordinarios (<span class="caja-cusco-brand" style="color: #d3141b;">Caja Cusco</span>)
                     </h3>
                     <small class="text-muted">Actualizado Periodo 2026</small>
                 </div>
@@ -283,14 +283,14 @@
                             <i class="fa fa-university"></i>
                         </div>
                         <div>
-                            <h3>Pagos para Trámites Extraordinarios en Caja Cusco</h3>
+                            <h3>Pagos para Trámites Extraordinarios en <span class="caja-cusco-brand" style="color: #d3141b;">Caja Cusco</span></h3>
                             <p>Realiza tus abonos exclusivamente mediante pago ordinario en ventanilla.</p>
                         </div>
                     </div>
 
                     <div class="pk-caja-alert">
                         <i class="fa fa-triangle-exclamation text-warning"></i>
-                        <span>Los pagos ordinarios <strong>SOLO SE PAGAN EN VENTANILLAS</strong> de cualquier agencia a nivel nacional de Caja Cusco.</span>
+                        <span>Los pagos ordinarios <strong>SOLO SE PAGAN EN VENTANILLAS</strong> de cualquier agencia a nivel nacional de <strong class="caja-cusco-brand" style="color: #d3141b;">Caja Cusco</strong>.</span>
                     </div>
 
                     <div class="pk-caja-points">
@@ -300,7 +300,7 @@
                         </div>
                         <div class="pk-caja-point-item">
                             <div class="pk-point-num">2</div>
-                            <p>Indica el concepto específico (ejemplo: Cambio de asesor: Cód. 13, Disolución de grupo: Cód. 14, etc.).</p>
+                            <p>Indica obligatoriamente los 3 datos: <strong>Concepto exacto</strong>, <strong>Código numérico</strong> y <strong>Monto</strong> (ejemplo: Cambio de asesor: Cód. 13 - S/ 10.00, Disolución de grupo: Cód. 14 - S/ 10.00, etc.).</p>
                         </div>
                         <div class="pk-caja-point-item">
                             <div class="pk-point-num">3</div>
@@ -314,7 +314,7 @@
 
                     <div class="pk-caja-footer">
                         <a href="javascript:void(0)" onclick="openPagoModal(event)" class="text-primary font-weight-bold" style="font-size: 14px;">
-                            <i class="fa fa-circle-info me-1"></i> Ver instructivo ilustrado de Caja Cusco
+                            <i class="fa fa-circle-info me-1"></i> Ver instructivo ilustrado de <strong class="caja-cusco-brand" style="color: #d3141b;">Caja Cusco</strong>
                         </a>
                         <a href="{{ asset('pdf/Conceptos-ordinarios-caja-cusco-2026-2.pdf') }}" target="_blank" class="pk-btn-caja-pdf">
                             <i class="fa fa-file-pdf"></i> Ver PDF de conceptos de pago

@@ -59,7 +59,7 @@
                             </div>
                             <h4>Plan de Trabajo (PTI)</h4>
                             <p>
-                                Propuesta de investigación vinculada a la práctica docente, pago en Caja Cusco, formulación y aprobación por R.D. con asignación de asesor.
+                                Propuesta de investigación vinculada a la práctica docente, pago en <strong class="caja-cusco-brand" style="color: #d3141b;">Caja Cusco</strong>, formulación y aprobación por R.D. con asignación de asesor.
                             </p>
                             <a href="{{ route('plan') }}" class="pk-step-link">
                                 Ver requisitos y formatos <i class="fa fa-arrow-right"></i>
@@ -244,7 +244,7 @@
                                 <ul class="listasCuerpo">
                                     <li>Solicitud dirigida al Director General de la EESP.</li>
                                     <li>Declaración jurada de pérdida, robo y/o deterioro.</li>
-                                    <li>Comprobante de pago por derechos de tramitación en Caja Cusco.</li>
+                                    <li>Comprobante de pago por derechos de tramitación en <strong class="caja-cusco-brand" style="color: #d3141b;">Caja Cusco</strong>.</li>
                                 </ul>
                             </div>
                         </div>
@@ -320,14 +320,14 @@
                             <i class="fa fa-university"></i>
                         </div>
                         <div>
-                            <h3>Instrucciones de Pago en Caja Cusco</h3>
+                            <h3>Instrucciones de Pago en <span class="caja-cusco-brand" style="color: #d3141b;">Caja Cusco</span></h3>
                             <p>Todos los derechos del proceso de titulación corresponden a pagos ordinarios en ventanilla.</p>
                         </div>
                     </div>
 
                     <div class="pk-caja-alert">
                         <i class="fa fa-triangle-exclamation text-warning"></i>
-                        <span><strong>Importante:</strong> No se consideran pagos ordinarios las matrículas ni cuotas semestrales. Estos conceptos son exclusivos de trámites de titulación e investigación.</span>
+                        <span><strong>Importante:</strong> Los pagos ordinarios <strong>SOLO SE REALIZAN EN VENTANILLAS</strong> de <strong class="caja-cusco-brand" style="color: #d3141b;">Caja Cusco</strong> a nivel nacional. No se consideran pagos ordinarios las matrículas ni cuotas semestrales.</span>
                     </div>
 
                     <div class="pk-caja-points">
@@ -337,7 +337,7 @@
                         </div>
                         <div class="pk-caja-point-item">
                             <div class="pk-point-num">2</div>
-                            <p>Indica el <strong>concepto y código de pago</strong> de tu trámite (PTI, Turnitin, dictamen, exposición o repositorio).</p>
+                            <p>Indica obligatoriamente los 3 datos: <strong>Concepto exacto</strong>, <strong>Código de pago</strong> y <strong>Monto</strong> de tu trámite (PTI, Turnitin, dictamen, exposición o repositorio).</p>
                         </div>
                         <div class="pk-caja-point-item">
                             <div class="pk-point-num">3</div>
@@ -351,7 +351,7 @@
 
                     <div class="pk-caja-footer">
                         <a href="javascript:void(0)" onclick="openPagoModal(event)" class="text-primary font-weight-bold" style="font-size: 14.5px;">
-                            <i class="fa fa-circle-info me-1"></i> Ver guía interactiva paso a paso
+                            <i class="fa fa-circle-info me-1"></i> Ver instructivo ilustrado de <strong class="caja-cusco-brand" style="color: #d3141b;">Caja Cusco</strong>
                         </a>
                         <a href="{{ asset('pdf/Conceptos-ordinarios-caja-cusco-2026-2.pdf') }}" target="_blank" class="pk-btn-caja-pdf">
                             <i class="fa fa-file-pdf"></i> Descargar PDF de Conceptos Oficiales

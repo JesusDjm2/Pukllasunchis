@@ -57,7 +57,7 @@
                     <li>2 fotos tamaño carnet </li>
                     <li>Pago por derecho de armado de expediente por traslado externo (100.00 soles), 
                     </li>
-                    <li>Indicar en Caja Cusco como pago ordinario.</li>
+                    <li>Indicar en <strong style="color: #d3141b;">Caja Cusco</strong> como pago ordinario.</li>
                     
                 </ul>
                 <h3 class="mt-4"><i class="fa fa-caret-right" style="color:#cd9244"></i> Posteriormente, será necesario:
@@ -147,7 +147,7 @@
                         </ul>
                     </li>
                     <li>Por <strong><span class="text-danger">Aplicativo móvil WAYKI APP</span></strong> para clientes que
-                        tienen una cuenta de ahorros y tarjeta en la Caja Cusco:
+                        tienen una cuenta de ahorros y tarjeta en la <strong style="color: #d3141b;">Caja Cusco</strong>:
                         <ul>
                             <li>Revisar la guía de pago en <strong><span class="text-danger"><a
                                             href="https://www.cmac-cusco.com.pe/" rel="no-follow" title="Seguir enlace"

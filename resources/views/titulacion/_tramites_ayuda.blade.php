@@ -59,24 +59,33 @@
 
                         @if ($monto)
                             <div class="tr-pago">
-                                <div class="tr-pago__eti"><i class="fas fa-receipt"></i>Paga en Caja Cusco <span>(pago ordinario)</span></div>
+                                <div class="tr-pago__eti">
+                                    <i class="fas fa-receipt"></i>Paga en <strong class="caja-cusco-brand" style="color: #d3141b;">Caja Cusco</strong> <span>(pago ordinario en ventanilla)</span>
+                                </div>
+                                <div style="font-size: 0.78rem; font-weight: 600; color: #991b1b; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 4px;">
+                                    <i class="fas fa-bullhorn" style="color: #d3141b;"></i>
+                                    <span>Indica en ventanilla estos 3 datos obligatorios:</span>
+                                </div>
                                 <dl class="tr-pago__datos">
-                                    <div><dt>Monto</dt><dd>S/ {{ $monto }}</dd></div>
-                                    <div><dt>Código</dt><dd>{{ $codigo }}</dd></div>
+                                    <div><dt>Monto</dt><dd style="color: #166534; font-weight: 800;">S/ {{ $monto }}</dd></div>
+                                    <div><dt>Código</dt><dd style="color: #d3141b; font-weight: 800; font-size: 1.05rem;">{{ $codigo }}</dd></div>
                                     <div class="tr-pago__concepto">
-                                        <dt>Concepto</dt>
+                                        <dt>Concepto exacto</dt>
                                         <dd>
-                                            {{ $concepto }}
+                                            <span style="color: #1e3a8a; font-weight: 700;">{{ $concepto }}</span>
                                             <button type="button" class="tr-copiar" data-tr-copiar="{{ $concepto }}" title="Copiar concepto" aria-label="Copiar el concepto de pago"><i class="far fa-copy"></i></button>
                                         </dd>
                                     </div>
                                 </dl>
+                                <div style="font-size: 0.74rem; color: #6b7280; margin-top: 6px; line-height: 1.35; border-top: 1px dashed #fecaca; padding-top: 5px;">
+                                    <i class="fas fa-info-circle text-muted mr-1"></i>Pago a nombre de <strong>Asociación Pukllasunchis - EESPP</strong>. Dicta tu <strong>DNI</strong>. <em>Espera 2 días hábiles tu boleta electrónica institucional para adjuntar al formulario (no voucher).</em>
+                                </div>
                             </div>
                         @endif
 
                         @if (! empty($t['pasos']))
                             <ol class="tr-pasos">
-                                @foreach ($t['pasos'] as $paso) <li>{{ $paso }}</li> @endforeach
+                                @foreach ($t['pasos'] as $paso) <li>{!! str_ireplace('Caja Cusco', '<strong class="caja-cusco-brand" style="color:#d3141b;">Caja Cusco</strong>', e($paso)) !!}</li> @endforeach
                             </ol>
                         @endif
 
@@ -131,7 +140,7 @@
 
         <footer class="tr-ayuda__pie">
             @if ($conceptosPdf)
-                <a href="{{ asset($conceptosPdf) }}" target="_blank" rel="noopener"><i class="fas fa-file-invoice-dollar"></i>Conceptos de pago de Caja Cusco</a>
+                <a href="{{ asset($conceptosPdf) }}" target="_blank" rel="noopener"><i class="fas fa-file-invoice-dollar"></i>Conceptos de pago de <strong class="caja-cusco-brand" style="color: #d3141b;">Caja Cusco</strong></a>
             @endif
             @foreach ($contactos as [$area, $numero])
                 <a href="{{ \App\Support\Telefono::whatsapp($numero) }}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i>{{ $area }} · {{ $numero }}</a>

@@ -691,12 +691,177 @@
 }
 
 /* ═════════════════════════════════════════════════════════
+   MARCA CAJA CUSCO (COLOR ROJO CORPORATIVO #d3141b)
+   ═════════════════════════════════════════════════════════ */
+.caja-cusco-brand,
+.text-caja-cusco {
+    color: #d3141b !important;
+    font-weight: 700;
+}
+
+/* ═════════════════════════════════════════════════════════
+   TARJETA DESTACADA DE DATOS DE PAGO PARA VENTANILLA
+   ═════════════════════════════════════════════════════════ */
+.pk-pago-box {
+    background: #ffffff;
+    border: 1.5px solid #fecaca;
+    border-left: 5px solid #d3141b;
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin: 16px 0 18px;
+    box-shadow: 0 4px 14px rgba(211, 20, 27, 0.07);
+}
+
+.pk-pago-box__header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14.5px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed #fca5a5;
+}
+
+.pk-pago-box__header i {
+    color: #d3141b;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.pk-pago-box__grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+@media (max-width: 768px) {
+    .pk-pago-box__grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.pk-pago-field {
+    background: #fff8f8;
+    border: 1.5px solid #fee2e2;
+    border-radius: 9px;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 3px;
+    transition: var(--pk-transition);
+}
+
+.pk-pago-field:hover {
+    border-color: #fca5a5;
+    background: #ffffff;
+}
+
+.pk-pago-field__label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.pk-pago-field__value {
+    font-size: 15px;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1.3;
+}
+
+.pk-pago-field--concepto .pk-pago-field__value {
+    color: #1e3a8a;
+    font-size: 15px;
+    word-break: break-word;
+}
+
+.pk-pago-field--codigo {
+    background: #fff5f5;
+    border-color: #fecaca;
+    text-align: center;
+    align-items: center;
+}
+
+.pk-pago-field--codigo .pk-pago-field__value {
+    color: #d3141b;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+}
+
+.pk-pago-field--monto {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+    text-align: center;
+    align-items: center;
+}
+
+.pk-pago-field--monto .pk-pago-field__label {
+    color: #166534;
+}
+
+.pk-pago-field--monto .pk-pago-field__value {
+    color: #15803d;
+    font-size: 22px;
+    font-weight: 800;
+}
+
+.pk-pago-box__instrucciones {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13.5px;
+    line-height: 22px;
+    color: #374151;
+}
+
+.pk-pago-box__instrucciones p {
+    margin: 0 0 6px 0;
+    font-size: 13.5px;
+    line-height: 22px;
+}
+
+.pk-pago-box__instrucciones p:last-child {
+    margin-bottom: 0;
+}
+
+.pk-pago-box__alerta-voucher {
+    margin-top: 10px;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    background: #fffbeb;
+    border-left: 3.5px solid #d97706;
+    border-radius: 0 6px 6px 0;
+    padding: 8px 12px;
+    font-size: 13px;
+    color: #92400e;
+    line-height: 20px;
+}
+
+.pk-pago-box__alerta-voucher i {
+    color: #d97706;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+/* ═════════════════════════════════════════════════════════
    6. CAJA CUSCO CALLOUT CARD
    ═════════════════════════════════════════════════════════ */
 .pk-caja-cusco-card {
     background: #ffffff;
-    border: 1px solid var(--pk-gold-border);
-    border-left: 5px solid #cd9244;
+    border: 1px solid #fecaca;
+    border-left: 5px solid #d3141b;
     border-radius: var(--pk-radius-sm);
     padding: 24px 26px;
     margin: 30px 0;
@@ -714,8 +879,9 @@
     width: 44px;
     height: 44px;
     border-radius: 10px;
-    background: var(--pk-gold-light);
-    color: var(--pk-gold-dark);
+    background: #fef2f2;
+    color: #d3141b;
+    border: 1px solid #fecaca;
     font-size: 20px;
     display: flex;
     align-items: center;
@@ -770,10 +936,11 @@
     width: 24px;
     height: 24px;
     border-radius: 50%;
-    background: var(--pk-gold-light);
-    color: var(--pk-gold-dark);
+    background: #fef2f2;
+    color: #d3141b;
+    border: 1px solid #fecaca;
     font-size: 12px;
-    font-weight: 600;
+    font-weight: 700;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1057,10 +1224,54 @@
 /* ═════════════════════════════════════════════════════════
    11. MENÚ LATERAL DE TRÁMITES (SIDEBAR NAVIGATION)
    ═════════════════════════════════════════════════════════ */
-.pegajoso.desktop {
-    position: sticky;
-    top: 6.5rem;
-    z-index: 10;
+/* Habilitar position:sticky anulando el overflow-x:hidden de estilos.css */
+html:has(.pk-titula-wrapper),
+body:has(.pk-titula-wrapper),
+html:has(.pegajoso),
+body:has(.pegajoso) {
+    overflow-x: clip !important;
+}
+
+@supports not (selector(:has(*))) {
+    html, body {
+        overflow-x: clip !important;
+    }
+}
+
+@media (min-width: 992px) {
+    .pk-titula-wrapper .col-lg-3 {
+        position: relative;
+    }
+
+    .pegajoso.desktop {
+        position: -webkit-sticky !important;
+        position: sticky !important;
+        top: 6.5rem !important;
+        z-index: 20 !important;
+        max-height: calc(100vh - 7.5rem);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(205, 146, 68, 0.4) transparent;
+        padding-right: 4px;
+    }
+
+    .pegajoso.desktop::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .pegajoso.desktop::-webkit-scrollbar-thumb {
+        background: rgba(205, 146, 68, 0.4);
+        border-radius: 4px;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .pegajoso.desktop {
+        position: static !important;
+        max-height: none !important;
+        overflow-y: visible !important;
+    }
 }
 
 .pegajoso .submenu2,

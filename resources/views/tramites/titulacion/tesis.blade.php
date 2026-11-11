@@ -146,8 +146,41 @@
                             </p>
                             <ul>
                                 <li>Versión final de la Tesis en formato <strong>WORD (.docx)</strong>.</li>
-                                <li>Comprobante de pago (Concepto: <em>REVISION TURNITIN DE TESIS | Código: 37</em>).</li>
+                                <li>Boleta electrónica oficial emitida por la EESPP (no voucher de ventanilla).</li>
                             </ul>
+
+                            <!-- Tarjeta Destacada de Datos de Pago en Caja Cusco -->
+                            <div class="pk-pago-box">
+                                <div class="pk-pago-box__header">
+                                    <i class="fa fa-cash-register"></i>
+                                    <span>Indica obligatoriamente al cajero en ventanilla de <strong class="caja-cusco-brand" style="color: #d3141b;">Caja Cusco</strong>:</span>
+                                </div>
+                                <div class="pk-pago-box__grid">
+                                    <div class="pk-pago-field pk-pago-field--concepto">
+                                        <span class="pk-pago-field__label"><i class="fa fa-tag text-primary"></i> 1. Concepto Exacto</span>
+                                        <strong class="pk-pago-field__value">REVISION TURNITIN DE TESIS</strong>
+                                    </div>
+                                    <div class="pk-pago-field pk-pago-field--codigo">
+                                        <span class="pk-pago-field__label"><i class="fa fa-barcode"></i> 2. Código</span>
+                                        <strong class="pk-pago-field__value">37</strong>
+                                    </div>
+                                    <div class="pk-pago-field pk-pago-field--monto">
+                                        <span class="pk-pago-field__label"><i class="fa fa-money-bill-wave"></i> 3. Monto a Pagar</span>
+                                        <strong class="pk-pago-field__value">S/ 25.00</strong>
+                                    </div>
+                                </div>
+                                <div class="pk-pago-box__instrucciones">
+                                    <p><i class="fa fa-building-columns text-muted me-1"></i> Tipo de pago: <strong>Pago Ordinario</strong> a nombre de <strong>Asociación Pukllasunchis - EESPP</strong>.</p>
+                                    <p><i class="fa fa-id-card text-muted me-1"></i> Identificación: Brinda tu <strong>DNI</strong> y tus nombres completos.</p>
+                                </div>
+                                <div class="pk-pago-box__alerta-voucher">
+                                    <i class="fa fa-triangle-exclamation"></i>
+                                    <div>
+                                        <strong>¡Atención con el comprobante!</strong> El voucher que te entrega el cajero <u>NO</u> se sube al formulario. En un lapso de <strong>2 días hábiles</strong> recibirás la <strong>Boleta Electrónica Oficial</strong> en tu correo institucional para adjuntar al formulario.
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="pk-milestone-notice">
                                 <i class="fa fa-circle-exclamation"></i>
                                 <span><strong>Regla de Exclusión (Art. 94):</strong> Si tu tesis es continuidad del TI con el que obtuviste tu bachiller, para la revisión preliminar de originalidad <strong>deberás excluir únicamente la sección "Base Teórica"</strong>. La versión oficial definitiva deberá presentarse íntegra en las etapas posteriores.</span>
@@ -181,8 +214,41 @@
                             <ul>
                                 <li>Tesis completa en formato WORD.</li>
                                 <li>Reporte de originalidad Turnitin adjunto (≤ 20% de similitud).</li>
-                                <li>Comprobante de pago (Concepto: <em>REVISIÓN DE TESIS | Código: 32</em>).</li>
+                                <li>Boleta electrónica oficial emitida por la EESPP (no voucher de ventanilla).</li>
                             </ul>
+
+                            <!-- Tarjeta Destacada de Datos de Pago en Caja Cusco -->
+                            <div class="pk-pago-box">
+                                <div class="pk-pago-box__header">
+                                    <i class="fa fa-cash-register"></i>
+                                    <span>Indica obligatoriamente al cajero en ventanilla de <strong class="caja-cusco-brand" style="color: #d3141b;">Caja Cusco</strong>:</span>
+                                </div>
+                                <div class="pk-pago-box__grid">
+                                    <div class="pk-pago-field pk-pago-field--concepto">
+                                        <span class="pk-pago-field__label"><i class="fa fa-tag text-primary"></i> 1. Concepto Exacto</span>
+                                        <strong class="pk-pago-field__value">REVISIÓN DE TESIS</strong>
+                                    </div>
+                                    <div class="pk-pago-field pk-pago-field--codigo">
+                                        <span class="pk-pago-field__label"><i class="fa fa-barcode"></i> 2. Código</span>
+                                        <strong class="pk-pago-field__value">32</strong>
+                                    </div>
+                                    <div class="pk-pago-field pk-pago-field--monto">
+                                        <span class="pk-pago-field__label"><i class="fa fa-money-bill-wave"></i> 3. Monto a Pagar</span>
+                                        <strong class="pk-pago-field__value">S/ 100.00</strong>
+                                    </div>
+                                </div>
+                                <div class="pk-pago-box__instrucciones">
+                                    <p><i class="fa fa-building-columns text-muted me-1"></i> Tipo de pago: <strong>Pago Ordinario</strong> a nombre de <strong>Asociación Pukllasunchis - EESPP</strong>.</p>
+                                    <p><i class="fa fa-id-card text-muted me-1"></i> Identificación: Brinda tu <strong>DNI</strong> y tus nombres completos.</p>
+                                </div>
+                                <div class="pk-pago-box__alerta-voucher">
+                                    <i class="fa fa-triangle-exclamation"></i>
+                                    <div>
+                                        <strong>¡Atención con el comprobante!</strong> El voucher que te entrega el banco <u>NO</u> se sube al formulario. En un lapso de <strong>2 días hábiles</strong> recibirás la <strong>Boleta Electrónica Oficial</strong> en tu correo institucional.
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="pk-milestone-result">
                                 <i class="fa fa-check-circle"></i>
                                 <span>Como resultado, recibirás en tu correo institucional el <strong>Informe de Tesis Apta</strong> para solicitar fecha de sustentación.</span>
@@ -213,8 +279,41 @@
                                 <li>Reporte Turnitin aprobado (máximo 20% de similitud).</li>
                                 <li>Versión final de la Tesis en WORD y Diapositivas en PPT.</li>
                                 <li><strong>Constancia de inscripción en SUNEDU del diploma de Bachiller en formato PDF.</strong></li>
-                                <li>Comprobante de pago (Concepto: <em>Fecha de sustentación de Tesis | Código: 21</em>).</li>
+                                <li>Boleta electrónica oficial emitida por la EESPP (no voucher).</li>
                             </ul>
+
+                            <!-- Tarjeta Destacada de Datos de Pago en Caja Cusco -->
+                            <div class="pk-pago-box">
+                                <div class="pk-pago-box__header">
+                                    <i class="fa fa-cash-register"></i>
+                                    <span>Indica obligatoriamente al cajero en ventanilla de <strong class="caja-cusco-brand" style="color: #d3141b;">Caja Cusco</strong>:</span>
+                                </div>
+                                <div class="pk-pago-box__grid">
+                                    <div class="pk-pago-field pk-pago-field--concepto">
+                                        <span class="pk-pago-field__label"><i class="fa fa-tag text-primary"></i> 1. Concepto Exacto</span>
+                                        <strong class="pk-pago-field__value">Fecha de sustentación de Tesis</strong>
+                                    </div>
+                                    <div class="pk-pago-field pk-pago-field--codigo">
+                                        <span class="pk-pago-field__label"><i class="fa fa-barcode"></i> 2. Código</span>
+                                        <strong class="pk-pago-field__value">21</strong>
+                                    </div>
+                                    <div class="pk-pago-field pk-pago-field--monto">
+                                        <span class="pk-pago-field__label"><i class="fa fa-money-bill-wave"></i> 3. Monto a Pagar</span>
+                                        <strong class="pk-pago-field__value">S/ 100.00</strong>
+                                    </div>
+                                </div>
+                                <div class="pk-pago-box__instrucciones">
+                                    <p><i class="fa fa-building-columns text-muted me-1"></i> Tipo de pago: <strong>Pago Ordinario</strong> a nombre de <strong>Asociación Pukllasunchis - EESPP</strong>.</p>
+                                    <p><i class="fa fa-id-card text-muted me-1"></i> Identificación: Brinda tu <strong>DNI</strong> y tus nombres completos.</p>
+                                </div>
+                                <div class="pk-pago-box__alerta-voucher">
+                                    <i class="fa fa-triangle-exclamation"></i>
+                                    <div>
+                                        <strong>¡Atención con el comprobante!</strong> Espera <strong>2 días hábiles</strong> tu <strong>Boleta Electrónica Oficial</strong> enviada a tu correo institucional.
+                                    </div>
+                                </div>
+                            </div>
+
                             <a href="https://docs.google.com/forms/d/e/1FAIpQLSf4DRlwjTV-vK5FVud94tUxTHi8h61brejjn9bzxBpv7ouqpQ/viewform"
                                target="_blank" class="pk-btn-form-cta">
                                 <i class="fa fa-arrow-up-right-from-square"></i> Solicitar Fecha de Sustentación
@@ -239,8 +338,41 @@
                             <ul>
                                 <li>Acta oficial de sustentación firmada por los miembros del jurado.</li>
                                 <li>Informe de tesis apta.</li>
-                                <li>Comprobante de pago (Concepto: <em>RD de aprobación de Tesis | Código: 33</em>).</li>
+                                <li>Boleta electrónica oficial emitida por la EESPP (no voucher).</li>
                             </ul>
+
+                            <!-- Tarjeta Destacada de Datos de Pago en Caja Cusco -->
+                            <div class="pk-pago-box">
+                                <div class="pk-pago-box__header">
+                                    <i class="fa fa-cash-register"></i>
+                                    <span>Indica obligatoriamente al cajero en ventanilla de <strong class="caja-cusco-brand" style="color: #d3141b;">Caja Cusco</strong>:</span>
+                                </div>
+                                <div class="pk-pago-box__grid">
+                                    <div class="pk-pago-field pk-pago-field--concepto">
+                                        <span class="pk-pago-field__label"><i class="fa fa-tag text-primary"></i> 1. Concepto Exacto</span>
+                                        <strong class="pk-pago-field__value">RD de aprobación de Tesis</strong>
+                                    </div>
+                                    <div class="pk-pago-field pk-pago-field--codigo">
+                                        <span class="pk-pago-field__label"><i class="fa fa-barcode"></i> 2. Código</span>
+                                        <strong class="pk-pago-field__value">33</strong>
+                                    </div>
+                                    <div class="pk-pago-field pk-pago-field--monto">
+                                        <span class="pk-pago-field__label"><i class="fa fa-money-bill-wave"></i> 3. Monto a Pagar</span>
+                                        <strong class="pk-pago-field__value">S/ 50.00</strong>
+                                    </div>
+                                </div>
+                                <div class="pk-pago-box__instrucciones">
+                                    <p><i class="fa fa-building-columns text-muted me-1"></i> Tipo de pago: <strong>Pago Ordinario</strong> a nombre de <strong>Asociación Pukllasunchis - EESPP</strong>.</p>
+                                    <p><i class="fa fa-id-card text-muted me-1"></i> Identificación: Brinda tu <strong>DNI</strong> y tus nombres completos.</p>
+                                </div>
+                                <div class="pk-pago-box__alerta-voucher">
+                                    <i class="fa fa-triangle-exclamation"></i>
+                                    <div>
+                                        <strong>¡Atención con el comprobante!</strong> Espera <strong>2 días hábiles</strong> tu <strong>Boleta Electrónica Oficial</strong> en tu correo institucional.
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="pk-milestone-result">
                                 <i class="fa fa-check-circle"></i>
                                 <span>Recibirás tu Resolución Directoral en el correo institucional el día lunes de la semana siguiente a la presentación de la solicitud.</span>
@@ -282,8 +414,41 @@
                             <ul>
                                 <li>Versión final corregida de la tesis en WORD.</li>
                                 <li>Autorización de depósito y Declaración Jurada firmadas.</li>
-                                <li>Comprobante de pago (Concepto: <em>Registro de Tesis en repositorio | Código: 34</em>).</li>
+                                <li>Boleta electrónica oficial emitida por la EESPP (no voucher).</li>
                             </ul>
+
+                            <!-- Tarjeta Destacada de Datos de Pago en Caja Cusco -->
+                            <div class="pk-pago-box">
+                                <div class="pk-pago-box__header">
+                                    <i class="fa fa-cash-register"></i>
+                                    <span>Indica obligatoriamente al cajero en ventanilla de <strong class="caja-cusco-brand" style="color: #d3141b;">Caja Cusco</strong>:</span>
+                                </div>
+                                <div class="pk-pago-box__grid">
+                                    <div class="pk-pago-field pk-pago-field--concepto">
+                                        <span class="pk-pago-field__label"><i class="fa fa-tag text-primary"></i> 1. Concepto Exacto</span>
+                                        <strong class="pk-pago-field__value">Registro de Tesis en repositorio</strong>
+                                    </div>
+                                    <div class="pk-pago-field pk-pago-field--codigo">
+                                        <span class="pk-pago-field__label"><i class="fa fa-barcode"></i> 2. Código</span>
+                                        <strong class="pk-pago-field__value">34</strong>
+                                    </div>
+                                    <div class="pk-pago-field pk-pago-field--monto">
+                                        <span class="pk-pago-field__label"><i class="fa fa-money-bill-wave"></i> 3. Monto a Pagar</span>
+                                        <strong class="pk-pago-field__value">S/ 50.00</strong>
+                                    </div>
+                                </div>
+                                <div class="pk-pago-box__instrucciones">
+                                    <p><i class="fa fa-building-columns text-muted me-1"></i> Tipo de pago: <strong>Pago Ordinario</strong> a nombre de <strong>Asociación Pukllasunchis - EESPP</strong>.</p>
+                                    <p><i class="fa fa-id-card text-muted me-1"></i> Identificación: Brinda tu <strong>DNI</strong> y tus nombres completos.</p>
+                                </div>
+                                <div class="pk-pago-box__alerta-voucher">
+                                    <i class="fa fa-triangle-exclamation"></i>
+                                    <div>
+                                        <strong>¡Atención con el comprobante!</strong> Espera <strong>2 días hábiles</strong> tu <strong>Boleta Electrónica Oficial</strong> enviada a tu correo institucional.
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="pk-milestone-result">
                                 <i class="fa fa-check-circle"></i>
                                 <span>Al no registrar observaciones metodológicas o formales, recibirás el enlace permanente (URL Handle) de registro institucional.</span>
@@ -316,8 +481,29 @@
                                     <i class="fa fa-stamp text-primary me-2"></i> A. Solicitud de Emisión de Diploma de Licenciado
                                 </h5>
                                 <p class="text-muted mb-2" style="font-size: 14px;">
-                                    Pago ordinario de <strong>S/ 400.00</strong> (Concepto: <em>Emisión título de Licenciado | Código: 35</em>). Plazo: 15 días hábiles. Se te notificará la fecha para acudir a la firma presencial del libro de títulos.
+                                    Plazo: 15 días hábiles. Se te notificará la fecha para acudir a la firma presencial del libro de títulos.
                                 </p>
+
+                                <div class="pk-pago-box my-2">
+                                    <div class="pk-pago-box__header">
+                                        <i class="fa fa-cash-register"></i>
+                                        <span>Pago en ventanilla de <strong class="caja-cusco-brand" style="color: #d3141b;">Caja Cusco</strong> para Diploma de Licenciado:</span>
+                                    </div>
+                                    <div class="pk-pago-box__grid">
+                                        <div class="pk-pago-field pk-pago-field--concepto">
+                                            <span class="pk-pago-field__label"><i class="fa fa-tag text-primary"></i> Concepto Exacto</span>
+                                            <strong class="pk-pago-field__value">Emisión título de Licenciado</strong>
+                                        </div>
+                                        <div class="pk-pago-field pk-pago-field--codigo">
+                                            <span class="pk-pago-field__label"><i class="fa fa-barcode"></i> Código</span>
+                                            <strong class="pk-pago-field__value">35</strong>
+                                        </div>
+                                        <div class="pk-pago-field pk-pago-field--monto">
+                                            <span class="pk-pago-field__label"><i class="fa fa-money-bill-wave"></i> Monto</span>
+                                            <strong class="pk-pago-field__value">S/ 400.00</strong>
+                                        </div>
+                                    </div>
+                                </div>
                                 <a href="https://forms.gle/oVAax2L4GiaPGTWp9" target="_blank" class="btn btn-sm btn-outline-dark">
                                     <i class="fa fa-file-signature me-1"></i> Formulario de Emisión de Diploma
                                 </a>
@@ -329,8 +515,29 @@
                                     <i class="fa fa-globe text-success me-2"></i> B. Registro e Inscripción de Título en SUNEDU
                                 </h5>
                                 <p class="text-muted mb-2" style="font-size: 14px;">
-                                    Pago ordinario de <strong>S/ 200.00</strong> (Concepto: <em>Inscripción título a SUNEDU | Código: 36</em>). Culmina en aprox. 30 días hábiles tras la remisión del expediente por Secretaría.
+                                    Culmina en aprox. 30 días hábiles tras la remisión del expediente por Secretaría.
                                 </p>
+
+                                <div class="pk-pago-box my-2">
+                                    <div class="pk-pago-box__header">
+                                        <i class="fa fa-cash-register"></i>
+                                        <span>Pago en ventanilla de <strong class="caja-cusco-brand" style="color: #d3141b;">Caja Cusco</strong> para Registro en SUNEDU:</span>
+                                    </div>
+                                    <div class="pk-pago-box__grid">
+                                        <div class="pk-pago-field pk-pago-field--concepto">
+                                            <span class="pk-pago-field__label"><i class="fa fa-tag text-primary"></i> Concepto Exacto</span>
+                                            <strong class="pk-pago-field__value">Inscripción título a SUNEDU</strong>
+                                        </div>
+                                        <div class="pk-pago-field pk-pago-field--codigo">
+                                            <span class="pk-pago-field__label"><i class="fa fa-barcode"></i> Código</span>
+                                            <strong class="pk-pago-field__value">36</strong>
+                                        </div>
+                                        <div class="pk-pago-field pk-pago-field--monto">
+                                            <span class="pk-pago-field__label"><i class="fa fa-money-bill-wave"></i> Monto</span>
+                                            <strong class="pk-pago-field__value">S/ 200.00</strong>
+                                        </div>
+                                    </div>
+                                </div>
                                 <a href="https://forms.gle/L7WHbS67NKYnWug69" target="_blank" class="btn btn-sm btn-outline-dark">
                                     <i class="fa fa-award me-1"></i> Formulario de Inscripción en SUNEDU (Correo institucional)
                                 </a>
@@ -346,14 +553,14 @@
                             <i class="fa fa-university"></i>
                         </div>
                         <div>
-                            <h3>Pagos del Proceso de Licenciatura en Caja Cusco</h3>
+                            <h3>Pagos del Proceso de Licenciatura en <span class="caja-cusco-brand" style="color: #d3141b;">Caja Cusco</span></h3>
                             <p>Realiza tus abonos exclusivamente mediante pago ordinario en ventanilla.</p>
                         </div>
                     </div>
 
                     <div class="pk-caja-alert">
                         <i class="fa fa-triangle-exclamation text-warning"></i>
-                        <span>Recuerda que para adjuntar tus comprobantes a los formularios debes esperar tu <strong>boleta electrónica institucional</strong> (llega en 2 días hábiles), no el voucher impreso del banco.</span>
+                        <span>Recuerda que para adjuntar tus comprobantes a los formularios debes esperar tu <strong>boleta electrónica institucional</strong> (llega en 2 días hábiles), no el voucher impreso de <strong class="caja-cusco-brand" style="color: #d3141b;">Caja Cusco</strong>.</span>
                     </div>
 
                     <div class="pk-caja-points">
@@ -363,7 +570,7 @@
                         </div>
                         <div class="pk-caja-point-item">
                             <div class="pk-point-num">2</div>
-                            <p>Indica el concepto exacto y código (Turnitin Tesis: 37, Dictamen: 32, Sustentación: 21, RD: 33, Repositorio: 34).</p>
+                            <p>Indica obligatoriamente los 3 datos: <strong>Concepto exacto</strong>, <strong>Código numérico</strong> y <strong>Monto</strong> (Turnitin Tesis: 37, Dictamen: 32, Sustentación: 21, RD: 33, Repositorio: 34).</p>
                         </div>
                         <div class="pk-caja-point-item">
                             <div class="pk-point-num">3</div>
@@ -377,7 +584,7 @@
 
                     <div class="pk-caja-footer">
                         <a href="javascript:void(0)" onclick="openPagoModal(event)" class="text-primary font-weight-bold" style="font-size: 14.5px;">
-                            <i class="fa fa-circle-info me-1"></i> Ver instructivo ilustrado de Caja Cusco
+                            <i class="fa fa-circle-info me-1"></i> Ver instructivo ilustrado de <strong class="caja-cusco-brand" style="color: #d3141b;">Caja Cusco</strong>
                         </a>
                         <a href="{{ asset('pdf/Conceptos-ordinarios-caja-cusco-2026-2.pdf') }}" target="_blank" class="pk-btn-caja-pdf">
                             <i class="fa fa-file-pdf"></i> Ver PDF de conceptos de pago
