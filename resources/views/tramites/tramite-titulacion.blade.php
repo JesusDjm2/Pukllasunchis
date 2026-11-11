@@ -53,7 +53,7 @@
 
                     <div class="pk-stepper-grid">
                         <!-- Paso 1 -->
-                        <div class="pk-step-box">
+                        <a href="{{ route('plan') }}" class="pk-step-box">
                             <div class="pk-step-box-header">
                                 <div class="pk-step-num">1</div>
                                 <span class="pk-step-tag">Fase 1 · Plan de Trabajo</span>
@@ -62,13 +62,13 @@
                             <p>
                                 Propuesta de investigación vinculada a la práctica docente, pago en <strong class="caja-cusco-brand" style="color: #d3141b;">Caja Cusco</strong>, formulación y aprobación por R.D. con asignación de asesor.
                             </p>
-                            <a href="{{ route('plan') }}" class="pk-step-link">
+                            <span class="pk-step-link">
                                 Ver requisitos y formatos <i class="fa fa-arrow-right"></i>
-                            </a>
-                        </div>
+                            </span>
+                        </a>
 
                         <!-- Paso 2 -->
-                        <div class="pk-step-box active">
+                        <a href="{{ route('tinvestigacion') }}" class="pk-step-box active">
                             <div class="pk-step-box-header">
                                 <div class="pk-step-num">2</div>
                                 <span class="pk-step-tag">Fase 2 · Grado de Bachiller</span>
@@ -77,13 +77,13 @@
                             <p>
                                 Redacción progresiva, reporte de originalidad Turnitin (máx. 20%), dictaminantes, exposición pública, repositorio y Grado de Bachiller SUNEDU.
                             </p>
-                            <a href="{{ route('tinvestigacion') }}" class="pk-step-link">
+                            <span class="pk-step-link">
                                 Ver proceso de Bachillerato <i class="fa fa-arrow-right"></i>
-                            </a>
-                        </div>
+                            </span>
+                        </a>
 
                         <!-- Paso 3 -->
-                        <div class="pk-step-box">
+                        <a href="{{ route('tesis') }}" class="pk-step-box">
                             <div class="pk-step-box-header">
                                 <div class="pk-step-num">3</div>
                                 <span class="pk-step-tag">Fase 3 · Licenciatura</span>
@@ -92,10 +92,10 @@
                             <p>
                                 Profundización y rigor metodológico para bachilleres. Sustentación formal ante jurado calificador, emisión de diploma y registro oficial ante SUNEDU.
                             </p>
-                            <a href="{{ route('tesis') }}" class="pk-step-link">
+                            <span class="pk-step-link">
                                 Ver proceso de Tesis <i class="fa fa-arrow-right"></i>
-                            </a>
-                        </div>
+                            </span>
+                        </a>
                     </div>
                 </div>
 
@@ -362,17 +362,17 @@
 
                 <!-- Navegación de inicio de fases -->
                 <div class="pk-etapas-nav mt-5">
-                    <div class="pk-etapas-nav-card pk-etapas-nav-next">
+                    <a href="{{ route('plan') }}" class="pk-etapas-nav-card pk-etapas-nav-next">
                         <div class="pk-etapas-nav-info">
                             <span class="pk-etapas-nav-badge">Paso 1 del Proceso</span>
                             <h4 class="pk-etapas-nav-title">Fase 1: Plan de Trabajo de Investigación (PTI)</h4>
                             <p class="pk-etapas-nav-desc">Inicia tu proceso formulando tu propuesta de investigación y solicitando docente asesor/a.</p>
                         </div>
-                        <a href="{{ route('plan') }}" class="pk-etapas-nav-btn">
+                        <span class="pk-etapas-nav-btn">
                             <span>Comenzar con la Fase 1</span>
                             <i class="fa fa-arrow-right"></i>
-                        </a>
-                    </div>
+                        </span>
+                    </a>
                 </div>
 
             </div>

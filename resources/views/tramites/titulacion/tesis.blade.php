@@ -597,30 +597,30 @@
                 <div class="pk-etapas-nav mt-5">
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <div class="pk-etapas-nav-card pk-etapas-nav-prev">
+                            <a href="{{ route('tinvestigacion') }}" class="pk-etapas-nav-card pk-etapas-nav-prev">
                                 <div class="pk-etapas-nav-info">
                                     <span class="pk-etapas-nav-badge">Etapa Anterior</span>
                                     <h4 class="pk-etapas-nav-title">Fase 2: Trabajo de Investigación</h4>
                                     <p class="pk-etapas-nav-desc">Obtención del Grado Académico de Bachiller.</p>
                                 </div>
-                                <a href="{{ route('tinvestigacion') }}" class="pk-etapas-nav-btn-outline">
+                                <span class="pk-etapas-nav-btn-outline">
                                     <i class="fa fa-arrow-left"></i>
                                     <span>Volver a Fase 2</span>
-                                </a>
-                            </div>
+                                </span>
+                            </a>
                         </div>
                         <div class="col-md-6">
-                            <div class="pk-etapas-nav-card pk-etapas-nav-next">
+                            <a href="{{ route('tramites') }}" class="pk-etapas-nav-card pk-etapas-nav-next">
                                 <div class="pk-etapas-nav-info">
                                     <span class="pk-etapas-nav-badge">Siguiente Paso</span>
                                     <h4 class="pk-etapas-nav-title">Trámites Presenciales</h4>
                                     <p class="pk-etapas-nav-desc">Armado físico del expediente y requisitos en secretaría.</p>
                                 </div>
-                                <a href="{{ route('tramites') }}" class="pk-etapas-nav-btn">
+                                <span class="pk-etapas-nav-btn">
                                     <span>Ver Expediente</span>
                                     <i class="fa fa-arrow-right"></i>
-                                </a>
-                            </div>
+                                </span>
+                            </a>
                         </div>
                     </div>
                 </div>

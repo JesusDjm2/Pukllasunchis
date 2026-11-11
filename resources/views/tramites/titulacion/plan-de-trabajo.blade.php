@@ -308,17 +308,17 @@
 
                 <!-- Navegación guiada a la siguiente etapa -->
                 <div class="pk-etapas-nav mt-5">
-                    <div class="pk-etapas-nav-card pk-etapas-nav-next">
+                    <a href="{{ route('tinvestigacion') }}" class="pk-etapas-nav-card pk-etapas-nav-next">
                         <div class="pk-etapas-nav-info">
                             <span class="pk-etapas-nav-badge">Siguiente Etapa de Titulación</span>
                             <h4 class="pk-etapas-nav-title">Fase 2: Trabajo de Investigación (Grado de Bachiller)</h4>
                             <p class="pk-etapas-nav-desc">Una vez aprobado tu Plan (PTI) y formalizado tu docente asesor/a, continúa con la redacción y dictamen del TI.</p>
                         </div>
-                        <a href="{{ route('tinvestigacion') }}" class="pk-etapas-nav-btn">
+                        <span class="pk-etapas-nav-btn">
                             <span>Continuar a Fase 2</span>
                             <i class="fa fa-arrow-right"></i>
-                        </a>
-                    </div>
+                        </span>
+                    </a>
                 </div>
 
             </div>

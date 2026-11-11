@@ -322,30 +322,30 @@
                 <div class="pk-etapas-nav mt-5">
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <div class="pk-etapas-nav-card pk-etapas-nav-prev">
+                            <a href="{{ route('tesis') }}" class="pk-etapas-nav-card pk-etapas-nav-prev">
                                 <div class="pk-etapas-nav-info">
                                     <span class="pk-etapas-nav-badge">Fase Académica</span>
                                     <h4 class="pk-etapas-nav-title">Fase 3: Tesis Profesional</h4>
                                     <p class="pk-etapas-nav-desc">Dictamen, sustentación y titulación de licenciatura.</p>
                                 </div>
-                                <a href="{{ route('tesis') }}" class="pk-etapas-nav-btn-outline">
+                                <span class="pk-etapas-nav-btn-outline">
                                     <i class="fa fa-arrow-left"></i>
                                     <span>Volver a Tesis</span>
-                                </a>
-                            </div>
+                                </span>
+                            </a>
                         </div>
                         <div class="col-md-6">
-                            <div class="pk-etapas-nav-card pk-etapas-nav-next">
+                            <a href="{{ route('extraordinarios') }}" class="pk-etapas-nav-card pk-etapas-nav-next">
                                 <div class="pk-etapas-nav-info">
                                     <span class="pk-etapas-nav-badge">Trámites y Tasas</span>
                                     <h4 class="pk-etapas-nav-title">Trámites Extraordinarios</h4>
                                     <p class="pk-etapas-nav-desc">Prórrogas, cambios de asesor, disolución de grupos y otros.</p>
                                 </div>
-                                <a href="{{ route('extraordinarios') }}" class="pk-etapas-nav-btn">
+                                <span class="pk-etapas-nav-btn">
                                     <span>Ver Extraordinarios</span>
                                     <i class="fa fa-arrow-right"></i>
-                                </a>
-                            </div>
+                                </span>
+                            </a>
                         </div>
                     </div>
                 </div>

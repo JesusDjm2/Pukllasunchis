@@ -648,30 +648,30 @@
                 <div class="pk-etapas-nav mt-5">
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <div class="pk-etapas-nav-card pk-etapas-nav-prev">
+                            <a href="{{ route('plan') }}" class="pk-etapas-nav-card pk-etapas-nav-prev">
                                 <div class="pk-etapas-nav-info">
                                     <span class="pk-etapas-nav-badge">Etapa Anterior</span>
                                     <h4 class="pk-etapas-nav-title">Fase 1: Plan de Trabajo (PTI)</h4>
                                     <p class="pk-etapas-nav-desc">Requisitos iniciales y asignación de asesor institucional.</p>
                                 </div>
-                                <a href="{{ route('plan') }}" class="pk-etapas-nav-btn-outline">
+                                <span class="pk-etapas-nav-btn-outline">
                                     <i class="fa fa-arrow-left"></i>
                                     <span>Volver a Fase 1</span>
-                                </a>
-                            </div>
+                                </span>
+                            </a>
                         </div>
                         <div class="col-md-6">
-                            <div class="pk-etapas-nav-card pk-etapas-nav-next">
+                            <a href="{{ route('tesis') }}" class="pk-etapas-nav-card pk-etapas-nav-next">
                                 <div class="pk-etapas-nav-info">
                                     <span class="pk-etapas-nav-badge">Siguiente Etapa</span>
                                     <h4 class="pk-etapas-nav-title">Fase 3: Tesis Profesional</h4>
                                     <p class="pk-etapas-nav-desc">Ruta final para la obtención del Título Profesional de Licenciado.</p>
                                 </div>
-                                <a href="{{ route('tesis') }}" class="pk-etapas-nav-btn">
+                                <span class="pk-etapas-nav-btn">
                                     <span>Ir a Fase 3</span>
                                     <i class="fa fa-arrow-right"></i>
-                                </a>
-                            </div>
+                                </span>
+                            </a>
                         </div>
                     </div>
                 </div>
