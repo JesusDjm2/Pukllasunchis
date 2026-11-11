@@ -262,11 +262,18 @@ class RpLecturaController extends Controller
         return redirect()->route('rp.importar.index')->with('success', 'Se descartó el acta escaneada.');
     }
 
-    /** Descarta todos los borradores pendientes de una sola vez. */
-    public function limpiarTodos(): RedirectResponse
+    /** Descarta todos los borradores pendientes de una sola vez, o solo los fallidos/vacíos. */
+    public function limpiarTodos(Request $request): RedirectResponse
     {
+        $soloFallidos = $request->boolean('solo_fallidos');
         $eliminados = 0;
         foreach (BorradorLecturaRp::todos() as $b) {
+            if ($soloFallidos) {
+                $esFallido = ! empty($b['error_lectura']) || ($b['alumnos'] ?? 0) === 0;
+                if (! $esFallido) {
+                    continue;
+                }
+            }
             $borrador = BorradorLecturaRp::buscar($b['id']);
             if ($borrador) {
                 $borrador->eliminar();
@@ -274,7 +281,11 @@ class RpLecturaController extends Controller
             }
         }
 
-        return redirect()->route('rp.importar.index')->with('success', "Se descartaron {$eliminados} borrador(es) pendiente(s).");
+        $msg = $soloFallidos
+            ? "Se eliminaron {$eliminados} borrador(es) fallido(s) o vacíos."
+            : "Se descartaron {$eliminados} borrador(es) pendiente(s).";
+
+        return redirect()->route('rp.importar.index')->with('success', $msg);
     }
 
     /** PDF escaneado guardado con el acta. */

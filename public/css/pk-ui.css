@@ -67,6 +67,10 @@
     .al-btn-verde:hover { background: #0b7c56; }
     body.dark-mode .al-btn-verde { background: #10b981; color: #0f172a !important; }
     body.dim-mode .al-btn-verde { background: var(--al-ok); color: #fff !important; }
+    .al-btn-rojo { background: var(--al-mal-f); color: var(--al-mal) !important; border: 1px solid rgba(192, 57, 43, .35); }
+    .al-btn-rojo:hover { background: var(--al-mal); color: #fff !important; border-color: var(--al-mal); }
+    .al-btn-azul { background: var(--al-info-f); color: var(--al-info) !important; border: 1px solid rgba(37, 99, 235, .35); }
+    .al-btn-azul:hover { background: var(--al-info); color: #fff !important; border-color: var(--al-info); }
     .al-btn-claro { background: rgba(255, 255, 255, .14); color: #fff !important; border-color: rgba(255, 255, 255, .3); }
     .al-btn-claro:hover { background: rgba(255, 255, 255, .24); }
     .al-btn-petroleo { background: var(--al-petroleo); color: #fff !important; }
@@ -865,33 +869,6 @@
     .rp-lec-chip.is-duda { background: var(--al-warn-f); }
     .rp-lec-chip.is-duda i { color: var(--al-warn); }
     .rp-lec-guardado { font-size: .75rem; }
-    .rp-lec-barra-flotante {
-        position: sticky;
-        bottom: .75rem;
-        z-index: 1020;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: .75rem;
-        padding: .75rem 1.15rem;
-        margin-top: 1rem;
-        background: var(--al-fondo);
-        border: 1px solid var(--al-borde);
-        border-radius: 14px;
-        box-shadow: 0 8px 30px rgba(0, 0, 0, .14);
-    }
-    @media (max-width: 767.98px) {
-        .rp-lec-barra-flotante {
-            flex-direction: column;
-            align-items: stretch;
-            bottom: 0;
-            border-radius: 0;
-            margin: 1rem -1rem 0;
-        }
-        .rp-lec-barra-flotante > div {
-            justify-content: center;
-        }
-    }
 
     .rp-lec-avisos:not(:empty) { margin-top: .9rem; display: flex; flex-direction: column; gap: .35rem; }
     .rp-lec-aviso { font-size: .8rem; padding: .4rem .7rem; border-radius: 8px; }
@@ -1045,7 +1022,8 @@
 
     /* Borradores pendientes en importar/index */
     .rp-borradores { display: flex; flex-direction: column; gap: .5rem; }
-    .rp-borrador { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .9rem; padding: .6rem .8rem; border: 1px solid var(--al-borde); border-radius: 10px; font-size: .84rem; }
+    .rp-borrador { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .9rem; padding: .6rem .8rem; border: 1px solid var(--al-borde); border-radius: 10px; font-size: .84rem; background: var(--al-fondo); }
+    .rp-borrador.is-fallido { background: rgba(192, 57, 43, .04); border-color: rgba(192, 57, 43, .25); }
     .rp-borrador > .al-btn { margin-left: auto; }
     .rp-borrador-acciones { margin-left: auto; display: flex; align-items: center; gap: .4rem; }
     .rp-borrador-acciones .al-btn { margin-left: 0; }

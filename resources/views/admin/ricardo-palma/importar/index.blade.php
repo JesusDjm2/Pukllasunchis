@@ -84,34 +84,60 @@
                 @endif
 
                 @if ($borradores)
+                    @php
+                        $fallidos = array_filter($borradores, fn($b) => !empty($b['error_lectura']) || ($b['alumnos'] ?? 0) === 0);
+                    @endphp
                     <div class="d-flex flex-wrap align-items-center justify-content-between mt-3 mb-2" style="gap: .5rem;">
                         <div class="rp-resultado-titulo m-0">Actas escaneadas sin cargar ({{ count($borradores) }})</div>
-                        <form method="POST" action="{{ route('rp.lecturas.limpiar') }}" onsubmit="return confirm('¿Seguro que deseas eliminar todos los borradores pendientes de escaneo?');" class="m-0">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="al-btn al-btn-sm al-btn-claro text-danger" title="Eliminar todos los borradores no cargados">
-                                <i class="fas fa-trash-alt"></i> Eliminar todos los borradores
-                            </button>
-                        </form>
+                        <div class="d-flex align-items-center flex-wrap" style="gap: .5rem;">
+                            @if (count($fallidos) > 0)
+                                <form method="POST" action="{{ route('rp.lecturas.limpiar') }}" onsubmit="return confirm('¿Seguro que deseas eliminar los {{ count($fallidos) }} borradores fallidos o vacíos?');" class="m-0">
+                                    @csrf
+                                    @method('DELETE')
+                                    <input type="hidden" name="solo_fallidos" value="1">
+                                    <button type="submit" class="al-btn al-btn-sm al-btn-rojo" title="Eliminar solo borradores con error o sin alumnos">
+                                        <i class="fas fa-trash-alt"></i> Borrar {{ count($fallidos) }} fallidos
+                                    </button>
+                                </form>
+                            @endif
+                            <form method="POST" action="{{ route('rp.lecturas.limpiar') }}" onsubmit="return confirm('¿Seguro que deseas eliminar todos los borradores pendientes de escaneo?');" class="m-0">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="al-btn al-btn-sm al-btn-borde text-muted" title="Eliminar todos los borradores no cargados">
+                                    <i class="fas fa-trash"></i> Eliminar todos
+                                </button>
+                            </form>
+                        </div>
                     </div>
                     <div class="rp-borradores">
                         @foreach ($borradores as $b)
-                            <div class="rp-borrador">
-                                <i class="fas fa-file-pdf al-suave"></i>
-                                <strong>{{ $b['archivo'] ?? 'escaneo.pdf' }}</strong>
-                                <span class="al-suave">{{ $b['titulo'] ?: 'Sin encabezado' }} · {{ $b['alumnos'] }} alumno(s)</span>
-                                <span class="al-suave">{{ $b['usuario'] ?? '' }} · {{ \Illuminate\Support\Carbon::parse($b['actualizado'])->format('d/m/Y H:i') }}</span>
-                                @if (! empty($b['error_lectura']))
-                                    <span class="al-badge is-mal" title="{{ $b['error_lectura'] }}">La IA no pudo leerla</span>
-                                @endif
+                            @php
+                                $esFallido = !empty($b['error_lectura']) || ($b['alumnos'] ?? 0) === 0;
+                            @endphp
+                            <div class="rp-borrador {{ $esFallido ? 'is-fallido' : '' }}">
+                                <i class="fas fa-file-pdf {{ $esFallido ? 'text-danger' : 'al-suave' }}"></i>
+                                <div>
+                                    <strong>{{ $b['archivo'] ?? 'escaneo.pdf' }}</strong>
+                                    <span class="al-suave ml-1">{{ $b['titulo'] ?: 'Sin encabezado' }} · {{ $b['alumnos'] }} alumno(s)</span>
+                                    <span class="al-suave ml-1">{{ $b['usuario'] ?? '' }} · {{ \Illuminate\Support\Carbon::parse($b['actualizado'])->format('d/m/Y H:i') }}</span>
+                                    @if (! empty($b['error_lectura']))
+                                        <span class="al-badge is-mal ml-1" title="{{ $b['error_lectura'] }}">La IA no pudo leerla</span>
+                                    @endif
+                                </div>
                                 <div class="rp-borrador-acciones">
-                                    <a href="{{ route('rp.lecturas.editar', $b['id']) }}" class="al-btn al-btn-sm al-btn-claro">
-                                        <i class="fas fa-pen"></i> Seguir corrigiendo
-                                    </a>
+                                    @if (! $esFallido)
+                                        <a href="{{ route('rp.lecturas.editar', $b['id']) }}" class="al-btn al-btn-sm al-btn-azul" title="Seguir revisando y corregir esta acta">
+                                            <i class="fas fa-pen"></i> Seguir corrigiendo
+                                        </a>
+                                    @else
+                                        <a href="{{ route('rp.lecturas.editar', $b['id']) }}" class="al-btn al-btn-sm al-btn-borde" title="Abrir editor">
+                                            <i class="fas fa-eye"></i> Ver
+                                        </a>
+                                    @endif
                                     <form method="POST" action="{{ route('rp.lecturas.descartar', $b['id']) }}" onsubmit="return confirm('¿Eliminar este borrador?');" class="d-inline m-0">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="al-btn al-btn-sm al-btn-claro text-danger" title="Eliminar este borrador">
+                                        <button type="submit" class="al-btn al-btn-sm al-btn-rojo" title="Eliminar este borrador">
                                             <i class="fas fa-trash-alt"></i> Borrar
                                         </button>
                                     </form>
