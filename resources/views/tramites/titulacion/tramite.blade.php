@@ -339,7 +339,7 @@
                                 <div class="pk-etapas-nav-info">
                                     <span class="pk-etapas-nav-badge">Trámites y Tasas</span>
                                     <h4 class="pk-etapas-nav-title">Trámites Extraordinarios</h4>
-                                    <p class="pk-etapas-nav-desc">Prórrogas, cambios de asesor, disolución de grupos y otros.</p>
+                                    <p class="pk-etapas-nav-desc">Prórrogas, cambios de asesor, separación de grupo y otros.</p>
                                 </div>
                                 <span class="pk-etapas-nav-btn">
                                     <span>Ver Extraordinarios</span>

@@ -57,7 +57,7 @@
                         <div class="pk-milestone-header">
                             <h4>Pago por Derecho de Aprobación de PTI y Asesor</h4>
                             <div class="pk-milestone-meta">
-                                <span class="pk-badge-fee"><i class="fa fa-receipt"></i> S/ 500.00</span>
+                                <span class="pk-badge-fee"><i class="fa fa-receipt"></i> S/ 50.00</span>
                                 <span class="pk-badge-time"><i class="fa fa-tag"></i> Código: 10</span>
                             </div>
                         </div>
@@ -83,7 +83,7 @@
                                     </div>
                                     <div class="pk-pago-field pk-pago-field--monto">
                                         <span class="pk-pago-field__label"><i class="fa fa-money-bill-wave"></i> 3. Monto a Pagar</span>
-                                        <strong class="pk-pago-field__value">S/ 500.00</strong>
+                                        <strong class="pk-pago-field__value">S/ 50.00</strong>
                                     </div>
                                 </div>
                                 <div class="pk-pago-box__instrucciones">
@@ -284,7 +284,7 @@
                         </div>
                         <div class="pk-caja-point-item">
                             <div class="pk-point-num">2</div>
-                            <p>Indica los 3 datos obligatorios: <strong>Concepto: APROBACIÓN DE PTI Y ASESOR</strong> | <strong>Código: 10</strong> | <strong>Monto: S/ 500.00</strong>.</p>
+                            <p>Indica los 3 datos obligatorios: <strong>Concepto: APROBACIÓN DE PTI Y ASESOR</strong> | <strong>Código: 10</strong> | <strong>Monto: S/ 50.00</strong>.</p>
                         </div>
                         <div class="pk-caja-point-item">
                             <div class="pk-point-num">3</div>

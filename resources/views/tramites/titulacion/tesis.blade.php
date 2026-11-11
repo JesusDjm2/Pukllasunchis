@@ -57,7 +57,7 @@
                         <div class="pk-milestone-header">
                             <h4>Revisión de Originalidad (Turnitin de Tesis)</h4>
                             <div class="pk-milestone-meta">
-                                <span class="pk-badge-fee"><i class="fa fa-receipt"></i> S/ 30.00</span>
+                                <span class="pk-badge-fee"><i class="fa fa-receipt"></i> S/ 25.00</span>
                                 <span class="pk-badge-time"><i class="fa fa-tag"></i> Código: 37</span>
                                 <span class="pk-badge-time"><i class="fa fa-clock"></i> Hasta 10 días hábiles</span>
                             </div>
@@ -88,7 +88,7 @@
                                     </div>
                                     <div class="pk-pago-field pk-pago-field--monto">
                                         <span class="pk-pago-field__label"><i class="fa fa-money-bill-wave"></i> 3. Monto a Pagar</span>
-                                        <strong class="pk-pago-field__value">S/ 30.00</strong>
+                                        <strong class="pk-pago-field__value">S/ 25.00</strong>
                                     </div>
                                 </div>
                                 <div class="pk-pago-box__instrucciones">
@@ -571,7 +571,7 @@
                         </div>
                         <div class="pk-caja-point-item">
                             <div class="pk-point-num">2</div>
-                            <p>Indica obligatoriamente los 3 datos: <strong>Concepto exacto</strong>, <strong>Código numérico</strong> y <strong>Monto</strong> (Turnitin Tesis: Cód. 37 - S/ 30.00, Dictamen de Tesis: Cód. 32 - S/ 100.00, Sustentación: Cód. 21 - S/ 100.00, RD Aprobación: Cód. 33 - S/ 50.00, Repositorio: Cód. 34 - S/ 50.00, Emisión Título: Cód. 35 - S/ 400.00, Registro Título: Cód. 36 - S/ 200.00).</p>
+                            <p>Indica obligatoriamente los 3 datos: <strong>Concepto exacto</strong>, <strong>Código numérico</strong> y <strong>Monto</strong> (Turnitin Tesis: Cód. 37 - S/ 25.00, Dictamen de Tesis: Cód. 32 - S/ 100.00, Sustentación: Cód. 21 - S/ 100.00, RD Aprobación: Cód. 33 - S/ 50.00, Repositorio: Cód. 34 - S/ 50.00, Emisión Título: Cód. 35 - S/ 400.00, Registro Título: Cód. 36 - S/ 200.00).</p>
                         </div>
                         <div class="pk-caja-point-item">
                             <div class="pk-point-num">3</div>

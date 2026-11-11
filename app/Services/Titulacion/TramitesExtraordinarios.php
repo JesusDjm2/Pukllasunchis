@@ -15,7 +15,7 @@ class TramitesExtraordinarios
 {
     public const TIPOS = [
         'aprobacion_pti' => [
-            'codigo' => 10, 'monto' => 500.00, 'concepto_caja' => 'APROBACIÓN DE PTI Y ASESOR',
+            'codigo' => 10, 'monto' => 50.00, 'concepto_caja' => 'APROBACIÓN DE PTI Y ASESOR',
             'titulo' => 'Aprobación de PTI y Asesor', 'icono' => 'fa-file-circle-check',
             'resumen' => 'Inscripción inicial o reaprobación tras cambio sustancial',
             'descripcion' => 'Inscripción formal del PTI y designación o ratificación de asesor mediante R.D.',
@@ -35,11 +35,39 @@ class TramitesExtraordinarios
             'descripcion' => 'Solicitud de reasignación fundamentada de asesor/a.',
             'formulario' => 'https://docs.google.com/forms/d/1m7kWkj6C_Uoz252CHr_IsM1xkRhygy5DsCYKl_bH36E/viewform',
         ],
-        'disolucion_grupo' => [
-            'codigo' => 14, 'monto' => 20.00, 'concepto_caja' => 'DISOLUCIÓN DEL GRUPO DE INVESTIGACIÓN',
-            'titulo' => 'Disolución de Grupo de Investigación', 'icono' => 'fa-users-slash',
-            'resumen' => 'Separación de integrantes por motivos justificados (costo por persona)',
-            'descripcion' => 'Solicitud de separación y continuidad individual del proceso de investigación.',
+        'separacion_grupo' => [
+            'codigo' => 43, 'monto' => 30.00, 'concepto_caja' => 'SEPARACION GRUPO DE INVESTIGACION',
+            'titulo' => 'Separación de Grupo de Investigación', 'icono' => 'fa-users-slash',
+            'resumen' => 'Cuando solo uno de los integrantes se retira del grupo de investigación',
+            'descripcion' => 'Solicitud de retiro de un integrante del equipo de investigación.',
+            'formulario' => null,
+        ],
+        'disolucion_grupo' => [ // Alias de compatibilidad hacia separacion_grupo
+            'codigo' => 43, 'monto' => 30.00, 'concepto_caja' => 'SEPARACION GRUPO DE INVESTIGACION',
+            'titulo' => 'Separación de Grupo de Investigación', 'icono' => 'fa-users-slash',
+            'resumen' => 'Cuando solo uno de los integrantes se retira del grupo de investigación',
+            'descripcion' => 'Solicitud de retiro de un integrante del equipo de investigación.',
+            'formulario' => null,
+        ],
+        'integracion_grupo' => [
+            'codigo' => 47, 'monto' => 30.00, 'concepto_caja' => 'INTEGRACION A GRUPO DE INVESTIGACION',
+            'titulo' => 'Integración al Grupo de Investigación', 'icono' => 'fa-user-plus',
+            'resumen' => 'Incorporación de un estudiante a un grupo de investigación existente',
+            'descripcion' => 'Solicitud de incorporación de un estudiante a un grupo de investigación ya conformado.',
+            'formulario' => null,
+        ],
+        'dejar_sin_efecto_rd' => [
+            'codigo' => 14, 'monto' => 30.00, 'concepto_caja' => 'DEJAR SIN EFECTO RD DE PTI',
+            'titulo' => 'Dejar sin efecto R.D. de PTI', 'icono' => 'fa-ban',
+            'resumen' => 'Dejar sin efecto la resolución directoral de plan de trabajo',
+            'descripcion' => 'Solicitud formal para dejar sin efecto la R.D. de aprobación del Plan de Trabajo de Investigación.',
+            'formulario' => null,
+        ],
+        'anulacion_rd_pti' => [ // Alias de compatibilidad hacia dejar_sin_efecto_rd
+            'codigo' => 14, 'monto' => 30.00, 'concepto_caja' => 'DEJAR SIN EFECTO RD DE PTI',
+            'titulo' => 'Dejar sin efecto R.D. de PTI', 'icono' => 'fa-ban',
+            'resumen' => 'Dejar sin efecto la resolución directoral de plan de trabajo',
+            'descripcion' => 'Solicitud formal para dejar sin efecto la R.D. de aprobación del Plan de Trabajo de Investigación.',
             'formulario' => null,
         ],
         'extension_plazo' => [
@@ -62,13 +90,6 @@ class TramitesExtraordinarios
             'resumen' => 'Acompañamiento especializado fuera de cronograma lectivo',
             'descripcion' => 'Solicitar sesiones complementarias de acompañamiento con docente especialista por sesión.',
             'formulario' => 'https://docs.google.com/forms/d/18yuH2gbrM5GVr8DHGvYeA7t5hrBIx9aXyIsbAcEdIAs/viewform',
-        ],
-        'anulacion_rd_pti' => [
-            'codigo' => 53, 'monto' => 30.00, 'concepto_caja' => 'ANULACION DE RD DE PTI',
-            'titulo' => 'Anulación de R.D. de PTI', 'icono' => 'fa-ban',
-            'resumen' => 'Anulación formal de resolución directoral de plan de trabajo',
-            'descripcion' => 'Solicitud de anulación de R.D. de aprobación del Plan de Trabajo de Investigación.',
-            'formulario' => null,
         ],
         'rectificacion_nombre' => [
             'codigo' => 24, 'monto' => 100.00, 'concepto_caja' => 'RECTIFICACIÓN DE NOMBRE',

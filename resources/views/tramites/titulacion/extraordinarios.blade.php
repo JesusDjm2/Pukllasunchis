@@ -5,7 +5,7 @@
     <title>{{ $titulo }} - EESPP Pukllasunchis</title>
     <meta name="description"
         content="Procedimientos, costos y formularios virtuales para trámites extraordinarios del proceso de investigación y titulación en la EESPP Pukllasunchis.">
-    <meta name="keywords" content="{{ $titulo }}, Tramites Extraordinarios Titulacion, Cambio Asesor Pukllasunchis, Disolucion Grupo">
+    <meta name="keywords" content="{{ $titulo }}, Tramites Extraordinarios Titulacion, Cambio Asesor Pukllasunchis, Separacion Grupo, Integracion Grupo">
     <link rel="stylesheet" href="{{ asset('css/pk-tramites-titulacion.css') }}">
 @endsection
 
@@ -69,7 +69,7 @@
                                     <div class="text-muted" style="font-size: 13px;">Inscripción formal inicial o reaprobación del plan</div>
                                 </td>
                                 <td class="text-center"><span class="pk-badge-code">10</span></td>
-                                <td class="text-center font-weight-bold text-dark">S/ 500.00</td>
+                                <td class="text-center font-weight-bold text-dark">S/ 50.00</td>
                                 <td class="text-end">
                                     <a href="https://docs.google.com/forms/d/e/1FAIpQLSeErc1rq886EWiuavn27wd5kpCkZ48ntkOrWgNS5uE2XKw5JA/viewform"
                                        target="_blank" class="btn btn-sm btn-outline-primary" style="font-size: 13px; font-weight: 500;">
@@ -107,16 +107,29 @@
                             </tr>
                             <tr>
                                 <td>
-                                    <strong>Disolución de Grupo de Investigación</strong>
-                                    <div class="text-muted" style="font-size: 13px;">Separación de integrantes por motivos justificados (costo por persona)</div>
+                                    <strong>Separación del Grupo de Investigación (solo uno se va)</strong>
+                                    <div class="text-muted" style="font-size: 13px;">Separación voluntaria o justificada de un integrante del equipo</div>
                                 </td>
-                                <td class="text-center"><span class="pk-badge-code">14</span></td>
-                                <td class="text-center font-weight-bold text-dark">S/ 20.00</td>
+                                <td class="text-center"><span class="pk-badge-code">43</span></td>
+                                <td class="text-center font-weight-bold text-dark">S/ 30.00</td>
                                 <td class="text-end">
                                     <a href="https://docs.google.com/forms/d/13N25FvL4V7142Hq_gP0FjY37R9dD6xK09GvJmQ7a/viewform"
                                        target="_blank" class="btn btn-sm btn-outline-primary" style="font-size: 13px; font-weight: 500;">
                                         Formulario <i class="fa fa-arrow-up-right-from-square"></i>
                                     </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>Integración al Grupo de Investigación</strong>
+                                    <div class="text-muted" style="font-size: 13px;">Incorporación o adhesión de un nuevo integrante a un grupo de investigación</div>
+                                </td>
+                                <td class="text-center"><span class="pk-badge-code">47</span></td>
+                                <td class="text-center font-weight-bold text-dark">S/ 30.00</td>
+                                <td class="text-end">
+                                    <span class="badge bg-light text-muted border" style="font-size: 12px; font-weight: 500;">
+                                        FUT Presencial
+                                    </span>
                                 </td>
                             </tr>
                             <tr>
@@ -163,10 +176,10 @@
                             </tr>
                             <tr>
                                 <td>
-                                    <strong>Anulación de R.D. de PTI</strong>
-                                    <div class="text-muted" style="font-size: 13px;">Anulación de resolución directoral de plan de trabajo de investigación</div>
+                                    <strong>Dejar sin efecto la R.D. de PTI</strong>
+                                    <div class="text-muted" style="font-size: 13px;">Dejar sin efecto la resolución directoral de plan de trabajo de investigación</div>
                                 </td>
-                                <td class="text-center"><span class="pk-badge-code">53</span></td>
+                                <td class="text-center"><span class="pk-badge-code">14</span></td>
                                 <td class="text-center font-weight-bold text-dark">S/ 30.00</td>
                                 <td class="text-end">
                                     <span class="badge bg-light text-muted border" style="font-size: 12px; font-weight: 500;">
@@ -216,7 +229,7 @@
                             <div class="pk-card-tramite__icon">
                                 <i class="fa fa-file-circle-check"></i>
                             </div>
-                            <span class="pk-card-tramite__badge">S/ 500.00 · Cód: 10</span>
+                            <span class="pk-card-tramite__badge">S/ 50.00 · Cód: 10</span>
                         </div>
                         <h4>Aprobación de PTI y Asesor</h4>
                         <p>Inscripción formal del PTI y designación o ratificación de asesor mediante R.D.</p>
@@ -255,20 +268,35 @@
                         </div>
                     </a>
 
-                    <!-- Card 4: Disolución de Grupo -->
+                    <!-- Card 4: Separación de Grupo -->
                     <a href="https://docs.google.com/forms/d/13N25FvL4V7142Hq_gP0FjY37R9dD6xK09GvJmQ7a/viewform" target="_blank" class="pk-card-tramite">
                         <div class="pk-card-tramite__top">
                             <div class="pk-card-tramite__icon">
                                 <i class="fa fa-users-slash"></i>
                             </div>
-                            <span class="pk-card-tramite__badge">S/ 20.00 · Cód: 14</span>
+                            <span class="pk-card-tramite__badge">S/ 30.00 · Cód: 43</span>
                         </div>
-                        <h4>Disolución de Grupo</h4>
-                        <p>Solicitud de separación y continuidad individual del proceso de investigación.</p>
+                        <h4>Separación del Grupo de Investigación</h4>
+                        <p>Solicitud de retiro de un integrante y continuidad individual del proceso de investigación.</p>
                         <div class="pk-card-tramite__action">
                             <span>Abrir Formulario</span> <i class="fa fa-external-link"></i>
                         </div>
                     </a>
+
+                    <!-- Card 4b: Integración al Grupo -->
+                    <div class="pk-card-tramite" style="cursor: default;">
+                        <div class="pk-card-tramite__top">
+                            <div class="pk-card-tramite__icon">
+                                <i class="fa fa-user-plus"></i>
+                            </div>
+                            <span class="pk-card-tramite__badge">S/ 30.00 · Cód: 47</span>
+                        </div>
+                        <h4>Integración al Grupo de Investigación</h4>
+                        <p>Incorporación o adhesión de un nuevo integrante a un grupo de investigación.</p>
+                        <div class="pk-card-tramite__action text-muted">
+                            <span>Vía FUT en Secretaría</span> <i class="fa fa-building-columns"></i>
+                        </div>
+                    </div>
 
                     <!-- Card 5: Extensión de Plazo -->
                     <a href="https://docs.google.com/forms/d/e/1FAIpQLSciR5L299xLpI5OQ_ample/viewform" target="_blank" class="pk-card-tramite">
@@ -315,16 +343,16 @@
                         </div>
                     </a>
 
-                    <!-- Card 8: Anulación RD PTI -->
+                    <!-- Card 8: Dejar sin efecto RD PTI -->
                     <div class="pk-card-tramite" style="cursor: default;">
                         <div class="pk-card-tramite__top">
                             <div class="pk-card-tramite__icon">
                                 <i class="fa fa-ban"></i>
                             </div>
-                            <span class="pk-card-tramite__badge">S/ 30.00 · Cód: 53</span>
+                            <span class="pk-card-tramite__badge">S/ 30.00 · Cód: 14</span>
                         </div>
-                        <h4>Anulación de R.D. de PTI</h4>
-                        <p>Anulación formal de la resolución directoral de aprobación de Plan de Trabajo.</p>
+                        <h4>Dejar sin efecto R.D. de PTI</h4>
+                        <p>Dejar sin efecto la resolución directoral de aprobación de Plan de Trabajo.</p>
                         <div class="pk-card-tramite__action text-muted">
                             <span>Vía FUT en Secretaría</span> <i class="fa fa-building-columns"></i>
                         </div>
@@ -355,7 +383,7 @@
                         </div>
                         <div class="pk-caja-point-item">
                             <div class="pk-point-num">2</div>
-                            <p>Indica obligatoriamente los 3 datos: <strong>Concepto exacto</strong>, <strong>Código numérico</strong> y <strong>Monto</strong> (ejemplo: Cambio de asesor: Cód. 13 - S/ 30.00, Disolución de grupo: Cód. 14 - S/ 20.00, Extensión de plazo: Cód. 11 - S/ 50.00, etc.).</p>
+                            <p>Indica obligatoriamente los 3 datos: <strong>Concepto exacto</strong>, <strong>Código numérico</strong> y <strong>Monto</strong> (ejemplo: Cambio de asesor: Cód. 13 - S/ 30.00, Separación de grupo: Cód. 43 - S/ 30.00, Integración a grupo: Cód. 47 - S/ 30.00, Dejar sin efecto RD: Cód. 14 - S/ 30.00, Extensión de plazo: Cód. 11 - S/ 50.00, etc.).</p>
                         </div>
                         <div class="pk-caja-point-item">
                             <div class="pk-point-num">3</div>

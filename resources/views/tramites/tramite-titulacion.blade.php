@@ -130,7 +130,7 @@
                         </div>
                         <h4>Trámites Extraordinarios</h4>
                         <p>
-                            Cambio de tema o asesor, disolución de grupo, ampliación de plazo, anulación de R.D. y solicitud de asesorías adicionales por sesión.
+                            Cambio de tema o asesor, separación o integración de grupo, ampliación de plazo, dejar sin efecto R.D. y asesorías adicionales.
                         </p>
                         <div class="pk-card-tramite__action">
                             <span>Ver conceptos y costos</span> <i class="fa fa-arrow-right"></i>
