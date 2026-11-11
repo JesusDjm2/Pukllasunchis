@@ -99,61 +99,10 @@
                     </div>
                 </div>
 
-                <!-- Grid de Módulos Específicos -->
-                <h3 class="mt-4 mb-3">Módulos y Trámites del Proceso</h3>
+                <!-- Otros Trámites -->
+                <h3 class="mt-4 mb-3">Otros Trámites</h3>
 
                 <div class="pk-cards-grid">
-                    <!-- PTI -->
-                    <a href="{{ route('plan') }}" class="pk-card-tramite">
-                        <div class="pk-card-tramite__top">
-                            <div class="pk-card-tramite__icon">
-                                <i class="fa fa-file-signature"></i>
-                            </div>
-                            <span class="pk-card-tramite__badge badge-gold">Fase 1</span>
-                        </div>
-                        <h4>Plan de Trabajo (PTI)</h4>
-                        <p>
-                            Descarga de formatos (.docx), Guía de Investigación 2025, pago ordinario (Cód. 10) y solicitud de Carta de Aplicación en Intranet.
-                        </p>
-                        <div class="pk-card-tramite__action">
-                            <span>Ingresar a PTI</span> <i class="fa fa-arrow-right"></i>
-                        </div>
-                    </a>
-
-                    <!-- TI -->
-                    <a href="{{ route('tinvestigacion') }}" class="pk-card-tramite">
-                        <div class="pk-card-tramite__top">
-                            <div class="pk-card-tramite__icon">
-                                <i class="fa fa-book-bookmark"></i>
-                            </div>
-                            <span class="pk-card-tramite__badge badge-primary">Fase 2</span>
-                        </div>
-                        <h4>Trabajo de Investigación</h4>
-                        <p>
-                            Formato oficial de TI, carátulas FID/PPD, revisión Turnitin, asignación de fecha de exposición y trámite de Bachiller SUNEDU.
-                        </p>
-                        <div class="pk-card-tramite__action">
-                            <span>Ingresar a TI</span> <i class="fa fa-arrow-right"></i>
-                        </div>
-                    </a>
-
-                    <!-- Tesis -->
-                    <a href="{{ route('tesis') }}" class="pk-card-tramite">
-                        <div class="pk-card-tramite__top">
-                            <div class="pk-card-tramite__icon">
-                                <i class="fa fa-award"></i>
-                            </div>
-                            <span class="pk-card-tramite__badge badge-primary">Fase 3</span>
-                        </div>
-                        <h4>Tesis de Licenciatura</h4>
-                        <p>
-                            Estructura de tesis, dictamen, fecha de sustentación con jurado calificador, R.D. aprobatoria y registro del Título Profesional.
-                        </p>
-                        <div class="pk-card-tramite__action">
-                            <span>Ingresar a Tesis</span> <i class="fa fa-arrow-right"></i>
-                        </div>
-                    </a>
-
                     <!-- Presenciales -->
                     <a href="{{ route('tramites') }}" class="pk-card-tramite">
                         <div class="pk-card-tramite__top">
