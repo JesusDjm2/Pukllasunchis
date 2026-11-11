@@ -903,6 +903,117 @@
     </script>
     <script src="{{ asset('js/gsap-animations.js') }}"></script>
     <script>
+        /* Controlador Universal de Acordeones y Colapsables (Bootstrap 5 Bridge)
+           Garantiza el funcionamiento interactivo de data-bs-toggle="collapse"
+           y .accordion-button con animación nativa suave. */
+        (function () {
+            function getRelatedButtons(target, activeBtn) {
+                var list = [];
+                if (activeBtn) list.push(activeBtn);
+                if (target && target.id) {
+                    var others = document.querySelectorAll(
+                        '[data-bs-target="#' + target.id + '"], [data-target="#' + target.id + '"], [href="#' + target.id + '"]'
+                    );
+                    others.forEach(function (btn) {
+                        if (list.indexOf(btn) === -1) list.push(btn);
+                    });
+                }
+                return list;
+            }
+
+            function getAccordionParent(target, btn) {
+                var sel = target.getAttribute('data-bs-parent') || target.getAttribute('data-parent');
+                if (sel) {
+                    try { return document.querySelector(sel); } catch (e) {}
+                }
+                if (btn) {
+                    var p = btn.closest('.accordion');
+                    if (p) return p;
+                }
+                return target.closest('.accordion');
+            }
+
+            function openCollapse(target, btn) {
+                if (!target || target.classList.contains('collapsing') || target.classList.contains('show')) return;
+
+                var btns = getRelatedButtons(target, btn);
+                btns.forEach(function (b) {
+                    b.classList.remove('collapsed');
+                    b.setAttribute('aria-expanded', 'true');
+                });
+
+                target.classList.remove('collapse');
+                target.classList.add('collapsing');
+                target.style.height = '0px';
+
+                var fullH = target.scrollHeight;
+                requestAnimationFrame(function () {
+                    target.style.height = fullH + 'px';
+                });
+
+                setTimeout(function () {
+                    target.classList.remove('collapsing');
+                    target.classList.add('collapse', 'show');
+                    target.style.height = '';
+                }, 350);
+            }
+
+            function closeCollapse(target, btn) {
+                if (!target || target.classList.contains('collapsing') || !target.classList.contains('show')) return;
+
+                var btns = getRelatedButtons(target, btn);
+                btns.forEach(function (b) {
+                    b.classList.add('collapsed');
+                    b.setAttribute('aria-expanded', 'false');
+                });
+
+                target.style.height = target.getBoundingClientRect().height + 'px';
+                target.offsetHeight; // reflow
+                target.classList.remove('collapse', 'show');
+                target.classList.add('collapsing');
+
+                requestAnimationFrame(function () {
+                    target.style.height = '0px';
+                });
+
+                setTimeout(function () {
+                    target.classList.remove('collapsing');
+                    target.classList.add('collapse');
+                    target.style.height = '';
+                }, 350);
+            }
+
+            document.addEventListener('click', function (e) {
+                var btn = e.target.closest('.accordion-button, [data-bs-toggle="collapse"]');
+                if (!btn) return;
+
+                var sel = btn.getAttribute('data-bs-target') || btn.getAttribute('data-target') || btn.getAttribute('href');
+                if (!sel || !sel.startsWith('#')) return;
+
+                var target = document.querySelector(sel);
+                if (!target) return;
+
+                e.preventDefault();
+
+                var isShow = target.classList.contains('show');
+                if (isShow) {
+                    closeCollapse(target, btn);
+                } else {
+                    var parent = getAccordionParent(target, btn);
+                    if (parent) {
+                        var openSiblings = parent.querySelectorAll('.collapse.show, .accordion-collapse.show');
+                        openSiblings.forEach(function (sib) {
+                            if (sib !== target) {
+                                closeCollapse(sib);
+                            }
+                        });
+                    }
+                    openCollapse(target, btn);
+                }
+            });
+        })();
+    </script>
+    <script>
         (function () {
             var pl = document.getElementById('pl-public');
             if (!pl) return;
