@@ -53,19 +53,22 @@
         </ul>
 
         <div class="pk-sidebar-support">
-            <h6><i class="fa fa-headset text-warning"></i> Mesa de Ayuda</h6>
-            <p>¿Dudas con tu expediente o estado de trámite?</p>
-            <p class="mb-1"><strong>Área de Investigación</strong></p>
-            <a href="https://wa.me/51972577170" target="_blank" rel="noopener">
-                <i class="fa-brands fa-whatsapp me-1"></i> +51 972 577 170
-            </a>
-            <p class="mb-1 mt-2"><strong>Secretaría Académica</strong></p>
-            <a href="https://wa.me/51969572566" target="_blank" rel="noopener">
-                <i class="fa-brands fa-whatsapp me-1"></i> +51 969 572 566
-            </a>
-            <p class="mt-2 text-muted mb-0" style="font-size: 12px;">
-                <i class="fa fa-clock me-1"></i> Lun a Vie: 8:00 am - 5:00 pm
-            </p>
+            <div class="pk-support-header">
+                <h6><i class="fa fa-headset text-warning"></i> Mesa de Ayuda</h6>
+                <span class="pk-support-time"><i class="fa fa-clock"></i> 8am - 5pm</span>
+            </div>
+            <div class="pk-support-links">
+                <a href="https://wa.me/51972577170" target="_blank" rel="noopener" class="pk-support-link" title="Contactar por WhatsApp al Área de Investigación">
+                    <i class="fa-brands fa-whatsapp"></i>
+                    <span class="pk-support-label">Investigación:</span>
+                    <strong>972 577 170</strong>
+                </a>
+                <a href="https://wa.me/51969572566" target="_blank" rel="noopener" class="pk-support-link" title="Contactar por WhatsApp a Secretaría Académica">
+                    <i class="fa-brands fa-whatsapp"></i>
+                    <span class="pk-support-label">Secretaría Acad.:</span>
+                    <strong>969 572 566</strong>
+                </a>
+            </div>
         </div>
     </div>
 </div>
@@ -250,64 +253,100 @@ body:has(.pegajoso) {
     transform: translateX(4px) !important;
 }
 
-/* Tarjeta Mesa de Ayuda */
+/* Tarjeta Mesa de Ayuda Compacta */
 .pk-sidebar-support {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 14px;
-    padding: 18px;
-    margin-top: 26px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    transition: all 0.25s ease;
+    background: #fdfaf6;
+    border: 1px solid #ebd9c0;
+    border-radius: 11px;
+    padding: 10px 12px;
+    margin-top: 14px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+    transition: all 0.2s ease;
 }
 
 .pk-sidebar-support:hover {
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
-    border-color: #d1d5db;
-    transform: translateY(-2px);
+    border-color: #cd9244;
+    box-shadow: 0 3px 10px rgba(205, 146, 68, 0.08);
+}
+
+.pk-support-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 7px;
 }
 
 .pk-sidebar-support h6 {
     font-family: "Poppins", sans-serif;
-    font-size: 14px;
+    font-size: 12.5px;
     font-weight: 600;
-    color: #1f2937;
-    margin-bottom: 6px;
+    color: #2c251e;
+    margin: 0;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 }
 
-.pk-sidebar-support p {
-    font-family: "Poppins", sans-serif;
-    font-size: 13px;
-    line-height: 19px;
-    color: #6b7280;
-    margin-bottom: 6px;
-}
-
-.pk-sidebar-support strong {
-    color: #374151;
-    font-weight: 600;
-}
-
-.pk-support-email {
-    font-family: "Poppins", sans-serif;
-    color: #cd9244 !important;
-    font-size: 12px;
+.pk-support-time {
+    font-size: 10.5px;
     font-weight: 500;
-    text-decoration: none !important;
-    word-break: break-all;
+    color: #8c7866;
+    background: #f5ece0;
+    padding: 2px 7px;
+    border-radius: 999px;
     display: inline-flex;
-    align-items: flex-start;
-    gap: 5px;
-    transition: color 0.2s ease;
-    line-height: 16px;
+    align-items: center;
+    gap: 4px;
 }
 
-.pk-support-email:hover {
-    color: #a86c1f !important;
-    text-decoration: underline !important;
+.pk-support-links {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.pk-support-link {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 9px;
+    background: #ffffff;
+    border: 1px solid #ebd9c0;
+    border-radius: 7px;
+    text-decoration: none !important;
+    font-family: "Poppins", sans-serif;
+    font-size: 11.5px;
+    color: #4b5563;
+    transition: all 0.18s ease;
+    line-height: 1.2;
+}
+
+.pk-support-link i {
+    color: #25d366;
+    font-size: 13.5px;
+    flex-shrink: 0;
+}
+
+.pk-support-label {
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.pk-support-link strong {
+    color: #1f2937;
+    font-weight: 600;
+    margin-left: auto;
+}
+
+.pk-support-link:hover {
+    background: #f0fdf4;
+    border-color: #86efac;
+    color: #166534;
+    transform: translateX(2px);
+}
+
+.pk-support-link:hover strong {
+    color: #15803d;
 }
 
 /* ── Overlay ─────────────────────────────────────────── */
