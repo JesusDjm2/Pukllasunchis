@@ -15,15 +15,6 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="bradcam_text">
-                        <nav aria-label="Migas de pan" class="pk-breadcrumbs-nav">
-                            <ol class="pk-breadcrumbs-list">
-                                <li><a href="{{ route('index') }}"><i class="fa fa-home"></i> Inicio</a></li>
-                                <li><i class="fa fa-chevron-right pk-breadcrumb-sep"></i></li>
-                                <li><a href="{{ route('tramiteTitulacion') }}">Titulación</a></li>
-                                <li><i class="fa fa-chevron-right pk-breadcrumb-sep"></i></li>
-                                <li class="pk-breadcrumb-current" aria-current="page">Trámites Extraordinarios</li>
-                            </ol>
-                        </nav>
                         <div class="pk-hero-badge">
                             <i class="fa fa-receipt"></i> Derechos Administrativos
                         </div>
@@ -328,6 +319,21 @@
                         </a>
                         <a href="{{ asset('pdf/Conceptos-ordinarios-caja-cusco-2026-2.pdf') }}" target="_blank" class="pk-btn-caja-pdf">
                             <i class="fa fa-file-pdf"></i> Ver PDF de conceptos de pago
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Navegación a la guía general -->
+                <div class="pk-etapas-nav mt-5">
+                    <div class="pk-etapas-nav-card pk-etapas-nav-next">
+                        <div class="pk-etapas-nav-info">
+                            <span class="pk-etapas-nav-badge">Guía Principal</span>
+                            <h4 class="pk-etapas-nav-title">Guía Oficial del Proceso de Titulación</h4>
+                            <p class="pk-etapas-nav-desc">Revisa el flujo completo de 3 fases reglamentarias para la obtención de tu Grado y Título Profesional.</p>
+                        </div>
+                        <a href="{{ route('tramiteTitulacion') }}" class="pk-etapas-nav-btn">
+                            <span>Ver Guía General</span>
+                            <i class="fa fa-arrow-right"></i>
                         </a>
                     </div>
                 </div>

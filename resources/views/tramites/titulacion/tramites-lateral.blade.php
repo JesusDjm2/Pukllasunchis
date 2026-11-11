@@ -1,4 +1,7 @@
-<div class="col-lg-3">
+<!-- ═════════════════════════════════════════════════════════════════════
+     1. MENÚ LATERAL PARA ESCRITORIO (PANTALLAS GRANDES >= 992px)
+     ═════════════════════════════════════════════════════════════════════ -->
+<div class="col-lg-3 d-none d-lg-block">
     <div class="pegajoso desktop">
         <h3 class="linea-debajo">Trámites</h3>
         <ul class="submenu2 pk-sidebar-menu">
@@ -68,6 +71,136 @@
                     <span class="pk-support-label">Secretaría Acad.:</span>
                     <strong>969 572 566</strong>
                 </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═════════════════════════════════════════════════════════════════════
+     2. NAVEGACIÓN RESPONSIVE PARA CELULARES Y TABLETS (< 992px)
+     Barra táctil de fases rápida con chips + menú desplegable completo
+     ═════════════════════════════════════════════════════════════════════ -->
+<div class="col-12 d-lg-none pk-mobile-nav-wrapper">
+    <div class="pk-mobile-nav-box">
+        <div class="pk-mobile-nav-top">
+            <div class="pk-mobile-nav-heading">
+                <i class="fa fa-compass"></i>
+                <div style="min-width: 0;">
+                    <span class="pk-mobile-nav-tag">Fases de Titulación</span>
+                    <strong class="pk-mobile-current-title">
+                        @if(request()->routeIs('plan'))
+                            Fase 1: Plan PTI
+                        @elseif(request()->routeIs('tinvestigacion'))
+                            Fase 2: Bachiller (TI)
+                        @elseif(request()->routeIs('tesis'))
+                            Fase 3: Tesis Licenciatura
+                        @elseif(request()->routeIs('tramiteTitulacion'))
+                            Guía Oficial de Grados y Títulos
+                        @elseif(request()->routeIs('extraordinarios'))
+                            Trámites Extraordinarios
+                        @elseif(request()->routeIs('tramites'))
+                            Trámites Presenciales
+                        @else
+                            Menú de Titulación
+                        @endif
+                    </strong>
+                </div>
+            </div>
+            <button type="button" class="pk-mobile-menu-btn" onclick="pkToggleMobileTitulaMenu()" aria-expanded="false" id="pkMobileMenuBtn">
+                <span id="pkMobileBtnText">Ver fases</span>
+                <i class="fa fa-chevron-down" id="pkMobileBtnIcon"></i>
+            </button>
+        </div>
+
+        <!-- Chips táctiles deslizables horizontalmente (1-tap directo) -->
+        <div class="pk-mobile-chips-track">
+            <a href="{{ route('tramiteTitulacion') }}" class="pk-mchip {{ request()->routeIs('tramiteTitulacion') ? 'active' : '' }}">
+                <i class="fa fa-book-reader"></i> Guía
+            </a>
+            <a href="{{ route('plan') }}" class="pk-mchip {{ request()->routeIs('plan') ? 'active' : '' }}">
+                <span class="pk-mchip-badge">1</span> Plan PTI
+            </a>
+            <a href="{{ route('tinvestigacion') }}" class="pk-mchip {{ request()->routeIs('tinvestigacion') ? 'active' : '' }}">
+                <span class="pk-mchip-badge">2</span> Bachiller (TI)
+            </a>
+            <a href="{{ route('tesis') }}" class="pk-mchip {{ request()->routeIs('tesis') ? 'active' : '' }}">
+                <span class="pk-mchip-badge">3</span> Tesis
+            </a>
+            <a href="{{ route('tramites') }}" class="pk-mchip {{ request()->routeIs('tramites') ? 'active' : '' }}">
+                <i class="fa fa-folder-open"></i> Presencial
+            </a>
+            <a href="{{ route('extraordinarios') }}" class="pk-mchip {{ request()->routeIs('extraordinarios') ? 'active' : '' }}">
+                <i class="fa fa-receipt"></i> Extraordinarios
+            </a>
+            <a href="#" onclick="openPagoModal(event)" class="pk-mchip pk-mchip-caja">
+                <i class="fa fa-credit-card" style="color: #d3141b;"></i> Caja Cusco
+            </a>
+        </div>
+
+        <!-- Panel desplegable completo con lista y mesa de ayuda -->
+        <div class="pk-mobile-expand-panel" id="pkMobileExpandPanel" style="display: none;">
+            <ul class="pk-mobile-list">
+                <li>
+                    <a href="{{ route('tramiteTitulacion') }}" class="{{ request()->routeIs('tramiteTitulacion') ? 'active' : '' }}">
+                        <i class="fa fa-book-reader"></i>
+                        <span>Proceso de Titulación (Visión General)</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('plan') }}" class="{{ request()->routeIs('plan') ? 'active' : '' }}">
+                        <span class="pk-list-num">1</span>
+                        <span>Fase 1: Plan de Trabajo de Investigación (PTI)</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('tinvestigacion') }}" class="{{ request()->routeIs('tinvestigacion') ? 'active' : '' }}">
+                        <span class="pk-list-num">2</span>
+                        <span>Fase 2: Trabajo de Investigación (Grado de Bachiller)</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('tesis') }}" class="{{ request()->routeIs('tesis') ? 'active' : '' }}">
+                        <span class="pk-list-num">3</span>
+                        <span>Fase 3: Tesis (Título Profesional de Licenciado)</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('tramites') }}" class="{{ request()->routeIs('tramites') ? 'active' : '' }}">
+                        <i class="fa fa-folder-open"></i>
+                        <span>Trámites Presenciales y Expediente</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('extraordinarios') }}" class="{{ request()->routeIs('extraordinarios') ? 'active' : '' }}">
+                        <i class="fa fa-receipt"></i>
+                        <span>Trámites Extraordinarios y Tasas</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="openPagoModal(event)" class="pk-mobile-caja-link">
+                        <i class="fa fa-credit-card" style="color: #d3141b;"></i>
+                        <span>¿Cómo pagar en <strong>Caja Cusco</strong>?</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="pk-mobile-support-box">
+                <div class="pk-support-header">
+                    <h6><i class="fa fa-headset text-warning"></i> Mesa de Ayuda por WhatsApp</h6>
+                    <span class="pk-support-time"><i class="fa fa-clock"></i> 8am - 5pm</span>
+                </div>
+                <div class="pk-support-links">
+                    <a href="https://wa.me/51972577170" target="_blank" rel="noopener" class="pk-support-link">
+                        <i class="fa-brands fa-whatsapp"></i>
+                        <span class="pk-support-label">Investigación:</span>
+                        <strong>972 577 170</strong>
+                    </a>
+                    <a href="https://wa.me/51969572566" target="_blank" rel="noopener" class="pk-support-link">
+                        <i class="fa-brands fa-whatsapp"></i>
+                        <span class="pk-support-label">Secretaría Acad.:</span>
+                        <strong>969 572 566</strong>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -675,6 +808,38 @@ body:has(.pegajoso) {
         if (e.key === 'Escape') closePagoModal();
     });
 
+    function pkToggleMobileTitulaMenu() {
+        var panel = document.getElementById('pkMobileExpandPanel');
+        var btn   = document.getElementById('pkMobileMenuBtn');
+        var text  = document.getElementById('pkMobileBtnText');
+        var icon  = document.getElementById('pkMobileBtnIcon');
+        if (!panel) return;
+
+        var isHidden = (panel.style.display === 'none' || panel.style.display === '');
+        if (isHidden) {
+            panel.style.display = 'block';
+            if (text) text.innerText = 'Cerrar';
+            if (icon) { icon.classList.remove('fa-chevron-down'); icon.classList.add('fa-chevron-up'); }
+            if (btn) btn.setAttribute('aria-expanded', 'true');
+        } else {
+            panel.style.display = 'none';
+            if (text) text.innerText = 'Ver fases';
+            if (icon) { icon.classList.remove('fa-chevron-up'); icon.classList.add('fa-chevron-down'); }
+            if (btn) btn.setAttribute('aria-expanded', 'false');
+        }
+    }
+
+    // Centrar suavemente el chip activo en el scroll horizontal de móviles
+    try {
+        var activeChip = document.querySelector('.pk-mobile-chips-track .pk-mchip.active');
+        if (activeChip && typeof activeChip.scrollIntoView === 'function') {
+            setTimeout(function () {
+                activeChip.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+            }, 150);
+        }
+    } catch (e) {}
+
+    window.pkToggleMobileTitulaMenu = pkToggleMobileTitulaMenu;
     window.openPagoModal  = openPagoModal;
     window.closePagoModal = closePagoModal;
 }());

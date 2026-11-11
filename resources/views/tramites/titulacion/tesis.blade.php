@@ -15,15 +15,6 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="bradcam_text">
-                        <nav aria-label="Migas de pan" class="pk-breadcrumbs-nav">
-                            <ol class="pk-breadcrumbs-list">
-                                <li><a href="{{ route('index') }}"><i class="fa fa-home"></i> Inicio</a></li>
-                                <li><i class="fa fa-chevron-right pk-breadcrumb-sep"></i></li>
-                                <li><a href="{{ route('tramiteTitulacion') }}">Titulación</a></li>
-                                <li><i class="fa fa-chevron-right pk-breadcrumb-sep"></i></li>
-                                <li class="pk-breadcrumb-current" aria-current="page">Tesis de Licenciatura</li>
-                            </ol>
-                        </nav>
                         <div class="pk-hero-badge">
                             <i class="fa fa-award"></i> Fase 3 de 3 · Título de Licenciado
                         </div>
@@ -599,6 +590,38 @@
                         <a href="{{ asset('pdf/Conceptos-ordinarios-caja-cusco-2026-2.pdf') }}" target="_blank" class="pk-btn-caja-pdf">
                             <i class="fa fa-file-pdf"></i> Ver PDF de conceptos de pago
                         </a>
+                    </div>
+                </div>
+
+                <!-- Navegación entre etapas -->
+                <div class="pk-etapas-nav mt-5">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="pk-etapas-nav-card pk-etapas-nav-prev">
+                                <div class="pk-etapas-nav-info">
+                                    <span class="pk-etapas-nav-badge">Etapa Anterior</span>
+                                    <h4 class="pk-etapas-nav-title">Fase 2: Trabajo de Investigación</h4>
+                                    <p class="pk-etapas-nav-desc">Obtención del Grado Académico de Bachiller.</p>
+                                </div>
+                                <a href="{{ route('tinvestigacion') }}" class="pk-etapas-nav-btn-outline">
+                                    <i class="fa fa-arrow-left"></i>
+                                    <span>Volver a Fase 2</span>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="pk-etapas-nav-card pk-etapas-nav-next">
+                                <div class="pk-etapas-nav-info">
+                                    <span class="pk-etapas-nav-badge">Siguiente Paso</span>
+                                    <h4 class="pk-etapas-nav-title">Trámites Presenciales</h4>
+                                    <p class="pk-etapas-nav-desc">Armado físico del expediente y requisitos en secretaría.</p>
+                                </div>
+                                <a href="{{ route('tramites') }}" class="pk-etapas-nav-btn">
+                                    <span>Ver Expediente</span>
+                                    <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

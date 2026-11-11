@@ -15,13 +15,6 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="bradcam_text">
-                        <nav aria-label="Migas de pan" class="pk-breadcrumbs-nav">
-                            <ol class="pk-breadcrumbs-list">
-                                <li><a href="{{ route('index') }}"><i class="fa fa-home"></i> Inicio</a></li>
-                                <li><i class="fa fa-chevron-right pk-breadcrumb-sep"></i></li>
-                                <li class="pk-breadcrumb-current" aria-current="page">Proceso de Titulación</li>
-                            </ol>
-                        </nav>
                         <div class="pk-hero-badge">
                             <i class="fa fa-book-reader"></i> Guía Oficial de Grados y Títulos
                         </div>
@@ -363,6 +356,21 @@
                         </a>
                         <a href="{{ asset('pdf/Conceptos-ordinarios-caja-cusco-2026-2.pdf') }}" target="_blank" class="pk-btn-caja-pdf">
                             <i class="fa fa-file-pdf"></i> Descargar PDF de Conceptos Oficiales
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Navegación de inicio de fases -->
+                <div class="pk-etapas-nav mt-5">
+                    <div class="pk-etapas-nav-card pk-etapas-nav-next">
+                        <div class="pk-etapas-nav-info">
+                            <span class="pk-etapas-nav-badge">Paso 1 del Proceso</span>
+                            <h4 class="pk-etapas-nav-title">Fase 1: Plan de Trabajo de Investigación (PTI)</h4>
+                            <p class="pk-etapas-nav-desc">Inicia tu proceso formulando tu propuesta de investigación y solicitando docente asesor/a.</p>
+                        </div>
+                        <a href="{{ route('plan') }}" class="pk-etapas-nav-btn">
+                            <span>Comenzar con la Fase 1</span>
+                            <i class="fa fa-arrow-right"></i>
                         </a>
                     </div>
                 </div>

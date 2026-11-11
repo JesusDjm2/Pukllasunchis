@@ -15,15 +15,6 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="bradcam_text">
-                        <nav aria-label="Migas de pan" class="pk-breadcrumbs-nav">
-                            <ol class="pk-breadcrumbs-list">
-                                <li><a href="{{ route('index') }}"><i class="fa fa-home"></i> Inicio</a></li>
-                                <li><i class="fa fa-chevron-right pk-breadcrumb-sep"></i></li>
-                                <li><a href="{{ route('tramiteTitulacion') }}">Titulación</a></li>
-                                <li><i class="fa fa-chevron-right pk-breadcrumb-sep"></i></li>
-                                <li class="pk-breadcrumb-current" aria-current="page">Plan de Trabajo (PTI)</li>
-                            </ol>
-                        </nav>
                         <div class="pk-hero-badge">
                             <i class="fa fa-file-signature"></i> Fase 1 de 3 · Proyecto Inicial
                         </div>
@@ -311,6 +302,21 @@
                         </a>
                         <a href="{{ asset('pdf/Conceptos-ordinarios-caja-cusco-2026-2.pdf') }}" target="_blank" class="pk-btn-caja-pdf">
                             <i class="fa fa-file-pdf"></i> Ver PDF de conceptos de pago
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Navegación guiada a la siguiente etapa -->
+                <div class="pk-etapas-nav mt-5">
+                    <div class="pk-etapas-nav-card pk-etapas-nav-next">
+                        <div class="pk-etapas-nav-info">
+                            <span class="pk-etapas-nav-badge">Siguiente Etapa de Titulación</span>
+                            <h4 class="pk-etapas-nav-title">Fase 2: Trabajo de Investigación (Grado de Bachiller)</h4>
+                            <p class="pk-etapas-nav-desc">Una vez aprobado tu Plan (PTI) y formalizado tu docente asesor/a, continúa con la redacción y dictamen del TI.</p>
+                        </div>
+                        <a href="{{ route('tinvestigacion') }}" class="pk-etapas-nav-btn">
+                            <span>Continuar a Fase 2</span>
+                            <i class="fa fa-arrow-right"></i>
                         </a>
                     </div>
                 </div>

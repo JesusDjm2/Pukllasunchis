@@ -15,15 +15,6 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="bradcam_text">
-                        <nav aria-label="Migas de pan" class="pk-breadcrumbs-nav">
-                            <ol class="pk-breadcrumbs-list">
-                                <li><a href="{{ route('index') }}"><i class="fa fa-home"></i> Inicio</a></li>
-                                <li><i class="fa fa-chevron-right pk-breadcrumb-sep"></i></li>
-                                <li><a href="{{ route('tramiteTitulacion') }}">Titulación</a></li>
-                                <li><i class="fa fa-chevron-right pk-breadcrumb-sep"></i></li>
-                                <li class="pk-breadcrumb-current" aria-current="page">Trabajo de Investigación (TI)</li>
-                            </ol>
-                        </nav>
                         <div class="pk-hero-badge">
                             <i class="fa fa-graduation-cap"></i> Fase 2 de 3 · Grado de Bachiller
                         </div>
@@ -650,6 +641,38 @@
                         <a href="{{ asset('pdf/Conceptos-ordinarios-caja-cusco-2026-2.pdf') }}" target="_blank" class="pk-btn-caja-pdf">
                             <i class="fa fa-file-pdf"></i> Ver PDF de conceptos de pago
                         </a>
+                    </div>
+                </div>
+
+                <!-- Navegación entre etapas -->
+                <div class="pk-etapas-nav mt-5">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="pk-etapas-nav-card pk-etapas-nav-prev">
+                                <div class="pk-etapas-nav-info">
+                                    <span class="pk-etapas-nav-badge">Etapa Anterior</span>
+                                    <h4 class="pk-etapas-nav-title">Fase 1: Plan de Trabajo (PTI)</h4>
+                                    <p class="pk-etapas-nav-desc">Requisitos iniciales y asignación de asesor institucional.</p>
+                                </div>
+                                <a href="{{ route('plan') }}" class="pk-etapas-nav-btn-outline">
+                                    <i class="fa fa-arrow-left"></i>
+                                    <span>Volver a Fase 1</span>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="pk-etapas-nav-card pk-etapas-nav-next">
+                                <div class="pk-etapas-nav-info">
+                                    <span class="pk-etapas-nav-badge">Siguiente Etapa</span>
+                                    <h4 class="pk-etapas-nav-title">Fase 3: Tesis Profesional</h4>
+                                    <p class="pk-etapas-nav-desc">Ruta final para la obtención del Título Profesional de Licenciado.</p>
+                                </div>
+                                <a href="{{ route('tesis') }}" class="pk-etapas-nav-btn">
+                                    <span>Ir a Fase 3</span>
+                                    <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
