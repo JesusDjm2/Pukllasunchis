@@ -43,85 +43,6 @@
                     La tesis es el documento culminante que llevas adelante como bachiller para alcanzar tu grado de Licenciado. En ella demuestras la aplicación avanzada del Trabajo de Investigación: planteas un problema educativo relevante (preferiblemente surgido de tu práctica docente) y lo analizas con rigor académico, siguiendo la estructura establecida en nuestra Guía de Investigación. La sustentación de este trabajo es tan importante como el documento mismo, ya que completa el proceso formal de titulación.
                 </p>
 
-                <!-- Deck de Formatos y Guías Oficiales -->
-                <h3 class="mt-4">Formatos y Carátulas Oficiales de Tesis</h3>
-                <div class="pk-downloads-deck">
-                    <!-- Formato Tesis -->
-                    <a href="{{ asset('pdf/FormatoTesis.docx') }}" target="_blank" class="pk-download-card">
-                        <div class="pk-download-card__icon-wrapper">
-                            <div class="pk-download-card__icon word">
-                                <i class="fa fa-file-word"></i>
-                            </div>
-                            <span class="pk-download-card__tag">Word (.docx)</span>
-                        </div>
-                        <h5>Formato Oficial de Tesis</h5>
-                        <p>Estructura normalizada con preliminares, cuerpo y anexos.</p>
-                        <span class="pk-download-card__btn">
-                            <i class="fa fa-download"></i> Descargar Formato
-                        </span>
-                    </a>
-
-                    <!-- Carátula FID -->
-                    <a href="{{ asset('pdf/CaratulaTesis-2025.docx') }}" target="_blank" class="pk-download-card">
-                        <div class="pk-download-card__icon-wrapper">
-                            <div class="pk-download-card__icon word">
-                                <i class="fa fa-file-word"></i>
-                            </div>
-                            <span class="pk-download-card__tag">Carátula FID</span>
-                        </div>
-                        <h5>Carátula Tesis (5 años)</h5>
-                        <p>Para egresados de Formación Inicial Docente Regular.</p>
-                        <span class="pk-download-card__btn">
-                            <i class="fa fa-download"></i> Descargar Carátula
-                        </span>
-                    </a>
-
-                    <!-- Carátula PPD -->
-                    <a href="{{ asset('pdf/CaratulaTesis-2025-PPD.docx') }}" target="_blank" class="pk-download-card">
-                        <div class="pk-download-card__icon-wrapper">
-                            <div class="pk-download-card__icon word">
-                                <i class="fa fa-file-word"></i>
-                            </div>
-                            <span class="pk-download-card__tag">Carátula PPD</span>
-                        </div>
-                        <h5>Carátula Tesis (1 año)</h5>
-                        <p>Para egresados de Profesionalización Docente.</p>
-                        <span class="pk-download-card__btn">
-                            <i class="fa fa-download"></i> Descargar Carátula
-                        </span>
-                    </a>
-
-                    <!-- Guía de Tesis -->
-                    <a href="{{ asset('pdf/Guia-de-Elaboracion-de-Tesis.pdf') }}" target="_blank" class="pk-download-card">
-                        <div class="pk-download-card__icon-wrapper">
-                            <div class="pk-download-card__icon pdf">
-                                <i class="fa fa-file-pdf"></i>
-                            </div>
-                            <span class="pk-download-card__tag">PDF Guía</span>
-                        </div>
-                        <h5>Guía de Elaboración de Tesis</h5>
-                        <p>Lineamientos de investigación, sustento empírico y jurado.</p>
-                        <span class="pk-download-card__btn">
-                            <i class="fa fa-download"></i> Descargar Guía
-                        </span>
-                    </a>
-
-                    <!-- Guía de Redacción -->
-                    <a href="{{ asset('pdf/Guia-de-Investigacion-2025.pdf') }}" target="_blank" class="pk-download-card">
-                        <div class="pk-download-card__icon-wrapper">
-                            <div class="pk-download-card__icon pdf">
-                                <i class="fa fa-file-pdf"></i>
-                            </div>
-                            <span class="pk-download-card__tag">PDF 2025-2026</span>
-                        </div>
-                        <h5>Guía de Redacción Académica</h5>
-                        <p>Normas APA 7ma edición y directivas de edición institucional.</p>
-                        <span class="pk-download-card__btn">
-                            <i class="fa fa-download"></i> Descargar Guía
-                        </span>
-                    </a>
-                </div>
-
                 <!-- Hitos Paso a Paso Tesis -->
                 <h3 class="mt-4 linea-debajo">Requisitos para la Obtención del Título de Licenciado:</h3>
                 <p>
@@ -544,6 +465,85 @@
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <!-- Deck de Formatos y Guías Oficiales -->
+                <h3 class="mt-5 linea-debajo">Formatos y Carátulas Oficiales de Tesis</h3>
+                <div class="pk-downloads-deck mb-4">
+                    <!-- Formato Tesis -->
+                    <a href="{{ asset('pdf/FormatoTesis.docx') }}" target="_blank" class="pk-download-card">
+                        <div class="pk-download-card__icon-wrapper">
+                            <div class="pk-download-card__icon word">
+                                <i class="fa fa-file-word"></i>
+                            </div>
+                            <span class="pk-download-card__tag">Word (.docx)</span>
+                        </div>
+                        <h5>Formato Oficial de Tesis</h5>
+                        <p>Estructura normalizada con preliminares, cuerpo y anexos.</p>
+                        <span class="pk-download-card__btn">
+                            <i class="fa fa-download"></i> Descargar Formato
+                        </span>
+                    </a>
+
+                    <!-- Carátula FID -->
+                    <a href="{{ asset('pdf/CaratulaTesis-2025.docx') }}" target="_blank" class="pk-download-card">
+                        <div class="pk-download-card__icon-wrapper">
+                            <div class="pk-download-card__icon word">
+                                <i class="fa fa-file-word"></i>
+                            </div>
+                            <span class="pk-download-card__tag">Carátula FID</span>
+                        </div>
+                        <h5>Carátula Tesis (5 años)</h5>
+                        <p>Para egresados de Formación Inicial Docente Regular.</p>
+                        <span class="pk-download-card__btn">
+                            <i class="fa fa-download"></i> Descargar Carátula
+                        </span>
+                    </a>
+
+                    <!-- Carátula PPD -->
+                    <a href="{{ asset('pdf/CaratulaTesis-2025-PPD.docx') }}" target="_blank" class="pk-download-card">
+                        <div class="pk-download-card__icon-wrapper">
+                            <div class="pk-download-card__icon word">
+                                <i class="fa fa-file-word"></i>
+                            </div>
+                            <span class="pk-download-card__tag">Carátula PPD</span>
+                        </div>
+                        <h5>Carátula Tesis (1 año)</h5>
+                        <p>Para egresados de Profesionalización Docente.</p>
+                        <span class="pk-download-card__btn">
+                            <i class="fa fa-download"></i> Descargar Carátula
+                        </span>
+                    </a>
+
+                    <!-- Guía de Tesis -->
+                    <a href="{{ asset('pdf/Guia-de-Elaboracion-de-Tesis.pdf') }}" target="_blank" class="pk-download-card">
+                        <div class="pk-download-card__icon-wrapper">
+                            <div class="pk-download-card__icon pdf">
+                                <i class="fa fa-file-pdf"></i>
+                            </div>
+                            <span class="pk-download-card__tag">PDF Guía</span>
+                        </div>
+                        <h5>Guía de Elaboración de Tesis</h5>
+                        <p>Lineamientos de investigación, sustento empírico y jurado.</p>
+                        <span class="pk-download-card__btn">
+                            <i class="fa fa-download"></i> Descargar Guía
+                        </span>
+                    </a>
+
+                    <!-- Guía de Redacción -->
+                    <a href="{{ asset('pdf/Guia-de-Investigacion-2025.pdf') }}" target="_blank" class="pk-download-card">
+                        <div class="pk-download-card__icon-wrapper">
+                            <div class="pk-download-card__icon pdf">
+                                <i class="fa fa-file-pdf"></i>
+                            </div>
+                            <span class="pk-download-card__tag">PDF 2025-2026</span>
+                        </div>
+                        <h5>Guía de Redacción Académica</h5>
+                        <p>Normas APA 7ma edición y directivas de edición institucional.</p>
+                        <span class="pk-download-card__btn">
+                            <i class="fa fa-download"></i> Descargar Guía
+                        </span>
+                    </a>
                 </div>
 
                 <!-- Caja Cusco Callout Card -->

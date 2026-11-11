@@ -43,85 +43,6 @@
                     Tiene relación con los principales ejes planteados en el plan de estudios, el graduando debe demostrar que domina los aspectos desarrollados en el currículo. El TI supone el desarrollo de aptitudes y habilidades relacionadas con el perfil de egreso y el planteamiento de un tema preciso a analizar relacionado con situaciones detectadas en la realidad educativa. El desarrollo del TI incluye la revisión de la literatura actualizada, una metodología de análisis de la información recolectada y una exposición de resultados. Conduce a la obtención del Grado de Bachiller en Educación. El TI se elabora de forma progresiva y se debe cumplir con la estructura solicitada por la escuela en su guía de investigación.
                 </p>
 
-                <!-- Deck de Formatos y Guías Oficiales -->
-                <h3 class="mt-4">Formatos y Carátulas Oficiales</h3>
-                <div class="pk-downloads-deck">
-                    <!-- Formato TI -->
-                    <a href="{{ asset('pdf/FormatoTI.docx') }}" target="_blank" class="pk-download-card">
-                        <div class="pk-download-card__icon-wrapper">
-                            <div class="pk-download-card__icon word">
-                                <i class="fa fa-file-word"></i>
-                            </div>
-                            <span class="pk-download-card__tag">Word (.docx)</span>
-                        </div>
-                        <h5>Formato de TI Oficial</h5>
-                        <p>Estructura general con capítulos, tablas e índices normalizados.</p>
-                        <span class="pk-download-card__btn">
-                            <i class="fa fa-download"></i> Descargar Formato
-                        </span>
-                    </a>
-
-                    <!-- Carátula FID -->
-                    <a href="{{ asset('pdf/CaratulaTI-2025.docx') }}" target="_blank" class="pk-download-card">
-                        <div class="pk-download-card__icon-wrapper">
-                            <div class="pk-download-card__icon word">
-                                <i class="fa fa-file-word"></i>
-                            </div>
-                            <span class="pk-download-card__tag">Carátula FID</span>
-                        </div>
-                        <h5>Carátula TI (5 años)</h5>
-                        <p>Para estudiantes de Formación Inicial Docente Regular.</p>
-                        <span class="pk-download-card__btn">
-                            <i class="fa fa-download"></i> Descargar Carátula
-                        </span>
-                    </a>
-
-                    <!-- Carátula PPD -->
-                    <a href="{{ asset('pdf/CaratulaTI-2025 PPD.docx') }}" target="_blank" class="pk-download-card">
-                        <div class="pk-download-card__icon-wrapper">
-                            <div class="pk-download-card__icon word">
-                                <i class="fa fa-file-word"></i>
-                            </div>
-                            <span class="pk-download-card__tag">Carátula PPD</span>
-                        </div>
-                        <h5>Carátula TI (1 año)</h5>
-                        <p>Para egresados del Programa de Profesionalización Docente.</p>
-                        <span class="pk-download-card__btn">
-                            <i class="fa fa-download"></i> Descargar Carátula
-                        </span>
-                    </a>
-
-                    <!-- Guía de TI -->
-                    <a href="{{ asset('pdf/Guia-Trabajo-de-Investigacion.pdf') }}" target="_blank" class="pk-download-card">
-                        <div class="pk-download-card__icon-wrapper">
-                            <div class="pk-download-card__icon pdf">
-                                <i class="fa fa-file-pdf"></i>
-                            </div>
-                            <span class="pk-download-card__tag">PDF Guía</span>
-                        </div>
-                        <h5>Guía de Elaboración TI</h5>
-                        <p>Criterios metodológicos, recolección de datos y análisis empírico.</p>
-                        <span class="pk-download-card__btn">
-                            <i class="fa fa-download"></i> Descargar Guía
-                        </span>
-                    </a>
-
-                    <!-- Guía de Redacción -->
-                    <a href="{{ asset('pdf/Guia-de-Investigacion-2025.pdf') }}" target="_blank" class="pk-download-card">
-                        <div class="pk-download-card__icon-wrapper">
-                            <div class="pk-download-card__icon pdf">
-                                <i class="fa fa-file-pdf"></i>
-                            </div>
-                            <span class="pk-download-card__tag">PDF 2025-2026</span>
-                        </div>
-                        <h5>Guía de Redacción Académica</h5>
-                        <p>Normas APA 7ma edición y directivas tipográficas de la institución.</p>
-                        <span class="pk-download-card__btn">
-                            <i class="fa fa-download"></i> Descargar Guía
-                        </span>
-                    </a>
-                </div>
-
                 <!-- Hitos Paso a Paso TI -->
                 <h3 class="mt-4 linea-debajo">Requisitos para la Obtención del Grado de Bachiller:</h3>
                 <p>
@@ -595,6 +516,85 @@
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <!-- Deck de Formatos y Guías Oficiales -->
+                <h3 class="mt-5 linea-debajo">Formatos y Carátulas Oficiales</h3>
+                <div class="pk-downloads-deck mb-4">
+                    <!-- Formato TI -->
+                    <a href="{{ asset('pdf/FormatoTI.docx') }}" target="_blank" class="pk-download-card">
+                        <div class="pk-download-card__icon-wrapper">
+                            <div class="pk-download-card__icon word">
+                                <i class="fa fa-file-word"></i>
+                            </div>
+                            <span class="pk-download-card__tag">Word (.docx)</span>
+                        </div>
+                        <h5>Formato de TI Oficial</h5>
+                        <p>Estructura general con capítulos, tablas e índices normalizados.</p>
+                        <span class="pk-download-card__btn">
+                            <i class="fa fa-download"></i> Descargar Formato
+                        </span>
+                    </a>
+
+                    <!-- Carátula FID -->
+                    <a href="{{ asset('pdf/CaratulaTI-2025.docx') }}" target="_blank" class="pk-download-card">
+                        <div class="pk-download-card__icon-wrapper">
+                            <div class="pk-download-card__icon word">
+                                <i class="fa fa-file-word"></i>
+                            </div>
+                            <span class="pk-download-card__tag">Carátula FID</span>
+                        </div>
+                        <h5>Carátula TI (5 años)</h5>
+                        <p>Para estudiantes de Formación Inicial Docente Regular.</p>
+                        <span class="pk-download-card__btn">
+                            <i class="fa fa-download"></i> Descargar Carátula
+                        </span>
+                    </a>
+
+                    <!-- Carátula PPD -->
+                    <a href="{{ asset('pdf/CaratulaTI-2025 PPD.docx') }}" target="_blank" class="pk-download-card">
+                        <div class="pk-download-card__icon-wrapper">
+                            <div class="pk-download-card__icon word">
+                                <i class="fa fa-file-word"></i>
+                            </div>
+                            <span class="pk-download-card__tag">Carátula PPD</span>
+                        </div>
+                        <h5>Carátula TI (1 año)</h5>
+                        <p>Para egresados del Programa de Profesionalización Docente.</p>
+                        <span class="pk-download-card__btn">
+                            <i class="fa fa-download"></i> Descargar Carátula
+                        </span>
+                    </a>
+
+                    <!-- Guía de TI -->
+                    <a href="{{ asset('pdf/Guia-Trabajo-de-Investigacion.pdf') }}" target="_blank" class="pk-download-card">
+                        <div class="pk-download-card__icon-wrapper">
+                            <div class="pk-download-card__icon pdf">
+                                <i class="fa fa-file-pdf"></i>
+                            </div>
+                            <span class="pk-download-card__tag">PDF Guía</span>
+                        </div>
+                        <h5>Guía de Elaboración TI</h5>
+                        <p>Criterios metodológicos, recolección de datos y análisis empírico.</p>
+                        <span class="pk-download-card__btn">
+                            <i class="fa fa-download"></i> Descargar Guía
+                        </span>
+                    </a>
+
+                    <!-- Guía de Redacción -->
+                    <a href="{{ asset('pdf/Guia-de-Investigacion-2025.pdf') }}" target="_blank" class="pk-download-card">
+                        <div class="pk-download-card__icon-wrapper">
+                            <div class="pk-download-card__icon pdf">
+                                <i class="fa fa-file-pdf"></i>
+                            </div>
+                            <span class="pk-download-card__tag">PDF 2025-2026</span>
+                        </div>
+                        <h5>Guía de Redacción Académica</h5>
+                        <p>Normas APA 7ma edición y directivas tipográficas de la institución.</p>
+                        <span class="pk-download-card__btn">
+                            <i class="fa fa-download"></i> Descargar Guía
+                        </span>
+                    </a>
                 </div>
 
                 <!-- Caja Cusco Callout Card -->
