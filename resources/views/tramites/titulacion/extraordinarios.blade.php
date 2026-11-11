@@ -66,10 +66,10 @@
                             <tr>
                                 <td>
                                     <strong>Aprobación de PTI y Asesor</strong>
-                                    <div class="text-muted" style="font-size: 13px;">Inscripción inicial o reaprobación tras cambio sustancial</div>
+                                    <div class="text-muted" style="font-size: 13px;">Inscripción formal inicial o reaprobación del plan</div>
                                 </td>
                                 <td class="text-center"><span class="pk-badge-code">10</span></td>
-                                <td class="text-center font-weight-bold text-dark">S/ 50.00</td>
+                                <td class="text-center font-weight-bold text-dark">S/ 500.00</td>
                                 <td class="text-end">
                                     <a href="https://docs.google.com/forms/d/e/1FAIpQLSeErc1rq886EWiuavn27wd5kpCkZ48ntkOrWgNS5uE2XKw5JA/viewform"
                                        target="_blank" class="btn btn-sm btn-outline-primary" style="font-size: 13px; font-weight: 500;">
@@ -79,11 +79,11 @@
                             </tr>
                             <tr>
                                 <td>
-                                    <strong>Cambios en la R.D. de PTI</strong>
-                                    <div class="text-muted" style="font-size: 13px;">Modificación de título, reajuste temático o metodológico</div>
+                                    <strong>Modificación o Cambio de Tema de Investigación</strong>
+                                    <div class="text-muted" style="font-size: 13px;">Modificación del título, reajuste temático o metodológico</div>
                                 </td>
                                 <td class="text-center"><span class="pk-badge-code">12</span></td>
-                                <td class="text-center font-weight-bold text-dark">S/ 20.00</td>
+                                <td class="text-center font-weight-bold text-dark">S/ 30.00</td>
                                 <td class="text-end">
                                     <a href="https://docs.google.com/forms/d/e/1FAIpQLSc7zZ9k9o1x8hKk6qGvVzU3wX8yL8q_example/viewform"
                                        target="_blank" class="btn btn-sm btn-outline-primary" style="font-size: 13px; font-weight: 500;">
@@ -111,7 +111,7 @@
                                     <div class="text-muted" style="font-size: 13px;">Separación de integrantes por motivos justificados (costo por persona)</div>
                                 </td>
                                 <td class="text-center"><span class="pk-badge-code">14</span></td>
-                                <td class="text-center font-weight-bold text-dark">S/ 50.00</td>
+                                <td class="text-center font-weight-bold text-dark">S/ 20.00</td>
                                 <td class="text-end">
                                     <a href="https://docs.google.com/forms/d/13N25FvL4V7142Hq_gP0FjY37R9dD6xK09GvJmQ7a/viewform"
                                        target="_blank" class="btn btn-sm btn-outline-primary" style="font-size: 13px; font-weight: 500;">
@@ -121,13 +121,13 @@
                             </tr>
                             <tr>
                                 <td>
-                                    <strong>Aprobación de TI y Asignación de Dictaminantes</strong>
-                                    <div class="text-muted" style="font-size: 13px;">Revisión formal y nombramiento de jurado calificador</div>
+                                    <strong>Extensión de Plazo para Sustentación</strong>
+                                    <div class="text-muted" style="font-size: 13px;">Prórroga excepcional para concluir el trabajo de campo, redacción o sustentación</div>
                                 </td>
-                                <td class="text-center"><span class="pk-badge-code">15</span></td>
+                                <td class="text-center"><span class="pk-badge-code">11</span></td>
                                 <td class="text-center font-weight-bold text-dark">S/ 50.00</td>
                                 <td class="text-end">
-                                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdp5y0sD40jM4oXWq6aI_kP15y9example/viewform"
+                                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSciR5L299xLpI5OQ_ample/viewform"
                                        target="_blank" class="btn btn-sm btn-outline-primary" style="font-size: 13px; font-weight: 500;">
                                         Formulario <i class="fa fa-arrow-up-right-from-square"></i>
                                     </a>
@@ -135,13 +135,13 @@
                             </tr>
                             <tr>
                                 <td>
-                                    <strong>Ampliación de Plazo de TI</strong>
-                                    <div class="text-muted" style="font-size: 13px;">Prórroga excepcional para concluir el trabajo de campo o redacción</div>
+                                    <strong>Revisión de Trabajo de Investigación (Dictamen)</strong>
+                                    <div class="text-muted" style="font-size: 13px;">Revisión formal del TI y designación de dictaminantes</div>
                                 </td>
-                                <td class="text-center"><span class="pk-badge-code">16</span></td>
-                                <td class="text-center font-weight-bold text-dark">S/ 20.00</td>
+                                <td class="text-center"><span class="pk-badge-code">15</span></td>
+                                <td class="text-center font-weight-bold text-dark">S/ 100.00</td>
                                 <td class="text-end">
-                                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSciR5L299xLpI5OQ_ample/viewform"
+                                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdp5y0sD40jM4oXWq6aI_kP15y9example/viewform"
                                        target="_blank" class="btn btn-sm btn-outline-primary" style="font-size: 13px; font-weight: 500;">
                                         Formulario <i class="fa fa-arrow-up-right-from-square"></i>
                                     </a>
@@ -161,6 +161,45 @@
                                     </a>
                                 </td>
                             </tr>
+                            <tr>
+                                <td>
+                                    <strong>Anulación de R.D. de PTI</strong>
+                                    <div class="text-muted" style="font-size: 13px;">Anulación de resolución directoral de plan de trabajo de investigación</div>
+                                </td>
+                                <td class="text-center"><span class="pk-badge-code">53</span></td>
+                                <td class="text-center font-weight-bold text-dark">S/ 30.00</td>
+                                <td class="text-end">
+                                    <span class="badge bg-light text-muted border" style="font-size: 12px; font-weight: 500;">
+                                        FUT Presencial
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>Rectificación de Nombre</strong>
+                                    <div class="text-muted" style="font-size: 13px;">Corrección formal de datos personales o nombres en registros oficiales</div>
+                                </td>
+                                <td class="text-center"><span class="pk-badge-code">24</span></td>
+                                <td class="text-center font-weight-bold text-dark">S/ 100.00</td>
+                                <td class="text-end">
+                                    <span class="badge bg-light text-muted border" style="font-size: 12px; font-weight: 500;">
+                                        FUT Presencial
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>Duplicado de Diploma (Bachiller / Título)</strong>
+                                    <div class="text-muted" style="font-size: 13px;">Por pérdida, deterioro o robo (anula el diploma anterior)</div>
+                                </td>
+                                <td class="text-center"><span class="pk-badge-code">23</span></td>
+                                <td class="text-center font-weight-bold text-dark">S/ 800.00</td>
+                                <td class="text-end">
+                                    <span class="badge bg-light text-muted border" style="font-size: 12px; font-weight: 500;">
+                                        FUT Presencial
+                                    </span>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -177,7 +216,7 @@
                             <div class="pk-card-tramite__icon">
                                 <i class="fa fa-file-circle-check"></i>
                             </div>
-                            <span class="pk-card-tramite__badge">S/ 50.00 · Cód: 10</span>
+                            <span class="pk-card-tramite__badge">S/ 500.00 · Cód: 10</span>
                         </div>
                         <h4>Aprobación de PTI y Asesor</h4>
                         <p>Inscripción formal del PTI y designación o ratificación de asesor mediante R.D.</p>
@@ -186,82 +225,22 @@
                         </div>
                     </a>
 
-                    <!-- Card 2: Cambios en R.D. PTI -->
+                    <!-- Card 2: Cambio de Tema -->
                     <a href="https://docs.google.com/forms/d/e/1FAIpQLSc7zZ9k9o1x8hKk6qGvVzU3wX8yL8q_example/viewform" target="_blank" class="pk-card-tramite">
                         <div class="pk-card-tramite__top">
                             <div class="pk-card-tramite__icon">
                                 <i class="fa fa-pen-ruler"></i>
                             </div>
-                            <span class="pk-card-tramite__badge">S/ 20.00 · Cód: 12</span>
+                            <span class="pk-card-tramite__badge">S/ 30.00 · Cód: 12</span>
                         </div>
-                        <h4>Cambios en R.D. de PTI</h4>
+                        <h4>Cambio de Tema de Investigación</h4>
                         <p>Modificación del título de investigación, objetivos o reajuste metodológico aprobado.</p>
                         <div class="pk-card-tramite__action">
                             <span>Abrir Formulario</span> <i class="fa fa-external-link"></i>
                         </div>
                     </a>
 
-                    <!-- Card 3: Disolución de Grupo -->
-                    <a href="https://docs.google.com/forms/d/13N25FvL4V7142Hq_gP0FjY37R9dD6xK09GvJmQ7a/viewform" target="_blank" class="pk-card-tramite">
-                        <div class="pk-card-tramite__top">
-                            <div class="pk-card-tramite__icon">
-                                <i class="fa fa-users-slash"></i>
-                            </div>
-                            <span class="pk-card-tramite__badge">S/ 50.00 · Cód: 14</span>
-                        </div>
-                        <h4>Disolución de Grupo de Investigación</h4>
-                        <p>Solicitud de separación y continuidad individual del proceso de investigación.</p>
-                        <div class="pk-card-tramite__action">
-                            <span>Abrir Formulario</span> <i class="fa fa-external-link"></i>
-                        </div>
-                    </a>
-
-                    <!-- Card 4: Aprobación TI y Dictaminantes -->
-                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdp5y0sD40jM4oXWq6aI_kP15y9example/viewform" target="_blank" class="pk-card-tramite">
-                        <div class="pk-card-tramite__top">
-                            <div class="pk-card-tramite__icon">
-                                <i class="fa fa-user-graduate"></i>
-                            </div>
-                            <span class="pk-card-tramite__badge">S/ 50.00 · Cód: 15</span>
-                        </div>
-                        <h4>Aprobación de TI y Dictaminantes</h4>
-                        <p>Trámite para designación del jurado dictaminante del Trabajo de Investigación.</p>
-                        <div class="pk-card-tramite__action">
-                            <span>Abrir Formulario</span> <i class="fa fa-external-link"></i>
-                        </div>
-                    </a>
-
-                    <!-- Card 5: Ampliación de Plazo -->
-                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSciR5L299xLpI5OQ_ample/viewform" target="_blank" class="pk-card-tramite">
-                        <div class="pk-card-tramite__top">
-                            <div class="pk-card-tramite__icon">
-                                <i class="fa fa-clock-rotate-left"></i>
-                            </div>
-                            <span class="pk-card-tramite__badge">S/ 20.00 · Cód: 16</span>
-                        </div>
-                        <h4>Ampliación de Plazo TI</h4>
-                        <p>Prórroga extraordinaria fundamentada para la culminación y entrega del informe final.</p>
-                        <div class="pk-card-tramite__action">
-                            <span>Abrir Formulario</span> <i class="fa fa-external-link"></i>
-                        </div>
-                    </a>
-
-                    <!-- Card 6: Asesoría Adicional -->
-                    <a href="https://docs.google.com/forms/d/18yuH2gbrM5GVr8DHGvYeA7t5hrBIx9aXyIsbAcEdIAs/viewform?edit_requested=true" target="_blank" class="pk-card-tramite">
-                        <div class="pk-card-tramite__top">
-                            <div class="pk-card-tramite__icon">
-                                <i class="fa fa-comments"></i>
-                            </div>
-                            <span class="pk-card-tramite__badge">S/ 20.00 · Cód: 52</span>
-                        </div>
-                        <h4>Asesoría Adicional</h4>
-                        <p>Solicitar sesiones complementarias de acompañamiento con docente especialista por sesión.</p>
-                        <div class="pk-card-tramite__action">
-                            <span>Abrir Formulario</span> <i class="fa fa-external-link"></i>
-                        </div>
-                    </a>
-
-                    <!-- Card 7: Cambio de Asesor -->
+                    <!-- Card 3: Cambio de Asesor -->
                     <a href="https://docs.google.com/forms/d/1m7kWkj6C_Uoz252CHr_IsM1xkRhygy5DsCYKl_bH36E/edit" target="_blank" class="pk-card-tramite">
                         <div class="pk-card-tramite__top">
                             <div class="pk-card-tramite__icon">
@@ -275,6 +254,81 @@
                             <span>Abrir Formulario</span> <i class="fa fa-external-link"></i>
                         </div>
                     </a>
+
+                    <!-- Card 4: Disolución de Grupo -->
+                    <a href="https://docs.google.com/forms/d/13N25FvL4V7142Hq_gP0FjY37R9dD6xK09GvJmQ7a/viewform" target="_blank" class="pk-card-tramite">
+                        <div class="pk-card-tramite__top">
+                            <div class="pk-card-tramite__icon">
+                                <i class="fa fa-users-slash"></i>
+                            </div>
+                            <span class="pk-card-tramite__badge">S/ 20.00 · Cód: 14</span>
+                        </div>
+                        <h4>Disolución de Grupo</h4>
+                        <p>Solicitud de separación y continuidad individual del proceso de investigación.</p>
+                        <div class="pk-card-tramite__action">
+                            <span>Abrir Formulario</span> <i class="fa fa-external-link"></i>
+                        </div>
+                    </a>
+
+                    <!-- Card 5: Extensión de Plazo -->
+                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSciR5L299xLpI5OQ_ample/viewform" target="_blank" class="pk-card-tramite">
+                        <div class="pk-card-tramite__top">
+                            <div class="pk-card-tramite__icon">
+                                <i class="fa fa-clock-rotate-left"></i>
+                            </div>
+                            <span class="pk-card-tramite__badge">S/ 50.00 · Cód: 11</span>
+                        </div>
+                        <h4>Extensión de Plazo para Sustentación</h4>
+                        <p>Prórroga extraordinaria fundamentada para la culminación y entrega del informe final.</p>
+                        <div class="pk-card-tramite__action">
+                            <span>Abrir Formulario</span> <i class="fa fa-external-link"></i>
+                        </div>
+                    </a>
+
+                    <!-- Card 6: Revisión TI / Dictaminantes -->
+                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdp5y0sD40jM4oXWq6aI_kP15y9example/viewform" target="_blank" class="pk-card-tramite">
+                        <div class="pk-card-tramite__top">
+                            <div class="pk-card-tramite__icon">
+                                <i class="fa fa-user-graduate"></i>
+                            </div>
+                            <span class="pk-card-tramite__badge">S/ 100.00 · Cód: 15</span>
+                        </div>
+                        <h4>Revisión de TI y Dictaminantes</h4>
+                        <p>Trámite para designación del jurado dictaminante del Trabajo de Investigación.</p>
+                        <div class="pk-card-tramite__action">
+                            <span>Abrir Formulario</span> <i class="fa fa-external-link"></i>
+                        </div>
+                    </a>
+
+                    <!-- Card 7: Asesoría Adicional -->
+                    <a href="https://docs.google.com/forms/d/18yuH2gbrM5GVr8DHGvYeA7t5hrBIx9aXyIsbAcEdIAs/viewform?edit_requested=true" target="_blank" class="pk-card-tramite">
+                        <div class="pk-card-tramite__top">
+                            <div class="pk-card-tramite__icon">
+                                <i class="fa fa-comments"></i>
+                            </div>
+                            <span class="pk-card-tramite__badge">S/ 20.00 · Cód: 52</span>
+                        </div>
+                        <h4>Asesoría Adicional (por sesión)</h4>
+                        <p>Solicitar sesiones complementarias de acompañamiento con docente especialista por sesión.</p>
+                        <div class="pk-card-tramite__action">
+                            <span>Abrir Formulario</span> <i class="fa fa-external-link"></i>
+                        </div>
+                    </a>
+
+                    <!-- Card 8: Anulación RD PTI -->
+                    <div class="pk-card-tramite" style="cursor: default;">
+                        <div class="pk-card-tramite__top">
+                            <div class="pk-card-tramite__icon">
+                                <i class="fa fa-ban"></i>
+                            </div>
+                            <span class="pk-card-tramite__badge">S/ 30.00 · Cód: 53</span>
+                        </div>
+                        <h4>Anulación de R.D. de PTI</h4>
+                        <p>Anulación formal de la resolución directoral de aprobación de Plan de Trabajo.</p>
+                        <div class="pk-card-tramite__action text-muted">
+                            <span>Vía FUT en Secretaría</span> <i class="fa fa-building-columns"></i>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Caja Cusco Callout Card -->
@@ -301,7 +355,7 @@
                         </div>
                         <div class="pk-caja-point-item">
                             <div class="pk-point-num">2</div>
-                            <p>Indica obligatoriamente los 3 datos: <strong>Concepto exacto</strong>, <strong>Código numérico</strong> y <strong>Monto</strong> (ejemplo: Cambio de asesor: Cód. 13 - S/ 10.00, Disolución de grupo: Cód. 14 - S/ 10.00, etc.).</p>
+                            <p>Indica obligatoriamente los 3 datos: <strong>Concepto exacto</strong>, <strong>Código numérico</strong> y <strong>Monto</strong> (ejemplo: Cambio de asesor: Cód. 13 - S/ 30.00, Disolución de grupo: Cód. 14 - S/ 20.00, Extensión de plazo: Cód. 11 - S/ 50.00, etc.).</p>
                         </div>
                         <div class="pk-caja-point-item">
                             <div class="pk-point-num">3</div>

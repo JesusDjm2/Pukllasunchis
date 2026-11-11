@@ -328,7 +328,7 @@
                                 <div class="pk-pago-box__grid">
                                     <div class="pk-pago-field pk-pago-field--concepto">
                                         <span class="pk-pago-field__label"><i class="fa fa-tag text-primary"></i> 1. Concepto Exacto</span>
-                                        <strong class="pk-pago-field__value">Armar expediente de titulación</strong>
+                                        <strong class="pk-pago-field__value">ARMADO DE EXPEDIENTE DE TITULA</strong>
                                     </div>
                                     <div class="pk-pago-field pk-pago-field--codigo">
                                         <span class="pk-pago-field__label"><i class="fa fa-barcode"></i> 2. Código</span>
@@ -397,7 +397,7 @@
                                 <div class="pk-pago-box__grid">
                                     <div class="pk-pago-field pk-pago-field--concepto">
                                         <span class="pk-pago-field__label"><i class="fa fa-tag text-primary"></i> 1. Concepto Exacto</span>
-                                        <strong class="pk-pago-field__value">Registro de TI al repositorio</strong>
+                                        <strong class="pk-pago-field__value">REGISTRO DEL TI AL REPOSITORIO</strong>
                                     </div>
                                     <div class="pk-pago-field pk-pago-field--codigo">
                                         <span class="pk-pago-field__label"><i class="fa fa-barcode"></i> 2. Código</span>
@@ -498,7 +498,7 @@
                                     <div class="pk-pago-box__grid">
                                         <div class="pk-pago-field pk-pago-field--concepto">
                                             <span class="pk-pago-field__label"><i class="fa fa-tag text-primary"></i> Concepto Exacto</span>
-                                            <strong class="pk-pago-field__value">Inscripción Bachiller a SUNEDU</strong>
+                                            <strong class="pk-pago-field__value">REGISTRO E INSCRIPCION DE BACHILLER</strong>
                                         </div>
                                         <div class="pk-pago-field pk-pago-field--codigo">
                                             <span class="pk-pago-field__label"><i class="fa fa-barcode"></i> Código</span>
@@ -622,7 +622,7 @@
                         </div>
                         <div class="pk-caja-point-item">
                             <div class="pk-point-num">2</div>
-                            <p>Indica obligatoriamente los 3 datos: <strong>Concepto exacto</strong>, <strong>Código numérico</strong> y <strong>Monto</strong> (Turnitin: 16, Revisión TI: 15, Exposición: 55, RD: 17, Repositorio: 19).</p>
+                            <p>Indica obligatoriamente los 3 datos: <strong>Concepto exacto</strong>, <strong>Código numérico</strong> y <strong>Monto</strong> (Turnitin TI: Cód. 16 - S/ 25.00, Revisión TI: Cód. 15 - S/ 100.00, Exposición: Cód. 55 - S/ 50.00, RD Aprobación: Cód. 17 - S/ 50.00, Repositorio: Cód. 19 - S/ 50.00, Diploma Bachiller: Cód. 22 - S/ 400.00, Registro Bachiller: Cód. 20 - S/ 200.00).</p>
                         </div>
                         <div class="pk-caja-point-item">
                             <div class="pk-point-num">3</div>

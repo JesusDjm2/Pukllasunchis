@@ -207,7 +207,7 @@
                             <div class="p-3 bg-white rounded-3 border h-100 shadow-sm">
                                 <div class="d-flex align-items-center justify-content-between mb-2">
                                     <h5 class="mb-0" style="font-size: 16px;">Carta de Presentación para I.E.</h5>
-                                    <span class="badge bg-light text-dark border">S/ 10.00</span>
+                                    <span class="badge bg-light text-dark border">S/ 10.00 · Cód: 31</span>
                                 </div>
                                 <p class="mb-2" style="font-size: 14px; line-height: 22px;">
                                     Permite solicitar a la I.E. la autorización para realizar la investigación de campo.
@@ -296,7 +296,7 @@
                         </div>
                         <div class="pk-caja-point-item">
                             <div class="pk-point-num">2</div>
-                            <p>Indica obligatoriamente los 3 datos: <strong>Concepto exacto</strong>, <strong>Código numérico</strong> y <strong>Monto</strong> a pagar (ejemplo: Armado de expediente de Titulación: Cód. 18 - S/ 500.00, Constancia no deudor: Cód. 28 - S/ 10.00, etc.).</p>
+                            <p>Indica obligatoriamente los 3 datos: <strong>Concepto exacto</strong>, <strong>Código numérico</strong> y <strong>Monto</strong> a pagar (ejemplo: Armado de expediente de Titulación: Cód. 18 - S/ 500.00, Constancia de no deudor: Cód. 28 - S/ 30.00, Constancia de egresado: Cód. 9 - S/ 50.00, etc.).</p>
                         </div>
                         <div class="pk-caja-point-item">
                             <div class="pk-point-num">3</div>
