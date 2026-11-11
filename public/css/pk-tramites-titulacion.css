@@ -1498,3 +1498,150 @@ body:has(.pegajoso) {
 .pk-support-link:hover strong {
     color: #15803d;
 }
+
+/* ═════════════════════════════════════════════════════════
+   HERO / BANNER COMPACTO Y MIGAS DE PAN MODERNAS (OPCIÓN A)
+   ═════════════════════════════════════════════════════════ */
+.bradcam_area.pk-bradcam-titulacion {
+    padding: 62px 0 50px !important;
+    position: relative;
+    background-size: cover;
+    background-position: center;
+}
+
+@media (max-width: 767.98px) {
+    .bradcam_area.pk-bradcam-titulacion {
+        padding: 42px 0 34px !important;
+    }
+}
+
+.pk-bradcam-titulacion .bradcam_text {
+    position: relative;
+    z-index: 2;
+}
+
+/* Migas de pan (Breadcrumbs) */
+.pk-breadcrumbs-nav {
+    display: block;
+    margin-bottom: 12px;
+}
+
+.pk-breadcrumbs-list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    font-family: "Poppins", sans-serif;
+    font-size: 13px;
+    text-transform: none !important;
+}
+
+.pk-breadcrumbs-list li {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: rgba(255, 255, 255, 0.75);
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 13px;
+}
+
+.pk-breadcrumbs-list li a {
+    color: rgba(255, 255, 255, 0.88) !important;
+    text-decoration: none !important;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 400;
+}
+
+.pk-breadcrumbs-list li a:hover {
+    color: #ffd88b !important;
+    text-decoration: underline !important;
+}
+
+.pk-breadcrumbs-list li a i {
+    font-size: 13px;
+}
+
+.pk-breadcrumbs-list .pk-breadcrumb-sep {
+    font-size: 9px;
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.pk-breadcrumbs-list .pk-breadcrumb-current {
+    color: #ffffff !important;
+    font-weight: 600;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+/* Badge de Fase / Guía Oficial */
+.pk-hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(205, 146, 68, 0.28);
+    border: 1px solid rgba(255, 222, 158, 0.45);
+    color: #ffe8b3;
+    font-family: "Poppins", sans-serif;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    padding: 4px 13px;
+    border-radius: 999px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22);
+}
+
+.pk-hero-badge i {
+    font-size: 12px;
+    color: #ffd88b;
+}
+
+/* Título de la vista en el Banner */
+.pk-bradcam-titulacion h1.pk-hero-title,
+.pk-bradcam-titulacion h3.pk-hero-title {
+    font-family: "Poppins", sans-serif !important;
+    font-size: 34px !important;
+    font-weight: 700 !important;
+    color: #ffffff !important;
+    margin: 0 0 8px 0 !important;
+    line-height: 1.22 !important;
+    text-transform: none !important;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6) !important;
+}
+
+@media (max-width: 767.98px) {
+    .pk-bradcam-titulacion h1.pk-hero-title,
+    .pk-bradcam-titulacion h3.pk-hero-title {
+        font-size: 24px !important;
+        line-height: 1.25 !important;
+    }
+}
+
+/* Subtítulo / Descripción concisa */
+.pk-hero-desc {
+    font-family: "Poppins", sans-serif !important;
+    font-size: 14.5px !important;
+    line-height: 22px !important;
+    color: rgba(255, 255, 255, 0.92) !important;
+    max-width: 760px;
+    margin: 0 !important;
+    text-transform: none !important;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5) !important;
+    font-weight: 300 !important;
+}
+
+@media (max-width: 767.98px) {
+    .pk-hero-desc {
+        font-size: 13px !important;
+        line-height: 19px !important;
+    }
+}

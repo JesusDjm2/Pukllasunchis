@@ -10,16 +10,26 @@
 @endsection
 
 @section('contenido')
-    <div class="bradcam_area tramites bradcam_overlay">
+    <div class="bradcam_area tramites bradcam_overlay pk-bradcam-titulacion">
         <div class="container">
             <div class="row">
                 <div class="col-lg-12">
                     <div class="bradcam_text">
-                        <h3 class="tituloAnimado">{{ $titulo }}</h3>
-                        <p class="slideUp">
-                            <a href="{{ route('index') }}">Inicio /</a>
-                            <a href="{{ route('tramiteTitulacion') }}">Trámites /</a>
-                            {{ $titulo }}
+                        <nav aria-label="Migas de pan" class="pk-breadcrumbs-nav">
+                            <ol class="pk-breadcrumbs-list">
+                                <li><a href="{{ route('index') }}"><i class="fa fa-home"></i> Inicio</a></li>
+                                <li><i class="fa fa-chevron-right pk-breadcrumb-sep"></i></li>
+                                <li><a href="{{ route('tramiteTitulacion') }}">Titulación</a></li>
+                                <li><i class="fa fa-chevron-right pk-breadcrumb-sep"></i></li>
+                                <li class="pk-breadcrumb-current" aria-current="page">Plan de Trabajo (PTI)</li>
+                            </ol>
+                        </nav>
+                        <div class="pk-hero-badge">
+                            <i class="fa fa-file-signature"></i> Fase 1 de 3 · Proyecto Inicial
+                        </div>
+                        <h1 class="pk-hero-title tituloAnimado">{{ $titulo }}</h1>
+                        <p class="pk-hero-desc slideUp">
+                            Primer paso indispensable para la formulación, aprobación y asignación formal de docente asesor/a institucional.
                         </p>
                     </div>
                 </div>
@@ -112,11 +122,11 @@
                             <p>
                                 Descarga la plantilla oficial editable y redacta tu propuesta (individual o grupal) según la estructura institucional:
                             </p>
-                            <ul>
+                            {{-- <ul>
                                 <li>Planteamiento claro del problema detectado en la práctica profesional docente.</li>
                                 <li>Objetivos, justificación y sustentación teórica contextualizada.</li>
                                 <li>Metodología propuesta, cronograma y recursos requeridos.</li>
-                            </ul>
+                            </ul> --}}
 
                             <!-- Descargables Directos del Hito 2 -->
                             <div class="pk-milestone-actions mt-3 d-flex flex-wrap gap-2">

@@ -10,16 +10,26 @@
 @endsection
 
 @section('contenido')
-    <div class="bradcam_area tramites bradcam_overlay">
+    <div class="bradcam_area tramites bradcam_overlay pk-bradcam-titulacion">
         <div class="container">
             <div class="row">
                 <div class="col-lg-12">
                     <div class="bradcam_text">
-                        <h3 class="tituloAnimado">{{ $titulo }}</h3>
-                        <p class="slideUp">
-                            <a href="{{ route('index') }}">Inicio /</a>
-                            <a href="{{ route('tramiteTitulacion') }}">Trámites /</a>
-                            {{ $titulo }}
+                        <nav aria-label="Migas de pan" class="pk-breadcrumbs-nav">
+                            <ol class="pk-breadcrumbs-list">
+                                <li><a href="{{ route('index') }}"><i class="fa fa-home"></i> Inicio</a></li>
+                                <li><i class="fa fa-chevron-right pk-breadcrumb-sep"></i></li>
+                                <li><a href="{{ route('tramiteTitulacion') }}">Titulación</a></li>
+                                <li><i class="fa fa-chevron-right pk-breadcrumb-sep"></i></li>
+                                <li class="pk-breadcrumb-current" aria-current="page">Expediente Presencial</li>
+                            </ol>
+                        </nav>
+                        <div class="pk-hero-badge">
+                            <i class="fa fa-folder-open"></i> Secretaría Académica
+                        </div>
+                        <h1 class="pk-hero-title tituloAnimado">{{ $titulo }}</h1>
+                        <p class="pk-hero-desc slideUp">
+                            Documentación física y requisitos oficiales necesarios para la conformación del expediente presencial de titulación.
                         </p>
                     </div>
                 </div>
