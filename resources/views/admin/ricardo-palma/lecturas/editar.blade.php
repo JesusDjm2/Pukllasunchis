@@ -131,23 +131,29 @@
                 <div id="rpLectorFormulario" @if ($necesitaLectura) style="display: none;" @endif>
                     {{-- Resumen y acciones (fijo arriba) --}}
                     <div class="rp-lec-resumen">
-                    <button type="button" class="al-btn al-btn-sm al-btn-claro js-rp-mostrar-pdf" hidden>
-                        <i class="fas fa-file-pdf"></i> Ver escaneo
-                    </button>
-                    <span class="rp-lec-chip is-ok" title="Filas que cuadran"><i class="fas fa-check"></i> <b data-cuenta="ok">0</b> cuadran</span>
-                    <button type="button" class="rp-lec-chip is-mal js-rp-ir" data-ir="mal" title="Ir a la siguiente fila con error">
-                        <i class="fas fa-times"></i> <b data-cuenta="mal">0</b> con error
-                    </button>
-                    <button type="button" class="rp-lec-chip is-duda js-rp-ir" data-ir="duda" title="Ir a la siguiente casilla dudosa">
-                        <i class="fas fa-question"></i> <b data-cuenta="duda">0</b> por revisar
-                    </button>
-                    <span class="rp-lec-guardado al-suave" data-estado-guardado>Borrador guardado</span>
-                    <form method="POST" action="{{ route('rp.lecturas.cargar', $borrador->id) }}" class="ml-auto js-rp-cargar">
-                        @csrf
-                        <input type="hidden" name="datos">
-                        <button type="submit" class="al-btn al-btn-oro"><i class="fas fa-cloud-upload-alt"></i> Cargar acta</button>
-                    </form>
-                </div>
+                        <button type="button" class="al-btn al-btn-sm al-btn-claro js-rp-mostrar-pdf" hidden>
+                            <i class="fas fa-file-pdf"></i> Ver escaneo
+                        </button>
+                        <span class="rp-lec-chip"><i class="fas fa-users"></i> <b data-cuenta="total-alumnos">0</b> alumnos</span>
+                        <span class="rp-lec-chip is-ok" title="Filas que cuadran"><i class="fas fa-check"></i> <b data-cuenta="ok">0</b> cuadran</span>
+                        <button type="button" class="rp-lec-chip is-mal js-rp-ir" data-ir="mal" title="Ir a la siguiente fila con error">
+                            <i class="fas fa-times"></i> <b data-cuenta="mal">0</b> con error
+                        </button>
+                        <button type="button" class="rp-lec-chip is-duda js-rp-ir" data-ir="duda" title="Ir a la siguiente casilla dudosa">
+                            <i class="fas fa-question"></i> <b data-cuenta="duda">0</b> por revisar
+                        </button>
+                        <span class="rp-lec-guardado al-suave" data-estado-guardado>Borrador guardado</span>
+                        <div class="ml-auto d-flex align-items-center flex-wrap" style="gap: .5rem;">
+                            <button type="button" class="al-btn al-btn-sm al-btn-verde js-rp-aprobar-todo" title="Aprobar todo el bloque leído (quita las dudas de la IA en todas las filas)">
+                                <i class="fas fa-check-double"></i> Aprobar bloque leído
+                            </button>
+                            <form method="POST" action="{{ route('rp.lecturas.cargar', $borrador->id) }}" class="m-0 js-rp-cargar">
+                                @csrf
+                                <input type="hidden" name="datos">
+                                <button type="submit" class="al-btn al-btn-oro"><i class="fas fa-cloud-upload-alt"></i> Guardar registros en bloque</button>
+                            </form>
+                        </div>
+                    </div>
 
                 {{-- Encabezado --}}
                 <article class="al-card">
@@ -198,6 +204,14 @@
                                 Total y promedio del acta se comparan con lo calculado.
                             </p>
                         </div>
+                        <div class="al-card-cab-acciones d-flex align-items-center flex-wrap ml-md-auto mt-2 mt-md-0" style="gap: .5rem;">
+                            <button type="button" class="al-btn al-btn-sm al-btn-verde js-rp-aprobar-todo" title="Aprobar todo el bloque leído (quita las dudas de la IA en todas las filas)">
+                                <i class="fas fa-check-double"></i> Aprobar bloque leído
+                            </button>
+                            <button type="button" class="al-btn al-btn-sm al-btn-oro js-rp-cargar-trigger" title="Guardar todos los registros leídos en el sistema">
+                                <i class="fas fa-cloud-upload-alt"></i> Guardar registros en bloque
+                            </button>
+                        </div>
                     </div>
                     <div class="rp-lec-tabla-marco">
                         <table class="rp-lec-tabla">
@@ -205,12 +219,45 @@
                             <tbody data-cuerpo></tbody>
                         </table>
                     </div>
-                    <div class="al-form-pie justify-content-start">
-                        <button type="button" class="al-btn al-btn-sm al-btn-claro js-rp-agregar-alumno"><i class="fas fa-user-plus"></i> Agregar alumno</button>
-                        <button type="button" class="al-btn al-btn-sm al-btn-claro js-rp-agregar-asignatura"><i class="fas fa-plus"></i> Agregar asignatura</button>
-                        <span class="al-suave rp-lec-ayuda">Enter baja a la misma casilla del siguiente alumno.</span>
+                    <div class="al-form-pie d-flex align-items-center justify-content-between flex-wrap" style="gap: .75rem;">
+                        <div class="d-flex align-items-center flex-wrap" style="gap: .5rem;">
+                            <button type="button" class="al-btn al-btn-sm al-btn-claro js-rp-agregar-alumno"><i class="fas fa-user-plus"></i> Agregar alumno</button>
+                            <button type="button" class="al-btn al-btn-sm al-btn-claro js-rp-agregar-asignatura"><i class="fas fa-plus"></i> Agregar asignatura</button>
+                            <span class="al-suave rp-lec-ayuda">Enter baja a la misma casilla del siguiente alumno.</span>
+                        </div>
+                        <div class="d-flex align-items-center flex-wrap ml-auto" style="gap: .5rem;">
+                            <button type="button" class="al-btn al-btn-sm al-btn-verde js-rp-aprobar-todo" title="Aprobar todo el bloque leído (quita las dudas de la IA en todas las filas)">
+                                <i class="fas fa-check-double"></i> Aprobar bloque leído
+                            </button>
+                            <button type="button" class="al-btn al-btn-sm al-btn-oro js-rp-cargar-trigger" title="Guardar todos los registros leídos en el sistema">
+                                <i class="fas fa-cloud-upload-alt"></i> Guardar todos los registros en bloque
+                            </button>
+                        </div>
                     </div>
                 </article>
+
+                {{-- Barra flotante persistente con resumen y acciones globales --}}
+                <div class="rp-lec-barra-flotante">
+                    <div class="d-flex align-items-center flex-wrap" style="gap: .6rem;">
+                        <span class="rp-lec-chip"><i class="fas fa-users"></i> <b data-cuenta="total-alumnos">0</b> alumnos</span>
+                        <span class="rp-lec-chip is-ok" title="Filas que cuadran"><i class="fas fa-check"></i> <b data-cuenta="ok">0</b> cuadran</span>
+                        <button type="button" class="rp-lec-chip is-mal js-rp-ir" data-ir="mal" title="Ir a la siguiente fila con error">
+                            <i class="fas fa-times"></i> <b data-cuenta="mal">0</b> con error
+                        </button>
+                        <button type="button" class="rp-lec-chip is-duda js-rp-ir" data-ir="duda" title="Ir a la siguiente casilla dudosa">
+                            <i class="fas fa-question"></i> <b data-cuenta="duda">0</b> por revisar
+                        </button>
+                        <span class="rp-lec-guardado al-suave ml-1" data-estado-guardado>Borrador guardado</span>
+                    </div>
+                    <div class="d-flex align-items-center flex-wrap ml-auto" style="gap: .5rem;">
+                        <button type="button" class="al-btn al-btn-sm al-btn-verde js-rp-aprobar-todo" title="Aprobar todo el bloque leído (quita las dudas de la IA en todas las filas)">
+                            <i class="fas fa-check-double"></i> Aprobar bloque leído
+                        </button>
+                        <button type="button" class="al-btn al-btn-sm al-btn-oro js-rp-cargar-trigger" title="Guardar todos los registros leídos en el sistema">
+                            <i class="fas fa-cloud-upload-alt"></i> Guardar todos los registros en bloque
+                        </button>
+                    </div>
+                </div>
                 </div> {{-- fin #rpLectorFormulario --}}
             </section>
         </div>

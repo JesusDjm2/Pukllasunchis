@@ -244,7 +244,7 @@
             '<th class="rp-lec-th-calc">Promedio</th>' +
             '<th class="rp-lec-th-acta">Prom.<br>del acta</th>' +
             '<th class="rp-lec-th-obs">Observación</th>' +
-            '<th class="rp-lec-th-acc"></th></tr>';
+            '<th class="rp-lec-th-acc"><button type="button" class="rp-lec-btn js-rp-aprobar-todo" title="Aprobar todas las filas del bloque leído"><i class="fas fa-check-double" style="color:var(--al-ok,#0e9467);"></i></button></th></tr>';
         thead.innerHTML = f;
     }
 
@@ -324,7 +324,10 @@
             td.classList.toggle('is-salto', salto);
             td.title = salto ? 'La matrícula no sigue a la anterior (' + prev + '): ¿falta o sobra una fila?' : '';
         });
-        Object.keys(c).forEach(function (k) { raiz.querySelector('[data-cuenta="' + k + '"]').textContent = c[k]; });
+        raiz.querySelectorAll('[data-cuenta="total-alumnos"]').forEach(function (el) { el.textContent = datos.alumnos.length; });
+        Object.keys(c).forEach(function (k) {
+            raiz.querySelectorAll('[data-cuenta="' + k + '"]').forEach(function (el) { el.textContent = c[k]; });
+        });
         avisosCabecera();
         return c;
     }
@@ -470,11 +473,13 @@
     try { if (localStorage.getItem('rpLectorSinPdf') === '1') escaneo(false); } catch (e) { /* sin almacenamiento */ }
 
     // ── Autoguardado del borrador ──
-    var estado = raiz.querySelector('[data-estado-guardado]');
     var temporizador = null, pendiente = false;
+    function setEstadoGuardado(msg) {
+        raiz.querySelectorAll('[data-estado-guardado]').forEach(function (el) { el.textContent = msg; });
+    }
     function cambio() {
         pendiente = true;
-        estado.textContent = 'Cambios sin guardar…';
+        setEstadoGuardado('Cambios sin guardar…');
         clearTimeout(temporizador);
         temporizador = setTimeout(guardar, 1500);
     }
@@ -489,40 +494,146 @@
             body: cuerpo,
             credentials: 'same-origin'
         }).then(function (r) { return r.json(); }).then(function (j) {
-            estado.textContent = j.ok ? 'Borrador guardado ' + j.hora : 'No se pudo guardar el borrador';
+            setEstadoGuardado(j.ok ? 'Borrador guardado ' + j.hora : 'No se pudo guardar el borrador');
         }).catch(function () {
             pendiente = true;
-            estado.textContent = 'Sin conexión: el borrador no se guardó';
+            setEstadoGuardado('Sin conexión: el borrador no se guardó');
         });
     }
     window.addEventListener('beforeunload', function (ev) {
         if (pendiente && !enviando) { ev.preventDefault(); ev.returnValue = ''; }
     });
 
-    // ── Cargar el acta ──
+    // ── Disparadores del guardado en bloque y aprobación ──
+    document.addEventListener('click', function (ev) {
+        var btnCargar = ev.target.closest('.js-rp-cargar-trigger');
+        if (btnCargar) {
+            ev.preventDefault();
+            formCargar.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+            return;
+        }
+
+        var btnAprobar = ev.target.closest('.js-rp-aprobar-todo');
+        if (btnAprobar) {
+            ev.preventDefault();
+            aprobarBloqueTodo();
+        }
+    });
+
+    // ── Aprobar todo el bloque leído ──
+    function aprobarBloqueTodo() {
+        if (!datos.alumnos || !datos.alumnos.length) {
+            aviso('No hay alumnos registrados en el acta.', 'Aprobar bloque');
+            return;
+        }
+
+        var c = actualizarTodo();
+        var mismatches = 0;
+        datos.alumnos.forEach(function (al, idx) {
+            var r = evaluar(al, idx);
+            if (r.celdas.total || r.celdas.promedio) mismatches++;
+        });
+
+        var aplicarAprobacion = function (sincronizar) {
+            datos.alumnos.forEach(function (al, idx) {
+                al.dudas = [];
+                if (sincronizar) {
+                    var r = evaluar(al, idx);
+                    if (r.suma !== null) al.total_acta = String(r.suma);
+                    if (r.prom !== null) al.promedio_acta = fmt2(r.prom);
+                }
+            });
+            pintarCuerpo();
+            cambio();
+            actualizarTodo();
+            if (window.PkAlert && PkAlert.toast) {
+                PkAlert.toast(sincronizar ? 'Bloque aprobado y totales sincronizados' : 'Bloque aprobado con éxito');
+            } else {
+                aviso('Se aprobaron todas las filas del bloque' + (sincronizar ? ' y se sincronizaron los totales con la suma calculada.' : '.'), 'Bloque aprobado');
+            }
+        };
+
+        if (mismatches > 0) {
+            confirmar('Se aprobarán las ' + datos.alumnos.length + ' filas del bloque leído.\n\n' +
+                'Se detectaron ' + mismatches + ' fila(s) donde el Total o Promedio del acta no coincide con la suma calculada de las asignaturas.\n\n' +
+                '¿Deseas sincronizar los totales con la suma calculada para que todas las filas cuadren al 100% y se puedan guardar sin errores?',
+                function () { aplicarAprobacion(true); },
+                'Sí, aprobar y sincronizar');
+        } else if (c.duda > 0) {
+            confirmar('¿Aprobar las ' + datos.alumnos.length + ' filas del bloque leído?\n\n' +
+                'Se marcarán todas como revisadas y se quitarán las ' + c.duda + ' duda(s) generadas por la IA.',
+                function () { aplicarAprobacion(false); },
+                'Sí, aprobar bloque');
+        } else {
+            aplicarAprobacion(false);
+        }
+    }
+
+    // ── Cargar / Guardar el acta en bloque ──
     var enviando = false;
     var formCargar = raiz.querySelector('.js-rp-cargar');
     formCargar.addEventListener('submit', function (ev) {
         ev.preventDefault();
         var c = actualizarTodo();
         var malCab = avisosCabecera();
-        if (malCab || c.mal) {
-            aviso((malCab ? 'Completa el encabezado del acta. ' : '') +
-                (c.mal ? 'Hay ' + c.mal + ' fila(s) que no cuadran (en rojo). Pasa el cursor sobre el ícono de la fila para ver el motivo.' : ''),
-                'Todavía no se puede cargar');
+
+        if (malCab) {
+            aviso('Completa los campos obligatorios del encabezado del acta antes de guardar.', 'Encabezado incompleto');
             return;
         }
+
         var enviar = function () {
             enviando = true;
             clearTimeout(temporizador);
             formCargar.querySelector('[name=datos]').value = JSON.stringify(datos);
-            formCargar.querySelector('button').disabled = true;
+            formCargar.querySelectorAll('button').forEach(function (b) { b.disabled = true; });
+            document.querySelectorAll('.js-rp-cargar-trigger').forEach(function (b) { b.disabled = true; b.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando…'; });
             formCargar.submit();
         };
+
+        if (c.mal > 0) {
+            // Verificar si los errores son únicamente por desfase entre total_acta/promedio y la suma real
+            var soloTotales = true;
+            var numTotales = 0;
+            datos.alumnos.forEach(function (al, idx) {
+                var r = evaluar(al, idx);
+                if (r.estado === 'mal') {
+                    var keys = Object.keys(r.celdas);
+                    var soloEsta = keys.length > 0 && keys.every(function (k) { return k === 'total' || k === 'promedio'; });
+                    if (soloEsta) {
+                        numTotales++;
+                    } else {
+                        soloTotales = false;
+                    }
+                }
+            });
+
+            if (soloTotales && numTotales > 0) {
+                confirmar('Hay ' + numTotales + ' fila(s) donde el Total o Promedio del acta escaneada no coincide con la suma calculada de las asignaturas.\n\n' +
+                    '¿Deseas sincronizar automáticamente los totales con la suma calculada y guardar el acta completa ahora?',
+                    function () {
+                        datos.alumnos.forEach(function (al, idx) {
+                            al.dudas = [];
+                            var r = evaluar(al, idx);
+                            if (r.suma !== null) al.total_acta = String(r.suma);
+                            if (r.prom !== null) al.promedio_acta = fmt2(r.prom);
+                        });
+                        pintarCuerpo();
+                        cambio();
+                        actualizarTodo();
+                        enviar();
+                    }, 'Sí, sincronizar y guardar');
+                return;
+            }
+
+            aviso('Hay ' + c.mal + ' fila(s) que no cuadran (en rojo). Pasa el cursor sobre el ícono de la fila para ver el motivo o corrígelas antes de guardar.', 'Todavía no se puede guardar');
+            return;
+        }
+
         if (c.duda) {
-            confirmar('Quedan ' + c.duda + ' casilla(s) en amarillo que la IA leyó con duda y nadie revisó. ¿Cargar el acta igual?', enviar, 'Sí, cargar');
+            confirmar('Quedan ' + c.duda + ' casilla(s) en amarillo que la IA leyó con duda y nadie revisó. ¿Guardar y cargar el acta en el sistema?', enviar, 'Sí, cargar');
         } else {
-            confirmar('Se cargarán ' + c.ok + ' alumno(s) de esta acta. Si el acta ya existe, sus notas se actualizan.', enviar, 'Sí, cargar');
+            confirmar('Se guardarán y cargarán ' + c.ok + ' alumno(s) de esta acta en el sistema. ¿Continuar?', enviar, 'Sí, guardar y cargar');
         }
     });
 

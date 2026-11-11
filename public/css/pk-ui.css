@@ -63,6 +63,10 @@
     .al-btn:hover { transform: translateY(-1px); }
     .al-btn-oro { background: var(--al-oro); color: #fff !important; box-shadow: 0 6px 16px rgba(205, 146, 68, .35); }
     .al-btn-oro:hover { background: var(--al-oro-2); }
+    .al-btn-verde { background: #0e9467; color: #fff !important; box-shadow: 0 4px 14px rgba(14, 148, 103, .28); }
+    .al-btn-verde:hover { background: #0b7c56; }
+    body.dark-mode .al-btn-verde { background: #10b981; color: #0f172a !important; }
+    body.dim-mode .al-btn-verde { background: var(--al-ok); color: #fff !important; }
     .al-btn-claro { background: rgba(255, 255, 255, .14); color: #fff !important; border-color: rgba(255, 255, 255, .3); }
     .al-btn-claro:hover { background: rgba(255, 255, 255, .24); }
     .al-btn-petroleo { background: var(--al-petroleo); color: #fff !important; }
@@ -861,6 +865,33 @@
     .rp-lec-chip.is-duda { background: var(--al-warn-f); }
     .rp-lec-chip.is-duda i { color: var(--al-warn); }
     .rp-lec-guardado { font-size: .75rem; }
+    .rp-lec-barra-flotante {
+        position: sticky;
+        bottom: .75rem;
+        z-index: 1020;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .75rem;
+        padding: .75rem 1.15rem;
+        margin-top: 1rem;
+        background: var(--al-fondo);
+        border: 1px solid var(--al-borde);
+        border-radius: 14px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, .14);
+    }
+    @media (max-width: 767.98px) {
+        .rp-lec-barra-flotante {
+            flex-direction: column;
+            align-items: stretch;
+            bottom: 0;
+            border-radius: 0;
+            margin: 1rem -1rem 0;
+        }
+        .rp-lec-barra-flotante > div {
+            justify-content: center;
+        }
+    }
 
     .rp-lec-avisos:not(:empty) { margin-top: .9rem; display: flex; flex-direction: column; gap: .35rem; }
     .rp-lec-aviso { font-size: .8rem; padding: .4rem .7rem; border-radius: 8px; }
@@ -1008,6 +1039,9 @@
     .rp-lec-btn { border: 0; background: none; padding: .3rem .4rem; font-size: .88rem; color: var(--al-suave); cursor: pointer; border-radius: 6px; transition: background .15s, color .15s; }
     .rp-lec-btn:hover { background: var(--al-fondo-2); color: var(--al-ok); }
     .rp-lec-btn.is-peligro:hover { color: var(--al-mal); background: var(--al-mal-f); }
+    .rp-lec-th-acc { text-align: center; vertical-align: middle !important; min-width: 4.5rem; }
+    .rp-lec-th-acc .rp-lec-btn { font-size: .95rem; color: var(--al-ok); padding: .25rem .45rem; border: 1px solid rgba(14, 148, 103, .3); border-radius: 6px; }
+    .rp-lec-th-acc .rp-lec-btn:hover { background: var(--al-ok-f); transform: scale(1.1); box-shadow: 0 2px 6px rgba(14, 148, 103, .2); }
 
     /* Borradores pendientes en importar/index */
     .rp-borradores { display: flex; flex-direction: column; gap: .5rem; }
