@@ -17,7 +17,7 @@
     <div class="container-fluid tl">
         <header class="tl-hero">
             <div class="tl-hero__texto">
-                <div class="tl-hero__kicker"><i class="fas fa-stamp"></i> Secretaría · Titulación</div>
+                <div class="tl-hero__kicker"><i class="fas fa-stamp"></i> Titulación · Solicitudes · Secretaría</div>
                 <h1 class="tl-hero__titulo">Cartas de aceptación</h1>
                 <p class="tl-hero__sub">Solicitudes de los estudiantes para la Institución Educativa donde harán su investigación. Revise los datos y el comprobante y envíe la respuesta de aprobación (plazo: {{ CartaAceptacion::DIAS_RESPUESTA }} días hábiles).</p>
             </div>
@@ -43,6 +43,7 @@
         </header>
 
         <div class="al-ui">
+            @include('titulacion.solicitudes._pestanas')
             @if (session('success'))
                 <div class="al-aviso is-ok"><i class="fas fa-check-circle"></i><div>{{ session('success') }}</div></div>
             @endif

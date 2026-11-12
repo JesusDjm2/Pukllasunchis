@@ -53,6 +53,18 @@
                         <span>Mi cuenta de egresado</span>
                     </a>
                 </li>
+                <li class="nav-item {{ request()->routeIs('postulante.index') ? 'active' : '' }}">
+                    <a class="nav-link collapsed" href="{{ route('postulante.index') }}">
+                        <i class="fas fa-fw fa-briefcase"></i>
+                        <span>Bolsa de trabajo</span>
+                    </a>
+                </li>
+                <li class="nav-item {{ request()->routeIs('alumno.comunicados') ? 'active' : '' }}">
+                    <a class="nav-link collapsed" href="{{ route('alumno.comunicados') }}">
+                        <i class="fas fa-fw fa-bullhorn"></i>
+                        <span>Comunicados</span>
+                    </a>
+                </li>
             @else
             <li class="nav-item {{ request()->routeIs('ppd.index', 'ppd.edit') ? 'active' : '' }}">
                 <a class="nav-link collapsed" href="{{ route('ppd.index') }}">

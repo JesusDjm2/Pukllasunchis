@@ -138,6 +138,35 @@
             </a>
         @endif
 
+        {{-- ── Revisión de originalidad (Turnitin) del TI o de la Tesis: con el PTI aprobado y hasta titularse (vista propia).
+             Solo con config titulacion.originalidad_alumnos encendido (por ahora siguen con el formulario de Google). ── --}}
+        @php
+            $mostrarOrig = config('titulacion.originalidad_alumnos') && $avance->hitos['pti_aprobado']['logrado'] && ! $avance->hitos['licenciado']['logrado'];
+            $origUltima = $mostrarOrig ? \App\Models\Titulacion\Solicitud::dePersona(\App\Models\Titulacion\Solicitud::ORIGINALIDAD, $persona)->first() : null;
+        @endphp
+        @if ($mostrarOrig)
+            @php
+                $origSim = $origUltima?->similitud();
+                $origDoc = $origUltima ? (\App\Models\Titulacion\Solicitud::ETAPAS[$origUltima->etapa()] ?? 'documento') : null;
+                [$origClase, $origIcono, $origTexto, $origBoton] = match (true) {
+                    ! $origUltima => ['', 'fa-spell-check', 'Cuando termines tu TI o tu Tesis, solicita la revisión de originalidad en Turnitin (máximo '.\App\Models\Titulacion\Solicitud::SIMILITUD_MAXIMA.' % de similitud).', 'Solicitar revisión'],
+                    $origUltima->estado === 'recibida' => ['is-info', 'fa-inbox', 'Tu revisión de '.$origDoc.' está en curso: el reporte llega a más tardar el '.$origUltima->fechaLimite()->format('d/m/Y').'.', 'Ver mi solicitud'],
+                    $origUltima->estado === 'observada' => ['is-warn', 'fa-exclamation-circle', 'Tu solicitud de revisión fue observada: corrígela y envíala de nuevo.', 'Corregir y enviar'],
+                    $origSim !== null && $origUltima->esApto() => ['is-ok', 'fa-check-circle', 'Tu '.$origDoc.' tiene '.rtrim(rtrim(number_format($origSim, 2), '0'), '.').' % de similitud: está apto.', 'Ver reporte'],
+                    $origSim !== null => ['is-warn', 'fa-times-circle', 'Tu '.$origDoc.' tiene '.rtrim(rtrim(number_format($origSim, 2), '0'), '.').' % de similitud: corrígelo y solicita otra revisión.', 'Ver y solicitar otra'],
+                    default => ['', 'fa-spell-check', 'Tu última revisión ('.$origDoc.') se atendió por correo. Solicita aquí la siguiente revisión.', 'Solicitar revisión'],
+                };
+            @endphp
+            <a href="{{ route('mi-titulacion.originalidad') }}" class="mt-carta {{ $origClase }}">
+                <span class="mt-carta__icono"><i class="fas {{ $origIcono }}"></i></span>
+                <span class="mt-carta__texto">
+                    <span class="mt-carta__kicker">Revisión de originalidad (Turnitin)</span>
+                    <span>{{ $origTexto }}</span>
+                </span>
+                <span class="mt-carta__boton">{{ $origBoton }} <i class="fas fa-arrow-right fa-xs ml-1"></i></span>
+            </a>
+        @endif
+
         {{-- ── Qué hacer ahora: solo los trámites del tramo en curso ── --}}
         @include('titulacion._tramites_ayuda', ['bloque' => \App\Services\Titulacion\GuiaTramites::actual($avance), 'clavePersona' => 's'.$seguimiento->id])
 

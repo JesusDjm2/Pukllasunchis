@@ -89,6 +89,11 @@
                 <button type="button" class="al-tab {{ $hayTitulacion ? '' : 'is-activa' }}" role="tab" data-panel="estudios">
                     <i class="fas fa-history"></i> Mis estudios <span class="al-badge is-muted">{{ $todos->count() }}</span>
                 </button>
+                <button type="button" class="al-tab" role="tab" data-panel="oportunidades">
+                    <i class="fas fa-briefcase"></i> Oportunidades
+                    @php $vigentes = $ofertas->filter(fn ($o) => $o->vigente)->count(); @endphp
+                    @if ($vigentes)<span class="al-tab-marca is-ok">{{ $vigentes }}</span>@endif
+                </button>
                 <button type="button" class="al-tab" role="tab" data-panel="datos">
                     <i class="fas fa-user"></i> Mis datos
                 </button>
@@ -111,39 +116,51 @@
                         <span class="al-card-cab-icono"><i class="fas fa-history"></i></span>
                         <div><h2>Historial de estudios</h2><p>{{ $user->programa->nombre ?? 'Programa PPD' }}{{ $promocion ? ' · ' . $promocion : '' }} · notas finales oficiales</p></div>
                     </div>
+                    {{-- Un acordeón por ciclo (el primero abierto): menos scroll. --}}
                     @forelse ($cursosPpd as $bloque)
-                        @php $notasCiclo = $bloque->cursos->pluck('nota')->filter(fn ($n) => $n !== null); @endphp
-                        <div class="al-grupo">
-                            <i class="fas fa-layer-group"></i> {{ $nombreCiclo($bloque->ciclo) }}
-                            <span class="al-badge is-muted">Promedio {{ $notasCiclo->isNotEmpty() ? number_format($notasCiclo->avg(), 2) : '—' }}</span>
-                        </div>
-                        <ul class="al-cursos">
-                            @foreach ($bloque->cursos as $c)
-                                <li class="al-curso">
-                                    <span class="al-curso-num">{{ $loop->iteration }}</span>
-                                    <div class="al-curso-texto">
-                                        <div class="al-curso-nombre">{{ $c->curso->nombre }}</div>
-                                        <div class="al-curso-meta">
-                                            <i class="fas fa-chalkboard-teacher"></i>{{ $c->docentes ?: 'Docente no registrado' }}
-                                            @if ($c->curso->creditos) · {{ $fmt((float) $c->curso->creditos) }} créditos @endif
-                                        </div>
-                                    </div>
-                                    <div class="al-curso-accion">
+                        @php
+                            $notasCiclo = $bloque->cursos->pluck('nota')->filter(fn ($n) => $n !== null);
+                            $malCiclo = $bloque->cursos->where('desaprobado', true)->count();
+                        @endphp
+                        <details class="al-acc" @if ($loop->first) open @endif>
+                            <summary class="al-curso">
+                                <span class="al-curso-num {{ $malCiclo ? 'is-mal' : 'is-ok' }}" title="{{ $malCiclo ? 'Cursos desaprobados' : 'Sin cursos desaprobados' }}">{{ $malCiclo ?: '✓' }}</span>
+                                <span class="al-curso-texto">
+                                    <span class="al-curso-nombre">{{ $nombreCiclo($bloque->ciclo) }}</span>
+                                    <span class="al-curso-meta d-block">{{ $bloque->cursos->count() }} {{ $bloque->cursos->count() === 1 ? 'curso' : 'cursos' }}@if ($malCiclo) · {{ $malCiclo }} {{ $malCiclo === 1 ? 'desaprobado' : 'desaprobados' }}@endif</span>
+                                </span>
+                                <span class="al-curso-accion">
+                                    <span class="al-badge is-muted">Promedio {{ $notasCiclo->isNotEmpty() ? number_format($notasCiclo->avg(), 2) : '—' }}</span>
+                                    <i class="fas fa-chevron-down al-acc-chev"></i>
+                                </span>
+                            </summary>
+                            <div class="al-acc-cuerpo">
+                                @foreach ($bloque->cursos as $c)
+                                    <div class="al-acc-fila">
                                         @if ($c->nota !== null)
-                                            <b class="cal-nota is-{{ $c->desaprobado ? 'mal' : 'ok' }}" title="{{ $c->periodo ? 'Nota oficial ' . $c->periodo : 'Nota final' }}">{{ $fmt($c->nota) }}</b>
+                                            <span class="cal-nota is-{{ $c->desaprobado ? 'mal' : 'ok' }}" title="{{ $c->periodo ? 'Nota oficial ' . $c->periodo : 'Nota final' }}">{{ $fmt($c->nota) }}</span>
                                         @else
-                                            <span class="al-badge is-muted">Sin nota registrada</span>
+                                            <span class="cal-nota" title="Sin nota registrada">—</span>
                                         @endif
+                                        <span>{{ $c->curso->nombre }} <small>· {{ $c->docentes ?: 'Docente no registrado' }}@if ($c->curso->creditos) · {{ $fmt((float) $c->curso->creditos) }} créditos @endif</small></span>
                                     </div>
-                                </li>
-                            @endforeach
-                        </ul>
+                                @endforeach
+                            </div>
+                        </details>
                     @empty
                         <div class="al-vacio"><i class="fas fa-info-circle"></i>No encontramos cursos registrados de tu programa.</div>
                     @endforelse
                 </div>
-                <p class="small text-muted mb-4"><i class="fas fa-info-circle mr-1"></i>
-                    Si necesitas un certificado de estudios oficial o algún dato no coincide, comunícate con Secretaría Académica.</p>
+                @include('egresado._trayectoria')
+
+                <div class="al-aviso is-info mb-4"><i class="fas fa-file-alt"></i><div>
+                    ¿Necesitas tu <strong>certificado de estudios</strong>, tu <strong>constancia de egresado</strong> u otro documento oficial, o algún dato no coincide?
+                    Comunícate con Secretaría Académica; revisa los conceptos y montos en <a href="{{ route('tramiteTitulacion') }}">Trámites</a>.
+                </div></div>
+            </section>
+
+            <section class="al-panel" role="tabpanel" data-panel="oportunidades">
+                @include('egresado._oportunidades')
             </section>
 
             <section class="al-panel" role="tabpanel" data-panel="datos">

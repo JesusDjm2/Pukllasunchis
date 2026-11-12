@@ -40,6 +40,30 @@
                 </div>
             </a>
             <hr class="sidebar-divider">
+            @php $esEgresadoFid = auth()->user()?->condicion === 'Egresado'; @endphp
+            @if ($esEgresadoFid)
+                {{-- Egresado FID: su intranet (/egresado) reúne titulación, estudios, trayectoria y oportunidades.
+                     Sin ficha de matrícula, calificaciones del año, investigaciones ni tutoría (son del alumno activo). --}}
+                <div class="sidebar-heading">Egresado(a) · FID</div>
+                <li class="nav-item {{ request()->routeIs('egresado.intranet') ? 'active' : '' }}">
+                    <a class="nav-link collapsed" href="{{ route('egresado.intranet') }}">
+                        <i class="fas fa-fw fa-user-graduate"></i>
+                        <span>Mi cuenta de egresado</span>
+                    </a>
+                </li>
+                <li class="nav-item {{ request()->routeIs('postulante.index') ? 'active' : '' }}">
+                    <a class="nav-link collapsed" href="{{ route('postulante.index') }}">
+                        <i class="fas fa-fw fa-briefcase"></i>
+                        <span>Bolsa de trabajo</span>
+                    </a>
+                </li>
+                <li class="nav-item {{ request()->routeIs('alumno.comunicados') ? 'active' : '' }}">
+                    <a class="nav-link collapsed" href="{{ route('alumno.comunicados') }}">
+                        <i class="fas fa-fw fa-bullhorn"></i>
+                        <span>Comunicados</span>
+                    </a>
+                </li>
+            @else
             <div class="sidebar-heading">
                 Dashboard Alumno
             </div>
@@ -102,6 +126,7 @@
                     </a>
                 </li>
             @endif
+            @endif {{-- /menú de alumno activo --}}
             <hr class="sidebar-divider d-none d-md-block">
             <li class="nav-item {{ request()->routeIs('alumno.formatos') ? 'active' : '' }}">
                 <a class="nav-link collapsed" href="{{ route('alumno.formatos') }}">
@@ -148,6 +173,8 @@
                                 Ver Horario {{ $periodoActual->nombre }}
                             </button>
                         </div>
+                    @elseif (auth()->user()?->condicion === 'Egresado')
+                        <span class="small text-muted ml-md-3 mb-0">Egresados · Formación Inicial Docente</span>
                     @else
                         <span class="small text-muted ml-md-3 mb-0">Sin horario asignado para este periodo.</span>
                     @endif

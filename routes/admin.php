@@ -73,6 +73,18 @@ Route::middleware('auth')->group(function () {
         ->middleware('throttle:30,10')->name('mi-titulacion.carta.enviar');
     Route::get('/mi-titulacion/carta-aceptacion/{carta}/{cual}', [App\Http\Controllers\Titulacion\CartaAceptacionController::class, 'archivo'])
         ->whereIn('cual', ['comprobante', 'carta', 'modelo'])->name('mi-titulacion.carta.archivo');
+    // Solicitud de aprobación del PTI (primer paso del proceso: se pide antes de tener proceso de titulación).
+    Route::get('/mi-titulacion/solicitud-pti', [App\Http\Controllers\Titulacion\MiSolicitudPtiController::class, 'crear'])
+        ->name('mi-titulacion.solicitud-pti');
+    Route::post('/mi-titulacion/solicitud-pti', [App\Http\Controllers\Titulacion\MiSolicitudPtiController::class, 'enviar'])
+        ->middleware('throttle:30,10')->name('mi-titulacion.solicitud-pti.enviar');
+    Route::get('/mi-titulacion/solicitud-pti/{solicitud}/{cual}/{n}', [App\Http\Controllers\Titulacion\MiSolicitudPtiController::class, 'archivo'])
+        ->whereIn('cual', ['archivo', 'comprobante', 'reporte'])->whereNumber('n')->name('mi-titulacion.solicitud-pti.archivo');
+    // Revisión de originalidad (Turnitin) del TI o de la Tesis, con el proceso ya iniciado.
+    Route::get('/mi-titulacion/originalidad', [App\Http\Controllers\Titulacion\MiSolicitudOriginalidadController::class, 'crear'])
+        ->name('mi-titulacion.originalidad');
+    Route::post('/mi-titulacion/originalidad', [App\Http\Controllers\Titulacion\MiSolicitudOriginalidadController::class, 'enviar'])
+        ->middleware('throttle:30,10')->name('mi-titulacion.originalidad.enviar');
 });
 
 // GET simple para mantener viva la sesión (y el token CSRF) mientras se llena
@@ -647,6 +659,26 @@ Route::middleware('auth')->group(function () {
             Route::post('/cartas-aceptacion/importar/aplicar', [App\Http\Controllers\Titulacion\ImportarCartasController::class, 'aplicar'])->name('cartas.importar.aplicar');
             Route::post('/cartas-aceptacion/{carta}/atender', [App\Http\Controllers\Titulacion\CartaAceptacionController::class, 'atender'])->name('cartas.atender');
             Route::post('/egresados/{egresado}/carta-externa', [App\Http\Controllers\Titulacion\CartaAceptacionController::class, 'registrarExterna'])->name('cartas.externa');
+            // Sección «Solicitudes»: pestaña «Por atender» (todos los trámites) + una pestaña por trámite (BandejasSolicitudes).
+            Route::get('/solicitudes', [App\Http\Controllers\Titulacion\SolicitudesController::class, 'index'])->name('solicitudes.index');
+            // Secretaría edita cualquier solicitud de los formularios (PTI, originalidad…): datos, integrantes y estado.
+            Route::get('/solicitudes/{solicitud}/editar', [App\Http\Controllers\Titulacion\SolicitudesController::class, 'editar'])->name('solicitudes.editar');
+            Route::put('/solicitudes/{solicitud}', [App\Http\Controllers\Titulacion\SolicitudesController::class, 'actualizar'])->name('solicitudes.actualizar');
+            // Solicitudes de aprobación de PTI (formulario de Google por ahora): bandeja e importación de respuestas (super-admin).
+            Route::get('/solicitudes-pti', [App\Http\Controllers\Titulacion\SolicitudPtiController::class, 'index'])->name('solicitudes-pti.index');
+            Route::post('/solicitudes-pti/{solicitud}/observar', [App\Http\Controllers\Titulacion\SolicitudPtiController::class, 'observar'])->name('solicitudes-pti.observar');
+            Route::get('/solicitudes-pti/importar',[App\Http\Controllers\Titulacion\SolicitudPtiController::class, 'importarForm'])->name('solicitudes-pti.importar');
+            Route::post('/solicitudes-pti/importar', [App\Http\Controllers\Titulacion\SolicitudPtiController::class, 'importarPrevia'])->name('solicitudes-pti.importar.previa');
+            Route::get('/solicitudes-pti/importar/{token}', [App\Http\Controllers\Titulacion\SolicitudPtiController::class, 'importarVista'])->name('solicitudes-pti.importar.vista');
+            Route::post('/solicitudes-pti/importar/aplicar', [App\Http\Controllers\Titulacion\SolicitudPtiController::class, 'importarAplicar'])->name('solicitudes-pti.importar.aplicar');
+            // Revisión de originalidad (Turnitin): bandeja, atender (reporte + %), observar e importar del formulario de Google.
+            Route::get('/solicitudes-originalidad', [App\Http\Controllers\Titulacion\SolicitudOriginalidadController::class, 'index'])->name('solicitudes-originalidad.index');
+            Route::post('/solicitudes-originalidad/{solicitud}/atender', [App\Http\Controllers\Titulacion\SolicitudOriginalidadController::class, 'atender'])->name('solicitudes-originalidad.atender');
+            Route::post('/solicitudes-originalidad/{solicitud}/observar', [App\Http\Controllers\Titulacion\SolicitudOriginalidadController::class, 'observar'])->name('solicitudes-originalidad.observar');
+            Route::get('/solicitudes-originalidad/importar', [App\Http\Controllers\Titulacion\SolicitudOriginalidadController::class, 'importarForm'])->name('solicitudes-originalidad.importar');
+            Route::post('/solicitudes-originalidad/importar', [App\Http\Controllers\Titulacion\SolicitudOriginalidadController::class, 'importarPrevia'])->name('solicitudes-originalidad.importar.previa');
+            Route::get('/solicitudes-originalidad/importar/{token}', [App\Http\Controllers\Titulacion\SolicitudOriginalidadController::class, 'importarVista'])->name('solicitudes-originalidad.importar.vista');
+            Route::post('/solicitudes-originalidad/importar/aplicar', [App\Http\Controllers\Titulacion\SolicitudOriginalidadController::class, 'importarAplicar'])->name('solicitudes-originalidad.importar.aplicar');
             // Secretaría corrige el grupo (retiro / incorporación con RD ya emitida): revisar y aplicar.
             Route::get('/egresados/{egresado}/grupo', [App\Http\Controllers\Titulacion\CambioGrupoController::class, 'editar'])->name('grupo.editar');
             Route::post('/egresados/{egresado}/grupo', [App\Http\Controllers\Titulacion\CambioGrupoController::class, 'aplicar'])->name('grupo.cambiar');

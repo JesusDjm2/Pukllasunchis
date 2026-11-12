@@ -1,4 +1,5 @@
-@extends('layouts.alumno')
+{{-- Con el menú de su intranet: PPD (alumno o egresado) o FID (alumno o egresado). --}}
+@extends(auth()->user()?->alumnoB ? 'layouts.profesionalizacion' : 'layouts.alumno')
 @section('titulo', 'Bolsa de trabajo — Oportunidades')
 @section('contenido')
     @include('partials.alumno-page-header', [

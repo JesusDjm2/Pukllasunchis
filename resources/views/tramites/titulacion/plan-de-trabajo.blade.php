@@ -135,20 +135,26 @@
                     <div class="pk-milestone-item">
                         <div class="pk-milestone-item__bullet">3</div>
                         <div class="pk-milestone-header">
-                            <h4>Registro en el Formulario Virtual de Aprobación</h4>
+                            <h4>FORMULARIO DE APROBACIÓN DE PTI</h4>
                             <div class="pk-milestone-meta">
                                 <span class="pk-badge-time"><i class="fa fa-globe"></i> Mesa Virtual</span>
                             </div>
                         </div>
                         <div class="pk-milestone-content">
                             <p>
-                                Con tu boleta electrónica y tu archivo finalizado, ingresa al formulario oficial con tu cuenta institucional:
+                                Con tu boleta electrónica y tu archivo finalizado, envía la <strong>Solicitud de Aprobación de Plan de Trabajo de Investigación y Asignación de Asesor</strong> desde tu <strong>Intranet</strong>:
                             </p>
 
-                            <a href="https://docs.google.com/forms/d/e/1FAIpQLSeErc1rq886EWiuavn27wd5kpCkZ48ntkOrWgNS5uE2XKw5JA/viewform"
-                               target="_blank" class="pk-btn-form-cta">
-                                <i class="fa fa-external-link me-1"></i> Abrir Formulario Oficial de PTI
-                            </a>
+                            {{-- Formulario del sistema (MiSolicitudPtiController): reemplaza al de Google. Sin sesión, aviso y login. --}}
+                            @auth
+                                <a href="{{ route('mi-titulacion.solicitud-pti') }}" class="pk-btn-form-cta">
+                                    <i class="fa fa-file-signature me-1"></i> Solicitar aprobación del PTI en mi Intranet
+                                </a>
+                            @else
+                                <button type="button" class="pk-btn-form-cta border-0" data-bs-toggle="modal" data-bs-target="#modalPtiIntranet">
+                                    <i class="fa fa-sign-in me-1"></i> Iniciar sesión en Intranet para solicitar
+                                </button>
+                            @endauth
                         </div>
                     </div>
 
@@ -321,6 +327,41 @@
                     </a>
                 </div>
 
+            </div>
+        </div>
+    </div>
+
+    {{-- Modal informativo previo al login para la Solicitud de Aprobación del PTI --}}
+    @php $tramitePti = \App\Services\Titulacion\TramitesExtraordinarios::tipo('aprobacion_pti'); @endphp
+    <div class="modal fade" id="modalPtiIntranet" tabindex="-1" aria-labelledby="modalPtiIntranetLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 1rem 3rem rgba(0,0,0,0.25); overflow: hidden; font-family: 'Poppins', sans-serif;">
+                <div class="modal-header border-0 text-white" style="background: linear-gradient(135deg, #364651, #243038); padding: 1.25rem 1.5rem;">
+                    <h5 class="modal-title d-flex align-items-center gap-2 mb-0" id="modalPtiIntranetLabel" style="font-size: 1.15rem; font-weight: 600; color: #fff;">
+                        <i class="fa fa-file-signature" style="color: #cd9244;"></i> Solicitud de Aprobación del PTI
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <div class="mb-3">
+                        <span style="display: inline-flex; width: 64px; height: 64px; border-radius: 50%; background: #fff8eb; align-items: center; justify-content: center; color: #cd9244; font-size: 28px;">
+                            <i class="fa fa-id-card"></i>
+                        </span>
+                    </div>
+                    <h5 class="font-weight-bold text-dark mb-2">Ingreso a la Intranet Institucional</h5>
+                    <p class="text-muted mb-3" style="font-size: 15px; line-height: 24px;">
+                        La <strong>Solicitud de Aprobación de Plan de Trabajo de Investigación y Asignación de Asesor</strong> se completa desde tu <strong>Intranet</strong>: ingresa con tu cuenta y, en «Tu proceso de titulación», pulsa <strong>«Solicitar aprobación del PTI»</strong>. Adjuntarás tu PTI (PDF o Word) y tu comprobante de pago.
+                    </p>
+                    <div class="alert alert-warning text-start mb-0 py-2 px-3" style="font-size: 14px; border-radius: 8px; border-left: 4px solid #cd9244; background-color: #fff9ed; color: #856404;">
+                        <i class="fa fa-info-circle me-1"></i> Recuerda adjuntar tu <strong>boleta electrónica oficial</strong> de <strong class="caja-cusco-brand" style="color: #d3141b;">Caja Cusco</strong> (Concepto: {{ $tramitePti['concepto_caja'] }} | Código: {{ $tramitePti['codigo'] }} | Monto: {{ \App\Services\Titulacion\TramitesExtraordinarios::monto($tramitePti) }}), no el voucher impreso de ventanilla.
+                    </div>
+                </div>
+                <div class="modal-footer border-0 bg-light p-3 justify-content-center">
+                    <button type="button" class="btn btn-outline-secondary px-3" data-bs-dismiss="modal" style="border-radius: 8px; font-size: 14px;">Cerrar</button>
+                    <a href="{{ route('mi-titulacion.solicitud-pti') }}" class="btn text-white fw-bold px-4 py-2" style="background: linear-gradient(135deg, #d59d52, #cd9244); border-radius: 8px; font-size: 14px;">
+                        <i class="fa fa-sign-in me-1"></i> Ir al Login de la Intranet
+                    </a>
+                </div>
             </div>
         </div>
     </div>

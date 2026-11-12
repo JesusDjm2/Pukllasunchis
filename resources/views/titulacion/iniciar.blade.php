@@ -6,7 +6,7 @@
 @section('contenido')
 @php
     $volver = route('titulacion.index', ['ver' => $persona->id]);
-    $previos = collect(old('integrantes', []))->map(fn ($id) => \App\Models\User::find($id))->filter()
+    $previos = collect(old('integrantes', $prefill['integrantes'] ?? []))->map(fn ($id) => \App\Models\User::find($id))->filter()
         ->map(fn ($u) => \App\Http\Controllers\Titulacion\InicioProcesoController::datosPersona($u))->values();
 @endphp
 @include('titulacion._rdg_estilos')
@@ -46,6 +46,14 @@
     <form method="POST" action="{{ route('titulacion.inicio.guardar', $persona->id) }}" id="iniForm"
           data-confirm="Se registrará el PTI y se asignarán los números de expediente." data-confirm-titulo="¿Iniciar el proceso?" data-confirm-boton="Sí, iniciar">
         @csrf
+        @if (! empty($solicitud))
+            <input type="hidden" name="solicitud_id" value="{{ $solicitud->id }}">
+            <div class="alert alert-info">
+                <i class="fas fa-inbox mr-1"></i>Se inicia desde la <strong>solicitud de PTI del {{ $solicitud->created_at->format('d/m/Y') }}</strong>{{ $solicitud->origen === 'formulario' ? ' (formulario de Google)' : '' }}:
+                título, fecha e integrantes reconocidos ya están puestos; revíselos. Escribieron: <em>{{ implode('; ', $solicitud->nombresIntegrantes()) }}</em>.
+                Al iniciar, la solicitud queda como atendida.
+            </div>
+        @endif
 
         {{-- 1. Datos del PTI --}}
         <div class="rdg-card">
@@ -53,16 +61,16 @@
             <div class="form-row">
                 <div class="form-group col-12">
                     <label for="iniTitulo">Título del Plan de Trabajo de Investigación</label>
-                    <textarea name="titulo" id="iniTitulo" rows="2" class="form-control" required maxlength="1000">{{ old('titulo') }}</textarea>
+                    <textarea name="titulo" id="iniTitulo" rows="2" class="form-control" required maxlength="1000">{{ old('titulo', $prefill['titulo'] ?? '') }}</textarea>
                 </div>
                 <div class="form-group col-sm-6 col-md-4">
                     <label for="iniFecha">Fecha de inscripción del PTI</label>
-                    <input type="date" name="fecha_pti" id="iniFecha" class="form-control" value="{{ old('fecha_pti', now()->toDateString()) }}" required>
+                    <input type="date" name="fecha_pti" id="iniFecha" class="form-control" value="{{ old('fecha_pti', $prefill['fecha_pti'] ?? now()->toDateString()) }}" required>
                 </div>
                 <div class="form-group col-sm-6 col-md-4">
                     <label for="iniVence">Fecha de vencimiento</label>
                     <input type="date" name="fecha_vencimiento" id="iniVence" class="form-control"
-                           value="{{ old('fecha_vencimiento', \Carbon\Carbon::parse(old('fecha_pti', now()->toDateString()))->addYears(2)->toDateString()) }}">
+                           value="{{ old('fecha_vencimiento', \Carbon\Carbon::parse(old('fecha_pti', $prefill['fecha_pti'] ?? now()->toDateString()))->addYears(2)->toDateString()) }}">
                     <div class="rdg-ayuda"><i class="fas fa-magic fa-xs mr-1"></i>Se calcula sola: 2 años desde la inscripción.</div>
                 </div>
             </div>

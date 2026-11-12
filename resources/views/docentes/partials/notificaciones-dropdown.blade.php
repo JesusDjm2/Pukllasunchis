@@ -1,18 +1,10 @@
-{{-- Campanita de notificaciones in-app — compartida por admin, superadmin,
-     docente/tutor y alumno (FID y PPD). Un solo partial para que un tipo de
-     notificación nuevo (icono, color, texto) se agregue en un único lugar. --}}
+
 @php
     $notiUser = auth()->user();
     // Cuentas de área (p. ej. Secretaría, que además tiene rol admin): solo los avisos de su área.
     $notiFiltro = fn ($q) => \App\Support\NotificacionesPorRol::filtrar($q, $notiUser);
     $notiNoLeidasTotal = $notiUser ? $notiFiltro($notiUser->unreadNotifications())->count() : 0;
 
-    // Prioriza siempre las no leídas (hasta 30, tope razonable para un
-    // dropdown) y solo completa con leídas recientes el espacio que sobre
-    // hasta 5 en total — así una notificación vieja sin atender nunca queda
-    // tapada por otras ya vistas, y las leídas de hace meses dejan de
-    // aparecer. La lista tiene alto fijo (~5 filas, ver .noti-scroll) con
-    // scroll propio para ver el resto sin atender cuando hay más de 5.
     $notiNoLeidas = $notiUser ? $notiFiltro($notiUser->unreadNotifications())->latest()->limit(30)->get() : collect();
     $cupoLeidas = max(0, 5 - $notiNoLeidas->count());
     $notiLeidasRecientes = $cupoLeidas > 0 && $notiUser
@@ -22,11 +14,6 @@
 @endphp
 
 <style>
-    /* Distinción leída/no-leída que funciona igual en claro, oscuro y tenue:
-       en vez de un bg-light (invisible en claro, y sin override en dark/dim,
-       ver public/admin/css/darkmode.css) se usa un tinte semitransparente +
-       barra de acento + punto — se nota por color Y por forma, no solo por
-       una diferencia de brillo que algunos temas anulaban. */
     .noti-item {
         border-left: 3px solid transparent;
         transition: background-color .15s ease;
@@ -40,7 +27,7 @@
     .noti-item:not(.is-unread) {
         opacity: .7;
     }
-
+ 
     .noti-item:not(.is-unread):hover {
         opacity: 1;
     }
@@ -158,6 +145,23 @@
                     \App\Notifications\TitulacionDatoReportado::class => [
                         'Titulación: dato por revisar', 'fa-user-graduate', 'bg-warning',
                         ($n->data['alumno_nombre'] ?? 'Un egresado').' — "'.($n->data['resumen'] ?? '').'"',
+                    ],
+                    \App\Notifications\TitulacionPtiSolicitada::class => [
+                        'Solicitud de PTI', 'fa-file-signature', 'bg-primary',
+                        ($n->data['alumno_nombre'] ?? 'Un estudiante').' solicita la aprobación de su PTI «'.($n->data['titulo'] ?? '').'»',
+                    ],
+                    \App\Notifications\TitulacionOriginalidadSolicitada::class => [
+                        'Revisión de originalidad', 'fa-spell-check', 'bg-primary',
+                        ($n->data['alumno_nombre'] ?? 'Un tesista').' solicita la revisión Turnitin de su '.(($n->data['etapa'] ?? '') ?: 'documento'),
+                    ],
+                    \App\Notifications\TitulacionOriginalidadAtendida::class => match (true) {
+                        ($n->data['estado'] ?? '') === 'observada' => ['Revisión de originalidad', 'fa-exclamation-circle', 'bg-warning', 'Tu solicitud fue observada: revísala y envíala de nuevo'],
+                        (bool) ($n->data['apto'] ?? false) => ['Revisión de originalidad', 'fa-check-circle', 'bg-success', 'Tu reporte Turnitin está listo: '.($n->data['similitud'] ?? '').' % de similitud (apto)'],
+                        default => ['Revisión de originalidad', 'fa-times-circle', 'bg-danger', 'Tu reporte Turnitin está listo: '.($n->data['similitud'] ?? '').' % de similitud (supera el máximo: corrige y solicita otra revisión)'],
+                    },
+                    \App\Notifications\TitulacionPtiParaRd::class => [
+                        'RD de PTI por emitir', 'fa-gavel', 'bg-warning',
+                        'Se inició el proceso de '.($n->data['alumno_nombre'] ?? 'un estudiante').': emitir la RD de aprobación del PTI «'.($n->data['titulo'] ?? '').'»',
                     ],
                     \App\Notifications\TitulacionCartaSolicitada::class => [
                         'Carta de aceptación', 'fa-envelope-open-text', 'bg-info',

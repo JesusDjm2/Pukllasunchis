@@ -8,15 +8,32 @@ use App\Models\User;
  * Qué avisos de la campanita le corresponden a una cuenta de área. Algunas cuentas tienen además el rol
  * «admin» (por ejemplo Secretaría), y les llegaban o quedaban avisos de administración (incidencias,
  * tutorías, sugerencias) que no son suyos. Para esas cuentas la campanita muestra SOLO los tipos de su área.
- * null = sin filtro (todos los avisos del usuario). Un aviso nuevo de Secretaría se agrega aquí.
+ * null = sin filtro (todos los avisos del usuario).
+ *
+ * Secretaría es parte central del proceso de titulación: le llegan TODAS las solicitudes de los trámites de
+ * titulación y los avisos de RD por emitir. Un aviso nuevo de titulación se agrega en TITULACION.
  */
 class NotificacionesPorRol
 {
-    /** Rol de área => tipos de aviso que ve. */
+    /** Avisos de los trámites de titulación (solicitudes y RD). */
+    public const TITULACION = [
+        \App\Notifications\TitulacionCartaSolicitada::class,
+        \App\Notifications\TitulacionPtiSolicitada::class,
+        \App\Notifications\TitulacionPtiParaRd::class,
+        \App\Notifications\TitulacionOriginalidadSolicitada::class,
+    ];
+
+    /** Rol de área con filtro => tipos de aviso que ve. */
     public const POR_ROL = [
-        'secretaria' => [
-            \App\Notifications\TitulacionCartaSolicitada::class,
-        ],
+        'secretaria' => self::TITULACION,
+    ];
+
+    /**
+     * Lo que suma otra área si la cuenta también la tiene (una cuenta de Secretaría que además es de
+     * Investigación ve también los avisos de Investigación). Estas áreas no filtran por sí solas.
+     */
+    public const SUMAN = [
+        'gestor-titulacion' => [...self::TITULACION, \App\Notifications\TitulacionDatoReportado::class],
     ];
 
     /** @return array<int, string>|null */
@@ -25,13 +42,22 @@ class NotificacionesPorRol
         if (! $user || $user->hasRole('super-admin')) {
             return null;
         }
-        foreach (self::POR_ROL as $rol => $tipos) {
+        $tipos = null;
+        foreach (self::POR_ROL as $rol => $deRol) {
             if ($user->hasRole($rol)) {
-                return $tipos;
+                $tipos = array_merge($tipos ?? [], $deRol);
+            }
+        }
+        if ($tipos === null) {
+            return null;
+        }
+        foreach (self::SUMAN as $rol => $deRol) {
+            if ($user->hasRole($rol)) {
+                $tipos = array_merge($tipos, $deRol);
             }
         }
 
-        return null;
+        return array_values(array_unique($tipos));
     }
 
     /** Aplica el filtro a una consulta de notificaciones del usuario. */

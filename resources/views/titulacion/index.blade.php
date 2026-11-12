@@ -10,10 +10,11 @@
                 <p class="tl-hero__sub">Seguimiento del proceso de cada egresado: PTI, Trabajo de Investigación y Tesis.</p>
             </div>
             <div class="tl-hero__acciones">
-                @php $cartasPorResponder = \App\Models\Titulacion\CartaAceptacion::where('estado', 'enviada')->distinct('lote')->count('lote'); @endphp
-                <a href="{{ route('titulacion.cartas.index', $cartasPorResponder ? ['estado' => 'enviada'] : []) }}" class="tl-hero__btn" title="Solicitudes de carta de aceptación de la Institución Educativa (las gestiona Secretaría)">
-                    <i class="fas fa-envelope-open-text"></i>Cartas de aceptación
-                    @if ($cartasPorResponder)<span class="badge badge-warning ml-1">{{ $cartasPorResponder }}</span>@endif
+                {{-- Todas las solicitudes (PTI, cartas de aceptación…) en una sección con pestañas: BandejasSolicitudes. --}}
+                @php $solicitudesPorAtender = \App\Services\Titulacion\BandejasSolicitudes::total(); @endphp
+                <a href="{{ route('titulacion.solicitudes.index') }}" class="tl-hero__btn" title="Solicitudes de los estudiantes: aprobación de PTI, carta de aceptación…">
+                    <i class="fas fa-inbox"></i>Solicitudes
+                    @if ($solicitudesPorAtender)<span class="badge badge-warning ml-1">{{ $solicitudesPorAtender }}</span>@endif
                 </a>
                 <a href="{{ route('titulacion.asesores.index') }}" class="tl-hero__btn" title="Asesores y jurados que no son docentes con cuenta">
                     <i class="fas fa-user-tie"></i>Asesores

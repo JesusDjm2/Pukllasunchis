@@ -59,6 +59,19 @@ class AreasTitulacion
         'grupo.cambiar' => self::SECRETARIA,
         'rdpti.completar' => self::SECRETARIA,
         'rdpti.normalizar' => self::SOLO_SUPER_ADMIN,
+        'solicitudes.editar' => self::SECRETARIA,
+        'solicitudes.actualizar' => self::SECRETARIA,
+        'solicitudes-pti.observar' => self::INVESTIGACION,
+        'solicitudes-originalidad.atender' => self::INVESTIGACION,
+        'solicitudes-originalidad.observar' => self::INVESTIGACION,
+        'solicitudes-originalidad.importar' => self::SOLO_SUPER_ADMIN,
+        'solicitudes-originalidad.importar.previa' => self::SOLO_SUPER_ADMIN,
+        'solicitudes-originalidad.importar.vista' => self::SOLO_SUPER_ADMIN,
+        'solicitudes-originalidad.importar.aplicar' => self::SOLO_SUPER_ADMIN,
+        'solicitudes-pti.importar' => self::SOLO_SUPER_ADMIN,
+        'solicitudes-pti.importar.previa' => self::SOLO_SUPER_ADMIN,
+        'solicitudes-pti.importar.vista' => self::SOLO_SUPER_ADMIN,
+        'solicitudes-pti.importar.aplicar' => self::SOLO_SUPER_ADMIN,
         'cartas.importar' => self::SOLO_SUPER_ADMIN,
         'cartas.importar.previa' => self::SOLO_SUPER_ADMIN,
         'cartas.importar.vista' => self::SOLO_SUPER_ADMIN,
@@ -113,5 +126,21 @@ class AreasTitulacion
     public static function sinCamposDeRd(array $data): array
     {
         return self::puede(self::SECRETARIA) ? $data : array_diff_key($data, array_flip(self::CAMPOS_DE_RD));
+    }
+
+    /**
+     * A quién avisar (campanita) de un trámite de titulación: Secretaría SIEMPRE (es parte de todo el proceso:
+     * solicitudes y RD) y, si se indica, también Investigación. Sin repetir; si no hay nadie con esos roles,
+     * el super-admin.
+     *
+     * @param  array<int, string>  $areas  self::SECRETARIA, self::INVESTIGACION
+     * @return \Illuminate\Support\Collection<int, \App\Models\User>
+     */
+    public static function destinatarios(array $areas = [self::SECRETARIA]): \Illuminate\Support\Collection
+    {
+        $roles = collect(array_unique([self::SECRETARIA, ...$areas]))->map(fn ($a) => self::ROLES[$a] ?? null)->filter()->values()->all();
+        $usuarios = \App\Models\User::role($roles)->get()->unique('id')->values();
+
+        return $usuarios->isNotEmpty() ? $usuarios : \App\Models\User::role('super-admin')->get();
     }
 }

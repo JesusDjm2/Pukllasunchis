@@ -7,6 +7,7 @@ use App\Models\Ciclo;
 use App\Models\Titulacion\EstadoTitulacion;
 use App\Models\Titulacion\Pti;
 use App\Models\Titulacion\SeguimientoTitulacion;
+use App\Models\Titulacion\Solicitud;
 use App\Models\User;
 use App\Services\Titulacion\Expediente;
 use Illuminate\Http\Request;
@@ -20,7 +21,7 @@ use Illuminate\Support\Facades\DB;
  */
 class InicioProcesoController extends Controller
 {
-    public function crear(User $persona)
+    public function crear(Request $request, User $persona)
     {
         if ($motivo = self::motivoNoPuede($persona)) {
             return redirect()->route('titulacion.index', ['ver' => $persona->id])->with('error', $motivo);
@@ -30,7 +31,21 @@ class InicioProcesoController extends Controller
         $expedientes = ['fid' => Expediente::siguiente(false), 'ppd' => Expediente::siguiente(true)];
         $grupos = self::gruposPara(self::esPpd($persona), $persona->id);
 
-        return view('titulacion.iniciar', compact('persona', 'titular', 'expedientes', 'grupos'));
+        // Desde una solicitud de PTI: título, fecha e integrantes reconocidos ya puestos.
+        $solicitud = self::solicitudPendiente($request->query('solicitud'));
+        $prefill = $solicitud ? [
+            'titulo' => trim((string) $solicitud->titulo, " \"“”"),
+            'fecha_pti' => $solicitud->created_at->toDateString(),
+            'integrantes' => array_values(array_diff($solicitud->idsIntegrantes(), [$persona->id])),
+        ] : [];
+
+        return view('titulacion.iniciar', compact('persona', 'titular', 'expedientes', 'grupos', 'solicitud', 'prefill'));
+    }
+
+    /** Solicitud de PTI que todavía no tiene proceso (null si no existe o ya se atendió). */
+    private static function solicitudPendiente($id): ?Solicitud
+    {
+        return $id ? Solicitud::deTipo(Solicitud::PTI)->where('estado', '!=', 'atendida')->find((int) $id) : null;
     }
 
     /**
@@ -163,6 +178,7 @@ class InicioProcesoController extends Controller
             'fecha_vencimiento' => 'nullable|date|after_or_equal:fecha_pti',
             'integrantes' => 'nullable|array|max:10',
             'integrantes.*' => 'integer|distinct|exists:users,id',
+            'solicitud_id' => 'nullable|integer',
         ], [
             'titulo.required' => 'Escriba el título del PTI.',
             'fecha_pti.required' => 'Indique la fecha de inscripción del PTI.',
@@ -184,7 +200,8 @@ class InicioProcesoController extends Controller
         // El PTI vence a los 2 años de su inscripción, salvo que se indique otra fecha.
         $data['fecha_vencimiento'] = $data['fecha_vencimiento'] ?? \Carbon\Carbon::parse($data['fecha_pti'])->addYears(2)->toDateString();
 
-        $asignados = DB::transaction(function () use ($miembros, $data) {
+        $solicitud = self::solicitudPendiente($data['solicitud_id'] ?? null);
+        $asignados = DB::transaction(function () use ($miembros, $data, $persona, $solicitud, $request) {
             $asignados = [];
             $grupoId = null;
             foreach ($miembros as $i => $m) {
@@ -214,8 +231,28 @@ class InicioProcesoController extends Controller
                 $asignados[] = trim($m->apellidos.', '.$m->name).' (N° '.$seguimiento->numero_expediente.')';
             }
 
+            // La solicitud de PTI de la que se partió queda atendida y enlazada al proceso del titular.
+            if ($solicitud) {
+                $solicitud->update([
+                    'estado' => 'atendida',
+                    'seguimiento_id' => SeguimientoTitulacion::where('user_id', $persona->id)->value('id'),
+                    'atendido_por' => $request->user()->id,
+                    'atendido_en' => now(),
+                ]);
+            }
+
             return $asignados;
         });
+
+        // A Secretaría le toca ahora la RD de aprobación del PTI: aviso en su campanita (un solo aviso por grupo).
+        try {
+            \Illuminate\Support\Facades\Notification::send(
+                \App\Services\Titulacion\AreasTitulacion::destinatarios(),
+                new \App\Notifications\TitulacionPtiParaRd($persona, $data['titulo'], $asignados)
+            );
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('No se pudo avisar a Secretaría del PTI por emitir', ['persona' => $persona->id, 'error' => $e->getMessage()]);
+        }
 
         $texto = count($asignados) > 1
             ? 'Proceso iniciado para el grupo: '.implode('; ', $asignados).'.'
