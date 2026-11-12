@@ -109,7 +109,7 @@
                             </div>
                             <div class="pk-milestone-result">
                                 <i class="fa fa-check-circle"></i>
-                                <span>Recibirás el Reporte Oficial Turnitin en tu correo institucional en un plazo no mayor a 10 días hábiles. El pago cubre 1 revisión dentro de 5 días hábiles posteriores.</span>
+                                <span>Recibirás el Reporte Oficial Turnitin en tu correo institucional en un plazo no mayor a 10 días hábiles. Cada pago cubre 1 revisión de originalidad.</span>
                             </div>
                             <a href="https://docs.google.com/forms/d/e/1FAIpQLSc1Bam9QlzjkT66NYeKMxS-xyoU4MchYtYiGCMmtvKVbHiCjg/viewform"
                                target="_blank" class="pk-btn-form-cta">

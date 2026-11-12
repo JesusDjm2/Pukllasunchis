@@ -109,7 +109,7 @@
                             </div>
                             <div class="pk-milestone-result">
                                 <i class="fa fa-check-circle"></i>
-                                <span>Porcentaje máximo permitido: <strong>20%</strong>. Recibirás tu reporte oficial por correo en un plazo no mayor a 10 días hábiles.</span>
+                                <span>Porcentaje máximo permitido: <strong>20%</strong>. Recibirás tu reporte oficial por correo en un plazo no mayor a 10 días hábiles. Cada pago cubre 1 revisión de originalidad.</span>
                             </div>
                             <a href="https://docs.google.com/forms/d/e/1FAIpQLSc1Bam9QlzjkT66NYeKMxS-xyoU4MchYtYiGCMmtvKVbHiCjg/viewform"
                                target="_blank" class="pk-btn-form-cta">

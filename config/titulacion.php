@@ -11,6 +11,13 @@
 */
 
 return [
+    /*
+     * Revisión de originalidad (Turnitin) desde la intranet del alumno: APAGADA por ahora (12/11). Los alumnos
+     * siguen con el formulario de Google; la bandeja de Investigación (importar y atender) funciona igual.
+     * Para encenderla: TITULACION_ORIGINALIDAD_ALUMNOS=true en el .env.
+     */
+    'originalidad_alumnos' => (bool) env('TITULACION_ORIGINALIDAD_ALUMNOS', false),
+
     'guias' => [
         'pti' => env('TITULACION_GUIA_PTI'),
         'ti' => env('TITULACION_GUIA_TI'),
@@ -40,14 +47,15 @@ return [
         // ── PTI ──
         'pti_aprobacion' => [
             'titulo' => 'Solicitar la aprobación del PTI',
-            'pago' => ['50.00', '10', 'Aprobación de PTI y Asesor'],
+            'pago' => ['50.00', '10', 'Aprobación de PTI y Asesor'],  // PDF oficial Caja Cusco 2026-II
             'pasos' => [
                 'Haz el pago por derecho de aprobación del PTI y asignación de asesor (pago ordinario en Caja Cusco).',
                 'Descarga y completa el Formato del PTI.',
                 'Llena el formulario de aprobación de PTI y adjunta los documentos.',
             ],
             'descargas' => [['Formato del PTI', 'pdf/Formato-PTI-2025.docx']],
-            'formulario' => ['Formulario de aprobación de PTI', 'https://docs.google.com/forms/u/1/d/e/1FAIpQLSeErc1rq886EWiuavn27wd5kpCkZ48ntkOrWgNS5uE2XKw5JA/viewform'],
+            // Formulario propio del sistema (11/11); reemplaza al de Google en la intranet (la página pública sigue con el de Google).
+            'formulario' => ['Formulario de aprobación de PTI', 'mi-titulacion.solicitud-pti'],
             'adjuntar' => ['Plan de Trabajo de Investigación en PDF', 'Comprobante de pago por derecho de aprobación del PTI'],
             'resultado' => 'Recibirás en tu correo institucional la RD de aprobación del PTI y asignación de asesor, y la boleta de tu pago.',
         ],
@@ -66,10 +74,13 @@ return [
             'titulo' => 'Solicitar la revisión de originalidad (Turnitin)',
             'pago' => ['25.00', '16', 'Revisión Turnitin de TI'],
             'pasos' => ['Cuando termines tu TI, haz el pago en Caja Cusco.', 'Llena el formulario de revisión de originalidad y adjunta los documentos.'],
-            'formulario' => ['Formulario de revisión de originalidad', 'https://docs.google.com/forms/d/e/1FAIpQLSc1Bam9QlzjkT66NYeKMxS-xyoU4MchYtYiGCMmtvKVbHiCjg/viewform'],
+            // Mientras originalidad_alumnos esté apagado, el de Google; al encenderlo, el del sistema (sirve para TI y Tesis).
+            'formulario' => env('TITULACION_ORIGINALIDAD_ALUMNOS', false)
+                ? ['Formulario de revisión de originalidad', 'mi-titulacion.originalidad']
+                : ['Formulario de revisión de originalidad', 'https://docs.google.com/forms/d/e/1FAIpQLSc1Bam9QlzjkT66NYeKMxS-xyoU4MchYtYiGCMmtvKVbHiCjg/viewform'],
             'adjuntar' => ['Versión final del TI en Word', 'Comprobante de pago por derecho de revisión de originalidad'],
             'resultado' => 'Recibirás en tu correo institucional el reporte de originalidad (Turnitin).',
-            'plazo' => 'Hasta 10 días hábiles. El pago vale una semana e incluye 1 revisión.',
+            'plazo' => 'Hasta 10 días hábiles. Cada pago incluye 1 revisión.',
             'nota' => 'La similitud máxima es 20 %. Si la superas, corrige el documento y solicita la revisión otra vez.',
         ],
         'revision_asesor' => [
