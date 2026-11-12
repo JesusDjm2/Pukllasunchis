@@ -59,7 +59,7 @@
                             <div class="pk-milestone-meta">
                                 <span class="pk-badge-fee"><i class="fa fa-receipt"></i> S/ 25.00</span>
                                 <span class="pk-badge-time"><i class="fa fa-tag"></i> Código: 16</span>
-                                <span class="pk-badge-time"><i class="fa fa-clock"></i> Hasta 10 días hábiles</span>
+                                <span class="pk-badge-time"><i class="fa fa-clock"></i> Hasta 20 días hábiles</span>
                             </div>
                         </div>
                         <div class="pk-milestone-content">
@@ -109,7 +109,7 @@
                             </div>
                             <div class="pk-milestone-result">
                                 <i class="fa fa-check-circle"></i>
-                                <span>Recibirás el Reporte Oficial Turnitin en tu correo institucional en un plazo no mayor a 10 días hábiles. Cada pago cubre 1 revisión de originalidad.</span>
+                                <span>Recibirás el Reporte Oficial Turnitin en tu correo institucional en un plazo no mayor a 20 días hábiles. Cada pago cubre 1 revisión de originalidad.</span>
                             </div>
                             <a href="https://docs.google.com/forms/d/e/1FAIpQLSc1Bam9QlzjkT66NYeKMxS-xyoU4MchYtYiGCMmtvKVbHiCjg/viewform"
                                target="_blank" class="pk-btn-form-cta">

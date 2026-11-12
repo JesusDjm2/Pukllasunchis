@@ -22,7 +22,7 @@ class ImportarSolicitudesOriginalidad extends ImportarFormularioGoogle
 {
     public const TIPO = Solicitud::ORIGINALIDAD;
 
-    /** Una solicitud con más días que esto ya se atendió fuera del sistema (el plazo es de 10 días hábiles). */
+    /** Una solicitud con más días que esto ya se atendió fuera del sistema (el plazo es de 20 días hábiles). */
     public const DIAS_ANTIGUA = 30;
 
     /** Pasos posteriores a la revisión de originalidad de cada etapa (AvanceTitulacion). */

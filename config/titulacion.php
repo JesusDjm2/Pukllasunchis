@@ -80,7 +80,7 @@ return [
                 : ['Formulario de revisión de originalidad', 'https://docs.google.com/forms/d/e/1FAIpQLSc1Bam9QlzjkT66NYeKMxS-xyoU4MchYtYiGCMmtvKVbHiCjg/viewform'],
             'adjuntar' => ['Versión final del TI en Word', 'Comprobante de pago por derecho de revisión de originalidad'],
             'resultado' => 'Recibirás en tu correo institucional el reporte de originalidad (Turnitin).',
-            'plazo' => 'Hasta 10 días hábiles. Cada pago incluye 1 revisión.',
+            'plazo' => 'Hasta 20 días hábiles. Cada pago incluye 1 revisión.',
             'nota' => 'La similitud máxima es 20 %. Si la superas, corrige el documento y solicita la revisión otra vez.',
         ],
         'revision_asesor' => [

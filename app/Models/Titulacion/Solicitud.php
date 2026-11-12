@@ -46,7 +46,7 @@ class Solicitud extends Model
     public const SIMILITUD_MAXIMA = 20;
 
     /** Días hábiles en que se entrega el reporte de originalidad. */
-    public const DIAS_ORIGINALIDAD = 10;
+    public const DIAS_ORIGINALIDAD = 20;
 
     public function etapa(): ?string
     {
