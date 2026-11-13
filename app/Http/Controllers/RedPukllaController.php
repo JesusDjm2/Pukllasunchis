@@ -126,9 +126,105 @@ class RedPukllaController extends Controller {
  }
  public function avisos(Request $r){$v=$r->validate(['avisos'=>'required|boolean']);DB::table('red_puklla_preferencias')->updateOrInsert(['user_id'=>$r->user()->id],$v+['created_at'=>now(),'updated_at'=>now()]);return back()->with('success','Preferencia guardada.');}
  public function leerAviso(string $id){$aviso=auth()->user()->notifications()->where('type',RedPukllaAviso::class)->findOrFail($id);$aviso->markAsRead();$d=$aviso->data;return redirect()->route($d['tipo']==='grupo'?'red.grupo':($d['tipo']==='oportunidad'?'red.oportunidad':'red.publicacion'),['id'=>$d['referencia']]);}
- public function moderar(Request $r){
-  $v=$r->validate(['tipo'=>'required|in:publicacion,oportunidad','referencia_id'=>'required|integer','accion'=>'required|in:reportar,ocultar,retirar,restaurar','motivo'=>'required|string|min:5|max:2000']);
-  DB::transaction(function()use($v,$r){$clase=$v['tipo']==='publicacion'?AylluPublicacion::class:BolsaTrabajoOferta::class;$o=$clase::deRedPuklla()->lockForUpdate()->findOrFail($v['referencia_id']);if($v['accion']==='reportar')abort_unless($v['tipo']==='publicacion'?$this->acceso->publicacion($r->user(),$o):$o->estado_red==='visible',404);else{abort_unless($this->acceso->moderar($r->user()),403);$o->estado_red=match($v['accion']){'restaurar'=>'visible','retirar'=>'retirado',default=>'oculto'};if($v['tipo']==='publicacion')$o->visible=$o->estado_red==='visible';$o->save();$this->aviso((int)($o->user_id??$o->autor_red_id),'Tu publicación fue revisada. Consulta el motivo en Mi espacio.',$v['tipo'],$o->id);}DB::table('red_puklla_moderacion')->insert($v+['actor_id'=>$r->user()->id,'created_at'=>now(),'updated_at'=>now()]);});return back()->with('success','Intervención registrada.');
+ public function moderar(\Illuminate\Http\Request $request)
+ {
+     $datos = $request->validate([
+         'tipo' => 'required|in:publicacion,oportunidad',
+         'referencia_id' => 'required|integer|min:1',
+         'accion' => 'required|in:reportar,ocultar,retirar,restaurar,solicitar_revision',
+         'motivo' => 'required|string|min:10|max:2000',
+     ]);
+
+     \Illuminate\Support\Facades\DB::transaction(function () use ($request, $datos) {
+         $usuario = $request->user();
+
+         $modelo = $datos['tipo'] === 'publicacion'
+             ? \App\Models\Ayllu\AylluPublicacion::class
+             : \App\Models\BolsaTrabajoOferta::class;
+
+         $contenido = $modelo::deRedPuklla()
+             ->lockForUpdate()
+             ->findOrFail($datos['referencia_id']);
+
+         $autorId = (int) (
+             $datos['tipo'] === 'publicacion'
+                 ? $contenido->user_id
+                 : $contenido->autor_red_id
+         );
+
+         if ($datos['accion'] === 'reportar') {
+             $puedeReportar = $datos['tipo'] === 'publicacion'
+                 ? $this->acceso->publicacion($usuario, $contenido)
+                 : $contenido->estado_red === 'visible';
+
+             abort_unless($puedeReportar, 404);
+         } elseif ($datos['accion'] === 'solicitar_revision') {
+             abort_unless((int) $usuario->id === $autorId, 403);
+
+             abort_unless(
+                 in_array($contenido->estado_red, ['oculto', 'retirado'], true),
+                 422,
+                 'Solo se solicita revisión de contenidos ocultos o retirados.'
+             );
+
+             // Solicitar revisión nunca vuelve a publicar el contenido.
+         } else {
+             // Autorizar en servidor, también en ayllus privados o inactivos.
+             abort_unless($this->acceso->moderar($usuario), 403);
+
+             $contenido->estado_red = match ($datos['accion']) {
+                 'restaurar' => 'visible',
+                 'retirar' => 'retirado',
+                 default => 'oculto',
+             };
+
+             if ($datos['tipo'] === 'publicacion') {
+                 $contenido->visible = $contenido->estado_red === 'visible';
+             }
+
+             $contenido->save();
+
+             $autor = \App\Models\User::find($autorId);
+
+             if ($autor) {
+                 $mensaje = sprintf(
+                     'Tu contenido fue revisado. Estado: %s. Motivo: %s',
+                     $contenido->estado_red,
+                     $datos['motivo']
+                 );
+
+                 // Aviso obligatorio de moderación, independiente de los
+                 // avisos comunitarios opcionales. Solo notificación interna.
+                 $autor->notify(
+                     new \App\Notifications\RedPukllaAviso(
+                         $mensaje,
+                         $datos['tipo'],
+                         $contenido->id
+                     )
+                 );
+             }
+         }
+
+         \Illuminate\Support\Facades\DB::table('red_puklla_moderacion')->insert([
+             'tipo' => $datos['tipo'],
+             'referencia_id' => $contenido->id,
+             'actor_id' => $usuario->id,
+             'accion' => $datos['accion'],
+             'motivo' => $datos['motivo'],
+             'created_at' => now(),
+             'updated_at' => now(),
+         ]);
+     });
+
+     return back()->with(
+         'success',
+         match ($datos['accion']) {
+             'reportar' => 'Reporte enviado para revisión.',
+             'solicitar_revision' => 'Solicitud de revisión registrada.',
+             'restaurar' => 'Contenido restaurado con trazabilidad.',
+             default => 'Contenido retirado de circulación con motivo registrado.',
+         }
+     );
  }
  public function moderacion(){abort_unless($this->acceso->moderar(auth()->user()),403);return view('red_puklla.moderacion',$this->base(['registros'=>DB::table('red_puklla_moderacion')->latest()->paginate(30)]));}
 }

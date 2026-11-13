@@ -9,10 +9,36 @@ class AccesoRed {
  public function miembro(User $u,AylluGrupo $g):bool{return $g->miembros()->where('users.id',$u->id)->wherePivot('estado_red','aceptado')->exists();}
  public function facilitar(User $u,AylluGrupo $g):bool{return (int)$g->creado_por===(int)$u->id;}
  public function grupo(User $u,AylluGrupo $g,bool $participar=false):bool{return $this->entrar($u)&&$g->red_egresados&&$g->activo&&($this->miembro($u,$g)||(!$participar&&($g->privacidad_red==='abierto'||$this->moderar($u))));}
- public function publicacion(User $u,AylluPublicacion $p,bool $oculta=false):bool {
-  if(!$this->entrar($u)||!$p->red_egresados)return false;
-  if((!$p->visible||$p->estado_red!=='visible')&&!($oculta&&($this->moderar($u)||(int)$p->user_id===(int)$u->id)))return false;
-  if(!$p->ayllu_grupo_id)return true;$g=AylluGrupo::deRedPuklla()->find($p->ayllu_grupo_id);return $g&&$this->grupo($u,$g);
+ public function publicacion(
+     \App\Models\User $u,
+     \App\Models\Ayllu\AylluPublicacion $p,
+     bool $oculta = false
+ ): bool {
+     if (!$this->entrar($u) || !$p->red_egresados) {
+         return false;
+     }
+
+     // La revisión autorizada no depende de la membresía ni de que
+     // el ayllu continúe activo.
+     if ($oculta && $this->moderar($u)) {
+         return true;
+     }
+
+     if (
+         (!$p->visible || $p->estado_red !== 'visible')
+         && !($oculta && (int) $p->user_id === (int) $u->id)
+     ) {
+         return false;
+     }
+
+     if (!$p->ayllu_grupo_id) {
+         return true;
+     }
+
+     $grupo = \App\Models\Ayllu\AylluGrupo::deRedPuklla()
+         ->find($p->ayllu_grupo_id);
+
+     return $grupo && $this->grupo($u, $grupo);
  }
  public function interactuar(User $u,AylluPublicacion $p):bool{if(!$this->publicacion($u,$p))return false;if(!$p->ayllu_grupo_id)return true;$g=AylluGrupo::deRedPuklla()->find($p->ayllu_grupo_id);return $g&&$this->grupo($u,$g,true);}
  public function publicaciones(User $u) {

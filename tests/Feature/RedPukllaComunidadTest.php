@@ -272,4 +272,263 @@ class RedPukllaComunidadTest extends TestCase
             'accion' => 'ocultar',
         ]);
     }
+
+    public function test_moderacion_retiro_global_ayllu_inactivo_aviso_obligatorio_y_solicitud_revision(): void
+    {
+        $autor = $this->crearEgresadoConfirmado('Autora Moderada');
+        $facilitador = $this->crearEgresadoConfirmado('Facilitador Ayllu');
+        $docenteSinPermiso = $this->crearDocente('Docente Ordinario');
+        $coordinador = User::factory()->create([
+            'name' => 'Coordinador Red',
+            'apellidos' => 'Puklla',
+            'dni' => (string) rand(10000000, 19999999),
+            'email' => 'coord_mod_' . rand(1000, 9999) . '@puklla.test',
+        ]);
+        $coordinador->assignRole('admin');
+
+        // Autora desactiva avisos comunitarios opcionales
+        DB::table('red_puklla_preferencias')->insert([
+            'user_id' => $autor->id,
+            'avisos' => false,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // Crear dos ayllus abiertos para probar difusión por referencia y luego desactivar el origen
+        $this->actingAs($facilitador)->post(route('red.grupos.crear'), [
+            'nombre' => 'Ayllu Origen Lectura',
+            'descripcion' => 'Espacio inicial.',
+            'tipo' => 'circulo_estudio',
+            'privacidad_red' => 'abierto',
+        ]);
+        $grupoOrigen = AylluGrupo::deRedPuklla()->where('nombre', 'Ayllu Origen Lectura')->firstOrFail();
+
+        $this->actingAs($facilitador)->post(route('red.grupos.crear'), [
+            'nombre' => 'Ayllu Destino Difusión',
+            'descripcion' => 'Espacio donde se comparte por referencia.',
+            'tipo' => 'taller',
+            'privacidad_red' => 'abierto',
+        ]);
+        $grupoDestino = AylluGrupo::deRedPuklla()->where('nombre', 'Ayllu Destino Difusión')->firstOrFail();
+
+        // Autora se une a ambos ayllus y publica en el de origen
+        $this->actingAs($autor)->post(route('red.membresia', ['id' => $grupoOrigen->id]), ['accion' => 'unir']);
+        $this->actingAs($autor)->post(route('red.membresia', ['id' => $grupoDestino->id]), ['accion' => 'unir']);
+
+        $this->actingAs($autor)->post(route('red.publicar'), [
+            'titulo' => 'Publicación compartida en varios ayllus',
+            'contenido' => 'Contenido que será difundido y luego revisado por moderación.',
+            'categoria_red' => 'rimay',
+            'intencion_red' => 'pregunta',
+            'ayllu_grupo_id' => $grupoOrigen->id,
+        ])->assertRedirect();
+
+        $post = AylluPublicacion::deRedPuklla()->where('user_id', $autor->id)->firstOrFail();
+
+        // Difundir por referencia al segundo ayllu y guardar en Mi espacio de otro miembro
+        $this->actingAs($autor)->post(route('red.difundir', ['id' => $post->id]), [
+            'grupo_id' => $grupoDestino->id,
+        ])->assertRedirect();
+
+        $this->actingAs($facilitador)->post(route('red.guardar'), [
+            'tipo' => 'publicacion',
+            'referencia_id' => $post->id,
+            'estado' => 'guardado',
+        ])->assertRedirect();
+
+        // Docente sin permiso de moderación ni coordinación, y facilitador de ayllu
+        Role::findByName('docente')->revokePermissionTo('ayllu.moderar');
+        app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+
+        try {
+            // Docente o facilitador sin permisos intenta retirar por POST -> 403 y no cambia el contenido
+            foreach ([$docenteSinPermiso, $facilitador] as $sinPermiso) {
+                $this->actingAs($sinPermiso)->post(route('red.moderar'), [
+                    'tipo' => 'publicacion',
+                    'referencia_id' => $post->id,
+                    'accion' => 'retirar',
+                    'motivo' => 'Intento sin permiso institucional suficiente.',
+                ])->assertForbidden();
+            }
+        } finally {
+            app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+        }
+        $this->assertSame('visible', $post->fresh()->estado_red);
+
+        // El ayllu de origen pasa a estar privado e inactivo; coordinación autorizada aún puede revisar y retirar
+        $grupoOrigen->update(['privacidad_red' => 'privado', 'activo' => false]);
+
+        $this->actingAs($coordinador)->get(route('red.publicacion', ['id' => $post->id]))
+            ->assertOk()
+            ->assertSee('Publicación compartida en varios ayllus');
+
+        $motivoRetiro = 'Incumple la política de convivencia al incluir datos personales de terceros sin autorización.';
+        $this->actingAs($coordinador)->post(route('red.moderar'), [
+            'tipo' => 'publicacion',
+            'referencia_id' => $post->id,
+            'accion' => 'retirar',
+            'motivo' => $motivoRetiro,
+        ])->assertRedirect();
+
+        $post->refresh();
+        $this->assertSame('retirado', $post->estado_red);
+        $this->assertFalse((bool) $post->visible);
+
+        // Reactivar el ayllu origen (conservándolo privado) para verificar el flujo ordinario de consulta del autor
+        $grupoOrigen->update(['activo' => true]);
+
+        // Desaparece de circulación en el segundo ayllu donde fue difundida por referencia y en el muro general
+        $this->actingAs($facilitador)->get(route('red.grupo', ['id' => $grupoDestino->id]))
+            ->assertOk()
+            ->assertDontSee('Publicación compartida en varios ayllus');
+
+        $this->actingAs($facilitador)->get(route('red.inicio'))
+            ->assertOk()
+            ->assertDontSee('Publicación compartida en varios ayllus');
+
+        // En guardados privados ya no entrega copia del contenido retirado
+        $this->actingAs($facilitador)->get(route('red.espacio'))
+            ->assertOk()
+            ->assertSee('Contenido ya no disponible para tu cuenta')
+            ->assertDontSee('Publicación compartida en varios ayllus');
+
+        // Autor recibe aviso interno obligatorio incluso con avisos comunitarios desactivados
+        $aviso = $autor->notifications()
+            ->where('type', \App\Notifications\RedPukllaAviso::class)
+            ->latest()
+            ->first();
+        $this->assertNotNull($aviso);
+        $this->assertStringContainsString('retirado', $aviso->data['mensaje']);
+        $this->assertStringContainsString($motivoRetiro, $aviso->data['mensaje']);
+
+        // Otro usuario intenta solicitar revisión ajena -> 403
+        $this->actingAs($facilitador)->post(route('red.moderar'), [
+            'tipo' => 'publicacion',
+            'referencia_id' => $post->id,
+            'accion' => 'solicitar_revision',
+            'motivo' => 'Intento de revisión por quien no es autor.',
+        ])->assertForbidden();
+
+        // Autor intenta restaurar directamente su propio contenido moderado -> 403
+        $this->actingAs($autor)->post(route('red.moderar'), [
+            'tipo' => 'publicacion',
+            'referencia_id' => $post->id,
+            'accion' => 'restaurar',
+            'motivo' => 'Quiero restaurar mi propia publicación directamente.',
+        ])->assertForbidden();
+
+        // Autor consulta la decisión, ve el formulario de solicitar revisión y envía su solicitud
+        $this->actingAs($autor)->get(route('red.publicacion', ['id' => $post->id]))
+            ->assertOk()
+            ->assertSee('Solicitar revisión de esta decisión');
+
+        $this->actingAs($autor)->post(route('red.moderar'), [
+            'tipo' => 'publicacion',
+            'referencia_id' => $post->id,
+            'accion' => 'solicitar_revision',
+            'motivo' => 'Ya edité el texto fuente y solicito revisión por coordinación.',
+        ])->assertRedirect();
+
+        // Solicitar revisión queda registrada en auditoría y panel pero NO vuelve a publicar el contenido
+        $post->refresh();
+        $this->assertSame('retirado', $post->estado_red);
+        $this->assertFalse((bool) $post->visible);
+
+        // Reactivar el ayllu origen (conservándolo privado) para verificar el flujo ordinario de consulta del autor
+        $grupoOrigen->update(['activo' => true]);
+        $this->assertDatabaseHas('red_puklla_moderacion', [
+            'tipo' => 'publicacion',
+            'referencia_id' => $post->id,
+            'actor_id' => $autor->id,
+            'accion' => 'solicitar_revision',
+        ]);
+
+        // Restauración autorizada restablece visibilidad y deja nueva intervención registrada
+        $grupoOrigen->update(['activo' => true, 'privacidad_red' => 'abierto']);
+        $this->actingAs($coordinador)->post(route('red.moderar'), [
+            'tipo' => 'publicacion',
+            'referencia_id' => $post->id,
+            'accion' => 'restaurar',
+            'motivo' => 'Revisado con el autor; cumple las pautas comunitarias.',
+        ])->assertRedirect();
+
+        $post->refresh();
+        $this->assertSame('visible', $post->estado_red);
+        $this->assertTrue((bool) $post->visible);
+        $this->assertDatabaseHas('red_puklla_moderacion', [
+            'tipo' => 'publicacion',
+            'referencia_id' => $post->id,
+            'actor_id' => $coordinador->id,
+            'accion' => 'restaurar',
+        ]);
+    }
+
+    public function test_middleware_archivo_red_visible_protege_adjuntos_y_evita_asociacion_cruzada(): void
+    {
+        // Registrar ruta efímera de prueba que sigue el contrato obligatorio de integración del documento
+        \Illuminate\Support\Facades\Route::middleware([
+            'web',
+            'auth',
+            \App\Http\Middleware\ArchivoRedVisible::class,
+        ])->get('/_test/red/publicaciones/{publicacionId}/adjuntos/{archivoPublicacionId}', function (\Illuminate\Http\Request $request, string $publicacionId, string $archivoPublicacionId) {
+            /** @var \App\Models\Ayllu\AylluPublicacion $autorizada */
+            $autorizada = $request->attributes->get('publicacion_red_autorizada');
+            // Contrato punto 2: comprobar que el adjunto solicitado pertenece exactamente a esa publicación
+            abort_unless($autorizada && (int) $autorizada->id === (int) $archivoPublicacionId, 404);
+
+            return response('CONTENIDO_PRIVADO_OK', 200);
+        });
+
+        $autor = $this->crearEgresadoConfirmado('Autor Adjunto');
+        $lector = $this->crearEgresadoConfirmado('Lector Adjunto');
+        $moderador = User::factory()->create([
+            'name' => 'Moderador Adjunto',
+            'apellidos' => 'Puklla',
+            'dni' => (string) rand(10000000, 19999999),
+            'email' => 'mod_adj_' . rand(1000, 9999) . '@puklla.test',
+        ]);
+        $moderador->assignRole('admin');
+
+        $postVisible = AylluPublicacion::create([
+            'user_id' => $autor->id,
+            'ambito' => 'institucional',
+            'tipo' => 'reflexion',
+            'titulo' => 'Publicación visible',
+            'contenido' => 'Con archivo visible.',
+            'categoria_red' => 'yachay',
+            'intencion_red' => 'recurso',
+            'red_egresados' => true,
+            'estado_red' => 'visible',
+            'visible' => true,
+        ]);
+
+        $postRetirado = AylluPublicacion::create([
+            'user_id' => $autor->id,
+            'ambito' => 'institucional',
+            'tipo' => 'reflexion',
+            'titulo' => 'Publicación retirada',
+            'contenido' => 'Con archivo retirado.',
+            'categoria_red' => 'yachay',
+            'intencion_red' => 'recurso',
+            'red_egresados' => true,
+            'estado_red' => 'retirado',
+            'visible' => false,
+        ]);
+
+        // Publicación visible entrega adjunto con Cache-Control privado sin almacenamiento en caché
+        $resOk = $this->actingAs($lector)->get("/_test/red/publicaciones/{$postVisible->id}/adjuntos/{$postVisible->id}");
+        $resOk->assertOk();
+        $this->assertStringContainsString('private', (string) $resOk->headers->get('Cache-Control'));
+        $this->assertStringContainsString('no-store', (string) $resOk->headers->get('Cache-Control'));
+
+        // Acceso a archivo retirado mediante URL directa se rechaza (404) para lectores y también para el propio autor
+        $this->actingAs($lector)->get("/_test/red/publicaciones/{$postRetirado->id}/adjuntos/{$postRetirado->id}")->assertNotFound();
+        $this->actingAs($autor)->get("/_test/red/publicaciones/{$postRetirado->id}/adjuntos/{$postRetirado->id}")->assertNotFound();
+
+        // Moderación autorizada sí conserva consulta privada para revisar el contenido retirado
+        $this->actingAs($moderador)->get("/_test/red/publicaciones/{$postRetirado->id}/adjuntos/{$postRetirado->id}")->assertOk();
+
+        // Usar una publicación visible para intentar abrir el adjunto de otra retirada se rechaza (404)
+        $this->actingAs($lector)->get("/_test/red/publicaciones/{$postVisible->id}/adjuntos/{$postRetirado->id}")->assertNotFound();
+    }
 }
