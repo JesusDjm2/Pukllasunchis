@@ -100,6 +100,7 @@
         @forelse ($notiRecientes as $n)
             @php
                 $notiTipo = match ($n->type) {
+                    \App\Notifications\RedPukllaAviso::class => ['Red Puklla de Egresados','fa-people-carry','bg-primary',$n->data['mensaje']??'Tienes un aviso de tu comunidad.'],
                     \App\Notifications\IncidenciaCreada::class => [
                         'Incidencia', 'fa-clipboard-list', 'bg-warning',
                         $n->data['alumno_nombre'] ?? 'Alumno',

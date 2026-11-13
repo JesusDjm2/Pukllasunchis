@@ -7,7 +7,7 @@
 
 }</style>
 <div class="seguimiento-panel"><main>
-<header><a href="{{ route('ayllu.inicio') }}">← Volver a Ayllu Puklla</a><h1>{{ $esEntrevista ? "Entrevista · ".$titular->name." ".$titular->apellidos : "Mi espacio · Puklla en Red" }}</h1><p><strong>Grupo de formación: {{ $clasificacion['etiqueta'] }}</strong> · Clasificación institucional. Si falta información, el equipo la verificará.</p><p>Queremos saber cómo te está yendo y en qué podemos acompañarte. Revisa tus datos y completa lo que corresponda a tu situación.</p><p>Tu información es privada para ti y el equipo autorizado. Las respuestas sobre comunidad, apoyo y encuentros son voluntarias.</p><strong id="avance-texto"></strong><progress id="avance" max="100" value="0"></progress><small id="pendientes"></small><p>Última confirmación: <span id="confirmacion">{{ $ultima ?: 'Aún no confirmada' }}</span></p>
+<header><a href="{{ route('red.inicio') }}">← Volver a Ayllu Puklla</a><h1>{{ $esEntrevista ? "Entrevista · ".$titular->name." ".$titular->apellidos : "Mi espacio · Puklla en Red" }}</h1><p><strong>Grupo de formación: {{ $clasificacion['etiqueta'] }}</strong> · Clasificación institucional. Si falta información, el equipo la verificará.</p><p>Queremos saber cómo te está yendo y en qué podemos acompañarte. Revisa tus datos y completa lo que corresponda a tu situación.</p><p>Tu información es privada para ti y el equipo autorizado. Las respuestas sobre comunidad, apoyo y encuentros son voluntarias.</p><strong id="avance-texto"></strong><progress id="avance" max="100" value="0"></progress><small id="pendientes"></small><p>Última confirmación: <span id="confirmacion">{{ $ultima ?: 'Aún no confirmada' }}</span></p>
 @if($borrador)<button type="button" id="restaurar">Continuar mi borrador guardado</button>@endif
 </header>
 <form id="perfil-form">
@@ -20,7 +20,7 @@
 <div class="sticky"><button type="submit">Confirmar y guardar mi perfil</button> @unless($esEntrevista)<button type="button" class="secondary" id="borrador">Guardar y continuar después</button>@endunless<p id="estado" role="status" aria-live="polite"></p></div>
 </form>
 @unless($esEntrevista)<section><h2>Mis solicitudes de apoyo</h2>@forelse($casos as $caso)<p><strong>{{ $caso->tema }}</strong> · {{ $caso->estado }} · Próxima gestión: {{ $caso->fecha_gestion?->format('d/m/Y') }}</p>@empty<p>Aún no tienes solicitudes registradas.</p>@endforelse</section>@endunless
-@unless($esEntrevista)<section><a class="button" href="{{ route('ayllu.inicio') }}">Continuar a la comunidad Ayllu Puklla →</a><p>El acceso se habilita al confirmar los datos principales; no necesitas completar las preguntas voluntarias.</p></section>@endunless
+@unless($esEntrevista)<section><a class="button" href="{{ route('red.inicio') }}">Continuar a Red Puklla de Egresados →</a><p>El acceso se habilita al confirmar los datos principales; no necesitas completar las preguntas voluntarias.</p></section>@endunless
 </main></div>
 @endsection
 @push('scripts')

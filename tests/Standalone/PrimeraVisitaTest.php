@@ -23,6 +23,8 @@ namespace {
  verificar($m->handle(new Illuminate\Http\Request($eg,'seguimiento.mi-espacio'),$siguiente),'continua','el propio formulario sigue accesible');
  verificar($m->handle(new Illuminate\Http\Request($prof,'vistaDocente'),$siguiente),'continua','no se bloquea la docencia institucional');
  verificar($m->handle(new Illuminate\Http\Request($eg,'ayllu.publicaciones.store',true),$siguiente),409,'no se elude la confirmación mediante publicación AJAX');
+ verificar($m->handle(new Illuminate\Http\Request($eg,'red.inicio'),$siguiente),'redirige-perfil','primera visita a Red Puklla exige confirmación');
+ verificar($m->handle(new Illuminate\Http\Request($prof,'red.inicio'),$siguiente),'continua','docente entra sin ficha de egresado');
  Illuminate\Support\Facades\DB::$confirmado=true;
  verificar($m->handle(new Illuminate\Http\Request($eg,'ayllu.inicio'),$siguiente),'continua','núcleo confirmado permite comunidad sin respuestas opcionales');
  $GLOBALS['perfil']['contacto']['correo']='';

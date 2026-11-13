@@ -1,7 +1,7 @@
 const test=require('node:test');
 const assert=require('node:assert/strict');
-require('../../public/js/seguimiento-grupos.js');
-const {crearPadron}=globalThis.PukllaGrupos;
+const modulo=require('../../public/js/seguimiento-grupos.js');
+const {crearPadron}=globalThis.PukllaGrupos||modulo;
 test('un grupo vacío no recibe egresados ficticios FID',()=>assert.deepEqual(crearPadron([]),[]));
 test('la persona con ambos grupos aparece una vez en el padrón conjunto',()=>{
  const rows=crearPadron([{id:'REAL-1',grupos_formacion:['FID','PPD']},{id:'REAL-1',grupos_formacion:['FID']}]);

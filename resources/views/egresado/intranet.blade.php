@@ -1,15 +1,7 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Mi cuenta — EESPP Pukllasunchis</title>
-    <link rel="shortcut icon" type="image/x-icon" href="{{ asset('img/logoiesp.ico') }}">
-    <link href="{{ asset('admin/vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" type="text/css">
-    <link href="https://fonts.googleapis.com/css?family=Nunito:400,600,700,800" rel="stylesheet">
-    <link href="{{ asset('admin/css/sb-admin-2.min.css') }}" rel="stylesheet">
-</head>
-<body style="background:#f8f9fc;">
+@extends('layouts.seguimiento')
+@section('titulo','Mi cuenta de egresado')
+@section('contenido')
+
     <div class="container" style="max-width:640px; margin-top:60px; margin-bottom:60px;">
         <div class="text-center mb-4">
             <img src="{{ asset('img/logoiesp.ico') }}" alt="Logo" style="width:48px; height:48px;">
@@ -117,5 +109,5 @@
             </a>
         </div>
     </div>
-</body>
-</html>
+
+@endsection

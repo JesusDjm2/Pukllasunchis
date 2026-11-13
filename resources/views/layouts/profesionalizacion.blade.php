@@ -42,6 +42,7 @@
             </a>
             @php $esEgresado = auth()->user()?->condicion === 'Egresado'; @endphp
             <hr class="sidebar-divider">
+            @include('layouts.partials.menu-red-puklla')
             @if (Route::has('ayllu.inicio'))
                 <div class="sidebar-heading">
                     Ayllu Puklla · Comunidad

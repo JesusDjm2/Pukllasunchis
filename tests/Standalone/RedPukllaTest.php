@@ -1,0 +1,33 @@
+<?php
+namespace App\Models {
+ class User {public function __construct(public int $id,public array $roles=[],public string $condicion='',public bool $gestion=false,public bool $modera=false){}public function getRoleNames(){return new class($this->roles){public function __construct(public array $r){}public function all(){return $this->r;}};}public function can($perm){return $perm==='ayllu.moderar'&&$this->modera;}}
+}
+namespace App\Models\Ayllu {
+ class AylluGrupo {public static array $registros=[];public int $creado_por=11;public bool $red_egresados=true;public bool $activo=true;public string $privacidad_red='privado';public array $miembros=[];public static function deRedPuklla(){return new class{public function find($id){return AylluGrupo::$registros[$id]??null;}};}public function miembros(){return new class($this){public int $id;public string $estado;public function __construct(public $g){}public function where($c,$id){$this->id=$id;return $this;}public function wherePivot($c,$estado){$this->estado=$estado;return $this;}public function exists(){return ($this->g->miembros[$this->id]??null)===$this->estado;}};}}
+ class AylluPublicacion {public bool $red_egresados=true;public bool $visible=true;public string $estado_red='visible';public int $user_id=10;public ?int $ayllu_grupo_id=null;}
+}
+namespace App\Services\SeguimientoEgresado {class SeguimientoAutorizacionService{public function esPersonalGestion($u){return $u->gestion;}}}
+namespace Illuminate\Database\Eloquent {
+ class Builder{public array $where=[];public array $removed=[];public function getModel(){return new class{public function qualifyColumn($c){return 'tabla.'.$c;}};}public function where($c,$v){$this->where[$c]=$v;return $this;}public function withoutGlobalScope($n){$this->removed[]=$n;return $this;}}
+}
+namespace {
+ function app($c){return new $c;}
+ require __DIR__.'/../../app/Services/RedPuklla/ContenidoRed.php';require __DIR__.'/../../app/Services/RedPuklla/AccesoRed.php';require __DIR__.'/../../app/Models/Concerns/AmbitoRedPuklla.php';
+ use App\Services\RedPuklla\ContenidoRed as R;use App\Models\User;use App\Models\Ayllu\{AylluGrupo,AylluPublicacion};
+ $n=0;function prueba($ok,$nombre){global $n;if(!$ok)throw new \RuntimeException($nombre);echo "OK: $nombre\n";$n++;}
+ foreach(['docente','admin','super-admin','adminB','secretaria','tutor','gestor-titulacion'] as $rol)prueba(R::elegible(null,[$rol]),'acceso comunitario: '.$rol);
+ prueba(R::elegible('Egresado',['alumno']),'egresado conserva identidad institucional');prueba(!R::elegible('Regular',['alumno']),'estudiante activo no entra a red de egresados');prueba(R::elegible(null,[],true),'coordinación entra mediante funciones existentes');
+ foreach(['https://youtube.com/watch?v=dQw4w9WgXcQ','https://youtu.be/dQw4w9WgXcQ','https://youtube.com/shorts/dQw4w9WgXcQ'] as $url)prueba(R::enlace($url)['embed']==='https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ','YouTube normaliza a reproductor permitido');
+ prueba(R::enlace('https://youtube.com/watch?v[]=mal')['embed']===null,'identificador malformado no se inserta');prueba(R::enlace('https://youtube.com.ejemplo.test/watch?v=dQw4w9WgXcQ')['embed']===null,'dominio parecido no suplanta a YouTube');prueba(R::enlace('https://instagram.com/reel/ABC/?utm_source=prueba')['url']==='https://www.instagram.com/reel/ABC/','Instagram normaliza sin rastreadores');prueba(R::enlace('https://instagram.com/stories/ejemplo/123')['proveedor']==='enlace','historias conservan enlace sin prometer inserción');prueba(R::enlace('https://example.test/recurso')['embed']===null,'fuente genérica no ejecuta HTML');
+ foreach(['javascript:alert(1)','data:text/html,script','https://usuario:clave@youtube.com/','http://127.0.0.1/','https://localhost/','https://example.test:8080/recurso'] as $url){$rechazo=false;try{R::enlace($url);}catch(\InvalidArgumentException $e){$rechazo=true;}prueba($rechazo,'enlace inseguro o no admitido rechazado');}
+ prueba(R::enlace(null)===null,'enlace sigue siendo opcional');
+ $a=new App\Services\RedPuklla\AccesoRed;$eg=new User(10,['egresado'],'Egresado');$otro=new User(20,['docente']);$coord=new User(30,['docente'],'',true);$facilita=new User(11,['egresado'],'Egresado');
+ prueba($a->entrar($otro),'docente general entra sin seguimiento');prueba(!$a->moderar($otro),'docente no obtiene moderación al entrar');prueba($a->moderar($coord),'coordinación modera por su función existente');
+ $g=new AylluGrupo;$g->miembros=[10=>'aceptado',20=>'pendiente',11=>'aceptado'];AylluGrupo::$registros[1]=$g;
+ prueba($a->grupo($eg,$g,true),'miembro aceptado participa en privado');prueba(!$a->grupo($otro,$g),'pendiente no lee grupo privado');prueba($a->facilitar($facilita,$g)&&!$a->moderar($facilita),'facilitar no concede administración');prueba($a->grupo($coord,$g)&&!$a->grupo($coord,$g,true),'moderación revisa sin simular membresía para chatear');
+ $p=new AylluPublicacion;$p->ayllu_grupo_id=1;prueba(!$a->publicacion($otro,$p),'URL directa no abre contenido privado');prueba($a->publicacion($eg,$p),'miembro aceptado lee contenido');$g->privacidad_red='abierto';prueba($a->publicacion($otro,$p)&&!$a->interactuar($otro,$p),'abierto permite leer, participar exige ingreso');$g->miembros[20]='aceptado';prueba($a->interactuar($otro,$p),'membresía habilita aportes');unset($g->miembros[10]);$g->privacidad_red='privado';prueba(!$a->publicacion($eg,$p),'salir revoca lectura privada incluso al autor');
+ $p->ayllu_grupo_id=null;$p->visible=false;$p->estado_red='oculto';prueba(!$a->publicacion($otro,$p,true),'oculto no aparece a otro docente');prueba($a->publicacion($eg,$p,true),'autor consulta su contenido oculto');prueba($a->publicacion($coord,$p,true),'moderación revisa contenido oculto');prueba(!$a->interactuar($eg,$p),'no se interactúa con contenido retirado');$p->red_egresados=false;prueba(!$a->publicacion($coord,$p,true),'Red no abre otros ámbitos institucionales');$g->activo=false;prueba(!$a->grupo($coord,$g),'grupo inactivo no se abre por actividad');
+ class ModeloEnsayo{use App\Models\Concerns\AmbitoRedPuklla;public static array $scopes=[];public static function addGlobalScope($n,$s){self::$scopes[$n]=$s;}public static function iniciar(){self::bootAmbitoRedPuklla();}}
+ ModeloEnsayo::iniciar();$normal=new Illuminate\Database\Eloquent\Builder;ModeloEnsayo::$scopes['red-puklla']($normal);prueba($normal->where['tabla.red_egresados']===false,'consulta histórica excluye contenido interno');$red=new Illuminate\Database\Eloquent\Builder;(new ModeloEnsayo)->scopeDeRedPuklla($red);prueba($red->where['tabla.red_egresados']===true,'consulta Red exige su ámbito');prueba($red->removed===['red-puklla'],'solo se retira el scope propio, no otras restricciones');
+ echo "$n pruebas superadas.\n";
+}

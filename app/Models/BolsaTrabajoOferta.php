@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class BolsaTrabajoOferta extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Models\Concerns\AmbitoRedPuklla;
 
     /**
      * Días que una oferta se considera vigente después de su fecha de publicación.
@@ -19,6 +19,18 @@ class BolsaTrabajoOferta extends Model
     protected $table = 'bolsa_trabajo_ofertas';
 
     protected $fillable = [
+        'red_egresados',
+        'tipo_red',
+        'estado_red',
+        'situacion_red',
+        'autor_red_id',
+        'fuente_red',
+        'institucion_red',
+        'enlace_red',
+        'correo_red',
+        'lugar_red',
+        'plazo_red',
+
         'nombre',
         'detalles',
         'imagen',
@@ -32,6 +44,7 @@ class BolsaTrabajoOferta extends Model
     ];
 
     protected $casts = [
+        'plazo_red'=>'date',
         'fecha_publicacion' => 'date',
         'anio' => 'integer',
         'mes' => 'integer',

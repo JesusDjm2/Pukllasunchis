@@ -43,6 +43,7 @@
             <div class="sidebar-heading">
                 Ayllu Puklla · Comunidad
             </div>
+            @include('layouts.partials.menu-red-puklla')
             @if (Route::has('ayllu.inicio'))
                 <li class="nav-item {{ request()->routeIs('ayllu.*') ? 'active' : '' }}">
                     <a class="nav-link collapsed" href="{{ route('ayllu.inicio') }}" style="background: rgba(205, 146, 68, 0.18); border-left: 3px solid #cd9244;">

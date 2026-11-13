@@ -29,6 +29,7 @@
                     <!---Contenido solo para estilo a logo--->
                 </div>
             </a>
+            @include('layouts.partials.menu-red-puklla')
             @role('admin')
                 <ul class="navbar-nav bg-gradient-info sidebar sidebar-dark accordion" id="accordionSidebar">
 

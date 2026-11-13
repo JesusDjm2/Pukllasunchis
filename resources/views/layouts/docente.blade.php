@@ -407,6 +407,7 @@
             @endif
 
             {{-- ── Funciones adicionales según los roles de la cuenta ── --}}
+            @include('layouts.partials.menu-red-puklla')
             @if ($tieneFuncionesSb)
                 <div class="pk-sb-titulo">Mis funciones</div>
                 @if ($esTutorSb)

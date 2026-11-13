@@ -1,0 +1,1 @@
+<form method="post" action="{{ route('red.guardar') }}">@csrf<input name="tipo" type="hidden" value="{{ $tipo }}"><input name="referencia_id" type="hidden" value="{{ $referencia }}"><input name="estado" type="hidden" value="guardado"><button class="rp-secondary">Guardar para después</button></form>

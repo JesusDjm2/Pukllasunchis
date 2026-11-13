@@ -10,11 +10,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class AylluEventoCalendario extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Models\Concerns\AmbitoRedPuklla;
 
     protected $table = 'ayllu_eventos_calendario';
 
     protected $fillable = [
+        'red_egresados',
+        'ayllu_grupo_id',
+
         'titulo',
         'descripcion',
         'tipo',

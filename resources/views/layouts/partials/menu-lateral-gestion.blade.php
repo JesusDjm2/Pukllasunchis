@@ -42,6 +42,7 @@
 
     {{-- Menú de gestión (admin, super-admin, adminB): mismas opciones en ambos layouts --}}
     @include('layouts.partials.menu-gestion')
+    @include('layouts.partials.menu-red-puklla')
     @include('layouts.partials.menu-seguimiento')
 
     {{-- ── Titulación (gestor-titulacion): un solo enlace; asesores, PTI por vencer y datos

@@ -471,3 +471,30 @@ Route::middleware('auth')->prefix('seguimiento-egresados/panel')->group(function
     Route::get('/entrevista/{egresado}', [App\Http\Controllers\PerfilEgresadoController::class,'entrevista'])->name('seguimiento.panel.entrevista');
     Route::post('/entrevista/{egresado}', [App\Http\Controllers\PerfilEgresadoController::class,'guardarEntrevista'])->name('seguimiento.panel.entrevista.guardar');
 });
+
+Route::middleware('auth')->prefix('red-puklla')->name('red.')->group(function () {
+    Route::get('/', [App\Http\Controllers\RedPukllaController::class,'inicio'])->name('inicio');
+    Route::get('/comunidad', [App\Http\Controllers\RedPukllaController::class,'inicio'])->name('comunidad');
+    Route::post('/publicaciones', [App\Http\Controllers\RedPukllaController::class,'publicar'])->middleware('throttle:20,1')->name('publicar');
+    Route::get('/publicaciones/{id}', [App\Http\Controllers\RedPukllaController::class,'publicacion'])->whereNumber('id')->name('publicacion');
+    Route::post('/publicaciones/{id}/editar', [App\Http\Controllers\RedPukllaController::class,'editarPublicacion'])->whereNumber('id')->middleware('throttle:20,1')->name('publicacion.editar');
+    Route::post('/publicaciones/{id}/comentar', [App\Http\Controllers\RedPukllaController::class,'comentar'])->whereNumber('id')->middleware('throttle:20,1')->name('comentar');
+    Route::post('/publicaciones/{id}/participar', [App\Http\Controllers\RedPukllaController::class,'accion'])->whereNumber('id')->middleware('throttle:20,1')->name('accion');
+    Route::post('/publicaciones/{id}/difundir', [App\Http\Controllers\RedPukllaController::class,'difundir'])->whereNumber('id')->middleware('throttle:20,1')->name('difundir');
+    Route::get('/ayllus', [App\Http\Controllers\RedPukllaController::class,'grupos'])->name('grupos');
+    Route::post('/ayllus', [App\Http\Controllers\RedPukllaController::class,'crearGrupo'])->middleware('throttle:20,1')->name('grupos.crear');
+    Route::get('/ayllus/{id}', [App\Http\Controllers\RedPukllaController::class,'grupo'])->whereNumber('id')->name('grupo');
+    Route::post('/ayllus/{id}/miembros', [App\Http\Controllers\RedPukllaController::class,'membresia'])->whereNumber('id')->middleware('throttle:20,1')->name('membresia');
+    Route::post('/ayllus/{id}/chat', [App\Http\Controllers\RedPukllaController::class,'mensaje'])->whereNumber('id')->middleware('throttle:20,1')->name('mensaje');
+    Route::post('/ayllus/{id}/encuentros', [App\Http\Controllers\RedPukllaController::class,'evento'])->whereNumber('id')->middleware('throttle:20,1')->name('evento');
+    Route::get('/oportunidades', [App\Http\Controllers\RedPukllaController::class,'oportunidades'])->name('oportunidades');
+    Route::post('/oportunidades', [App\Http\Controllers\RedPukllaController::class,'crearOportunidad'])->middleware('throttle:20,1')->name('oportunidades.crear');
+    Route::get('/oportunidades/{id}', [App\Http\Controllers\RedPukllaController::class,'oportunidad'])->whereNumber('id')->name('oportunidad');
+    Route::post('/oportunidades/{id}/editar', [App\Http\Controllers\RedPukllaController::class,'editarOportunidad'])->whereNumber('id')->middleware('throttle:20,1')->name('oportunidad.editar');
+    Route::post('/guardados', [App\Http\Controllers\RedPukllaController::class,'guardar'])->middleware('throttle:20,1')->name('guardar');
+    Route::get('/mi-espacio', [App\Http\Controllers\RedPukllaController::class,'espacio'])->name('espacio');
+    Route::post('/avisos', [App\Http\Controllers\RedPukllaController::class,'avisos'])->middleware('throttle:20,1')->name('avisos');
+    Route::post('/avisos/{id}/leer', [App\Http\Controllers\RedPukllaController::class,'leerAviso'])->whereUuid('id')->middleware('throttle:20,1')->name('avisos.leer');
+    Route::get('/moderacion', [App\Http\Controllers\RedPukllaController::class,'moderacion'])->name('moderacion');
+    Route::post('/moderacion', [App\Http\Controllers\RedPukllaController::class,'moderar'])->middleware('throttle:20,1')->name('moderar');
+});

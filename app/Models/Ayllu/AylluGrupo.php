@@ -10,11 +10,16 @@ use Illuminate\Database\Eloquent\Model;
 
 class AylluGrupo extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Models\Concerns\AmbitoRedPuklla;
 
     protected $table = 'ayllu_grupos';
 
     protected $fillable = [
+        'red_egresados',
+        'privacidad_red',
+        'origen_publicacion_id',
+        'promocion_red',
+
         'nombre',
         'nombre_quechua',
         'slug',

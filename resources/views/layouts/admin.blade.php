@@ -36,7 +36,7 @@
             <div class="pl-dots"><span></span><span></span><span></span></div>
             <div class="pl-bar"></div>
         </div>
-        @hasanyrole('super-admin|admin|docente|adminB|tutor|gestor-titulacion')
+        @hasanyrole('super-admin|admin|docente|adminB|tutor|gestor-titulacion|secretaria|direccion|bienestar')
             {{-- Menú lateral pk-sb compartido con layouts.superadmin (color por rol: pk-tokens.css) --}}
             @php
                 $uSb = auth()->user();
