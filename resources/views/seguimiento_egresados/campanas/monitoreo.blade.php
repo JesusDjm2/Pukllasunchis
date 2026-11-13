@@ -1,14 +1,9 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width,initial-scale=1" name="viewport"/>
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Puklla en Red · Monitoreo de Campaña y Supervisión de Entrevistadores</title>
-    <link rel="shortcut icon" type="image/x-icon" href="{{ asset('img/logoiesp.ico') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <style>
-        :root {
+@extends('layouts.seguimiento')
+@section('titulo','Red Puklla de Egresados')
+@section('contenido')
+<style>@scope (.seguimiento-panel) {
+
+        :scope {
             --puklla-crema: #FAF8F5;
             --puklla-ocre: #C88219;
             --puklla-granate: #832128;
@@ -25,7 +20,7 @@
             --radius: 12px;
         }
         * { box-sizing: border-box; }
-        html, body {
+        :scope, :scope {
             margin: 0;
             min-height: 100%;
             font: 14px/1.5 Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
@@ -192,7 +187,7 @@
             align-items: center;
             gap: 8px;
         }
-        .card-body { padding: 20px; }
+        .card-:scope { padding: 20px; }
 
         /* KPI Grid */
         .kpi-grid {
@@ -304,52 +299,14 @@
             box-shadow: 0 20px 40px rgba(0,0,0,0.2);
             padding: 24px;
         }
-    </style>
-</head>
-<body>
+
+}</style>
+<div class="seguimiento-panel">
+@include('seguimiento_egresados.partials.grupo_formacion')
+@include('seguimiento_egresados.partials.avance_grupos', ['avancePorGrupo' => $metricas['por_grupo'] ?? []])
 <div id="app-layout">
     <!-- Sidebar -->
-    <aside class="sidebar">
-        <div class="brand-box">
-            <img src="{{ asset('img/logoiesp.ico') }}" alt="Pukllasunchis">
-            <div>
-                <div class="brand-title">Puklla en Red</div>
-                <div class="brand-subtitle">EESP Pukllasunchis</div>
-            </div>
-        </div>
 
-        <div class="nav-label">Módulos de Coordinación</div>
-        <a href="{{ route('seguimiento.campanas.gestion') }}" class="nav-item">
-            <span class="nav-icon"><i class="fas fa-bullhorn"></i></span>
-            <span>Gestión de Campañas</span>
-        </a>
-        <a href="{{ route('seguimiento.campanas.monitoreo', ['campanaId' => $campana->id]) }}" class="nav-item active">
-            <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
-            <span>Monitoreo de Avance</span>
-        </a>
-        <a href="{{ route('seguimiento.campanas.territorio', ['campanaId' => $campana->id]) }}" class="nav-item">
-            <span class="nav-icon"><i class="fas fa-map-marked-alt"></i></span>
-            <span>Observatorio Territorial</span>
-        </a>
-        <a href="{{ route('seguimiento.index') }}" class="nav-item">
-            <span class="nav-icon"><i class="fas fa-user-graduate"></i></span>
-            <span>Padrón Maestro</span>
-        </a>
-        <a href="{{ route('seguimiento.laboratorio') }}" class="nav-item">
-            <span class="nav-icon"><i class="fas fa-microscope"></i></span>
-            <span>Laboratorio Analítico</span>
-        </a>
-
-        <div class="nav-label">Intranet Institucional</div>
-        <a href="{{ route('admin') }}" class="nav-item">
-            <span class="nav-icon"><i class="fas fa-arrow-left"></i></span>
-            <span>Panel Administrador</span>
-        </a>
-        <a href="{{ route('auditoria.logout') }}" class="nav-item" style="color: #F87171;">
-            <span class="nav-icon"><i class="fas fa-sign-out-alt"></i></span>
-            <span>Cerrar Sesión</span>
-        </a>
-    </aside>
 
     <!-- Main Workspace -->
     <div class="main-content">
@@ -654,6 +611,10 @@
     </div>
 </div>
 
+
+</div>
+@endsection
+@push('scripts')
 <script>
     function abrirModalReasignacion(docenteId, docenteNombre) {
         document.getElementById('docenteActualId').value = docenteId;
@@ -723,5 +684,4 @@
         });
     }
 </script>
-</body>
-</html>
+@endpush

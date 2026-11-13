@@ -608,7 +608,7 @@ Route::middleware('auth')->group(function () {
     // Mismo rol para Carlos y Marilyn (gestor-titulacion); super-admin ve
     // y gestiona todo igual, como el resto de módulos del panel.
     // ═══════════════════════════════════════════════════════════════
-    Route::middleware('role:super-admin|gestor-titulacion')
+    Route::middleware(['role:super-admin|gestor-titulacion|secretaria', 'area.titulacion'])
         ->prefix('titulacion')
         ->name('titulacion.')
         ->group(function () {

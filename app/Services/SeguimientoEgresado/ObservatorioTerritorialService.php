@@ -49,7 +49,7 @@ class ObservatorioTerritorialService
         foreach ($egresados as $eg) {
             $depRes = strtoupper(trim($eg['dep_residencia'] ?: 'NO DECLARADO'));
             $depTrab = strtoupper(trim($eg['dep_trabajo'] ?: 'NO DECLARADO'));
-            $provTrab = strtoupper(trim($eg['prov_trabajo'] ?: ($eg['prov_residencia'] ?: 'NO DECLARADO')));
+            $provTrab = strtoupper(trim($eg['prov_trabajo'] ?: 'NO DECLARADO'));
 
             // Departamentos
             $porDepartamentoResidencia[$depRes] = ($porDepartamentoResidencia[$depRes] ?? 0) + 1;
@@ -134,38 +134,42 @@ class ObservatorioTerritorialService
 
         // Aplicar filtros opcionales
         if (!empty($filtros['programa'])) {
-            $query->whereHas('alumno.programa', function ($q) use ($filtros) {
-                $q->where('nombre', 'like', '%' . $filtros['programa'] . '%');
+            $query->where(function ($q) use ($filtros) {
+                foreach (['programa', 'alumno.programa', 'alumnoB.programa'] as $relation) $q->orWhereHas($relation, fn ($p) => $p->where('nombre', 'like', '%'.$filtros['programa'].'%'));
             });
         }
 
+        $clasificacion = app(GrupoFormacionService::class);
+        $clasificacion->aplicar($query, $filtros['grupo_formacion'] ?? null);
         $egresados = $query->get();
 
         // Obtener últimas actualizaciones y episodios
         $userIds = $egresados->pluck('id')->toArray();
-        $actualizaciones = Actualizacion::whereIn('user_id', $userIds)->latest()->get()->keyBy('user_id');
-        $episodiosActivos = EpisodioLaboral::whereIn('user_id', $userIds)->where('es_actual', true)->latest()->get()->keyBy('user_id');
+        $actualizaciones = Actualizacion::whereIn('user_id', $userIds)->where('estado_verificacion', 'verificado')->orderBy('id')->get()->keyBy('user_id');
+        $episodiosActivos = EpisodioLaboral::whereIn('user_id', $userIds)->where('es_actual', true)->orderBy('id')->get()->keyBy('user_id');
 
-        return $egresados->map(function ($u) use ($actualizaciones, $episodiosActivos) {
-            $alumno = $u->alumno;
+        return $egresados->map(function ($u) use ($actualizaciones, $episodiosActivos, $clasificacion, $filtros) {
+            $alumno = $clasificacion->ficha($u, $filtros['grupo_formacion'] ?? null);
             $act = $actualizaciones->get($u->id);
             $ep = $episodiosActivos->get($u->id);
 
-            $depRes = $act?->res_departamento ?: ($alumno?->departamento ?: 'Cusco');
-            $provRes = $act?->res_provincia ?: ($alumno?->provincia ?: 'Cusco');
-            $distRes = $act?->res_distrito ?: ($alumno?->distrito ?: 'Cusco');
+            $depRes = $act?->res_departamento ?: ($alumno?->departamento ?: null);
+            $provRes = $act?->res_provincia ?: ($alumno?->provincia ?: null);
+            $distRes = $act?->res_distrito ?: ($alumno?->distrito ?: null);
 
             $depTrab = $ep?->trab_departamento ?: ($act?->trab_departamento ?: null);
             $provTrab = $ep?->trab_provincia ?: ($act?->trab_provincia ?: null);
             $distTrab = $ep?->trab_distrito ?: ($act?->trab_distrito ?: null);
 
             $esEib = ($ep?->es_empleo_educativo && ($act?->eib === 'Sí' || !empty($act?->quechua))) || ($act?->eib === 'Sí');
-            $progNombre = $alumno?->programa?->nombre ?: '';
-            $progEib = str_contains($progNombre, 'EIB');
+            $programaInstitucional = $clasificacion->programa($u, $filtros['grupo_formacion'] ?? null);
+            $progNombre = $programaInstitucional?->nombre ?: 'Por verificar';
+            $progEib = (bool) $programaInstitucional?->eib;
 
-            $ambito = $alumno?->procedencia_familiar ?: '';
+            $ambito = ''; // Procedencia familiar no describe el ámbito del empleo actual.
 
             return [
+                'grupos_formacion' => $clasificacion->resolver($u)['grupos'],
                 'user_id' => $u->id,
                 'nombre' => trim($u->name . ' ' . $u->apellidos),
                 'programa' => $progNombre,

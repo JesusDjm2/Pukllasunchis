@@ -47,21 +47,24 @@ class SeguimientoLaboratorioController extends Controller
     {
         $this->autorizarAccesoLaboratorio();
 
+        $request->validate(['grupo_formacion' => 'nullable|in:TODOS,FID,PPD,COMPARAR,POR_VERIFICAR']);
+        $grupoFormacion = app(\App\Services\SeguimientoEgresado\GrupoFormacionService::class)->normalizar($request->query('grupo_formacion'));
+        $filtros = ['grupo_formacion' => $grupoFormacion];
         $variables = $this->analiticaService->getVariablesPermitidas();
-        $universos = $this->analiticaService->calcularUniversos();
+        $universos = $this->analiticaService->calcularUniversos($filtros);
 
         // Matriz por defecto: Programa x Situación Laboral
         $varFilaDefecto = 'programa';
         $varColumnaDefecto = 'situacion_laboral';
-        $matrizInicial = $this->analiticaService->generarMatrizCruzada($varFilaDefecto, $varColumnaDefecto);
+        $matrizInicial = $this->analiticaService->generarMatrizCruzada($varFilaDefecto, $varColumnaDefecto, $filtros);
 
         // Análisis longitudinal y observatorio territorial inicial
-        $longitudinalInicial = $this->analiticaService->generarAnalisisLongitudinal();
-        $territorialInicial = $this->territorialService->obtenerReporteTerritorial();
-        $demandasInicial = $this->analiticaService->obtenerDemandasFormativas();
+        $longitudinalInicial = $this->analiticaService->generarAnalisisLongitudinal($filtros);
+        $territorialInicial = $this->territorialService->obtenerReporteTerritorial($filtros);
+        $demandasInicial = $this->analiticaService->obtenerDemandasFormativas($filtros);
 
         return view('seguimiento_egresados.laboratorio', compact(
-            'variables',
+            'grupoFormacion', 'variables',
             'universos',
             'varFilaDefecto',
             'varColumnaDefecto',
@@ -81,6 +84,7 @@ class SeguimientoLaboratorioController extends Controller
 
         $varFila = $request->input('fila', 'programa');
         $varColumna = $request->input('columna', 'situacion_laboral');
+        $request->validate(['filtros' => 'nullable|array', 'filtros.grupo_formacion' => 'nullable|in:TODOS,FID,PPD,COMPARAR,POR_VERIFICAR']);
         $filtros = $request->input('filtros', []);
 
         try {
@@ -126,6 +130,9 @@ class SeguimientoLaboratorioController extends Controller
         $varFila = $request->input('fila', 'programa');
         $varColumna = $request->input('columna', 'situacion_laboral');
         $filtros = json_decode($request->input('filtros', '[]'), true) ?: [];
+        if (!is_array($filtros)) abort(422, 'Filtros no válidos.');
+        $filtros = array_merge($request->only(['grupo_formacion','programa','cohorte','docencia_directa']), $filtros);
+        app(\App\Services\SeguimientoEgresado\GrupoFormacionService::class)->normalizar($filtros['grupo_formacion'] ?? null);
 
         $matriz = $this->analiticaService->generarMatrizCruzada($varFila, $varColumna, $filtros);
 
@@ -137,7 +144,7 @@ class SeguimientoLaboratorioController extends Controller
             'Expires' => '0'
         ];
 
-        return new StreamedResponse(function () use ($matriz, $varFila, $varColumna) {
+        return new StreamedResponse(function () use ($matriz, $varFila, $varColumna, $filtros) {
             $handle = fopen('php://output', 'w');
 
             // BOM para compatibilidad con Excel en UTF-8
@@ -147,6 +154,7 @@ class SeguimientoLaboratorioController extends Controller
             fputcsv($handle, ['ESCUELA DE EDUCACIÓN SUPERIOR PEDAGÓGICA PUKLLASUNCHIS']);
             fputcsv($handle, ['SISTEMA DE SEGUIMIENTO DE EGRESADOS — LABORATORIO DE INTELIGENCIA']);
             fputcsv($handle, ['Cruce Analítico:', $matriz['dimension_fila']['nombre'] . ' x ' . $matriz['dimension_columna']['nombre']]);
+            fputcsv($handle, ['Grupo de formación:', $filtros['grupo_formacion'] ?? 'TODOS']);
             fputcsv($handle, ['Fecha de corte:', $matriz['fecha_corte']]);
             fputcsv($handle, ['Denominador:', $matriz['denominador_personas'] . ' personas únicas']);
             fputcsv($handle, ['Nota metodológica:', $matriz['nota_metodologica']]);

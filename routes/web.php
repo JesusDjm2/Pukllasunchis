@@ -450,3 +450,24 @@ if (app()->isLocal()) {
 }
 
 
+
+// Mi espacio del egresado: identidad siempre tomada de la sesión, nunca del payload.
+Route::middleware(['auth'])->prefix('seguimiento-egresados')->group(function () {
+    Route::get('/mi-espacio', [App\Http\Controllers\PerfilEgresadoController::class, 'index'])->name('seguimiento.mi-espacio');
+    Route::post('/mi-espacio', [App\Http\Controllers\PerfilEgresadoController::class, 'guardar'])->middleware('throttle:30,1')->name('seguimiento.mi-espacio.guardar');
+    Route::post('/mi-espacio/borrador', [App\Http\Controllers\PerfilEgresadoController::class, 'borrador'])->middleware('throttle:30,1')->name('seguimiento.mi-espacio.borrador');
+    Route::get('/divisiones-territoriales', [App\Http\Controllers\PerfilEgresadoController::class, 'divisiones'])->name('seguimiento.divisiones');
+    Route::get('/lugares', [App\Http\Controllers\PerfilEgresadoController::class, 'lugares'])->name('seguimiento.lugares');
+    Route::get('/observatorio-conectado', [App\Http\Controllers\PerfilEgresadoController::class, 'observatorio'])->name('seguimiento.observatorio-conectado');
+    Route::get('/observatorio-conectado/datos', [App\Http\Controllers\PerfilEgresadoController::class, 'datosObservatorio'])->name('seguimiento.observatorio-conectado.datos');
+});
+
+Route::middleware('auth')->prefix('seguimiento-egresados/panel')->group(function () {
+    Route::get('/coordinacion', [App\Http\Controllers\SeguimientoPanelController::class,'coordinacion'])->name('seguimiento.panel.coordinacion');
+    Route::post('/campanas', [App\Http\Controllers\SeguimientoPanelController::class,'crearCampana'])->name('seguimiento.panel.campana');
+    Route::post('/casos/{caso}', [App\Http\Controllers\SeguimientoPanelController::class,'gestionarCaso'])->name('seguimiento.panel.caso');
+    Route::post('/campanas/{campana}/cerrar', [App\Http\Controllers\SeguimientoPanelController::class,'cerrarCampana'])->name('seguimiento.panel.cerrar');
+    Route::get('/informes/{corte}', [App\Http\Controllers\SeguimientoPanelController::class,'informe'])->name('seguimiento.panel.informe');
+    Route::get('/entrevista/{egresado}', [App\Http\Controllers\PerfilEgresadoController::class,'entrevista'])->name('seguimiento.panel.entrevista');
+    Route::post('/entrevista/{egresado}', [App\Http\Controllers\PerfilEgresadoController::class,'guardarEntrevista'])->name('seguimiento.panel.entrevista.guardar');
+});

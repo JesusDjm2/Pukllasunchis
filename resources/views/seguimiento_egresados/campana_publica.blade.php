@@ -347,7 +347,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="programa">Programa de formación *</label>
+                        <label for="programa">¿En qué programa y año egresaste? · Programa *</label>
                         <select id="programa" name="programa" required>
                             <option value="">-- Selecciona --</option>
                             <option value="Educación Inicial">Educación Inicial</option>
@@ -357,17 +357,12 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="egreso">Año / Semestre de egreso</label>
+                        <label for="egreso">Año de egreso</label>
                         <select id="egreso" name="egreso">
-                            <option value="2025-II">2025-II</option>
-                            <option value="2025-I">2025-I</option>
-                            <option value="2024-II">2024-II</option>
-                            <option value="2024-I">2024-I</option>
-                            <option value="2023-II">2023-II</option>
-                            <option value="2023-I">2023-I</option>
-                            <option value="2022-II">2022-II</option>
-                            <option value="2021-II">2021-II</option>
-                            <option value="Anterior">Anterior a 2021</option>
+                            <option value="">Selecciona tu año de egreso</option>
+                            @for($anio = now()->year; $anio >= 1985; $anio--)
+                            <option value="{{ $anio }}">{{ $anio }}</option>
+                            @endfor
                         </select>
                     </div>
 
@@ -377,13 +372,16 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="correo">Correo electrónico</label>
+                        <label for="correo">Confirma tu correo electrónico (coloca el correo que usas más seguido)</label>
                         <input type="email" id="correo" name="correo" placeholder="ejemplo@correo.com">
                     </div>
 
                     <div class="form-group col-full">
-                        <label for="residencia">Departamento / Provincia / Distrito donde vives actualmente</label>
-                        <input type="text" id="residencia" name="residencia" placeholder="Ej. Cusco, Canchis, Sicuani">
+                        <label for="residencia">Centro poblado o localidad donde vives actualmente</label>
+                        <input type="text" id="residencia" name="residencia" placeholder="Centro poblado o localidad">
+                        <label for="res_departamento">Región/departamento</label><input id="res_departamento">
+                        <label for="res_provincia">Provincia</label><input id="res_provincia">
+                        <label for="res_distrito">Distrito</label><input id="res_distrito">
                     </div>
                 </div>
 
@@ -396,7 +394,7 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="titulo_bach">Grado de Bachiller</label>
-                        <select id="titulo_bach" name="titulo_bach">
+                        <select id="titulo_bach" name="titulo_bach"><option value="">Selecciona una respuesta</option>
                             <option value="Obtenido">Obtenido / Registrado</option>
                             <option value="En trámite">En trámite</option>
                             <option value="Pendiente">Pendiente</option>
@@ -405,7 +403,7 @@
 
                     <div class="form-group">
                         <label for="titulo_lic">Título Profesional Pedagógico</label>
-                        <select id="titulo_lic" name="titulo_lic">
+                        <select id="titulo_lic" name="titulo_lic"><option value="">Selecciona una respuesta</option>
                             <option value="Titulado">Titulada / Licenciada</option>
                             <option value="Tesis en desarrollo">Tesis en desarrollo</option>
                             <option value="En sustentación">En proceso de sustentación</option>
@@ -415,7 +413,7 @@
 
                     <div class="form-group col-full">
                         <label for="apoyo_titulacion">¿Te gustaría recibir asesoría o acompañamiento de Pukllasunchis para titularte?</label>
-                        <select id="apoyo_titulacion" name="apoyo_titulacion">
+                        <select id="apoyo_titulacion" name="apoyo_titulacion"><option value="">Selecciona una respuesta</option>
                             <option value="Sí, requiero asesoría en tesis">Sí, requiero asesoría en tesis o plan de trabajo</option>
                             <option value="Sí, información sobre trámites">Sí, información sobre requisitos y trámites</option>
                             <option value="No por el momento">No por el momento / Ya estoy titulado</option>
@@ -434,7 +432,7 @@
                         <label>¿Te encuentras trabajando actualmente? *</label>
                         <div class="radio-pills">
                             <div class="radio-pill-item">
-                                <input type="radio" id="trab_si_doc" name="trabaja" value="Trabaja" checked>
+                                <input type="radio" id="trab_si_doc" name="trabaja" value="Trabaja" required>
                                 <label for="trab_si_doc"><i class="fas fa-chalkboard-teacher mr-1"></i> Sí, en docencia o aula</label>
                             </div>
                             <div class="radio-pill-item">
@@ -447,7 +445,7 @@
                             </div>
                             <div class="radio-pill-item">
                                 <input type="radio" id="trab_no" name="trabaja" value="No trabaja">
-                                <label for="trab_no"><i class="fas fa-search mr-1"></i> Buscando empleo / No labora</label>
+                                <label for="trab_no"><i class="fas fa-search mr-1"></i> No trabajo actualmente</label>
                             </div>
                         </div>
                     </div>
@@ -464,7 +462,7 @@
 
                     <div class="form-group">
                         <label for="contrato">Tipo de contrato / Régimen</label>
-                        <select id="contrato" name="contrato">
+                        <select id="contrato" name="contrato"><option value="">Selecciona una respuesta</option>
                             <option value="Contrato docente MINEDU">Contrato docente MINEDU (Concurso)</option>
                             <option value="Nombrado">Nombrado / Carrera Pública Magisterial</option>
                             <option value="Privado / Particular">Colegio privado / particular</option>
@@ -488,7 +486,7 @@
                 <div class="form-grid">
                     <div class="form-group col-full">
                         <label for="temas">¿En qué temas te gustaría recibir talleres o diplomados de Pukllasunchis?</label>
-                        <select id="temas" name="temas">
+                        <select id="temas" name="temas"><option value="">Selecciona una respuesta</option>
                             <option value="Planificación curricular y evaluación formativa">Planificación curricular y evaluación formativa</option>
                             <option value="Lengua Quechua y Didáctica EIB">Lengua Quechua y Didáctica EIB</option>
                             <option value="Pedagogía lúdica y educación infantil">Pedagogía lúdica y educación infantil</option>
@@ -500,7 +498,7 @@
 
                     <div class="form-group col-full">
                         <label for="compartir">¿Te interesaría participar como expositor/a o compartir tus experiencias pedagógicas?</label>
-                        <select id="compartir" name="compartir">
+                        <select id="compartir" name="compartir"><option value="">Selecciona una respuesta</option>
                             <option value="Sí, me gustaría compartir mi experiencia">Sí, me gustaría compartir mi experiencia</option>
                             <option value="Tal vez en el futuro">Tal vez en el futuro</option>
                             <option value="No por ahora">No por ahora</option>
@@ -527,8 +525,8 @@
                 <h2>¡Datos actualizados con éxito!</h2>
                 <p>Muchas gracias, <strong id="success-nombre">egresada/o</strong>. Tu información ha sido guardada directamente en el Sistema Institucional de EESP Pukllasunchis para la Campaña 2026-II.</p>
                 <div style="margin-top: 1.5rem;">
-                    <a href="https://pukllasunchis.edu.pe" target="_blank" style="display:inline-block;padding:0.75rem 1.4rem;background:#10b981;color:#fff;border-radius:10px;text-decoration:none;font-weight:700;">
-                        <i class="fas fa-globe mr-1"></i> Ir a la página web institucional
+                    <a href="{{ route('seguimiento.mi-espacio') }}" style="display:inline-block;padding:0.75rem 1.4rem;background:#10b981;color:#fff;border-radius:10px;text-decoration:none;font-weight:700;">
+                        <i class="fas fa-globe mr-1"></i> Continuar a Mi espacio (requiere ingresar a tu cuenta)
                     </a>
                 </div>
             </div>
@@ -556,23 +554,27 @@
             const isSinCambios = document.getElementById('sin_cambios_public')?.checked || false;
             const tokenVal = document.getElementById('token_invitacion')?.value.trim() || null;
             const payload = {
+                programa: document.getElementById('programa').value,
+                egreso: document.getElementById('egreso').value,
+                res_departamento: document.getElementById('res_departamento').value.trim(),
+                res_provincia: document.getElementById('res_provincia').value.trim(),
                 id: 'CAMP-' + (document.getElementById('dni').value.trim() || 'PUBLIC'),
                 nombre: document.getElementById('nombre').value.trim(),
                 dni: document.getElementById('dni').value.trim(),
                 token_invitacion: tokenVal,
                 token: tokenVal,
                 sin_cambios: isSinCambios,
-                cambio_empleo: isSinCambios ? 'Sin cambios' : 'Primer empleo',
+                cambio_empleo: isSinCambios ? 'Sin cambios' : 'Primera actualización',
                 canal: tokenVal ? 'campana_whatsapp_invitacion' : 'campana_whatsapp_publica',
                 telefono: document.getElementById('telefono').value.trim(),
                 whatsapp: document.getElementById('telefono').value.trim(),
                 correo: document.getElementById('correo').value.trim(),
                 direccion_contacto: document.getElementById('residencia').value.trim(),
-                res_distrito: document.getElementById('residencia').value.trim(),
+                res_distrito: document.getElementById('res_distrito').value.trim(),
                 titulo_bach: document.getElementById('titulo_bach').value,
                 titulo_lic: document.getElementById('titulo_lic').value,
                 apoyo_titulacion: document.getElementById('apoyo_titulacion').value,
-                trabaja: document.querySelector('input[name="trabaja"]:checked')?.value || 'Trabaja',
+                trabaja: document.querySelector('input[name="trabaja"]:checked')?.value || null,
                 institucion: document.getElementById('institucion').value.trim(),
                 cargo: document.getElementById('cargo').value.trim(),
                 contrato: document.getElementById('contrato').value,
@@ -599,6 +601,7 @@
                     form.style.display = 'none';
                     successNombre.textContent = payload.nombre || 'estimada/o colega';
                     successBox.style.display = 'block';
+                    successBox.querySelector('p').textContent = data.message || 'Tu actualización fue recibida.';
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 } else {
                     alert('Error al guardar la información: ' + (data.message || 'Por favor revisa tus datos e intenta nuevamente.'));

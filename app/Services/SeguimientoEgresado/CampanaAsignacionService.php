@@ -73,7 +73,7 @@ class CampanaAsignacionService
      * Recupera y diagnostica el padrón de egresados reales institucionales.
      * Criterio: users.condicion = 'Egresado', excluyendo usuarios de test.
      */
-    public function obtenerPadronEgresadosElegibles(?int $campanaId = null, bool $excluirAsignados = false): Collection
+    public function obtenerPadronEgresadosElegibles(?int $campanaId = null, bool $excluirAsignados = false, string $grupoFormacion = 'TODOS'): Collection
     {
         $query = User::query()
             ->where('condicion', 'Egresado')
@@ -95,20 +95,24 @@ class CampanaAsignacionService
             }
         }
 
+        $clasificacion = app(GrupoFormacionService::class);
+        $clasificacion->aplicar($query, $grupoFormacion);
         $egresados = $query->get();
 
-        return $egresados->map(function (User $u) use ($campanaId) {
-            $alumno = $u->alumno;
+        return $egresados->map(function (User $u) use ($campanaId, $grupoFormacion, $clasificacion) {
+            $alumno = $clasificacion->ficha($u, $grupoFormacion);
+            $meta = $clasificacion->resolver($u);
+            $ultima = Actualizacion::where('user_id', $u->id)->where('estado_verificacion','verificado')->latest('id')->first();
             $tit = $u->seguimientoTitulacion;
 
-            $tel = $alumno?->numero ?: '';
+            $tel = $ultima?->telefono ?: ($alumno?->numero ?: $u->telefono ?: '');
             $telAlt = $alumno?->numero_referencia ?: '';
             $tieneTelefono = strlen(trim($tel)) >= 6 || strlen(trim($telAlt)) >= 6;
             $emailValido = filter_var($u->email, FILTER_VALIDATE_EMAIL) !== false;
 
-            $dep = $alumno?->departamento ?: '';
-            $prov = $alumno?->provincia ?: '';
-            $dist = $alumno?->distrito ?: '';
+            $dep = $ultima?->res_departamento ?: $alumno?->departamento ?: '';
+            $prov = $ultima?->res_provincia ?: $alumno?->provincia ?: '';
+            $dist = $ultima?->res_distrito ?: $alumno?->distrito ?: '';
             $tieneResidencia = !empty($dep) || !empty($prov) || !empty($dist);
 
             $tieneTrabajo = EpisodioLaboral::where('user_id', $u->id)->exists()
@@ -117,14 +121,11 @@ class CampanaAsignacionService
             $cohorte = 'Por verificar';
             if ($tit && $tit->periodo_estudios) {
                 $cohorte = $tit->periodo_estudios;
-            } elseif (preg_match('/(20\d{2})/', $u->email, $m)) {
-                $cohorte = $m[1];
             }
 
             $progNombre = 'Sin programa asignado';
-            if ($alumno && $alumno->programa) {
-                $progNombre = str_replace('Programa ', '', $alumno->programa->nombre);
-            }
+            $programaInstitucional = $clasificacion->programa($u, $grupoFormacion);
+            if ($programaInstitucional) $progNombre = $programaInstitucional->nombre;
 
             $asignacionActual = null;
             if ($campanaId) {
@@ -148,6 +149,8 @@ class CampanaAsignacionService
             return [
                 'user_id' => $u->id,
                 'dni' => $u->dni,
+                'grupos_formacion' => $meta['grupos'],
+                'grupo_formacion' => $meta['etiqueta'],
                 'nombre_completo' => trim($u->name . ' ' . $u->apellidos),
                 'programa' => $progNombre,
                 'cohorte' => $cohorte,
@@ -156,9 +159,9 @@ class CampanaAsignacionService
                 'telefono' => $tel,
                 'telefono_alt' => $telAlt,
                 'tiene_telefono' => $tieneTelefono,
-                'res_departamento' => $dep ?: 'CUSCO',
-                'res_provincia' => $prov ?: 'CUSCO',
-                'res_distrito' => $dist ?: 'CUSCO',
+                'res_departamento' => $dep ?: 'No declarado',
+                'res_provincia' => $prov ?: 'No declarado',
+                'res_distrito' => $dist ?: 'No declarado',
                 'tiene_residencia' => $tieneResidencia,
                 'tiene_trabajo' => $tieneTrabajo,
                 'asignacion_actual' => $asignacionActual,
@@ -170,9 +173,9 @@ class CampanaAsignacionService
     /**
      * Diagnóstico integral del padrón real para el informe institucional.
      */
-    public function diagnosticarPadron(): array
+    public function diagnosticarPadron(string $grupoFormacion = 'TODOS'): array
     {
-        $padron = $this->obtenerPadronEgresadosElegibles();
+        $padron = $this->obtenerPadronEgresadosElegibles(null, false, $grupoFormacion);
         $total = $padron->count();
 
         $porPrograma = $padron->groupBy('programa')->map->count()->toArray();
@@ -208,13 +211,16 @@ class CampanaAsignacionService
         array $docenteUserIds,
         int $asignadoPorId,
         bool $esEnsayo = false,
-        bool $previewOnly = false
+        bool $previewOnly = false,
+        string $grupoFormacion = 'TODOS'
     ): array {
         if (empty($docenteUserIds)) {
             throw new \InvalidArgumentException('Debes seleccionar al menos un docente entrevistador.');
         }
 
         $campana = Campana::findOrFail($campanaId);
+
+        if (!in_array(strtolower($campana->estado), ['activo','activa'])) throw new \InvalidArgumentException('Solo se distribuyen campañas abiertas.');
 
         // Docentes seleccionados (verificar que existan y tengan rol docente)
         $docentes = User::role('docente')
@@ -226,7 +232,7 @@ class CampanaAsignacionService
         }
 
         // Obtener egresados elegibles no asignados en esta campaña
-        $egresadosElegibles = $this->obtenerPadronEgresadosElegibles($campanaId, true);
+        $egresadosElegibles = $this->obtenerPadronEgresadosElegibles($campanaId, true, $grupoFormacion);
 
         if ($egresadosElegibles->isEmpty()) {
             throw new \RuntimeException('No hay egresados disponibles sin asignar para esta campaña.');
@@ -286,7 +292,8 @@ class CampanaAsignacionService
             $campana, $grupos, $asignadoPorId, $esEnsayo, $totalEgresados, $numDocentes, $resumenDistribucion
         ) {
             // Bloqueo pesimista de campaña para evitar condiciones de carrera concurrentes
-            Campana::where('id', $campana->id)->lockForUpdate()->first();
+            $bloqueada = Campana::where('id', $campana->id)->lockForUpdate()->first();
+            if (!in_array(strtolower($bloqueada->estado), ['activo','activa'])) throw new \RuntimeException('La campaña se cerró antes de asignar.');
 
             $ahora = now();
             $registrosAInsertar = [];
@@ -344,7 +351,11 @@ class CampanaAsignacionService
     public function reasignarEgresado(int $asignacionId, int $nuevoDocenteId, int $actorId, string $motivo): AsignacionCampana
     {
         return DB::transaction(function () use ($asignacionId, $nuevoDocenteId, $actorId, $motivo) {
+            $referencia=AsignacionCampana::findOrFail($asignacionId);
+            $campana=Campana::lockForUpdate()->findOrFail($referencia->campana_id);
+            if(!in_array(strtolower($campana->estado),['activo','activa'])) throw new \InvalidArgumentException('No se reasigna una campaña cerrada.');
             $asignacion = AsignacionCampana::lockForUpdate()->findOrFail($asignacionId);
+            if(!in_array($asignacion->estado,['asignado','contactado'])) throw new \InvalidArgumentException('Esta asignación ya no está activa.');
 
             if ($asignacion->docente_user_id === $nuevoDocenteId) {
                 throw new \InvalidArgumentException('El nuevo docente es idéntico al docente actual.');
@@ -387,14 +398,27 @@ class CampanaAsignacionService
     /**
      * Métricas globales de la campaña con denominadores explícitos (Panel Coordinación).
      */
-    public function obtenerMetricasCampana(int $campanaId): array
+    public function compararSeguimiento(Collection $padron, Collection $llamadas, Collection $actualizaciones): array
+    {
+        $rows = [];
+        foreach (['FID','PPD','POR_VERIFICAR'] as $grupo) {
+            $personas = $padron->filter(fn ($p) => app(GrupoFormacionService::class)->coincide($p['grupos_formacion'] ?? [], $grupo))->unique('user_id');
+            $ids = $personas->pluck('user_id'); $total = $ids->count();
+            $contactados = $llamadas->whereIn('user_id', $ids)->where('es_contacto_efectivo', true)->pluck('user_id')->unique()->count();
+            $actualizados = $actualizaciones->whereIn('user_id', $ids)->pluck('user_id')->unique()->count();
+            $rows[$grupo] = ['personas' => $total, 'contactados' => $contactados, 'actualizados' => $actualizados,
+                'pendientes' => max(0, $total-$actualizados), 'avance_pct' => $total ? round(100*$actualizados/$total,1) : null];
+        }
+        return $rows;
+    }
+
+    public function obtenerMetricasCampana(int $campanaId, string $grupoFormacion = 'TODOS'): array
     {
         $campana = Campana::findOrFail($campanaId);
-        $totalPadronReales = User::where('condicion', 'Egresado')
-            ->whereNotIn('email', ['auditor.egresada@puklla.test', 'egresado.noasignado@puklla.test'])
-            ->count();
-
-        $asignaciones = AsignacionCampana::where('campana_id', $campanaId)->activos()->get();
+        $padron = $this->obtenerPadronEgresadosElegibles(null, false, $grupoFormacion);
+        $idsGrupo = $padron->pluck('user_id');
+        $totalPadronReales = $idsGrupo->count();
+        $asignaciones = AsignacionCampana::where('campana_id', $campanaId)->whereIn('egresado_user_id', $idsGrupo)->activos()->get()->unique('egresado_user_id');
         $totalAsignados = $asignaciones->count();
         $egresadosSinAsignar = max(0, $totalPadronReales - $totalAsignados);
 
@@ -403,10 +427,7 @@ class CampanaAsignacionService
         $egresadosAsignadosIds = $asignaciones->pluck('egresado_user_id')->toArray();
 
         // Intentos de llamada totales
-        $llamadasQuery = Llamada::where('campana_id', $campanaId);
-        if ($campana->es_ensayo) {
-            $llamadasQuery->orWhere('es_ensayo', true);
-        }
+        $llamadasQuery = Llamada::where('campana_id', $campanaId)->whereIn('user_id', $egresadosAsignadosIds);
         $totalIntentosLlamada = $llamadasQuery->count();
 
         // Contactos efectivos (personas únicas con al menos un contacto efectivo)
@@ -423,21 +444,21 @@ class CampanaAsignacionService
             $q->where('campana_id', $campana->id)
               ->orWhere('periodo_campana', $campana->codigo)
               ->orWhere('periodo_campana', $campana->nombre);
-        })->whereIn('user_id', $egresadosAsignadosIds ?: [0])->get();
+        })->whereIn('user_id', $egresadosAsignadosIds ?: [0])->where('estado_verificacion','verificado')->orderByDesc('id')->get()->unique('user_id');
 
-        $actualizacionesCompletas = $actualizaciones->where('tipo_registro', '!=', 'confirmacion_sin_cambios')
+        $actualizacionesCompletas = $actualizaciones->where('tipo_registro', '!=', 'confirmacion_sin_cambios')->where('es_confirmacion_sin_cambios', false)
             ->where('estado_verificacion', '!=', 'pendiente_verificacion')
             ->count();
 
         $confirmacionesSinCambios = $actualizaciones->where('es_confirmacion_sin_cambios', true)->count();
 
         $actualizacionesParciales = Llamada::where('campana_id', $campanaId)
-            ->where('tipo_resultado', 'actualizacion_parcial')
+            ->where('tipo_resultado', 'actualizacion_parcial')->whereIn('user_id', $egresadosAsignadosIds)
             ->distinct('user_id')
             ->count('user_id');
 
         $noLocalizados = Llamada::where('campana_id', $campanaId)
-            ->where('tipo_resultado', 'numero_equivocado')
+            ->where('tipo_resultado', 'numero_equivocado')->whereIn('user_id', $egresadosAsignadosIds)
             ->distinct('user_id')
             ->count('user_id');
 
@@ -446,10 +467,10 @@ class CampanaAsignacionService
             ->count();
 
         // Datos validados
-        $laboralValidada = EpisodioLaboral::whereIn('user_id', $egresadosAsignadosIds ?: [0])->count();
+        $laboralValidada = EpisodioLaboral::whereIn('user_id', $egresadosAsignadosIds ?: [0])->distinct()->count('user_id');
         $territorialValidada = Actualizacion::whereIn('user_id', $egresadosAsignadosIds ?: [0])
-            ->whereNotNull('res_departamento')
-            ->count();
+            ->whereNotNull('res_departamento')->where('estado_verificacion','verificado')
+            ->distinct()->count('user_id');
 
         // Avance por docente
         $avanceDocentes = [];
@@ -464,7 +485,7 @@ class CampanaAsignacionService
 
             $contactadosDoc = count(array_intersect($egresadosContactadosIds, $egrDocIds));
 
-            $actualizadosDoc = $actualizaciones->whereIn('user_id', $egrDocIds)->count();
+            $actualizadosDoc = $actualizaciones->whereIn('user_id', $egrDocIds)->unique('user_id')->count();
             $pendientesDoc = max(0, $cantAsignados - $actualizadosDoc);
 
             $coberturaContacto = $cantAsignados > 0 ? round(($contactadosDoc / $cantAsignados) * 100, 1) : 0;
@@ -491,6 +512,7 @@ class CampanaAsignacionService
 
         return [
             'campana' => $campana,
+            'por_grupo' => $this->compararSeguimiento($padron->whereIn('user_id', $egresadosAsignadosIds), $llamadasQuery->get(), $actualizaciones),
             'total_padron_elegible' => $totalPadronReales,
             'total_asignados' => $totalAsignados,
             'egresados_sin_asignar' => $egresadosSinAsignar,
@@ -514,25 +536,31 @@ class CampanaAsignacionService
     /**
      * Métricas individuales y lista de trabajo del docente entrevistador.
      */
-    public function obtenerMetricasDocente(int $docenteUserId, ?int $campanaId = null): array
+    public function obtenerMetricasDocente(int $docenteUserId, ?int $campanaId = null, string $grupoFormacion = 'TODOS'): array
     {
-        $query = AsignacionCampana::activos()->where('docente_user_id', $docenteUserId);
+        $query = AsignacionCampana::activos()->where('docente_user_id', $docenteUserId)->whereHas('campana',fn($q)=>$q->whereIn('estado',['activo','activa'])->where(fn($d)=>$d->whereNull('fecha_inicio')->orWhere('fecha_inicio','<=',now()->toDateString()))->where(fn($d)=>$d->whereNull('fecha_fin')->orWhere('fecha_fin','>=',now()->toDateString())));
         if ($campanaId) {
             $query->where('campana_id', $campanaId);
         }
 
-        $asignaciones = $query->with(['egresado.alumno.programa', 'campana'])->get();
-        $totalAsignados = $asignaciones->count();
+        $idsGrupo = $this->obtenerPadronEgresadosElegibles(null, false, $grupoFormacion)->pluck('user_id');
+        $asignaciones = $query->whereIn('egresado_user_id', $idsGrupo)->with(['egresado.programa','egresado.alumno.programa','egresado.alumnoB.programa','egresado.trayectoriaEventos.cicloOrigen.programa','egresado.trayectoriaEventos.cicloDestino.programa', 'campana'])->get();
+        $totalAsignados = $asignaciones->pluck('egresado_user_id')->unique()->count();
         $egrIds = $asignaciones->pluck('egresado_user_id')->toArray();
 
         $llamadas = Llamada::where('docente_user_id', $docenteUserId)
-            ->whereIn('user_id', $egrIds ?: [0])
+            ->whereIn('user_id', $egrIds ?: [0])->whereIn('campana_id', $asignaciones->pluck('campana_id')->unique())
             ->get();
 
         $intentosLlamada = $llamadas->count();
         $contactadosEfectivos = $llamadas->where('es_contacto_efectivo', true)->pluck('user_id')->unique()->count();
 
-        $actualizaciones = Actualizacion::whereIn('user_id', $egrIds ?: [0])->get();
+        $actualizacionesQuery = Actualizacion::whereIn('user_id', $egrIds ?: [0])->where('estado_verificacion','verificado');
+        if ($campanaId) {
+            $campana = Campana::findOrFail($campanaId);
+            $actualizacionesQuery->where(fn ($q) => $q->where('campana_id',$campanaId)->orWhere('periodo_campana',$campana->codigo)->orWhere('periodo_campana',$campana->nombre));
+        }
+        $actualizaciones = $actualizacionesQuery->orderByDesc('id')->get()->unique('user_id');
         $completadas = $actualizaciones->where('tipo_registro', '!=', 'confirmacion_sin_cambios')->where('es_confirmacion_sin_cambios', false)->count();
         $sinCambios = $actualizaciones->where('es_confirmacion_sin_cambios', true)->count();
         $parciales = $llamadas->where('tipo_resultado', 'actualizacion_parcial')->pluck('user_id')->unique()->count();
@@ -541,21 +569,24 @@ class CampanaAsignacionService
         $casosAtencion = Caso::whereIn('user_id', $egrIds ?: [0])->whereNotIn('estado', ['Resuelto', 'Cerrado'])->count();
 
         // Construir lista de trabajo detallada
-        $listaTrabajo = $asignaciones->map(function (AsignacionCampana $asig) use ($llamadas, $actualizaciones) {
+        $listaTrabajo = $asignaciones->map(function (AsignacionCampana $asig) use ($llamadas, $actualizaciones, $grupoFormacion) {
             $egr = $asig->egresado;
-            $alumno = $egr?->alumno;
+            $clasificacion = app(GrupoFormacionService::class);
+            $alumno = $egr ? $clasificacion->ficha($egr, $grupoFormacion) : null;
+            $meta = $egr ? $clasificacion->resolver($egr) : ['grupos' => [], 'etiqueta' => 'Por verificar'];
 
             $tel = $alumno?->numero ?: ($alumno?->numero_referencia ?: '');
-            $progNombre = $alumno?->programa ? str_replace('Programa ', '', $alumno->programa->nombre) : 'Por verificar';
+            $progNombre = $egr ? ($clasificacion->programa($egr, $grupoFormacion)?->nombre ?: 'Por verificar') : 'Por verificar';
 
             $llamadasEgr = $llamadas->where('user_id', $asig->egresado_user_id);
             $ultimaLlamada = $llamadasEgr->sortByDesc('fecha_hora')->first();
 
             $act = $actualizaciones->where('user_id', $asig->egresado_user_id)->first();
+            $tel = $act?->telefono ?: $tel;
 
             $estadoSeguimiento = 'Por contactar';
             if ($act) {
-                $estadoSeguimiento = $act->es_confirmacion_sin_cambios ? 'Confirmación sin cambios' : 'Actualización completa';
+                $estadoSeguimiento = $act->es_confirmacion_sin_cambios ? 'Confirmación sin cambios' : 'Datos confirmados';
             } elseif ($ultimaLlamada) {
                 $estadoSeguimiento = match($ultimaLlamada->tipo_resultado) {
                     'contacto_efectivo' => 'Contacto efectivo',
@@ -576,7 +607,9 @@ class CampanaAsignacionService
                 'nombre_completo' => $egr ? trim($egr->name . ' ' . $egr->apellidos) : 'Egresado/a',
                 'email' => $egr?->email,
                 'programa' => $progNombre,
-                'cohorte' => preg_match('/(20\d{2})/', $egr?->email ?? '', $m) ? $m[1] : 'Egresado',
+                'grupos_formacion' => $meta['grupos'],
+                'grupo_formacion' => $meta['etiqueta'],
+                'cohorte' => $act?->cohorte_egreso ?: 'Por verificar',
                 'telefono' => $tel,
                 'tiene_telefono' => !empty($tel),
                 'estado_seguimiento' => $estadoSeguimiento,
@@ -585,13 +618,14 @@ class CampanaAsignacionService
                 'ultimo_intento_resultado' => $ultimaLlamada?->resultado ?? null,
                 'proxima_accion' => $ultimaLlamada?->fecha_reprogramada ? $ultimaLlamada->fecha_reprogramada->format('d/m/Y H:i') : 'Contactar según disponibilidad',
                 'actualizado' => $act !== null,
-                'res_departamento' => $alumno?->departamento ?: 'CUSCO',
-                'res_provincia' => $alumno?->provincia ?: 'CUSCO',
-                'res_distrito' => $alumno?->distrito ?: 'CUSCO',
+                'res_departamento' => $alumno?->departamento ?: 'No declarado',
+                'res_provincia' => $alumno?->provincia ?: 'No declarado',
+                'res_distrito' => $alumno?->distrito ?: 'No declarado',
             ];
         });
 
         return [
+            'por_grupo' => $this->compararSeguimiento($listaTrabajo, $llamadas, $actualizaciones),
             'docente_user_id' => $docenteUserId,
             'total_asignados' => $totalAsignados,
             'pendientes_contactar' => $pendientesContacto,
@@ -609,10 +643,10 @@ class CampanaAsignacionService
     /**
      * Métricas de actualización territorial real (antes y después de la campaña).
      */
-    public function obtenerMetricasTerritoriales(int $campanaId): array
+    public function obtenerMetricasTerritoriales(int $campanaId, string $grupoFormacion = 'TODOS'): array
     {
         $campana = Campana::findOrFail($campanaId);
-        $padron = $this->obtenerPadronEgresadosElegibles();
+        $padron = $this->obtenerPadronEgresadosElegibles(null, false, $grupoFormacion);
         $totalPadron = $padron->count();
 
         // 1. Estado territorial basal (previo a la campaña)
@@ -627,7 +661,7 @@ class CampanaAsignacionService
             $q->where('campana_id', $campana->id)
               ->orWhere('periodo_campana', $campana->codigo)
               ->orWhere('periodo_campana', $campana->nombre);
-        })->get();
+        })->whereIn('user_id', $padron->pluck('user_id'))->where('estado_verificacion','verificado')->orderByDesc('id')->get()->unique('user_id');
 
         $residenciaConfirmada = 0;
         $residenciaModificada = 0;
@@ -664,11 +698,11 @@ class CampanaAsignacionService
         $provinciasCusco = [];
 
         foreach ($padron as $egr) {
-            $dep = strtoupper($egr['res_departamento'] ?: 'CUSCO');
+            $dep = strtoupper($egr['res_departamento'] ?: 'NO DECLARADO');
             $departamentos[$dep] = ($departamentos[$dep] ?? 0) + 1;
 
             if (str_contains($dep, 'CUSCO')) {
-                $prov = strtoupper($egr['res_provincia'] ?: 'CUSCO');
+                $prov = strtoupper($egr['res_provincia'] ?: 'NO DECLARADO');
                 $provinciasCusco[$prov] = ($provinciasCusco[$prov] ?? 0) + 1;
             }
         }

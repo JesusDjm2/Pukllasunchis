@@ -420,8 +420,8 @@ class SeguimientoIntegracionRolesTest extends TestCase
         $resDashboard->assertStatus(200);
         $resDashboard->assertSee('Seguimiento de Egresados — Puklla en Red');
 
-        // 4. Docente accede al padrón del módulo Puklla en Red
-        $resModulo = $this->actingAs($docente)->get(route('seguimiento-egresados.index'));
+        // 4. Docente accede al padrón del módulo Puklla en Red (redirige a su panel de asignaciones)
+        $resModulo = $this->actingAs($docente)->followingRedirects()->get(route('seguimiento-egresados.index'));
         $resModulo->assertStatus(200);
 
         // 5. Super-admin revoca el rol

@@ -8,6 +8,19 @@ use App\Models\User;
 
 class SeguimientoAutorizacionService
 {
+    public const PERMISOS_DELEGABLES = [
+        'seguimiento-egresados.ver-dashboard',
+        'seguimiento-egresados.ver-perfiles-autorizados',
+        'seguimiento-egresados.actualizar-perfiles-autorizados',
+        'seguimiento-egresados.registrar-entrevistas',
+        'seguimiento-egresados.gestionar-campanas',
+        'seguimiento-egresados.gestionar-grupos',
+        'seguimiento-egresados.ver-analitica',
+        'seguimiento-egresados.exportar-analitica',
+        'seguimiento-egresados.gestionar-casos',
+        'seguimiento-egresados.ver-contactos-autorizados',
+    ];
+
     /**
      * Verifica si el usuario ejerce funciones de Dirección o Coordinación de Empleabilidad.
      */
@@ -16,7 +29,9 @@ class SeguimientoAutorizacionService
         $user = $user ?: auth()->user();
         if (!$user) return false;
 
-        return $user->hasAnyRole(['admin', 'super-admin', 'coordinacion-empleabilidad', 'direccion', 'adminB']);
+        // Misma jerarquía institucional que main. Admin Bolsa no administra expedientes.
+        return $user->hasAnyRole(['admin', 'super-admin'])
+            || ($user->can('seguimiento-egresados.gestionar-campanas') && $user->can('seguimiento-egresados.gestionar-grupos'));
     }
 
     /**
@@ -49,8 +64,11 @@ class SeguimientoAutorizacionService
         $user = $user ?: auth()->user();
         if (!$user) return false;
 
-        return $user->hasAnyRole(['docente', 'tutor', 'encuestador-seguimiento', 'encuestador', 'seguimiento-egresados'])
-            || $user->can('seguimiento-egresados.ver-perfiles-autorizados');
+        return $user->hasRole('seguimiento-egresados')
+            || $user->can('seguimiento-egresados.ver-perfiles-autorizados')
+            || ($user->hasAnyRole(['docente', 'tutor', 'encuestador-seguimiento', 'encuestador'])
+                && method_exists(AsignacionCampana::class, 'scopeActivos')
+                && AsignacionCampana::activos()->where('docente_user_id', $user->id)->exists());
     }
 
     /**
@@ -87,7 +105,11 @@ class SeguimientoAutorizacionService
      */
     public function puedeModificarEgresado(int $targetUserId, ?User $user = null): bool
     {
-        return $this->puedeConsultarEgresado($targetUserId, $user);
+        $user = $user ?: auth()->user();
+        if (!$user) return false;
+        if ((int) $user->id === $targetUserId || $this->esPersonalGestion($user)) return true;
+        return ($this->esDocenteOEntrevistador($user) || $user->can('seguimiento-egresados.actualizar-perfiles-autorizados'))
+            && $this->puedeConsultarEgresado($targetUserId, $user);
     }
 
     /**
@@ -97,7 +119,7 @@ class SeguimientoAutorizacionService
     public function puedeRegistrarLlamada(int $targetUserId, ?User $user = null): bool
     {
         $user = $user ?: auth()->user();
-        if (!$user || $this->esEgresadoOAlumno($user)) {
+        if (!$user) {
             return false;
         }
 
@@ -130,7 +152,8 @@ class SeguimientoAutorizacionService
         $user = $user ?: auth()->user();
         if (!$user) return false;
 
-        return $this->esPersonalGestion($user) || $this->esBienestarSocial($user);
+        return $this->esPersonalGestion($user) || $this->esBienestarSocial($user)
+            || $user->can('seguimiento-egresados.gestionar-casos');
     }
 
     /**
@@ -161,10 +184,7 @@ class SeguimientoAutorizacionService
             return true;
         }
 
-        $rolesPermitidos = [
-            'admin', 'super-admin', 'coordinacion-empleabilidad', 'direccion', 'adminB',
-            'formacion-continua', 'investigador', 'gestor-titulacion'
-        ];
+        $rolesPermitidos = ['admin', 'super-admin'];
 
         return $user->hasAnyRole($rolesPermitidos);
     }
@@ -188,7 +208,7 @@ class SeguimientoAutorizacionService
         $user = $user ?: auth()->user();
         if (!$user) return false;
 
-        return $user->hasAnyRole(['admin', 'super-admin', 'coordinacion-empleabilidad', 'direccion', 'seguimiento-egresados'])
+        return $this->esPersonalGestion($user) || $user->hasRole('seguimiento-egresados')
             || $user->can('seguimiento-egresados.ver-dashboard');
     }
 }

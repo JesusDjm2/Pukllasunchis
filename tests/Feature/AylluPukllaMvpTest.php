@@ -30,7 +30,7 @@ class AylluPukllaMvpTest extends TestCase
 
     public function test_estudiante_fid_puede_navegar_por_todas_las_vistas_de_ayllu_puklla(): void
     {
-        $alumno = Alumno::whereHas('user')->first();
+        $alumno = Alumno::whereHas('user', fn ($q) => $q->where(fn ($s) => $s->whereNull('condicion')->orWhere('condicion', '!=', 'Egresado')))->first();
         $this->assertNotNull($alumno, 'Debe existir al menos un estudiante FID en la BD de desarrollo');
 
         $user = $alumno->user;
@@ -104,7 +104,7 @@ class AylluPukllaMvpTest extends TestCase
 
     public function test_politica_muro_general_decision_a3_estudiante_publica_en_su_comunidad_y_no_en_institucional(): void
     {
-        $alumno = Alumno::whereHas('user')->first();
+        $alumno = Alumno::whereHas('user', fn ($q) => $q->where(fn ($s) => $s->whereNull('condicion')->orWhere('condicion', '!=', 'Egresado')))->first();
         $user = $alumno->user;
 
         $response = $this->actingAs($user)->post(route('ayllu.publicaciones.store'), [
@@ -131,7 +131,7 @@ class AylluPukllaMvpTest extends TestCase
      */
     public function test_estudiante_no_puede_abrir_curso_ajeno_por_id(): void
     {
-        $alumno = Alumno::whereHas('user')->first();
+        $alumno = Alumno::whereHas('user', fn ($q) => $q->where(fn ($s) => $s->whereNull('condicion')->orWhere('condicion', '!=', 'Egresado')))->first();
         $user = $alumno->user;
 
         // Crear un curso en un ciclo distinto y sin matrícula para este estudiante
@@ -170,7 +170,7 @@ class AylluPukllaMvpTest extends TestCase
      */
     public function test_estudiante_no_puede_publicar_ni_enviar_mensajes_en_comunidades_sin_acceso(): void
     {
-        $alumno = Alumno::whereHas('user')->first();
+        $alumno = Alumno::whereHas('user', fn ($q) => $q->where(fn ($s) => $s->whereNull('condicion')->orWhere('condicion', '!=', 'Egresado')))->first();
         $docente = Docente::whereHas('user')->first();
         $user = $alumno->user;
 
@@ -246,7 +246,7 @@ class AylluPukllaMvpTest extends TestCase
      */
     public function test_docente_no_asignado_no_puede_ver_ni_retroalimentar_entregas_de_otro_curso(): void
     {
-        $alumno = Alumno::whereHas('user')->first();
+        $alumno = Alumno::whereHas('user', fn ($q) => $q->where(fn ($s) => $s->whereNull('condicion')->orWhere('condicion', '!=', 'Egresado')))->first();
         $curso = $alumno->cursos()->first() ?? Curso::first();
         $alumno->cursos()->syncWithoutDetaching([$curso->id]);
 
@@ -297,7 +297,7 @@ class AylluPukllaMvpTest extends TestCase
      */
     public function test_estudiante_no_puede_usar_identificador_de_grupo_taqe_ajeno(): void
     {
-        $alumno = Alumno::whereHas('user')->first();
+        $alumno = Alumno::whereHas('user', fn ($q) => $q->where(fn ($s) => $s->whereNull('condicion')->orWhere('condicion', '!=', 'Egresado')))->first();
         $curso = $alumno->cursos()->first() ?? Curso::first();
         $alumno->cursos()->syncWithoutDetaching([$curso->id]);
 
@@ -330,7 +330,7 @@ class AylluPukllaMvpTest extends TestCase
      */
     public function test_visitante_no_puede_ver_portafolio_privado_ni_retroalimentacion_confidencial_en_perfil(): void
     {
-        $alumnos = Alumno::whereHas('user')->take(2)->get();
+        $alumnos = Alumno::whereHas('user', fn ($q) => $q->where(fn ($s) => $s->whereNull('condicion')->orWhere('condicion', '!=', 'Egresado')))->take(2)->get();
         $this->assertGreaterThanOrEqual(2, $alumnos->count(), 'Se requieren al menos 2 alumnos con usuario');
 
         $titular = $alumnos[0];
@@ -400,7 +400,7 @@ class AylluPukllaMvpTest extends TestCase
      */
     public function test_entrega_formativa_y_retroalimentacion_no_alteran_calificaciones_oficiales(): void
     {
-        $alumno = Alumno::whereHas('user')->first();
+        $alumno = Alumno::whereHas('user', fn ($q) => $q->where(fn ($s) => $s->whereNull('condicion')->orWhere('condicion', '!=', 'Egresado')))->first();
         $docente = Docente::whereHas('user')->first();
         $curso = $alumno->cursos()->first() ?? Curso::first();
 
@@ -477,7 +477,7 @@ class AylluPukllaMvpTest extends TestCase
 
     public function test_comunidades_reacciones_chat_calendario_y_perfil_funcionan_integralmente(): void
     {
-        $alumno = Alumno::whereHas('user')->first();
+        $alumno = Alumno::whereHas('user', fn ($q) => $q->where(fn ($s) => $s->whereNull('condicion')->orWhere('condicion', '!=', 'Egresado')))->first();
         $docente = Docente::whereHas('user')->first();
         $user = $alumno->user;
 

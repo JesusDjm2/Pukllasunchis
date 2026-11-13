@@ -347,7 +347,7 @@ class AylluMesaProyectosIntegradoresTest extends TestCase
     {
         Storage::fake('local');
 
-        $alumno = Alumno::whereHas('user')->firstOrFail();
+        $alumno = Alumno::whereHas('user', fn ($q) => $q->where(fn ($s) => $s->whereNull('condicion')->orWhere('condicion', '!=', 'Egresado')))->firstOrFail();
         $cicloAlumno = strtoupper(trim((string) $alumno->ciclo?->nombre)) ?: 'I';
         if (!in_array($cicloAlumno, ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'], true)) {
             $cicloEst = Ciclo::whereIn('nombre', ['I', 'II'])->first();
@@ -645,7 +645,7 @@ class AylluMesaProyectosIntegradoresTest extends TestCase
     {
         Storage::fake('local');
 
-        $alumno = Alumno::whereHas('user')->firstOrFail();
+        $alumno = Alumno::whereHas('user', fn ($q) => $q->where(fn ($s) => $s->whereNull('condicion')->orWhere('condicion', '!=', 'Egresado')))->firstOrFail();
         $cicloIII = Ciclo::whereRaw('UPPER(TRIM(nombre)) = ?', ['III'])->firstOrFail();
         $alumno->update(['ciclo_id' => $cicloIII->id]);
 

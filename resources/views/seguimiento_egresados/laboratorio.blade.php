@@ -1,13 +1,9 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width,initial-scale=1" name="viewport"/>
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Puklla en Red · Laboratorio de Inteligencia Institucional y Observatorio Territorial</title>
-    <link rel="shortcut icon" type="image/x-icon" href="{{ asset('img/logoiesp.ico') }}">
-    <style>
-        :root {
+@extends('layouts.seguimiento')
+@section('titulo','Red Puklla de Egresados')
+@section('contenido')
+<style>@scope (.seguimiento-panel) {
+
+        :scope {
             --puklla-crema: #FAF8F5;
             --puklla-ocre: #C88219;
             --puklla-granate: #832128;
@@ -24,7 +20,7 @@
             --radius: 12px;
         }
         * { box-sizing: border-box; }
-        html, body {
+        :scope, :scope {
             margin: 0;
             min-height: 100%;
             font: 14px/1.5 Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
@@ -527,9 +523,14 @@
             animation: spin 0.8s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
-    </style>
-</head>
-<body>
+
+}</style>
+<div class="seguimiento-panel">
+@include('seguimiento_egresados.partials.grupo_formacion')
+@include('seguimiento_egresados.partials.comparativa_grupos')
+@if(app(App\Services\SeguimientoEgresado\SeguimientoAutorizacionService::class)->esPersonalGestion())
+<p style="padding:12px"><a href="{{ route('seguimiento.observatorio-conectado') }}">Observatorio conectado · Residencia, trabajo y comunidades</a></p>
+@endif
 
 <div id="loading-overlay">
     <div style="text-align:center;">
@@ -540,39 +541,7 @@
 
 <div id="app-layout">
     <!-- Sidebar Navigation -->
-    <aside class="sidebar">
-        <div class="brand-box">
-            <img src="{{ asset('img/logoiesp.ico') }}" alt="Pukllasunchis">
-            <div>
-                <div class="brand-title">Puklla en Red</div>
-                <div class="brand-subtitle">EESP Pukllasunchis</div>
-            </div>
-        </div>
 
-        <div class="nav-label">Módulos de Seguimiento</div>
-        <a href="{{ route('seguimiento.index') }}" class="nav-item">
-            <span class="nav-icon">👥</span>
-            <span>Padrón de Egresados</span>
-        </a>
-        <a href="{{ route('seguimiento.laboratorio') }}" class="nav-item active">
-            <span class="nav-icon">📊</span>
-            <span>Laboratorio Analítico</span>
-        </a>
-        <a href="#observatorio" class="nav-item" onclick="scrollToSection('observatorio')">
-            <span class="nav-icon">🗺️</span>
-            <span>Observatorio Territorial</span>
-        </a>
-        <a href="#longitudinal" class="nav-item" onclick="scrollToSection('longitudinal')">
-            <span class="nav-icon">📈</span>
-            <span>Trayectoria Longitudinal</span>
-        </a>
-
-        <div class="nav-label">Intranet Institucional</div>
-        <a href="{{ route('index') }}" class="nav-item">
-            <span class="nav-icon">↩</span>
-            <span>Volver a la Intranet</span>
-        </a>
-    </aside>
 
     <!-- Main Workspace -->
     <div class="main-content">
@@ -642,7 +611,7 @@
                     <div class="u-count" id="u-respondientes">{{ $universos['respondientes'] ?? 0 }}</div>
                     <div class="u-subtitle">
                         <span>Fichas con info laboral</span>
-                        <span class="badge badge-green">{{ $universos['tasa_respuesta_pct'] ?? 0 }}% Tasa Resp.</span>
+                        <span class="badge badge-green">{{ isset($universos['tasa_respuesta_pct']) ? $universos['tasa_respuesta_pct'].' % de respuesta sobre padrón' : 'Respuesta no calculable' }}</span>
                     </div>
                 </div>
                 <div class="universe-card c-longitudinal">
@@ -966,6 +935,10 @@
     </div> <!-- /main-content -->
 </div> <!-- /app-layout -->
 
+
+</div>
+@endsection
+@push('scripts')
 <script>
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
@@ -985,7 +958,7 @@
         const cohorte = document.getElementById('filtro-cohorte').value;
         const docencia = document.getElementById('filtro-docencia').value;
 
-        const filtros = {};
+        const filtros = {grupo_formacion: document.getElementById('grupo-formacion-global').value};
         if (prog) filtros.programa = prog;
         if (cohorte) filtros.cohorte = cohorte;
         if (docencia) filtros.docencia_directa = docencia;
@@ -1014,6 +987,8 @@
                     document.getElementById('u-longitudinales').innerText = data.universos.longitudinales_multiperiodo;
                 }
 
+                document.getElementById('comparativa-grupos')?.setAttribute('hidden','');
+                // Las tablas de cohorte se recalculan al recargar; no mostrar corte anterior bajo filtros nuevos.
                 // Renderizar matriz actualizada
                 renderizarMatriz(data.matriz);
             }
@@ -1139,6 +1114,7 @@
         const docencia = document.getElementById('filtro-docencia').value;
 
         let url = "{{ route('seguimiento.analitica.exportar') }}?fila=" + encodeURIComponent(fila) + "&columna=" + encodeURIComponent(columna) + "&formato=" + encodeURIComponent(formato);
+        url += '&grupo_formacion=' + encodeURIComponent(document.getElementById('grupo-formacion-global').value);
         if (prog) url += "&programa=" + encodeURIComponent(prog);
         if (cohorte) url += "&cohorte=" + encodeURIComponent(cohorte);
         if (docencia) url += "&docencia_directa=" + encodeURIComponent(docencia);
@@ -1153,5 +1129,4 @@
         @endif
     });
 </script>
-</body>
-</html>
+@endpush

@@ -35,7 +35,7 @@ class Caso extends Model
             return $this->proposito ?: '';
         }
 
-        if ($consultante && $consultante->hasAnyRole(['bienestar', 'coordinacion-empleabilidad', 'admin', 'super-admin'])) {
+        if ($consultante && app(\App\Services\SeguimientoEgresado\SeguimientoAutorizacionService::class)->puedeVerNotasConfidencialesBienestar($consultante)) {
             return $this->proposito ?: '';
         }
 

@@ -91,6 +91,7 @@ class AsignacionCampana extends Model
 
         $hoy = now()->toDateString();
         foreach ($asignaciones as $asig) {
+            if (!$asig->campana) continue;
             if ($asig->campana) {
                 $c = $asig->campana;
                 if (!in_array(strtolower($c->estado), ['activo', 'activa'], true)) {

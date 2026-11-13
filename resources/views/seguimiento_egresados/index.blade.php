@@ -234,6 +234,7 @@
     </style>
 </head>
 <body>
+@include('seguimiento_egresados.partials.grupo_formacion')
 <div id="root">
     <aside class="sidebar">
         <div class="brand">
@@ -350,22 +351,11 @@
         ]
     };
 
-    const SOURCE = {
-        "padron": [
-            {"id":"PAD-001","nombre":"Lucía Quispe Huamán","programa":"Inicial","ingreso":"2019-I","egreso":"2024","situacion":"Bachiller","contacto":"Contactado","fuente":"Padrón FID · demostración","encuesta":"ENC-001","link":"Vinculación simulada","empleo_hist":"Trabaja"},
-            {"id":"PAD-002","nombre":"Marco Huamán Flores","programa":"Primaria EIB","ingreso":"2018-I","egreso":"2023","situacion":"Bachiller","contacto":"Contactado","fuente":"Padrón FID · demostración","encuesta":"ENC-002","link":"Vinculación simulada","empleo_hist":"No trabaja"},
-            {"id":"PAD-003","nombre":"Elena Ccama Torres","programa":"Inicial","ingreso":"2020-I","egreso":"2025","situacion":"Egresada","contacto":"Contactado","fuente":"Padrón FID · demostración","encuesta":"ENC-003","link":"Vinculación simulada","empleo_hist":"Trabaja"}
-        ],
-        "encuesta": [
-            {"id":"ENC-001","nombre":"Lucía Quispe Huamán","programa":"Inicial","egreso":"2024","academica":"Bachiller","trabaja":"Trabaja","insercion":"En educación","sector":"Privado/particular","practica":"Docencia directa","cargo":"Docente de Inicial","lugar_trabajo":"Cusco, Cusco","necesidades_archivo":"Planificación y evaluación formativa","aporte_archivo":"Juego y participación de las familias","sugerencias_archivo":"Intercambio de experiencias en lengua quechua","match":"Verificado","padron_id":"PAD-001"},
-            {"id":"ENC-002","nombre":"Marco Huamán Flores","programa":"Primaria EIB","egreso":"2023","academica":"Bachiller","trabaja":"No trabaja","insercion":"No trabaja","sector":"Indeterminado","practica":"Otros sectores","cargo":"","lugar_trabajo":"","necesidades_archivo":"Apoyo en contratación docente","aporte_archivo":"Trabajo con escuelas rurales","sugerencias_archivo":"","match":"Verificado","padron_id":"PAD-002"},
-            {"id":"ENC-003","nombre":"Elena Ccama Torres","programa":"Inicial","egreso":"2025","academica":"Egresada","trabaja":"Trabaja","insercion":"En educación","sector":"Público/estatal","practica":"Auxiliar / apoyo pedagógico","cargo":"Auxiliar de Educación Inicial","lugar_trabajo":"Sicuani, Canchis, Cusco","necesidades_archivo":"Investigación y titulación","aporte_archivo":"Materiales lúdicos","sugerencias_archivo":"","match":"Verificado","padron_id":"PAD-003"}
-        ],
-        "fuente": "300 egresados institucionales desde la BD de EESP Pukllasunchis + 3 casos base V8"
-    };
+    const SOURCE = {padron: [], encuesta: [], fuente: 'Población institucional filtrada; sin registros de demostración'};
 </script>
 
 {{-- Incluir scripts interactivos del Simulador V8 integrados con Laravel --}}
+<script src="{{ asset('js/seguimiento-grupos.js') }}"></script>
 <script>
 (()=>{'use strict';
 const $=s=>document.querySelector(s);
@@ -458,6 +448,7 @@ if (Array.isArray(LLAMADAS_DB)) {
     state.calls = LLAMADAS_DB.map(l => ({
         id: l.user_id ? ('REAL-' + l.user_id) : (l.identificador_temporal || 'ID'),
         result: l.resultado,
+        efectivo: Boolean(l.es_contacto_efectivo),
         comment: l.observaciones,
         at: new Date(l.fecha_hora || l.created_at).toLocaleString('es-PE')
     }));
@@ -472,30 +463,10 @@ if (Array.isArray(ACCESOS_DB)) {
     }));
 }
 
-// Población de egresados combinada
-const SURVEY = SOURCE.encuesta;
-const ROSTER = [...SOURCE.padron];
-if (Array.isArray(INSTITUTIONAL_EGRESADOS)) {
-    INSTITUTIONAL_EGRESADOS.forEach(p => {
-        ROSTER.push({
-            id: p.id,
-            nombre: p.nombre,
-            programa: p.programa,
-            egreso: p.egreso,
-            periodo_referencia: p.periodo_referencia,
-            egreso_confirmado: true,
-            correo: p.correo,
-            telefono: p.telefono,
-            telefono_alt: p.telefono_alt,
-            direccion_contacto: p.direccion_contacto,
-            res_departamento: p.res_departamento,
-            res_provincia: p.res_provincia,
-            res_distrito: p.res_distrito,
-            situacion: p.estado_academico,
-            fuente: p.origen
-        });
-    });
-}
+// Población exclusivamente institucional: sin ejemplos FID mezclados con PPD.
+const SURVEY = [];
+const ROSTER = window.PukllaGrupos.crearPadron(INSTITUTIONAL_EGRESADOS);
+state.selected = ROSTER[0]?.id || null;
 
 const surveyById = Object.fromEntries(SURVEY.map(p=>[p.id,p]));
 const rosterById = Object.fromEntries(ROSTER.map(p=>[p.id,p]));
@@ -509,7 +480,7 @@ const CONTACT_EXAMPLES = {
     'ENC-003':{correo:'elena@ejemplo.invalid',telefono:'900 000 003',whatsapp:'900 000 003',direccion_contacto:'San Sebastián, Cusco'}
 };
 
-const ASSIGNED = ['PAD-001','PAD-002'];
+const ASSIGNED = [];
 const contactAuthorized = p => !!p && ['coordinacion','direccion','encuestador'].includes(state.role);
 const canEdit = () => ['coordinacion','encuestador','egresado'].includes(state.role);
 const stat = (a,n,desc,cls='c1') => `<div class="stat ${cls}"><div class="label">${a}</div><div class="number">${n}</div><div class="foot">${desc}</div></div>`;
@@ -592,9 +563,9 @@ function formValues(p){
         egreso: p.egreso || s.egreso || '',
         titulo_bach: '',
         titulo_lic: '',
-        res_departamento: p.res_departamento || 'CUSCO',
-        res_provincia: p.res_provincia || 'CUSCO',
-        res_distrito: p.res_distrito || 'CUSCO',
+        res_departamento: p.res_departamento || '',
+        res_provincia: p.res_provincia || '',
+        res_distrito: p.res_distrito || '',
         direccion_contacto: p.direccion_contacto || contactDemo.direccion_contacto || '',
         whatsapp: p.telefono || contactDemo.whatsapp || '',
         correo: p.correo || contactDemo.correo || '',
@@ -622,17 +593,17 @@ function panel(){
     const all = ROSTER.map(p => ({p, v:formValues(p)}));
     const updated = state.history.length;
     const employed = all.filter(({v}) => v.trabaja === 'Trabaja').length;
-    const phones = state.calls.filter(c => c.result === 'Entrevista completa' || c.result === 'Entrevista aceptada').length;
+    const phones = new Set(state.calls.filter(c => c.efectivo).map(c => c.id)).size;
 
     return hero('UNIDAD DE BIENESTAR Y EMPLEABILIDAD', 'Seguimiento de egresados', 'Panel unificado conectado con la base de datos de la escuela EESPP Pukllasunchis.') +
     `<div class="notice">
-        <strong>✓ Conectado a la base de datos institucional:</strong> ${ROSTER.length} egresados disponibles (${INSTITUTIONAL_EGRESADOS.length} reales de la BD <code>puklla</code> + casos de prueba). Los cambios se guardan directamente en MySQL.
+        <strong>✓ Conectado a la base de datos institucional:</strong> ${ROSTER.length} egresados disponibles del grupo seleccionado y del alcance autorizado. Los cambios se guardan directamente en MySQL.
     </div>
     <div class="cards">
         ${stat('Egresados en sistema', ROSTER.length, 'Registros institucionales activos', 'c1')}
         ${stat('Actualizaciones registradas', updated, 'Fichas actualizadas en MySQL', 'c2')}
-        ${stat('Casos de apoyo abiertos', state.actions.length, 'Seguimiento institucional', 'c3')}
-        ${stat('Entrevistas telefónicas', phones, 'Recuperación de cobertura', 'c4')}
+        ${stat('Casos de apoyo abiertos', state.actions.filter(a => !['Resuelto','Cerrado','Concluido'].includes(a.estado)).length, 'Seguimiento institucional', 'c3')}
+        ${stat('Personas contactadas', phones, 'Recuperación de cobertura', 'c4')}
     </div>
     <div class="two">
         <div class="panel">
@@ -699,6 +670,7 @@ function shortField(k, lab, kind='text', opts=[]){
 
 function actualizacionAgil(){
     const p = locate(state.selected) || ROSTER[0];
+    if (!p) return '<div class="panel">No hay egresados disponibles para este grupo y alcance.</div>';
     state.current = formValues(p);
     const v = state.current;
     const isTel = state.formMode === 'telefono';
@@ -749,7 +721,7 @@ function actualizacionAgil(){
         <div class="v8-head">01 · Contacto y titulación</div>
         <div class="v8-two">
             ${shortField('telefono', 'Celular o WhatsApp actual', 'tel')}
-            ${shortField('correo', 'Correo electrónico', 'email')}
+            ${shortField('correo', 'Confirma tu correo electrónico (coloca el correo que usas más seguido)', 'email')}
         </div>
         <div class="v8-two">
             ${shortField('titulo_lic', '¿Cuál es tu situación de licenciatura?', 'select', ['Aún no iniciado', 'En trámite', 'Licenciado/a', 'Necesito asesoría'])}
@@ -898,6 +870,7 @@ async function saveQuick(ev){
             body: JSON.stringify(payload)
         });
         const json = await res.json();
+        if (!res.ok || !json.success) throw new Error(json.message || json.error || 'No se pudo guardar la actualización.');
 
         $('#v8-fast-notice').innerHTML = `
             <div class="notice" style="margin-top:14px;background:#e9f9f0;color:#126c36;border:1px solid #c2eccd;">
@@ -910,7 +883,7 @@ async function saveQuick(ev){
         console.warn('Error sincronizando con backend', err);
         $('#v8-fast-notice').innerHTML = `
             <div class="notice" style="margin-top:14px;">
-                <strong>✓ Guardado en memoria local:</strong> ${changed.length} campos actualizados.
+                <strong>No se guardó en la institución.</strong> Conserva tus respuestas en esta pantalla y vuelve a intentar.
             </div>
         `;
     }
@@ -918,6 +891,7 @@ async function saveQuick(ev){
 
 async function confirmarSinCambios() {
     const p = locate(state.selected) || ROSTER[0];
+    if (!p) return '<div class="panel">No hay egresados disponibles para este grupo y alcance.</div>';
     if (!p) return;
 
     const noticeEl = $('#v8-fast-notice');
@@ -1573,7 +1547,7 @@ function llamadas(){
                         const c = state.calls.filter(x => x.id === p.id).slice(-1)[0];
                         return `<tr>
                             <td><b>${esc(p.nombre)}</b><span class="mutedline">${esc(p.id)}</span></td>
-                            <td>${esc(p.programa)}</td>
+                            <td>${esc(p.grupo_formacion || 'Por verificar')} · ${esc(p.programa)}</td>
                             <td>${esc(p.telefono || 'Sin teléfono')}</td>
                             <td>${c ? esc(c.result) + ' (' + esc(c.at) + ')' : 'Sin intentos'}</td>
                             <td>
@@ -1658,6 +1632,7 @@ function inteligencia(){
 // ---------------- MI FICHA ----------------
 function ficha(){
     const p = locate(state.selected) || ROSTER[0];
+    if (!p) return '<div class="panel">No hay egresados disponibles para este grupo y alcance.</div>';
     const v = formValues(p);
     const hist = state.history.filter(x => x.id === keyOf(p));
 
@@ -1671,7 +1646,7 @@ function ficha(){
             <h2>Datos vigentes en el sistema</h2>
             <table>
                 <tr><td><b>Nombre:</b></td><td>${esc(p.nombre)}</td></tr>
-                <tr><td><b>Programa:</b></td><td>${esc(p.programa)}</td></tr>
+                <tr><td><b>Programa:</b></td><td>${esc(p.grupo_formacion || 'Por verificar')} · ${esc(p.programa)}</td></tr>
                 <tr><td><b>Año / Cohorte:</b></td><td>${esc(p.egreso)}</td></tr>
                 <tr><td><b>Condición académica:</b></td><td>${esc(p.situacion || 'Egresado/a')}</td></tr>
                 <tr><td><b>Situación laboral:</b></td><td>${esc(v.trabaja || 'Por actualizar')}</td></tr>
@@ -1894,7 +1869,7 @@ function render(){
                             ${ROSTER.slice(0, 50).map(p => `
                                 <tr>
                                     <td><b>${esc(p.nombre)}</b><span class="mutedline">${esc(p.id)}</span></td>
-                                    <td>${esc(p.programa)}</td>
+                                    <td>${esc(p.grupo_formacion || 'Por verificar')} · ${esc(p.programa)}</td>
                                     <td>${esc(p.egreso || 'Por verificar')}</td>
                                     <td><span class="chip ok">${esc(p.situacion || 'Egresado')}</span></td>
                                     <td>
@@ -1941,7 +1916,7 @@ function filterSearch(txt){
     tbody.innerHTML = filtered.slice(0, 50).map(p => `
         <tr>
             <td><b>${esc(p.nombre)}</b><span class="mutedline">${esc(p.id)}</span></td>
-            <td>${esc(p.programa)}</td>
+            <td>${esc(p.grupo_formacion || 'Por verificar')} · ${esc(p.programa)}</td>
             <td>${esc(p.egreso || 'Por verificar')}</td>
             <td><span class="chip ok">${esc(p.situacion || 'Egresado')}</span></td>
             <td><button class="btn sm outline" onclick="APP.selectQuick('${p.id}')">Ver / Actualizar</button></td>

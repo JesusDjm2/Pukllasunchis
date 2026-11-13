@@ -78,177 +78,17 @@ class SeguimientoEgresadoController extends Controller
      */
     public function index(Request $request)
     {
-        if (!auth()->check()) {
-            return redirect()->guest(route('login'));
-        }
-
-        $authUser = auth()->user();
-
-        // Control de acceso al módulo: personal de gestión, usuarios con rol seguimiento-egresados o egresados a su ficha
-        if (!$this->autorizacionService->puedeAccederDashboard($authUser) && !$this->esEgresadoOAlumno($authUser)) {
-            abort(403, 'No tienes autorización para acceder al módulo de seguimiento de egresados.');
-        }
-
-        // 1. Obtener egresados reales según alcance de autorización
-        $egresadosQuery = User::query()
-            ->where('condicion', 'Egresado')
-            ->with(['alumno.programa', 'seguimientoTitulacion.estadoTitulacion'])
-            ->orderBy('apellidos')
-            ->orderBy('name');
-
-        // Si es egresado/alumno sin rol de seguimiento ni gestión, restringir estrictamente a su propio expediente
-        if ($this->esEgresadoOAlumno($authUser) && !$this->esPersonalGestion($authUser) && !$authUser->hasRole('seguimiento-egresados')) {
-            $egresadosQuery->where('id', $authUser->id);
-        }
-        // Si es encuestador o docente con rol seguimiento-egresados o asignaciones (sin rol directivo de gestión), filtrar SOLO a los egresados asignados en sus grupos activos y campañas vigentes
-        elseif (($authUser->hasRole('seguimiento-egresados') || $this->esEncuestador($authUser) || $this->esEquipoDocente($authUser)) && !$this->esPersonalGestion($authUser)) {
-            $gruposActivos = GrupoEntrevistador::with('campana')->where('estado', 'activo')->get();
-            $hoy = now()->toDateString();
-            $gruposVigentes = $gruposActivos->filter(function ($g) use ($hoy) {
-                if ($g->campana_id && $g->campana) {
-                    if (!in_array(strtolower($g->campana->estado), ['activo', 'activa'], true)) return false;
-                    if ($g->campana->fecha_inicio && $g->campana->fecha_inicio > $hoy) return false;
-                    if ($g->campana->fecha_fin && $g->campana->fecha_fin < $hoy) return false;
-                }
-                return true;
-            });
-
-            $asignadosGrupoIds = $gruposVigentes->filter(fn ($g) => in_array($authUser->id, (array)$g->entrevistadores))
-                ->flatMap(fn ($g) => (array)$g->egresados_ids)
-                ->map(fn ($id) => is_string($id) && str_starts_with($id, 'REAL-') ? (int)str_replace('REAL-', '', $id) : (int)$id)
-                ->all();
-
-            $asignadosCampanaIds = AsignacionCampana::activos()
-                ->where('docente_user_id', $authUser->id)
-                ->whereHas('campana', function ($q) use ($hoy) {
-                    $q->whereIn('estado', ['activo', 'activa'])
-                      ->where(function ($sub) use ($hoy) {
-                          $sub->whereNull('fecha_inicio')->orWhere('fecha_inicio', '<=', $hoy);
-                      })
-                      ->where(function ($sub) use ($hoy) {
-                          $sub->whereNull('fecha_fin')->orWhere('fecha_fin', '>=', $hoy);
-                      });
-                })
-                ->pluck('egresado_user_id')
-                ->all();
-
-            $asignadosIds = array_values(array_unique(array_merge($asignadosGrupoIds, $asignadosCampanaIds)));
-
-            $egresadosQuery->whereIn('id', $asignadosIds ?: [0]);
-        } else {
-            $egresadosQuery->limit(300);
-        }
-
-        $egresadosReales = $egresadosQuery->get()->map(function ($u) {
-            $alumno = $u->alumno;
-            $tit = $u->seguimientoTitulacion;
-
-            $cohorte = 'Por verificar';
-            if ($tit && $tit->periodo_estudios) {
-                $cohorte = $tit->periodo_estudios;
-            } elseif (preg_match('/(20\d{2})/', $u->email, $m)) {
-                $cohorte = $m[1];
-            }
-
-            $progNombre = 'Programa por verificar';
-            if ($alumno && $alumno->programa) {
-                $progNombre = str_replace('Programa ', '', $alumno->programa->nombre);
-            }
-
-            return [
-                'id' => 'REAL-' . $u->id,
-                'user_id' => $u->id,
-                'nombre' => trim($u->name . ' ' . $u->apellidos),
-                'programa' => $progNombre,
-                'egreso' => $cohorte,
-                'periodo_referencia' => $cohorte,
-                'egreso_confirmado' => true,
-                'correo' => $u->email,
-                'telefono' => $alumno?->numero ?: '',
-                'telefono_alt' => $alumno?->numero_referencia ?: '',
-                'direccion_contacto' => $alumno?->direccion ?: '',
-                'res_departamento' => $alumno?->departamento ?: 'CUSCO',
-                'res_provincia' => $alumno?->provincia ?: 'CUSCO',
-                'res_distrito' => $alumno?->distrito ?: 'CUSCO',
-                'estado_academico' => $tit?->estadoTitulacion?->nombre ?: 'Egresado/a',
-                'origen' => 'Base institucional EESPP Pukllasunchis'
-            ];
-        });
-
-        // 2. Obtener actualizaciones según alcance
-        $actualizacionesQuery = Actualizacion::latest();
-        if ($this->esEgresadoOAlumno($authUser)) {
-            $actualizacionesQuery->where('user_id', $authUser->id);
-        }
-        $actualizacionesDb = $actualizacionesQuery->get()->keyBy(function ($item) {
-            return $item->identificador_temporal ?: ('REAL-' . $item->user_id);
-        });
-
-        // 3. Casos según alcance
-        $casosQuery = Caso::latest();
-        if ($this->esEgresadoOAlumno($authUser)) {
-            $casosQuery->where('user_id', $authUser->id);
-        }
-        $casosDb = $casosQuery->get();
-
-        // 4. Llamadas según alcance
-        $llamadasQuery = Llamada::latest();
-        if ($this->esEgresadoOAlumno($authUser)) {
-            $llamadasQuery->where('user_id', $authUser->id);
-        }
-        $llamadasDb = $llamadasQuery->get();
-
-        // 5. Auditoría de contactos (oculta para egresados/alumnos)
-        $accesosContactoDb = $this->esEgresadoOAlumno($authUser) ? collect([]) : AccesoContacto::latest()->limit(50)->get();
-
-        // 6. Grupos de entrevistadores (oculta para egresados/alumnos)
-        $gruposDb = $this->esEgresadoOAlumno($authUser) ? collect([]) : GrupoEntrevistador::latest()->get();
-
-        // 7. Entrevistadores disponibles (oculta para egresados/alumnos)
-        $entrevistadoresDisponibles = $this->esEgresadoOAlumno($authUser)
-            ? collect([])
-            : User::whereHas('roles', fn ($q) => $q->whereIn('name', ['docente', 'tutor', 'admin', 'alumno', 'encuestador-seguimiento']))
-                ->orderBy('apellidos')
-                ->limit(150)
-                ->get()
-                ->map(fn ($u) => ['id' => $u->id, 'nombre' => trim($u->name . ' ' . $u->apellidos), 'email' => $u->email]);
-
-        // 8. Catálogo geográfico
-        $departamentos = Departamento::orderBy('nombre')->pluck('nombre');
-        $provinciasCusco = Provincia::whereHas('departamento', function ($q) {
-            $q->where('nombre', 'like', '%Cusco%');
-        })->orderBy('nombre')->pluck('nombre');
-        $distritosCusco = Distrito::whereHas('provincia', function ($q) {
-            $q->where('nombre', 'like', '%Cusco%');
-        })->orderBy('nombre')->pluck('nombre');
-
-        // 9. Episodios laborales según alcance
-        $episodiosQuery = EpisodioLaboral::latest();
-        if ($this->esEgresadoOAlumno($authUser)) {
-            $episodiosQuery->where('user_id', $authUser->id);
-        }
-        $episodiosDb = $episodiosQuery->get();
-
-        return view('seguimiento_egresados.index', compact(
-            'egresadosReales',
-            'actualizacionesDb',
-            'casosDb',
-            'llamadasDb',
-            'accesosContactoDb',
-            'gruposDb',
-            'entrevistadoresDisponibles',
-            'departamentos',
-            'provinciasCusco',
-            'distritosCusco',
-            'episodiosDb'
-        ));
+        if (!auth()->check()) return redirect()->guest(route('login'));
+        $request->validate(['grupo_formacion'=>'nullable|in:TODOS,FID,PPD,COMPARAR,POR_VERIFICAR']);
+        $u=auth()->user();
+        $filtro=$request->only('grupo_formacion');
+        if ($this->autorizacionService->esPersonalGestion($u)) return redirect()->route('seguimiento.panel.coordinacion',$filtro);
+        if ($this->autorizacionService->esDocenteOEntrevistador($u)) return redirect()->route('seguimiento-egresados.mis-asignaciones',$filtro);
+        if ($u->condicion==='Egresado' || $u->hasRole('egresado')) return redirect()->route('seguimiento.mi-espacio');
+        if ($this->autorizacionService->puedeAccederLaboratorio($u)) return redirect()->route('seguimiento.laboratorio',$filtro);
+        abort(403,'Sin función autorizada de seguimiento.');
     }
 
-    /**
-     * Guardar actualización de ficha con resolución estricta de identidad (R01),
-     * confirmación rápida «sin cambios» (R02), persistencia longitudinal (R03)
-     * e inmunidad anti-suplantación en accesos públicos sin token (Fase 1C).
-     */
     public function guardarActualizacion(Request $request)
     {
         // -------------------------------------------------------------
@@ -323,6 +163,7 @@ class SeguimientoEgresadoController extends Controller
                 $procedencia = 'intranet_entrevistador';
                 $registradoPor = $authUser->name;
             } else {
+                abort_unless($targetUserId && $this->autorizacionService->puedeModificarEgresado($targetUserId, $authUser), 403);
                 $procedencia = 'intranet_gestion';
                 $registradoPor = $authUser->name;
             }
@@ -509,6 +350,7 @@ class SeguimientoEgresadoController extends Controller
                         ->where('es_actual', true)
                         ->count();
 
+                    app(\App\Services\SeguimientoEgresado\PerfilTerritorialService::class)->desdeActualizacion($actualizacion);
                     return response()->json([
                         'success' => true,
                         'tipo' => 'confirmacion_sin_cambios',
@@ -735,7 +577,8 @@ class SeguimientoEgresadoController extends Controller
                     ->where('es_actual', true)
                     ->count();
 
-                return response()->json([
+                app(\App\Services\SeguimientoEgresado\PerfilTerritorialService::class)->desdeActualizacion($actualizacion);
+                    return response()->json([
                     'success' => true,
                     'tipo' => 'actualizacion_completa',
                     'message' => 'Actualización guardada correctamente en la base institucional.',
@@ -894,7 +737,7 @@ class SeguimientoEgresadoController extends Controller
             return response()->json(['success' => false, 'error' => 'No autenticado.'], 401);
         }
 
-        if ($this->esEgresadoOAlumno()) {
+        if ($this->esEgresadoOAlumno() && !$this->autorizacionService->esPersonalGestion() && !$this->autorizacionService->esDocenteOEntrevistador()) {
             return response()->json([
                 'success' => false,
                 'error' => 'No tienes autorización para registrar llamadas.'
@@ -919,6 +762,13 @@ class SeguimientoEgresadoController extends Controller
             ], 403);
         }
 
+        $request->validate(['campana_id'=>'required|integer|exists:egresado_campanas,id','tipo_resultado'=>'nullable|in:intento_sin_respuesta,numero_equivocado,tercero_conocido,entrevista_programada,contacto_efectivo,actualizacion_completa,actualizacion_parcial,confirmacion_sin_cambios,rechazo_participacion,requiere_verificacion,requiere_derivacion','comment'=>'nullable|string|max:4000','fecha_reprogramada'=>'required_if:tipo_resultado,entrevista_programada|nullable|date|after:now','motivo_derivacion'=>'nullable|string|max:2000']);
+        abort_unless($userId && $this->autorizacionService->puedeRegistrarLlamada($userId),403);
+        abort_unless(User::whereKey($userId)->where('condicion','Egresado')->exists(),404);
+        return DB::transaction(function () use ($request,$userId,$idTemporal) {
+        $campanaLlamada=Campana::lockForUpdate()->findOrFail($request->campana_id);
+        abort_unless(in_array(strtolower($campanaLlamada->estado),['activo','activa']) && (!$campanaLlamada->fecha_inicio || $campanaLlamada->fecha_inicio<=now()->toDateString()) && (!$campanaLlamada->fecha_fin || $campanaLlamada->fecha_fin>=now()->toDateString()),422,'Campaña fuera de vigencia.');
+        abort_unless($this->autorizacionService->esPersonalGestion() || AsignacionCampana::esDocenteAsignado(auth()->id(),$userId,(int)$request->campana_id),403);
         $resultado = $request->input('result', 'No contesta');
         $tipoResultado = $request->input('tipo_resultado');
         if (!$tipoResultado) {
@@ -940,16 +790,10 @@ class SeguimientoEgresadoController extends Controller
             'contacto_efectivo', 'entrevista_programada', 'actualizacion_completa',
             'actualizacion_parcial', 'confirmacion_sin_cambios', 'rechazo_participacion'
         ];
-        $esEfectivo = $request->boolean('es_contacto_efectivo') || in_array($tipoResultado, $contactosEfectivosTipos, true);
+        $esEfectivo = in_array($tipoResultado, $contactosEfectivosTipos, true);
 
         $campanaId = $request->input('campana_id');
-        $esEnsayo = $request->boolean('es_ensayo');
-        if ($campanaId && !$esEnsayo) {
-            $c = Campana::find($campanaId);
-            if ($c && $c->es_ensayo) {
-                $esEnsayo = true;
-            }
-        }
+        $esEnsayo = (bool)$campanaLlamada->es_ensayo;
 
         $requiereDerivacion = $request->boolean('requiere_derivacion') || $tipoResultado === 'requiere_derivacion';
         $motivoDerivacion = $request->input('motivo_derivacion');
@@ -1003,6 +847,7 @@ class SeguimientoEgresadoController extends Controller
             'success' => true,
             'llamada_id' => $llamada->id
         ]);
+        });
     }
 
     /**

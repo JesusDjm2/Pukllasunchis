@@ -1,6 +1,9 @@
 @extends('ayllu.layout')
 
 @section('ayllu_contenido')
+@if($esMiPerfil && auth()->user()->condicion === 'Egresado')
+<div class="ayllu-card p-3"><a class="btn btn-primary" href="{{ route('seguimiento.mi-espacio') }}">Mi espacio · Actualizar perfil, trayectoria y territorio</a></div>
+@endif
 {{-- Encabezado del Perfil Intercultural EIB --}}
 <div class="ayllu-card p-4" style="border-top: 4px solid #9e3d22;">
     <div class="d-flex flex-wrap justify-content-between align-items-start" style="gap: 1rem;">
@@ -61,7 +64,7 @@
                     @csrf
                     <div class="form-row">
                         <div class="form-group col-md-7 mb-2">
-                            <label class="small font-weight-bold mb-1">Saludo intercultural o lema pedagógico</label>
+                            <label class="small font-weight-bold mb-1">Regala a la comunidad una frase o saludo para tu perfil (opcional)</label>
                             <input type="text" name="saludo_intercultural" class="form-control form-control-sm" maxlength="180" value="{{ $perfilAyllu->saludo_intercultural }}">
                         </div>
                         <div class="form-group col-md-5 mb-2">

@@ -27,6 +27,8 @@ class SeguimientoCampanaController extends Controller
      */
     public function gestion(Request $request)
     {
+        $request->validate(['grupo_formacion' => 'nullable|in:TODOS,FID,PPD,COMPARAR,POR_VERIFICAR']);
+        $grupoFormacion = app(\App\Services\SeguimientoEgresado\GrupoFormacionService::class)->normalizar($request->query('grupo_formacion'));
         if (!auth()->check()) {
             return redirect()->guest(route('login'));
         }
@@ -41,15 +43,15 @@ class SeguimientoCampanaController extends Controller
         $campanaActual = $campanas->firstWhere('id', $campanaId) ?: $campanas->first();
 
         $docentesElegibles = $this->asignacionService->obtenerDocentesElegibles();
-        $diagnosticoPadron = $this->asignacionService->diagnosticarPadron();
-        $padronEgresados = $this->asignacionService->obtenerPadronEgresadosElegibles($campanaActual?->id);
+        $diagnosticoPadron = $this->asignacionService->diagnosticarPadron($grupoFormacion);
+        $padronEgresados = $this->asignacionService->obtenerPadronEgresadosElegibles($campanaActual?->id, false, $grupoFormacion);
 
         $asignacionesActuales = $campanaActual
-            ? AsignacionCampana::activos()->where('campana_id', $campanaActual->id)->with(['docente', 'egresado'])->get()
+            ? AsignacionCampana::activos()->whereIn('egresado_user_id', $padronEgresados->pluck('user_id'))->where('campana_id', $campanaActual->id)->with(['docente', 'egresado'])->get()
             : collect([]);
 
         return view('seguimiento_egresados.campanas.gestion', compact(
-            'campanas',
+            'grupoFormacion', 'campanas',
             'campanaActual',
             'docentesElegibles',
             'diagnosticoPadron',
@@ -69,6 +71,7 @@ class SeguimientoCampanaController extends Controller
 
         $request->validate([
             'campana_id' => 'required|exists:egresado_campanas,id',
+            'grupo_formacion' => 'nullable|in:TODOS,FID,PPD,COMPARAR,POR_VERIFICAR',
             'docentes' => 'required|array|min:1',
             'docentes.*' => 'exists:users,id',
         ]);
@@ -79,7 +82,8 @@ class SeguimientoCampanaController extends Controller
                 $request->input('docentes'),
                 auth()->id(),
                 $request->boolean('es_ensayo'),
-                true
+                true,
+                $request->input('grupo_formacion', 'TODOS')
             );
 
             return response()->json(['success' => true, 'data' => $preview]);
@@ -99,6 +103,7 @@ class SeguimientoCampanaController extends Controller
 
         $request->validate([
             'campana_id' => 'required|exists:egresado_campanas,id',
+            'grupo_formacion' => 'nullable|in:TODOS,FID,PPD,COMPARAR,POR_VERIFICAR',
             'docentes' => 'required|array|min:1',
             'docentes.*' => 'exists:users,id',
         ]);
@@ -109,7 +114,8 @@ class SeguimientoCampanaController extends Controller
                 $request->input('docentes'),
                 auth()->id(),
                 $request->boolean('es_ensayo'),
-                false
+                false,
+                $request->input('grupo_formacion', 'TODOS')
             );
 
             if ($request->wantsJson()) {
@@ -131,6 +137,8 @@ class SeguimientoCampanaController extends Controller
      */
     public function monitoreo(Request $request, $campanaId)
     {
+        $request->validate(['grupo_formacion' => 'nullable|in:TODOS,FID,PPD,COMPARAR,POR_VERIFICAR']);
+        $grupoFormacion = app(\App\Services\SeguimientoEgresado\GrupoFormacionService::class)->normalizar($request->query('grupo_formacion'));
         if (!auth()->check()) {
             return redirect()->guest(route('login'));
         }
@@ -141,11 +149,11 @@ class SeguimientoCampanaController extends Controller
         }
 
         $campana = Campana::findOrFail($campanaId);
-        $metricas = $this->asignacionService->obtenerMetricasCampana($campana->id);
+        $metricas = $this->asignacionService->obtenerMetricasCampana($campana->id, $grupoFormacion);
         $docentesDisponibles = $this->asignacionService->obtenerDocentesElegibles();
         $campanas = Campana::orderBy('id', 'desc')->get();
 
-        return view('seguimiento_egresados.campanas.monitoreo', compact('campana', 'metricas', 'docentesDisponibles', 'campanas'));
+        return view('seguimiento_egresados.campanas.monitoreo', compact('grupoFormacion', 'campana', 'metricas', 'docentesDisponibles', 'campanas'));
     }
 
     /**
@@ -186,6 +194,8 @@ class SeguimientoCampanaController extends Controller
      */
     public function territorio(Request $request, $campanaId)
     {
+        $request->validate(['grupo_formacion' => 'nullable|in:TODOS,FID,PPD,COMPARAR,POR_VERIFICAR']);
+        $grupoFormacion = app(\App\Services\SeguimientoEgresado\GrupoFormacionService::class)->normalizar($request->query('grupo_formacion'));
         if (!auth()->check()) {
             return redirect()->guest(route('login'));
         }
@@ -196,10 +206,10 @@ class SeguimientoCampanaController extends Controller
         }
 
         $campana = Campana::findOrFail($campanaId);
-        $metricasTerritoriales = $this->asignacionService->obtenerMetricasTerritoriales($campana->id);
+        $metricasTerritoriales = $this->asignacionService->obtenerMetricasTerritoriales($campana->id, $grupoFormacion);
         $campanas = Campana::orderBy('id', 'desc')->get();
 
-        return view('seguimiento_egresados.campanas.territorio', compact('campana', 'metricasTerritoriales', 'campanas'));
+        return view('seguimiento_egresados.campanas.territorio', compact('grupoFormacion', 'campana', 'metricasTerritoriales', 'campanas'));
     }
 
     /**
@@ -207,6 +217,8 @@ class SeguimientoCampanaController extends Controller
      */
     public function misAsignaciones(Request $request)
     {
+        $request->validate(['grupo_formacion' => 'nullable|in:TODOS,FID,PPD,COMPARAR,POR_VERIFICAR']);
+        $grupoFormacion = app(\App\Services\SeguimientoEgresado\GrupoFormacionService::class)->normalizar($request->query('grupo_formacion'));
         if (!auth()->check()) {
             return redirect()->guest(route('login'));
         }
@@ -217,9 +229,25 @@ class SeguimientoCampanaController extends Controller
         }
 
         $campanaId = $request->query('campana_id');
-        $metricasDocente = $this->asignacionService->obtenerMetricasDocente($user->id, $campanaId ? (int)$campanaId : null);
+        $metricasDocente = $this->asignacionService->obtenerMetricasDocente($user->id, $campanaId ? (int)$campanaId : null, $grupoFormacion);
         $campanas = Campana::orderBy('id', 'desc')->get();
 
-        return view('seguimiento_egresados.docente.mis_asignaciones', compact('metricasDocente', 'campanas', 'campanaId'));
+        $perfilService=app(\App\Services\SeguimientoEgresado\PerfilTerritorialService::class);
+        $metricasDocente['lista_trabajo']=$metricasDocente['lista_trabajo']->map(function($fila)use($perfilService){
+            $p=$perfilService->actual($fila['user_id']);
+            $fila['avance']=$perfilService->avance($p);
+            $fila['telefono']=$p['contacto']['telefono'] ?? $fila['telefono'];
+            $fila['email']=$p['contacto']['correo'] ?? $fila['email'];
+            $fila['historial']=\App\Models\SeguimientoEgresado\Llamada::where('docente_user_id',auth()->id())->where('user_id',$fila['user_id'])->where('campana_id',$fila['campana_id'])->latest('fecha_hora')->limit(20)->get(['fecha_hora','resultado','observaciones']);
+            $fila['alterno']=!empty($p['contacto_alterno']['autorizado']) ? $p['contacto_alterno'] : null;
+            \App\Models\SeguimientoEgresado\AccesoContacto::create(['user_id_consultante'=>auth()->id(),'rol_consultante'=>'docente entrevistador','user_id_consultado'=>$fila['user_id'],'identificador_consultado'=>(string)$fila['user_id'],'finalidad'=>'Campaña asignada '.$fila['campana_id'],'fecha_hora'=>now()]);
+            return $fila;
+        });
+        $pares=$metricasDocente['lista_trabajo']->map(fn($f)=>[$f['user_id'],$f['campana_id']]);
+        $evolucion=\App\Models\SeguimientoEgresado\Llamada::where('docente_user_id',$user->id)->where(function($q)use($pares){
+            if($pares->isEmpty()) $q->whereRaw('1=0');
+            foreach($pares as [$persona,$campana]) $q->orWhere(fn($sub)=>$sub->where('user_id',$persona)->where('campana_id',$campana));
+        })->orderBy('fecha_hora')->get()->groupBy(fn($l)=>$l->fecha_hora->format('Y-m-d'))->map(fn($llamadas)=>['intentos'=>$llamadas->count(),'contactados'=>$llamadas->where('es_contacto_efectivo',true)->pluck('user_id')->unique()->count()]);
+        return view('seguimiento_egresados.docente.mis_asignaciones', compact('grupoFormacion', 'metricasDocente', 'campanas', 'campanaId','evolucion'));
     }
 }

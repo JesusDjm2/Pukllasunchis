@@ -9,7 +9,8 @@
         'tutor'        => ['Tutor',           'rp-tutor',   'fas fa-chalkboard'],
         'investigador' => ['Investigador',    'rp-investigador', 'fas fa-microscope'],
         'gestor-titulacion' => ['Gestor de Titulación', 'rp-titulacion', 'fas fa-user-graduate'],
-        'seguimiento-egresados' => ['Seguimiento Egresados', 'rp-seguimiento', 'fas fa-network-wired'],
+        'secretaria' => ['Secretaría (Titulación)', 'rp-titulacion', 'fas fa-stamp'],
+        'seguimiento-egresados' => ['Seguimiento Egresados (habilitación operativa existente)', 'rp-seguimiento', 'fas fa-network-wired'],
         'alumno'       => ['Alumno FID',      'rp-alumno',  'fas fa-graduation-cap'],
         'alumnoB'      => ['Alumno PPD',      'rp-alumnoB', 'fas fa-user-graduate'],
         'adminB'       => ['Admin Bolsa',     'rp-adminB',  'fas fa-briefcase'],
@@ -43,3 +44,13 @@
         <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
     </div>
 @enderror
+
+@hasrole('super-admin')
+<fieldset class="mt-3"><legend class="h6">Permisos funcionales de seguimiento</legend>
+<p class="small text-muted">Se administran en esta misma cuenta institucional. No cambian su rol docente, tutor, Secretaría o Bolsa. Los entrevistadores mantienen el límite de egresados asignados.</p>
+<input type="hidden" name="editar_permisos_seguimiento" value="1">
+@foreach(App\Services\SeguimientoEgresado\SeguimientoAutorizacionService::PERMISOS_DELEGABLES as $permiso)
+<label class="d-block small"><input type="checkbox" name="permisos_seguimiento[]" value="{{ $permiso }}" {{ in_array($permiso, old('permisos_seguimiento', isset($admin) ? $admin->permissions->pluck('name')->all() : [])) ? 'checked' : '' }}> {{ str_replace('seguimiento-egresados.', '', $permiso) }}</label>
+@endforeach
+</fieldset>
+@endhasrole

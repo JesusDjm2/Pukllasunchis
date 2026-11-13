@@ -40,13 +40,14 @@ class LoginController extends Controller
 
     protected function authenticated(Request $request, $user)
     {
-        if ($user->hasRole('super-admin')) {
-            return redirect()->route('admin')->with('userData', $user);
-        } elseif ($user->hasRole('coordinacion-empleabilidad')) {
-            return redirect()->route('seguimiento-egresados.index');
-        } elseif ($user->hasRole('direccion')) {
-            return redirect()->route('seguimiento.laboratorio');
-        } elseif ($user->hasRole('admin')) {
+        // Llegó desde un enlace a «Mi titulación» (p. ej. el formulario de la carta en la página pública):
+        // vuelve ahí en lugar de ir a su panel. Solo para esas páginas, el resto del login no cambia.
+        $pedida = (string) $request->session()->get('url.intended');
+        if ($pedida !== '' && str_contains((string) parse_url($pedida, PHP_URL_PATH), '/mi-titulacion/')) {
+            return redirect()->intended();
+        }
+
+        if ($user->hasRole('super-admin') || $user->hasRole('admin')) {
             return redirect()->route('admin')->with('userData', $user);
         } elseif ($user->hasRole('docente')) {
             return redirect()->route('vistaDocente', ['docente' => $user->docente->id]);
@@ -54,7 +55,7 @@ class LoginController extends Controller
             return redirect()->route('tutor.dashboard');
         } elseif ($user->hasRole('adminB')) {
             return redirect()->route('trabajo.index')->with('userData', $user);
-        } elseif ($user->hasRole('gestor-titulacion')) {
+        } elseif ($user->hasAnyRole(['gestor-titulacion', 'secretaria'])) {
             // Gestor puro (sin admin/docente): su único panel es Titulación.
             return redirect()->route('titulacion.index');
         } elseif ($user->condicion === 'Egresado') {

@@ -730,6 +730,7 @@ class AdminController extends Controller
 
     public function store(Request $request)
     {
+        $this->validarPermisosSeguimiento($request);
         $request->validate([
             'name' => 'required|string|max:255',
             'apellidos' => 'required|string|max:255',
@@ -747,7 +748,7 @@ class AdminController extends Controller
                     $fail('El rol Investigador requiere que también se asigne el rol Docente.');
                 }
             }],
-            'roles.*' => 'string|in:super-admin,admin,docente,alumno,adminB,alumnoB,inhabilitado,tutor,investigador,gestor-titulacion,seguimiento-egresados',
+            'roles.*' => 'string|in:super-admin,admin,docente,alumno,adminB,alumnoB,inhabilitado,tutor,investigador,gestor-titulacion,secretaria,seguimiento-egresados',
             'programa_id' => [\Illuminate\Validation\Rule::requiredIf(fn () => !empty(array_intersect($request->input('roles', []), ['alumno', 'alumnoB']))), 'nullable', 'exists:programas,id'],
             'ciclo_id' => [\Illuminate\Validation\Rule::requiredIf(fn () => !empty(array_intersect($request->input('roles', []), ['alumno', 'alumnoB']))), 'nullable', 'exists:ciclos,id'],
         ]);
@@ -771,6 +772,7 @@ class AdminController extends Controller
         }
 
         $user->syncRoles($roles);
+        $this->guardarPermisosSeguimiento($request, $user);
 
         if (in_array('docente', $roles)) {
             $docente = new Docente;
@@ -796,6 +798,7 @@ class AdminController extends Controller
 
     public function update(Request $request, $id)
     {
+        $this->validarPermisosSeguimiento($request);
         $request->validate([
             'name' => 'required|string|max:255',
             'apellidos' => 'required|string|max:255',
@@ -813,7 +816,7 @@ class AdminController extends Controller
                     $fail('El rol Investigador requiere que también se asigne el rol Docente.');
                 }
             }],
-            'roles.*' => 'string|in:super-admin,admin,docente,alumno,adminB,alumnoB,inhabilitado,tutor,investigador,gestor-titulacion,seguimiento-egresados',
+            'roles.*' => 'string|in:super-admin,admin,docente,alumno,adminB,alumnoB,inhabilitado,tutor,investigador,gestor-titulacion,secretaria,seguimiento-egresados',
             'programa_id' => [\Illuminate\Validation\Rule::requiredIf(fn () => !empty(array_intersect($request->input('roles', []), ['alumno', 'alumnoB']))), 'nullable', 'exists:programas,id'],
             'ciclo_id' => [\Illuminate\Validation\Rule::requiredIf(fn () => !empty(array_intersect($request->input('roles', []), ['alumno', 'alumnoB']))), 'nullable', 'exists:ciclos,id'],
             'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
@@ -893,6 +896,7 @@ class AdminController extends Controller
 
         $rolesAnteriores = $user->getRoleNames()->toArray();
         $user->syncRoles($roles);
+        $this->guardarPermisosSeguimiento($request, $user);
 
         if (!$teniaSeguimiento && $tendraSeguimiento) {
             \App\Models\SeguimientoEgresado\AuditoriaRolSeguimiento::registrarEvento(
@@ -1415,4 +1419,30 @@ class AdminController extends Controller
                 $q->whereNull('condicion')->orWhere('condicion', '!=', 'Egresado');
             });
     }
+    private function validarPermisosSeguimiento(Request $request): void
+    {
+        if (!$request->has('editar_permisos_seguimiento') && !$request->has('permisos_seguimiento')) return;
+        abort_unless(auth()->user()?->hasRole('super-admin'), 403, 'Solo Super Admin puede delegar permisos de seguimiento.');
+        $request->validate([
+            'permisos_seguimiento' => 'nullable|array',
+            'permisos_seguimiento.*' => ['string', \Illuminate\Validation\Rule::in(\App\Services\SeguimientoEgresado\SeguimientoAutorizacionService::PERMISOS_DELEGABLES)],
+        ]);
+    }
+
+    private function guardarPermisosSeguimiento(Request $request, User $user): void
+    {
+        if (!$request->has('editar_permisos_seguimiento')) return;
+        $allowed = \App\Services\SeguimientoEgresado\SeguimientoAutorizacionService::PERMISOS_DELEGABLES;
+        $before = $user->getDirectPermissions()->pluck('name')->intersect($allowed)->values()->all();
+        $after = $request->input('permisos_seguimiento', []);
+        foreach (array_diff($before, $after) as $permission) $user->revokePermissionTo($permission);
+        foreach (array_diff($after, $before) as $permission) {
+            \Spatie\Permission\Models\Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
+            $user->givePermissionTo($permission);
+        }
+        \Illuminate\Support\Facades\Log::info('Delegación de permisos de seguimiento desde administración institucional', [
+            'admin_id' => auth()->id(), 'user_id' => $user->id, 'antes' => $before, 'despues' => $after,
+        ]);
+    }
+
 }

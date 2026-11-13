@@ -21,6 +21,7 @@ class SeguimientoAnaliticaService
      * Catálogo estricto de variables permitidas para evitar inyecciones.
      */
     protected array $variablesPermitidas = [
+        'grupo_formacion' => 'Grupo de formación (FID / PPD)',
         'programa' => 'Programa de estudios',
         'cohorte' => 'Promoción / Cohorte de egreso',
         'estado_titulacion' => 'Estado de titulación',
@@ -60,96 +61,45 @@ class SeguimientoAnaliticaService
      */
     public function calcularUniversos(array $filtros = []): array
     {
-        // 1. Padrón Institucional Total (users.condicion = 'Egresado')
-        $padronTotal = User::where('condicion', 'Egresado')->count();
-
-        // 2. Elegibles (no inhabilitados, con programa o cohorte verificable)
-        $elegiblesQuery = User::where('condicion', 'Egresado')
-            ->whereDoesntHave('roles', fn ($q) => $q->where('name', 'inhabilitado'));
-        $elegiblesTotal = $elegiblesQuery->count();
-
-        // 3. Contactados (con llamadas registradas o invitaciones enviadas)
-        $userIdsConLlamada = Llamada::whereNotNull('user_id')->pluck('user_id');
-        $userIdsConInvitacion = InvitacionCampana::whereNotNull('user_id')->pluck('user_id');
-        $contactadosIds = $userIdsConLlamada->concat($userIdsConInvitacion)->unique();
+        // Mismo conjunto filtrado para todos los numeradores y denominadores.
+        $ids = $this->obtenerDatasetAnalitico($filtros)->pluck('user_id')->unique()->values();
+        $padronTotal = $ids->count();
+        $elegiblesIds = User::whereIn('id', $ids)->whereDoesntHave('roles', fn ($q) => $q->where('name', 'inhabilitado'))->pluck('id');
+        $elegiblesTotal = $elegiblesIds->count();
+        $contactadosIds = Llamada::whereIn('user_id', $elegiblesIds)->where('es_contacto_efectivo', true)->pluck('user_id')->unique();
         $contactadosTotal = $contactadosIds->count();
-
-        // 4. Respondientes (con al menos una actualización registrada)
-        $respondientesIds = Actualizacion::whereNotNull('user_id')->pluck('user_id')->unique();
+        $respondientesIds = Actualizacion::whereIn('user_id', $ids)->where('estado_verificacion', 'verificado')->pluck('user_id')->unique();
         $respondientesTotal = $respondientesIds->count();
-
-        // 5. Con información laboral válida
-        $conLaboralIds = EpisodioLaboral::whereNotNull('user_id')->pluck('user_id')
-            ->concat(Actualizacion::whereNotNull('user_id')->whereNotNull('trabaja')->pluck('user_id'))
-            ->unique();
+        $conLaboralIds = EpisodioLaboral::whereIn('user_id', $ids)->where('es_actual', true)->pluck('user_id')
+            ->concat(Actualizacion::whereIn('user_id', $ids)->where('estado_verificacion', 'verificado')->whereIn('trabaja', ['Trabaja','No trabaja','Trabaja en gestión','Trabaja otro sector'])->pluck('user_id'))->unique();
         $conLaboralTotal = $conLaboralIds->count();
-
-        // 6. Con información territorial válida (residencia o trabajo)
-        $conTerritorialTotal = Actualizacion::whereNotNull('user_id')
-            ->where(function ($q) {
-                $q->whereNotNull('res_departamento')->orWhereNotNull('trab_departamento');
-            })->distinct('user_id')->count('user_id');
-
-        // 7. Con trayectoria longitudinal (>= 2 campañas respondidas o >= 2 episodios)
-        $userIdsMultiCampana = Actualizacion::whereNotNull('user_id')
-            ->groupBy('user_id')
-            ->havingRaw('COUNT(DISTINCT periodo_campana) >= 2')
-            ->pluck('user_id');
-        $userIdsMultiEpisodio = EpisodioLaboral::whereNotNull('user_id')
-            ->groupBy('user_id')
-            ->havingRaw('COUNT(id) >= 2')
-            ->pluck('user_id');
-        $longitudinalesTotal = $userIdsMultiCampana->concat($userIdsMultiEpisodio)->unique()->count();
-
-        // Tasas e indicadores con denominadores explícitos
-        $tasaCobertura = $elegiblesTotal > 0 ? round(($contactadosTotal / $elegiblesTotal) * 100, 1) : 0;
-        $tasaRespuesta = $contactadosTotal > 0 ? round(($respondientesTotal / $contactadosTotal) * 100, 1) : 0;
-
-        // Tasa de inserción en docencia directa (sobre respondientes)
-        $docenciaDirectaCount = EpisodioLaboral::where('es_actual', true)
-            ->where('es_docencia_directa', true)
-            ->distinct('user_id')
-            ->count('user_id');
-        $tasaDocenciaDirecta = $respondientesTotal > 0 ? round(($docenciaDirectaCount / $respondientesTotal) * 100, 1) : 0;
-
-        // Titulados (Licenciado o Bachiller en seguimiento de titulación o actualización)
-        $tituladosCount = User::where('condicion', 'Egresado')
-            ->whereHas('seguimientoTitulacion.estadoTitulacion', function ($q) {
-                $q->whereIn('clave', ['bachiller', 'licenciado', 'tesis_aprobada', 'ti_aprobado']);
-            })->count();
-        $tasaTitulacion = $padronTotal > 0 ? round(($tituladosCount / $padronTotal) * 100, 1) : 0;
-
+        $conTerritorialTotal = Actualizacion::whereIn('user_id', $ids)->where('estado_verificacion', 'verificado')
+            ->where(fn ($q) => $q->whereNotNull('res_departamento')->orWhereNotNull('trab_departamento'))->distinct()->count('user_id');
+        $multiCampana = Actualizacion::whereIn('user_id', $ids)->where('estado_verificacion', 'verificado')->groupBy('user_id')->havingRaw('COUNT(DISTINCT periodo_campana) >= 2')->pluck('user_id');
+        $multiEmpleo = EpisodioLaboral::whereIn('user_id', $ids)->groupBy('user_id')->havingRaw('COUNT(id) >= 2')->pluck('user_id');
+        $longitudinalesTotal = $multiCampana->concat($multiEmpleo)->unique()->count();
+        $docenciaDirectaCount = EpisodioLaboral::whereIn('user_id', $conLaboralIds)->where('es_actual', true)->where('es_docencia_directa', true)->distinct()->count('user_id');
+        $tituladosCount = User::whereIn('id', $ids)->whereHas('seguimientoTitulacion.estadoTitulacion', fn ($q) => $q->whereIn('clave', ['licenciado','tesis_aprobada','ti_aprobado']))->count();
+        $pct = fn ($n, $d) => $d ? round(100 * $n / $d, 1) : null;
+        $tasaCobertura = $pct($contactadosTotal, $elegiblesTotal);
+        $tasaRespuesta = $pct($respondientesTotal, $padronTotal);
         return [
-            'padron_total' => $padronTotal,
-            'total_padron' => $padronTotal,
-            'elegibles' => $elegiblesTotal,
-            'elegibles_seguimiento' => $elegiblesTotal,
-            'contactados' => $contactadosTotal,
-            'respondientes' => $respondientesTotal,
-            'no_respondientes' => max(0, $padronTotal - $respondientesTotal),
-            'con_info_laboral' => $conLaboralTotal,
-            'con_info_laboral_valida' => $conLaboralTotal,
+            'padron_total' => $padronTotal, 'total_padron' => $padronTotal,
+            'elegibles' => $elegiblesTotal, 'elegibles_seguimiento' => $elegiblesTotal,
+            'contactados' => $contactadosTotal, 'respondientes' => $respondientesTotal,
+            'invitaciones_enviadas' => InvitacionCampana::whereIn('user_id', $ids)->distinct()->count('user_id'),
+            'no_respondientes' => $padronTotal - $respondientesTotal,
+            'con_info_laboral' => $conLaboralTotal, 'con_info_laboral_valida' => $conLaboralTotal,
             'con_info_territorial' => $conTerritorialTotal,
-            'longitudinales' => $longitudinalesTotal,
-            'longitudinales_multiperiodo' => $longitudinalesTotal,
-            'tasa_respuesta_pct' => $tasaRespuesta,
-            'cobertura_padron_pct' => $padronTotal > 0 ? round(($contactadosTotal / $padronTotal) * 100, 1) : 0,
-            'advertencias_metodologicas' => [
-                'La falta de respuesta en la campaña corresponde a no respondientes y bajo ningún supuesto se asume desempleo.',
-                'Los denominadores expresan exclusivamente egresados con reporte confirmado.'
-            ],
-            'indicadores' => [
-                'tasa_cobertura' => $tasaCobertura, // Contactados / Elegibles
-                'tasa_respuesta' => $tasaRespuesta, // Respondientes / Contactados
-                'tasa_docencia_directa' => $tasaDocenciaDirecta, // Docencia / Respondientes
-                'tasa_titulacion' => $tasaTitulacion, // Titulados / Padrón
-                'docencia_directa_absoluta' => $docenciaDirectaCount,
-                'titulados_absoluto' => $tituladosCount,
-            ],
-            'advertencias' => [
-                'no_respondio_no_es_desempleo' => 'La falta de respuesta en la campaña no equivale a desempleo. Los denominadores expresan exclusivamente egresados con reporte confirmado.',
-                'cobertura_cuestion' => $contactadosTotal === 0 ? 'Fase de contacto en despliegue. Las tasas se consolidarán al avanzar las llamadas de entrevistadores.' : null,
-            ]
+            'longitudinales' => $longitudinalesTotal, 'longitudinales_multiperiodo' => $longitudinalesTotal,
+            'tasa_respuesta_pct' => $tasaRespuesta, 'cobertura_padron_pct' => $pct($contactadosTotal, $padronTotal),
+            'grupo_formacion' => app(GrupoFormacionService::class)->normalizar($filtros['grupo_formacion'] ?? null),
+            'denominadores' => ['cobertura' => $elegiblesTotal, 'respuesta' => $padronTotal, 'docencia_directa' => $conLaboralTotal, 'titulacion' => $padronTotal],
+            'advertencias_metodologicas' => ['Las invitaciones e intentos no son contactos efectivos.', 'Respuesta sobre padrón filtrado; docencia sobre información laboral disponible. Sin denominador se informa dato no calculable.', 'La ausencia de respuesta no equivale a desempleo.'],
+            'indicadores' => ['tasa_cobertura' => $tasaCobertura, 'tasa_respuesta' => $tasaRespuesta,
+                'tasa_docencia_directa' => $pct($docenciaDirectaCount, $conLaboralTotal), 'tasa_titulacion' => $pct($tituladosCount, $padronTotal),
+                'docencia_directa_absoluta' => $docenciaDirectaCount, 'titulados_absoluto' => $tituladosCount],
+            'advertencias' => ['no_respondio_no_es_desempleo' => 'Sin respuesta no equivale a desempleo.', 'cobertura_cuestion' => !$contactadosTotal ? 'No se han registrado contactos efectivos en este conjunto.' : null],
         ];
     }
 
@@ -328,6 +278,7 @@ class SeguimientoAnaliticaService
 
         return [
             'cohortes' => $cohortesReporte,
+            'comparativa_grupos' => $this->compararGrupos($dataset),
             'comparativa_programas' => $this->generarComparativaProgramas($dataset),
             'advertencia_cobertura' => 'Las variaciones entre cohortes recientes y antiguas pueden reflejar diferencias en la tasa de respuesta y no necesariamente menor éxito laboral.',
         ];
@@ -336,6 +287,32 @@ class SeguimientoAnaliticaService
     /**
      * Comparación específica entre programas Inicial vs Primaria EIB.
      */
+    public function compararGrupos(Collection $dataset): array
+    {
+        $result = [];
+        foreach (['FID','PPD','POR_VERIFICAR'] as $grupo) {
+            $rows = $dataset->filter(fn ($r) => app(GrupoFormacionService::class)->coincide($r['grupos_formacion'] ?? [], $grupo))->unique('user_id');
+            $valid = $rows->whereIn('situacion_laboral', ['Trabaja','No trabaja']);
+            $n = $valid->count(); $empleados = $valid->where('situacion_laboral','Trabaja')->count();
+            $safeN = $this->seguridadService->protegerConteo($n);
+            $safeEmpleo = $this->seguridadService->protegerConteo($empleados);
+            $cohortes = [];
+            foreach ($rows as $row) {
+                $dates = collect($row['trayectorias_confirmadas'] ?? [])->where('grupo',$grupo)->pluck('fecha_egreso')->filter()->sort()->values();
+                $cohorte = $dates->isNotEmpty() ? substr($dates->last(),0,4) : (count($row['grupos_formacion'] ?? []) === 1 ? $row['cohorte'] : 'Por verificar');
+                $cohortes[$cohorte] = ($cohortes[$cohorte] ?? 0) + 1;
+            }
+            $result[$grupo] = [
+                'personas' => $this->seguridadService->protegerConteo($rows->count()),
+                'con_informacion_laboral' => $safeN, 'trabajan' => $safeEmpleo,
+                'tasa_empleo' => $n && !$safeN['suprimido'] && !$safeEmpleo['suprimido'] && ($n-$empleados === 0 || $n-$empleados >= 5) ? round(100*$empleados/$n,1) : null,
+                'cohortes' => $this->seguridadService->procesarDistribucionSegura($cohortes),
+            ];
+        }
+        return ['grupos' => $result, 'personas_unicas' => $dataset->unique('user_id')->count(),
+            'nota' => 'Cada tasa usa respuestas laborales del propio grupo. Una persona con ambos egresos puede aparecer en FID y PPD; el conjunto la cuenta una vez. Las cohortes duales requieren fecha de egreso atribuida a cada grupo.'];
+    }
+
     protected function generarComparativaProgramas(Collection $dataset): array
     {
         $programas = [
@@ -380,7 +357,8 @@ class SeguimientoAnaliticaService
      */
     public function obtenerDemandasFormativas(array $filtros = []): array
     {
-        $actualizaciones = Actualizacion::whereNotNull('user_id')->latest()->get();
+        $ids = $this->obtenerDatasetAnalitico($filtros)->pluck('user_id');
+        $actualizaciones = Actualizacion::whereIn('user_id', $ids)->where('estado_verificacion','verificado')->orderByDesc('id')->get()->unique('user_id');
 
         $temas = [];
         $disposicionCompartir = [];
@@ -419,41 +397,44 @@ class SeguimientoAnaliticaService
 
         // Filtro: Programa
         if (!empty($filtros['programa'])) {
-            $query->whereHas('alumno.programa', function ($q) use ($filtros) {
-                $q->where('nombre', 'like', '%' . $filtros['programa'] . '%');
+            $query->where(function ($q) use ($filtros) {
+                foreach (['programa','alumno.programa','alumnoB.programa'] as $rel) $q->orWhereHas($rel, fn ($p) => $p->where('nombre','like','%'.$filtros['programa'].'%'));
             });
         }
 
+        $clasificacion = app(GrupoFormacionService::class);
+        $clasificacion->aplicar($query, $filtros['grupo_formacion'] ?? null);
         $egresados = $query->get();
 
         $userIds = $egresados->pluck('id')->toArray();
-        $actualizaciones = Actualizacion::whereIn('user_id', $userIds)->latest()->get()->keyBy('user_id');
-        $episodiosActivos = EpisodioLaboral::whereIn('user_id', $userIds)->where('es_actual', true)->latest()->get()->keyBy('user_id');
+        $actualizaciones = Actualizacion::whereIn('user_id', $userIds)->where('estado_verificacion', 'verificado')->orderBy('id')->get()->keyBy('user_id');
+        $episodiosActivos = EpisodioLaboral::whereIn('user_id', $userIds)->where('es_actual', true)->orderBy('id')->get()->keyBy('user_id');
 
-        return $egresados->map(function ($u) use ($actualizaciones, $episodiosActivos, $filtros) {
-            $alumno = $u->alumno;
+        return $egresados->map(function ($u) use ($actualizaciones, $episodiosActivos, $filtros, $clasificacion) {
+            $alumno = $clasificacion->ficha($u, $filtros['grupo_formacion'] ?? null);
+            $grupo = $clasificacion->resolver($u);
             $tit = $u->seguimientoTitulacion;
             $act = $actualizaciones->get($u->id);
             $ep = $episodiosActivos->get($u->id);
 
             // 1. Programa
             $progNombre = 'Por verificar';
-            if ($alumno && $alumno->programa) {
-                $progNombre = str_replace('Programa ', '', $alumno->programa->nombre);
-            }
+            $programaInstitucional = $clasificacion->programa($u, $filtros['grupo_formacion'] ?? null);
+            if ($programaInstitucional) $progNombre = $programaInstitucional->nombre;
 
             // 2. Cohorte
             $cohorte = 'Por verificar';
-            if ($act && $act->cohorte_egreso) {
+            if (count($grupo['grupos']) > 1 && in_array($filtros['grupo_formacion'] ?? null, ['FID','PPD'], true)) {
+                $fechas = collect($grupo['trayectorias_confirmadas'])->where('grupo',$filtros['grupo_formacion'])->pluck('fecha_egreso')->filter()->sort();
+                $cohorte = $fechas->isNotEmpty() ? substr($fechas->last(),0,4) : 'Por verificar';
+            } elseif ($act && $act->cohorte_egreso) {
                 $cohorte = $act->cohorte_egreso;
             } elseif ($tit && $tit->periodo_estudios) {
                 $cohorte = $tit->periodo_estudios;
-            } elseif (preg_match('/(20\d{2})/', $u->email, $m)) {
-                $cohorte = $m[1];
             }
 
             // 3. Titulación
-            $titulacion = $tit?->estadoTitulacion?->nombre ?: ($act?->titulo_lic ? 'Licenciado' : ($act?->titulo_bach ? 'Bachiller' : 'En proceso'));
+            $titulacion = $tit?->estadoTitulacion?->nombre ?: (in_array($act?->titulo_lic, ['Titulado','Licenciado/a','Licenciado'], true) ? 'Licenciado' : (in_array($act?->titulo_bach, ['Obtenido','Registrado'], true) ? 'Bachiller' : 'Por verificar'));
 
             // 4. Situación Laboral
             $trabajaDeclarado = $act?->trabaja;
@@ -478,12 +459,12 @@ class SeguimientoAnaliticaService
             // 7. EIB
             $esEib = ($ep && $ep->es_empleo_educativo && ($act?->eib === 'Sí' || !empty($act?->quechua)))
                 || ($act && $act->eib === 'Sí')
-                || str_contains($progNombre, 'EIB');
+;
             $eibLabel = $esEib ? 'Docencia Intercultural Bilingüe (EIB)' : 'Educación Regular / No EIB';
 
             // 8. Territorios
-            $depRes = strtoupper(trim($act?->res_departamento ?: ($alumno?->departamento ?: 'CUSCO')));
-            $provRes = strtoupper(trim($act?->res_provincia ?: ($alumno?->provincia ?: 'CUSCO')));
+            $depRes = strtoupper(trim($act?->res_departamento ?: ($alumno?->departamento ?: 'NO DECLARADO')));
+            $provRes = strtoupper(trim($act?->res_provincia ?: ($alumno?->provincia ?: 'NO DECLARADO')));
             $depTrab = strtoupper(trim($ep?->trab_departamento ?: ($act?->trab_departamento ?: 'NO DECLARADO')));
             $provTrab = strtoupper(trim($ep?->trab_provincia ?: ($act?->trab_provincia ?: 'NO DECLARADO')));
 
@@ -504,10 +485,13 @@ class SeguimientoAnaliticaService
             }
 
             // 10. Campaña y Necesidades
-            $campana = $act?->periodo_campana ?: '2026-II';
+            $campana = $act?->periodo_campana ?: 'Sin actualización';
             $necesidades = $act?->temas_interes ?: 'No especificadas';
 
             return [
+                'grupos_formacion' => $grupo['grupos'],
+                'grupo_formacion' => $grupo['etiqueta'],
+                'trayectorias_confirmadas' => $grupo['trayectorias_confirmadas'],
                 'user_id' => $u->id,
                 'programa' => $progNombre,
                 'cohorte' => $cohorte,
