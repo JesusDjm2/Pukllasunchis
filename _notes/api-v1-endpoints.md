@@ -169,3 +169,69 @@ ofertas ordenadas por `created_at` desc (mismo comportamiento que
 Fase 1); cada oferta trae `fecha_publicacion`, `vigente` (calculado,
 `fecha_publicacion` + 20 días), `nombre_publicador`, `telefono_publicador`,
 `relacion_publicador`.
+
+## Titulación (alumno / egresado)
+
+### `GET /alumno/titulacion`
+Auth. "Mi proceso de titulación": lo mismo que la web muestra en
+`titulacion/_avance_alumno` (con proceso) o `titulacion/_guia_inicio` (sin
+proceso pero ya puede iniciarlo), calculado con los mismos servicios
+(`AvanceTitulacion`, `GuiaTramites`, `VigenciaPti`, `Solicitud`). Solo lectura.
+- `disponible`: egresado (`condicion='Egresado'`), o con `seguimiento_titulacion`,
+  o `TitulacionController::puedeIniciar()` (FID desde el Ciclo IX). Si es
+  `false`, el resto viene vacío.
+- Con proceso: `estado {clave, nombre, color}`, `siguiente_paso`, `etapas[]`
+  (PTI → TI → Tesis, cada hito con `situacion` logrado|actual|pendiente|sin_registro),
+  `vigencia_pti`, `carta` y `originalidad` (estado de la última solicitud + URL web).
+- Sin proceso: `etapas[]` sin logros, `solicitud_pti` (primer paso).
+- `tramites`: "qué hacer ahora" (pago Caja Cusco, pasos, formulario, descargas,
+  contactos de WhatsApp) del tramo en curso.
+- Las solicitudes (PTI, carta, originalidad) llevan archivos: la app abre sus
+  URLs en la web (`mi-titulacion.*`), no se envían por la API.
+
+## Investigaciones (ex Taq'e)
+
+### `GET /taqe/guia-pdf`
+Auth. Guía del estudiante de Investigaciones (la misma vista que la web
+`taqe.guia.pdf`: `pdf.instructivo-investigaciones-ciclo2`). Descarga binaria.
+
+## `GET /me` — campos agregados
+`condicion` y `es_egresado`: el egresado tiene su propio panel (sin
+matrícula, cursos del periodo, tutoría ni investigaciones), como su intranet web.
+
+## Solicitudes de titulación (envío desde la app)
+
+`MiTitulacionSolicitudController` — **espejo** de los controladores web
+`Titulacion\MiSolicitudPtiController`, `CartaAceptacionController` y
+`MiSolicitudOriginalidadController` (mismas reglas, mismos datos guardados,
+mismos avisos). La API es aditiva: si cambian las reglas en la web, hay que
+cambiarlas aquí también (`tests/Feature/Api/MiTitulacionSolicitudTest`).
+
+Cada una tiene `GET` (lo que necesita el formulario: `motivo_no_puede` —null
+si puede enviar—, `ultima`, `valores` iniciales, `fijos` —campos que manda la
+ficha—, `opciones`, reglas de `archivos`, `pago`) y `POST` multipart
+(201 con `message`; 409 si no corresponde; 422 con `errors` por campo).
+Throttle 30/10 min, como la web.
+
+### `GET|POST /alumno/titulacion/solicitud-pti`
+Primer paso (antes de tener proceso). Campos: `integrante2`, `integrante3`,
+`celulares`, `programa_estudios`, `ciclo`, `area`, `linea` (debe ser de esa
+área), `titulo`, `pti` (pdf/doc/docx ≤10 MB), `comprobantes[]` (1–5,
+pdf/jpg/png ≤10 MB), `declaracion`.
+
+### `GET|POST /alumno/titulacion/carta`
+Con el PTI aprobado y correo institucional. Campos: `grupo`, `celular`,
+`programa_estudios`, `programa_formacion`, `institucion`, `director`,
+`titulo`, `comprobante` (pdf/jpg/png ≤5 MB), `declaracion`. Crea una fila por
+integrante del grupo (mismo `lote`), sube el comprobante a Drive (o al
+servidor si falla) y **envía el correo de recepción** (`CartaRecibidaMail`).
+
+### `GET|POST /alumno/titulacion/originalidad`
+Solo con `TITULACION_ORIGINALIDAD_ALUMNOS=true`; si no, `habilitada=false` y
+`formulario_externo` (Google Forms). Campos: `etapa` (ti|tesis), `titulo`,
+`celulares`, `domicilio`, `fecha_pago` (≤ hoy), `documento` (doc/docx ≤10 MB),
+`comprobantes[]`, `declaracion`.
+
+`GET /alumno/titulacion` indica en cada acción y en cada trámite
+`formulario_app` (`solicitud-pti` | `carta` | `originalidad`) para que la app
+abra su formulario nativo; null = se abre en el navegador.

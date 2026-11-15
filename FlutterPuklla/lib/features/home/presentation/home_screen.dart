@@ -16,6 +16,9 @@ import '../../perfil/data/alumno_perfil.dart';
 import '../application/home_providers.dart';
 import '../data/curso.dart';
 import '../data/periodo_actual.dart';
+import '../../taqe/application/taqe_providers.dart';
+import '../../titulacion/application/titulacion_providers.dart';
+import '../../titulacion/presentation/titulacion_widgets.dart';
 import 'curso_detalle_sheet.dart';
 import '../../perfil/presentation/carnet_digital_sheet.dart';
 import '../../../core/widgets/puklla_preloader.dart';
@@ -130,16 +133,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final cursosAsync = ref.watch(cursosProvider);
     final comunicadosAsync = ref.watch(comunicadosProvider);
     final yaMatriculadoAsync = ref.watch(yaMatriculadoProvider);
+    final titulacion = ref.watch(titulacionProvider).valueOrNull;
+
+    // Egresado: como en su intranet web, nada de matrícula ni cursos del periodo.
+    final esEgresado = user?.esEgresado == true;
 
     // Si el usuario es alumno y el formulario está abierto sin matrícula, mostrar popup de alerta
-    _verificarAlertaMatricula(periodoAsync.valueOrNull, yaMatriculadoAsync.valueOrNull);
+    if (!esEgresado) {
+      _verificarAlertaMatricula(periodoAsync.valueOrNull, yaMatriculadoAsync.valueOrNull);
+    }
 
     return Scaffold(
       backgroundColor: PukllaDashboardStyles.backgroundColor(context),
       appBar: AppBar(
-        title: const Text(
-          'Portal Estudiantil',
-          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 19),
+        title: Text(
+          esEgresado ? 'Portal del Egresado' : 'Portal Estudiantil',
+          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 19),
         ),
         actions: const [PukllaAppBarActions()],
         elevation: 0,
@@ -153,6 +162,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ref.invalidate(cursosProvider);
           ref.invalidate(comunicadosProvider);
           ref.invalidate(yaMatriculadoProvider);
+          ref.invalidate(titulacionProvider);
+          ref.invalidate(taqeDataProvider);
           await ref.read(perfilProvider.future);
         },
         child: ListView(
@@ -181,13 +192,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // ── TARJETA COMPACTA UNIFICADA: PERÍODO ACTUAL & ESTADO DE MATRÍCULA ──
-                  if (periodoAsync.valueOrNull != null) ...[
+                  if (!esEgresado && periodoAsync.valueOrNull != null) ...[
                     PukllaFadeInSlide(
                       delayMs: 40,
                       child: _PeriodoMatriculaCard(
                         periodo: periodoAsync.valueOrNull!,
                         yaMatriculado: yaMatriculadoAsync.valueOrNull,
                       ),
+                    ),
+                    const SizedBox(height: 18),
+                  ],
+
+                  // ── MI PROCESO DE TITULACIÓN (egresados, o FID desde el Ciclo IX) ──
+                  if (titulacion != null && titulacion.disponible) ...[
+                    PukllaFadeInSlide(
+                      delayMs: 60,
+                      child: TitulacionResumenCard(data: titulacion),
                     ),
                     const SizedBox(height: 18),
                   ],
@@ -210,8 +230,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                   const SizedBox(height: 26),
 
-                  // ── MIS CURSOS ACTIVOS ──
-                  PukllaFadeInSlide(
+                  // ── MIS CURSOS ACTIVOS (no aplica al egresado) ──
+                  if (!esEgresado) PukllaFadeInSlide(
                     delayMs: 140,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -788,6 +808,13 @@ class _BentoGridModulos extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final perfil = ref.watch(perfilProvider).valueOrNull;
+    final user = ref.watch(authControllerProvider).user;
+
+    if (user?.esEgresado == true) return const _BentoGridEgresado();
+
+    // Invitaciones a grupos de Investigaciones sin responder (badge, como en el menú web).
+    final invitaciones = ref.watch(taqeDataProvider).valueOrNull?.invitacionesPendientes.length ?? 0;
+    final titulacionDisponible = ref.watch(titulacionProvider).valueOrNull?.disponible == true;
 
     return Column(
       children: [
@@ -858,8 +885,11 @@ class _BentoGridModulos extends ConsumerWidget {
               child: _BentoItem(
                 icon: Icons.science_outlined,
                 color: const Color(0xFF7C3AED),
-                title: "Taq'e Proyectos",
-                subtitle: 'Investigación formativa',
+                title: 'Investigaciones',
+                subtitle: invitaciones > 0
+                    ? '$invitaciones ${invitaciones == 1 ? 'invitación pendiente' : 'invitaciones pendientes'}'
+                    : 'Ferias de investigación',
+                badge: invitaciones,
                 onTap: () => context.go('/taqe'),
               ),
             ),
@@ -901,6 +931,87 @@ class _BentoGridModulos extends ConsumerWidget {
             ),
           ],
         ),
+
+        // ── FILA 5: TITULACIÓN (FID desde el Ciclo IX o con proceso iniciado) ──
+        if (titulacionDisponible) ...[
+          const SizedBox(height: 12),
+          _BentoItem(
+            icon: Icons.workspace_premium_outlined,
+            color: const Color(0xFF16A34A),
+            title: 'Mi Titulación',
+            subtitle: 'PTI, Bachiller y Licenciatura',
+            onTap: () => context.go('/titulacion'),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// Módulos del egresado: los mismos que su menú en la web (su cuenta con la
+/// titulación, bolsa de trabajo, comunicados, guías y bibliotecas) más sus datos.
+class _BentoGridEgresado extends StatelessWidget {
+  const _BentoGridEgresado();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: _BentoItem(
+                icon: Icons.workspace_premium_outlined,
+                color: const Color(0xFF16A34A),
+                title: 'Mi Titulación',
+                subtitle: 'PTI, Bachiller y Licenciatura',
+                onTap: () => context.go('/titulacion'),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _BentoItem(
+                icon: Icons.work_outline,
+                color: const Color(0xFFD97706),
+                title: 'Bolsa de Trabajo',
+                subtitle: 'Convocatorias para egresados',
+                onTap: () => context.go('/bolsa-trabajo'),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _BentoItem(
+                icon: Icons.campaign_outlined,
+                color: const Color(0xFFE11D48),
+                title: 'Comunicados',
+                subtitle: 'Avisos institucionales',
+                onTap: () => context.go('/comunicados'),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _BentoItem(
+                icon: Icons.local_library_outlined,
+                color: const Color(0xFFCA8A04),
+                title: 'Guías & Biblioteca',
+                subtitle: 'Formatos de TI y Tesis',
+                onTap: () => context.go('/recursos'),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        _BentoItem(
+          icon: Icons.badge_outlined,
+          color: const Color(0xFF2563EB),
+          title: 'Mis datos',
+          subtitle: 'Si algo cambió, avisa a Secretaría Académica',
+          onTap: () => context.go('/ficha-tecnica'),
+        ),
       ],
     );
   }
@@ -913,6 +1024,7 @@ class _BentoItem extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.onTap,
+    this.badge = 0,
   });
 
   final IconData icon;
@@ -920,6 +1032,9 @@ class _BentoItem extends StatelessWidget {
   final String title;
   final String subtitle;
   final VoidCallback onTap;
+
+  /// Contador (p. ej. invitaciones pendientes); 0 = sin badge.
+  final int badge;
 
   @override
   Widget build(BuildContext context) {
@@ -944,6 +1059,20 @@ class _BentoItem extends StatelessWidget {
                   child: Icon(icon, color: color, size: 22),
                 ),
                 const Spacer(),
+                if (badge > 0) ...[
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF59E0B),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      '$badge',
+                      style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w800),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                ],
                 Icon(
                   Icons.arrow_forward_ios,
                   size: 12,

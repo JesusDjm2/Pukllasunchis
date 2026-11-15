@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -191,7 +194,7 @@ class _TaqeScreenState extends ConsumerState<TaqeScreen> {
             const SizedBox(width: 10),
             const Expanded(
               child: Text(
-                "¿Cómo funciona Taq'e?",
+                '¿Cómo funciona Investigaciones?',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
               ),
             ),
@@ -265,6 +268,15 @@ class _TaqeScreenState extends ConsumerState<TaqeScreen> {
           ),
         ),
         actions: [
+          // Misma guía que la web ofrece en el modal "Cómo funciona Investigaciones".
+          OutlinedButton.icon(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _descargarGuiaPdf();
+            },
+            icon: const Icon(Icons.picture_as_pdf_outlined, size: 18, color: Color(0xFFB91C1C)),
+            label: const Text('Descargar guía PDF'),
+          ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx),
             style: FilledButton.styleFrom(backgroundColor: AppColors.teal),
@@ -273,6 +285,37 @@ class _TaqeScreenState extends ConsumerState<TaqeScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _descargarGuiaPdf() async {
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.showSnackBar(const SnackBar(
+      content: Text('Descargando la guía...'),
+      behavior: SnackBarBehavior.floating,
+      duration: Duration(seconds: 2),
+    ));
+    try {
+      final bytes = await ref.read(taqeRepositoryProvider).descargarGuiaPdf();
+      if (kIsWeb) {
+        await launchUrl(Uri.dataFromBytes(bytes, mimeType: 'application/pdf'));
+      } else {
+        final file = File('${Directory.systemTemp.path}/Guia_Estudiante_Investigaciones.pdf');
+        await file.writeAsBytes(bytes);
+        final abierto = await launchUrl(Uri.file(file.path), mode: LaunchMode.externalApplication);
+        if (!abierto) {
+          messenger.showSnackBar(SnackBar(
+            content: Text('Guía guardada en ${file.path}'),
+            behavior: SnackBarBehavior.floating,
+          ));
+        }
+      }
+    } catch (_) {
+      messenger.showSnackBar(const SnackBar(
+        content: Text('No se pudo descargar la guía. Inténtalo de nuevo.'),
+        backgroundColor: AppColors.danger,
+        behavior: SnackBarBehavior.floating,
+      ));
+    }
   }
 
   void _mostrarDialogoCrearGrupo(List<TaqeCursoOpcion> cursos) {
@@ -325,7 +368,7 @@ class _TaqeScreenState extends ConsumerState<TaqeScreen> {
                   const SizedBox(width: 10),
                   const Expanded(
                     child: Text(
-                      "Crear grupo Taq'e",
+                      'Crear grupo de Investigaciones',
                       style: TextStyle(fontSize: 16.5, fontWeight: FontWeight.w800),
                     ),
                   ),
@@ -1201,15 +1244,15 @@ class _TaqeScreenState extends ConsumerState<TaqeScreen> {
     return Scaffold(
       backgroundColor: PukllaDashboardStyles.backgroundColor(context),
       appBar: AppBar(
-        title: const Text("Taq'e · Proyectos"),
+        title: const Text('Investigaciones'),
         actions: const [PukllaAppBarActions()],
       ),
       endDrawer: const AppDrawer(),
       bottomNavigationBar: const PukllaBottomNavBar(),
       body: taqeAsync.when(
-        loading: () => const PukllaPreloader(mensaje: "Cargando espacio Taq'e..."),
+        loading: () => const PukllaPreloader(mensaje: 'Cargando Investigaciones...'),
         error: (err, stack) => ErrorState(
-          message: "No se pudo cargar el espacio Taq'e.",
+          message: 'No se pudo cargar Investigaciones.',
           onRetry: () => ref.refresh(taqeDataProvider),
         ),
         data: (data) {
@@ -1415,7 +1458,7 @@ class _HeroTaqeCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Espacio Taq'e",
+                      'Investigaciones',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 17.5,
@@ -1773,7 +1816,7 @@ class _EmptyGruposCard extends StatelessWidget {
             ),
             const SizedBox(height: 14),
             Text(
-              "Aún no perteneces a ningún grupo Taq'e este periodo",
+              'Aún no perteneces a ningún grupo de Investigaciones este periodo',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,

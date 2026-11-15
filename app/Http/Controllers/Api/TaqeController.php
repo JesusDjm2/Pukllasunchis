@@ -783,6 +783,17 @@ class TaqeController extends Controller
     /**
      * Solicitar ayuda metodológica al docente investigador.
      */
+    /**
+     * Guía del estudiante de Investigaciones (la misma que la web descarga en
+     * taqe.guia.pdf). Se descarga con el token, como la ficha PDF.
+     */
+    public function guiaPdf()
+    {
+        return \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.instructivo-investigaciones-ciclo2')
+            ->setPaper('a4', 'portrait')
+            ->download('Guia_Estudiante_Investigaciones.pdf');
+    }
+
     public function solicitarAyuda(Request $request)
     {
         $alumno = $this->alumnoActual($request);

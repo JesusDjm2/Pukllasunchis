@@ -20,6 +20,9 @@ import '../features/perfil/presentation/ficha_tecnica_screen.dart';
 import '../features/perfil/presentation/matricula_form_screen.dart';
 import '../features/recursos/presentation/formatos_biblioteca_screen.dart';
 import '../features/taqe/presentation/taqe_screen.dart';
+import '../features/titulacion/data/solicitud_formulario.dart';
+import '../features/titulacion/presentation/solicitud_titulacion_screen.dart';
+import '../features/titulacion/presentation/titulacion_screen.dart';
 import '../features/tutoria/presentation/tutoria_screen.dart';
 
 /// Si el usuario tiene perfil docente o tutor, aterriza directamente en su panel docente (/docente).
@@ -76,6 +79,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/taqe',
         builder: (context, state) => const TaqeScreen(),
+      ),
+      GoRoute(
+        path: '/titulacion',
+        builder: (context, state) => const TitulacionScreen(),
+      ),
+      GoRoute(
+        path: '/titulacion/solicitud/:tipo',
+        builder: (context, state) {
+          final tipo = TipoSolicitud.deRuta(state.pathParameters['tipo']);
+          return tipo != null ? SolicitudTitulacionScreen(tipo: tipo) : const TitulacionScreen();
+        },
       ),
       GoRoute(
         path: '/tutoria',

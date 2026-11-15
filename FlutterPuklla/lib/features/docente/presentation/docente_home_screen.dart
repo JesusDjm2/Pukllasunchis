@@ -360,7 +360,7 @@ class _DocenteHeroHeader extends StatelessWidget {
                 if (resumen!.esTutor)
                   const _RolPill(label: 'Tutor(a)', color: Color(0xFF34D399), icon: Icons.support_agent),
                 if (resumen!.esInvestigador)
-                  const _RolPill(label: "Investigador Taq'e", color: Color(0xFFA78BFA), icon: Icons.science_outlined),
+                  const _RolPill(label: 'Investigador', color: Color(0xFFA78BFA), icon: Icons.science_outlined),
                 if (resumen!.esTitulacion)
                   const _RolPill(label: 'Titulación', color: Color(0xFFFBBF24), icon: Icons.school_outlined),
                 if (resumen!.esBolsa)
@@ -558,7 +558,7 @@ class _FuncionesEspecialesSection extends StatelessWidget {
             icon: Icons.science_outlined,
             iconoBg: const Color(0xFFF5F3FF),
             iconoColor: const Color(0xFF8B5CF6),
-            titulo: "Taq'e — Seguimiento de Proyectos",
+            titulo: 'Investigaciones — Seguimiento de Proyectos',
             subtitulo: 'Ferias de investigación, asesoría metodológica y proyectos a tu cargo.',
             chips: [
               if (resumen.investigadorData != null && resumen.investigadorData!.solicitudesPendientes > 0)
@@ -1974,7 +1974,7 @@ class _ModalTaqeDocente extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Taq'e — Proyectos de Investigación",
+                      'Investigaciones — Proyectos',
                       style: TextStyle(
                         fontSize: 16.5,
                         fontWeight: FontWeight.w800,
@@ -2157,7 +2157,7 @@ class _ModalTaqeDocente extends StatelessWidget {
                   Icon(Icons.science_outlined, color: Colors.white, size: 18),
                   SizedBox(width: 8),
                   Text(
-                    "Abrir Espacio Taq'e Completo",
+                    'Abrir Investigaciones',
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w800,

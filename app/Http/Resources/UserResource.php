@@ -29,6 +29,9 @@ class UserResource extends JsonResource
             'foto' => $fotoUrl,
             'roles' => $this->getRoleNames(),
             'beca' => (bool) $this->beca,
+            // Egresado: la web le da su propia intranet (sin matrícula, cursos ni tutoría).
+            'condicion' => $this->condicion,
+            'es_egresado' => $this->condicion === 'Egresado',
             'alumno_id' => $this->alumno?->id,
             'docente_id' => $this->docente?->id,
         ];

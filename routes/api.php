@@ -11,9 +11,11 @@ use App\Http\Controllers\Api\DeviceTokenController;
 use App\Http\Controllers\Api\DocenteController;
 use App\Http\Controllers\Api\IncidenciaController;
 use App\Http\Controllers\Api\MatriculaController;
+use App\Http\Controllers\Api\MiTitulacionSolicitudController;
 use App\Http\Controllers\Api\NotificacionController;
 use App\Http\Controllers\Api\PeriodoActualController;
 use App\Http\Controllers\Api\TaqeController;
+use App\Http\Controllers\Api\TitulacionController;
 use App\Http\Controllers\Api\TutoriaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -81,6 +83,16 @@ Route::prefix('v1')->group(function () {
         Route::put('/alumno/perfil', [AlumnoController::class, 'actualizarPerfil']);
         Route::get('/alumno/ficha-pdf', [AlumnoController::class, 'fichaPdf']);
         Route::get('/alumno/carnet', [AlumnoController::class, 'carnet']);
+        Route::get('/alumno/titulacion', [TitulacionController::class, 'show']);
+        // Solicitudes de titulación (espejo de /mi-titulacion/* en la web; mismo límite de envíos).
+        Route::prefix('alumno/titulacion')->controller(MiTitulacionSolicitudController::class)->group(function () {
+            Route::get('/solicitud-pti', 'ptiFormulario');
+            Route::post('/solicitud-pti', 'ptiEnviar')->middleware('throttle:30,10');
+            Route::get('/carta', 'cartaFormulario');
+            Route::post('/carta', 'cartaEnviar')->middleware('throttle:30,10');
+            Route::get('/originalidad', 'originalidadFormulario');
+            Route::post('/originalidad', 'originalidadEnviar')->middleware('throttle:30,10');
+        });
 
         Route::get('/periodo-actual', [PeriodoActualController::class, 'show']);
 
@@ -107,6 +119,7 @@ Route::prefix('v1')->group(function () {
         // Taq'e: proyectos integradores, grupos y entregables
         Route::prefix('taqe')->group(function () {
             Route::get('/', [TaqeController::class, 'index']);
+            Route::get('/guia-pdf', [TaqeController::class, 'guiaPdf']);
             Route::post('/grupos', [TaqeController::class, 'crearGrupo']);
             Route::get('/cursos/{curso}/alumnos', [TaqeController::class, 'alumnosDelCurso']);
             Route::post('/grupos/{grupo}/trabajos', [TaqeController::class, 'subirTrabajo']);

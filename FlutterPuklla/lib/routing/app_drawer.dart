@@ -8,6 +8,7 @@ import '../core/theme/puklla_dashboard_styles.dart';
 import '../core/theme/theme_mode_provider.dart';
 import '../core/widgets/puklla_avatar.dart';
 import '../features/auth/application/auth_controller.dart';
+import '../features/titulacion/application/titulacion_providers.dart';
 
 class AppDrawer extends ConsumerWidget {
   const AppDrawer({super.key});
@@ -159,6 +160,50 @@ class AppDrawer extends ConsumerWidget {
                       route: '/comunicados',
                       currentLocation: location,
                     ),
+                  ] else if (user?.esEgresado == true) ...[
+                    // Egresado: mismo menú que la web (layouts.alumno / profesionalizacion):
+                    // su cuenta con la titulación, bolsa, comunicados y guías. Sin matrícula,
+                    // calificaciones del año, investigaciones ni tutoría (son del alumno activo).
+                    const _SectionTitle(title: 'EGRESADO(A)'),
+                    _DrawerItem(
+                      icon: Icons.dashboard_outlined,
+                      label: 'Inicio · Mi cuenta de egresado',
+                      route: '/home',
+                      currentLocation: location,
+                    ),
+                    _DrawerItem(
+                      icon: Icons.workspace_premium_outlined,
+                      label: 'Mi proceso de titulación',
+                      route: '/titulacion',
+                      currentLocation: location,
+                    ),
+                    _DrawerItem(
+                      icon: Icons.badge_outlined,
+                      label: 'Mis datos · Ficha',
+                      route: '/ficha-tecnica',
+                      currentLocation: location,
+                    ),
+
+                    const SizedBox(height: 14),
+                    const _SectionTitle(title: 'OPORTUNIDADES Y RECURSOS'),
+                    _DrawerItem(
+                      icon: Icons.work_outline,
+                      label: 'Bolsa de Trabajo',
+                      route: '/bolsa-trabajo',
+                      currentLocation: location,
+                    ),
+                    _DrawerItem(
+                      icon: Icons.campaign_outlined,
+                      label: 'Comunicados Oficiales',
+                      route: '/comunicados',
+                      currentLocation: location,
+                    ),
+                    _DrawerItem(
+                      icon: Icons.local_library_outlined,
+                      label: 'Guías de TI, Tesis & Biblioteca Virtual',
+                      route: '/recursos',
+                      currentLocation: location,
+                    ),
                   ] else ...[
                     const _SectionTitle(title: 'MI ESPACIO ACADÉMICO'),
                     _DrawerItem(
@@ -190,10 +235,18 @@ class AppDrawer extends ConsumerWidget {
                     const _SectionTitle(title: 'INVESTIGACIÓN Y DESARROLLO'),
                     _DrawerItem(
                       icon: Icons.science_outlined,
-                      label: "Taq'e · Proyectos",
+                      label: 'Investigaciones',
                       route: '/taqe',
                       currentLocation: location,
                     ),
+                    // Solo si ya la tiene (FID desde el Ciclo IX o con proceso iniciado), como en la web.
+                    if (ref.watch(titulacionProvider).valueOrNull?.disponible == true)
+                      _DrawerItem(
+                        icon: Icons.workspace_premium_outlined,
+                        label: 'Mi proceso de titulación',
+                        route: '/titulacion',
+                        currentLocation: location,
+                      ),
                     _DrawerItem(
                       icon: Icons.local_library_outlined,
                       label: 'Guías de TI, Tesis & Biblioteca Virtual',

@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -17,6 +19,15 @@ class TaqeRepository {
     final response = await _dio.get('/taqe');
     final data = response.data['data'] as Map<String, dynamic>;
     return TaqeData.fromJson(data);
+  }
+
+  /// Guía del estudiante de Investigaciones (PDF), la misma que descarga la web.
+  Future<Uint8List> descargarGuiaPdf() async {
+    final response = await _dio.get<List<int>>(
+      '/taqe/guia-pdf',
+      options: Options(responseType: ResponseType.bytes),
+    );
+    return Uint8List.fromList(response.data!);
   }
 
   Future<List<TaqeCompanero>> fetchCompaneros(int cursoId) async {

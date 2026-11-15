@@ -8,6 +8,8 @@ class AuthUser {
     this.foto,
     required this.roles,
     this.beca = false,
+    this.condicion,
+    this.esEgresado = false,
     required this.alumnoId,
     required this.docenteId,
   });
@@ -21,6 +23,8 @@ class AuthUser {
       foto: json['foto'] as String?,
       roles: List<String>.from(json['roles'] as List? ?? const []),
       beca: json['beca'] as bool? ?? false,
+      condicion: json['condicion'] as String?,
+      esEgresado: json['es_egresado'] as bool? ?? false,
       alumnoId: json['alumno_id'] as int?,
       docenteId: json['docente_id'] as int?,
     );
@@ -33,6 +37,13 @@ class AuthUser {
   final String? foto;
   final List<String> roles;
   final bool beca;
+
+  /// `condicion` del usuario en la web (Regular, Egresado…).
+  final String? condicion;
+
+  /// Egresado: la web le da su propia intranet (titulación, bolsa, comunicados),
+  /// sin matrícula, cursos del periodo, tutoría ni investigaciones.
+  final bool esEgresado;
   final int? alumnoId;
   final int? docenteId;
 

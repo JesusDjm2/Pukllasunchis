@@ -34,13 +34,17 @@ class PukllaBottomNavBar extends ConsumerWidget {
     final esTutor = user?.isTutor == true || resumen?.esTutor == true;
     final homeRoute = esDocenteOTutor ? '/docente' : '/home';
 
+    // Egresado: sin notas del año ni tutoría (como en su intranet web); en su
+    // lugar, su titulación y las guías de TI/Tesis.
+    final esEgresado = !esDocenteOTutor && user?.esEgresado == true;
+
     int? activeIndex;
     if (!esDocenteOTutor) {
       if (location == '/home') {
         activeIndex = 0;
-      } else if (location.startsWith('/calificaciones')) {
+      } else if (location.startsWith(esEgresado ? '/titulacion' : '/calificaciones')) {
         activeIndex = 1;
-      } else if (location.startsWith('/tutoria')) {
+      } else if (location.startsWith(esEgresado ? '/recursos' : '/tutoria')) {
         activeIndex = 2;
       } else if (location.startsWith('/bolsa-trabajo')) {
         activeIndex = 3;
@@ -164,24 +168,45 @@ class PukllaBottomNavBar extends ConsumerWidget {
                       isDark: isDark,
                       onTap: () => navigateTo(homeRoute),
                     ),
-                    _NavItem(
-                      index: 1,
-                      label: 'Notas',
-                      icon: Icons.grade_outlined,
-                      selectedIcon: Icons.grade_rounded,
-                      isSelected: activeIndex == 1,
-                      isDark: isDark,
-                      onTap: () => navigateTo('/calificaciones'),
-                    ),
-                    _NavItem(
-                      index: 2,
-                      label: 'Tutoría',
-                      icon: Icons.support_agent_outlined,
-                      selectedIcon: Icons.support_agent_rounded,
-                      isSelected: activeIndex == 2,
-                      isDark: isDark,
-                      onTap: () => navigateTo('/tutoria'),
-                    ),
+                    if (esEgresado) ...[
+                      _NavItem(
+                        index: 1,
+                        label: 'Titulación',
+                        icon: Icons.workspace_premium_outlined,
+                        selectedIcon: Icons.workspace_premium_rounded,
+                        isSelected: activeIndex == 1,
+                        isDark: isDark,
+                        onTap: () => navigateTo('/titulacion'),
+                      ),
+                      _NavItem(
+                        index: 2,
+                        label: 'Guías',
+                        icon: Icons.local_library_outlined,
+                        selectedIcon: Icons.local_library_rounded,
+                        isSelected: activeIndex == 2,
+                        isDark: isDark,
+                        onTap: () => navigateTo('/recursos'),
+                      ),
+                    ] else ...[
+                      _NavItem(
+                        index: 1,
+                        label: 'Notas',
+                        icon: Icons.grade_outlined,
+                        selectedIcon: Icons.grade_rounded,
+                        isSelected: activeIndex == 1,
+                        isDark: isDark,
+                        onTap: () => navigateTo('/calificaciones'),
+                      ),
+                      _NavItem(
+                        index: 2,
+                        label: 'Tutoría',
+                        icon: Icons.support_agent_outlined,
+                        selectedIcon: Icons.support_agent_rounded,
+                        isSelected: activeIndex == 2,
+                        isDark: isDark,
+                        onTap: () => navigateTo('/tutoria'),
+                      ),
+                    ],
                     _NavItem(
                       index: 3,
                       label: 'Bolsa',

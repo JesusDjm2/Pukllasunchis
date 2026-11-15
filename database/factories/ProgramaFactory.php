@@ -13,6 +13,8 @@ class ProgramaFactory extends Factory
     {
         return [
             'nombre' => fake()->unique()->words(3, true),
+            // NOT NULL desde 2026_09_29_000000_add_modalidad_nivel_eib_to_programas_table.
+            'modalidad' => 'FID',
         ];
     }
 }
