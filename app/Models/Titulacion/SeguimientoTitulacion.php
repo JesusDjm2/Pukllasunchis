@@ -61,6 +61,12 @@ class SeguimientoTitulacion extends Model
         return $this->hasMany(Resolucion::class, 'seguimiento_id');
     }
 
+    /** Solicitudes de carta de aceptación de la IE (la más reciente primero). */
+    public function cartasAceptacion()
+    {
+        return $this->hasMany(CartaAceptacion::class, 'seguimiento_id')->latest('id');
+    }
+
     public function documentos()
     {
         return $this->hasMany(Documento::class, 'seguimiento_id');

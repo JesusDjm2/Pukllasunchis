@@ -1,5 +1,5 @@
 {{--
-    Tarjeta de un grupo Taq'e para docente, Investigador y Super Admin — misma estructura que la del
+    Tarjeta de un grupo de Investigaciones para docente, Investigador y Super Admin — misma estructura que la del
     alumno (alumnos/taqe/index): cabecera con el tono de su Proyecto Integrador, avance en 3 pasos, equipo a
     todo el ancho y debajo Evidencias (izquierda) | Trabajo final (derecha).
     Espera: $grupo; opcionales:

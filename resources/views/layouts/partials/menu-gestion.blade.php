@@ -147,7 +147,15 @@
                     <h6 class="collapse-header mt-2">Control del sistema</h6>
                     <a class="collapse-item {{ $activo('bitacora.*') }}" href="{{ route('bitacora.index') }}">Bitácora de accesos</a>
                     @if (Route::has('admin.taqe.index'))
-                        <a class="collapse-item {{ $activo('admin.taqe.*') }}" href="{{ route('admin.taqe.index') }}">Taq'e — Gestión</a>
+                        <a class="collapse-item {{ $activo('admin.taqe.*') }}" href="{{ route('admin.taqe.index') }}">Investigaciones — Gestión</a>
+                    @endif
+                    @if (Route::has('pukllabot.reindexar'))
+                        {{-- Tras editar storage/app/pukllabot (enlaces, FAQ): el chat responde con lo nuevo. --}}
+                        <form method="POST" action="{{ route('pukllabot.reindexar') }}" class="m-0"
+                              onsubmit="return confirm('¿Reindexar el conocimiento de PukllaBot con los textos actuales?');">
+                            @csrf
+                            <button type="submit" class="collapse-item border-0 bg-transparent w-100 text-left">Reindexar PukllaBot</button>
+                        </form>
                     @endif
                 @endif
             </div>

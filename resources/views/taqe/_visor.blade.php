@@ -1,5 +1,5 @@
 {{--
-    Visor emergente de archivos Taq'e (imagen, PDF, video, audio; Word: abrir/descargar), común a
+    Visor emergente de archivos de Investigaciones (imagen, PDF, video, audio; Word: abrir/descargar), común a
     todas las vistas. Cada enlace "ver" lleva class="js-tq-previa" + data-tipo, data-nombre y
     data-descargar; sin JS el enlace abre la pestaña nueva. Requiere taqe/_estilos.
 --}}

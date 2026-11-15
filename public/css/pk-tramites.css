@@ -62,10 +62,38 @@ body.dim-mode .tr-ayuda__icono { color: #241a24; }
 
 .tr-tramite__cuerpo { padding: .1rem .9rem .85rem 3.15rem; font-size: .86rem; }
 
+/* Marca Caja Cusco */
+.caja-cusco-brand,
+.text-caja-cusco {
+    color: #d3141b !important;
+    font-weight: 700;
+}
+
 /* Pago */
-.tr-pago { margin-bottom: .75rem; padding: .6rem .75rem; border: 1px dashed var(--tr-oro); border-radius: .55rem; background: var(--tr-oro-f); }
-.tr-pago__eti { display: flex; align-items: center; gap: .4rem; font-size: .78rem; font-weight: 700; color: var(--tr-oro); margin-bottom: .35rem; }
-.tr-pago__eti span { font-weight: 500; }
+.tr-pago {
+    margin-bottom: .75rem;
+    padding: .75rem .85rem;
+    border: 1px solid #fecaca;
+    border-left: 4px solid #d3141b;
+    border-radius: .55rem;
+    background: #fffafa;
+}
+.tr-pago__eti {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    font-size: .8rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: .45rem;
+}
+.tr-pago__eti i {
+    color: #d3141b;
+}
+.tr-pago__eti span {
+    font-weight: 500;
+    color: #6b7280;
+}
 .tr-pago__datos { display: flex; flex-wrap: wrap; gap: .35rem 1.25rem; margin: 0; }
 .tr-pago__datos dt { font-size: .66rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--tr-suave); }
 .tr-pago__datos dd { margin: 0; font-weight: 700; color: var(--tr-texto); display: flex; align-items: center; gap: .3rem; }

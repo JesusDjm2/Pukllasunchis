@@ -1,5 +1,5 @@
 {{--
-    Botón "Descargar" (ZIP) de un grupo Taq'e para docentes a cargo, Investigador y Super Admin.
+    Botón "Descargar" (ZIP) de un grupo de Investigaciones para docentes a cargo, Investigador y Super Admin.
     Menú propio con <details> (sin Bootstrap): el dropdown anterior quedaba recortado por la tarjeta.
     Parámetros: $grupo (con evidencias y finales cargados), $rutaZip (name de ruta con {grupo}/{que}).
 --}}

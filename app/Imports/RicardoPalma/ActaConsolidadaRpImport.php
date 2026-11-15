@@ -47,7 +47,8 @@ class ActaConsolidadaRpImport implements ToCollection, WithHeadingRow
 
         try {
             foreach ($rows as $index => $row) {
-                $numFila = $index + 2; // +2 por encabezado base 1
+                // +2 por encabezado base 1; las filas armadas desde el formato acta traen su propia referencia
+                $numFila = $row['_fila'] ?? $index + 2;
 
                 $periodoRaw = trim((string) ($row['periodo'] ?? ''));
                 $programaStr = mb_strtoupper(trim((string) ($row['programa'] ?? '')));
@@ -252,10 +253,11 @@ class ActaConsolidadaRpImport implements ToCollection, WithHeadingRow
         }
     }
 
-    protected function error(int $fila, string $mensaje): void
+    /** $fila: número de fila, una referencia ya armada («Hoja «ACTA», fila 14») o null (mensaje completo). */
+    public function error(int|string|null $fila, string $mensaje): void
     {
         $this->fallidos++;
-        $this->errores[] = "Fila {$fila}: {$mensaje}";
+        $this->errores[] = $fila === null ? $mensaje : (is_int($fila) ? "Fila {$fila}" : $fila).": {$mensaje}";
     }
 
     /** «1996-II», «1996-2», «1996 II», «1996II» → «1996-II»; null si no se reconoce. */
@@ -282,8 +284,9 @@ class ActaConsolidadaRpImport implements ToCollection, WithHeadingRow
                 return null;
             }
         }
-        $texto = trim((string) $valor);
-        foreach (['d/m/Y', 'd-m-Y', 'Y-m-d', 'd/m/y'] as $formato) {
+        // «16 - 01 - 98» del acta escrita a máquina → «16-01-98»
+        $texto = preg_replace('/\s*([-\/.])\s*/', '$1', trim((string) $valor));
+        foreach (['d/m/Y', 'd-m-Y', 'Y-m-d', 'd/m/y', 'd-m-y', 'd.m.Y'] as $formato) {
             try {
                 $fecha = Carbon::createFromFormat('!'.$formato, $texto);
                 if ($fecha && $fecha->format($formato) === $texto) {

@@ -9,7 +9,7 @@ use App\Models\TaqeTrabajo;
 use Illuminate\Http\Request;
 
 /**
- * Taq'e para los docentes encargados/organizadores de un Proyecto Integrador (tabla proyecto_docente):
+ * Investigaciones para los docentes encargados/organizadores de un Proyecto Integrador (tabla proyecto_docente):
  * ven TODOS los grupos del proyecto, aunque no dicten esos cursos, con sus archivos y ZIP. Solo lectura.
  * Admin y super-admin también pueden entrar.
  */

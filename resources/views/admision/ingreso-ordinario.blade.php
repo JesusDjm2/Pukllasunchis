@@ -156,7 +156,7 @@
                 </p>
                 <ul class="listasCuerpo">
                     <li>
-                        Hacer el pago de S/150 soles por derecho a la inscripción en las oficinas de Caja Cusco.
+                        Hacer el pago de S/150 soles por derecho a la inscripción en las oficinas de <strong style="color: #d3141b;">Caja Cusco</strong>.
                     </li>
                     <li> Llenar FICHA DE INSCRIPCIÓN</li>
                     <li>
@@ -250,7 +250,7 @@
                         </div>
                         <div class="step-content">
                             <h3>Realiza el pago por Derecho de Inscripción</h3>
-                            <p>s/150.00 (ciento cincuenta soles) en agentes de <span class="text-danger">Caja Cusco</span>
+                            <p>s/150.00 (ciento cincuenta soles) en agentes de <span class="text-danger" style="color: #d3141b !important; font-weight: 700;">Caja Cusco</span>
                             </p>
                             <p>Indicar concepto y código: EXAMEN DE ADMISION - 1 </p>
                         </div>

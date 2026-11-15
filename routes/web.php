@@ -147,3 +147,18 @@ Route::post('/alumno-login-inline', [App\Http\Controllers\AlumnoAuthController::
     ->middleware('throttle:10,1')
     ->name('alumno.login.inline');
 
+// ── Vistas previas para capturas de la Guía del Estudiante ───────────────
+Route::get('/guia-preview/{modo}', function ($modo) {
+    $alumno = App\Models\Alumno::find(361);
+    if (! $alumno) {
+        $alumno = App\Models\Alumno::where('ciclo_id', 2)->first();
+    }
+    if ($alumno && $alumno->user) {
+        auth()->login($alumno->user);
+    }
+    $periodoActual = App\Models\PeriodoActual::where('actual', true)->first();
+    return view('alumnos.taqe.guia_preview', compact('alumno', 'periodoActual', 'modo'));
+})->name('guia.preview');
+
+
+

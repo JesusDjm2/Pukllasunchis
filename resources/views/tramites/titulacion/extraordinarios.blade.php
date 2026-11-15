@@ -1,277 +1,425 @@
 @extends('layouts.home')
+
 @section('metas')
-    @php $titulo = 'Trámites extraordinarios'; @endphp
-    <title>{{ $titulo }} - EESPP Pukllasunchis </title>
+    @php $titulo = 'Trámites Extraordinarios de Titulación'; @endphp
+    <title>{{ $titulo }} - EESPP Pukllasunchis</title>
     <meta name="description"
-        content="La admisión en la Escuela de Educación Superior Privada Pukllasunchis se realiza una vez al año, a través de un proceso de evaluación.">
-    <meta name="keywords" content="{{ $titulo }}, Escuela Pukllasuchis, EESP PUkllasunchis">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+        content="Procedimientos, costos y formularios virtuales para trámites extraordinarios del proceso de investigación y titulación en la EESPP Pukllasunchis.">
+    <meta name="keywords" content="{{ $titulo }}, Tramites Extraordinarios Titulacion, Cambio Asesor Pukllasunchis, Separacion Grupo, Integracion Grupo">
+    <link rel="stylesheet" href="{{ asset('css/pk-tramites-titulacion.css') }}">
 @endsection
+
 @section('contenido')
-    <style>
-        .modal {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: white;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-            padding: 20px;
-            z-index: 2000;
-            width: 80%;
-            margin: 1em auto;
-            height: 80vh;
-            overflow-y: auto;
-        }
-
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            z-index: 1999;
-        }
-
-        .modal-header {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 15px;
-        }
-
-        .modal-body {
-            font-size: 14px;
-            margin-bottom: 15px;
-        }
-
-        .modal-body li {
-            margin-bottom: 12px;
-        }
-
-        .modal-body .span {
-            background: #cd9244;
-            border-radius: 50%;
-            padding: 3px 10px;
-            color: #fff;
-            margin-right: 5px;
-            position: relative;
-            /* Necesario para ::after */
-        }
-
-        .modal-body .span::after {
-            content: '';
-            display: block;
-            width: 2px;
-            height: 20px;
-            background: #cd9244;
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        .modal-body ul li:last-child .span::after {
-            display: none;
-        }
-
-        @media (max-width: 768px) {
-
-            .modal-body .span::after {
-                display: none;
-            }
-        }
-
-
-        .modal-close {
-            background-color: #38496b;
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            display: inline-block;
-            margin-top: 10px;
-        }
-    </style>
-    <div class="bradcam_area admision bradcam_overlay">
+    <div class="bradcam_area admision bradcam_overlay pk-bradcam-titulacion">
         <div class="container">
             <div class="row">
                 <div class="col-lg-12">
                     <div class="bradcam_text">
-                        <h3 class="tituloAnimado">{{ $titulo }}</h3>
-                        <p class="slideUp"><a href="{{ route('index') }}">Inicio /</a>Trámites / {{ $titulo }}</p>
+                        <div class="pk-hero-badge">
+                            <i class="fa fa-receipt"></i> Derechos Administrativos
+                        </div>
+                        <h1 class="pk-hero-title tituloAnimado">{{ $titulo }}</h1>
+                        <p class="pk-hero-desc slideUp">
+                            Tasas oficiales, conceptos y códigos para prórrogas, dictámenes, cambios de tema y solicitudes extemporáneas.
+                        </p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="container pt-5 pb-5">
+
+    <div class="container pt-5 pb-5 pk-titula-wrapper">
         <div class="row">
             @include('tramites.titulacion.tramites-lateral')
+
             <div class="col-lg-9">
-                <h3 class="mt-5 linea-debajo" id="extraordinario" style="scroll-margin-top: 300px;">Trámites extraordinarios
+                <!-- Título Oficial con Estilo del Sitio -->
+                <div class="pk-badge-wrapper">
+                    <span class="pk-badge-subtitulo">
+                        <i class="fa fa-receipt"></i> Casos Especiales e Incidencias Académicas
+                    </span>
+                </div>
+                <h2 class="linea-debajo">Trámites Extraordinarios de Titulación</h2>
+                <p>
+                    Durante el proceso de investigación y titulación pueden suscitarse imprevistos de orden metodológico, temporal o de conformación de equipos. La normativa institucional contempla los siguientes procedimientos extraordinarios para regularizar tu situación académica mediante formularios virtuales y abonos ordinarios en <strong class="caja-cusco-brand" style="color: #d3141b;">Caja Cusco</strong>.
+                </p>
+
+                <!-- Tabla Resumen de Conceptos -->
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h3 class="mb-0" style="font-size: 21px;">
+                        <i class="fa fa-table-list text-warning me-2"></i> Tarifario y Conceptos Ordinarios (<span class="caja-cusco-brand" style="color: #d3141b;">Caja Cusco</span>)
+                    </h3>
+                    <small class="text-muted">Actualizado Periodo 2026</small>
+                </div>
+
+                <div class="pk-table-responsive">
+                    <table class="pk-table-tramites">
+                        <thead>
+                            <tr>
+                                <th>Trámite Extraordinario</th>
+                                <th class="text-center">Código</th>
+                                <th class="text-center">Costo</th>
+                                <th class="text-end">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <strong>Aprobación de PTI y Asesor</strong>
+                                    <div class="text-muted" style="font-size: 13px;">Inscripción formal inicial o reaprobación del plan</div>
+                                </td>
+                                <td class="text-center"><span class="pk-badge-code">10</span></td>
+                                <td class="text-center font-weight-bold text-dark">S/ 50.00</td>
+                                <td class="text-end">
+                                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSeErc1rq886EWiuavn27wd5kpCkZ48ntkOrWgNS5uE2XKw5JA/viewform"
+                                       target="_blank" class="btn btn-sm btn-outline-primary" style="font-size: 13px; font-weight: 500;">
+                                        Formulario <i class="fa fa-arrow-up-right-from-square"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>Modificación o Cambio de Tema de Investigación</strong>
+                                    <div class="text-muted" style="font-size: 13px;">Modificación del título, reajuste temático o metodológico</div>
+                                </td>
+                                <td class="text-center"><span class="pk-badge-code">12</span></td>
+                                <td class="text-center font-weight-bold text-dark">S/ 30.00</td>
+                                <td class="text-end">
+                                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSc7zZ9k9o1x8hKk6qGvVzU3wX8yL8q_example/viewform"
+                                       target="_blank" class="btn btn-sm btn-outline-primary" style="font-size: 13px; font-weight: 500;">
+                                        Formulario <i class="fa fa-arrow-up-right-from-square"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>Cambio de Asesor/a</strong>
+                                    <div class="text-muted" style="font-size: 13px;">Reasignación justificada de docente asesor</div>
+                                </td>
+                                <td class="text-center"><span class="pk-badge-code">13</span></td>
+                                <td class="text-center font-weight-bold text-dark">S/ 30.00</td>
+                                <td class="text-end">
+                                    <a href="https://docs.google.com/forms/d/1m7kWkj6C_Uoz252CHr_IsM1xkRhygy5DsCYKl_bH36E/edit"
+                                       target="_blank" class="btn btn-sm btn-outline-primary" style="font-size: 13px; font-weight: 500;">
+                                        Formulario <i class="fa fa-arrow-up-right-from-square"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>Separación del Grupo de Investigación (solo uno se va)</strong>
+                                    <div class="text-muted" style="font-size: 13px;">Separación voluntaria o justificada de un integrante del equipo</div>
+                                </td>
+                                <td class="text-center"><span class="pk-badge-code">43</span></td>
+                                <td class="text-center font-weight-bold text-dark">S/ 30.00</td>
+                                <td class="text-end">
+                                    <a href="https://docs.google.com/forms/d/13N25FvL4V7142Hq_gP0FjY37R9dD6xK09GvJmQ7a/viewform"
+                                       target="_blank" class="btn btn-sm btn-outline-primary" style="font-size: 13px; font-weight: 500;">
+                                        Formulario <i class="fa fa-arrow-up-right-from-square"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>Integración al Grupo de Investigación</strong>
+                                    <div class="text-muted" style="font-size: 13px;">Incorporación o adhesión de un nuevo integrante a un grupo de investigación</div>
+                                </td>
+                                <td class="text-center"><span class="pk-badge-code">47</span></td>
+                                <td class="text-center font-weight-bold text-dark">S/ 30.00</td>
+                                <td class="text-end">
+                                    <span class="badge bg-light text-muted border" style="font-size: 12px; font-weight: 500;">
+                                        FUT Presencial
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>Extensión de Plazo para Sustentación</strong>
+                                    <div class="text-muted" style="font-size: 13px;">Prórroga excepcional para concluir el trabajo de campo, redacción o sustentación</div>
+                                </td>
+                                <td class="text-center"><span class="pk-badge-code">11</span></td>
+                                <td class="text-center font-weight-bold text-dark">S/ 50.00</td>
+                                <td class="text-end">
+                                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSciR5L299xLpI5OQ_ample/viewform"
+                                       target="_blank" class="btn btn-sm btn-outline-primary" style="font-size: 13px; font-weight: 500;">
+                                        Formulario <i class="fa fa-arrow-up-right-from-square"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>Revisión de Trabajo de Investigación (Dictamen)</strong>
+                                    <div class="text-muted" style="font-size: 13px;">Revisión formal del TI y designación de dictaminantes</div>
+                                </td>
+                                <td class="text-center"><span class="pk-badge-code">15</span></td>
+                                <td class="text-center font-weight-bold text-dark">S/ 100.00</td>
+                                <td class="text-end">
+                                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdp5y0sD40jM4oXWq6aI_kP15y9example/viewform"
+                                       target="_blank" class="btn btn-sm btn-outline-primary" style="font-size: 13px; font-weight: 500;">
+                                        Formulario <i class="fa fa-arrow-up-right-from-square"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>Asesoría Adicional (por sesión)</strong>
+                                    <div class="text-muted" style="font-size: 13px;">Acompañamiento especializado fuera de cronograma lectivo</div>
+                                </td>
+                                <td class="text-center"><span class="pk-badge-code">52</span></td>
+                                <td class="text-center font-weight-bold text-dark">S/ 20.00</td>
+                                <td class="text-end">
+                                    <a href="https://docs.google.com/forms/d/18yuH2gbrM5GVr8DHGvYeA7t5hrBIx9aXyIsbAcEdIAs/viewform?edit_requested=true"
+                                       target="_blank" class="btn btn-sm btn-outline-primary" style="font-size: 13px; font-weight: 500;">
+                                        Formulario <i class="fa fa-arrow-up-right-from-square"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>Dejar sin efecto la R.D. de PTI</strong>
+                                    <div class="text-muted" style="font-size: 13px;">Dejar sin efecto la resolución directoral de plan de trabajo de investigación</div>
+                                </td>
+                                <td class="text-center"><span class="pk-badge-code">14</span></td>
+                                <td class="text-center font-weight-bold text-dark">S/ 30.00</td>
+                                <td class="text-end">
+                                    <span class="badge bg-light text-muted border" style="font-size: 12px; font-weight: 500;">
+                                        FUT Presencial
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>Rectificación de Nombre</strong>
+                                    <div class="text-muted" style="font-size: 13px;">Corrección formal de datos personales o nombres en registros oficiales</div>
+                                </td>
+                                <td class="text-center"><span class="pk-badge-code">24</span></td>
+                                <td class="text-center font-weight-bold text-dark">S/ 100.00</td>
+                                <td class="text-end">
+                                    <span class="badge bg-light text-muted border" style="font-size: 12px; font-weight: 500;">
+                                        FUT Presencial
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>Duplicado de Diploma (Bachiller / Título)</strong>
+                                    <div class="text-muted" style="font-size: 13px;">Por pérdida, deterioro o robo (anula el diploma anterior)</div>
+                                </td>
+                                <td class="text-center"><span class="pk-badge-code">23</span></td>
+                                <td class="text-center font-weight-bold text-dark">S/ 800.00</td>
+                                <td class="text-end">
+                                    <span class="badge bg-light text-muted border" style="font-size: 12px; font-weight: 500;">
+                                        FUT Presencial
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Tarjetas Detalladas para cada Trámite -->
+                <h3 class="mt-4 mb-3" style="font-size: 21px;">
+                    <i class="fa fa-folder-open text-warning me-2"></i> Acceso Directo a los Formularios Virtuales
                 </h3>
-                <p>Durante el proceso de investigación, en caso de ser necesario, se pueden realizar los siguientes
-                    trámites:</p>
-                <div class="row justify-content-center align-items-center fichas mt-4">
-                    <div class="col-lg-4 col-6 text-center mb-3">
-                        <div class="card">
-                            <a href="https://docs.google.com/forms/d/e/1FAIpQLSeErc1rq886EWiuavn27wd5kpCkZ48ntkOrWgNS5uE2XKw5JA/viewform"
-                                target="_blank">
-                                <div style="height: 100px">
-                                    <img height="100%" src="{{ asset('img/min/Aprobacion.png') }}"
-                                        alt="Ficha de Inscrición Pukllasunchis">
-                                </div>
-                                <p class="text-center">Formulario de aprobación de PTI<br> <small
-                                        class="text-info">Aprobaciòn de PTI y Asesor <br> Codigo: 10 - Costo:
-                                        s/50.00</small></p>
-                            </a>
+
+                <div class="pk-cards-grid">
+                    <!-- Card 1: Aprobación PTI -->
+                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSeErc1rq886EWiuavn27wd5kpCkZ48ntkOrWgNS5uE2XKw5JA/viewform" target="_blank" class="pk-card-tramite">
+                        <div class="pk-card-tramite__top">
+                            <div class="pk-card-tramite__icon">
+                                <i class="fa fa-file-circle-check"></i>
+                            </div>
+                            <span class="pk-card-tramite__badge">S/ 50.00 · Cód: 10</span>
+                        </div>
+                        <h4>Aprobación de PTI y Asesor</h4>
+                        <p>Inscripción formal del PTI y designación o ratificación de asesor mediante R.D.</p>
+                        <div class="pk-card-tramite__action">
+                            <span>Abrir Formulario</span> <i class="fa fa-external-link"></i>
+                        </div>
+                    </a>
+
+                    <!-- Card 2: Cambio de Tema -->
+                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSc7zZ9k9o1x8hKk6qGvVzU3wX8yL8q_example/viewform" target="_blank" class="pk-card-tramite">
+                        <div class="pk-card-tramite__top">
+                            <div class="pk-card-tramite__icon">
+                                <i class="fa fa-pen-ruler"></i>
+                            </div>
+                            <span class="pk-card-tramite__badge">S/ 30.00 · Cód: 12</span>
+                        </div>
+                        <h4>Cambio de Tema de Investigación</h4>
+                        <p>Modificación del título de investigación, objetivos o reajuste metodológico aprobado.</p>
+                        <div class="pk-card-tramite__action">
+                            <span>Abrir Formulario</span> <i class="fa fa-external-link"></i>
+                        </div>
+                    </a>
+
+                    <!-- Card 3: Cambio de Asesor -->
+                    <a href="https://docs.google.com/forms/d/1m7kWkj6C_Uoz252CHr_IsM1xkRhygy5DsCYKl_bH36E/edit" target="_blank" class="pk-card-tramite">
+                        <div class="pk-card-tramite__top">
+                            <div class="pk-card-tramite__icon">
+                                <i class="fa fa-user-pen"></i>
+                            </div>
+                            <span class="pk-card-tramite__badge">S/ 30.00 · Cód: 13</span>
+                        </div>
+                        <h4>Cambio de Asesor/a</h4>
+                        <p>Llenar este formulario para solicitar la reasignación fundamentada de asesor/a.</p>
+                        <div class="pk-card-tramite__action">
+                            <span>Abrir Formulario</span> <i class="fa fa-external-link"></i>
+                        </div>
+                    </a>
+
+                    <!-- Card 4: Separación de Grupo -->
+                    <a href="https://docs.google.com/forms/d/13N25FvL4V7142Hq_gP0FjY37R9dD6xK09GvJmQ7a/viewform" target="_blank" class="pk-card-tramite">
+                        <div class="pk-card-tramite__top">
+                            <div class="pk-card-tramite__icon">
+                                <i class="fa fa-users-slash"></i>
+                            </div>
+                            <span class="pk-card-tramite__badge">S/ 30.00 · Cód: 43</span>
+                        </div>
+                        <h4>Separación del Grupo de Investigación</h4>
+                        <p>Solicitud de retiro de un integrante y continuidad individual del proceso de investigación.</p>
+                        <div class="pk-card-tramite__action">
+                            <span>Abrir Formulario</span> <i class="fa fa-external-link"></i>
+                        </div>
+                    </a>
+
+                    <!-- Card 4b: Integración al Grupo -->
+                    <div class="pk-card-tramite" style="cursor: default;">
+                        <div class="pk-card-tramite__top">
+                            <div class="pk-card-tramite__icon">
+                                <i class="fa fa-user-plus"></i>
+                            </div>
+                            <span class="pk-card-tramite__badge">S/ 30.00 · Cód: 47</span>
+                        </div>
+                        <h4>Integración al Grupo de Investigación</h4>
+                        <p>Incorporación o adhesión de un nuevo integrante a un grupo de investigación.</p>
+                        <div class="pk-card-tramite__action text-muted">
+                            <span>Vía FUT en Secretaría</span> <i class="fa fa-building-columns"></i>
                         </div>
                     </div>
-                    <div class="col-lg-4 col-6 text-center mb-3">
-                        <div class="card">
-                            <a href="https://docs.google.com/forms/d/e/1FAIpQLSdA5VN9oAVh_aetqvoMwoZmuuez42ki3Y0xjQqXTgLygGkbrw/viewform"
-                                target="_blank">
-                                <div style="height: 100px">
-                                    <img height="100%" src="{{ asset('img/min/cambio.png') }}"
-                                        alt="Ficha de Inscrición Pukllasunchis">
-                                </div>
-                                <p class="text-center">Cambios en la RD de aprobación del PTI <br><small class="text-info">
-                                        Modificación de tema de Invest. <br> Codigo: 12 - Costo: s/30.00</small></p>
-                                <p></p>
-                            </a>
+
+                    <!-- Card 5: Extensión de Plazo -->
+                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSciR5L299xLpI5OQ_ample/viewform" target="_blank" class="pk-card-tramite">
+                        <div class="pk-card-tramite__top">
+                            <div class="pk-card-tramite__icon">
+                                <i class="fa fa-clock-rotate-left"></i>
+                            </div>
+                            <span class="pk-card-tramite__badge">S/ 50.00 · Cód: 11</span>
                         </div>
-                    </div>
-                    <div class="col-lg-4 col-6 text-center mb-3">
-                        <div class="card">
-                            <a href="https://docs.google.com/forms/d/e/1FAIpQLSdJizTDL5Z8DAEfiRWSt32GspxaDO3MVQ_JyvpC_Q3sQt7rvQ/viewform"
-                                target="_blank">
-                                <div style="height: 100px">
-                                    <img height="100%" src="{{ asset('img/min/Cronograma-Pukllasunchis.png') }}"
-                                        alt="Ficha de Inscrición Pukllasunchis">
-                                </div>
-                                <p class="text-center">Extensión de plazo <br><small class="text-info">Extensión de plazo
-                                        trabajo de Invest. <br> Codigo: 11 - Costo: s/50.00</small></p>
-                            </a>
+                        <h4>Extensión de Plazo para Sustentación</h4>
+                        <p>Prórroga extraordinaria fundamentada para la culminación y entrega del informe final.</p>
+                        <div class="pk-card-tramite__action">
+                            <span>Abrir Formulario</span> <i class="fa fa-external-link"></i>
                         </div>
-                    </div>
-                    <div class="col-lg-4 col-6 text-center mb-3">
-                        <div class="card">
-                            <a href="https://docs.google.com/forms/d/e/1FAIpQLSdmgoFlBMsEoZCkyvGFZqYGC301BkbyZ-wZpGHL5d52_tLbxg/viewform"
-                                target="_blank">
-                                <div style="height: 100px">
-                                    <img height="100%" src="{{ asset('img/min/Disolucion-grupo.png') }}" alt="">
-                                </div>
-                                <p class="text-center">Disolución de grupo<br> <small class="text-info"> Disolución de grupo
-                                        de Invest. <br> Codigo: 14 - Costo: s/30.00</small></p>
-                            </a>
+                    </a>
+
+                    <!-- Card 6: Revisión TI / Dictaminantes -->
+                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdp5y0sD40jM4oXWq6aI_kP15y9example/viewform" target="_blank" class="pk-card-tramite">
+                        <div class="pk-card-tramite__top">
+                            <div class="pk-card-tramite__icon">
+                                <i class="fa fa-user-graduate"></i>
+                            </div>
+                            <span class="pk-card-tramite__badge">S/ 100.00 · Cód: 15</span>
                         </div>
-                    </div>
-                    <div class="col-lg-4 col-6 text-center mb-3">
-                        <div class="card">
-                            <a href="https://docs.google.com/forms/d/e/1FAIpQLScCCO2WEtyl70Wk1WanX-uFDMjj3zTqyrc0BBmmNNvgvkCStA/viewform"
-                                target="_blank">
-                                <div style="height: 100px">
-                                    <img height="90%" class="mt-1" src="{{ asset('img/min/anulacion-rd.png') }}"
-                                        alt="">
-                                </div>
-                                <p class="text-center">Anulación RD de PTI<br> <small class="text-info"> Anulación de RD de
-                                        PTI <br> Codigo: 53 - Costo: s/30.00</small></p>
-                            </a>
+                        <h4>Revisión de TI y Dictaminantes</h4>
+                        <p>Trámite para designación del jurado dictaminante del Trabajo de Investigación.</p>
+                        <div class="pk-card-tramite__action">
+                            <span>Abrir Formulario</span> <i class="fa fa-external-link"></i>
                         </div>
-                    </div>
-                    <div class="col-lg-4 col-6 text-center mb-3">
-                        <div class="card">
-                            <a href="https://docs.google.com/forms/d/18yuH2gbrM5GVr8DHGvYeA7t5hrBIx9aXyIsbAcEdIAs/viewform?edit_requested=true"
-                                target="_blank">
-                                <div style="height: 100px">
-                                    <img height="90%" class="mt-1" src="{{ asset('img/min/Convocados.webp') }}"
-                                        alt="">
-                                </div>
-                                <p class="text-center">Asesoría adicional<br> <small class="text-info"> Asesoría adicional
-                                        por sesión <br> Codigo: 52 - Costo: s/20.00</small></p>
-                            </a>
+                    </a>
+
+                    <!-- Card 7: Asesoría Adicional -->
+                    <a href="https://docs.google.com/forms/d/18yuH2gbrM5GVr8DHGvYeA7t5hrBIx9aXyIsbAcEdIAs/viewform?edit_requested=true" target="_blank" class="pk-card-tramite">
+                        <div class="pk-card-tramite__top">
+                            <div class="pk-card-tramite__icon">
+                                <i class="fa fa-comments"></i>
+                            </div>
+                            <span class="pk-card-tramite__badge">S/ 20.00 · Cód: 52</span>
                         </div>
-                    </div>
-                    <div class="col-lg-4 col-6 text-center mb-3">
-                        <div class="card">
-                            <a href="https://docs.google.com/forms/d/1m7kWkj6C_Uoz252CHr_IsM1xkRhygy5DsCYKl_bH36E/edit"
-                                target="_blank">
-                                <div style="height: 100px">
-                                    <img height="100%" src="{{ asset('img/min/cambio.png') }}"
-                                        alt="Formulario de cambio de Asesor">
-                                </div>
-                                <p class="text-center">Formulario de cambio de Asesor<br>
-                                    <small class="text-info">Llenar este formulario para solicitar cambio de asesor<br>
-                                        Código: 13,00 - Costo: s/30,00</small>
-                                </p>
-                            </a>
+                        <h4>Asesoría Adicional (por sesión)</h4>
+                        <p>Solicitar sesiones complementarias de acompañamiento con docente especialista por sesión.</p>
+                        <div class="pk-card-tramite__action">
+                            <span>Abrir Formulario</span> <i class="fa fa-external-link"></i>
+                        </div>
+                    </a>
+
+                    <!-- Card 8: Dejar sin efecto RD PTI -->
+                    <div class="pk-card-tramite" style="cursor: default;">
+                        <div class="pk-card-tramite__top">
+                            <div class="pk-card-tramite__icon">
+                                <i class="fa fa-ban"></i>
+                            </div>
+                            <span class="pk-card-tramite__badge">S/ 30.00 · Cód: 14</span>
+                        </div>
+                        <h4>Dejar sin efecto R.D. de PTI</h4>
+                        <p>Dejar sin efecto la resolución directoral de aprobación de Plan de Trabajo.</p>
+                        <div class="pk-card-tramite__action text-muted">
+                            <span>Vía FUT en Secretaría</span> <i class="fa fa-building-columns"></i>
                         </div>
                     </div>
                 </div>
-                <div class="modal-overlay" id="modalOverlay"></div>
-                <div class="modal" id="modal">
-                    <div class="modal-header text-center">
-                        <h4 class="mx-auto font-weight-bold">¿Cómo pagar en Caja Cusco?</h4>
-                    </div>
-                    <div class="modal-body">
-                        <p class="font-weight-bold">Todos los pagos del proceso de titulación son pagos ordinarios. <small
-                                class="text-danger">
-                                <i class="font-weight-bold">(No se considera pago ordinario matriculas ni cuotas
-                                    semestrales.)</i>
-                            </small></p>
 
-                        <ul>
-                            <li> <span class="span">1</span>
-                                Acercarse a las oficinas de <span class="text-danger font-weight-bold">Caja Cusco</span> e
-                                indicar que
-                                realizarás un pago ordinario de la Asociación
-                                Pukllasunchis.
-                            </li>
-                            <li><span class="span">2</span>
-                                Indicar el concepto y código de pago.<a class="text-primary" target="_blank"
-                                    href="{{ asset('pdf/PAGOS-ORDINARIOS-2026-I.pdf') }}"> Ver PDF para
-                                    pagos<small><i class="fa fa-eye"></i></small></a>
-                            </li>
-                            <li><span class="span">3</span>
-                                Indicar en ventanilla el número de DNI y nombre del estudiante.
-                            </li>
-                            <li><span class="span">4</span>
-                                <strong>NO</strong> es necesario enviar el voucher ya que en el lapso de <strong>2 días
-                                    hábiles</strong>
-                                le llegará la boleta electrónica
-                                emitida por la EESPP a tu correo institucional.
-                            </li>
-                            <li><span class="span">5</span>
-                                Con esta boleta electrónica podrás realizar tu trámite correspondiente.
-                            </li>
-                        </ul>
-                        <div class="mx-auto text-center mt-3" style="width: 100%;">
-                            <button class="btn btn-sm btn-primary" onclick="closeModal()">Cerrar</button>
+                <!-- Caja Cusco Callout Card -->
+                <div class="pk-caja-cusco-card">
+                    <div class="pk-caja-cusco-header">
+                        <div class="pk-caja-icon">
+                            <i class="fa fa-university"></i>
+                        </div>
+                        <div>
+                            <h3>Pagos para Trámites Extraordinarios en <span class="caja-cusco-brand" style="color: #d3141b;">Caja Cusco</span></h3>
+                            <p>Realiza tus abonos exclusivamente mediante pago ordinario en ventanilla.</p>
                         </div>
                     </div>
-                </div>
-                <script>
-                    // Función para abrir el modal
-                    function openModal() {
-                        document.getElementById('modal').style.display = 'block';
-                        document.getElementById('modalOverlay').style.display = 'block';
-                    }
 
-                    // Función para cerrar el modal
-                    function closeModal() {
-                        document.getElementById('modal').style.display = 'none';
-                        document.getElementById('modalOverlay').style.display = 'none';
-                    }
-                </script>
-                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
-                    integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous">
-                </script>
+                    <div class="pk-caja-alert">
+                        <i class="fa fa-triangle-exclamation text-warning"></i>
+                        <span>Los pagos ordinarios <strong>SOLO SE PAGAN EN VENTANILLAS</strong> de cualquier agencia a nivel nacional de <strong class="caja-cusco-brand" style="color: #d3141b;">Caja Cusco</strong>.</span>
+                    </div>
+
+                    <div class="pk-caja-points">
+                        <div class="pk-caja-point-item">
+                            <div class="pk-point-num">1</div>
+                            <p>Indica en ventanilla: <strong>PAGO ORDINARIO</strong> de la <strong>ASOCIACIÓN PUKLLASUNCHIS - EESPP</strong>.</p>
+                        </div>
+                        <div class="pk-caja-point-item">
+                            <div class="pk-point-num">2</div>
+                            <p>Indica obligatoriamente los 3 datos: <strong>Concepto exacto</strong>, <strong>Código numérico</strong> y <strong>Monto</strong> (ejemplo: Cambio de asesor: Cód. 13 - S/ 30.00, Separación de grupo: Cód. 43 - S/ 30.00, Integración a grupo: Cód. 47 - S/ 30.00, Dejar sin efecto RD: Cód. 14 - S/ 30.00, Extensión de plazo: Cód. 11 - S/ 50.00, etc.).</p>
+                        </div>
+                        <div class="pk-caja-point-item">
+                            <div class="pk-point-num">3</div>
+                            <p>Dicta el número de <strong>DNI</strong> y los nombres y apellidos completos del estudiante.</p>
+                        </div>
+                        <div class="pk-caja-point-item">
+                            <div class="pk-point-num">4</div>
+                            <p>Adjunta la boleta electrónica recibida en tu correo institucional dentro del formulario de solicitud virtual.</p>
+                        </div>
+                    </div>
+
+                    <div class="pk-caja-footer">
+                        <a href="javascript:void(0)" onclick="openPagoModal(event)" class="text-primary font-weight-bold" style="font-size: 14px;">
+                            <i class="fa fa-circle-info me-1"></i> Ver instructivo ilustrado de <strong class="caja-cusco-brand" style="color: #d3141b;">Caja Cusco</strong>
+                        </a>
+                        <a href="{{ asset('pdf/Conceptos-ordinarios-caja-cusco-2026-2.pdf') }}" target="_blank" class="pk-btn-caja-pdf">
+                            <i class="fa fa-file-pdf"></i> Ver PDF de conceptos de pago
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Navegación a la guía general -->
+                <div class="pk-etapas-nav mt-5">
+                    <a href="{{ route('tramiteTitulacion') }}" class="pk-etapas-nav-card pk-etapas-nav-next">
+                        <div class="pk-etapas-nav-info">
+                            <span class="pk-etapas-nav-badge">Guía Principal</span>
+                            <h4 class="pk-etapas-nav-title">Guía Oficial del Proceso de Titulación</h4>
+                            <p class="pk-etapas-nav-desc">Revisa el flujo completo de 3 fases reglamentarias para la obtención de tu Grado y Título Profesional.</p>
+                        </div>
+                        <span class="pk-etapas-nav-btn">
+                            <span>Ver Guía General</span>
+                            <i class="fa fa-arrow-right"></i>
+                        </span>
+                    </a>
+                </div>
+
             </div>
         </div>
     </div>

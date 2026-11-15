@@ -36,6 +36,8 @@
                 @else
                     <span class="tc-exp tc-exp--falta">Sin expediente</span>
                 @endif
+                {{-- RD que aprueba el PTI: da inicio al proceso, siempre a la vista (ver RdPti). --}}
+                @include('titulacion._rd_pti_chip', ['seguimiento' => $seguimiento, 'personaId' => $egresado->id])
                 <span>{{ $egresado->ciclo?->programa?->nombre ?? $egresado->programa?->nombre ?? 'Sin programa' }}</span>
                 @if ($egresado->ciclo) <span class="tc-punto">{{ preg_match('/^[IVX]+$/', trim($egresado->ciclo->nombre)) ? 'Ciclo '.$egresado->ciclo->nombre : $egresado->ciclo->nombre }}</span> @endif
             </div>

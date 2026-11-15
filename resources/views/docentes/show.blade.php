@@ -1011,7 +1011,7 @@
             </div>
         </div>
 
-        {{-- Taq'e --}}
+        {{-- Investigaciones --}}
         @php $proyectosACargo = $docente->proyectosIntegradores()->orderBy('nombre')->get(); @endphp
         @if ($proyectosACargo->isNotEmpty())
             <div class="card docente-ui-card mb-3 mb-md-4">
@@ -1020,7 +1020,7 @@
                         <i class="fas fa-project-diagram mr-1"></i>Proyectos Integradores a tu cargo
                     </span>
                     @foreach ($proyectosACargo as $pi)
-                        <a href="{{ route('taqe.proyecto.index', $pi) }}" class="docente-curso-stat" title="Grupos Taq'e de este proyecto">
+                        <a href="{{ route('taqe.proyecto.index', $pi) }}" class="docente-curso-stat" title="Grupos de Investigaciones de este proyecto">
                             <i class="fas fa-flask"></i> {{ $pi->nombre }} · {{ $pi->pivot->rol === 'encargado' ? 'Encargado' : 'Organizador' }}
                         </a>
                     @endforeach
@@ -1190,11 +1190,11 @@
                                     <span class="docente-curso-stat"><i class="fas fa-tag"></i> {{ $curso->cc }}</span>
                                     <a href="{{ route('docente.alumnos', ['docente' => $docente->id, 'curso' => $curso->id]) }}" class="docente-curso-stat docente-curso-stat-link" title="Ver la lista de alumnos y contactarlos">
                                         <i class="fas fa-user-graduate"></i> Alumnos</a>
-                                    {{-- Taq'e --}}
+                                    {{-- Investigaciones --}}
                                     @php $nTaqe = $curso->taqeGrupos()->count(); @endphp
                                     @if ($nTaqe > 0)
                                         <a href="{{ route('docente.curso.taqe', ['docente' => $docente->id, 'curso' => $curso->id]) }}" class="docente-curso-stat"
-                                            title="Grupos Taq'e de este curso"><i class="fas fa-flask"></i> Taq'e · {{ $nTaqe }}</a>
+                                            title="Grupos de Investigaciones de este curso"><i class="fas fa-flask"></i> Investigaciones · {{ $nTaqe }}</a>
                                     @endif
                                     
                                 </div>
@@ -1603,11 +1603,11 @@
                                     <span class="docente-curso-stat"><i class="fas fa-tag"></i> {{ $curso->cc }}</span>
                                     <a href="{{ route('docente.alumnos', ['docente' => $docente->id, 'curso' => $curso->id]) }}" class="docente-curso-stat docente-curso-stat-link" title="Ver la lista de alumnos y contactarlos">
                                         <i class="fas fa-user-graduate"></i> Alumnos</a>
-                                    {{-- Taq'e --}}
+                                    {{-- Investigaciones --}}
                                     @php $nTaqe = $curso->taqeGrupos()->count(); @endphp
                                     @if ($nTaqe > 0)
                                         <a href="{{ route('docente.curso.taqe', ['docente' => $docente->id, 'curso' => $curso->id]) }}" class="docente-curso-stat"
-                                            title="Grupos Taq'e de este curso"><i class="fas fa-flask"></i> Taq'e · {{ $nTaqe }}</a>
+                                            title="Grupos de Investigaciones de este curso"><i class="fas fa-flask"></i> Investigaciones · {{ $nTaqe }}</a>
                                     @endif
                                     
                                 </div>

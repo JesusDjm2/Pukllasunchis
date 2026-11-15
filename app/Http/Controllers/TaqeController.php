@@ -29,7 +29,7 @@ class TaqeController extends Controller
     {
         $alumno = auth()->user()?->alumno;
 
-        // Taq'e es un espacio de trabajo entre alumnos activos: uno inhabilitado
+        // Investigaciones es un espacio de trabajo entre alumnos activos: uno inhabilitado
         // (retirado, con licencia, con deuda o cualquier otro motivo — el
         // criterio es "tiene el rol inhabilitado", sin excepción, a diferencia
         // de otros módulos que sí dejan pasar Deuda/Licencia) no debe poder
@@ -176,7 +176,7 @@ class TaqeController extends Controller
         // Proyecto Integrador: el curso debe tener uno y debe ser el del ciclo del propio alumno.
         $proyectoId = $curso->ciclo?->proyecto_id;
         if (! $proyectoId) {
-            return back()->withInput()->with('error', "El ciclo de ese curso no tiene un Proyecto Integrador asignado. Avisa a la coordinación para poder formar tu grupo Taq'e.");
+            return back()->withInput()->with('error', "El ciclo de ese curso no tiene un Proyecto Integrador asignado. Avisa a la coordinación para poder formar tu grupo de Investigaciones.");
         }
         if ((int) $this->proyectoDelAlumno($alumno) !== (int) $proyectoId) {
             return back()->withInput()->with('error', 'Ese curso pertenece al Proyecto Integrador de otro ciclo. Solo puedes formar grupo en el Proyecto Integrador de tu ciclo.');
@@ -188,7 +188,7 @@ class TaqeController extends Controller
             ->where('periodo_actual_id', $periodoActual->id)
             ->exists();
         if ($yaTieneGrupo) {
-            return back()->withInput()->with('error', "Ya perteneces a un grupo Taq'e este periodo. Solo se puede estar en un grupo por periodo.");
+            return back()->withInput()->with('error', "Ya perteneces a un grupo de Investigaciones este periodo. Solo se puede estar en un grupo por periodo.");
         }
 
         $grupo = TaqeGrupo::create([
@@ -280,7 +280,7 @@ class TaqeController extends Controller
                 ->exists();
 
             if ($yaTieneOtroGrupo) {
-                return back()->with('error', "Ya perteneces a un grupo Taq'e este periodo (solo se puede estar en uno). Sal de él primero si quieres cambiarte a este.");
+                return back()->with('error', "Ya perteneces a un grupo de Investigaciones este periodo (solo se puede estar en uno). Sal de él primero si quieres cambiarte a este.");
             }
 
             if ($grupo->proyecto_id && (int) $this->proyectoDelAlumno($alumno) !== (int) $grupo->proyecto_id) {
@@ -307,7 +307,7 @@ class TaqeController extends Controller
                         try {
                             $integrante->user->notify(new TaqeMiembroAcepto($grupo, $alumno));
                         } catch (\Throwable $e) {
-                            Log::warning("Notificación de nuevo integrante Taq'e a alumno {$integrante->id}: ".$e->getMessage());
+                            Log::warning("Notificación de nuevo integrante de Investigaciones a alumno {$integrante->id}: ".$e->getMessage());
                         }
                     }
                 });
@@ -360,7 +360,7 @@ class TaqeController extends Controller
                 try {
                     $integrante->user->notify(new TaqeMiembroSalio($grupo, $alumno, $huboCambioDeOrganizador));
                 } catch (\Throwable $e) {
-                    Log::warning("Notificación de salida de grupo Taq'e a alumno {$integrante->id}: ".$e->getMessage());
+                    Log::warning("Notificación de salida de grupo de Investigaciones a alumno {$integrante->id}: ".$e->getMessage());
                 }
             }
         }
@@ -391,7 +391,7 @@ class TaqeController extends Controller
             try {
                 $integrante->user->notify(new TaqeIntegranteRetirado($grupo));
             } catch (\Throwable $e) {
-                Log::warning("Notificación de retiro de grupo Taq'e a alumno {$integrante->id}: ".$e->getMessage());
+                Log::warning("Notificación de retiro de grupo de Investigaciones a alumno {$integrante->id}: ".$e->getMessage());
             }
         }
 
@@ -715,7 +715,7 @@ class TaqeController extends Controller
             try {
                 $nuevoOrganizador->user->notify(new TaqeOrganizadorCambiado($grupo));
             } catch (\Throwable $e) {
-                Log::warning("Notificación de nuevo organizador Taq'e a alumno {$nuevoOrganizador->id}: ".$e->getMessage());
+                Log::warning("Notificación de nuevo organizador de Investigaciones a alumno {$nuevoOrganizador->id}: ".$e->getMessage());
             }
         }
 
@@ -753,7 +753,7 @@ class TaqeController extends Controller
             try {
                 $investigador->notify(new TaqeSolicitudAyudaCreada($solicitud));
             } catch (\Throwable $e) {
-                Log::warning("Notificación de solicitud de ayuda Taq'e a investigador {$investigador->id}: ".$e->getMessage());
+                Log::warning("Notificación de solicitud de ayuda de Investigaciones a investigador {$investigador->id}: ".$e->getMessage());
             }
         }
 

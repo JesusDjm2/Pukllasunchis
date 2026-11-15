@@ -1,6 +1,6 @@
 @extends('layouts.docente')
 
-@section('titulo', "Taq'e — Seguimiento")
+@section('titulo', "Investigaciones — Seguimiento")
 
 @section('contenido')
     {{-- Mismo diseño que la vista del alumno (memoria: feedback_diseno_unificado). --}}
@@ -16,9 +16,9 @@
         <section class="al-hero">
             <div class="al-hero-fila">
                 <div class="al-hero-texto">
-                    <div class="al-kicker"><i class="fas fa-flask"></i> Taq'e · Ferias de Investigación</div>
+                    <div class="al-kicker"><i class="fas fa-flask"></i> Investigaciones · Ferias de Investigación</div>
                     <h1>Seguimiento institucional</h1>
-                    <p class="al-hero-sub">Todos los grupos Taq'e de la institución. Filtra por periodo, programa, ciclo y curso, revisa sus evidencias y atiende sus pedidos de ayuda.</p>
+                    <p class="al-hero-sub">Todos los grupos de Investigaciones de la institución. Filtra por periodo, programa, ciclo y curso, revisa sus evidencias y atiende sus pedidos de ayuda.</p>
                 </div>
             </div>
         </section>
@@ -45,7 +45,7 @@
                 'rutaZip' => 'taqe.investigador.descargar',
             ])
         @empty
-            <div class="al-card"><div class="al-vacio"><i class="fas fa-flask"></i>No hay grupos Taq'e con estos filtros.</div></div>
+            <div class="al-card"><div class="al-vacio"><i class="fas fa-flask"></i>No hay grupos de Investigaciones con estos filtros.</div></div>
         @endforelse
     </div>
 

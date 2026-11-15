@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Proyecto Integrador de un par de ciclos (ciclos.proyecto_id). Lo muestra el sílabo (Sección III) y
- * define en qué proyecto trabaja cada grupo Taq'e: un alumno solo participa en el de SU ciclo.
+ * define en qué proyecto trabaja cada grupo de Investigaciones: un alumno solo participa en el de SU ciclo.
  * La descripción es texto enriquecido (CKEditor) y se sanea al guardar con limpiarHtml().
  */
 class Proyecto extends Model
@@ -30,8 +30,8 @@ class Proyecto extends Model
     }
 
     /**
-     * ¿Está Taq'e instalado? En producción el módulo aún no existe (ni su tabla): el CRUD de proyectos
-     * oculta conteos y textos de Taq'e hasta que se despliegue, sin cambiar este código.
+     * ¿Está Investigaciones instalado? En producción el módulo aún no existe (ni su tabla): el CRUD de proyectos
+     * oculta conteos y textos de Investigaciones hasta que se despliegue, sin cambiar este código.
      */
     public static function taqeActivo(): bool
     {

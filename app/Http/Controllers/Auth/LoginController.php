@@ -40,6 +40,13 @@ class LoginController extends Controller
 
     protected function authenticated(Request $request, $user)
     {
+        // Llegó desde un enlace a «Mi titulación» (p. ej. el formulario de la carta en la página pública):
+        // vuelve ahí en lugar de ir a su panel. Solo para esas páginas, el resto del login no cambia.
+        $pedida = (string) $request->session()->get('url.intended');
+        if ($pedida !== '' && str_contains((string) parse_url($pedida, PHP_URL_PATH), '/mi-titulacion/')) {
+            return redirect()->intended();
+        }
+
         if ($user->hasRole('super-admin') || $user->hasRole('admin')) {
             return redirect()->route('admin')->with('userData', $user);
         } elseif ($user->hasRole('docente')) {

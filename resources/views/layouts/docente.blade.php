@@ -325,7 +325,7 @@
             $nombreSb = trim(($usuarioSb->name ?? '').' '.($usuarioSb->apellidos ?? '')) ?: ($docente->nombre ?? 'Docente');
             $inicialesSb = collect(preg_split('/\s+/', trim(($usuarioSb->name ?? '').' '.($usuarioSb->apellidos ?? ''))))
                 ->filter()->take(2)->map(fn ($p) => mb_strtoupper(mb_substr($p, 0, 1)))->implode('') ?: 'D';
-            // Proyectos Integradores a cargo: solo cuando Taq'e está instalado (ruta presente)
+            // Proyectos Integradores a cargo: solo cuando Investigaciones está instalado (ruta presente)
             $proyectosSb = Route::has('taqe.proyecto.index') && $docente && method_exists($docente, 'proyectosIntegradores')
                 ? $docente->proyectosIntegradores()->orderBy('nombre')->get()
                 : collect();
@@ -401,9 +401,9 @@
                 @endif
                 @if ($esInvestigadorSb)
                     <li class="nav-item">
-                        <a class="nav-link pk-sb-link {{ request()->routeIs('taqe.investigador.*') ? 'is-activo' : '' }}" href="{{ route('taqe.investigador.index') }}" title="Taq'e — Seguimiento">
+                        <a class="nav-link pk-sb-link {{ request()->routeIs('taqe.investigador.*') ? 'is-activo' : '' }}" href="{{ route('taqe.investigador.index') }}" title="Investigaciones — Seguimiento">
                             <span class="pk-sb-icono"><i class="fas fa-microscope"></i></span>
-                            <span class="pk-sb-texto">Taq'e — Seguimiento</span>
+                            <span class="pk-sb-texto">Investigaciones — Seguimiento</span>
                         </a>
                     </li>
                 @endif

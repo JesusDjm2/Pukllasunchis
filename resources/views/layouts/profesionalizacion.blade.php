@@ -53,6 +53,18 @@
                         <span>Mi cuenta de egresado</span>
                     </a>
                 </li>
+                <li class="nav-item {{ request()->routeIs('postulante.index') ? 'active' : '' }}">
+                    <a class="nav-link collapsed" href="{{ route('postulante.index') }}">
+                        <i class="fas fa-fw fa-briefcase"></i>
+                        <span>Bolsa de trabajo</span>
+                    </a>
+                </li>
+                <li class="nav-item {{ request()->routeIs('alumno.comunicados') ? 'active' : '' }}">
+                    <a class="nav-link collapsed" href="{{ route('alumno.comunicados') }}">
+                        <i class="fas fa-fw fa-bullhorn"></i>
+                        <span>Comunicados</span>
+                    </a>
+                </li>
             @else
             <li class="nav-item {{ request()->routeIs('ppd.index', 'ppd.edit') ? 'active' : '' }}">
                 <a class="nav-link collapsed" href="{{ route('ppd.index') }}">
@@ -78,9 +90,16 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link collapsed" target="_blank" rel="noopener noreferrer"
-                    href="https://sites.google.com/pukllavirtual.edu.pe/bibliotecaeesppuklla/inicio">
+                    href="https://pukllavirtual.eesppukllasunchis.edu.pe/" title="Biblioteca virtual (abre en otra pestaña)">
+                    <i class="fas fa-fw fa-book-reader"></i>
+                    <span>Biblioteca virtual</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link collapsed" target="_blank" rel="noopener noreferrer"
+                    href="https://sites.google.com/pukllavirtual.edu.pe/bibliotecaeesppuklla/inicio" title="Biblioteca anterior en Google Sites (abre en otra pestaña)">
                     <i class="fas fa-fw fa-university"></i>
-                    <span>Biblioteca</span>
+                    <span>Biblioteca anterior</span>
                 </a>
             </li>
             <li class="nav-item">

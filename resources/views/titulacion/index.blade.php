@@ -10,6 +10,12 @@
                 <p class="tl-hero__sub">Seguimiento del proceso de cada egresado: PTI, Trabajo de Investigación y Tesis.</p>
             </div>
             <div class="tl-hero__acciones">
+                {{-- Todas las solicitudes (PTI, cartas de aceptación…) en una sección con pestañas: BandejasSolicitudes. --}}
+                @php $solicitudesPorAtender = \App\Services\Titulacion\BandejasSolicitudes::total(); @endphp
+                <a href="{{ route('titulacion.solicitudes.index') }}" class="tl-hero__btn" title="Solicitudes de los estudiantes: aprobación de PTI, carta de aceptación…">
+                    <i class="fas fa-inbox"></i>Solicitudes
+                    @if ($solicitudesPorAtender)<span class="badge badge-warning ml-1">{{ $solicitudesPorAtender }}</span>@endif
+                </a>
                 <a href="{{ route('titulacion.asesores.index') }}" class="tl-hero__btn" title="Asesores y jurados que no son docentes con cuenta">
                     <i class="fas fa-user-tie"></i>Asesores
                 </a>
@@ -18,6 +24,9 @@
                 </a>
                 <a href="{{ route('titulacion.sincronizar.form') }}" @unless (\App\Services\Titulacion\AreasTitulacion::puede('super-admin')) hidden @endunless class="tl-hero__btn" title="Completar el proceso de cada persona desde la planilla de expedientes (EXP. PPD / FID)">
                     <i class="fas fa-file-import"></i>Sincronizar planilla
+                </a>
+                <a href="{{ route('titulacion.rdpti.normalizar') }}" @unless (\App\Services\Titulacion\AreasTitulacion::puede('super-admin')) hidden @endunless class="tl-hero__btn" title="Dejar la RD del PTI importada del Excel en formato «088-2021», con vista previa">
+                    <i class="fas fa-broom"></i>Normalizar RD del PTI
                 </a>
                 @if ($totalPendientes > 0 && \App\Services\Titulacion\AreasTitulacion::puedeRuta('crear-cuentas-masivo.preview'))
                     <a href="{{ route('titulacion.crear-cuentas-masivo.preview') }}" class="tl-hero__btn tl-hero__btn--oro">

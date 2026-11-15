@@ -28,6 +28,9 @@
         p.sin-sangria { text-indent: 0; }
         .centro { text-align: center; text-indent: 0; }
         .firma { margin-top: .7em; }
+
+        /* Ajustes propios de una RD (p. ej. compactar para que entre en una hoja). */
+        @yield('estilos')
     </style>
 </head>
 <body>

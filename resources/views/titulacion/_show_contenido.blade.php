@@ -229,6 +229,14 @@
             <div class="small text-muted mt-2">
                 <i class="fas fa-info-circle mr-1"></i>El grupo se reconoce por compartir una RD o un acta. Al generar una RD desde el sistema puede marcar a sus integrantes.
             </div>
+            @if (\App\Services\Titulacion\AreasTitulacion::puedeRuta('titulacion.grupo.editar'))
+                <div class="ft-grupo-corregir mt-2">
+                    <a href="{{ route('titulacion.grupo.editar', $egresado->id) }}" class="btn btn-sm btn-outline-warning">
+                        <i class="fas fa-people-arrows mr-1"></i>Corregir grupo (retiro / incorporación)
+                    </a>
+                    <span class="small text-muted ml-1">Para cambios con la RD ya emitida. Se revisa antes de guardar.</span>
+                </div>
+            @endif
         </div>
 
         {{-- ═══ Historial: resoluciones, actas y jurados, documentos ═══
@@ -410,6 +418,7 @@
             @include('titulacion._rd_slot', ['etiqueta' => 'Retiro del grupo (de esta persona)', 'res' => $rdDe('RetiroGrupo'), 'plantilla' => 'retiro_grupo', 'tabVolver' => 'tramites'])
             @include('titulacion._rd_slot', ['etiqueta' => 'Incorporación de un integrante a este grupo', 'res' => $rdDe('IncorporacionGrupo'), 'plantilla' => 'incorporacion_grupo', 'tabVolver' => 'tramites'])
             @include('titulacion._rd_slot', ['etiqueta' => 'Anulación de PTI', 'res' => $rdDe('AnulacionPti'), 'plantilla' => 'anulacion_pti', 'tabVolver' => 'tramites'])
+            @include('titulacion._rd_slot', ['etiqueta' => 'Extensión de plazo de PTI', 'res' => $rdDe('AmpliacionPti'), 'plantilla' => 'extension_plazo_pti', 'tabVolver' => 'tramites'])
             <details class="tp-mas" id="rdemitida-{{ $egresado->id }}">
                 <summary>Registrar una RD ya emitida (de otro tipo)</summary>
                 <div class="mt-2">@include('titulacion._form_resolucion', ['res' => null])</div>

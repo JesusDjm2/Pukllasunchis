@@ -18,7 +18,7 @@ use Illuminate\Http\Request;
 class EtapaTiController extends TitulacionController
 {
     /** Hito que debe estar logrado para registrar asesores/jurado de cada etapa. */
-    private const REQUISITO_ETAPA = ['ti' => 'pti_aprobado', 'tesis' => 'bachiller'];
+    private const REQUISITO_ETAPA = ['ti' => 'pti_carta', 'tesis' => 'bachiller'];
 
     /** Informe ITI del asesor: enlace externo (Drive, etc.) y el día en que lo compartió (plazo de
      * 8 días hábiles, ver PasosProceso::plazoInforme). Se guarda en el PTI vigente (link_iti, fecha_iti). */

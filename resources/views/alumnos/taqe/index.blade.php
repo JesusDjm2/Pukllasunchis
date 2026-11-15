@@ -1,5 +1,5 @@
 @extends('layouts.alumno')
-@section('titulo', "Taq'e")
+@section('titulo', "Investigaciones")
 @section('contenido')
     @include('alumnos.partials.ui')
     @include('taqe._estilos')
@@ -19,7 +19,7 @@
         <section class="al-hero">
             <div class="al-hero-fila">
                 <div class="al-hero-texto">
-                    <div class="al-kicker"><i class="fas fa-flask"></i> Taq'e · Ferias de Investigación</div>
+                    <div class="al-kicker"><i class="fas fa-flask"></i> Investigaciones · Ferias de Investigación</div>
                     <h1>Mis grupos de investigación</h1>
                     <p class="al-hero-sub">Forma tu equipo, sube las evidencias de tu proceso y presenta tu trabajo final.</p>
                     @if ($misGrupos->isNotEmpty())
@@ -100,11 +100,11 @@
                     <div class="al-card">
                         <div class="al-vacio py-5">
                             <i class="fas fa-flask"></i>
-                            <div class="font-weight-bold mb-1" style="color: var(--al-texto);">Aún no perteneces a ningún grupo Taq'e este periodo</div>
+                            <div class="font-weight-bold mb-1" style="color: var(--al-texto);">Aún no perteneces a ningún grupo de Investigaciones este periodo</div>
                             <div class="small mb-3">Crea uno para un curso y suma a tus compañeros; ellos aceptan la invitación desde aquí mismo.</div>
                             @if ($cursosSinGrupo->isNotEmpty())
                                 <button type="button" class="al-btn al-btn-oro" data-toggle="modal" data-target="#modalCrearGrupo">
-                                    <i class="fas fa-plus"></i> Crear mi primer grupo Taq'e
+                                    <i class="fas fa-plus"></i> Crear mi primer grupo de Investigaciones
                                 </button>
                             @endif
                         </div>
@@ -422,7 +422,7 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content tq-modal">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modalGuiaLabel"><i class="fas fa-route mr-1"></i> Cómo funciona Taq'e</h5>
+                    <h5 class="modal-title" id="modalGuiaLabel"><i class="fas fa-route mr-1"></i> Cómo funciona Investigaciones</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-body p-0">
@@ -448,6 +448,9 @@
                     </div>
                 </div>
                 <div class="modal-footer">
+                    <a href="{{ route('taqe.guia.pdf') }}" target="_blank" class="al-btn al-btn-oro al-btn-sm">
+                        <i class="fas fa-file-pdf"></i> Descargar Guía PDF
+                    </a>
                     <button type="button" class="al-btn al-btn-borde al-btn-sm" data-dismiss="modal">Entendido</button>
                 </div>
             </div>
@@ -464,7 +467,7 @@
                     <form action="{{ route('taqe.store') }}" method="POST" id="formCrearGrupo">
                         @csrf
                         <div class="modal-header">
-                            <h5 class="modal-title" id="modalCrearGrupoLabel"><i class="fas fa-flask mr-1"></i> Crear grupo Taq'e</h5>
+                            <h5 class="modal-title" id="modalCrearGrupoLabel"><i class="fas fa-flask mr-1"></i> Crear grupo de Investigaciones</h5>
                             <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button>
                         </div>
                         <div class="modal-body">

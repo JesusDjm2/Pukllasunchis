@@ -40,6 +40,30 @@
                 </div>
             </a>
             <hr class="sidebar-divider">
+            @php $esEgresadoFid = auth()->user()?->condicion === 'Egresado'; @endphp
+            @if ($esEgresadoFid)
+                {{-- Egresado FID: su intranet (/egresado) reúne titulación, estudios, trayectoria y oportunidades.
+                     Sin ficha de matrícula, calificaciones del año, investigaciones ni tutoría (son del alumno activo). --}}
+                <div class="sidebar-heading">Egresado(a) · FID</div>
+                <li class="nav-item {{ request()->routeIs('egresado.intranet') ? 'active' : '' }}">
+                    <a class="nav-link collapsed" href="{{ route('egresado.intranet') }}">
+                        <i class="fas fa-fw fa-user-graduate"></i>
+                        <span>Mi cuenta de egresado</span>
+                    </a>
+                </li>
+                <li class="nav-item {{ request()->routeIs('postulante.index') ? 'active' : '' }}">
+                    <a class="nav-link collapsed" href="{{ route('postulante.index') }}">
+                        <i class="fas fa-fw fa-briefcase"></i>
+                        <span>Bolsa de trabajo</span>
+                    </a>
+                </li>
+                <li class="nav-item {{ request()->routeIs('alumno.comunicados') ? 'active' : '' }}">
+                    <a class="nav-link collapsed" href="{{ route('alumno.comunicados') }}">
+                        <i class="fas fa-fw fa-bullhorn"></i>
+                        <span>Comunicados</span>
+                    </a>
+                </li>
+            @else
             <div class="sidebar-heading">
                 Dashboard Alumno
             </div>
@@ -60,7 +84,7 @@
                     <li class="nav-item {{ request()->routeIs('taqe.index') ? 'active' : '' }}">
                         <a class="nav-link collapsed" href="{{ route('taqe.index') }}">
                             <i class="fas fa-fw fa-flask"></i>
-                            <span>Taq'e
+                            <span>Investigaciones
                                 @php $taqePendientes = $alumno->taqeGrupos()->wherePivot('estado', 'pendiente')->count(); @endphp
                                 @if ($taqePendientes > 0)
                                     <span class="badge badge-warning">{{ $taqePendientes }}</span>
@@ -102,6 +126,7 @@
                     </a>
                 </li>
             @endif
+            @endif {{-- /menú de alumno activo --}}
             <hr class="sidebar-divider d-none d-md-block">
             <li class="nav-item {{ request()->routeIs('alumno.formatos') ? 'active' : '' }}">
                 <a class="nav-link collapsed" href="{{ route('alumno.formatos') }}">
@@ -111,9 +136,16 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link collapsed" target="_blank" rel="noopener noreferrer"
-                    href="https://sites.google.com/pukllavirtual.edu.pe/bibliotecaeesppuklla/inicio">
+                    href="https://pukllavirtual.eesppukllasunchis.edu.pe/" title="Biblioteca virtual (abre en otra pestaña)">
+                    <i class="fas fa-fw fa-book-reader"></i>
+                    <span>Biblioteca virtual</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link collapsed" target="_blank" rel="noopener noreferrer"
+                    href="https://sites.google.com/pukllavirtual.edu.pe/bibliotecaeesppuklla/inicio" title="Biblioteca anterior en Google Sites (abre en otra pestaña)">
                     <i class="fas fa-fw fa-university"></i>
-                    <span>Biblioteca</span>
+                    <span>Biblioteca anterior</span>
                 </a>
             </li>
             <li class="nav-item">
@@ -141,6 +173,8 @@
                                 Ver Horario {{ $periodoActual->nombre }}
                             </button>
                         </div>
+                    @elseif (auth()->user()?->condicion === 'Egresado')
+                        <span class="small text-muted ml-md-3 mb-0">Egresados · Formación Inicial Docente</span>
                     @else
                         <span class="small text-muted ml-md-3 mb-0">Sin horario asignado para este periodo.</span>
                     @endif

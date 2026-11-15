@@ -1,6 +1,6 @@
 @extends('layouts.docente')
 
-@section('titulo', "Taq'e — " . $curso->nombre)
+@section('titulo', "Investigaciones — " . $curso->nombre)
 
 @section('contenido')
     {{-- Mismo diseño que la vista del alumno (memoria: feedback_diseno_unificado). Solo lectura. --}}
@@ -11,7 +11,7 @@
         <section class="al-hero">
             <div class="al-hero-fila">
                 <div class="al-hero-texto">
-                    <div class="al-kicker"><i class="fas fa-flask"></i> Taq'e · Ferias de Investigación</div>
+                    <div class="al-kicker"><i class="fas fa-flask"></i> Investigaciones · Ferias de Investigación</div>
                     <h1>{{ $curso->nombre }}</h1>
                     <div class="al-chips">
                         <span class="al-chip"><i class="fas fa-graduation-cap"></i>{{ $curso->ciclo->programa->nombre ?? '—' }}</span>
@@ -37,7 +37,7 @@
         @forelse ($grupos as $grupo)
             @include('taqe._grupo-gestion', ['grupo' => $grupo, 'mostrarContexto' => false])
         @empty
-            <div class="al-card"><div class="al-vacio"><i class="fas fa-flask"></i>Aún no hay grupos Taq'e en este curso.</div></div>
+            <div class="al-card"><div class="al-vacio"><i class="fas fa-flask"></i>Aún no hay grupos de Investigaciones en este curso.</div></div>
         @endforelse
     </div>
 @endsection

@@ -22,8 +22,19 @@
             <div class="tg-guia__sub">Ya puedes iniciarlo. Estos son los pasos, en orden: cada uno se habilita cuando se registra el anterior.</div>
         </div>
     </div>
-    <div class="tg-guia__inicio">
-        <i class="fas fa-flag mr-1"></i><strong>Tu primer paso:</strong> inscribir tu Plan de Trabajo de Investigación (PTI) en la Unidad de Investigación.
+    {{-- Paso 1: la solicitud de aprobación del PTI (MiSolicitudPtiController), con el estado de la última enviada. --}}
+    @php
+        $solicitudPti = auth()->check() ? \App\Models\Titulacion\Solicitud::ptiDe(auth()->user())->first() : null;
+        [$spTexto, $spBoton] = match ($solicitudPti?->estado) {
+            'recibida' => ['El Área de Investigación recibió tu solicitud del '.$solicitudPti->created_at->format('d/m/Y').' y la está revisando.', 'Ver mi solicitud'],
+            'observada' => ['El Área de Investigación observó tu solicitud: corrígela y envíala de nuevo.', 'Corregir y enviar'],
+            'atendida' => ['Tu solicitud fue atendida: pronto verás aquí tu proceso de titulación.', 'Ver mi solicitud'],
+            default => ['inscribir tu Plan de Trabajo de Investigación (PTI): envía tu solicitud de aprobación con tu PTI y el comprobante de pago.', 'Solicitar aprobación del PTI'],
+        };
+    @endphp
+    <div class="tg-guia__inicio d-flex align-items-center flex-wrap" style="gap:.5rem;">
+        <span class="flex-grow-1"><i class="fas fa-flag mr-1"></i><strong>{{ $solicitudPti ? 'Tu solicitud de PTI:' : 'Tu primer paso:' }}</strong> {{ $spTexto }}</span>
+        <a href="{{ route('mi-titulacion.solicitud-pti') }}" class="btn btn-sm btn-primary">{{ $spBoton }} <i class="fas fa-arrow-right fa-xs ml-1"></i></a>
     </div>
     @include('titulacion._tramites_ayuda', ['bloque' => \App\Services\Titulacion\GuiaTramites::bloque('pti'), 'clavePersona' => 'u'.auth()->id()])
     <ol class="tg-guia__etapas">

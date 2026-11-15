@@ -200,7 +200,7 @@
 
                     <h3 class="linea-debajo scroolOk mt-4" id="requisitos">Requisitos</h3>
                     <p>
-                        ➤ Baucher de pago por inscripción (Pago en Caja Cusco).<br>
+                        ➤ Baucher de pago por inscripción (Pago en <strong style="color: #d3141b;">Caja Cusco</strong>).<br>
                         ➤ Copia de DNI ampliado<br>
                         ➤ Copia de Título legalizado o fedatado.<br>
                         ➤ 2 fotos tamaño pasaporte.<br>

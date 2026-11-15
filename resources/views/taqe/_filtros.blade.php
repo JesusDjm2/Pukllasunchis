@@ -1,4 +1,4 @@
-{{-- Filtros de grupos Taq'e (Investigador y Super Admin).
+{{-- Filtros de grupos de Investigaciones (Investigador y Super Admin).
      Espera: $ruta (name de la ruta índice), $periodos, $programas, $proyectos, $ciclos, $cursos, $total. --}}
 <form method="GET" action="{{ route($ruta) }}" class="al-card tq-filtros">
     <div class="tq-filtro">

@@ -38,7 +38,7 @@ class GoogleDriveService
      * Retorna el file ID de Drive.
      *
      * $nombrePersonalizado permite guardarlo con otro nombre visible en Drive
-     * (ej. Taq'e lo usa para nombrar "grupo - alumno - trabajo.ext" en vez del
+     * (ej. Investigaciones lo usa para nombrar "grupo - alumno - trabajo.ext" en vez del
      * nombre original del archivo, para que se pueda identificar navegando la
      * carpeta compartida a mano). Si no se pasa, se usa el nombre original.
      */
@@ -58,6 +58,29 @@ class GoogleDriveService
         ]);
 
         return $driveFile->id;
+    }
+
+    /**
+     * ID de la subcarpeta $nombre dentro de $padreId (en una unidad compartida también); la crea si no
+     * existe. Se guarda en caché para no buscarla en cada subida.
+     */
+    public function carpeta(string $padreId, string $nombre): string
+    {
+        return Cache::rememberForever('gdrive_carpeta_'.md5($padreId.'|'.$nombre), function () use ($padreId, $nombre) {
+            $q = sprintf("name = '%s' and '%s' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false",
+                str_replace("'", "\\'", $nombre), $padreId);
+            $existente = $this->drive->files->listFiles([
+                'q' => $q, 'fields' => 'files(id)', 'pageSize' => 1,
+                'supportsAllDrives' => true, 'includeItemsFromAllDrives' => true,
+            ])->getFiles();
+            if (! empty($existente)) {
+                return $existente[0]->getId();
+            }
+
+            return $this->drive->files->create(new DriveFile([
+                'name' => $nombre, 'parents' => [$padreId], 'mimeType' => 'application/vnd.google-apps.folder',
+            ]), ['fields' => 'id', 'supportsAllDrives' => true])->id;
+        });
     }
 
     /**

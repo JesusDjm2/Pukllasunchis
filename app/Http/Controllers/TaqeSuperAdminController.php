@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
- * Gestión institucional de Taq'e para Super Admin: a diferencia del
+ * Gestión institucional de Investigaciones para Super Admin: a diferencia del
  * Investigador (solo lectura, ver TaqeInvestigadorController), acá se puede
  * agregar/retirar integrantes, descargar o borrar archivos y eliminar un
  * grupo completo — control total sobre CUALQUIER grupo, no solo el propio
@@ -93,7 +93,7 @@ class TaqeSuperAdminController extends Controller
             try {
                 $solicitud->alumno->user->notify(new TaqeSolicitudAtendida($solicitud));
             } catch (\Throwable $e) {
-                Log::warning("Notificación de solicitud atendida (Super Admin) Taq'e a alumno {$solicitud->alumno_id}: ".$e->getMessage());
+                Log::warning("Notificación de solicitud atendida (Super Admin) de Investigaciones a alumno {$solicitud->alumno_id}: ".$e->getMessage());
             }
         }
 
@@ -176,7 +176,7 @@ class TaqeSuperAdminController extends Controller
             try {
                 $integrante->user->notify(new TaqeIntegranteRetirado($grupo));
             } catch (\Throwable $e) {
-                Log::warning("Notificación de retiro (Super Admin) de grupo Taq'e a alumno {$integrante->id}: ".$e->getMessage());
+                Log::warning("Notificación de retiro (Super Admin) de grupo de Investigaciones a alumno {$integrante->id}: ".$e->getMessage());
             }
         }
 
@@ -230,7 +230,7 @@ class TaqeSuperAdminController extends Controller
                 try {
                     $integrante->user->notify(new TaqeGrupoEliminado($grupo));
                 } catch (\Throwable $e) {
-                    Log::warning("Notificación de eliminación (Super Admin) de grupo Taq'e a alumno {$integrante->id}: ".$e->getMessage());
+                    Log::warning("Notificación de eliminación (Super Admin) de grupo de Investigaciones a alumno {$integrante->id}: ".$e->getMessage());
                 }
             }
         }

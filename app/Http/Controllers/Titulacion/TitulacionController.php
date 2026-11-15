@@ -80,6 +80,7 @@ class TitulacionController extends Controller
         'sin_asesor' => ['TI sin asesor(a)', 'fa-user-slash', 'Con el PTI aprobado y todavía ningún asesor(a) asignado(a) (se asigna en el TI).'],
         'rd_sin_pdf' => ['RD sin PDF', 'fa-file-pdf', 'Resoluciones registradas que todavía no tienen su PDF.'],
         'sin_expediente' => ['Sin N° de expediente', 'fa-folder-open', 'Personas en proceso sin número de expediente.'],
+        'rd_pti' => ['RD del PTI por completar', 'fa-file-signature', 'Con PTI pero su RD de aprobación falta o no tiene número y año (viene del Excel). Se completa en el paso del PTI.'],
         'proximas' => ['Exposiciones y sustentaciones (30 días)', 'fa-calendar-alt', 'Con fecha de exposición o sustentación en los próximos 30 días.'],
     ];
 
@@ -215,6 +216,7 @@ class TitulacionController extends Controller
                 && ! $pti->asesor_id && ! $pti->asesor_externo_id && ! $tesis?->asesor_id && ! $tesis?->asesor_externo_id,
             'rd_sin_pdf' => $seguimiento->resoluciones->contains(fn ($r) => filled($r->numero_rd) && blank($r->archivo)),
             'sin_expediente' => blank($seguimiento->numero_expediente),
+            'rd_pti' => (bool) $pti && \App\Services\Titulacion\RdPti::de($seguimiento)['estado'] !== 'completa',
             'proximas' => $enRango($tesis?->fecha_exposicion) || $enRango($tesis?->fecha_sustentacion)
                 || $seguimiento->actas->contains(fn ($a) => $enRango($a->fecha)),
         ]));
@@ -322,6 +324,8 @@ class TitulacionController extends Controller
                 'seguimientoTitulacion.ptis.asesorExterno',
                 'seguimientoTitulacion.tesis.asesorExterno',
                 'seguimientoTitulacion.resoluciones',
+                'seguimientoTitulacion.cartasAceptacion',
+                'seguimientoTitulacion.participantes',
                 'seguimientoTitulacion.documentos',
                 'seguimientoTitulacion.pti.asesor',
                 'seguimientoTitulacion.tesis.asesor',
@@ -1053,7 +1057,7 @@ class TitulacionController extends Controller
             'pti.asesor', 'pti.asesorExterno', 'ptis.asesor', 'ptis.asesorExterno',
             'tesis.asesor', 'tesis.asesorExterno', 'actas.asesor', 'actas.asesorExterno',
             'actas.jurados.docente', 'actas.jurados.asesorExterno',
-            'resoluciones', 'documentos', 'estadoTitulacion', 'avisosPti.creadoPor', 'participantes.docente', 'participantes.asesorExterno',
+            'resoluciones', 'cartasAceptacion', 'documentos', 'estadoTitulacion', 'avisosPti.creadoPor', 'participantes.docente', 'participantes.asesorExterno',
         ]);
 
         $estados = EstadoTitulacion::orderBy('orden')->get();
@@ -1147,7 +1151,7 @@ class TitulacionController extends Controller
             'pti.asesor', 'pti.asesorExterno', 'ptis.asesor', 'ptis.asesorExterno',
             'tesis.asesor', 'tesis.asesorExterno', 'actas.asesor', 'actas.asesorExterno',
             'actas.jurados.docente', 'actas.jurados.asesorExterno',
-            'resoluciones', 'documentos', 'estadoTitulacion', 'avisosPti.creadoPor', 'actualizadoPor', 'participantes.docente', 'participantes.asesorExterno',
+            'resoluciones', 'cartasAceptacion', 'documentos', 'estadoTitulacion', 'avisosPti.creadoPor', 'actualizadoPor', 'participantes.docente', 'participantes.asesorExterno',
         ]);
         $egresado->load(['programa', 'ciclo']);
 
