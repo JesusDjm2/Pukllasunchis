@@ -6,7 +6,7 @@
     <meta name="description"
         content="Ruta oficial y requisitos para el desarrollo del Trabajo de Investigación (TI) y la obtención del Grado de Bachiller en Educación en la EESPP Pukllasunchis.">
     <meta name="keywords" content="{{ $titulo }}, Bachiller Pukllasunchis, TI Pukllasunchis, Investigacion Educacion">
-    <link rel="stylesheet" href="{{ asset('css/pk-tramites-titulacion.css') }}?v=20261117b">
+    <link rel="stylesheet" href="{{ asset('css/pk-tramites-titulacion.css') }}?v=20261117d">
 @endsection
 
 @section('contenido')

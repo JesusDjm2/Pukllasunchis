@@ -6,7 +6,7 @@
     <meta name="description"
         content="Guía y requisitos oficiales para la elaboración y aprobación del Plan de Trabajo de Investigación (PTI) en la EESPP Pukllasunchis. Descarga de formatos y formulario de postulación.">
     <meta name="keywords" content="{{ $titulo }}, PTI Pukllasunchis, Investigacion Educacion Cusco, Formato PTI">
-    <link rel="stylesheet" href="{{ asset('css/pk-tramites-titulacion.css') }}?v=20261117c">
+    <link rel="stylesheet" href="{{ asset('css/pk-tramites-titulacion.css') }}?v=20261117d">
 @endsection
 
 @section('contenido')
