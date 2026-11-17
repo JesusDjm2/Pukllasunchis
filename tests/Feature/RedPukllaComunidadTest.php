@@ -336,22 +336,14 @@ class RedPukllaComunidadTest extends TestCase
             'estado' => 'guardado',
         ])->assertRedirect();
 
-        // Docente sin permiso de moderación ni coordinación, y facilitador de ayllu
-        Role::findByName('docente')->revokePermissionTo('ayllu.moderar');
-        app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
-
-        try {
-            // Docente o facilitador sin permisos intenta retirar por POST -> 403 y no cambia el contenido
-            foreach ([$docenteSinPermiso, $facilitador] as $sinPermiso) {
-                $this->actingAs($sinPermiso)->post(route('red.moderar'), [
-                    'tipo' => 'publicacion',
-                    'referencia_id' => $post->id,
-                    'accion' => 'retirar',
-                    'motivo' => 'Intento sin permiso institucional suficiente.',
-                ])->assertForbidden();
-            }
-        } finally {
-            app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+        // Docente o facilitador sin permisos intenta retirar por POST -> 403 y no cambia el contenido
+        foreach ([$docenteSinPermiso, $facilitador] as $sinPermiso) {
+            $this->actingAs($sinPermiso)->post(route('red.moderar'), [
+                'tipo' => 'publicacion',
+                'referencia_id' => $post->id,
+                'accion' => 'retirar',
+                'motivo' => 'Intento sin permiso institucional suficiente.',
+            ])->assertForbidden();
         }
         $this->assertSame('visible', $post->fresh()->estado_red);
 

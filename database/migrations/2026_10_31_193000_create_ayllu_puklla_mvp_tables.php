@@ -218,7 +218,14 @@ return new class extends Migration
             Permission::firstOrCreate(['name' => $permName, 'guard_name' => 'web']);
         }
 
-        // Roles institucionales que publican en el muro general y moderan
+        // Roles institucionales que publican en el muro general y acompañan formativamente
+        $permisosMuroGeneral = [
+            'ayllu.ver-inicio',
+            'ayllu.publicar-muro-general',
+            'ayllu.publicar-comunidad',
+            'ayllu.retroalimentar-formativo',
+        ];
+
         $rolesMuroGeneral = [
             'super-admin',
             'admin',
@@ -233,7 +240,14 @@ return new class extends Migration
 
         foreach ($rolesMuroGeneral as $rName) {
             if ($rol = Role::where(['name' => $rName, 'guard_name' => 'web'])->first()) {
-                $rol->givePermissionTo($permisosAyllu);
+                $rol->givePermissionTo($permisosMuroGeneral);
+            }
+        }
+
+        // El permiso institucional ayllu.moderar se reserva a administración y coordinación
+        foreach (['super-admin', 'admin', 'coordinacion-empleabilidad'] as $rMod) {
+            if ($rol = Role::where(['name' => $rMod, 'guard_name' => 'web'])->first()) {
+                $rol->givePermissionTo('ayllu.moderar');
             }
         }
 

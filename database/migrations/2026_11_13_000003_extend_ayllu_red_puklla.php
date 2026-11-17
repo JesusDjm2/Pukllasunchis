@@ -18,6 +18,15 @@ return new class extends Migration {
   if(!Schema::hasTable('red_puklla_guardados'))Schema::create('red_puklla_guardados',function(Blueprint $t){$t->id();$t->unsignedBigInteger('user_id')->index();$t->string('tipo',20);$t->unsignedBigInteger('referencia_id');$t->string('estado',20);$t->timestamps();$t->unique(['user_id','tipo','referencia_id']);});
   if(!Schema::hasTable('red_puklla_moderacion'))Schema::create('red_puklla_moderacion',function(Blueprint $t){$t->id();$t->string('tipo',20);$t->unsignedBigInteger('referencia_id')->index();$t->unsignedBigInteger('actor_id');$t->string('accion',20);$t->text('motivo');$t->timestamps();});
   if(!Schema::hasTable('red_puklla_preferencias'))Schema::create('red_puklla_preferencias',function(Blueprint $t){$t->id();$t->unsignedBigInteger('user_id')->unique();$t->boolean('avisos')->default(true);$t->timestamps();});
+  if(Schema::hasTable('roles')&&Schema::hasTable('permissions')&&class_exists(\Spatie\Permission\Models\Role::class)){
+   app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+   foreach(['docente','tutor','investigador','gestor-titulacion','adminB','direccion'] as $rolNombre){
+    if($rol=\Spatie\Permission\Models\Role::where(['name'=>$rolNombre,'guard_name'=>'web'])->first()){
+     if($rol->hasPermissionTo('ayllu.moderar'))$rol->revokePermissionTo('ayllu.moderar');
+    }
+   }
+   app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+  }
  }
  public function down():void {/* Conservar contenido, preferencias y trazabilidad. */}
 };

@@ -333,7 +333,7 @@
             $esInvestigadorSb = $usuarioSb?->hasRole('investigador') && Route::has('taqe.investigador.index');
             $esTitulacionSb = $usuarioSb?->hasRole('gestor-titulacion') && Route::has('titulacion.index');
             $esBolsaSb = $usuarioSb?->hasRole('adminB');
-            $esSeguimientoSb = ($usuarioSb?->hasRole('seguimiento-egresados') || $usuarioSb?->can('seguimiento-egresados.ver-dashboard') || app(\App\Services\SeguimientoEgresado\SeguimientoAutorizacionService::class)->esPersonalGestion($usuarioSb)) && Route::has('seguimiento-egresados.index');
+            $esSeguimientoSb = ($usuarioSb?->hasRole('seguimiento-egresados') || $usuarioSb?->can('seguimiento-egresados.ver-dashboard') || app(\App\Services\SeguimientoEgresado\SeguimientoAutorizacionService::class)->esPersonalGestion($usuarioSb) || app(\App\Services\SeguimientoEgresado\SeguimientoAutorizacionService::class)->esDocenteOEntrevistador($usuarioSb)) && Route::has('seguimiento-egresados.index');
             $tieneFuncionesSb = $esTutorSb || $esInvestigadorSb || $esTitulacionSb || $esBolsaSb || $esSeguimientoSb || $proyectosSb->isNotEmpty();
         @endphp
         <ul class="navbar-nav sidebar sidebar-dark accordion pk-sb" id="accordionSidebar">
