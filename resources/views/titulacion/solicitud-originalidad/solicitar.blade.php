@@ -26,7 +26,7 @@
             <div class="al-hero-texto">
                 <span class="al-kicker">Proceso de titulación · Trabajo de Investigación y Tesis</span>
                 <h1>Revisión de originalidad (Turnitin)</h1>
-                <p class="al-hero-sub">Solicita la revisión del porcentaje de similitud de tu Trabajo de Investigación o de tu Tesis. El Área de Investigación te enviará el reporte en hasta {{ Solicitud::DIAS_ORIGINALIDAD }} días hábiles. La similitud máxima es {{ $max }} %.</p>
+                <p class="al-hero-sub">Solicita la revisión del porcentaje de similitud de tu Trabajo de Investigación o de tu Tesis. El Área de Investigación te enviará el reporte en hasta {{ Solicitud::DIAS_ORIGINALIDAD }} días hábiles (plazo modificado el 10 de noviembre de 2026). La similitud máxima es {{ $max }} %.</p>
             </div>
             @if ($ultima)
                 @php [$cl, $ic, $tx] = match (true) {

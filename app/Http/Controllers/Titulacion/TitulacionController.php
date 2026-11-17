@@ -1001,6 +1001,10 @@ class TitulacionController extends Controller
     /** Público: las intranets de alumno (FID y PPD) muestran la guía del proceso a quien ya puede iniciarlo. */
     public static function puedeIniciar(User $user): bool
     {
+        // Excepción de Secretaría (Habilitacion): puede aunque todavía no cumpla la regla del ciclo.
+        if (\App\Models\Titulacion\Habilitacion::tiene($user)) {
+            return true;
+        }
         $user->loadMissing('ciclo.programa', 'programa');
         if (! $user->ciclo || $user->ciclo->ordenCiclo() >= 999) {
             return false; // sin ciclo, o "Egresados <año>" (esos ya se gestionan como egresados)

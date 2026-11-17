@@ -12,6 +12,10 @@ class PostulanteController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
+        // La bolsa de la intranet es para alumnos y egresados con sesión; sin sesión, al login (antes daba error 500).
+        if (! $user) {
+            return redirect()->route('login');
+        }
         $alumno = $user->alumno;
 
         return view('bolsa.postulante.index', array_merge(

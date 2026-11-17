@@ -662,7 +662,11 @@ Route::middleware('auth')->group(function () {
             // Sección «Solicitudes»: pestaña «Por atender» (todos los trámites) + una pestaña por trámite (BandejasSolicitudes).
             Route::get('/solicitudes', [App\Http\Controllers\Titulacion\SolicitudesController::class, 'index'])->name('solicitudes.index');
             // Secretaría edita cualquier solicitud de los formularios (PTI, originalidad…): datos, integrantes y estado.
-            Route::get('/solicitudes/{solicitud}/editar', [App\Http\Controllers\Titulacion\SolicitudesController::class, 'editar'])->name('solicitudes.editar');
+            // Excepciones: Secretaría habilita a un alumno a solicitar su PTI antes del Ciclo IX.
+            Route::get('/solicitudes-pti/habilitaciones', [App\Http\Controllers\Titulacion\HabilitacionPtiController::class, 'index'])->name('habilitaciones.index');
+            Route::post('/solicitudes-pti/habilitaciones', [App\Http\Controllers\Titulacion\HabilitacionPtiController::class, 'store'])->name('habilitaciones.store');
+            Route::delete('/solicitudes-pti/habilitaciones/{habilitacion}', [App\Http\Controllers\Titulacion\HabilitacionPtiController::class, 'destroy'])->name('habilitaciones.destroy');
+            Route::get('/solicitudes/{solicitud}/editar',[App\Http\Controllers\Titulacion\SolicitudesController::class, 'editar'])->name('solicitudes.editar');
             Route::put('/solicitudes/{solicitud}', [App\Http\Controllers\Titulacion\SolicitudesController::class, 'actualizar'])->name('solicitudes.actualizar');
             // Solicitudes de aprobación de PTI (formulario de Google por ahora): bandeja e importación de respuestas (super-admin).
             Route::get('/solicitudes-pti', [App\Http\Controllers\Titulacion\SolicitudPtiController::class, 'index'])->name('solicitudes-pti.index');

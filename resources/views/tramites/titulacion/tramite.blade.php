@@ -103,7 +103,7 @@
                                                 <li class="mb-2"><i class="fa fa-check text-success me-2"></i> Dos (2) fotocopias de DNI ampliado y legalizado notarialmente.</li>
                                                 <li class="mb-2"><i class="fa fa-check text-success me-2"></i> Partida de nacimiento original (vigente).</li>
                                                 <li class="mb-2"><i class="fa fa-check text-success me-2"></i> Certificado de estudios secundarios original.</li>
-                                                <li class="mb-2"><i class="fa fa-check text-success me-2"></i> Ocho (8) fotos tamaño pasaporte a color, fondo blanco, con terno y en papel mate (4 cm x 5 cm).</li>
+                                                <li class="mb-2"><i class="fa fa-check text-success me-2"></i> Ocho (8) fotos tamaño pasaporte a color, fondo blanco, con terno y en papel mate (4 cm x 5 cm). <strong>Escribe tus nombres y apellidos completos en la parte de atrás de cada foto.</strong></li>
                                                 <li class="mb-2">
                                                     <i class="fa fa-check text-success me-2"></i> Documento acreditando dominio de idioma extranjero (mínimo nivel <strong>A2</strong> del MCER) o lengua originaria según DCBN EIB.
                                                 </li>
@@ -155,7 +155,7 @@
                                             </h5>
                                             <ul class="list-unstyled ms-2 mt-2" style="font-size: 14.5px; line-height: 24px;">
                                                 <li class="mb-2"><i class="fa fa-check text-success me-2"></i> Dos (2) fotocopias de DNI ampliado y legalizado.</li>
-                                                <li class="mb-2"><i class="fa fa-check text-success me-2"></i> Cuatro (4) fotos tamaño pasaporte a color, fondo blanco, terno y papel mate (4 cm x 5 cm).</li>
+                                                <li class="mb-2"><i class="fa fa-check text-success me-2"></i> Cuatro (4) fotos tamaño pasaporte a color, fondo blanco, terno y papel mate (4 cm x 5 cm). <strong>Escribe tus nombres y apellidos completos en la parte de atrás de cada foto.</strong></li>
                                                 <li class="mb-2"><i class="fa fa-check text-success me-2"></i> Documento acreditando conocimiento de idioma A2 o lengua originaria.</li>
                                                 <li class="mb-2">
                                                     <i class="fa fa-check text-success me-2"></i> Certificado original de estudios superiores:

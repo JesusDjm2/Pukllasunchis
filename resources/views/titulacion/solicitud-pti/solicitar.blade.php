@@ -37,9 +37,26 @@
     @if (session('error'))<div class="al-aviso is-mal"><i class="fas fa-times-circle"></i><div>{{ session('error') }}</div></div>@endif
 
     @if ($bloqueo)
-        <div class="al-aviso is-warn">
-            <i class="fas fa-lock"></i>
-            <div><strong>Todavía no puedes enviar esta solicitud:</strong> {{ $bloqueo }}. Si crees que es un error, comunícate con el Área de Investigación (<a href="https://wa.me/51972577170" target="_blank" rel="noopener">WhatsApp +51 972 577 170</a>).</div>
+        @php $porCiclo = str_contains($bloqueo, 'Ciclo IX'); @endphp
+        <div class="al-card">
+            <div class="al-card-cab">
+                <span class="al-card-cab-icono"><i class="fas fa-hourglass-half"></i></span>
+                <div>
+                    <h2>{{ $porCiclo ? 'Podrás solicitar la aprobación de tu PTI desde el Ciclo IX' : 'Todavía no puedes enviar esta solicitud' }}</h2>
+                    <p>{{ $porCiclo ? 'El proceso de titulación de Formación Inicial Docente empieza en el Ciclo IX: entonces aparecerá aquí el formulario.' : ucfirst($bloqueo).'.' }}</p>
+                </div>
+            </div>
+            <div class="al-card-cuerpo">
+                @if ($porCiclo)
+                    <p class="mb-2"><strong>Mientras tanto, puedes ir preparando tu Plan de Trabajo de Investigación:</strong></p>
+                    <ul class="mb-3 pl-3">
+                        <li>Revisa los pasos, el formato del PTI y los datos de pago en <a href="{{ route('plan') }}" target="_blank" rel="noopener">Plan de Trabajo de Investigación</a>.</li>
+                        <li>Consulta las <a href="{{ route('alumno.formatos') }}">guías de TI y Tesis</a>.</li>
+                        <li>Conversa tu tema con tus docentes y con tu futuro grupo de investigación.</li>
+                    </ul>
+                @endif
+                <div class="cr-ayuda"><i class="fas fa-question-circle mr-1"></i>Si crees que es un error (por ejemplo, ya estás en el Ciclo IX o eres egresado y tu ficha no lo dice), comunícate con el Área de Investigación: <a href="https://wa.me/51972577170" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> +51 972 577 170</a>.</div>
+            </div>
         </div>
     @endif
 

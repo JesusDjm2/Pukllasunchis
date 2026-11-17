@@ -71,10 +71,12 @@
                                 <td class="text-center"><span class="pk-badge-code">10</span></td>
                                 <td class="text-center font-weight-bold text-dark">S/ 50.00</td>
                                 <td class="text-end">
-                                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSeErc1rq886EWiuavn27wd5kpCkZ48ntkOrWgNS5uE2XKw5JA/viewform"
-                                       target="_blank" class="btn btn-sm btn-outline-primary" style="font-size: 13px; font-weight: 500;">
-                                        Formulario <i class="fa fa-arrow-up-right-from-square"></i>
-                                    </a>
+                                    {{-- Mismo trámite que el formulario del sistema (MiSolicitudPtiController): con sesión va directo; sin sesión, aviso y login. --}}
+                                    @auth
+                                        <a href="{{ route('mi-titulacion.solicitud-pti') }}" class="btn btn-sm btn-outline-primary" style="font-size: 13px; font-weight: 500;">Formulario <i class="fa fa-arrow-right"></i></a>
+                                    @else
+                                        <button type="button" class="btn btn-sm btn-outline-primary" style="font-size: 13px; font-weight: 500;" data-bs-toggle="modal" data-bs-target="#modalPtiIntranet">Formulario <i class="fa fa-sign-in"></i></button>
+                                    @endauth
                                 </td>
                             </tr>
                             <tr>
@@ -85,7 +87,7 @@
                                 <td class="text-center"><span class="pk-badge-code">12</span></td>
                                 <td class="text-center font-weight-bold text-dark">S/ 30.00</td>
                                 <td class="text-end">
-                                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSc7zZ9k9o1x8hKk6qGvVzU3wX8yL8q_example/viewform"
+                                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdA5VN9oAVh_aetqvoMwoZmuuez42ki3Y0xjQqXTgLygGkbrw/viewform"
                                        target="_blank" class="btn btn-sm btn-outline-primary" style="font-size: 13px; font-weight: 500;">
                                         Formulario <i class="fa fa-arrow-up-right-from-square"></i>
                                     </a>
@@ -99,7 +101,7 @@
                                 <td class="text-center"><span class="pk-badge-code">13</span></td>
                                 <td class="text-center font-weight-bold text-dark">S/ 30.00</td>
                                 <td class="text-end">
-                                    <a href="https://docs.google.com/forms/d/1m7kWkj6C_Uoz252CHr_IsM1xkRhygy5DsCYKl_bH36E/edit"
+                                    <a href="https://docs.google.com/forms/d/1m7kWkj6C_Uoz252CHr_IsM1xkRhygy5DsCYKl_bH36E/viewform"
                                        target="_blank" class="btn btn-sm btn-outline-primary" style="font-size: 13px; font-weight: 500;">
                                         Formulario <i class="fa fa-arrow-up-right-from-square"></i>
                                     </a>
@@ -113,7 +115,7 @@
                                 <td class="text-center"><span class="pk-badge-code">43</span></td>
                                 <td class="text-center font-weight-bold text-dark">S/ 30.00</td>
                                 <td class="text-end">
-                                    <a href="https://docs.google.com/forms/d/13N25FvL4V7142Hq_gP0FjY37R9dD6xK09GvJmQ7a/viewform"
+                                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdmgoFlBMsEoZCkyvGFZqYGC301BkbyZ-wZpGHL5d52_tLbxg/viewform"
                                        target="_blank" class="btn btn-sm btn-outline-primary" style="font-size: 13px; font-weight: 500;">
                                         Formulario <i class="fa fa-arrow-up-right-from-square"></i>
                                     </a>
@@ -140,7 +142,7 @@
                                 <td class="text-center"><span class="pk-badge-code">11</span></td>
                                 <td class="text-center font-weight-bold text-dark">S/ 50.00</td>
                                 <td class="text-end">
-                                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSciR5L299xLpI5OQ_ample/viewform"
+                                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdJizTDL5Z8DAEfiRWSt32GspxaDO3MVQ_JyvpC_Q3sQt7rvQ/viewform"
                                        target="_blank" class="btn btn-sm btn-outline-primary" style="font-size: 13px; font-weight: 500;">
                                         Formulario <i class="fa fa-arrow-up-right-from-square"></i>
                                     </a>
@@ -154,7 +156,7 @@
                                 <td class="text-center"><span class="pk-badge-code">15</span></td>
                                 <td class="text-center font-weight-bold text-dark">S/ 100.00</td>
                                 <td class="text-end">
-                                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdp5y0sD40jM4oXWq6aI_kP15y9example/viewform"
+                                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSfr-AXQ-NLEpO_2PGr8E8MVvHp8Cw8ook1hfqVB_WFlYpRw1Q/viewform"
                                        target="_blank" class="btn btn-sm btn-outline-primary" style="font-size: 13px; font-weight: 500;">
                                         Formulario <i class="fa fa-arrow-up-right-from-square"></i>
                                     </a>
@@ -168,7 +170,7 @@
                                 <td class="text-center"><span class="pk-badge-code">52</span></td>
                                 <td class="text-center font-weight-bold text-dark">S/ 20.00</td>
                                 <td class="text-end">
-                                    <a href="https://docs.google.com/forms/d/18yuH2gbrM5GVr8DHGvYeA7t5hrBIx9aXyIsbAcEdIAs/viewform?edit_requested=true"
+                                    <a href="https://docs.google.com/forms/d/18yuH2gbrM5GVr8DHGvYeA7t5hrBIx9aXyIsbAcEdIAs/viewform"
                                        target="_blank" class="btn btn-sm btn-outline-primary" style="font-size: 13px; font-weight: 500;">
                                         Formulario <i class="fa fa-arrow-up-right-from-square"></i>
                                     </a>
@@ -182,9 +184,10 @@
                                 <td class="text-center"><span class="pk-badge-code">14</span></td>
                                 <td class="text-center font-weight-bold text-dark">S/ 30.00</td>
                                 <td class="text-end">
-                                    <span class="badge bg-light text-muted border" style="font-size: 12px; font-weight: 500;">
-                                        FUT Presencial
-                                    </span>
+                                    <a href="https://docs.google.com/forms/d/1CzTidT0pvsKBPVuIPxoIelt8fYP40kODJ7YIfexhT1E/viewform"
+                                       target="_blank" class="btn btn-sm btn-outline-primary" style="font-size: 13px; font-weight: 500;">
+                                        Formulario <i class="fa fa-arrow-up-right-from-square"></i>
+                                    </a>
                                 </td>
                             </tr>
                             <tr>
@@ -224,7 +227,8 @@
 
                 <div class="pk-cards-grid">
                     <!-- Card 1: Aprobación PTI -->
-                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSeErc1rq886EWiuavn27wd5kpCkZ48ntkOrWgNS5uE2XKw5JA/viewform" target="_blank" class="pk-card-tramite">
+                    @auth
+                        <a href="{{ route('mi-titulacion.solicitud-pti') }}" class="pk-card-tramite">
                         <div class="pk-card-tramite__top">
                             <div class="pk-card-tramite__icon">
                                 <i class="fa fa-file-circle-check"></i>
@@ -234,12 +238,27 @@
                         <h4>Aprobación de PTI y Asesor</h4>
                         <p>Inscripción formal del PTI y designación o ratificación de asesor mediante R.D.</p>
                         <div class="pk-card-tramite__action">
-                            <span>Abrir Formulario</span> <i class="fa fa-external-link"></i>
+                            <span>Solicitar en mi Intranet</span> <i class="fa fa-arrow-right"></i>
                         </div>
                     </a>
+                    @else
+                        <a href="javascript:void(0)" class="pk-card-tramite" data-bs-toggle="modal" data-bs-target="#modalPtiIntranet">
+                        <div class="pk-card-tramite__top">
+                            <div class="pk-card-tramite__icon">
+                                <i class="fa fa-file-circle-check"></i>
+                            </div>
+                            <span class="pk-card-tramite__badge">S/ 50.00 · Cód: 10</span>
+                        </div>
+                        <h4>Aprobación de PTI y Asesor</h4>
+                        <p>Inscripción formal del PTI y designación o ratificación de asesor mediante R.D.</p>
+                        <div class="pk-card-tramite__action">
+                            <span>Solicitar en mi Intranet</span> <i class="fa fa-arrow-right"></i>
+                        </div>
+                    </a>
+                    @endauth
 
                     <!-- Card 2: Cambio de Tema -->
-                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSc7zZ9k9o1x8hKk6qGvVzU3wX8yL8q_example/viewform" target="_blank" class="pk-card-tramite">
+                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdA5VN9oAVh_aetqvoMwoZmuuez42ki3Y0xjQqXTgLygGkbrw/viewform" target="_blank" class="pk-card-tramite">
                         <div class="pk-card-tramite__top">
                             <div class="pk-card-tramite__icon">
                                 <i class="fa fa-pen-ruler"></i>
@@ -254,7 +273,7 @@
                     </a>
 
                     <!-- Card 3: Cambio de Asesor -->
-                    <a href="https://docs.google.com/forms/d/1m7kWkj6C_Uoz252CHr_IsM1xkRhygy5DsCYKl_bH36E/edit" target="_blank" class="pk-card-tramite">
+                    <a href="https://docs.google.com/forms/d/1m7kWkj6C_Uoz252CHr_IsM1xkRhygy5DsCYKl_bH36E/viewform" target="_blank" class="pk-card-tramite">
                         <div class="pk-card-tramite__top">
                             <div class="pk-card-tramite__icon">
                                 <i class="fa fa-user-pen"></i>
@@ -269,7 +288,7 @@
                     </a>
 
                     <!-- Card 4: Separación de Grupo -->
-                    <a href="https://docs.google.com/forms/d/13N25FvL4V7142Hq_gP0FjY37R9dD6xK09GvJmQ7a/viewform" target="_blank" class="pk-card-tramite">
+                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdmgoFlBMsEoZCkyvGFZqYGC301BkbyZ-wZpGHL5d52_tLbxg/viewform" target="_blank" class="pk-card-tramite">
                         <div class="pk-card-tramite__top">
                             <div class="pk-card-tramite__icon">
                                 <i class="fa fa-users-slash"></i>
@@ -299,7 +318,7 @@
                     </div>
 
                     <!-- Card 5: Extensión de Plazo -->
-                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSciR5L299xLpI5OQ_ample/viewform" target="_blank" class="pk-card-tramite">
+                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdJizTDL5Z8DAEfiRWSt32GspxaDO3MVQ_JyvpC_Q3sQt7rvQ/viewform" target="_blank" class="pk-card-tramite">
                         <div class="pk-card-tramite__top">
                             <div class="pk-card-tramite__icon">
                                 <i class="fa fa-clock-rotate-left"></i>
@@ -314,7 +333,7 @@
                     </a>
 
                     <!-- Card 6: Revisión TI / Dictaminantes -->
-                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdp5y0sD40jM4oXWq6aI_kP15y9example/viewform" target="_blank" class="pk-card-tramite">
+                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSfr-AXQ-NLEpO_2PGr8E8MVvHp8Cw8ook1hfqVB_WFlYpRw1Q/viewform" target="_blank" class="pk-card-tramite">
                         <div class="pk-card-tramite__top">
                             <div class="pk-card-tramite__icon">
                                 <i class="fa fa-user-graduate"></i>
@@ -329,7 +348,7 @@
                     </a>
 
                     <!-- Card 7: Asesoría Adicional -->
-                    <a href="https://docs.google.com/forms/d/18yuH2gbrM5GVr8DHGvYeA7t5hrBIx9aXyIsbAcEdIAs/viewform?edit_requested=true" target="_blank" class="pk-card-tramite">
+                    <a href="https://docs.google.com/forms/d/18yuH2gbrM5GVr8DHGvYeA7t5hrBIx9aXyIsbAcEdIAs/viewform" target="_blank" class="pk-card-tramite">
                         <div class="pk-card-tramite__top">
                             <div class="pk-card-tramite__icon">
                                 <i class="fa fa-comments"></i>
@@ -344,7 +363,7 @@
                     </a>
 
                     <!-- Card 8: Dejar sin efecto RD PTI -->
-                    <div class="pk-card-tramite" style="cursor: default;">
+                    <a href="https://docs.google.com/forms/d/1CzTidT0pvsKBPVuIPxoIelt8fYP40kODJ7YIfexhT1E/viewform" target="_blank" class="pk-card-tramite">
                         <div class="pk-card-tramite__top">
                             <div class="pk-card-tramite__icon">
                                 <i class="fa fa-ban"></i>
@@ -353,10 +372,10 @@
                         </div>
                         <h4>Dejar sin efecto R.D. de PTI</h4>
                         <p>Dejar sin efecto la resolución directoral de aprobación de Plan de Trabajo.</p>
-                        <div class="pk-card-tramite__action text-muted">
-                            <span>Vía FUT en Secretaría</span> <i class="fa fa-building-columns"></i>
+                        <div class="pk-card-tramite__action">
+                            <span>Abrir Formulario</span> <i class="fa fa-external-link"></i>
                         </div>
-                    </div>
+                    </a>
                 </div>
 
                 <!-- Caja Cusco Callout Card -->
@@ -423,4 +442,39 @@
             </div>
         </div>
     </div>
+    {{-- Modal informativo previo al login para la Solicitud de Aprobación del PTI --}}
+    @php $tramitePti = \App\Services\Titulacion\TramitesExtraordinarios::tipo('aprobacion_pti'); @endphp
+    <div class="modal fade" id="modalPtiIntranet" tabindex="-1" aria-labelledby="modalPtiIntranetLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 1rem 3rem rgba(0,0,0,0.25); overflow: hidden; font-family: 'Poppins', sans-serif;">
+                <div class="modal-header border-0 text-white" style="background: linear-gradient(135deg, #364651, #243038); padding: 1.25rem 1.5rem;">
+                    <h5 class="modal-title d-flex align-items-center gap-2 mb-0" id="modalPtiIntranetLabel" style="font-size: 1.15rem; font-weight: 600; color: #fff;">
+                        <i class="fa fa-file-signature" style="color: #cd9244;"></i> Solicitud de Aprobación del PTI
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <div class="mb-3">
+                        <span style="display: inline-flex; width: 64px; height: 64px; border-radius: 50%; background: #fff8eb; align-items: center; justify-content: center; color: #cd9244; font-size: 28px;">
+                            <i class="fa fa-id-card"></i>
+                        </span>
+                    </div>
+                    <h5 class="font-weight-bold text-dark mb-2">Ingreso a la Intranet Institucional</h5>
+                    <p class="text-muted mb-3" style="font-size: 15px; line-height: 24px;">
+                        La <strong>Solicitud de Aprobación de Plan de Trabajo de Investigación y Asignación de Asesor</strong> se completa desde tu <strong>Intranet</strong>: ingresa con tu cuenta y, en «Tu proceso de titulación», pulsa <strong>«Solicitar aprobación del PTI»</strong>. Adjuntarás tu PTI (PDF o Word) y tu comprobante de pago.
+                    </p>
+                    <div class="alert alert-warning text-start mb-0 py-2 px-3" style="font-size: 14px; border-radius: 8px; border-left: 4px solid #cd9244; background-color: #fff9ed; color: #856404;">
+                        <i class="fa fa-info-circle me-1"></i> Recuerda adjuntar tu <strong>boleta electrónica oficial</strong> de <strong class="caja-cusco-brand" style="color: #d3141b;">Caja Cusco</strong> (Concepto: {{ $tramitePti['concepto_caja'] }} | Código: {{ $tramitePti['codigo'] }} | Monto: {{ \App\Services\Titulacion\TramitesExtraordinarios::monto($tramitePti) }}), no el voucher impreso de ventanilla.
+                    </div>
+                </div>
+                <div class="modal-footer border-0 bg-light p-3 justify-content-center">
+                    <button type="button" class="btn btn-outline-secondary px-3" data-bs-dismiss="modal" style="border-radius: 8px; font-size: 14px;">Cerrar</button>
+                    <a href="{{ route('mi-titulacion.solicitud-pti') }}" class="btn text-white fw-bold px-4 py-2" style="background: linear-gradient(135deg, #d59d52, #cd9244); border-radius: 8px; font-size: 14px;">
+                        <i class="fa fa-sign-in me-1"></i> Ir al Login de la Intranet
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
 @endsection

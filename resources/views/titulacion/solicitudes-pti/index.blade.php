@@ -24,6 +24,7 @@
             </div>
             <div class="tl-hero__acciones">
                 <a href="{{ route('titulacion.index') }}" class="tl-hero__btn"><i class="fas fa-arrow-left"></i>Volver a Titulación</a>
+                <a href="{{ route('titulacion.habilitaciones.index') }}" class="tl-hero__btn" title="Excepciones: alumnos autorizados a solicitar su PTI antes del Ciclo IX"><i class="fas fa-user-check"></i>Habilitar alumnos</a>
                 @if (\App\Services\Titulacion\AreasTitulacion::puedeRuta('titulacion.solicitudes-pti.importar'))
                     <a href="{{ route('titulacion.solicitudes-pti.importar') }}" class="tl-hero__btn" title="Registrar las solicitudes hechas con el formulario de Google (Excel de respuestas)"><i class="fas fa-file-import"></i>Importar del formulario de Google</a>
                 @endif
@@ -47,7 +48,7 @@
             @if (session('success'))<div class="al-aviso is-ok"><i class="fas fa-check-circle"></i><div>{{ session('success') }}</div></div>@endif
             @if (session('error'))<div class="al-aviso is-mal"><i class="fas fa-exclamation-circle"></i><div>{{ session('error') }}</div></div>@endif
             @unless ($puedeIniciar)
-                <div class="al-aviso is-info"><i class="fas fa-eye"></i><div>Las solicitudes de PTI las atiende el Área de Investigación (iniciar el proceso u observar).@if ($puedeEditar) Secretaría puede corregir sus datos con «Editar la solicitud».@endif</div></div>
+                <div class="al-aviso is-info"><i class="fas fa-eye"></i><div>Las solicitudes de PTI las atienden el Área de Investigación o Secretaría (iniciar el proceso u observar).@if ($puedeEditar) Secretaría puede corregir sus datos con «Editar la solicitud».@endif</div></div>
             @endunless
         </div>
 

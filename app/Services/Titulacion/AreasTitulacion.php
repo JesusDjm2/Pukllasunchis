@@ -21,10 +21,13 @@ class AreasTitulacion
 
     public const SOLO_SUPER_ADMIN = 'super-admin';
 
+    /** Acciones que pueden hacer las dos áreas (p. ej. iniciar el proceso desde una solicitud de PTI). */
+    public const AMBAS = 'secretaria-investigacion';
+
     /** Rol que da cada área. */
     private const ROLES = [self::SECRETARIA => 'secretaria', self::INVESTIGACION => 'gestor-titulacion'];
 
-    public const NOMBRES = [self::SECRETARIA => 'Secretaría', self::INVESTIGACION => 'el Área de Investigación', self::SOLO_SUPER_ADMIN => 'el super-admin'];
+    public const NOMBRES = [self::SECRETARIA => 'Secretaría', self::INVESTIGACION => 'el Área de Investigación', self::SOLO_SUPER_ADMIN => 'el super-admin', self::AMBAS => 'Secretaría o al Área de Investigación'];
 
     /** Ruta (sin el prefijo «titulacion.») => área a la que le corresponde. Las que no están son de lectura. */
     public const RUTAS = [
@@ -45,9 +48,10 @@ class AreasTitulacion
         'importaciones.completar-ficha.form' => self::INVESTIGACION,
         'importaciones.completar-ficha.guardar' => self::INVESTIGACION,
         'iniciar' => self::INVESTIGACION,
-        'inicio.buscar' => self::INVESTIGACION,
-        'inicio.crear' => self::INVESTIGACION,
-        'inicio.guardar' => self::INVESTIGACION,
+        // Iniciar el proceso (desde una solicitud de PTI o a mano): Investigación o Secretaría (12/11).
+        'inicio.buscar' => self::AMBAS,
+        'inicio.crear' => self::AMBAS,
+        'inicio.guardar' => self::AMBAS,
         'estado.actualizar' => self::INVESTIGACION,
         'pti.guardar' => self::INVESTIGACION,
         'pti.nuevo' => self::INVESTIGACION,
@@ -59,9 +63,11 @@ class AreasTitulacion
         'grupo.cambiar' => self::SECRETARIA,
         'rdpti.completar' => self::SECRETARIA,
         'rdpti.normalizar' => self::SOLO_SUPER_ADMIN,
+        'habilitaciones.store' => self::SECRETARIA,
+        'habilitaciones.destroy' => self::SECRETARIA,
         'solicitudes.editar' => self::SECRETARIA,
         'solicitudes.actualizar' => self::SECRETARIA,
-        'solicitudes-pti.observar' => self::INVESTIGACION,
+        'solicitudes-pti.observar' => self::AMBAS,
         'solicitudes-originalidad.atender' => self::INVESTIGACION,
         'solicitudes-originalidad.observar' => self::INVESTIGACION,
         'solicitudes-originalidad.importar' => self::SOLO_SUPER_ADMIN,
@@ -106,7 +112,14 @@ class AreasTitulacion
             return false;
         }
 
-        return $user->hasRole('super-admin') || (isset(self::ROLES[$area]) && $user->hasRole(self::ROLES[$area]));
+        if ($user->hasRole('super-admin')) {
+            return true;
+        }
+        if ($area === self::AMBAS) {
+            return $user->hasAnyRole(array_values(self::ROLES));
+        }
+
+        return isset(self::ROLES[$area]) && $user->hasRole(self::ROLES[$area]);
     }
 
     /** $ruta con o sin el prefijo «titulacion.». Las que no están en la lista son de lectura. */

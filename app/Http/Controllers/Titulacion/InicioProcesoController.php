@@ -247,7 +247,8 @@ class InicioProcesoController extends Controller
         // A Secretaría le toca ahora la RD de aprobación del PTI: aviso en su campanita (un solo aviso por grupo).
         try {
             \Illuminate\Support\Facades\Notification::send(
-                \App\Services\Titulacion\AreasTitulacion::destinatarios(),
+                // Quien inició el proceso (Secretaría puede hacerlo) no necesita avisarse a sí mismo.
+                \App\Services\Titulacion\AreasTitulacion::destinatarios()->reject(fn ($u) => $u->id === $request->user()->id),
                 new \App\Notifications\TitulacionPtiParaRd($persona, $data['titulo'], $asignados)
             );
         } catch (\Throwable $e) {

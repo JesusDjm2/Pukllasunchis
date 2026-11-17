@@ -1213,3 +1213,80 @@
         background-color: #161b22 !important;
         box-shadow: 4px 0 12px -2px rgba(0, 0, 0, .45);
     }
+
+    /* ═══ Mi proceso de titulación dentro de la intranet (titulacion/_avance_alumno y _stepper): en oscuro y tenue
+       usa las variables .al-ui; el modo claro conserva los colores propios de esos parciales. Alumno FID/PPD y egresados. ═══ */
+    body.dark-mode .al-ui .mt-card, body.dim-mode .al-ui .mt-card { --mt-texto-btn: var(--al-fondo); }
+    /* Pasos PTI → TI → Tesis */
+    body.dark-mode .al-ui .titulacion-stepper__circulo, body.dim-mode .al-ui .titulacion-stepper__circulo { background: var(--al-fondo-2); color: var(--al-suave); border-color: var(--al-borde); }
+    body.dark-mode .al-ui .titulacion-stepper__label, body.dim-mode .al-ui .titulacion-stepper__label,
+    body.dark-mode .al-ui .titulacion-stepper__resumen, body.dim-mode .al-ui .titulacion-stepper__resumen { color: var(--al-suave); }
+    body.dark-mode .al-ui .titulacion-stepper__linea, body.dim-mode .al-ui .titulacion-stepper__linea { background: var(--al-borde); }
+    body.dark-mode .al-ui .titulacion-stepper__paso--en_proceso .titulacion-stepper__circulo,
+    body.dim-mode .al-ui .titulacion-stepper__paso--en_proceso .titulacion-stepper__circulo { background: var(--al-info-f); color: var(--al-info); border-color: var(--al-info); }
+    body.dark-mode .al-ui .titulacion-stepper__paso--en_proceso .titulacion-stepper__label,
+    body.dim-mode .al-ui .titulacion-stepper__paso--en_proceso .titulacion-stepper__label { color: var(--al-info); }
+    body.dark-mode .al-ui .titulacion-stepper__paso--completo .titulacion-stepper__circulo,
+    body.dim-mode .al-ui .titulacion-stepper__paso--completo .titulacion-stepper__circulo { background: var(--al-ok); color: var(--al-fondo); border-color: var(--al-ok); }
+    body.dark-mode .al-ui .titulacion-stepper__paso--completo .titulacion-stepper__label,
+    body.dim-mode .al-ui .titulacion-stepper__paso--completo .titulacion-stepper__label { color: var(--al-ok); }
+    /* Siguiente paso */
+    body.dark-mode .al-ui .mt-card .mt-siguiente, body.dim-mode .al-ui .mt-card .mt-siguiente { background: var(--al-info-f); border-color: var(--al-borde); }
+    body.dark-mode .al-ui .mt-siguiente__icono, body.dim-mode .al-ui .mt-siguiente__icono { background: var(--al-info); color: var(--al-fondo); }
+    body.dark-mode .al-ui .mt-siguiente__kicker, body.dim-mode .al-ui .mt-siguiente__kicker { color: var(--al-info); }
+    body.dark-mode .al-ui .mt-card .mt-siguiente__texto, body.dim-mode .al-ui .mt-card .mt-siguiente__texto { color: var(--al-texto); }
+    body.dark-mode .al-ui .mt-card .mt-siguiente--completo, body.dim-mode .al-ui .mt-card .mt-siguiente--completo { background: var(--al-ok-f); }
+    body.dark-mode .al-ui .mt-siguiente--completo .mt-siguiente__icono, body.dim-mode .al-ui .mt-siguiente--completo .mt-siguiente__icono { background: var(--al-ok); }
+    body.dark-mode .al-ui .mt-siguiente--completo .mt-siguiente__kicker, body.dim-mode .al-ui .mt-siguiente--completo .mt-siguiente__kicker { color: var(--al-ok); }
+    /* Vigencia del PTI */
+    body.dark-mode .al-ui .mt-card .mt-vigencia, body.dim-mode .al-ui .mt-card .mt-vigencia { background: var(--al-fondo-2); border-color: var(--al-borde); }
+    body.dark-mode .al-ui .mt-vigencia .progress, body.dim-mode .al-ui .mt-vigencia .progress { background: var(--al-borde); }
+    body.dark-mode .al-ui .mt-vigencia .progress-bar, body.dim-mode .al-ui .mt-vigencia .progress-bar { background: var(--al-info); }
+    body.dark-mode .al-ui .mt-card .mt-vigencia--urgente, body.dim-mode .al-ui .mt-card .mt-vigencia--urgente { background: var(--al-warn-f); border-color: var(--al-warn); }
+    body.dark-mode .al-ui .mt-vigencia--urgente .progress-bar, body.dim-mode .al-ui .mt-vigencia--urgente .progress-bar { background: var(--al-warn); }
+    body.dark-mode .al-ui .mt-card .mt-vigencia--vencido, body.dim-mode .al-ui .mt-card .mt-vigencia--vencido { background: var(--al-mal-f); border-color: var(--al-mal); }
+    body.dark-mode .al-ui .mt-vigencia--vencido .progress-bar, body.dim-mode .al-ui .mt-vigencia--vencido .progress-bar { background: var(--al-mal); }
+    /* Línea de tiempo e hitos */
+    body.dark-mode .al-ui .mt-etapa:not(:last-child)::before, body.dim-mode .al-ui .mt-etapa:not(:last-child)::before { background: var(--al-borde); }
+    body.dark-mode .al-ui .mt-etapa--completo:not(:last-child)::before, body.dim-mode .al-ui .mt-etapa--completo:not(:last-child)::before { background: var(--al-ok); }
+    body.dark-mode .al-ui .mt-etapa__marca, body.dim-mode .al-ui .mt-etapa__marca { background: var(--al-fondo-2); color: var(--al-suave); border-color: var(--al-borde); }
+    body.dark-mode .al-ui .mt-etapa--en_proceso .mt-etapa__marca, body.dim-mode .al-ui .mt-etapa--en_proceso .mt-etapa__marca { background: var(--al-info-f); color: var(--al-info); border-color: var(--al-info); }
+    body.dark-mode .al-ui .mt-etapa--completo .mt-etapa__marca, body.dim-mode .al-ui .mt-etapa--completo .mt-etapa__marca { background: var(--al-ok); color: var(--al-fondo); border-color: var(--al-ok); }
+    body.dark-mode .al-ui .mt-card .mt-etapa__titulo, body.dim-mode .al-ui .mt-card .mt-etapa__titulo,
+    body.dark-mode .al-ui .mt-card .mt-etapa__datos, body.dim-mode .al-ui .mt-card .mt-etapa__datos { color: var(--al-texto); }
+    body.dark-mode .al-ui .mt-card .mt-etapa--pendiente .mt-etapa__titulo, body.dim-mode .al-ui .mt-card .mt-etapa--pendiente .mt-etapa__titulo { color: var(--al-suave); }
+    body.dark-mode .al-ui .mt-etapa__chip, body.dim-mode .al-ui .mt-etapa__chip { background: var(--al-fondo-2); color: var(--al-suave); }
+    body.dark-mode .al-ui .mt-etapa--en_proceso .mt-etapa__chip, body.dim-mode .al-ui .mt-etapa--en_proceso .mt-etapa__chip { background: var(--al-info-f); color: var(--al-info); }
+    body.dark-mode .al-ui .mt-etapa--completo .mt-etapa__chip, body.dim-mode .al-ui .mt-etapa--completo .mt-etapa__chip { background: var(--al-ok-f); color: var(--al-ok); }
+    body.dark-mode .al-ui .mt-hito--logrado .mt-hito__icono, body.dim-mode .al-ui .mt-hito--logrado .mt-hito__icono { color: var(--al-ok); }
+    body.dark-mode .al-ui .mt-hito--actual .mt-hito__icono, body.dim-mode .al-ui .mt-hito--actual .mt-hito__icono,
+    body.dark-mode .al-ui .mt-hito--actual .mt-hito__label, body.dim-mode .al-ui .mt-hito--actual .mt-hito__label,
+    body.dark-mode .al-ui .mt-hito__meta--actual, body.dim-mode .al-ui .mt-hito__meta--actual { color: var(--al-info); }
+    body.dark-mode .al-ui .mt-hito--pendiente .mt-hito__icono, body.dim-mode .al-ui .mt-hito--pendiente .mt-hito__icono,
+    body.dark-mode .al-ui .mt-hito--sin_registro .mt-hito__icono, body.dim-mode .al-ui .mt-hito--sin_registro .mt-hito__icono { color: var(--al-borde); }
+    body.dark-mode .al-ui .mt-hito--pendiente .mt-hito__label, body.dim-mode .al-ui .mt-hito--pendiente .mt-hito__label,
+    body.dark-mode .al-ui .mt-hito--sin_registro .mt-hito__label, body.dim-mode .al-ui .mt-hito--sin_registro .mt-hito__label,
+    body.dark-mode .al-ui .mt-hito__meta, body.dim-mode .al-ui .mt-hito__meta { color: var(--al-suave); }
+    /* Tarjetas de trámite (solicitud de PTI, carta de aceptación, originalidad) */
+    body.dark-mode .al-ui .mt-card .mt-carta, body.dim-mode .al-ui .mt-card .mt-carta { background: var(--al-warn-f); border-color: var(--al-borde); color: var(--al-texto); }
+    body.dark-mode .al-ui .mt-card .mt-carta__icono, body.dim-mode .al-ui .mt-card .mt-carta__icono,
+    body.dark-mode .al-ui .mt-card .mt-carta__boton, body.dim-mode .al-ui .mt-card .mt-carta__boton { background: var(--al-oro); color: var(--al-fondo); }
+    body.dark-mode .al-ui .mt-card .mt-carta__kicker, body.dim-mode .al-ui .mt-card .mt-carta__kicker { color: var(--al-oro); }
+    body.dark-mode .al-ui .mt-card .mt-carta.is-ok, body.dim-mode .al-ui .mt-card .mt-carta.is-ok { background: var(--al-ok-f); }
+    body.dark-mode .al-ui .mt-card .mt-carta.is-ok .mt-carta__icono, body.dim-mode .al-ui .mt-card .mt-carta.is-ok .mt-carta__icono,
+    body.dark-mode .al-ui .mt-card .mt-carta.is-ok .mt-carta__boton, body.dim-mode .al-ui .mt-card .mt-carta.is-ok .mt-carta__boton { background: var(--al-ok); }
+    body.dark-mode .al-ui .mt-card .mt-carta.is-ok .mt-carta__kicker, body.dim-mode .al-ui .mt-card .mt-carta.is-ok .mt-carta__kicker { color: var(--al-ok); }
+    body.dark-mode .al-ui .mt-card .mt-carta.is-info, body.dim-mode .al-ui .mt-card .mt-carta.is-info { background: var(--al-info-f); }
+    body.dark-mode .al-ui .mt-card .mt-carta.is-info .mt-carta__icono, body.dim-mode .al-ui .mt-card .mt-carta.is-info .mt-carta__icono,
+    body.dark-mode .al-ui .mt-card .mt-carta.is-info .mt-carta__boton, body.dim-mode .al-ui .mt-card .mt-carta.is-info .mt-carta__boton { background: var(--al-info); }
+    body.dark-mode .al-ui .mt-card .mt-carta.is-info .mt-carta__kicker, body.dim-mode .al-ui .mt-card .mt-carta.is-info .mt-carta__kicker { color: var(--al-info); }
+    body.dark-mode .al-ui .mt-card .mt-carta.is-warn, body.dim-mode .al-ui .mt-card .mt-carta.is-warn { background: var(--al-warn-f); border-color: var(--al-warn); }
+    body.dark-mode .al-ui .mt-card .mt-carta.is-warn .mt-carta__icono, body.dim-mode .al-ui .mt-card .mt-carta.is-warn .mt-carta__icono,
+    body.dark-mode .al-ui .mt-card .mt-carta.is-warn .mt-carta__boton, body.dim-mode .al-ui .mt-card .mt-carta.is-warn .mt-carta__boton { background: var(--al-warn); }
+    body.dark-mode .al-ui .mt-card .mt-carta.is-warn .mt-carta__kicker, body.dim-mode .al-ui .mt-card .mt-carta.is-warn .mt-carta__kicker { color: var(--al-warn); }
+    body.dark-mode .al-ui .mt-card .mt-carta:hover, body.dim-mode .al-ui .mt-card .mt-carta:hover { color: var(--al-texto); box-shadow: none; filter: brightness(1.08); }
+    /* Contacto y aviso de datos incorrectos */
+    body.dark-mode .al-ui .mt-card .mt-contacto, body.dim-mode .al-ui .mt-card .mt-contacto { background: var(--al-fondo-2); border-color: var(--al-borde); }
+    body.dark-mode .al-ui .mt-contacto__eti, body.dim-mode .al-ui .mt-contacto__eti { color: var(--al-suave); }
+    body.dark-mode .al-ui .mt-reporte, body.dim-mode .al-ui .mt-reporte { border-top-color: var(--al-borde); }
+    body.dark-mode .al-ui .mt-reporte summary, body.dim-mode .al-ui .mt-reporte summary { color: var(--al-info); }

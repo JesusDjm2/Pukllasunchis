@@ -109,7 +109,7 @@
                             </div>
                             <div class="pk-milestone-result">
                                 <i class="fa fa-check-circle"></i>
-                                <span>Porcentaje máximo permitido: <strong>20%</strong>. Recibirás tu reporte oficial por correo en un plazo no mayor a 20 días hábiles. Cada pago cubre 1 revisión de originalidad.</span>
+                                <span>Porcentaje máximo permitido: <strong>20%</strong>. Recibirás tu reporte oficial por correo en un plazo no mayor a 20 días hábiles. Cada pago cubre 1 revisión de originalidad. <span class="d-block mt-1" style="font-size: 13px; font-weight: 500;"><i class="fa fa-calendar-check me-1"></i> (Plazo modificado el 10 de noviembre de 2026)</span></span>
                             </div>
                             <a href="https://docs.google.com/forms/d/e/1FAIpQLSc1Bam9QlzjkT66NYeKMxS-xyoU4MchYtYiGCMmtvKVbHiCjg/viewform"
                                target="_blank" class="pk-btn-form-cta">

@@ -1,4 +1,3 @@
-
 @php
     $notiUser = auth()->user();
     // Cuentas de área (p. ej. Secretaría, que además tiene rol admin): solo los avisos de su área.
@@ -12,7 +11,6 @@
         : collect();
     $notiRecientes = $notiNoLeidas->concat($notiLeidasRecientes);
 @endphp
-
 <style>
     .noti-item {
         border-left: 3px solid transparent;
@@ -63,7 +61,6 @@
         border-radius: 10px;
     }
 </style>
-
 <li class="nav-item dropdown no-arrow mx-1">
     <a class="nav-link dropdown-toggle" href="#" id="notificacionesDropdown" role="button"
         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Notificaciones">
@@ -159,6 +156,10 @@
                         (bool) ($n->data['apto'] ?? false) => ['Revisión de originalidad', 'fa-check-circle', 'bg-success', 'Tu reporte Turnitin está listo: '.($n->data['similitud'] ?? '').' % de similitud (apto)'],
                         default => ['Revisión de originalidad', 'fa-times-circle', 'bg-danger', 'Tu reporte Turnitin está listo: '.($n->data['similitud'] ?? '').' % de similitud (supera el máximo: corrige y solicita otra revisión)'],
                     },
+                    \App\Notifications\TitulacionPtiHabilitada::class => [
+                        'Titulación', 'fa-user-check', 'bg-success',
+                        'Secretaría te habilitó para solicitar la aprobación de tu PTI: ya puedes enviarla desde tu intranet',
+                    ],
                     \App\Notifications\TitulacionPtiParaRd::class => [
                         'RD de PTI por emitir', 'fa-gavel', 'bg-warning',
                         'Se inició el proceso de '.($n->data['alumno_nombre'] ?? 'un estudiante').': emitir la RD de aprobación del PTI «'.($n->data['titulo'] ?? '').'»',
