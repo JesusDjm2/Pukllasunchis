@@ -20,6 +20,34 @@
 <div class="sticky"><button type="submit">Confirmar y guardar mi perfil</button> @unless($esEntrevista)<button type="button" class="secondary" id="borrador">Guardar y continuar después</button>@endunless<p id="estado" role="status" aria-live="polite"></p></div>
 </form>
 @unless($esEntrevista)<section><h2>Mis solicitudes de apoyo</h2>@forelse($casos as $caso)<p><strong>{{ $caso->tema }}</strong> · {{ $caso->estado }} · Próxima gestión: {{ $caso->fecha_gestion?->format('d/m/Y') }}</p>@empty<p>Aún no tienes solicitudes registradas.</p>@endforelse</section>@endunless
+<details id="antecedentes-seguimiento"><summary>Antecedentes de seguimiento e hitos oficiales</summary>
+<fieldset><legend>Hitos oficiales en el sistema</legend>
+<p><strong>Egreso institucional:</strong> {{ ($hitosOficiales['egreso']['acreditado'] ?? false) ? 'Acreditado ('.implode(', ', $hitosOficiales['egreso']['fechas'] ?? []).')' : 'No verificado en el sistema' }}</p>
+<p><strong>Titulación:</strong> {{ $hitosOficiales['titulacion']['detalle'] ?? 'No verificado en el sistema' }}</p>
+<p><strong>Grado / Bachiller:</strong> {{ $hitosOficiales['grado_bachiller']['detalle'] ?? 'No verificado en el sistema' }}</p>
+<small>Los hitos oficiales provienen exclusivamente de actas, resoluciones y registros académicos institucionales. Las encuestas históricas no modifican tu expediente.</small>
+</fieldset>
+<fieldset><legend>Antecedentes de seguimiento (observaciones históricas declaradas)</legend>
+@forelse($antecedentesHistoricos ?? [] as $ant)
+<div class="job">
+<p><strong>{{ $ant['fuente_nombre'] }}</strong> · Corte: {{ $ant['fecha_corte'] }} · Fecha de observación: {{ $ant['observada_en'] }}</p>
+<p><small>Naturaleza: {{ $ant['naturaleza'] }} · Calidad: {{ $ant['calidad'] }} · Vínculo de trayectoria: {{ $ant['trayectoria_tipo'] }}</small></p>
+<p>Situación declarada en ese corte: <strong>{{ $ant['situacion_laboral_declarada'] }}</strong>
+@if($ant['insercion_educativa_declarada']) · {{ $ant['insercion_educativa_declarada'] }}@endif
+@if($ant['sector_declarado']) · Sector: {{ $ant['sector_declarado'] }}@endif
+@if($ant['cargo_declarado']) · Cargo/función: {{ $ant['cargo_declarado'] }}@endif
+@if($ant['lugar_trabajo_texto_origen']) · Lugar (texto origen): {{ $ant['lugar_trabajo_texto_origen'] }}@endif
+</p>
+@if($ant['satisfaccion_historica_archivo'])<p><small>Satisfacción histórica (archivo previo): {{ $ant['satisfaccion_historica_archivo'] }}</small></p>@endif
+@if($ant['aporte_formacion_original'])<p><small>Aporte de formación declarado: {{ $ant['aporte_formacion_original'] }}</small></p>@endif
+@if($ant['necesidades_formacion_original'])<p><small>Necesidades formativas declaradas: {{ $ant['necesidades_formacion_original'] }}</small></p>@endif
+@if($ant['tiene_bienestar_restringido'])<p><small>Bienestar (acceso restringido): {{ $ant['bienestar_restringido'] }}</small></p>@endif
+</div>
+@empty
+<p>No se registran observaciones históricas previas vinculadas a esta cuenta.</p>
+@endforelse
+</fieldset>
+</details>
 @unless($esEntrevista)<section><a class="button" href="{{ route('red.inicio') }}">Continuar a Red Puklla de Egresados →</a><p>El acceso se habilita al confirmar los datos principales; no necesitas completar las preguntas voluntarias.</p></section>@endunless
 </main></div>
 @endsection

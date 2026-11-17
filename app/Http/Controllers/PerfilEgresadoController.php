@@ -80,8 +80,11 @@ class PerfilEgresadoController extends Controller
         $borrador = !$esEntrevista && $draft ? json_decode($draft->datos, true) : null;
         $ultima = DB::table('egresado_perfil_versiones')->where('user_id', $id)->latest('id')->value('confirmado_at');
         $casos = Caso::where('user_id', $id)->latest('id')->get(['tema','estado','fecha_gestion']);
+        $conciliacionSvc = app(\App\Services\SeguimientoEgresado\ConciliacionHistoricoService::class);
+        $hitosOficiales = $conciliacionSvc->obtenerHitosOficialesSeparados($titular);
+        $antecedentesHistoricos = $conciliacionSvc->obtenerAntecedentesPersona($id, auth()->user());
         if ($esEntrevista) { unset($datos['apoyo'],$datos['contacto_alterno']); $casos=collect(); }
-        return view('seguimiento_egresados.mi_espacio', compact('datos','borrador','ultima','casos','clasificacion','esEntrevista','titular','campanaId'));
+        return view('seguimiento_egresados.mi_espacio', compact('datos','borrador','ultima','casos','clasificacion','esEntrevista','titular','campanaId','hitosOficiales','antecedentesHistoricos'));
     }
 
     public function guardar(Request $request)

@@ -470,6 +470,9 @@ Route::middleware('auth')->prefix('seguimiento-egresados/panel')->group(function
     Route::get('/informes/{corte}', [App\Http\Controllers\SeguimientoPanelController::class,'informe'])->name('seguimiento.panel.informe');
     Route::get('/entrevista/{egresado}', [App\Http\Controllers\PerfilEgresadoController::class,'entrevista'])->name('seguimiento.panel.entrevista');
     Route::post('/entrevista/{egresado}', [App\Http\Controllers\PerfilEgresadoController::class,'guardarEntrevista'])->name('seguimiento.panel.entrevista.guardar');
+    Route::get('/conciliacion-historica', [App\Http\Controllers\SeguimientoPanelController::class,'conciliacionHistorica'])->name('seguimiento.panel.conciliacion');
+    Route::post('/conciliacion-historica/{registro}/resolver', [App\Http\Controllers\SeguimientoPanelController::class,'resolverConciliacionHistorica'])->whereNumber('registro')->name('seguimiento.panel.conciliacion.resolver');
+    Route::get('/antecedentes/{egresado}', [App\Http\Controllers\SeguimientoPanelController::class,'antecedentesEgresado'])->whereNumber('egresado')->name('seguimiento.panel.antecedentes');
 });
 
 Route::middleware('auth')->prefix('red-puklla')->name('red.')->group(function () {

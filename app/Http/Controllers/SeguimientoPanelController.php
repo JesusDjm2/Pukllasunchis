@@ -94,4 +94,73 @@ class SeguimientoPanelController extends Controller
         $informe=json_decode($registro->datos,true);
         return view('seguimiento_egresados.informe_campana',compact('registro','informe'));
     }
+
+    public function conciliacionHistorica(Request $r)
+    {
+        abort_unless($this->acceso->esPersonalGestion(), 403);
+        abort_unless(Schema::hasTable('egresado_historico_registros'), 503, 'Ejecuta la migración de conciliación histórica.');
+
+        $estado = $r->query('estado', 'pendientes');
+        $q = DB::table('egresado_historico_registros')->orderBy('id');
+        if ($estado === 'pendientes') {
+            $q->whereIn('estado_conciliacion', ['candidato_revision', 'candidato_ambiguo', 'identidad_confirmada_trayectoria_pendiente', 'sin_correspondencia']);
+        } elseif (in_array($estado, ['vinculo_confirmado', 'candidato_revision', 'candidato_ambiguo', 'sin_correspondencia'], true)) {
+            $q->where('estado_conciliacion', $estado);
+        }
+
+        $registros = $q->paginate(25)->withQueryString();
+        $idsReg = collect($registros->items())->pluck('id');
+        $candidaturas = DB::table('egresado_historico_candidaturas as c')
+            ->join('users as u', 'u.id', '=', 'c.user_id_candidato')
+            ->whereIn('c.registro_id', $idsReg)
+            ->get(['c.*', 'u.name', 'u.apellidos', 'u.condicion'])
+            ->groupBy('registro_id');
+
+        $resumenPorFuente = DB::table('egresado_historico_registros')
+            ->selectRaw('fuente_codigo, estado_conciliacion, COUNT(*) as total')
+            ->groupBy('fuente_codigo', 'estado_conciliacion')
+            ->get();
+
+        return view('seguimiento_egresados.conciliacion_historica', compact('registros', 'candidaturas', 'resumenPorFuente', 'estado'));
+    }
+
+    public function resolverConciliacionHistorica(Request $r, int $registro)
+    {
+        abort_unless($this->acceso->esPersonalGestion(), 403);
+        $v = $r->validate([
+            'accion' => 'required|in:aprobar,rechazar',
+            'user_id_validado' => 'required_if:accion,aprobar|nullable|integer|exists:users,id',
+            'trayectoria_tipo' => 'nullable|in:FID,PPD,TRANSVERSAL,PENDIENTE',
+            'motivo' => 'required|string|min:5|max:1000',
+        ]);
+
+        $servicio = app(\App\Services\SeguimientoEgresado\ConciliacionHistoricoService::class);
+        $res = $servicio->resolverConciliacionManual(
+            $registro,
+            $v['accion'],
+            isset($v['user_id_validado']) ? (int) $v['user_id_validado'] : null,
+            $v['trayectoria_tipo'] ?? null,
+            (int) auth()->id(),
+            $v['motivo']
+        );
+
+        if ($r->expectsJson()) {
+            return response()->json(['success' => true, 'resultado' => $res]);
+        }
+
+        return back()->with('success', 'Decisión de conciliación histórica registrada con auditoría.');
+    }
+
+    public function antecedentesEgresado(Request $r, int $egresado)
+    {
+        abort_unless($this->acceso->puedeConsultarEgresado($egresado), 403);
+        $userObj = User::findOrFail($egresado);
+        $servicio = app(\App\Services\SeguimientoEgresado\ConciliacionHistoricoService::class);
+
+        return response()->json([
+            'user_id' => $userObj->id,
+            'hitos_oficiales' => $servicio->obtenerHitosOficialesSeparados($userObj),
+            'antecedentes_seguimiento' => $servicio->obtenerAntecedentesPersona($userObj->id, auth()->user()),
+        ]);
+    }
 }

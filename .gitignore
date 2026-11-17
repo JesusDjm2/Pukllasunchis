@@ -25,3 +25,7 @@ yarn-error.log
 *.sql
 /database/*.sql
 /storage/backups/
+/storage/app/privado_historico/
+*ENCUESTA_HISTORICO*
+*PADRON_PRIVADO*
+*Base_Maestra_Empleabilidad*
