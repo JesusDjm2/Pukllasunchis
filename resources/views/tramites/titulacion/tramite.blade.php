@@ -6,7 +6,7 @@
     <meta name="description"
         content="Requisitos y procedimientos para trámites presenciales, descarga del FUT y armado de expediente de graduación en la EESPP Pukllasunchis.">
     <meta name="keywords" content="{{ $titulo }}, Expediente Titulacion Pukllasunchis, FUT Pukllasunchis, Tramites Presenciales">
-    <link rel="stylesheet" href="{{ asset('css/pk-tramites-titulacion.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/pk-tramites-titulacion.css') }}?v=20261117b">
 @endsection
 
 @section('contenido')

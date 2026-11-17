@@ -6,7 +6,7 @@
     <meta name="description"
         content="Procedimientos, costos y formularios virtuales para trámites extraordinarios del proceso de investigación y titulación en la EESPP Pukllasunchis.">
     <meta name="keywords" content="{{ $titulo }}, Tramites Extraordinarios Titulacion, Cambio Asesor Pukllasunchis, Separacion Grupo, Integracion Grupo">
-    <link rel="stylesheet" href="{{ asset('css/pk-tramites-titulacion.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/pk-tramites-titulacion.css') }}?v=20261117b">
 @endsection
 
 @section('contenido')

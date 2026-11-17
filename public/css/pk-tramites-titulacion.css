@@ -1958,74 +1958,133 @@ body:has(.pegajoso) {
    ═════════════════════════════════════════════════════════ */
 .pk-etapas-nav {
     border-top: 1px solid #e5e7eb;
-    padding-top: 24px;
+    padding-top: 26px;
+}
+
+.pk-etapas-nav .row > [class*="col-"] {
+    display: flex;
 }
 
 a.pk-etapas-nav-card,
-.pk-etapas-nav-card {
-    background: #fbf8f3;
-    border: 1px solid #eedecb;
-    border-radius: 14px;
-    padding: 18px 22px;
+.pk-etapas-nav-card,
+.pk-etapas-nav-card.pk-etapas-nav-prev,
+.pk-etapas-nav-card.pk-etapas-nav-next {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #ffffff 0%, #fbf6ee 100%);
+    border: 1.5px solid #ead8be;
+    border-radius: 16px;
+    padding: 20px 22px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 16px;
-    transition: all 0.22s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    box-shadow: 0 3px 10px rgba(180, 128, 52, 0.06);
     text-decoration: none !important;
     color: inherit;
     cursor: pointer;
+    transition:
+        transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+        border-color 0.3s ease,
+        background 0.35s ease;
+    will-change: transform;
+}
+
+/* Destello diagonal sutil en hover */
+a.pk-etapas-nav-card::before,
+.pk-etapas-nav-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -120%;
+    width: 65%;
+    height: 100%;
+    background: linear-gradient(
+        105deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.65) 50%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    transform: skewX(-22deg);
+    pointer-events: none;
+    transition: left 0.72s cubic-bezier(0.22, 1, 0.36, 1);
+    z-index: 1;
+}
+
+/* Barra dorada inferior animada en hover */
+a.pk-etapas-nav-card::after,
+.pk-etapas-nav-card::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3.5px;
+    background: linear-gradient(90deg, #cd9244 0%, #e5b268 50%, #b57726 100%);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+    z-index: 2;
+}
+
+.pk-etapas-nav-card.pk-etapas-nav-prev::after {
+    transform-origin: right center;
 }
 
 a.pk-etapas-nav-card:hover,
-.pk-etapas-nav-card:hover {
+.pk-etapas-nav-card:hover,
+.pk-etapas-nav-card.pk-etapas-nav-prev:hover,
+.pk-etapas-nav-card.pk-etapas-nav-next:hover {
+    background: linear-gradient(135deg, #ffffff 0%, #f8efe0 100%);
     border-color: #cd9244;
-    box-shadow: 0 4px 14px rgba(205, 146, 68, 0.12);
-    transform: translateY(-2px);
+    box-shadow:
+        0 16px 30px -10px rgba(205, 146, 68, 0.32),
+        0 6px 14px -4px rgba(38, 53, 82, 0.08);
+    transform: translateY(-6px) scale(1.012);
     text-decoration: none !important;
 }
 
-a.pk-etapas-nav-card:hover .pk-etapas-nav-btn {
-    background: linear-gradient(135deg, #be8334 0%, #b37626 100%);
-    transform: translateX(4px);
-    box-shadow: 0 4px 14px rgba(205, 146, 68, 0.35);
+a.pk-etapas-nav-card:hover::before,
+.pk-etapas-nav-card:hover::before {
+    left: 165%;
 }
 
-a.pk-etapas-nav-card:hover .pk-etapas-nav-btn-outline {
-    background: #f3f4f6;
-    border-color: #9ca3af;
-    color: #1f2937 !important;
-    transform: translateX(-4px);
+a.pk-etapas-nav-card:hover::after,
+.pk-etapas-nav-card:hover::after {
+    transform: scaleX(1);
 }
 
-.pk-etapas-nav-card.pk-etapas-nav-prev {
-    background: #ffffff;
-    border-color: #e5e7eb;
-}
-
-.pk-etapas-nav-card.pk-etapas-nav-prev:hover {
-    border-color: #9ca3af;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+a.pk-etapas-nav-card:active,
+.pk-etapas-nav-card:active {
+    transform: translateY(-2px) scale(0.995);
+    transition-duration: 0.12s;
 }
 
 .pk-etapas-nav-info {
+    position: relative;
+    z-index: 2;
     min-width: 0;
+    flex: 1;
 }
 
-.pk-etapas-nav-badge {
+.pk-etapas-nav-badge,
+.pk-etapas-nav-prev .pk-etapas-nav-badge {
     display: inline-block;
     font-family: "Poppins", sans-serif;
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #cd9244;
-    margin-bottom: 4px;
+    letter-spacing: 0.06em;
+    color: #b87c2d;
+    margin-bottom: 5px;
+    transition: color 0.25s ease;
 }
 
-.pk-etapas-nav-prev .pk-etapas-nav-badge {
-    color: #6b7280;
+a.pk-etapas-nav-card:hover .pk-etapas-nav-badge {
+    color: #9e651c;
 }
 
 .pk-etapas-nav-title {
@@ -2033,72 +2092,101 @@ a.pk-etapas-nav-card:hover .pk-etapas-nav-btn-outline {
     font-size: 16.5px;
     font-weight: 600;
     color: #1f2937;
-    margin: 0 0 4px 0;
+    margin: 0 0 5px 0;
     line-height: 1.3;
+    transition: color 0.25s ease;
+}
+
+a.pk-etapas-nav-card:hover .pk-etapas-nav-title {
+    color: #263552;
 }
 
 .pk-etapas-nav-desc {
     font-family: "Poppins", sans-serif;
     font-size: 13.5px;
-    color: #6b7280;
+    color: #5b6472;
     margin: 0;
-    line-height: 1.4;
+    line-height: 1.45;
 }
 
-.pk-etapas-nav-btn {
+.pk-etapas-nav-btn,
+.pk-etapas-nav-btn-outline {
+    position: relative;
+    z-index: 2;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
     padding: 10px 18px;
-    background: linear-gradient(135deg, #d59d52 0%, #cd9244 100%);
+    background: linear-gradient(135deg, #d59d52 0%, #c68836 100%);
+    border: 1px solid transparent;
     color: #ffffff !important;
-    border-radius: 9px;
+    border-radius: 10px;
     font-family: "Poppins", sans-serif;
     font-size: 13.5px;
     font-weight: 600;
     text-decoration: none !important;
     white-space: nowrap;
     flex-shrink: 0;
-    box-shadow: 0 3px 10px rgba(205, 146, 68, 0.25);
-    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(205, 146, 68, 0.28);
+    transition:
+        transform 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+        background 0.3s ease,
+        box-shadow 0.3s ease;
 }
 
-.pk-etapas-nav-btn:hover {
-    background: linear-gradient(135deg, #be8334 0%, #b37626 100%);
+.pk-etapas-nav-btn i,
+.pk-etapas-nav-btn-outline i {
+    transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+a.pk-etapas-nav-card:hover .pk-etapas-nav-btn,
+a.pk-etapas-nav-card:hover .pk-etapas-nav-btn-outline {
+    background: linear-gradient(135deg, #263552 0%, #1b273d 100%);
+    color: #ffffff !important;
+    border-color: transparent;
+    box-shadow: 0 8px 18px rgba(38, 53, 82, 0.28);
+}
+
+a.pk-etapas-nav-card.pk-etapas-nav-next:hover .pk-etapas-nav-btn,
+a.pk-etapas-nav-card:not(.pk-etapas-nav-prev):hover .pk-etapas-nav-btn {
     transform: translateX(3px);
-    box-shadow: 0 4px 14px rgba(205, 146, 68, 0.35);
 }
 
-.pk-etapas-nav-btn-outline {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 9px 16px;
-    background: #ffffff;
-    border: 1px solid #d1d5db;
-    color: #4b5563 !important;
-    border-radius: 9px;
-    font-family: "Poppins", sans-serif;
-    font-size: 13.5px;
-    font-weight: 500;
-    text-decoration: none !important;
-    white-space: nowrap;
-    flex-shrink: 0;
-    transition: all 0.2s ease;
+a.pk-etapas-nav-card.pk-etapas-nav-next:hover .pk-etapas-nav-btn i,
+a.pk-etapas-nav-card:not(.pk-etapas-nav-prev):hover .pk-etapas-nav-btn i {
+    transform: translateX(4px);
 }
 
-.pk-etapas-nav-btn-outline:hover {
-    background: #f3f4f6;
-    border-color: #9ca3af;
-    color: #1f2937 !important;
+a.pk-etapas-nav-card.pk-etapas-nav-prev:hover .pk-etapas-nav-btn,
+a.pk-etapas-nav-card.pk-etapas-nav-prev:hover .pk-etapas-nav-btn-outline {
     transform: translateX(-3px);
 }
 
+a.pk-etapas-nav-card.pk-etapas-nav-prev:hover .pk-etapas-nav-btn i,
+a.pk-etapas-nav-card.pk-etapas-nav-prev:hover .pk-etapas-nav-btn-outline i {
+    transform: translateX(-4px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    a.pk-etapas-nav-card,
+    a.pk-etapas-nav-card::before,
+    a.pk-etapas-nav-card::after,
+    .pk-etapas-nav-btn,
+    .pk-etapas-nav-btn-outline,
+    .pk-etapas-nav-btn i,
+    .pk-etapas-nav-btn-outline i {
+        transition: none !important;
+        transform: none !important;
+    }
+}
+
 @media (max-width: 767.98px) {
+    a.pk-etapas-nav-card,
     .pk-etapas-nav-card {
         flex-direction: column;
         align-items: flex-start;
-        padding: 16px;
+        padding: 18px;
     }
     .pk-etapas-nav-btn,
     .pk-etapas-nav-btn-outline {

@@ -6,7 +6,7 @@
     <meta name="description"
         content="Ruta oficial y requisitos para el desarrollo de la Tesis Profesional y la obtención del Título de Licenciado en Educación en la EESPP Pukllasunchis.">
     <meta name="keywords" content="{{ $titulo }}, Tesis Pukllasunchis, Titulo Licenciado Educacion, Sustentacion Tesis Cusco">
-    <link rel="stylesheet" href="{{ asset('css/pk-tramites-titulacion.css') }}?v=20261117">
+    <link rel="stylesheet" href="{{ asset('css/pk-tramites-titulacion.css') }}?v=20261117b">
 @endsection
 
 @section('contenido')

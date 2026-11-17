@@ -6,7 +6,7 @@
     <meta name="description"
         content="Guía oficial del proceso de titulación y grados académicos en la EESPP Pukllasunchis: Plan de Trabajo (PTI), Trabajo de Investigación (Bachillerato), Tesis (Licenciatura), trámites presenciales y extraordinarios.">
     <meta name="keywords" content="{{ $titulo }}, Titulación Pukllasunchis, Bachiller Educacion, Licenciatura Educacion, PTI, Tesis Pukllasunchis, Cusco">
-    <link rel="stylesheet" href="{{ asset('css/pk-tramites-titulacion.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/pk-tramites-titulacion.css') }}?v=20261117b">
 @endsection
 
 @section('contenido')
