@@ -6,7 +6,7 @@
     <meta name="description"
         content="Procedimientos, costos y formularios virtuales para trámites extraordinarios del proceso de investigación y titulación en la EESPP Pukllasunchis.">
     <meta name="keywords" content="{{ $titulo }}, Tramites Extraordinarios Titulacion, Cambio Asesor Pukllasunchis, Separacion Grupo, Integracion Grupo">
-    <link rel="stylesheet" href="{{ asset('css/pk-tramites-titulacion.css') }}?v=20261117b">
+    <link rel="stylesheet" href="{{ asset('css/pk-tramites-titulacion.css') }}?v=20261117c">
 @endsection
 
 @section('contenido')
@@ -469,8 +469,9 @@
                 </div>
                 <div class="modal-footer border-0 bg-light p-3 justify-content-center">
                     <button type="button" class="btn btn-outline-secondary px-3" data-bs-dismiss="modal" style="border-radius: 8px; font-size: 14px;">Cerrar</button>
-                    <a href="{{ route('mi-titulacion.solicitud-pti') }}" class="btn text-white fw-bold px-4 py-2" style="background: linear-gradient(135deg, #d59d52, #cd9244); border-radius: 8px; font-size: 14px;">
-                        <i class="fa fa-sign-in me-1"></i> Ir al Login de la Intranet
+                    <a href="{{ route('mi-titulacion.solicitud-pti') }}" class="pk-btn-intranet-cta">
+                        <i class="fa fa-sign-in"></i>
+                        <span>Ir al Login de la Intranet</span>
                     </a>
                 </div>
             </div>

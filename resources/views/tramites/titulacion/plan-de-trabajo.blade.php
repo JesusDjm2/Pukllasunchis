@@ -6,7 +6,7 @@
     <meta name="description"
         content="Guía y requisitos oficiales para la elaboración y aprobación del Plan de Trabajo de Investigación (PTI) en la EESPP Pukllasunchis. Descarga de formatos y formulario de postulación.">
     <meta name="keywords" content="{{ $titulo }}, PTI Pukllasunchis, Investigacion Educacion Cusco, Formato PTI">
-    <link rel="stylesheet" href="{{ asset('css/pk-tramites-titulacion.css') }}?v=20261117b">
+    <link rel="stylesheet" href="{{ asset('css/pk-tramites-titulacion.css') }}?v=20261117c">
 @endsection
 
 @section('contenido')
@@ -135,7 +135,7 @@
                     <div class="pk-milestone-item">
                         <div class="pk-milestone-item__bullet">3</div>
                         <div class="pk-milestone-header">
-                            <h4>FORMULARIO DE APROBACIÓN DE PTI</h4>
+                            <h4>Formulario de Aprobación de PTI</h4>
                             <div class="pk-milestone-meta">
                                 <span class="pk-badge-time"><i class="fa fa-globe"></i> Mesa Virtual</span>
                             </div>
@@ -147,12 +147,14 @@
 
                             {{-- Formulario del sistema (MiSolicitudPtiController): reemplaza al de Google. Sin sesión, aviso y login. --}}
                             @auth
-                                <a href="{{ route('mi-titulacion.solicitud-pti') }}" class="pk-btn-form-cta">
-                                    <i class="fa fa-file-signature me-1"></i> Solicitar aprobación del PTI en mi Intranet
+                                <a href="{{ route('mi-titulacion.solicitud-pti') }}" class="pk-btn-intranet-cta mt-2">
+                                    <i class="fa fa-file-signature"></i>
+                                    <span>Solicitar aprobación del PTI en mi Intranet</span>
                                 </a>
                             @else
-                                <button type="button" class="pk-btn-form-cta border-0" data-bs-toggle="modal" data-bs-target="#modalPtiIntranet">
-                                    <i class="fa fa-sign-in me-1"></i> Iniciar sesión en Intranet para solicitar
+                                <button type="button" class="pk-btn-intranet-cta mt-2" data-bs-toggle="modal" data-bs-target="#modalPtiIntranet">
+                                    <i class="fa fa-sign-in"></i>
+                                    <span>Iniciar sesión en Intranet para solicitar</span>
                                 </button>
                             @endauth
                         </div>
@@ -205,12 +207,14 @@
                     </p>
                     <div>
                         @auth
-                            <a href="{{ route('mi-titulacion.carta') }}" class="btn text-white fw-bold px-4 py-2" style="background: linear-gradient(135deg, #d59d52, #cd9244); border-radius: 8px; font-size: 14px;">
-                                <i class="fa fa-file-text me-2"></i> Solicitar Carta en mi Intranet
+                            <a href="{{ route('mi-titulacion.carta') }}" class="pk-btn-intranet-cta">
+                                <i class="fa fa-file-text"></i>
+                                <span>Solicitar Carta en mi Intranet</span>
                             </a>
                         @else
-                            <button type="button" class="btn text-white fw-bold px-4 py-2" style="background: linear-gradient(135deg, #d59d52, #cd9244); border-radius: 8px; font-size: 14px;" data-bs-toggle="modal" data-bs-target="#modalCartaIntranet">
-                                <i class="fa fa-sign-in me-2"></i> Iniciar sesión en Intranet para solicitar
+                            <button type="button" class="pk-btn-intranet-cta" data-bs-toggle="modal" data-bs-target="#modalCartaIntranet">
+                                <i class="fa fa-sign-in"></i>
+                                <span>Iniciar sesión en Intranet para solicitar</span>
                             </button>
                         @endauth
                     </div>
@@ -358,8 +362,9 @@
                 </div>
                 <div class="modal-footer border-0 bg-light p-3 justify-content-center">
                     <button type="button" class="btn btn-outline-secondary px-3" data-bs-dismiss="modal" style="border-radius: 8px; font-size: 14px;">Cerrar</button>
-                    <a href="{{ route('mi-titulacion.solicitud-pti') }}" class="btn text-white fw-bold px-4 py-2" style="background: linear-gradient(135deg, #d59d52, #cd9244); border-radius: 8px; font-size: 14px;">
-                        <i class="fa fa-sign-in me-1"></i> Ir al Login de la Intranet
+                    <a href="{{ route('mi-titulacion.solicitud-pti') }}" class="pk-btn-intranet-cta">
+                        <i class="fa fa-sign-in"></i>
+                        <span>Ir al Login de la Intranet</span>
                     </a>
                 </div>
             </div>
@@ -394,8 +399,9 @@
                     <button type="button" class="btn btn-outline-secondary px-3" data-bs-dismiss="modal" style="border-radius: 8px; font-size: 14px;">
                         Cerrar
                     </button>
-                    <a href="{{ route('mi-titulacion.carta') }}" class="btn text-white fw-bold px-4 py-2" style="background: linear-gradient(135deg, #d59d52, #cd9244); border-radius: 8px; font-size: 14px;">
-                        <i class="fa fa-sign-in me-1"></i> Ir al Login de la Intranet
+                    <a href="{{ route('mi-titulacion.carta') }}" class="pk-btn-intranet-cta">
+                        <i class="fa fa-sign-in"></i>
+                        <span>Ir al Login de la Intranet</span>
                     </a>
                 </div>
             </div>
