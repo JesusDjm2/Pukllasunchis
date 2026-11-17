@@ -1011,6 +1011,48 @@
                     openCollapse(target, btn);
                 }
             });
+
+            /* Puente Bootstrap 5 -> Bootstrap 4 para Modales:
+               Habilita data-bs-toggle="modal", data-bs-target y data-bs-dismiss="modal"
+               con el motor de modales de Bootstrap 4 JS cargado en este layout. */
+            document.addEventListener('click', function (e) {
+                var trigger = e.target.closest('[data-bs-toggle="modal"]');
+                if (trigger && !trigger.hasAttribute('data-toggle')) {
+                    var sel = trigger.getAttribute('data-bs-target') || trigger.getAttribute('data-target') || trigger.getAttribute('href');
+                    if (sel && sel.startsWith('#')) {
+                        var modalEl = document.querySelector(sel);
+                        if (modalEl) {
+                            e.preventDefault();
+                            if (modalEl.parentNode !== document.body) {
+                                document.body.appendChild(modalEl);
+                            }
+                            if (window.jQuery && typeof window.jQuery.fn.modal === 'function') {
+                                window.jQuery(modalEl).modal('show');
+                            } else {
+                                modalEl.classList.add('show');
+                                modalEl.style.display = 'block';
+                                modalEl.removeAttribute('aria-hidden');
+                            }
+                        }
+                    }
+                    return;
+                }
+
+                var dismiss = e.target.closest('[data-bs-dismiss="modal"]');
+                if (dismiss && !dismiss.hasAttribute('data-dismiss')) {
+                    var openModal = dismiss.closest('.modal');
+                    if (openModal) {
+                        e.preventDefault();
+                        if (window.jQuery && typeof window.jQuery.fn.modal === 'function') {
+                            window.jQuery(openModal).modal('hide');
+                        } else {
+                            openModal.classList.remove('show');
+                            openModal.style.display = 'none';
+                            openModal.setAttribute('aria-hidden', 'true');
+                        }
+                    }
+                }
+            });
         })();
     </script>
     <script>
