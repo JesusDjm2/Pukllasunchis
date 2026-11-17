@@ -369,6 +369,7 @@ class CartaAceptacionController extends Controller
             return view('titulacion.carta.solo-estudiantes', [
                 'user' => $user,
                 'panel' => $panel,
+                'tramite' => 'carta',
                 'puedeRegistros' => $user->hasAnyRole(['super-admin', 'secretaria', 'gestor-titulacion']),
             ]);
         }

@@ -159,7 +159,7 @@ class MiSolicitudPtiController extends Controller
         }
         if (PanelDeUsuario::esPersonal($user)) {
             return view('titulacion.carta.solo-estudiantes', [
-                'user' => $user, 'panel' => PanelDeUsuario::url($user),
+                'user' => $user, 'panel' => PanelDeUsuario::url($user), 'tramite' => 'pti',
                 'puedeRegistros' => $user->hasAnyRole(['super-admin', 'secretaria', 'gestor-titulacion']),
             ]);
         }
