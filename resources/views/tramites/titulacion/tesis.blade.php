@@ -6,7 +6,7 @@
     <meta name="description"
         content="Ruta oficial y requisitos para el desarrollo de la Tesis Profesional y la obtención del Título de Licenciado en Educación en la EESPP Pukllasunchis.">
     <meta name="keywords" content="{{ $titulo }}, Tesis Pukllasunchis, Titulo Licenciado Educacion, Sustentacion Tesis Cusco">
-    <link rel="stylesheet" href="{{ asset('css/pk-tramites-titulacion.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/pk-tramites-titulacion.css') }}?v=20261117">
 @endsection
 
 @section('contenido')
@@ -71,45 +71,59 @@
                                 <li>Boleta electrónica oficial emitida por la EESPP (no voucher de ventanilla).</li>
                             </ul>
 
-                            <!-- Tarjeta Destacada de Datos de Pago en Caja Cusco -->
-                            <div class="pk-pago-box">
-                                <div class="pk-pago-box__header">
-                                    <i class="fa fa-cash-register"></i>
-                                    <span>Indica obligatoriamente al cajero en ventanilla de <strong class="caja-cusco-brand" style="color: #d3141b;">Caja Cusco</strong>:</span>
+                            <!-- Ficha compacta de pago en Caja Cusco -->
+                            <div class="pk-pago-compact">
+                                <div class="pk-pago-compact__top">
+                                    <span class="pk-pago-compact__title">
+                                        <i class="fa fa-cash-register"></i> Pago ordinario en ventanilla — <strong class="caja-cusco-brand">Caja Cusco</strong>
+                                    </span>
+                                    <span class="pk-pago-compact__sub">Asociación Pukllasunchis - EESPP · Brinda tu DNI</span>
                                 </div>
-                                <div class="pk-pago-box__grid">
-                                    <div class="pk-pago-field pk-pago-field--concepto">
-                                        <span class="pk-pago-field__label"><i class="fa fa-tag text-primary"></i> 1. Concepto Exacto</span>
-                                        <strong class="pk-pago-field__value">UNA REVISION TURNITIN DE TESIS</strong>
+                                <div class="pk-pago-compact__row">
+                                    <div class="pk-pago-compact__item">
+                                        <span class="pk-pago-compact__label">Concepto exacto</span>
+                                        <span class="pk-pago-compact__val">UNA REVISION TURNITIN DE TESIS</span>
                                     </div>
-                                    <div class="pk-pago-field pk-pago-field--codigo">
-                                        <span class="pk-pago-field__label"><i class="fa fa-barcode"></i> 2. Código</span>
-                                        <strong class="pk-pago-field__value">37</strong>
+                                    <div class="pk-pago-compact__item">
+                                        <span class="pk-pago-compact__label">Código</span>
+                                        <span class="pk-pago-compact__val pk-pago-compact__val--code">37</span>
                                     </div>
-                                    <div class="pk-pago-field pk-pago-field--monto">
-                                        <span class="pk-pago-field__label"><i class="fa fa-money-bill-wave"></i> 3. Monto a Pagar</span>
-                                        <strong class="pk-pago-field__value">S/ 25.00</strong>
+                                    <div class="pk-pago-compact__item">
+                                        <span class="pk-pago-compact__label">Monto</span>
+                                        <span class="pk-pago-compact__val pk-pago-compact__val--price">S/ 25.00</span>
                                     </div>
                                 </div>
-                                <div class="pk-pago-box__instrucciones">
-                                    <p><i class="fa fa-building-columns text-muted me-1"></i> Tipo de pago: <strong>Pago Ordinario</strong> a nombre de <strong>Asociación Pukllasunchis - EESPP</strong>.</p>
-                                    <p><i class="fa fa-id-card text-muted me-1"></i> Identificación: Brinda tu <strong>DNI</strong> y tus nombres completos.</p>
-                                </div>
-                                <div class="pk-pago-box__alerta-voucher">
+                                <div class="pk-pago-compact__foot">
                                     <i class="fa fa-triangle-exclamation"></i>
-                                    <div>
-                                        <strong>¡Atención con el comprobante!</strong> El voucher que te entrega el cajero <u>NO</u> se sube al formulario. En un lapso de <strong>2 días hábiles</strong> recibirás la <strong>Boleta Electrónica Oficial</strong> en tu correo institucional para adjuntar al formulario.
-                                    </div>
+                                    <span><strong>Comprobante:</strong> No subas el voucher de ventanilla. En <strong>2 días hábiles</strong> recibirás la <strong>Boleta Electrónica Oficial</strong> en tu correo institucional.</span>
                                 </div>
                             </div>
 
-                            <div class="pk-milestone-notice">
-                                <i class="fa fa-circle-exclamation"></i>
-                                <span><strong>Regla de Exclusión (Art. 94):</strong> Si tu tesis es continuidad del TI con el que obtuviste tu bachiller, para la revisión preliminar de originalidad <strong>deberás excluir únicamente la sección "Base Teórica"</strong>. La versión oficial definitiva deberá presentarse íntegra en las etapas posteriores.</span>
-                            </div>
-                            <div class="pk-milestone-result">
-                                <i class="fa fa-check-circle"></i>
-                                <span>Porcentaje máximo permitido: <strong>20%</strong>. Recibirás tu reporte oficial por correo en un plazo no mayor a 20 días hábiles. Cada pago cubre 1 revisión de originalidad. <span class="d-block mt-1" style="font-size: 13px; font-weight: 500;"><i class="fa fa-calendar-check me-1"></i> (Plazo modificado el 10 de noviembre de 2026)</span></span>
+                            <!-- Condiciones y entrega en 2 columnas -->
+                            <div class="pk-condiciones-grid">
+                                <div class="pk-cond-card pk-cond-card--rule">
+                                    <div class="pk-cond-card__icon">
+                                        <i class="fa fa-percent"></i>
+                                    </div>
+                                    <div class="pk-cond-card__body">
+                                        <strong>Similitud máx. 20% · Exclusión (Art. 94)</strong>
+                                        Si tu tesis continúa tu TI de bachiller, excluye solo la sección <em>«Base Teórica»</em> en esta revisión preliminar.
+                                    </div>
+                                </div>
+                                <div class="pk-cond-card pk-cond-card--time">
+                                    <div class="pk-cond-card__icon">
+                                        <i class="fa fa-envelope-circle-check"></i>
+                                    </div>
+                                    <div class="pk-cond-card__body">
+                                        <strong>Entrega en hasta 20 días hábiles</strong>
+                                        Llegará a tu correo institucional (cada pago cubre 1 revisión).
+                                        <div>
+                                            <span class="pk-cond-card__meta">
+                                                <i class="fa fa-calendar-check"></i> Modificado el 10 de noviembre de 2026
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <a href="https://docs.google.com/forms/d/e/1FAIpQLSc1Bam9QlzjkT66NYeKMxS-xyoU4MchYtYiGCMmtvKVbHiCjg/viewform"
                                target="_blank" class="pk-btn-form-cta">
