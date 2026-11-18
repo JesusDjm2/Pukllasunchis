@@ -1,0 +1,256 @@
+/*
+ * Sistema visual para Ficha de Verificación y Seguimiento de Egresados (.seguimiento-panel)
+ * Integrado con los tokens institucionales (pk-tokens.css) y Bootstrap 4.
+ */
+.seguimiento-panel {
+    --pk-seg-azul: #1f459b;
+    --pk-seg-oro: #bf7b16;
+    --pk-seg-fucsia: #ad2474;
+    --pk-seg-borde: #dbe3f0;
+    --pk-seg-fondo: #f4f7fc;
+    --pk-seg-superficie: #ffffff;
+    --pk-seg-texto: #1e293b;
+    --pk-seg-muted: #52627a;
+    margin: 0;
+    background: var(--pk-seg-fondo);
+    color: var(--pk-seg-texto);
+    font: 15px/1.55 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    border-radius: 14px;
+}
+
+body.dark-mode .seguimiento-panel {
+    --pk-seg-azul: #7aa2f7;
+    --pk-seg-oro: #e0af68;
+    --pk-seg-borde: #2e3c54;
+    --pk-seg-fondo: #161b26;
+    --pk-seg-superficie: #1f2737;
+    --pk-seg-texto: #e2e8f0;
+    --pk-seg-muted: #94a3b8;
+}
+
+.seguimiento-panel .seg-contenedor {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 18px 16px 32px;
+}
+
+.seguimiento-panel header,
+.seguimiento-panel section,
+.seguimiento-panel details {
+    background: var(--pk-seg-superficie);
+    border-radius: 14px;
+    padding: 20px 22px;
+    margin: 14px 0;
+    border: 1px solid var(--pk-seg-borde);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);
+}
+
+.seguimiento-panel h1,
+.seguimiento-panel h2,
+.seguimiento-panel h3 {
+    color: var(--pk-seg-azul);
+    font-weight: 700;
+}
+
+.seguimiento-panel h1 {
+    font-size: 1.45rem;
+    margin: 0.45rem 0 0.6rem;
+}
+
+.seguimiento-panel h2 {
+    font-size: 1.15rem;
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+}
+
+.seguimiento-panel h3 {
+    font-size: 1rem;
+    margin-top: 0.75rem;
+}
+
+.seguimiento-panel label {
+    display: block;
+    margin: 12px 0 4px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.seguimiento-panel input,
+.seguimiento-panel select,
+.seguimiento-panel textarea,
+.seguimiento-panel button {
+    font: inherit;
+    padding: 9px 12px;
+    border-radius: 8px;
+    border: 1px solid #b9c8dc;
+    width: 100%;
+    background: var(--pk-seg-superficie);
+    color: inherit;
+}
+
+.seguimiento-panel input:focus,
+.seguimiento-panel select:focus,
+.seguimiento-panel textarea:focus,
+.seguimiento-panel button:focus {
+    outline: 2px solid var(--pk-seg-azul);
+    outline-offset: 1px;
+    border-color: var(--pk-seg-azul);
+}
+
+.seguimiento-panel button,
+.seguimiento-panel .button {
+    background: var(--pk-seg-azul);
+    color: #ffffff;
+    cursor: pointer;
+    text-decoration: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-weight: 600;
+    border: 1px solid transparent;
+    display: inline-block;
+    width: auto;
+    margin: 6px 4px 6px 0;
+}
+
+.seguimiento-panel button.secondary,
+.seguimiento-panel .button.secondary {
+    background: var(--pk-seg-superficie);
+    color: var(--pk-seg-azul);
+    border-color: var(--pk-seg-azul);
+}
+
+.seguimiento-panel .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0 18px;
+}
+
+.seguimiento-panel progress {
+    width: 100%;
+    height: 18px;
+    accent-color: var(--pk-seg-oro);
+}
+
+.seguimiento-panel small {
+    color: var(--pk-seg-muted);
+}
+
+.seguimiento-panel .job {
+    border-left: 4px solid var(--pk-seg-oro);
+    padding: 12px 14px;
+    margin: 14px 0;
+    background: rgba(191, 123, 22, 0.05);
+    border-radius: 8px;
+}
+
+.seguimiento-panel fieldset {
+    border: 1px solid var(--pk-seg-borde);
+    border-radius: 10px;
+    padding: 14px;
+    margin: 14px 0;
+}
+
+.seguimiento-panel legend {
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding: 0 6px;
+    width: auto;
+}
+
+.seguimiento-panel input[type=checkbox] {
+    width: auto;
+    margin-right: 8px;
+}
+
+.seguimiento-panel .sticky {
+    position: sticky;
+    bottom: 0;
+    z-index: 20;
+    background: var(--pk-seg-superficie);
+    padding: 12px 16px;
+    border-top: 2px solid var(--pk-seg-oro);
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 -4px 12px rgba(15, 23, 42, 0.06);
+}
+
+.seguimiento-panel [hidden] {
+    display: none !important;
+}
+
+.seguimiento-panel a {
+    color: var(--pk-seg-azul);
+}
+
+.seguimiento-panel #estado {
+    white-space: pre-line;
+    margin-bottom: 0;
+    font-weight: 600;
+}
+
+.seguimiento-panel .results button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #eef3ff;
+    color: #223f73;
+    margin: 3px 0;
+}
+
+.seguimiento-panel summary {
+    cursor: pointer;
+    font-weight: 700;
+}
+
+/* Tarjetas de Trayectoria Oficial y Procedencia */
+.seguimiento-panel .seg-origen-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    margin-right: 6px;
+    margin-bottom: 4px;
+}
+
+.seguimiento-panel .seg-origen-institucional {
+    background: #e0f2fe;
+    color: #075985;
+    border: 1px solid #bae6fd;
+}
+
+.seguimiento-panel .seg-origen-confirmado {
+    background: #dcfce7;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+}
+
+.seguimiento-panel .seg-origen-verificar {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+}
+
+.seguimiento-panel .seg-hitos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+    margin: 12px 0;
+}
+
+.seguimiento-panel .seg-hito-card {
+    border: 1px solid var(--pk-seg-borde);
+    border-radius: 10px;
+    padding: 12px 14px;
+    background: rgba(31, 69, 155, 0.02);
+}
+
+.seguimiento-panel .seg-hito-card strong {
+    display: block;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--pk-seg-muted);
+    margin-bottom: 4px;
+}

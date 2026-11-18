@@ -35,36 +35,56 @@ class PerfilEgresadoController extends Controller
         abort_unless($this->autorizacion->puedeModificarEgresado($egresado),403);
         abort_unless(\App\Models\User::whereKey($egresado)->where('condicion','Egresado')->exists(),404);
         $campanaId=$this->campanaEntrevista($request,$egresado);
-        return $this->mostrar($egresado, true, $campanaId);
+        $grupoFormacion = app(\App\Services\SeguimientoEgresado\GrupoFormacionService::class)->normalizar($request->query('grupo_formacion'));
+        return $this->mostrar($egresado, true, $campanaId, $grupoFormacion);
     }
 
-    private function mostrar(int $id, bool $esEntrevista, ?int $campanaId=null)
+    private function mostrar(int $id, bool $esEntrevista, ?int $campanaId=null, string $grupoFormacion='TODOS')
     {
         $titular = \App\Models\User::findOrFail($id);
         $titular->loadMissing(\App\Services\SeguimientoEgresado\GrupoFormacionService::RELACIONES);
-        $clasificacion = app(\App\Services\SeguimientoEgresado\GrupoFormacionService::class)->resolver($titular);
+        $grupoSvc = app(\App\Services\SeguimientoEgresado\GrupoFormacionService::class);
+        $clasificacion = $grupoSvc->resolver($titular);
         $datos = $this->perfil->actual($id);
+        $a = Actualizacion::where('user_id', $id)->where('estado_verificacion', 'verificado')->latest('id')->first();
+        $ficha = $grupoSvc->ficha($titular);
+        $progModel = $grupoSvc->programa($titular);
+        $anioEgreso = $a?->cohorte_egreso
+            ?: ($titular->trayectoriaEventos->firstWhere('tipo', 'egreso')?->fecha_inicio?->format('Y'))
+            ?: $titular->seguimientoTitulacion?->anio_egreso;
+
+        $defaults = [
+            'contacto' => [
+                'correo' => $a?->correo ?: ($ficha?->email ?: $titular->email),
+                'telefono' => $a?->telefono ?: ($ficha?->numero ?: ($ficha?->numero_referencia ?: $titular->telefono)),
+                'programa' => $a?->programa ?: $progModel?->nombre,
+                'egreso' => $anioEgreso && preg_match('/(19\d{2}|20\d{2})/', (string) $anioEgreso, $m) ? (int) $m[1] : null,
+            ],
+            'residencia' => [
+                'departamento' => $a?->res_departamento ?: $ficha?->departamento,
+                'provincia' => $a?->res_provincia ?: $ficha?->provincia,
+                'distrito' => $a?->res_distrito ?: $ficha?->distrito,
+            ],
+            'trabaja' => $a?->trabaja === 'No trabaja' ? 'no' : ($a?->trabaja === 'Trabaja' ? 'si' : null),
+        ];
+
         if (!$datos) {
-            $a = Actualizacion::where('user_id', $id)->where('estado_verificacion', 'verificado')->latest('id')->first();
-            $u = $titular;
-            $grupoSvc = app(\App\Services\SeguimientoEgresado\GrupoFormacionService::class);
-            $ficha = $grupoSvc->ficha($u);
-            $progModel = $grupoSvc->programa($u);
-            $anioEgreso = $a?->cohorte_egreso ?: $u->seguimientoTitulacion?->anio_egreso;
-            $datos = [
-                'contacto' => [
-                    'correo' => $a?->correo ?: ($ficha?->email ?: $u->email),
-                    'telefono' => $a?->telefono ?: ($ficha?->numero ?: $ficha?->numero_referencia),
-                    'programa' => $a?->programa ?: $progModel?->nombre,
-                    'egreso' => $anioEgreso && preg_match('/(19\d{2}|20\d{2})/', (string) $anioEgreso, $m) ? (int) $m[1] : null,
-                ],
-                'residencia' => [
-                    'departamento' => $a?->res_departamento ?: $ficha?->departamento,
-                    'provincia' => $a?->res_provincia ?: $ficha?->provincia,
-                    'distrito' => $a?->res_distrito ?: $ficha?->distrito,
-                ],
-                'trabaja' => $a?->trabaja === 'No trabaja' ? 'no' : ($a?->trabaja === 'Trabaja' ? 'si' : null),
-            ];
+            $datos = $defaults;
+        } else {
+            // Completar campos vacíos de una versión previa con la mejor fuente institucional disponible sin pisar lo confirmado
+            foreach (['correo', 'telefono', 'programa', 'egreso'] as $ck) {
+                if (empty($datos['contacto'][$ck]) && !empty($defaults['contacto'][$ck])) {
+                    $datos['contacto'][$ck] = $defaults['contacto'][$ck];
+                }
+            }
+            foreach (['departamento', 'provincia', 'distrito'] as $rk) {
+                if (empty($datos['residencia'][$rk]) && !empty($defaults['residencia'][$rk])) {
+                    $datos['residencia'][$rk] = $defaults['residencia'][$rk];
+                }
+            }
+            if (empty($datos['trabaja']) && !empty($defaults['trabaja'])) {
+                $datos['trabaja'] = $defaults['trabaja'];
+            }
         }
         // Los episodios son la fuente de vigencia laboral, incluso si fueron cerrados por otra pantalla.
         $extras = collect($datos['trabajos'] ?? [])->keyBy('episodio_id');
@@ -78,13 +98,16 @@ class PerfilEgresadoController extends Controller
         })->all();
         $draft = DB::table('egresado_perfil_borradores')->where('user_id', $id)->first();
         $borrador = !$esEntrevista && $draft ? json_decode($draft->datos, true) : null;
-        $ultima = DB::table('egresado_perfil_versiones')->where('user_id', $id)->latest('id')->value('confirmado_at');
+        $ultimaRow = DB::table('egresado_perfil_versiones')->where('user_id', $id)->latest('id')->first(['id','confirmado_at']);
+        $ultima = $ultimaRow?->confirmado_at;
+        $versionActualId = $ultimaRow?->id;
+        $campana = $campanaId ? \App\Models\SeguimientoEgresado\Campana::find($campanaId) : null;
         $casos = Caso::where('user_id', $id)->latest('id')->get(['tema','estado','fecha_gestion']);
         $conciliacionSvc = app(\App\Services\SeguimientoEgresado\ConciliacionHistoricoService::class);
         $hitosOficiales = $conciliacionSvc->obtenerHitosOficialesSeparados($titular);
         $antecedentesHistoricos = $conciliacionSvc->obtenerAntecedentesPersona($id, auth()->user());
         if ($esEntrevista) { unset($datos['apoyo'],$datos['contacto_alterno']); $casos=collect(); }
-        return view('seguimiento_egresados.mi_espacio', compact('datos','borrador','ultima','casos','clasificacion','esEntrevista','titular','campanaId','hitosOficiales','antecedentesHistoricos'));
+        return view('seguimiento_egresados.mi_espacio', compact('datos','borrador','ultima','versionActualId','casos','clasificacion','esEntrevista','titular','campanaId','campana','grupoFormacion','hitosOficiales','antecedentesHistoricos'));
     }
 
     public function guardar(Request $request)

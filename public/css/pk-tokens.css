@@ -31,6 +31,15 @@
     --pk-radio-lg: 16px;
     --pk-sombra: 0 4px 24px rgba(15, 23, 42, .06);
 
+    /* Tokens semánticos compartidos (superficie, texto, borde, foco) */
+    --pk-superficie: #ffffff;
+    --pk-superficie-suave: #f8fafc;
+    --pk-fondo-pagina: #f1f5fc;
+    --pk-texto: #1e293b;
+    --pk-texto-muted: #52627a;
+    --pk-borde: #dbe3f0;
+    --pk-foco: #2563eb;
+
     /* Rol por defecto (lo redefine cada pk-rol-*) */
     --pk-acento: var(--pk-petroleo);          /* botones de alertas, foco, enlaces de marca */
     --pk-sb-fondo: var(--pk-petroleo);        /* fondo sólido del menú lateral */
@@ -53,15 +62,36 @@
     --pk-sb-fondo: var(--pk-petroleo-2);
 }
 
+.pk-rol-alumno,
+.pk-rol-egresado,
+body.alumno-app {
+    --pk-acento: var(--pk-petroleo);
+    --pk-sb-fondo: var(--pk-petroleo);
+    --pk-sb-marca: var(--pk-oro);
+    --pk-sb-resalte: var(--pk-crema);
+}
+
 /* ── Temas (ganan sobre el rol) ── */
 body.dark-mode {
     --pk-sb-fondo: #161b22;
+    --pk-superficie: #1f2737;
+    --pk-superficie-suave: #18202c;
+    --pk-fondo-pagina: #121722;
+    --pk-texto: #e2e8f0;
+    --pk-texto-muted: #94a3b8;
+    --pk-borde: #2e3c54;
 }
 
 body.dim-mode {
     --pk-sb-fondo: var(--lm-bg-hondo, #1d151d);
     --pk-sb-marca: var(--lm-acento, #f49ac1);
     --pk-sb-resalte: var(--lm-acento-claro, #f9c2da);
+    --pk-superficie: #28202c;
+    --pk-superficie-suave: #312736;
+    --pk-fondo-pagina: #1e1821;
+    --pk-texto: #f3e8f7;
+    --pk-texto-muted: #c6b4ce;
+    --pk-borde: #423449;
 }
 
 /* Docente: el menú lateral SIEMPRE con los colores del modo oscuro, sea cual sea el tema

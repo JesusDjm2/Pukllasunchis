@@ -1,7 +1,10 @@
 @extends('layouts.seguimiento')
-@section('titulo', 'Bandeja restringida de conciliación histórica · Puklla en Red')
+@section('titulo', 'Bandeja restringida de conciliación histórica · Seguimiento de Egresados')
 @section('contenido')
 <div class="container-fluid py-3">
+    <div class="mb-2">
+        <a href="{{ route('seguimiento.panel.coordinacion') }}" class="btn btn-sm btn-outline-primary">← Volver a Coordinación de egresados</a>
+    </div>
     <h1 class="h4 mb-2">Bandeja restringida de conciliación histórica (2026 / Promociones)</h1>
     <p class="text-muted small">
         Las coincidencias por nombre nunca vinculan automáticamente un registro histórico. Toda resolución exige justificación y queda auditada con revisor, fecha y versión.

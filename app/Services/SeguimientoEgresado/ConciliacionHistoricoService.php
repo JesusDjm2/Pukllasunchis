@@ -245,7 +245,7 @@ class ConciliacionHistoricoService
     }
 
     /**
-     * Obtiene el resumen de hitos oficiales separados (Egreso, Titulación y Grado/Licenciatura) (T09, T10).
+     * Obtiene el resumen de hitos oficiales separados (Egreso, Titulación y Grado/Licenciatura) y el resumen académico por trayectoria (T09, T10).
      */
     public function obtenerHitosOficialesSeparados(User $user): array
     {
@@ -253,6 +253,8 @@ class ConciliacionHistoricoService
             'seguimientoTitulacion.estadoTitulacion',
             'seguimientoTitulacion.resoluciones',
             'seguimientoTitulacion.actas',
+            'seguimientoTitulacion.pti',
+            'seguimientoTitulacion.tesis',
         ]));
 
         $eventosEgreso = $user->trayectoriaEventos->where('tipo', 'egreso');
@@ -260,40 +262,132 @@ class ConciliacionHistoricoService
 
         $seg = $user->seguimientoTitulacion;
         $claveTit = $seg?->estadoTitulacion?->clave;
+        $avanceTit = $seg ? new \App\Services\Titulacion\AvanceTitulacion($seg) : null;
 
         $estadoTitulacion = 'No verificado en el sistema';
         $tituloAcreditado = false;
         if ($seg) {
-            if ($claveTit === 'licenciado') {
+            if ($claveTit === 'licenciado' || ($avanceTit && ($avanceTit->hitos['licenciado']['logrado'] ?? false))) {
                 $estadoTitulacion = 'Título acreditado';
                 $tituloAcreditado = true;
-            } elseif (in_array($claveTit, ['pti_en_proceso', 'pti_aprobado', 'ti_aprobado', 'tesis_aprobada'], true)) {
+            } elseif (in_array($claveTit, ['pti_en_proceso', 'pti_aprobado', 'ti_aprobado', 'tesis_aprobada', 'bachiller'], true)) {
                 $estadoTitulacion = 'En trámite (' . ($seg->estadoTitulacion?->nombre ?? $claveTit) . ')';
             } else {
                 $estadoTitulacion = $seg->estadoTitulacion?->nombre ?? 'Registrado sin título acreditado';
             }
         }
 
-        // Grado / Licenciatura: solo si existe evidencia específica (no asumir sinonimia automática con título)
+        // Grado / Bachiller: evidencia específica (o hito SUNEDU en tesis)
         $tieneEvidenciaGrado = $claveTit === 'bachiller'
+            || ($avanceTit && ($avanceTit->hitos['bachiller']['logrado'] ?? false))
             || ($seg && $seg->resoluciones && $seg->resoluciones->contains(fn ($r) => str_contains(strtolower((string) $r->tipo), 'bachiller') || str_contains(strtolower((string) $r->tipo), 'grado')));
+
+        $clasificacion = $this->grupoFormacionService->resolver($user);
+        $historialGeneral = \App\Services\HistorialAcademico::de($user);
+        $periodosTodos = $historialGeneral['periodos'] ?? collect();
+
+        $cursosPpdCiclo = $user->alumnoB ? \App\Services\HistorialAcademico::cursosPpdPorCiclo($user) : collect();
+        $todosPpd = $cursosPpdCiclo->flatMap(fn ($b) => $b->cursos);
+        $conNotaPpd = $todosPpd->filter(fn ($c) => $c->nota !== null);
+        $aprobadosPpd = $conNotaPpd->where('desaprobado', false);
+        $creditosPpd = $aprobadosPpd->sum(fn ($c) => (float) ($c->curso->creditos ?? 0));
+
+        $periodosFid = $periodosTodos->where('modalidad', 'FID');
+        $cursosFidOficiales = $periodosFid->flatMap(fn ($p) => $p->cursos)->reject(fn ($c) => $c->en_curso);
+        $aprobadosFid = $cursosFidOficiales->filter(fn ($c) => $c->nota !== null && !$c->desaprobado);
+        $creditosFid = $aprobadosFid->sum(fn ($c) => (float) ($c->curso?->creditos ?? 0));
+
+        $trayectoriasDetalle = [];
+        foreach (['FID', 'PPD'] as $mod) {
+            $tieneFicha = $mod === 'FID' ? (bool) $user->alumno : (bool) $user->alumnoB;
+            $enGrupos = in_array($mod, $clasificacion['grupos'] ?? [], true);
+            if (!$tieneFicha && !$enGrupos) {
+                continue;
+            }
+            $prog = $this->grupoFormacionService->programa($user, $mod);
+            $evEgreso = $eventosEgreso->first(function ($e) use ($mod) {
+                $p = $e->cicloOrigen?->programa ?? $e->cicloDestino?->programa;
+                return $p?->modalidad?->value === $mod;
+            });
+            $esPpd = $mod === 'PPD';
+            $cursosAprob = $esPpd ? $aprobadosPpd->count() : $aprobadosFid->count();
+            $cursosTotal = $esPpd ? $todosPpd->count() : $cursosFidOficiales->count();
+            $creditosAprob = $esPpd ? round($creditosPpd, 1) : round($creditosFid, 1);
+            $promedioMod = $esPpd
+                ? ($conNotaPpd->isNotEmpty() ? round($conNotaPpd->avg('nota'), 2) : null)
+                : ($cursosFidOficiales->pluck('nota')->filter(fn ($n) => $n !== null)->isNotEmpty()
+                    ? round($cursosFidOficiales->pluck('nota')->filter(fn ($n) => $n !== null)->avg(), 2)
+                    : null);
+            $ciclosCursados = $esPpd ? $cursosPpdCiclo->count() : $periodosFid->count();
+
+            $trayectoriasDetalle[$mod] = [
+                'modalidad' => $mod,
+                'programa_id' => $prog?->id,
+                'programa_nombre' => $prog?->nombre ?? ($esPpd ? 'Programa de Profesionalización Docente' : 'Formación Inicial Docente'),
+                'ficha_id' => $esPpd ? $user->alumnoB?->id : $user->alumno?->id,
+                'egreso_acreditado' => (bool) $evEgreso,
+                'fecha_egreso' => $evEgreso?->fecha_inicio?->format('Y-m-d'),
+                'resolucion_egreso' => $evEgreso?->resolucion ?: $evEgreso?->documento,
+                'ciclos_o_periodos' => $ciclosCursados,
+                'cursos_aprobados' => $cursosAprob,
+                'cursos_registrados' => $cursosTotal,
+                'creditos_aprobados' => $creditosAprob,
+                'promedio_ponderado' => $promedioMod,
+                'fuente_academica' => $cursosTotal > 0
+                    ? ($esPpd ? 'Historial oficial PPD (periodo_ppds)' : 'Historial oficial FID (periodos)')
+                    : 'Expediente previo a 2024-II (sin detalle de notas por curso en base digital)',
+            ];
+        }
+
+        $documentosTitulacion = [];
+        if ($seg) {
+            foreach ($seg->resoluciones ?? [] as $rd) {
+                if (filled($rd->numero_rd)) {
+                    $documentosTitulacion[] = [
+                        'tipo' => \App\Models\Titulacion\Resolucion::nombreTipo($rd->tipo),
+                        'referencia' => 'RD ' . $rd->numero_rd,
+                        'fecha' => $rd->fecha?->format('d/m/Y'),
+                    ];
+                }
+            }
+            foreach ($seg->actas ?? [] as $acta) {
+                if (filled($acta->numero_acta)) {
+                    $documentosTitulacion[] = [
+                        'tipo' => 'Acta de ' . ($acta->tipo === 'tesis' ? 'Sustentación de Tesis' : 'Exposición de TI'),
+                        'referencia' => 'Acta ' . $acta->numero_acta,
+                        'fecha' => $acta->fecha?->format('d/m/Y'),
+                    ];
+                }
+            }
+        }
 
         return [
             'condicion_cuenta' => $user->condicion ?? 'No consignada',
+            'clasificacion_grupo' => $clasificacion,
+            'trayectorias' => $trayectoriasDetalle,
+            'creditos_evaluacion' => $this->evaluarCumplimientoCreditos($user),
             'egreso' => [
                 'estado' => $egresoAcreditado ? 'acreditado_institucional' : 'no_verificado',
                 'acreditado' => $egresoAcreditado,
                 'fechas' => $eventosEgreso->map(fn ($e) => $e->fecha_inicio?->format('Y-m-d'))->filter()->values()->all(),
+                'fuente' => $egresoAcreditado ? 'Registrado por la institución (trayectoria_eventos)' : ($user->condicion === 'Egresado' ? 'Condición de cuenta Egresado (fecha exacta por verificar)' : 'No verificado en el sistema'),
             ],
             'titulacion' => [
-                'estado' => $tituloAcreditacion = ($tituloAcreditado ? 'acreditado_institucional' : ($seg ? 'en_tramite' : 'no_verificado')),
+                'estado' => $tituloAcreditado ? 'acreditado_institucional' : ($seg ? 'en_tramite' : 'no_verificado'),
                 'titulo_acreditado' => $tituloAcreditado,
                 'detalle' => $estadoTitulacion,
+                'expediente' => $seg?->numero_expediente,
+                'fecha_sunedu' => $seg?->tesis?->fecha_titulo_sunedu?->format('d/m/Y'),
+                'registro_sunedu' => $seg?->tesis?->titulo_sunedu,
+                'documentos' => $documentosTitulacion,
             ],
             'grado_bachiller' => [
                 'estado' => $tieneEvidenciaGrado ? 'acreditado_institucional' : 'no_verificado',
                 'acreditado' => $tieneEvidenciaGrado,
-                'detalle' => $tieneEvidenciaGrado ? 'Evidencia de grado registrada en expediente' : 'No verificado en el sistema',
+                'detalle' => $tieneEvidenciaGrado
+                    ? ('Acreditado' . ($seg?->tesis?->bachiller_sunedu ? ' · SUNEDU: ' . $seg->tesis->bachiller_sunedu : ' (evidencia registrada en expediente)'))
+                    : 'No verificado en el sistema',
+                'fecha_sunedu' => $seg?->tesis?->fecha_bachiller_sunedu?->format('d/m/Y'),
             ],
         ];
     }

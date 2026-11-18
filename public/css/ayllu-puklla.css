@@ -4,25 +4,30 @@
    Hereda variables de public/css/pk-tokens.css (--pk-oro, --pk-marron, --pk-petroleo)
    ═══════════════════════════════════════════════════════════════════════════ */
 
-:root {
+.ayllu-wrapper {
     --ayllu-bg: #faf7f2;
-    --ayllu-surface: #ffffff;
+    --ayllu-surface: var(--pk-superficie, #ffffff);
     --ayllu-surface-soft: #fdfaf5;
     --ayllu-border: #eadfce;
-    --ayllu-text: #1e293b;
-    --ayllu-muted: #64748b;
+    --ayllu-text: var(--pk-texto, #1e293b);
+    --ayllu-muted: var(--pk-texto-muted, #64748b);
     --ayllu-terracota: #832128;
-    --ayllu-oro: #cd9244;
+    --ayllu-oro: var(--pk-oro, #cd9244);
     --ayllu-oro-suave: #fef5e7;
-    --ayllu-petroleo: #33445a;
-    --ayllu-verde: #0e9467;
+    --ayllu-petroleo: var(--pk-petroleo, #33445a);
+    --ayllu-verde: var(--pk-ok, #0e9467);
     --ayllu-verde-suave: #e6f7f1;
     --ayllu-azul-formativo: #1d4ed8;
     --ayllu-azul-suave: #eff6ff;
-    --ayllu-sombra: 0 6px 24px rgba(51, 68, 90, 0.06);
+    --ayllu-sombra: var(--pk-sombra, 0 6px 24px rgba(51, 68, 90, 0.06));
+    background-color: var(--ayllu-bg);
+    color: var(--ayllu-text);
+    padding-bottom: 5.5rem;
+    min-height: calc(100vh - 120px);
+    border-radius: 16px;
 }
 
-body.dark-mode {
+body.dark-mode .ayllu-wrapper {
     --ayllu-bg: #0f141c;
     --ayllu-surface: #18202c;
     --ayllu-surface-soft: #1e2837;
@@ -34,21 +39,13 @@ body.dark-mode {
     --ayllu-azul-suave: rgba(37, 99, 235, 0.15);
 }
 
-body.dim-mode {
+body.dim-mode .ayllu-wrapper {
     --ayllu-bg: #1e1821;
     --ayllu-surface: #28202c;
     --ayllu-surface-soft: #312736;
     --ayllu-border: #423449;
     --ayllu-text: #f3e8f7;
     --ayllu-muted: #c6b4ce;
-}
-
-.ayllu-wrapper {
-    background-color: var(--ayllu-bg);
-    color: var(--ayllu-text);
-    padding-bottom: 5.5rem;
-    min-height: calc(100vh - 120px);
-    border-radius: 16px;
 }
 
 /* Franja artesanal andina sutil (Chakana / Tejido) */

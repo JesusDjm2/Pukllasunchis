@@ -70,6 +70,9 @@ class PerfilTerritorialService
             'apoyo.solicitar' => 'nullable|boolean',
             'apoyo.tema' => 'nullable|in:empleo,pedagogia,titulacion,formacion,bienestar,otro,privado',
             'apoyo.detalle' => 'nullable|string|max:2000',
+            'discrepancia' => 'sometimes|array:reportar,detalle',
+            'discrepancia.reportar' => 'nullable|boolean',
+            'discrepancia.detalle' => 'nullable|string|max:2000',
         ];
         foreach (['residencia', 'trabajos.*.lugar'] as $prefix) {
             $rules[$prefix] = 'sometimes|array:departamento,provincia,distrito,localidad,ubigeo,comunidad_tipo,comunidad_nombre,lugar_id,latitud,longitud';
@@ -210,6 +213,27 @@ class PerfilTerritorialService
                     'es_confidencial_bienestar' => in_array($support['tema'], ['bienestar','privado']),
                     'origen' => 'Mi espacio',
                 ]);
+            }
+            $discrepancia = $data['discrepancia'] ?? [];
+            if (!empty($discrepancia['reportar']) && !empty($discrepancia['detalle']) && $discrepancia !== ($previous['discrepancia'] ?? [])) {
+                $user = User::findOrFail($userId);
+                Caso::create([
+                    'codigo' => 'REV-EXP-'.bin2hex(random_bytes(6)), 'user_id' => $userId,
+                    'nombre_egresado' => trim($user->name.' '.$user->apellidos),
+                    'tema' => 'Revisión de discrepancia en trayectoria oficial',
+                    'responsable' => 'Coordinación de Empleabilidad',
+                    'fecha_gestion' => now()->addDays(5)->toDateString(), 'estado' => 'Por revisar',
+                    'proposito' => 'Diferencia reportada en ficha/entrevista (sin alterar expediente oficial): ' . $discrepancia['detalle'],
+                    'es_confidencial_bienestar' => false,
+                    'origen' => (int) auth()->id() === $userId ? 'Mi espacio (egresado)' : 'Entrevista de campaña',
+                ]);
+            }
+            if ($campanaId) {
+                \App\Models\SeguimientoEgresado\AsignacionCampana::activos()
+                    ->where('campana_id', $campanaId)
+                    ->where('egresado_user_id', $userId)
+                    ->whereIn('estado', ['asignado', 'contactado'])
+                    ->update(['estado' => 'completado']);
             }
             if ((int) auth()->id() === $userId) DB::table('egresado_perfil_borradores')->where('user_id', $userId)->delete();
             return $profile;

@@ -63,9 +63,17 @@
                 <li class="nav-item {{ request()->routeIs('egresado.intranet') ? 'active' : '' }}">
                     <a class="nav-link collapsed" href="{{ route('egresado.intranet') }}">
                         <i class="fas fa-fw fa-user-graduate"></i>
-                        <span>Mi cuenta de egresado</span>
+                        <span>Mi trayectoria y titulación</span>
                     </a>
                 </li>
+                @if (Route::has('seguimiento.mi-espacio'))
+                    <li class="nav-item {{ request()->routeIs('seguimiento.mi-espacio') ? 'active' : '' }}">
+                        <a class="nav-link collapsed" href="{{ route('seguimiento.mi-espacio') }}">
+                            <i class="fas fa-fw fa-user-check"></i>
+                            <span>Actualizar mis datos y solicitar apoyo</span>
+                        </a>
+                    </li>
+                @endif
             @else
             <li class="nav-item {{ request()->routeIs('ppd.index', 'ppd.edit') ? 'active' : '' }}">
                 <a class="nav-link collapsed" href="{{ route('ppd.index') }}">

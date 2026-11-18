@@ -40,40 +40,13 @@ class LoginController extends Controller
 
     protected function authenticated(Request $request, $user)
     {
-        // Llegó desde un enlace a «Mi titulación» (p. ej. el formulario de la carta en la página pública):
-        // vuelve ahí en lugar de ir a su panel. Solo para esas páginas, el resto del login no cambia.
+        // Llegó desde un enlace profundo autorizado («Mi titulación», «Seguimiento», «Red Puklla» o «Ayllu Puklla»):
         $pedida = (string) $request->session()->get('url.intended');
-        if ($pedida !== '' && str_contains((string) parse_url($pedida, PHP_URL_PATH), '/mi-titulacion/')) {
+        $path = (string) parse_url($pedida, PHP_URL_PATH);
+        if ($pedida !== '' && (str_contains($path, '/mi-titulacion/') || str_contains($path, '/seguimiento-egresados') || str_contains($path, '/red-puklla'))) {
             return redirect()->intended();
         }
 
-        if ($user->hasRole('super-admin') || $user->hasRole('admin')) {
-            return redirect()->route('admin')->with('userData', $user);
-        } elseif ($user->hasRole('docente')) {
-            return redirect()->route('vistaDocente', ['docente' => $user->docente->id]);
-        } elseif ($user->hasRole('tutor')) {
-            return redirect()->route('tutor.dashboard');
-        } elseif ($user->hasRole('adminB')) {
-            return redirect()->route('trabajo.index')->with('userData', $user);
-        } elseif ($user->hasAnyRole(['gestor-titulacion', 'secretaria'])) {
-            // Gestor puro (sin admin/docente): su único panel es Titulación.
-            return redirect()->route('titulacion.index');
-        } elseif ($user->condicion === 'Egresado') {
-            // Antes de la intranet normal de alumno/alumnoB: esa asume
-            // matrícula/ciclo activo (cursos, calificaciones del periodo
-            // en curso), lo cual ya no aplica a alguien que se graduó.
-            // No aplica si además tiene un rol "más fuerte" arriba
-            // (super-admin/admin/docente/tutor/adminB) — esos siguen
-            // yendo a su panel normal aunque también sean egresados.
-            return redirect()->route('egresado.intranet');
-        } elseif ($user->hasRole('alumnoB')) {
-            return redirect()->route('ppd.index')->with('userData', $user);
-        } elseif ($user->hasRole('alumno')) {
-            return redirect()->route('alumnos.index')->with('userData', $user);
-        } elseif ($user->hasRole('inhabilitado')) {
-            return redirect()->route('inhabilitado')->with('userData', $user);
-        } else {
-            return redirect('/');
-        }
+        return redirect()->to($user->rutaIntranet())->with('userData', $user);
     }
 }

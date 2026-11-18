@@ -159,4 +159,46 @@ class User extends Authenticatable
 
         return trim($primerNombre.' '.$primerApellido);
     }
+
+    /**
+     * Resuelve el destino canónico de entrada a la intranet según el rol y las capacidades de la cuenta.
+     */
+    public function rutaIntranet(): string
+    {
+        if ($this->hasRole('super-admin') || $this->hasRole('admin')) {
+            return route('admin');
+        }
+        if ($this->hasRole('docente') && $this->docente) {
+            return route('vistaDocente', ['docente' => $this->docente->id]);
+        }
+        if ($this->hasRole('tutor')) {
+            return route('tutor.dashboard');
+        }
+        if ($this->hasRole('adminB')) {
+            return route('trabajo.index');
+        }
+        if ($this->hasAnyRole(['gestor-titulacion', 'secretaria'])) {
+            return route('titulacion.index');
+        }
+        $segAuth = app(\App\Services\SeguimientoEgresado\SeguimientoAutorizacionService::class);
+        if ($segAuth->esPersonalGestion($this)) {
+            return route('seguimiento.panel.coordinacion');
+        }
+        if ($segAuth->esDocenteOEntrevistador($this)) {
+            return route('seguimiento-egresados.mis-asignaciones');
+        }
+        if ($this->condicion === 'Egresado' || $this->hasRole('egresado')) {
+            return route('egresado.intranet');
+        }
+        if ($this->hasRole('alumnoB') || $this->alumnoB) {
+            return route('ppd.index');
+        }
+        if ($this->hasRole('alumno') || $this->alumno) {
+            return route('alumnos.index');
+        }
+        if ($this->hasRole('inhabilitado')) {
+            return route('inhabilitado');
+        }
+        return \Illuminate\Support\Facades\Route::has('ayllu.inicio') ? route('ayllu.inicio') : url('/');
+    }
 }

@@ -826,6 +826,38 @@ class SeguimientoEgresadoController extends Controller
             if ($asig && $esEfectivo && $asig->estado === 'asignado') {
                 $asig->update(['estado' => 'contactado']);
             }
+
+            if ($tipoResultado === 'confirmacion_sin_cambios') {
+                $uObj = User::find($userId);
+                $lastVerif = Actualizacion::where('user_id', $userId)->where('estado_verificacion', 'verificado')->latest('id')->first();
+                $confirmacion = $lastVerif ? $lastVerif->replicate() : new Actualizacion(['user_id' => $userId]);
+                $confirmacion->fill([
+                    'user_id' => $userId,
+                    'nombre_completo' => $uObj ? trim($uObj->name . ' ' . $uObj->apellidos) : 'Egresado/a',
+                    'campana_id' => $campanaId,
+                    'es_ensayo' => $esEnsayo,
+                    'periodo_campana' => now()->year . '-' . (now()->month <= 6 ? 'I' : 'II'),
+                    'tipo_registro' => 'confirmacion_sin_cambios',
+                    'estado_verificacion' => 'verificado',
+                    'procedencia' => 'entrevista_docente',
+                    'canal' => 'llamada_docente',
+                    'registrado_por' => auth()->user()->name,
+                    'fecha_ultima_confirmacion' => now(),
+                    'es_confirmacion_sin_cambios' => true,
+                ])->save();
+                app(\App\Services\SeguimientoEgresado\PerfilTerritorialService::class)->desdeActualizacion($confirmacion);
+                if ($asig) {
+                    $asig->update(['estado' => 'completado']);
+                }
+            } elseif ($tipoResultado === 'actualizacion_completa') {
+                $tieneConfirmacion = Actualizacion::where('user_id', $userId)
+                    ->where('campana_id', $campanaId)
+                    ->where('estado_verificacion', 'verificado')
+                    ->exists();
+                if ($asig && $tieneConfirmacion) {
+                    $asig->update(['estado' => 'completado']);
+                }
+            }
         }
 
         // Si requiere derivación, abrir caso institucional automáticamente

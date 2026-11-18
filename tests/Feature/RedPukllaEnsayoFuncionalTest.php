@@ -556,5 +556,50 @@ class RedPukllaEnsayoFuncionalTest extends TestCase
         $this->assertStringNotContainsString('Me gusta', $htmlInicio);
         $this->assertStringNotContainsString('Ranking', $htmlInicio);
         $this->assertStringContainsString('No genera puntos ni rankings', $this->actingAs($fid01)->get(route('red.publicacion', ['id' => $pubPukllay->id]))->getContent());
+
+        // 6. Auditoría P0/P1: Trayectoria oficial antes del formulario en entrevista, retorno a Mis entrevistas, reporte de discrepancia y paridad FID/PPD en /egresado
+        $htmlEntrevista = $this->actingAs($entrev)->get(route('seguimiento.panel.entrevista', [
+            'egresado' => $fid01->id,
+            'campana_id' => $campanaVigente->id,
+            'grupo_formacion' => 'FID',
+        ]))->assertOk()->getContent();
+
+        $posTrayectoria = strpos($htmlEntrevista, '0 · Trayectoria registrada por la institución');
+        $posFormulario = strpos($htmlEntrevista, 'id="perfil-form"');
+        $this->assertNotFalse($posTrayectoria, 'La sección 0 de trayectoria oficial debe mostrarse en entrevista');
+        $this->assertNotFalse($posFormulario);
+        $this->assertLessThan($posFormulario, $posTrayectoria, 'La trayectoria oficial debe preceder al formulario de entrevista');
+        $this->assertStringContainsString('Volver a Mis entrevistas', $htmlEntrevista);
+        $this->assertStringContainsString('Confirmar actualización de campaña', $htmlEntrevista);
+
+        // Reporte de discrepancia de trayectoria abre caso sin reescribir el expediente
+        $this->actingAs($fid01)->postJson(route('seguimiento.mi-espacio.guardar'), [
+            'contacto' => [
+                'programa' => 'Educación Primaria EIB',
+                'egreso' => 2021,
+                'correo' => $fid01->email,
+            ],
+            'discrepancia' => [
+                'reportar' => true,
+                'detalle' => 'Solicito verificar el número de RD de mi grado de bachiller.',
+            ],
+        ])->assertOk();
+        $this->assertDatabaseHas('egresado_casos', [
+            'user_id' => $fid01->id,
+            'tema' => 'Revisión de discrepancia en trayectoria oficial',
+        ]);
+
+        // Paridad en /egresado para FID y PPD con pestañas de Titulación, Mis estudios y Mis datos
+        $this->actingAs($fid01)->get(route('egresado.intranet'))
+            ->assertOk()
+            ->assertSee('Trayectoria FID')
+            ->assertSee('Mis estudios')
+            ->assertSee('Actualizar mis datos y solicitar apoyo');
+
+        $ppd01 = $this->cuenta('egresado.ppd.01@example.test');
+        $this->actingAs($ppd01)->get(route('egresado.intranet'))
+            ->assertOk()
+            ->assertSee('Mis estudios')
+            ->assertSee('Actualizar mis datos y solicitar apoyo');
     }
 }

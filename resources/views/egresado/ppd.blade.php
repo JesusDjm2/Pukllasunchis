@@ -51,9 +51,12 @@
                         @if ($hayTitulacion)
                             <a class="al-btn al-btn-oro" href="#titulacion" data-al-ir><i class="fas fa-route"></i> Mi titulación</a>
                         @endif
-                        <a class="al-btn" href="{{ route('seguimiento.mi-espacio') }}"><i class="fas fa-user-check"></i> Mi ficha y apoyo</a>
-                        @if (Route::has('red.inicio'))
+                        <a class="al-btn" href="{{ route('seguimiento.mi-espacio') }}"><i class="fas fa-user-check"></i> Actualizar mis datos y solicitar apoyo</a>
+                        @if (Route::has('red.inicio') && app(\App\Services\RedPuklla\AccesoRed::class)->entrar($user))
                             <a class="al-btn" href="{{ route('red.inicio') }}"><i class="fas fa-users"></i> Red Puklla de Egresados</a>
+                        @endif
+                        @if (Route::has('ayllu.inicio'))
+                            <a class="al-btn" href="{{ route('ayllu.inicio') }}"><i class="fas fa-home"></i> Ayllu Puklla</a>
                         @endif
                     </div>
             </div>

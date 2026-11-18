@@ -52,17 +52,35 @@
                     </a>
                 </li>
             @endif
+            @php $esEgresado = auth()->user()?->condicion === 'Egresado' || auth()->user()?->hasRole('egresado'); @endphp
             <hr class="sidebar-divider my-2">
             <div class="sidebar-heading">
-                Dashboard Alumno
+                {{ $esEgresado ? 'Egresado(a) · FID' : 'Dashboard Alumno' }}
             </div>
-            <li class="nav-item {{ request()->routeIs('alumnos.index', 'alumnos.editarDatos') ? 'active' : '' }}">
-                <a class="nav-link collapsed" href="{{ route('alumnos.index') }}">
-                    <i class="fas fa-fw fa-id-card"></i>
-                    <span>Ficha técnica</span>
-                </a>
-            </li>
-            @if (isset($alumno) && $alumno)
+            @if ($esEgresado)
+                <li class="nav-item {{ request()->routeIs('egresado.intranet') ? 'active' : '' }}">
+                    <a class="nav-link collapsed" href="{{ route('egresado.intranet') }}">
+                        <i class="fas fa-fw fa-user-graduate"></i>
+                        <span>Mi trayectoria y titulación</span>
+                    </a>
+                </li>
+                @if (Route::has('seguimiento.mi-espacio'))
+                    <li class="nav-item {{ request()->routeIs('seguimiento.mi-espacio') ? 'active' : '' }}">
+                        <a class="nav-link collapsed" href="{{ route('seguimiento.mi-espacio') }}">
+                            <i class="fas fa-fw fa-user-check"></i>
+                            <span>Actualizar mis datos y solicitar apoyo</span>
+                        </a>
+                    </li>
+                @endif
+            @else
+                <li class="nav-item {{ request()->routeIs('alumnos.index', 'alumnos.editarDatos') ? 'active' : '' }}">
+                    <a class="nav-link collapsed" href="{{ route('alumnos.index') }}">
+                        <i class="fas fa-fw fa-id-card"></i>
+                        <span>Ficha técnica</span>
+                    </a>
+                </li>
+            @endif
+            @if (! $esEgresado && isset($alumno) && $alumno)
                 <li class="nav-item {{ request()->routeIs('calificaciones') ? 'active' : '' }}">
                     <a class="nav-link collapsed" href="{{ route('calificaciones', $alumno->id) }}">
                         <i class="fas fa-fw fa-clipboard-list"></i>

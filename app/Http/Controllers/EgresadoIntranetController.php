@@ -27,14 +27,19 @@ class EgresadoIntranetController extends Controller
         $seguimiento = SeguimientoTitulacion::where('user_id', $user->id)
             ->with('estadoTitulacion', 'pti.asesor', 'tesis.asesor', 'actas', 'resoluciones')
             ->first();
+        $guiaTitulacion = ! $seguimiento && Titulacion\TitulacionController::puedeIniciar($user);
+        $clasificacion = app(\App\Services\SeguimientoEgresado\GrupoFormacionService::class)->resolver($user);
+        $hitosOficiales = app(\App\Services\SeguimientoEgresado\ConciliacionHistoricoService::class)->obtenerHitosOficialesSeparados($user);
 
         if ($alumno = $user->alumnoB) {
-            $guiaTitulacion = ! $seguimiento && Titulacion\TitulacionController::puedeIniciar($user);
             $cursosPpd = HistorialAcademico::cursosPpdPorCiclo($user);
 
-            return view('egresado.ppd', compact('user', 'alumno', 'seguimiento', 'guiaTitulacion', 'cursosPpd'));
+            return view('egresado.ppd', compact('user', 'alumno', 'seguimiento', 'guiaTitulacion', 'cursosPpd', 'clasificacion', 'hitosOficiales'));
         }
 
-        return view('egresado.intranet', compact('user', 'seguimiento'));
+        $alumno = $user->alumno;
+        $historialFid = HistorialAcademico::de($user);
+
+        return view('egresado.intranet', compact('user', 'alumno', 'seguimiento', 'guiaTitulacion', 'historialFid', 'clasificacion', 'hitosOficiales'));
     }
 }

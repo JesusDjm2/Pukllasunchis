@@ -1,11 +1,18 @@
 @extends('layouts.seguimiento')
-@section('titulo','Red Puklla de Egresados')
+@section('titulo','Visor territorial conectado · Seguimiento de Egresados')
+@push('styles')
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="{{ asset('css/seguimiento-egresados.css') }}?v={{ filemtime(public_path('css/seguimiento-egresados.css')) }}">
+@endpush
 @section('contenido')
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"><style>@scope (.seguimiento-panel) {
-:scope{font:16px/1.5 system-ui;background:#f1f5fc;color:#25344b;margin:0}main{max-width:1100px;margin:auto;padding:24px}#mapa{height:560px;border-radius:16px}select,button{padding:10px;margin:6px;font:inherit}article{background:white;padding:18px;border-radius:12px;margin:14px 0}a{color:#224db5}
-}</style>
 <div class="seguimiento-panel">
-@include('seguimiento_egresados.partials.grupo_formacion')<main><a href="{{ route('seguimiento.laboratorio') }}">← Laboratorio</a><h1>Observatorio territorial conectado</h1><p>Residencia y empleo (Encuesta 2026-I e historial institucional) se muestran por localidad o distrito oficial del catálogo, nunca domicilios individuales.</p><label for="capa">Ubicación</label><select id="capa"><option value="ambos" selected>Trabajo y Residencia (Ambos)</option><option value="trabajo">Trabajo (Encuesta 2026-I)</option><option value="residencia">Residencia</option></select><label for="vista">Vista</label><select id="vista"><option value="puntos">Geolocalización agrupada</option><option value="calor">Concentración (calor)</option></select><button id="actualizar">Actualizar</button><p id="estado" role="status"></p><div id="mapa"></div><article><h2>Vínculo comunitario</h2><div id="indicadores"></div><p>Indicadores declarados; no prueban por sí solos que la formación haya causado un retorno. La cobertura corresponde a perfiles integrados de egresados.</p></article><article><h2>Encuentros</h2><p>Las preferencias voluntarias se conservan en el perfil. La recomendación automática por tiempos de viaje requiere un catálogo de sedes y un servicio de rutas validado; este mapa no estima accesibilidad mediante distancias en línea recta.</p></article></main></div>
+<div class="seg-contenedor">
+@include('seguimiento_egresados.partials.grupo_formacion')
+<div class="d-flex flex-wrap align-items-center mb-2" style="gap:10px;">
+    <a class="button secondary" href="{{ route('seguimiento.panel.coordinacion', ['grupo_formacion' => $grupoFormacion]) }}">← Coordinación de egresados</a>
+    <a class="button secondary" href="{{ route('seguimiento.laboratorio', ['grupo_formacion' => $grupoFormacion]) }}">Cruces y exportaciones</a>
+</div>
+<section><h1>Observatorio territorial conectado</h1><p>Residencia y empleo (Encuesta 2026-I e historial institucional) se muestran por localidad o distrito oficial del catálogo, nunca domicilios individuales.</p><div class="grid"><div><label for="capa">Ubicación</label><select id="capa"><option value="ambos" selected>Trabajo y Residencia (Ambos)</option><option value="trabajo">Trabajo (Encuesta 2026-I)</option><option value="residencia">Residencia</option></select></div><div><label for="vista">Vista</label><select id="vista"><option value="puntos">Geolocalización agrupada</option><option value="calor">Concentración (calor)</option></select></div></div><button id="actualizar">Actualizar</button><p id="estado" role="status"></p><div id="mapa" style="height:560px;border-radius:16px;margin-top:12px;"></div></section><section><h2>Vínculo comunitario</h2><div id="indicadores"></div><p>Indicadores declarados; no prueban por sí solos que la formación haya causado un retorno. La cobertura corresponde a perfiles integrados de egresados.</p></section><section><h2>Encuentros</h2><p>Las preferencias voluntarias se conservan en el perfil. La recomendación automática por tiempos de viaje requiere un catálogo de sedes y un servicio de rutas validado; este mapa no estima accesibilidad mediante distancias en línea recta.</p></section></div></div>
 @endsection
 @push('scripts')
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>

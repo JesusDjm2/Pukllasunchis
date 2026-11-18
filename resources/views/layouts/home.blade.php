@@ -80,50 +80,17 @@
                                     @auth
                                         @php
                                             $user = auth()->user();
+                                            $etiquetaIntranet = match (true) {
+                                                $user->hasAnyRole(['super-admin', 'admin']) => 'Administrador',
+                                                $user->condicion === 'Egresado' || $user->hasRole('egresado') => 'Mi trayectoria y titulación',
+                                                default => 'Intranet',
+                                            };
                                         @endphp
-                                        @if ($user->hasAnyRole(['super-admin', 'admin']))
-                                            <li>
-                                                <a href="{{ route('admin') }}">
-                                                    <i class="fa fa-download"></i> Administrador
-                                                </a>
-                                            </li>
-                                        @elseif ($user->hasRole('coordinacion-empleabilidad'))
-                                            <li>
-                                                <a href="{{ route('seguimiento.panel.coordinacion') }}">
-                                                    <i class="fa fa-download"></i> Coordinación Egresados
-                                                </a>
-                                            </li>
-                                        @elseif ($user->hasRole('docente') && $user->docente)
-                                            <li><a href="{{ route('vistaDocente', ['docente' => $user->docente->id]) }}">
-                                                    <i class="fa fa-download"></i> Intranet</a>
-                                            </li>
-                                        @elseif ($user->hasRole('tutor'))
-                                            <li><a href="{{ route('tutor.dashboard') }}"> <i class="fa fa-download"></i>
-                                                    Intranet</a>
-                                            </li>
-                                        @elseif ($user->hasRole('adminB'))
-                                            <li><a href="{{ route('trabajo.index') }}"> <i class="fa fa-download"></i>
-                                                    Intranet</a>
-                                            </li>
-                                        @elseif ($user->hasAnyRole(['gestor-titulacion', 'secretaria']))
-                                            <li><a href="{{ route('titulacion.index') }}"> <i class="fa fa-download"></i>
-                                                    Intranet</a>
-                                            </li>
-                                        @elseif ($user->condicion === 'Egresado' || $user->hasRole('egresado'))
-                                            <li><a href="{{ route('egresado.intranet') }}"> <i class="fa fa-download"></i>
-                                                    Mi Cuenta Egresado</a>
-                                            </li>
-                                        @elseif ($user->hasRole('alumnoB'))
-                                            <li><a href="{{ route('ppd.index') }}"> <i class="fa fa-download"></i>
-                                                    Intranet</a>
-                                            </li>
-                                        @elseif ($user->hasRole('alumno'))
-                                            <li><a href="{{ route('alumnos.index') }}"> <i class="fa fa-download"></i>
-                                                    Matrícula</a></li>
-                                        @else
-                                            <li><a href="{{ route('ayllu.inicio') }}"> <i class="fa fa-download"></i> Intranet</a>
-                                            </li>
-                                        @endif
+                                        <li>
+                                            <a href="{{ $user->rutaIntranet() }}">
+                                                <i class="fa fa-download"></i> {{ $etiquetaIntranet }}
+                                            </a>
+                                        </li>
                                     @else
                                         <li><a href="{{ route('login') }}"> <i class="fa fa-download"></i> Intranet</a>
                                         </li>
