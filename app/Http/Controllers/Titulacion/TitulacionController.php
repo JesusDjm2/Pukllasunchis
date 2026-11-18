@@ -1255,17 +1255,56 @@ class TitulacionController extends Controller
         $pti = $ptiId
             ? $seguimiento->ptis()->findOrFail($ptiId)
             : ($seguimiento->pti ?? new Pti(['seguimiento_id' => $seguimiento->id, 'numero' => 1]));
-        // PTI aprobado (con RD): sus datos ya no se editan (el título cambia con la RD de cambio de
-        // tema y el asesor con la de cambio de asesor). Solo se registra su ampliación o se marca vencido.
+        // PTI aprobado (con RD): sus datos críticos (título, asesor, RD) ya no se editan
+        // (el título cambia con RD de cambio de tema y el asesor con cambio de asesor).
+        // Pero Secretaría sí puede completar/editar la fecha de PTI y fecha de vencimiento.
         $aprobado = $pti->exists && (filled($pti->rd_pti)
             || ($pti->id === $seguimiento->pti?->id && $seguimiento->avance()->hitos['pti_aprobado']['logrado']));
         if ($aprobado) {
-            $data = array_intersect_key($data, array_flip(['estado', 'rd_ampliacion', 'fecha_ampliacion', 'vencimiento_ampliado']));
+            $data = array_intersect_key($data, array_flip([
+                'estado', 'rd_ampliacion', 'fecha_ampliacion', 'vencimiento_ampliado',
+                'fecha_pti', 'fecha_vencimiento',
+            ]));
         }
+
+        // Si se especificó fecha_pti pero no fecha_vencimiento, calcular por defecto a 2 años
+        if (! empty($data['fecha_pti']) && empty($data['fecha_vencimiento'])) {
+            $data['fecha_vencimiento'] = \Carbon\Carbon::parse($data['fecha_pti'])->addYears(2)->toDateString();
+        }
+
         $pti->fill($data)->save();
         $this->registrarRdAmpliacionPti($seguimiento, $pti);
 
-        return $this->volverAlAcordeon($egresado->id, 'PTI N° '.$pti->numero.' guardado.', 'pti');
+        // Si la RD de PTI no tenía fecha, sincronizarla con fecha_pti
+        if (! empty($data['fecha_pti'])) {
+            $rdPti = $seguimiento->resoluciones()->where('tipo', 'PTI')->first();
+            if ($rdPti && empty($rdPti->fecha)) {
+                $rdPti->update(['fecha' => $data['fecha_pti']]);
+            }
+        }
+
+        $aplicados = 0;
+        $omitidos = [];
+        if ($request->boolean('aplicar_grupo')) {
+            foreach ($this->companerosDestino($seguimiento, $request) as $otro) {
+                $otroPti = $otro->ptis()->where('numero', $pti->numero)->first() ?? $otro->pti;
+                if (! $otroPti) {
+                    $omitidos[] = $otro->user?->apellidos.' (sin PTI)';
+                    continue;
+                }
+                $otroPti->fill($data)->save();
+                $this->registrarRdAmpliacionPti($otro, $otroPti);
+                if (! empty($data['fecha_pti'])) {
+                    $otroRd = $otro->resoluciones()->where('tipo', 'PTI')->first();
+                    if ($otroRd && empty($otroRd->fecha)) {
+                        $otroRd->update(['fecha' => $data['fecha_pti']]);
+                    }
+                }
+                $aplicados++;
+            }
+        }
+
+        return $this->volverAlAcordeon($egresado->id, 'PTI N° '.$pti->numero.' guardado'.$this->textoGrupo($aplicados, $omitidos), 'pti');
     }
 
     /**

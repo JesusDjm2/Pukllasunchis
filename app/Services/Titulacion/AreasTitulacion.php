@@ -53,7 +53,7 @@ class AreasTitulacion
         'inicio.crear' => self::AMBAS,
         'inicio.guardar' => self::AMBAS,
         'estado.actualizar' => self::INVESTIGACION,
-        'pti.guardar' => self::INVESTIGACION,
+        'pti.guardar' => self::AMBAS,
         'pti.nuevo' => self::INVESTIGACION,
         'aviso-pti.enviar' => self::INVESTIGACION,
         'ti.informe' => self::INVESTIGACION,

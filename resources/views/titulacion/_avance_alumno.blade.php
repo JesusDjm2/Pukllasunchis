@@ -197,11 +197,22 @@
                 @endif
                 <div class="small mt-2">
                     @if ($ptiVencido)
-                        Comunícate con la coordinación de titulación para ver cómo continuar (por ejemplo, una extensión).
+                        Comunícate con la coordinación de titulación para continuar con una ampliación de plazo.
                     @else
                         Tu PTI tiene una vigencia de {{ VigenciaPti::ANIOS_VIGENCIA }} años para completar tu investigación.
                     @endif
                 </div>
+                @if (($quedan !== null && $quedan <= VigenciaPti::MESES_AVISO_URGENTE) || $ptiVencido)
+                    <div class="mt-2 pt-2 border-top d-flex align-items-center justify-content-between flex-wrap" style="gap:.5rem;">
+                        <span class="small {{ $ptiVencido ? 'text-danger font-weight-bold' : 'text-dark' }}">
+                            <i class="fas {{ $ptiVencido ? 'fa-exclamation-circle text-danger' : 'fa-hourglass-half text-warning' }} mr-1"></i>
+                            {{ $ptiVencido ? 'Plazo vencido: solicita una ampliación para continuar tu investigación.' : 'Próximo a vencer: puedes tramitar tu ampliación de plazo (Cód. 11 · S/ 50.00).' }}
+                        </span>
+                        <a href="https://docs.google.com/forms/d/e/1FAIpQLSdJizTDL5Z8DAEfiRWSt32GspxaDO3MVQ_JyvpC_Q3sQt7rvQ/viewform" target="_blank" rel="noopener" class="btn btn-sm {{ $ptiVencido ? 'btn-danger' : 'btn-outline-primary' }}">
+                            <i class="fas fa-file-signature mr-1"></i>Solicitar ampliación de plazo
+                        </a>
+                    </div>
+                @endif
             </div>
         @endif
 

@@ -11,17 +11,28 @@
     @if ($p) <input type="hidden" name="pti_id" value="{{ $p->id }}"> @endif
     @if ($aprobadoPorRd && $p)
         <div class="ft-subcaja mb-2">
-            <div class="ft-subcaja__titulo"><i class="fas fa-lock mr-1"></i>PTI aprobado <span class="text-muted font-weight-normal">— sus datos ya no se editan</span></div>
+            <div class="ft-subcaja__titulo"><i class="fas fa-lock mr-1"></i>PTI aprobado <span class="text-muted font-weight-normal">— datos protegidos por RD</span></div>
             <dl class="ft-etapa__datos mb-0">
                 <div><dt>Título</dt><dd>{{ $p->titulo ?: '—' }}</dd></div>
-                <div><dt>Fecha PTI</dt><dd>{{ $p->fecha_pti?->format('d/m/Y') ?? '—' }}</dd></div>
-                <div><dt>Vencimiento</dt><dd>{{ $p->fecha_vencimiento?->format('d/m/Y') ?? '—' }}@if ($p->vencimiento_ampliado) · ampliado al {{ $p->vencimiento_ampliado->format('d/m/Y') }}@endif</dd></div>
                 <div><dt>RD PTI</dt><dd>{{ $p->rd_pti ?: '—' }}</dd></div>
+                @if ($p->vencimiento_ampliado)
+                    <div><dt>Ampliación</dt><dd>RD {{ $p->rd_ampliacion ?: 'registrada' }} · ampliado al {{ $p->vencimiento_ampliado->format('d/m/Y') }}</dd></div>
+                @endif
             </dl>
             <div class="small text-muted mt-1">Para cambiar el título o el asesor se emite la RD correspondiente en «Trámites extraordinarios».</div>
         </div>
         <div class="form-row">
-            <div class="form-group col-md-6">
+            <div class="form-group col-md-4">
+                <label class="small font-weight-bold">Fecha PTI (inscripción)</label>
+                <input type="date" name="fecha_pti" class="form-control form-control-sm" value="{{ $p->fecha_pti?->format('Y-m-d') }}">
+                <small class="text-muted d-block">Fecha de inscripción/aprobación del PTI.</small>
+            </div>
+            <div class="form-group col-md-4">
+                <label class="small font-weight-bold">Fecha vencimiento</label>
+                <input type="date" name="fecha_vencimiento" class="form-control form-control-sm" value="{{ $p->fecha_vencimiento?->format('Y-m-d') }}">
+                <small class="text-muted d-block">Por defecto: 2 años desde la inscripción.</small>
+            </div>
+            <div class="form-group col-md-4">
                 <label class="small font-weight-bold">Estado</label>
                 <select name="estado" class="form-control form-control-sm">
                     <option value="">Aprobado (tiene RD)</option>
@@ -29,6 +40,7 @@
                 </select>
             </div>
         </div>
+        @include('titulacion._aplicar_grupo', ['idCasilla' => 'pti-aprobado-grupo-'.$p->id])
     @else
     <div class="form-row">
         <div class="form-group col-md-8">
@@ -74,6 +86,6 @@
     </div>
     @endif
 
-    <button type="submit" class="btn btn-sm btn-primary">{{ $aprobadoPorRd && $p ? 'Guardar estado' : 'Guardar PTI' }}{{ $p ? ' N° '.$p->numero : '' }}</button>
+    <button type="submit" class="btn btn-sm btn-primary">{{ $aprobadoPorRd && $p ? 'Guardar datos del PTI' : 'Guardar PTI' }}{{ $p ? ' N° '.$p->numero : '' }}</button>
 </fieldset>
 </form>

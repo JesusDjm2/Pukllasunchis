@@ -194,7 +194,7 @@
                             </details>
 
                             <details class="tp-mas">
-                                <summary>{{ $ptiAprobado ? 'Estado del PTI (marcar vencido)' : 'Editar datos del PTI' }}</summary>
+                                <summary>{{ $ptiAprobado ? 'Fechas y estado del PTI' : 'Editar datos del PTI' }}</summary>
                                 <div class="tp-form mt-2" id="ptidatos-{{ $egresado->id }}">
                                     @include('titulacion._form_pti', ['p' => $pti, 'aprobadoPorRd' => $ptiAprobado])
                                 </div>
