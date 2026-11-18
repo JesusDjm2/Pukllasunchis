@@ -78,7 +78,7 @@ body.dark-mode .seguimiento-panel {
 .seguimiento-panel input,
 .seguimiento-panel select,
 .seguimiento-panel textarea,
-.seguimiento-panel button {
+.seguimiento-panel button:not(.leaflet-control-zoom-in):not(.leaflet-control-zoom-out):not(.leaflet-popup-close-button) {
     font: inherit;
     padding: 9px 12px;
     border-radius: 8px;
@@ -91,13 +91,13 @@ body.dark-mode .seguimiento-panel {
 .seguimiento-panel input:focus,
 .seguimiento-panel select:focus,
 .seguimiento-panel textarea:focus,
-.seguimiento-panel button:focus {
+.seguimiento-panel button:not(.leaflet-control-zoom-in):not(.leaflet-control-zoom-out):not(.leaflet-popup-close-button):focus {
     outline: 2px solid var(--pk-seg-azul);
     outline-offset: 1px;
     border-color: var(--pk-seg-azul);
 }
 
-.seguimiento-panel button,
+.seguimiento-panel button:not(.leaflet-control-zoom-in):not(.leaflet-control-zoom-out):not(.leaflet-popup-close-button),
 .seguimiento-panel .button {
     background: var(--pk-seg-azul);
     color: #ffffff;
@@ -110,6 +110,38 @@ body.dark-mode .seguimiento-panel {
     display: inline-block;
     width: auto;
     margin: 6px 4px 6px 0;
+}
+
+/* Protección del contenedor Leaflet dentro de .seguimiento-panel */
+.seguimiento-panel #mapa {
+    height: 560px;
+    min-height: 520px;
+    width: 100%;
+    border-radius: 16px;
+    border: 1px solid var(--pk-seg-borde);
+    z-index: 1;
+}
+
+.seguimiento-panel .leaflet-container img.leaflet-tile {
+    max-width: none !important;
+    max-height: none !important;
+}
+
+.seguimiento-panel .leaflet-container a {
+    color: #0078A8;
+}
+
+.seguimiento-panel .leaflet-bar a {
+    background-color: #fff;
+    color: #1e293b;
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+    padding: 0;
+    margin: 0;
+    display: block;
+    text-align: center;
+    text-decoration: none;
 }
 
 .seguimiento-panel button.secondary,

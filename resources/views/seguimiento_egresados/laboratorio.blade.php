@@ -631,7 +631,7 @@
                     <strong>Rigor Metodológico y Separación de Universos:</strong>
                     Los <strong>{{ $universos['no_respondientes'] ?? 0 }} egresados sin actualización en el ciclo</strong> corresponden al universo de <em>no respondientes</em>.
                     Bajo ningún supuesto analítico se les imputa la condición de desempleados o inactivos.
-                    Asimismo, las celdas con conteos de 1 a 4 personas se reportan como <code>&lt; 5</code> mediante supresión estadística primaria y secundaria (R08) para preservar el secreto estadístico institucional.
+                    Todas las tablas, matrices y gráficos muestran los conteos exactos de personas únicas, incluyendo los valores menores a 5 tal cual.
                 </div>
             </div>
 
@@ -850,11 +850,7 @@
                                     <tr>
                                         <td><strong>{{ $provNom }}</strong></td>
                                         <td>
-                                            @if($provSupr || ($provTot !== '< 5' && is_numeric($provTot) && $provTot < 5 && $provTot > 0))
-                                                <span class="privacy-masked">&lt; 5</span>
-                                            @else
-                                                <span class="matrix-cell-val">{{ $provTot }}</span>
-                                            @endif
+                                            <span class="matrix-cell-val">{{ $provTot }}</span>
                                         </td>
                                         <td>{{ $provPct !== null ? $provPct . '%' : '—' }}</td>
                                     </tr>
@@ -1017,12 +1013,11 @@
                 const celda = matriz.celdas[fila] && matriz.celdas[fila][col] ? matriz.celdas[fila][col] : null;
                 if (!celda) {
                     html += '<td>0</td>';
-                } else if (celda.suprimido) {
-                    html += '<td><span class="privacy-masked" title="Supresión por privacidad (&lt; 5)">&lt; 5</span></td>';
                 } else {
-                    html += '<td><span class="matrix-cell-val">' + celda.conteo + '</span>';
-                    if (celda.porcentaje_fila !== null) {
-                        html += '<span class="matrix-cell-pct">(' + celda.porcentaje_fila + '%)</span>';
+                    const val = celda.conteo ?? celda.valor ?? 0;
+                    html += '<td><span class="matrix-cell-val">' + val + '</span>';
+                    if (celda.porcentaje_fila !== null && celda.porcentaje_fila !== undefined) {
+                        html += ' <span class="matrix-cell-pct">(' + celda.porcentaje_fila + '%)</span>';
                     }
                     html += '</td>';
                 }
@@ -1030,11 +1025,7 @@
 
             // Total fila
             const totFila = matriz.totales_fila[fila];
-            if (totFila && totFila.suprimido) {
-                html += '<td class="row-total"><span class="privacy-masked">&lt; 5</span></td>';
-            } else {
-                html += '<td class="row-total">' + (totFila ? totFila.conteo : 0) + '</td>';
-            }
+            html += '<td class="row-total">' + (totFila ? (totFila.conteo ?? totFila.valor ?? 0) : 0) + '</td>';
             html += '</tr>';
         });
 
@@ -1043,19 +1034,11 @@
         html += '<td><strong>Total Columna</strong></td>';
         matriz.valores_columna.forEach(col => {
             const totCol = matriz.totales_columna[col];
-            if (totCol && totCol.suprimido) {
-                html += '<td class="col-total"><span class="privacy-masked">&lt; 5</span></td>';
-            } else {
-                html += '<td class="col-total">' + (totCol ? totCol.conteo : 0) + '</td>';
-            }
+            html += '<td class="col-total">' + (totCol ? (totCol.conteo ?? totCol.valor ?? 0) : 0) + '</td>';
         });
 
         // Gran Total
-        if (matriz.suprimido_general) {
-            html += '<td class="col-total"><span class="privacy-masked">&lt; 5</span></td>';
-        } else {
-            html += '<td class="col-total" style="font-size:15px;color:var(--puklla-granate);">' + matriz.total_general + '</td>';
-        }
+        html += '<td class="col-total" style="font-size:15px;color:var(--puklla-granate);">' + (matriz.total_general?.valor ?? matriz.total_general ?? 0) + '</td>';
         html += '</tr></tbody></table>';
 
         if (matriz.nota_privacidad) {
@@ -1075,7 +1058,7 @@
         const filas = matriz.valores_fila;
         const maxConteo = Math.max(...filas.map(f => {
             const t = matriz.totales_fila[f];
-            return (t && !t.suprimido) ? t.conteo : 0;
+            return t ? Number(t.conteo ?? t.valor ?? 0) : 0;
         }), 10);
 
         const svgWidth = 800;
@@ -1087,7 +1070,7 @@
 
         filas.forEach((f, idx) => {
             const tot = matriz.totales_fila[f];
-            const conteo = (tot && !tot.suprimido) ? tot.conteo : 0;
+            const conteo = tot ? Number(tot.conteo ?? tot.valor ?? 0) : 0;
             const w = Math.round((conteo / maxConteo) * 480);
             const y = idx * (barHeight + gap) + 15;
 
@@ -1098,8 +1081,7 @@
             // Value bar
             svg += `<rect x="220" y="${y}" width="${Math.max(w, 4)}" height="${barHeight}" rx="4" fill="#2B579A"/>`;
             // Value text
-            const textVal = (tot && tot.suprimido) ? '< 5' : conteo;
-            svg += `<text x="${230 + w + 10}" y="${y + 18}" font-size="12" font-weight="800" fill="#1A202C">${textVal}</text>`;
+            svg += `<text x="${230 + w + 10}" y="${y + 18}" font-size="12" font-weight="800" fill="#1A202C">${conteo}</text>`;
         });
 
         svg += '</svg>';

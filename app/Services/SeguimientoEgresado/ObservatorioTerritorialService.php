@@ -119,7 +119,7 @@ class ObservatorioTerritorialService
             'movilidad' => $movilidad,
             'rural_urbano' => $ruralUrbano,
             'agenda_accion' => $agendaAccion,
-            'advertencia_metodologica' => 'Los conteos territoriales representan personas únicas. Los recuentos menores a 5 han sido protegidos mediante supresión estadística conforme a la norma de privacidad institucional.',
+            'advertencia_metodologica' => 'Los conteos territoriales representan personas únicas mostrando todos los valores reales tal cual (incluidos los menores a 5).',
         ];
     }
 

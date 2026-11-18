@@ -192,8 +192,8 @@ class SeguimientoAnaliticaService
             'suprimido_general' => is_array($resultadoSeguro['total_general']) ? ($resultadoSeguro['total_general']['suprimido'] ?? false) : false,
             'reglas_privacidad' => $resultadoSeguro['reglas_aplicadas'],
             'fecha_corte' => now()->toDateString(),
-            'nota_metodologica' => 'Conteo de personas únicas (users.id). Las celdas entre 1 y 4 están protegidas mediante supresión estadística para salvaguardar la identidad de los egresados.',
-            'nota_privacidad' => 'Conteo de personas únicas (users.id). Las celdas entre 1 y 4 están protegidas mediante supresión estadística para salvaguardar la identidad de los egresados.',
+            'nota_metodologica' => 'Conteo exacto de personas únicas (users.id), incluyendo desgloses con valores menores a 5.',
+            'nota_privacidad' => 'Conteo exacto de personas únicas (users.id), mostrando todos los valores reales tal cual.',
         ];
     }
 
@@ -305,7 +305,7 @@ class SeguimientoAnaliticaService
             $result[$grupo] = [
                 'personas' => $this->seguridadService->protegerConteo($rows->count()),
                 'con_informacion_laboral' => $safeN, 'trabajan' => $safeEmpleo,
-                'tasa_empleo' => $n && !$safeN['suprimido'] && !$safeEmpleo['suprimido'] && ($n-$empleados === 0 || $n-$empleados >= 5) ? round(100*$empleados/$n,1) : null,
+                'tasa_empleo' => $n > 0 ? round(100*$empleados/$n,1) : null,
                 'cohortes' => $this->seguridadService->procesarDistribucionSegura($cohortes),
             ];
         }
@@ -379,7 +379,16 @@ class SeguimientoAnaliticaService
         arsort($disposicionCompartir);
         arsort($apoyoTitulacion);
 
+        $temasList = [];
+        foreach ($temas as $tKey => $tCnt) {
+            if ($tKey === 'No especificado') continue;
+            $temasList[] = ['tema' => $tKey, 'solicitudes' => $tCnt];
+        }
+        $casosUrgentesTotal = Caso::whereIn('user_id', $ids)->whereIn('estado', ['Por revisar', 'En atención', 'Pendiente'])->count();
+
         return [
+            'temas_formativos' => array_slice($temasList, 0, 12),
+            'casos_atencion_urgente' => ['total' => $casosUrgentesTotal],
             'temas_priorizados' => $this->seguridadService->procesarDistribucionSegura($temas),
             'disposicion_compartir' => $this->seguridadService->procesarDistribucionSegura($disposicionCompartir),
             'apoyo_titulacion' => $this->seguridadService->procesarDistribucionSegura($apoyoTitulacion),
@@ -429,27 +438,43 @@ class SeguimientoAnaliticaService
                 $cohorte = $fechas->isNotEmpty() ? substr($fechas->last(),0,4) : 'Por verificar';
             } elseif ($act && $act->cohorte_egreso) {
                 $cohorte = $act->cohorte_egreso;
+            } elseif ($u->trayectoriaEventos->where('tipo', 'egreso')->isNotEmpty()) {
+                $evEg = $u->trayectoriaEventos->where('tipo', 'egreso')->first();
+                if ($evEg && $evEg->fecha_inicio) {
+                    $cohorte = $evEg->fecha_inicio->format('Y');
+                }
+            } elseif ($u->ciclo?->nombre && preg_match_all('/(20\d{2})/', $u->ciclo->nombre, $mCic)) {
+                $cohorte = (string) end($mCic[1]);
             } elseif ($tit && $tit->periodo_estudios) {
-                $cohorte = $tit->periodo_estudios;
+                $cohorte = preg_match_all('/(20\d{2})/', (string) $tit->periodo_estudios, $mPer) ? (string) end($mPer[1]) : $tit->periodo_estudios;
             }
 
             // 3. Titulación
             $titulacion = $tit?->estadoTitulacion?->nombre ?: (in_array($act?->titulo_lic, ['Titulado','Licenciado/a','Licenciado'], true) ? 'Licenciado' : (in_array($act?->titulo_bach, ['Obtenido','Registrado'], true) ? 'Bachiller' : 'Por verificar'));
 
-            // 4. Situación Laboral
+            // 4. Situación Laboral (jerarquía: Episodio activo > Actualización verificada > Ficha institucional alumnos/ppds)
             $trabajaDeclarado = $act?->trabaja;
+            $trabFicha = strtolower(trim((string) ($alumno?->trabajas ?? '')));
             if ($ep) {
                 $situacion = 'Trabaja';
             } elseif ($trabajaDeclarado === 'Trabaja' || str_starts_with(strtolower($trabajaDeclarado ?: ''), 'trabaja')) {
                 $situacion = 'Trabaja';
             } elseif ($trabajaDeclarado === 'No trabaja') {
                 $situacion = 'No trabaja';
+            } elseif (in_array($trabFicha, ['sí', 'si', '1', 'true'], true)) {
+                $situacion = 'Trabaja';
+            } elseif (in_array($trabFicha, ['no', 'todavía no', 'todavia no', '0'], true)) {
+                $situacion = 'No trabaja';
             } else {
                 $situacion = 'Sin información confirmada';
             }
 
             // 5. Sector y Contrato
-            $sector = $ep?->sector ?: ($act?->sector ?: 'No declarado');
+            $sectorFicha = trim((string) ($alumno?->sector_laboral ?? ''));
+            if (in_array(strtolower($sectorFicha), ['', 'ninguno', 'no trabajo', 'elegir', '--'], true)) {
+                $sectorFicha = null;
+            }
+            $sector = $ep?->sector ?: ($act?->sector ?: ($sectorFicha ?: 'No declarado'));
             $contrato = $ep?->contrato ?: ($act?->contrato ?: 'No declarado');
 
             // 6. Docencia y Educación

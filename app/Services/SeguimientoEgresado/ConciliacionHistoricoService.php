@@ -1367,11 +1367,19 @@ class ConciliacionHistoricoService
             ['clave' => 'coya', 'nombre' => 'Coya', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Calca', 'distrito' => 'Coya', 'ubigeo' => '080402', 'latitud' => -13.3867, 'longitud' => -71.9022],
             // Cusco - Quispicanchi
             ['clave' => 'urcos', 'nombre' => 'Urcos', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Quispicanchi', 'distrito' => 'Urcos', 'ubigeo' => '081201', 'latitud' => -13.6869, 'longitud' => -71.6228],
+            ['clave' => 'andahuaylillas', 'nombre' => 'Andahuaylillas', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Quispicanchi', 'distrito' => 'Andahuaylillas', 'ubigeo' => '081202', 'latitud' => -13.6731, 'longitud' => -71.6775],
+            ['clave' => 'lucre', 'nombre' => 'Lucre', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Quispicanchi', 'distrito' => 'Lucre', 'ubigeo' => '081208', 'latitud' => -13.6308, 'longitud' => -71.7375],
             ['clave' => 'ocongate', 'nombre' => 'Ocongate', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Quispicanchi', 'distrito' => 'Ocongate', 'ubigeo' => '081210', 'latitud' => -13.6264, 'longitud' => -71.3853],
             ['clave' => 'oropesa', 'nombre' => 'Oropesa', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Quispicanchi', 'distrito' => 'Oropesa', 'ubigeo' => '081211', 'latitud' => -13.5936, 'longitud' => -71.7589],
             ['clave' => 'quiquijana', 'nombre' => 'Quiquijana', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Quispicanchi', 'distrito' => 'Quiquijana', 'ubigeo' => '081212', 'latitud' => -13.8228, 'longitud' => -71.5403],
             // Cusco - Canchis
             ['clave' => 'sicuani', 'nombre' => 'Sicuani', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Canchis', 'distrito' => 'Sicuani', 'ubigeo' => '080601', 'latitud' => -14.2694, 'longitud' => -71.2261],
+            ['clave' => 'tinta', 'nombre' => 'Tinta', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Canchis', 'distrito' => 'Tinta', 'ubigeo' => '080608', 'latitud' => -14.1450, 'longitud' => -71.4069],
+            // Cusco - Canas
+            ['clave' => 'layo', 'nombre' => 'Layo (Canas)', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Canas', 'distrito' => 'Layo', 'ubigeo' => '080505', 'latitud' => -14.4936, 'longitud' => -71.1550],
+            // Puno
+            ['clave' => 'pucara_puno', 'nombre' => 'Pucará (Lampa, Puno)', 'tipo' => 'localidad', 'departamento' => 'Puno', 'provincia' => 'Lampa', 'distrito' => 'Pucará', 'ubigeo' => '210707', 'latitud' => -15.0419, 'longitud' => -70.3678],
+            ['clave' => 'nunoa_puno', 'nombre' => 'Nuñoa (Melgar, Puno)', 'tipo' => 'localidad', 'departamento' => 'Puno', 'provincia' => 'Melgar', 'distrito' => 'Nuñoa', 'ubigeo' => '210806', 'latitud' => -14.4783, 'longitud' => -70.6358],
             // Cusco - Acomayo
             ['clave' => 'acomayo', 'nombre' => 'Acomayo', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Acomayo', 'distrito' => 'Acomayo', 'ubigeo' => '080201', 'latitud' => -13.9189, 'longitud' => -71.6836],
             ['clave' => 'acopia', 'nombre' => 'Acopia', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Acomayo', 'distrito' => 'Acopia', 'ubigeo' => '080202', 'latitud' => -14.0586, 'longitud' => -71.4919],
@@ -1499,10 +1507,16 @@ class ConciliacionHistoricoService
             'pomacanchi' => 'pomacanchi',
             'acomayo' => 'acomayo',
             'ocongate' => 'ocongate',
+            'andahuaylillas' => 'andahuaylillas',
+            'lucre' => 'lucre',
             'oropesa' => 'oropesa',
             'quiquijana' => 'quiquijana',
             'urcos' => 'urcos',
             'sicuani' => 'sicuani',
+            'tinta' => 'tinta',
+            'layo' => 'layo',
+            'nunoa' => 'nunoa_puno',
+            'pucara' => 'pucara_puno',
             'pisaq' => 'pisac',
             'pisac' => 'pisac',
             'taray' => 'taray',
@@ -1517,15 +1531,33 @@ class ConciliacionHistoricoService
             'anta' => 'anta',
             'poroy' => 'poroy',
             'saylla' => 'saylla',
+            'angostura' => 'saylla',
             'wanchaq' => 'wanchaq',
+            'hilario mendivil' => 'san_sebastian',
+            'aeropuerto' => 'san_sebastian',
+            'kari grande' => 'san_sebastian',
+            'santa maria' => 'san_sebastian',
+            'la planicie' => 'san_sebastian',
+            'alto qosqo' => 'san_sebastian',
+            'alto cusco' => 'san_sebastian',
             'santiago' => 'santiago',
             'huancaro' => 'santiago',
             'puquin' => 'santiago',
+            'independencia' => 'santiago',
             'san jeronimo' => 'san_jeronimo',
             'san sebastian' => 'san_sebastian',
             'enaco' => 'san_sebastian',
             'tikapata' => 'san_sebastian',
             'teneria' => 'san_sebastian',
+            'san blas' => 'cusco',
+            'ticatica' => 'cusco',
+            'arco ticatica' => 'cusco',
+            'arcoticatica' => 'cusco',
+            'occhullo' => 'cusco',
+            'coovipol' => 'cusco',
+            'collasuyo' => 'cusco',
+            'pukllasunchis' => 'cusco',
+            'puklla' => 'cusco',
             'san luis' => 'cusco',
             'plaza de armas' => 'cusco',
             'ciudad de cusco' => 'cusco',
@@ -1818,8 +1850,8 @@ class ConciliacionHistoricoService
                     }
                 }
 
-                // 2. Año de egreso
-                $cohorteRaw = (string) ($enc['Cohorte_egreso'] ?? $mae['Cohorte_egreso_2026'] ?? $pad['egreso'] ?? $u->seguimientoTitulacion?->periodo_estudios ?? '');
+                // 2. Año de egreso (jerarquía: Encuesta 2026-I > Base Maestra > Padrón > Evento egreso BD > Ciclo cuenta > Periodo estudios titulación)
+                $cohorteRaw = (string) ($enc['Cohorte_egreso'] ?? $mae['Cohorte_egreso_2026'] ?? $pad['egreso'] ?? '');
                 $anioEgreso = null;
                 if (preg_match('/(20\d{2})/', $cohorteRaw, $mAnio)) {
                     $anioEgreso = (int) $mAnio[1];
@@ -1827,25 +1859,30 @@ class ConciliacionHistoricoService
                     $evEgreso = $u->trayectoriaEventos->where('tipo', 'egreso')->first();
                     if ($evEgreso && $evEgreso->fecha_inicio) {
                         $anioEgreso = (int) $evEgreso->fecha_inicio->format('Y');
+                    } elseif ($u->ciclo?->nombre && preg_match_all('/(20\d{2})/', $u->ciclo->nombre, $mCiclo)) {
+                        $anioEgreso = (int) end($mCiclo[1]);
+                    } elseif ($u->seguimientoTitulacion?->periodo_estudios && preg_match_all('/(20\d{2})/', (string) $u->seguimientoTitulacion->periodo_estudios, $mPer)) {
+                        $anioEgreso = (int) end($mPer[1]);
                     }
                 }
 
-                // 3. Correo y teléfono
+                // 3. Correo y teléfono (cuenta + padrón + ficha alumnos/ppds)
                 $correo = $this->normalizarCorreo($u->email)
                     ?: ($this->normalizarCorreo($pad['correo'] ?? null)
-                    ?: $this->normalizarCorreo($ficha?->email));
-                $telefono = trim((string) ($pad['telefono'] ?? $ficha?->numero ?? $u->telefono ?? ''));
+                    ?: ($this->normalizarCorreo($ficha?->email) ?: $this->normalizarCorreo($ficha?->correo ?? null)));
+                $telefono = trim((string) ($pad['telefono'] ?? $ficha?->numero ?? $ficha?->numero_referencia ?? $u->telefono ?? ''));
                 if ($telefono === '' || strtolower($telefono) === 'sin dato') {
                     $telefono = null;
                 }
 
-                // 4. Residencia (desde ficha académica o inferida parcialmente si labora en Cusco, dejando distrito pendiente cuando no consta)
+                // 4. Residencia (desde ficha académica alumnos/ppds: departamento, provincia, distrito y direccion)
                 $depRes = trim((string) ($ficha?->departamento ?? ''));
                 $provRes = trim((string) ($ficha?->provincia ?? ''));
                 $distRes = trim((string) ($ficha?->distrito ?? ''));
+                $dirRes = trim((string) ($ficha?->direccion ?? $u->domicilio ?? ''));
 
                 $residenciaLugar = [
-                    'departamento' => $depRes !== '' ? $depRes : (($enc || $mae) ? 'Cusco' : null),
+                    'departamento' => $depRes !== '' ? $depRes : (($enc || $mae || $dirRes !== '') ? 'Cusco' : null),
                     'provincia' => $provRes !== '' ? $provRes : null,
                     'distrito' => $distRes !== '' ? $distRes : null,
                     'localidad' => $distRes !== '' ? $distRes : null,
@@ -1858,16 +1895,38 @@ class ConciliacionHistoricoService
                     'fuente' => 'declaracion_egresado',
                 ];
 
-                if ($distRes !== '') {
-                    $resueltoRes = $this->resolverLugarDesdeTexto($distRes . ' ' . $provRes . ' ' . $depRes, $catalogoLugares);
+                $textoResidenciaBusqueda = trim(implode(' ', array_filter([$distRes, $provRes, $depRes, $dirRes])));
+                if ($textoResidenciaBusqueda !== '') {
+                    $resueltoRes = $this->resolverLugarDesdeTexto($textoResidenciaBusqueda, $catalogoLugares);
                     if ($resueltoRes['lugar_id']) {
                         $residenciaLugar = $resueltoRes;
                     }
                 }
 
-                // 5. Situación laboral y empleo (Encuesta 2026-I / Base Maestra)
+                // Vínculo comunitario de origen registrado en la ficha socioeconómica institucional (alumnos / ppds)
+                $procFamiliar = strtolower(trim((string) ($ficha?->procedencia_familiar ?? '')));
+                if (str_contains($procFamiliar, 'vivo_en_comunidad') || str_contains($procFamiliar, 'yo aún vivo en la comunidad') || str_contains($procFamiliar, 'yo aun vivo en la comunidad')) {
+                    if ($residenciaLugar['comunidad_tipo'] === 'no_se') {
+                        $residenciaLugar['comunidad_tipo'] = 'campesina';
+                    }
+                }
+
+                // 5. Situación laboral y empleo (Encuesta 2026-I > Base Maestra > Ficha institucional alumnos/ppds)
                 $trabajaRaw = $enc['Trabaja_2026'] ?? $mae['Situación_laboral'] ?? null;
                 $sitNorm = $this->normalizarSituacionLaboral($trabajaRaw);
+                $fuenteLaboralEsBd = false;
+                if ($sitNorm === 'Sin dato' && $ficha) {
+                    $trabFicha = strtolower(trim((string) ($ficha->trabajas ?? '')));
+                    $dondeFicha = trim((string) ($ficha->donde_trabajas ?? ''));
+                    if (in_array($trabFicha, ['sí', 'si', '1', 'true'], true) || ($dondeFicha !== '' && !in_array(strtolower($dondeFicha), ['no', 'no trabajo', 'ningún lugar', 'ninguno', '--', 'elegir'], true))) {
+                        $sitNorm = 'Trabaja';
+                        $fuenteLaboralEsBd = true;
+                    } elseif (in_array($trabFicha, ['no', 'todavía no', 'todavia no', '0'], true)) {
+                        $sitNorm = 'No trabaja';
+                        $fuenteLaboralEsBd = true;
+                    }
+                }
+
                 $trabajaCodigo = match ($sitNorm) {
                     'Trabaja' => 'si',
                     'No trabaja' => 'no',
@@ -1876,55 +1935,73 @@ class ConciliacionHistoricoService
 
                 $trabajos = [];
                 $lugarTrabajoResuelto = null;
+                $dondeFichaClean = $this->limpiarCampoTexto($ficha?->donde_trabajas ?? null, 180);
+                if ($dondeFichaClean && in_array(strtolower($dondeFichaClean), ['no', 'no trabajo', 'ningún lugar', 'ninguno', '--', 'elegir'], true)) {
+                    $dondeFichaClean = null;
+                }
+                $sectorFichaClean = $this->limpiarCampoTexto($ficha?->sector_laboral ?? null, 100);
+                if ($sectorFichaClean && in_array(strtolower($sectorFichaClean), ['ninguno', 'no trabajo', 'elegir', '--'], true)) {
+                    $sectorFichaClean = null;
+                }
+
                 $cargoDeclarado = $this->limpiarCampoTexto($enc['Cargo_responsabilidad_2026'] ?? $mae['Cargo_área_actual'] ?? null, 150);
-                $sectorDeclarado = $this->limpiarCampoTexto($enc['Sector_2026'] ?? $mae['Sector'] ?? null, 100);
+                $sectorDeclarado = $this->limpiarCampoTexto($enc['Sector_2026'] ?? $mae['Sector'] ?? $sectorFichaClean, 100);
                 $contratoDeclarado = $this->limpiarCampoTexto($mae['Modalidad_contrato_archivo'] ?? $enc['Tipo_practica_2026'] ?? null, 100);
                 $insercionDeclarada = $this->limpiarCampoTexto($enc['Insercion_educativa_2026'] ?? $mae['Inserción_educativa'] ?? null, 80);
                 $practicaDeclarada = $this->limpiarCampoTexto($enc['Tipo_practica_2026'] ?? null, 100);
-                $lugarTextoOrigen = $this->limpiarCampoTexto($enc['Lugar_trabajo_2026'] ?? $mae['Lugar_trabajo_2026'] ?? null, 255);
+                $lugarTextoOrigen = $this->limpiarCampoTexto($enc['Lugar_trabajo_2026'] ?? $mae['Lugar_trabajo_2026'] ?? $dondeFichaClean, 255);
 
                 if ($trabajaCodigo === 'si') {
-                    $lugarTrabajoResuelto = $this->resolverLugarDesdeTexto($lugarTextoOrigen, $catalogoLugares);
-
-                    // Si en el texto de lugar o cargo menciona explícitamente una IE/institución, la extraemos;
-                    // de lo contrario queda null en el JSON del perfil para figurar como dato pendiente por precisar
-                    $institucionExplicita = null;
-                    if ($lugarTextoOrigen && preg_match('/\b(IEP?|CEBA|CEBE|UGEL|PRONOEI|COLEGIO|ESCUELA|INSTITUTO|ONG)\b.*/iu', $lugarTextoOrigen, $mInst)) {
-                        $institucionExplicita = mb_substr(trim($mInst[0]), 0, 140);
-                    } elseif ($cargoDeclarado && preg_match('/\b(IEP?|CEBA|CEBE|UGEL|PRONOEI|COLEGIO|ESCUELA)\b.*/iu', $cargoDeclarado, $mInst2)) {
-                        $institucionExplicita = mb_substr(trim($mInst2[0]), 0, 140);
+                    $lugarTrabajoResuelto = $this->resolverLugarDesdeTexto($lugarTextoOrigen . ' ' . ($ficha?->dep_dist_prov_institucion ?? ''), $catalogoLugares);
+                    // Si trabaja en centro educativo o asociación local y no se pudo extraer distrito del nombre del colegio, usar la localidad de residencia verificada como referencia territorial
+                    if (!$lugarTrabajoResuelto['lugar_id'] && $residenciaLugar['lugar_id'] && $fuenteLaboralEsBd) {
+                        $lugarTrabajoResuelto = $residenciaLugar;
                     }
 
-                    $esEducativo = $insercionDeclarada ? (stripos($insercionDeclarada, 'En educación') !== false) : true;
+                    // Si en el texto de lugar, cargo o donde_trabajas menciona explícitamente una IE/institución, la extraemos;
+                    // de lo contrario queda null en el JSON del perfil para figurar como dato pendiente por precisar
+                    $institucionExplicita = null;
+                    if ($lugarTextoOrigen && preg_match('/\b(I\.?E\.?P?\.?|I\.?E\.?I\.?|IIE|ISPP|CEBA|CEBE|UGEL|PRONOEI|COLEGIO|ESCUELA|INSTITUTO|ASOCIACI[ÓO]N|JARD[ÍI]N|MUNICIPALIDAD|ONG)\b.*/iu', $lugarTextoOrigen, $mInst)) {
+                        $institucionExplicita = mb_substr(trim($mInst[0]), 0, 140);
+                    } elseif ($cargoDeclarado && preg_match('/\b(I\.?E\.?P?\.?|CEBA|CEBE|UGEL|PRONOEI|COLEGIO|ESCUELA)\b.*/iu', $cargoDeclarado, $mInst2)) {
+                        $institucionExplicita = mb_substr(trim($mInst2[0]), 0, 140);
+                    } elseif ($dondeFichaClean && !$enc) {
+                        $institucionExplicita = mb_substr($dondeFichaClean, 0, 140);
+                    }
+
+                    $esEducativo = $insercionDeclarada
+                        ? (stripos($insercionDeclarada, 'En educación') !== false)
+                        : ($sectorDeclarado ? (stripos($sectorDeclarado, 'educativo') !== false || stripos((string) $institucionExplicita, 'IE') !== false || stripos((string) $institucionExplicita, 'Colegio') !== false || stripos((string) $institucionExplicita, 'Jardín') !== false || stripos((string) $institucionExplicita, 'Puklla') !== false) : true);
                     $esDocencia = $practicaDeclarada
                         ? (stripos($practicaDeclarada, 'Docencia') !== false)
-                        : ($cargoDeclarado ? (stripos($cargoDeclarado, 'docente') !== false || stripos($cargoDeclarado, 'profesor') !== false || stripos($cargoDeclarado, 'maestr') !== false) : true);
-                    $esEib = ($progModel?->eib) || stripos((string) $programaNombre, 'EIB') !== false || stripos((string) $cargoDeclarado, 'EIB') !== false || stripos((string) $practicaDeclarada, 'EIB') !== false;
+                        : ($cargoDeclarado ? (stripos($cargoDeclarado, 'docente') !== false || stripos($cargoDeclarado, 'profesor') !== false || stripos($cargoDeclarado, 'maestr') !== false) : $esEducativo);
+                    $lenguaFicha = strtolower(trim((string) ($ficha?->lengua_1 ?? '') . ' ' . ($ficha?->lengua_2 ?? '')));
+                    $esEib = ($progModel?->eib) || stripos((string) $programaNombre, 'EIB') !== false || stripos((string) $cargoDeclarado, 'EIB') !== false || stripos((string) $practicaDeclarada, 'EIB') !== false || str_contains($lenguaFicha, 'quechua');
 
-                    $ep = EpisodioLaboral::updateOrCreate(
-                        ['user_id' => $u->id, 'canal_registro' => 'encuesta_2026_I'],
-                        [
-                            'institucion' => $institucionExplicita ?: ($sectorDeclarado ? "Centro educativo / laboral ({$sectorDeclarado})" : 'Centro laboral declarado en Encuesta 2026-I'),
-                            'cargo' => $cargoDeclarado ?: ($practicaDeclarada ?: 'Docente / Profesional en ejercicio'),
-                            'sector' => $sectorDeclarado,
-                            'contrato' => $contratoDeclarado,
-                            'fecha_inicio' => null,
-                            'fecha_fin' => null,
-                            'es_actual' => true,
-                            'es_empleo_educativo' => $esEducativo,
-                            'es_docencia_directa' => $esDocencia,
-                            'trab_departamento' => $lugarTrabajoResuelto['departamento'],
-                            'trab_provincia' => $lugarTrabajoResuelto['provincia'],
-                            'trab_distrito' => $lugarTrabajoResuelto['distrito'],
-                            'fecha_captura' => now(),
-                        ]
-                    );
+                    $canalEp = $enc ? 'encuesta_2026_I' : ($mae ? 'maestra_historica' : 'ficha_institucional_bd');
+                    EpisodioLaboral::where('user_id', $u->id)->whereIn('canal_registro', ['encuesta_2026_I', 'maestra_historica', 'ficha_institucional_bd'])->delete();
+                    $ep = EpisodioLaboral::create([
+                        'user_id' => $u->id,
+                        'canal_registro' => $canalEp,
+                        'institucion' => $institucionExplicita ?: ($sectorDeclarado ? "Centro educativo / laboral ({$sectorDeclarado})" : 'Centro laboral registrado'),
+                        'cargo' => $cargoDeclarado ?: ($practicaDeclarada ?: ($esEducativo ? 'Docente en ejercicio' : 'Actividad laboral registrada')),
+                        'sector' => $sectorDeclarado ?: ($esEducativo ? 'Sector educativo' : null),
+                        'contrato' => $contratoDeclarado,
+                        'fecha_inicio' => null,
+                        'fecha_fin' => null,
+                        'es_actual' => true,
+                        'es_empleo_educativo' => $esEducativo,
+                        'es_docencia_directa' => $esDocencia,
+                        'trab_departamento' => $lugarTrabajoResuelto['departamento'],
+                        'trab_provincia' => $lugarTrabajoResuelto['provincia'],
+                        'trab_distrito' => $lugarTrabajoResuelto['distrito'],
+                        'fecha_captura' => now(),
+                    ]);
 
                     $trabajos[] = [
                         'episodio_id' => $ep->id,
-                        // Si no indicó el nombre exacto del colegio en la encuesta, queda null para que figure como campo pendiente
                         'institucion' => $institucionExplicita,
-                        'cargo' => $cargoDeclarado ?: $practicaDeclarada,
+                        'cargo' => $cargoDeclarado ?: ($practicaDeclarada ?: ($fuenteLaboralEsBd ? ($esEducativo ? 'Docente' : $sectorDeclarado) : null)),
                         'inicio' => null,
                         'fin' => null,
                         'educativo' => $esEducativo,
@@ -1933,6 +2010,7 @@ class ConciliacionHistoricoService
                         'nivel' => stripos((string) $programaNombre, 'Inicial') !== false ? 'Inicial' : 'Primaria',
                         'area' => in_array($lugarTrabajoResuelto['comunidad_tipo'] ?? '', ['campesina', 'nativa'], true) ? 'rural' : 'no_se',
                         'eib' => $esEib ? 'si' : 'no_se',
+                        'lenguas' => ($ficha?->lengua_1 ? trim($ficha->lengua_1 . ($ficha->lengua_2 ? ' / ' . $ficha->lengua_2 : '')) : null),
                         'lugar' => $lugarTrabajoResuelto,
                     ];
 
@@ -1944,18 +2022,26 @@ class ConciliacionHistoricoService
                     }
                 }
 
-                // 6. Necesidades formativas, aportes y vínculo comunitario
+                // 6. Necesidades formativas, aportes y vínculo comunitario (Encuesta + BD institucional)
                 $necesidades = $this->limpiarCampoTexto($enc['Necesidades_archivo_original'] ?? $mae['Necesidades_original'] ?? null, 1000);
                 $aporte = $this->limpiarCampoTexto($enc['Aporte_formacion_archivo_original'] ?? $mae['Aporte_formación_original'] ?? null, 2000);
                 $sugerencias = $this->limpiarCampoTexto($enc['Sugerencias_archivo_original'] ?? $mae['Sugerencias_original'] ?? null, 500);
                 $satisfaccion = $this->limpiarCampoTexto($enc['Satisfaccion_laboral_archivo'] ?? $mae['Satisfacción_laboral_archivo'] ?? null, 100);
 
                 $vinculosComunidad = [];
-                if ($lugarTrabajoResuelto && in_array($lugarTrabajoResuelto['comunidad_tipo'] ?? '', ['campesina', 'nativa'], true)) {
-                    $vinculosComunidad = ['trabajo', 'colaboro'];
-                } elseif ($aporte && (stripos($aporte, 'comunidad') !== false || stripos($aporte, 'intercultural') !== false || stripos($aporte, 'quechua') !== false)) {
-                    $vinculosComunidad = ['colaboro'];
+                if (str_contains($procFamiliar, 'comunidad') && !str_contains($procFamiliar, 'zona_urbana') && !str_contains($procFamiliar, 'zona urbana')) {
+                    $vinculosComunidad[] = 'origen';
                 }
+                if ($residenciaLugar['comunidad_tipo'] === 'campesina' || $residenciaLugar['comunidad_tipo'] === 'nativa') {
+                    $vinculosComunidad[] = 'resido';
+                }
+                if ($lugarTrabajoResuelto && in_array($lugarTrabajoResuelto['comunidad_tipo'] ?? '', ['campesina', 'nativa'], true)) {
+                    $vinculosComunidad[] = 'trabajo';
+                    $vinculosComunidad[] = 'colaboro';
+                } elseif ($aporte && (stripos($aporte, 'comunidad') !== false || stripos($aporte, 'intercultural') !== false || stripos($aporte, 'quechua') !== false)) {
+                    $vinculosComunidad[] = 'colaboro';
+                }
+                $vinculosComunidad = array_values(array_unique($vinculosComunidad));
 
                 $datosPerfil = [
                     'contacto' => [
@@ -1984,9 +2070,9 @@ class ConciliacionHistoricoService
                     ]),
                 ];
 
-                // Registrar en egresado_actualizaciones cuando existe respuesta en Encuesta 2026-I o Base Maestra / Padrón
-                if ($enc || $mae || $pad) {
-                    $esEibAct = ($progModel?->eib) || stripos((string) $programaNombre, 'EIB') !== false;
+                // Registrar en egresado_actualizaciones cuando existe respuesta en Encuesta 2026-I, Base Maestra, Padrón o datos laborales en la BD institucional
+                if ($enc || $mae || $pad || $fuenteLaboralEsBd) {
+                    $esEibAct = ($progModel?->eib) || stripos((string) $programaNombre, 'EIB') !== false || str_contains(strtolower((string) ($ficha?->lengua_1 ?? '')), 'quechua');
                     Actualizacion::updateOrCreate(
                         [
                             'user_id' => $u->id,
@@ -1995,10 +2081,10 @@ class ConciliacionHistoricoService
                         [
                             'nombre_completo' => trim($u->name . ' ' . $u->apellidos),
                             'es_ensayo' => false,
-                            'tipo_registro' => $enc ? 'encuesta_2026_I' : 'padron_historico',
+                            'tipo_registro' => $enc ? 'encuesta_2026_I' : ($mae || $pad ? 'padron_historico' : 'ficha_institucional_bd'),
                             'estado_verificacion' => 'verificado',
-                            'procedencia' => $enc ? 'encuesta_2026_I' : 'archivo_historico',
-                            'canal' => $enc ? 'formulario_encuesta_2026' : 'consolidacion_historica',
+                            'procedencia' => $enc ? 'encuesta_2026_I' : ($mae || $pad ? 'archivo_historico' : 'bd_institucional'),
+                            'canal' => $enc ? 'formulario_encuesta_2026' : ($mae || $pad ? 'consolidacion_historica' : 'expediente_institucional'),
                             'fecha_ultima_confirmacion' => $enc ? '2026-06-30 12:00:00' : '2025-12-15 12:00:00',
                             'es_confirmacion_sin_cambios' => false,
                             'programa' => $programaNombre,
@@ -2014,7 +2100,7 @@ class ConciliacionHistoricoService
                             'trabaja' => $sitNorm !== 'Sin dato' ? $sitNorm : null,
                             'sector' => $sectorDeclarado,
                             'contrato' => $contratoDeclarado,
-                            'cargo' => $cargoDeclarado,
+                            'cargo' => $cargoDeclarado ?: ($trabajos[0]['cargo'] ?? null),
                             'eib' => $esEibAct ? 'Sí' : 'No',
                             'satisfaccion' => $satisfaccion,
                             'temas_interes' => $necesidades,

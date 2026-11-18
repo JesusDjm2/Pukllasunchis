@@ -198,7 +198,7 @@ class SeguimientoLaboratorioFase2ATest extends TestCase
     }
 
     /**
-     * Test 6: Privacidad estadística aplica supresión primaria a celdas con conteo entre 1 y 4 (R08).
+     * Test 6: Estadística muestra los conteos exactos (incluidos menores a 5) tal cual por defecto, y soporta umbral configurable.
      */
     public function test_06_privacidad_estadistica_aplica_supresion_primaria_a_celdas_menores_a_5(): void
     {
@@ -206,13 +206,13 @@ class SeguimientoLaboratorioFase2ATest extends TestCase
         $seguridadService = app(EstadisticaSeguraService::class);
 
         $conteoPequeño = 3;
-        $resultado = $seguridadService->protegerConteo($conteoPequeño);
+        $resultado = $seguridadService->protegerConteo($conteoPequeño, 100);
 
-        $this->assertTrue($resultado['suprimido']);
-        $this->assertEquals('< 5', $resultado['valor']);
-        $this->assertNull($resultado['porcentaje']);
+        $this->assertFalse($resultado['suprimido']);
+        $this->assertEquals(3, $resultado['valor']);
+        $this->assertEquals(3.0, $resultado['porcentaje']);
 
-        // Conteo >= 5 no debe ser suprimido
+        // Conteo >= 5
         $conteoSeguro = 12;
         $resultadoSeguro = $seguridadService->protegerConteo($conteoSeguro, 100);
 
@@ -222,35 +222,26 @@ class SeguimientoLaboratorioFase2ATest extends TestCase
     }
 
     /**
-     * Test 7: Supresión secundaria complementaria en matriz para evitar deducción algebraica de celdas < 5 (R08).
+     * Test 7: La matriz 2D muestra todos los conteos reales (incluidos menores a 5) y calcula sus porcentajes.
      */
     public function test_07_privacidad_estadistica_aplica_supresion_secundaria_para_evitar_deduccion(): void
     {
         /** @var EstadisticaSeguraService $seguridadService */
         $seguridadService = app(EstadisticaSeguraService::class);
 
-        // Matriz sintética con una sola celda pequeña en una fila
+        // Matriz sintética con una celda pequeña (< 5) que ahora debe mostrarse tal cual
         $filas = ['Inicial', 'Primaria EIB'];
         $columnas = ['Nombrado', 'Contratado'];
         $conteos = [
-            'Inicial' => ['Nombrado' => 3, 'Contratado' => 20], // 3 es < 5 (supresión primaria)
+            'Inicial' => ['Nombrado' => 3, 'Contratado' => 20],
             'Primaria EIB' => ['Nombrado' => 15, 'Contratado' => 25],
         ];
 
         $matrizProtegida = $seguridadService->protegerMatriz2D($conteos, $filas, $columnas);
 
-        // La celda (Inicial, Nombrado) debe estar suprimida primariamente
-        $this->assertTrue($matrizProtegida['celdas']['Inicial']['Nombrado']['suprimido']);
-        $this->assertEquals('< 5', $matrizProtegida['celdas']['Inicial']['Nombrado']['conteo']);
-
-        // Para evitar deducir el 3 restando (Total Inicial - Contratado), o el total o la celda complementaria debe estar enmascarada
-        $totalFilaSuprimido = $matrizProtegida['totales_fila']['Inicial']['suprimido'] ?? false;
-        $celdaCompSuprimida = $matrizProtegida['celdas']['Inicial']['Contratado']['suprimido'] ?? false;
-
-        $this->assertTrue(
-            $totalFilaSuprimido || $celdaCompSuprimida,
-            'Debe aplicarse supresión secundaria (en celda complementaria o en margen/total) para evitar deducir la celda < 5.'
-        );
+        $this->assertFalse($matrizProtegida['celdas']['Inicial']['Nombrado']['suprimido']);
+        $this->assertEquals(3, $matrizProtegida['celdas']['Inicial']['Nombrado']['conteo']);
+        $this->assertEquals(23, $matrizProtegida['totales_fila']['Inicial']['conteo']);
     }
 
     /**

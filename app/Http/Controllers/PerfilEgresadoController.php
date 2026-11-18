@@ -51,11 +51,16 @@ class PerfilEgresadoController extends Controller
         $progModel = $grupoSvc->programa($titular);
         $anioEgreso = $a?->cohorte_egreso
             ?: ($titular->trayectoriaEventos->firstWhere('tipo', 'egreso')?->fecha_inicio?->format('Y'))
+            ?: ($titular->ciclo?->nombre && preg_match_all('/(20\d{2})/', $titular->ciclo->nombre, $mCic) ? end($mCic[1]) : null)
+            ?: ($titular->seguimientoTitulacion?->periodo_estudios && preg_match_all('/(20\d{2})/', (string) $titular->seguimientoTitulacion->periodo_estudios, $mPer) ? end($mPer[1]) : null)
             ?: $titular->seguimientoTitulacion?->anio_egreso;
+
+        $trabFicha = strtolower(trim((string) ($ficha?->trabajas ?? '')));
+        $trabDefault = $a?->trabaja === 'No trabaja' ? 'no' : ($a?->trabaja === 'Trabaja' ? 'si' : (in_array($trabFicha, ['sí', 'si', '1'], true) ? 'si' : (in_array($trabFicha, ['no', 'todavía no', 'todavia no'], true) ? 'no' : null)));
 
         $defaults = [
             'contacto' => [
-                'correo' => $a?->correo ?: ($ficha?->email ?: $titular->email),
+                'correo' => $a?->correo ?: ($ficha?->email ?: ($ficha?->correo ?: $titular->email)),
                 'telefono' => $a?->telefono ?: ($ficha?->numero ?: ($ficha?->numero_referencia ?: $titular->telefono)),
                 'programa' => $a?->programa ?: $progModel?->nombre,
                 'egreso' => $anioEgreso && preg_match('/(19\d{2}|20\d{2})/', (string) $anioEgreso, $m) ? (int) $m[1] : null,
@@ -65,7 +70,7 @@ class PerfilEgresadoController extends Controller
                 'provincia' => $a?->res_provincia ?: $ficha?->provincia,
                 'distrito' => $a?->res_distrito ?: $ficha?->distrito,
             ],
-            'trabaja' => $a?->trabaja === 'No trabaja' ? 'no' : ($a?->trabaja === 'Trabaja' ? 'si' : null),
+            'trabaja' => $trabDefault,
         ];
 
         if (!$datos) {
@@ -222,14 +227,13 @@ class PerfilEgresadoController extends Controller
                 foreach ($clasificacion->resolver($usuarios[$row->user_id])['grupos'] as $g) $groups[$key]['por_grupo'][$g][$row->user_id] = true;
             }
         }
-        // Agregación fija por localidad oficial del catálogo sin filtros identificables ni coordenadas de viviendas.
+        // Agregación fija por localidad oficial del catálogo mostrando todos los conteos reales (incluidos valores < 5).
         $points = [];
         foreach ($groups as $group) {
             $n = count($group['personas']);
             if ($n < 1) continue;
             unset($group['personas']);
-            $small = $n < 5 || collect($group['por_grupo'])->contains(fn ($personas) => count($personas) > 0 && count($personas) < 5);
-            foreach ($group['por_grupo'] as $g => $personas) $group['por_grupo'][$g] = $small ? null : count($personas);
+            foreach ($group['por_grupo'] as $g => $personas) $group['por_grupo'][$g] = count($personas);
             $group['n'] = $n; $points[] = $group;
         }
         $safe = app(\App\Services\SeguimientoEgresado\EstadisticaSeguraService::class);
