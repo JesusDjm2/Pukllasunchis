@@ -47,11 +47,15 @@
                         <span class="al-chip"><i class="fas fa-id-card"></i>DNI {{ $user->dni ?: $alumno->dni }}</span>
                     </div>
                 </div>
-                @if ($hayTitulacion)
-                    <div class="al-hero-acciones">
-                        <a class="al-btn al-btn-oro" href="#titulacion" data-al-ir><i class="fas fa-route"></i> Mi titulación</a>
+                    <div class="al-hero-acciones" style="display:flex;gap:8px;flex-wrap:wrap;">
+                        @if ($hayTitulacion)
+                            <a class="al-btn al-btn-oro" href="#titulacion" data-al-ir><i class="fas fa-route"></i> Mi titulación</a>
+                        @endif
+                        <a class="al-btn" href="{{ route('seguimiento.mi-espacio') }}"><i class="fas fa-user-check"></i> Mi ficha y apoyo</a>
+                        @if (Route::has('red.inicio'))
+                            <a class="al-btn" href="{{ route('red.inicio') }}"><i class="fas fa-users"></i> Red Puklla de Egresados</a>
+                        @endif
                     </div>
-                @endif
             </div>
         </section>
 

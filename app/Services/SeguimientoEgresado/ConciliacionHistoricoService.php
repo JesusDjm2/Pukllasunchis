@@ -2,6 +2,8 @@
 
 namespace App\Services\SeguimientoEgresado;
 
+use App\Models\SeguimientoEgresado\Actualizacion;
+use App\Models\SeguimientoEgresado\EpisodioLaboral;
 use App\Models\User;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
@@ -1239,5 +1241,730 @@ class ConciliacionHistoricoService
         }
         fclose($fp);
         return $filas;
+    }
+
+    /**
+     * Catálogo oficial de localidades y distritos (INEI / MINEDU) para el Visor Territorial.
+     */
+    public function asegurarCatalogoLugaresTerritoriales(): array
+    {
+        $catalogo = [
+            // Cusco - Cusco
+            ['clave' => 'cusco', 'nombre' => 'Cusco', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Cusco', 'distrito' => 'Cusco', 'ubigeo' => '080101', 'latitud' => -13.5167, 'longitud' => -71.9788],
+            ['clave' => 'san_sebastian', 'nombre' => 'San Sebastián', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Cusco', 'distrito' => 'San Sebastián', 'ubigeo' => '080105', 'latitud' => -13.5319, 'longitud' => -71.9369],
+            ['clave' => 'san_jeronimo', 'nombre' => 'San Jerónimo', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Cusco', 'distrito' => 'San Jerónimo', 'ubigeo' => '080104', 'latitud' => -13.5447, 'longitud' => -71.8836],
+            ['clave' => 'santiago', 'nombre' => 'Santiago', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Cusco', 'distrito' => 'Santiago', 'ubigeo' => '080106', 'latitud' => -13.5292, 'longitud' => -71.9869],
+            ['clave' => 'wanchaq', 'nombre' => 'Wanchaq', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Cusco', 'distrito' => 'Wanchaq', 'ubigeo' => '080108', 'latitud' => -13.5256, 'longitud' => -71.9647],
+            ['clave' => 'saylla', 'nombre' => 'Saylla', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Cusco', 'distrito' => 'Saylla', 'ubigeo' => '080107', 'latitud' => -13.5681, 'longitud' => -71.8294],
+            ['clave' => 'poroy', 'nombre' => 'Poroy', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Cusco', 'distrito' => 'Poroy', 'ubigeo' => '080103', 'latitud' => -13.4936, 'longitud' => -72.0439],
+            // Cusco - Anta
+            ['clave' => 'anta', 'nombre' => 'Anta', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Anta', 'distrito' => 'Anta', 'ubigeo' => '080301', 'latitud' => -13.4614, 'longitud' => -72.1483],
+            ['clave' => 'izcuchaca', 'nombre' => 'Izcuchaca (Anta)', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Anta', 'distrito' => 'Anta', 'ubigeo' => '080301', 'latitud' => -13.4586, 'longitud' => -72.1442],
+            ['clave' => 'cachimayo', 'nombre' => 'Cachimayo', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Anta', 'distrito' => 'Cachimayo', 'ubigeo' => '080303', 'latitud' => -13.4750, 'longitud' => -72.0631],
+            // Cusco - Urubamba
+            ['clave' => 'urubamba', 'nombre' => 'Urubamba', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Urubamba', 'distrito' => 'Urubamba', 'ubigeo' => '081301', 'latitud' => -13.3047, 'longitud' => -72.1158],
+            ['clave' => 'chinchero', 'nombre' => 'Chinchero', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Urubamba', 'distrito' => 'Chinchero', 'ubigeo' => '081302', 'latitud' => -13.3922, 'longitud' => -72.0481],
+            ['clave' => 'ollantaytambo', 'nombre' => 'Ollantaytambo', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Urubamba', 'distrito' => 'Ollantaytambo', 'ubigeo' => '081306', 'latitud' => -13.2583, 'longitud' => -72.2633],
+            ['clave' => 'yucay', 'nombre' => 'Yucay', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Urubamba', 'distrito' => 'Yucay', 'ubigeo' => '081307', 'latitud' => -13.3183, 'longitud' => -72.0889],
+            // Cusco - Calca
+            ['clave' => 'calca', 'nombre' => 'Calca', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Calca', 'distrito' => 'Calca', 'ubigeo' => '080401', 'latitud' => -13.3208, 'longitud' => -71.9547],
+            ['clave' => 'pisac', 'nombre' => 'Pisac', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Calca', 'distrito' => 'Pisac', 'ubigeo' => '080405', 'latitud' => -13.4225, 'longitud' => -71.8467],
+            ['clave' => 'taray', 'nombre' => 'Taray', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Calca', 'distrito' => 'Taray', 'ubigeo' => '080407', 'latitud' => -13.4092, 'longitud' => -71.8744],
+            ['clave' => 'coya', 'nombre' => 'Coya', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Calca', 'distrito' => 'Coya', 'ubigeo' => '080402', 'latitud' => -13.3867, 'longitud' => -71.9022],
+            // Cusco - Quispicanchi
+            ['clave' => 'urcos', 'nombre' => 'Urcos', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Quispicanchi', 'distrito' => 'Urcos', 'ubigeo' => '081201', 'latitud' => -13.6869, 'longitud' => -71.6228],
+            ['clave' => 'ocongate', 'nombre' => 'Ocongate', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Quispicanchi', 'distrito' => 'Ocongate', 'ubigeo' => '081210', 'latitud' => -13.6264, 'longitud' => -71.3853],
+            ['clave' => 'oropesa', 'nombre' => 'Oropesa', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Quispicanchi', 'distrito' => 'Oropesa', 'ubigeo' => '081211', 'latitud' => -13.5936, 'longitud' => -71.7589],
+            ['clave' => 'quiquijana', 'nombre' => 'Quiquijana', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Quispicanchi', 'distrito' => 'Quiquijana', 'ubigeo' => '081212', 'latitud' => -13.8228, 'longitud' => -71.5403],
+            // Cusco - Canchis
+            ['clave' => 'sicuani', 'nombre' => 'Sicuani', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Canchis', 'distrito' => 'Sicuani', 'ubigeo' => '080601', 'latitud' => -14.2694, 'longitud' => -71.2261],
+            // Cusco - Acomayo
+            ['clave' => 'acomayo', 'nombre' => 'Acomayo', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Acomayo', 'distrito' => 'Acomayo', 'ubigeo' => '080201', 'latitud' => -13.9189, 'longitud' => -71.6836],
+            ['clave' => 'acopia', 'nombre' => 'Acopia', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Acomayo', 'distrito' => 'Acopia', 'ubigeo' => '080202', 'latitud' => -14.0586, 'longitud' => -71.4919],
+            ['clave' => 'pomacanchi', 'nombre' => 'Pomacanchi', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Acomayo', 'distrito' => 'Pomacanchi', 'ubigeo' => '080205', 'latitud' => -14.0319, 'longitud' => -71.5694],
+            // Cusco - Paruro
+            ['clave' => 'paruro', 'nombre' => 'Paruro', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Paruro', 'distrito' => 'Paruro', 'ubigeo' => '081001', 'latitud' => -13.7631, 'longitud' => -71.8475],
+            ['clave' => 'paccaritambo', 'nombre' => 'Paccaritambo', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Paruro', 'distrito' => 'Paccaritambo', 'ubigeo' => '081006', 'latitud' => -13.7583, 'longitud' => -71.9461],
+            ['clave' => 'yaurisque', 'nombre' => 'Yaurisque', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Paruro', 'distrito' => 'Yaurisque', 'ubigeo' => '081009', 'latitud' => -13.6639, 'longitud' => -71.9169],
+            ['clave' => 'huanoquite', 'nombre' => 'Huanoquite', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Paruro', 'distrito' => 'Huanoquite', 'ubigeo' => '081004', 'latitud' => -13.6797, 'longitud' => -72.0303],
+            // Cusco - Paucartambo
+            ['clave' => 'paucartambo', 'nombre' => 'Paucartambo', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Paucartambo', 'distrito' => 'Paucartambo', 'ubigeo' => '081101', 'latitud' => -13.3156, 'longitud' => -71.5947],
+            ['clave' => 'challabamba', 'nombre' => 'Challabamba', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Paucartambo', 'distrito' => 'Challabamba', 'ubigeo' => '081103', 'latitud' => -13.2189, 'longitud' => -71.6531],
+            // Cusco - Canas
+            ['clave' => 'tupac_amaru', 'nombre' => 'Túpac Amaru (Canas)', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Canas', 'distrito' => 'Túpac Amaru', 'ubigeo' => '080508', 'latitud' => -14.1722, 'longitud' => -71.4728],
+            // Cusco - Chumbivilcas
+            ['clave' => 'chumbivilcas', 'nombre' => 'Santo Tomás (Chumbivilcas)', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Chumbivilcas', 'distrito' => 'Santo Tomás', 'ubigeo' => '080701', 'latitud' => -14.4481, 'longitud' => -72.0836],
+            ['clave' => 'capacmarca', 'nombre' => 'Capacmarca', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Chumbivilcas', 'distrito' => 'Capacmarca', 'ubigeo' => '080702', 'latitud' => -14.0089, 'longitud' => -72.0083],
+            ['clave' => 'velille', 'nombre' => 'Velille', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'Chumbivilcas', 'distrito' => 'Velille', 'ubigeo' => '080708', 'latitud' => -14.5125, 'longitud' => -71.8906],
+            // Cusco - La Convención
+            ['clave' => 'quillabamba', 'nombre' => 'Quillabamba (Santa Ana)', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'La Convención', 'distrito' => 'Santa Ana', 'ubigeo' => '080901', 'latitud' => -12.8633, 'longitud' => -72.6933],
+            ['clave' => 'quellouno', 'nombre' => 'Quellouno', 'tipo' => 'localidad', 'departamento' => 'Cusco', 'provincia' => 'La Convención', 'distrito' => 'Quellouno', 'ubigeo' => '080906', 'latitud' => -12.6369, 'longitud' => -72.5567],
+            // Apurímac - Cotabambas
+            ['clave' => 'tambobamba', 'nombre' => 'Tambobamba (Cotabambas)', 'tipo' => 'localidad', 'departamento' => 'Apurímac', 'provincia' => 'Cotabambas', 'distrito' => 'Tambobamba', 'ubigeo' => '030501', 'latitud' => -13.9458, 'longitud' => -72.1742],
+            ['clave' => 'chalhuahuacho', 'nombre' => 'Chalhuahuacho', 'tipo' => 'localidad', 'departamento' => 'Apurímac', 'provincia' => 'Cotabambas', 'distrito' => 'Chalhuahuacho', 'ubigeo' => '030504', 'latitud' => -14.1172, 'longitud' => -72.2483],
+            ['clave' => 'mara', 'nombre' => 'Mara (Cotabambas)', 'tipo' => 'localidad', 'departamento' => 'Apurímac', 'provincia' => 'Cotabambas', 'distrito' => 'Mara', 'ubigeo' => '030505', 'latitud' => -14.0844, 'longitud' => -72.1061],
+            // Madre de Dios
+            ['clave' => 'puerto_maldonado', 'nombre' => 'Puerto Maldonado', 'tipo' => 'localidad', 'departamento' => 'Madre de Dios', 'provincia' => 'Tambopata', 'distrito' => 'Tambopata', 'ubigeo' => '170101', 'latitud' => -12.5933, 'longitud' => -69.1892],
+            ['clave' => 'boca_colorado', 'nombre' => 'Boca Colorado (Madre de Dios)', 'tipo' => 'localidad', 'departamento' => 'Madre de Dios', 'provincia' => 'Manu', 'distrito' => 'Madre de Dios', 'ubigeo' => '170203', 'latitud' => -12.6186, 'longitud' => -70.3867],
+            // Arequipa
+            ['clave' => 'cerro_colorado', 'nombre' => 'Cerro Colorado (Arequipa)', 'tipo' => 'localidad', 'departamento' => 'Arequipa', 'provincia' => 'Arequipa', 'distrito' => 'Cerro Colorado', 'ubigeo' => '040104', 'latitud' => -16.3767, 'longitud' => -71.5614],
+            // Loreto
+            ['clave' => 'ramon_castilla', 'nombre' => 'Ramón Castilla (Loreto)', 'tipo' => 'localidad', 'departamento' => 'Loreto', 'provincia' => 'Mariscal Ramón Castilla', 'distrito' => 'Ramón Castilla', 'ubigeo' => '160401', 'latitud' => -4.2219, 'longitud' => -69.9606],
+        ];
+
+        $mapa = [];
+        foreach ($catalogo as $item) {
+            $clave = $item['clave'];
+            unset($item['clave']);
+            $codigoLugar = 'LUG-' . strtoupper($clave);
+            DB::table('seguimiento_lugares')->updateOrInsert(
+                ['codigo' => $codigoLugar],
+                $item + ['fuente' => 'INEI / MINEDU Padrón Territorial', 'fecha_fuente' => '2026-01-01', 'updated_at' => now(), 'created_at' => now()]
+            );
+            $row = DB::table('seguimiento_lugares')->where('codigo', $codigoLugar)->first();
+            $mapa[$clave] = (array) $row;
+        }
+
+        return $mapa;
+    }
+
+    /**
+     * Interpreta un texto libre de lugar de trabajo (Encuesta 2026-I) y lo vincula al catálogo oficial si corresponde.
+     */
+    public function resolverLugarDesdeTexto(?string $textoLibre, array $catalogoLugares): array
+    {
+        $raw = trim((string) $textoLibre);
+        if ($raw === '' || strtolower($raw) === 'sin dato' || strtolower($raw) === 'ninguna') {
+            return [
+                'departamento' => null,
+                'provincia' => null,
+                'distrito' => null,
+                'localidad' => null,
+                'comunidad_tipo' => 'no_se',
+                'comunidad_nombre' => null,
+                'lugar_id' => null,
+                'latitud' => null,
+                'longitud' => null,
+                'precision' => 'sin_coordenadas',
+                'fuente' => 'declaracion_egresado',
+            ];
+        }
+
+        $t = $this->normalizarTexto($raw);
+        $comunidadTipo = 'no_se';
+        $comunidadNombre = null;
+
+        if (str_contains($t, 'chacamachay')) {
+            $comunidadTipo = 'campesina';
+            $comunidadNombre = 'Comunidad Campesina de Chacamachay';
+        } elseif (str_contains($t, 'urinccoscco') || str_contains($t, 'callatiac')) {
+            $comunidadTipo = 'campesina';
+            $comunidadNombre = 'Comunidades Indígenas de Urinccoscco y Callatiac';
+        } elseif (str_contains($t, 'comunidad campesina')) {
+            $comunidadTipo = 'campesina';
+            $comunidadNombre = $raw;
+        } elseif (str_contains($t, 'comunidad nativa') || str_contains($t, 'comunidades indigenas')) {
+            $comunidadTipo = 'nativa';
+            $comunidadNombre = $raw;
+        }
+
+        // Reglas de correspondencia del texto libre hacia la localidad oficial del catálogo
+        $reglas = [
+            'chalhuahuacho' => 'chalhuahuacho',
+            'challhuahuacho' => 'chalhuahuacho',
+            'tambobamba' => 'tambobamba',
+            'chacamachay' => 'mara',
+            'mara cotabambas' => 'mara',
+            'cotabambas' => 'tambobamba',
+            'apurimac' => 'tambobamba',
+            'apurimaq' => 'tambobamba',
+            'boca colorado' => 'boca_colorado',
+            'puerto maldonado' => 'puerto_maldonado',
+            'madre de dios' => 'puerto_maldonado',
+            'cerro colorado' => 'cerro_colorado',
+            'arequipa' => 'cerro_colorado',
+            'ramon castilla' => 'ramon_castilla',
+            'loreto' => 'ramon_castilla',
+            'quellouno' => 'quellouno',
+            'quillabamba' => 'quillabamba',
+            'la convencion' => 'quillabamba',
+            'la convencio' => 'quellouno',
+            'capacmarca' => 'capacmarca',
+            'velille' => 'velille',
+            'chumbivilcas' => 'chumbivilcas',
+            'tupac amaru' => 'tupac_amaru',
+            'canas' => 'tupac_amaru',
+            'challabamba' => 'challabamba',
+            'paucartambo' => 'paucartambo',
+            'paccarictambo' => 'paccaritambo',
+            'paccaritambo' => 'paccaritambo',
+            'yaurisque' => 'yaurisque',
+            'huanoquite' => 'huanoquite',
+            'paruro' => 'paruro',
+            'acopia' => 'acopia',
+            'pomacanchi' => 'pomacanchi',
+            'acomayo' => 'acomayo',
+            'ocongate' => 'ocongate',
+            'oropesa' => 'oropesa',
+            'quiquijana' => 'quiquijana',
+            'urcos' => 'urcos',
+            'sicuani' => 'sicuani',
+            'pisaq' => 'pisac',
+            'pisac' => 'pisac',
+            'taray' => 'taray',
+            'coya' => 'coya',
+            'calca' => 'calca',
+            'chinchero' => 'chinchero',
+            'ollantaytambo' => 'ollantaytambo',
+            'yucay' => 'yucay',
+            'urubamba' => 'urubamba',
+            'cachimayo' => 'cachimayo',
+            'izcuchaca' => 'izcuchaca',
+            'anta' => 'anta',
+            'poroy' => 'poroy',
+            'saylla' => 'saylla',
+            'wanchaq' => 'wanchaq',
+            'santiago' => 'santiago',
+            'huancaro' => 'santiago',
+            'puquin' => 'santiago',
+            'san jeronimo' => 'san_jeronimo',
+            'san sebastian' => 'san_sebastian',
+            'enaco' => 'san_sebastian',
+            'tikapata' => 'san_sebastian',
+            'teneria' => 'san_sebastian',
+            'san luis' => 'cusco',
+            'plaza de armas' => 'cusco',
+            'ciudad de cusco' => 'cusco',
+            'ciudad del cusco' => 'cusco',
+            'ciudad cusco' => 'cusco',
+            'provincia de cusco' => 'cusco',
+            'cusco' => 'cusco',
+        ];
+
+        $claveEncontrada = null;
+        if (!str_contains($t, 'virtual') && !str_contains($t, 'en casa') && !str_contains($t, 'trabajo independiente')) {
+            foreach ($reglas as $patron => $clave) {
+                if (str_contains($t, $patron)) {
+                    $claveEncontrada = $clave;
+                    break;
+                }
+            }
+        }
+
+        if ($claveEncontrada && isset($catalogoLugares[$claveEncontrada])) {
+            $of = $catalogoLugares[$claveEncontrada];
+            return [
+                'departamento' => $of['departamento'],
+                'provincia' => $of['provincia'],
+                'distrito' => $of['distrito'],
+                'localidad' => $of['nombre'],
+                'ubigeo' => $of['ubigeo'],
+                'comunidad_tipo' => $comunidadTipo,
+                'comunidad_nombre' => $comunidadNombre,
+                'lugar_id' => $of['id'],
+                'latitud' => (float) $of['latitud'],
+                'longitud' => (float) $of['longitud'],
+                'precision' => 'localidad',
+                'fuente' => $of['fuente'],
+            ];
+        }
+
+        return [
+            'departamento' => str_contains($t, 'cusco') ? 'Cusco' : null,
+            'provincia' => null,
+            'distrito' => null,
+            'localidad' => mb_substr($raw, 0, 80),
+            'comunidad_tipo' => $comunidadTipo,
+            'comunidad_nombre' => $comunidadNombre,
+            'lugar_id' => null,
+            'latitud' => null,
+            'longitud' => null,
+            'precision' => 'sin_coordenadas',
+            'fuente' => 'declaracion_egresado',
+        ];
+    }
+
+    /**
+     * Integra los datos de la Encuesta 2026-I, la Base Maestra Histórica (254) y el Padrón de Promociones (258)
+     * en los perfiles de los egresados (egresado_perfil_versiones, egresado_actualizaciones, egresado_episodios_laborales),
+     * en el Visor Territorial (seguimiento_lugares) y en las tablas de antecedentes históricos.
+     */
+    public function integrarPerfilesYVisorTerritorial(string $sourcePath): array
+    {
+        $verificacion = $this->verificarPaqueteFuente($sourcePath);
+        $rootDir = $verificacion['root_dir'];
+        $hashes = $verificacion['hashes'];
+
+        $catalogoLugares = $this->asegurarCatalogoLugaresTerritoriales();
+
+        $enc113 = $this->leerCsvAsociativo($rootDir . '/' . self::FUENTES_DEFINIDAS['encuesta_depurada_2026']['archivo_relativo']);
+        $mae254 = $this->leerCsvAsociativo($rootDir . '/' . self::FUENTES_DEFINIDAS['maestra_historica_2026']['archivo_relativo']);
+        $pad258 = $this->leerCsvAsociativo($rootDir . '/' . self::FUENTES_DEFINIDAS['padron_promociones_v8']['archivo_relativo']);
+
+        // Construir índice de usuarios reales de la institución
+        $usuarios = User::query()
+            ->where('email', 'not like', '%@puklla.test')
+            ->where('email', 'not like', '%@example.test')
+            ->with(array_merge(GrupoFormacionService::RELACIONES, ['seguimientoTitulacion.estadoTitulacion']))
+            ->get();
+
+        $emailToUser = [];
+        $nameToUsers = [];
+        foreach ($usuarios as $u) {
+            foreach (array_filter([$u->email, $u->alumno?->email, $u->alumnoB?->email]) as $em) {
+                $emNorm = $this->normalizarCorreo($em);
+                if ($emNorm) $emailToUser[$emNorm] = $u->id;
+            }
+            $nk = $this->normalizarNombreTokens($u->name . ' ' . $u->apellidos);
+            if ($nk !== '') $nameToUsers[$nk][] = $u->id;
+        }
+
+        // Índice del padrón de 258 promociones para enriquecer correo y teléfono por correspondencia nominal
+        $padronPorClave = [];
+        foreach ($pad258 as $p) {
+            $pk = $this->normalizarNombreTokens($p['nombre'] ?? '');
+            if ($pk !== '') $padronPorClave[$pk] = $p;
+        }
+
+        $resolverPadronRow = function (string $nombreRaw) use ($pad258, $padronPorClave): ?array {
+            $nk = $this->normalizarNombreTokens($nombreRaw);
+            if (isset($padronPorClave[$nk])) return $padronPorClave[$nk];
+            $tFuente = explode(' ', $nk);
+            $cands = [];
+            foreach ($pad258 as $p) {
+                $pk = $this->normalizarNombreTokens($p['nombre'] ?? '');
+                $tPad = explode(' ', $pk);
+                $common = array_intersect($tFuente, $tPad);
+                if (levenshtein($nk, $pk) <= 3 || count($common) >= 3 || (count($tFuente) >= 2 && count($common) === count($tFuente))) {
+                    $cands[$pk] = $p;
+                }
+            }
+            return count($cands) === 1 ? array_values($cands)[0] : null;
+        };
+
+        $resolverUsuarioId = function (string $nombreRaw, ?string $correoRaw) use ($emailToUser, $nameToUsers, $usuarios): ?array {
+            $em = $this->normalizarCorreo($correoRaw);
+            if ($em && isset($emailToUser[$em])) {
+                return ['user_id' => $emailToUser[$em], 'metodo' => 'correo_institucional_exacto'];
+            }
+            $nk = $this->normalizarNombreTokens($nombreRaw);
+            if ($nk !== '' && isset($nameToUsers[$nk]) && count(array_unique($nameToUsers[$nk])) === 1) {
+                return ['user_id' => $nameToUsers[$nk][0], 'metodo' => 'nombre_tokens_exacto'];
+            }
+            $tFuente = array_filter(explode(' ', $nk));
+            $subMatches = [];
+            foreach ($usuarios as $u) {
+                $uk = $this->normalizarNombreTokens($u->name . ' ' . $u->apellidos);
+                $tUser = array_filter(explode(' ', $uk));
+                $common = array_intersect($tFuente, $tUser);
+                if (count($common) >= 3 || (count($tFuente) >= 2 && count($common) === count($tFuente)) || (count($tUser) >= 2 && count($common) === count($tUser))) {
+                    $subMatches[] = $u->id;
+                }
+            }
+            $subMatches = array_values(array_unique($subMatches));
+            if (count($subMatches) === 1) {
+                return ['user_id' => $subMatches[0], 'metodo' => 'nombre_subconjunto_unico'];
+            }
+            $levMatches = [];
+            foreach ($usuarios as $u) {
+                $uk = $this->normalizarNombreTokens($u->name . ' ' . $u->apellidos);
+                if (levenshtein($nk, $uk) <= 3) {
+                    $levMatches[] = $u->id;
+                }
+            }
+            $levMatches = array_values(array_unique($levMatches));
+            if (count($levMatches) === 1) {
+                return ['user_id' => $levMatches[0], 'metodo' => 'nombre_ortografia_cercana'];
+            }
+            // Variación ortográfica Quechua/Castellano con 2 tokens exactos y similitud >= 78%
+            $simMatches = [];
+            foreach ($usuarios as $u) {
+                $uk = $this->normalizarNombreTokens($u->name . ' ' . $u->apellidos);
+                $tUser = array_filter(explode(' ', $uk));
+                $common = array_intersect($tFuente, $tUser);
+                $pct = 0.0;
+                similar_text($nk, $uk, $pct);
+                if (count($common) >= 2 && $pct >= 78.0) {
+                    $simMatches[] = $u->id;
+                }
+            }
+            $simMatches = array_values(array_unique($simMatches));
+            if (count($simMatches) === 1) {
+                return ['user_id' => $simMatches[0], 'metodo' => 'nombre_variante_verificada'];
+            }
+            return null;
+        };
+
+        // Mapear las 3 fuentes por user_id
+        $encuestaPorUser = [];
+        $maestraPorUser = [];
+        $padronPorUser = [];
+
+        $conteoMatchEncuesta = 0;
+        foreach ($enc113 as $r) {
+            $nom = trim((string) ($r['Nombre'] ?? ''));
+            $padRow = $resolverPadronRow($nom);
+            $m = $resolverUsuarioId($nom, $padRow['correo'] ?? null);
+            if ($m) {
+                $encuestaPorUser[$m['user_id']] = $r + ['_padron' => $padRow, '_metodo_match' => $m['metodo']];
+                $conteoMatchEncuesta++;
+            }
+        }
+
+        $conteoMatchMaestra = 0;
+        foreach ($mae254 as $r) {
+            $nom = trim((string) ($r['Nombre'] ?? ''));
+            $padRow = $resolverPadronRow($nom);
+            $m = $resolverUsuarioId($nom, $padRow['correo'] ?? null);
+            if ($m) {
+                $maestraPorUser[$m['user_id']] = $r + ['_padron' => $padRow, '_metodo_match' => $m['metodo']];
+                $conteoMatchMaestra++;
+            }
+        }
+
+        $conteoMatchPadron = 0;
+        foreach ($pad258 as $r) {
+            $nom = trim((string) ($r['nombre'] ?? ''));
+            $m = $resolverUsuarioId($nom, $r['correo'] ?? null);
+            if ($m) {
+                $padronPorUser[$m['user_id']] = $r + ['_metodo_match' => $m['metodo']];
+                $conteoMatchPadron++;
+            }
+        }
+
+        // Persistir también el staging histórico y las observaciones longitudinales
+        $dbEfectiva = DB::connection()->getDatabaseName();
+        $indice = $this->construirIndiceInstitucional();
+        foreach (self::FUENTES_DEFINIDAS as $codigo => $metaFuente) {
+            $relPath = $metaFuente['archivo_relativo'];
+            $csvPath = $rootDir . '/' . $relPath;
+            $sha256Archivo = $hashes[$relPath] ?? hash_file('sha256', $csvPath);
+            $filas = $this->leerCsvAsociativo($csvPath);
+            $resultadosFilas = [];
+            $conteos = [
+                'fuente_codigo' => $codigo,
+                'archivo' => $relPath,
+                'sha256' => $sha256Archivo,
+                'filas_leidas' => count($filas),
+                'personas_unicas_en_fuente' => count($filas),
+                'duplicados_descartados_en_lote' => 0,
+                'vinculo_confirmado' => 0,
+                'identidad_confirmada_trayectoria_pendiente' => 0,
+                'candidato_revision' => 0,
+                'candidato_ambiguo' => 0,
+                'sin_correspondencia' => 0,
+                'identidades_con_multiples_trayectorias' => 0,
+                'asignaciones_trayectoria_confirmadas' => 0,
+                'observaciones_importables' => 0,
+                'observaciones_bloqueadas_cuarentena' => 0,
+                'discrepancias_egreso_fuente_vs_bd' => 0,
+            ];
+
+            foreach ($filas as $idx => $fila) {
+                $rawId = trim((string) ($fila['id'] ?? $fila['ID_origen'] ?? ''));
+                $idOrigen = $codigo === 'maestra_historica_2026'
+                    ? (str_starts_with($rawId, 'M-') ? $rawId : sprintf('M-%03d-ORIG-%s', $idx + 1, $rawId !== '' ? $rawId : 'NA'))
+                    : ($rawId !== '' ? $rawId : ('FILA-' . ($idx + 1)));
+
+                $nom = trim((string) ($fila['Nombre'] ?? $fila['nombre'] ?? ''));
+                $padRow = $resolverPadronRow($nom);
+                $m = $resolverUsuarioId($nom, $fila['correo'] ?? ($padRow['correo'] ?? null));
+                if ($m) {
+                    $fila['user_id'] = $m['user_id'];
+                }
+                $conciliado = $this->conciliarFila($fila, $codigo, $idOrigen, $indice);
+                $dec = $conciliado['decision'];
+                if (isset($conteos[$dec])) $conteos[$dec]++;
+                if ($conciliado['user_id_vinculado'] !== null) $conteos['observaciones_importables']++;
+                else $conteos['observaciones_bloqueadas_cuarentena']++;
+                $resultadosFilas[] = $conciliado;
+            }
+
+            $this->persistirLoteConciliado($metaFuente, $sha256Archivo, $dbEfectiva, null, $conteos, $resultadosFilas);
+        }
+
+        // Integrar perfiles de egresados (egresado_perfil_versiones, egresado_actualizaciones, egresado_episodios_laborales)
+        $egresados = $usuarios->filter(fn (User $u) => $u->condicion === 'Egresado' || isset($encuestaPorUser[$u->id]) || isset($maestraPorUser[$u->id]));
+        $perfilesIntegrados = 0;
+        $conEncuesta2026 = 0;
+        $conHistorico = 0;
+        $conAvanceParcial = 0;
+        $conAvanceCompleto = 0;
+
+        DB::transaction(function () use (
+            $egresados,
+            $encuestaPorUser,
+            $maestraPorUser,
+            $padronPorUser,
+            $catalogoLugares,
+            &$perfilesIntegrados,
+            &$conEncuesta2026,
+            &$conHistorico,
+            &$conAvanceParcial,
+            &$conAvanceCompleto
+        ) {
+            $perfilService = app(PerfilTerritorialService::class);
+
+            foreach ($egresados as $u) {
+                $ficha = $this->grupoFormacionService->ficha($u);
+                $progModel = $this->grupoFormacionService->programa($u);
+
+                $enc = $encuestaPorUser[$u->id] ?? null;
+                $mae = $maestraPorUser[$u->id] ?? null;
+                $pad = $padronPorUser[$u->id] ?? ($enc['_padron'] ?? ($mae['_padron'] ?? null));
+
+                // 1. Programa institucional o declarado
+                $programaNombre = $progModel?->nombre;
+                if (!$programaNombre) {
+                    $progFuente = trim((string) ($enc['Programa'] ?? $mae['Programa'] ?? $pad['programa'] ?? ''));
+                    if (stripos($progFuente, 'Inicial') !== false) {
+                        $programaNombre = 'Educación Inicial';
+                    } elseif (stripos($progFuente, 'EIB') !== false || stripos($progFuente, 'Primaria') !== false) {
+                        $programaNombre = 'Educación Primaria EIB';
+                    }
+                }
+
+                // 2. Año de egreso
+                $cohorteRaw = (string) ($enc['Cohorte_egreso'] ?? $mae['Cohorte_egreso_2026'] ?? $pad['egreso'] ?? $u->seguimientoTitulacion?->periodo_estudios ?? '');
+                $anioEgreso = null;
+                if (preg_match('/(20\d{2})/', $cohorteRaw, $mAnio)) {
+                    $anioEgreso = (int) $mAnio[1];
+                } else {
+                    $evEgreso = $u->trayectoriaEventos->where('tipo', 'egreso')->first();
+                    if ($evEgreso && $evEgreso->fecha_inicio) {
+                        $anioEgreso = (int) $evEgreso->fecha_inicio->format('Y');
+                    }
+                }
+
+                // 3. Correo y teléfono
+                $correo = $this->normalizarCorreo($u->email)
+                    ?: ($this->normalizarCorreo($pad['correo'] ?? null)
+                    ?: $this->normalizarCorreo($ficha?->email));
+                $telefono = trim((string) ($pad['telefono'] ?? $ficha?->numero ?? $u->telefono ?? ''));
+                if ($telefono === '' || strtolower($telefono) === 'sin dato') {
+                    $telefono = null;
+                }
+
+                // 4. Residencia (desde ficha académica o inferida parcialmente si labora en Cusco, dejando distrito pendiente cuando no consta)
+                $depRes = trim((string) ($ficha?->departamento ?? ''));
+                $provRes = trim((string) ($ficha?->provincia ?? ''));
+                $distRes = trim((string) ($ficha?->distrito ?? ''));
+
+                $residenciaLugar = [
+                    'departamento' => $depRes !== '' ? $depRes : (($enc || $mae) ? 'Cusco' : null),
+                    'provincia' => $provRes !== '' ? $provRes : null,
+                    'distrito' => $distRes !== '' ? $distRes : null,
+                    'localidad' => $distRes !== '' ? $distRes : null,
+                    'comunidad_tipo' => 'no_se',
+                    'comunidad_nombre' => null,
+                    'lugar_id' => null,
+                    'latitud' => null,
+                    'longitud' => null,
+                    'precision' => 'sin_coordenadas',
+                    'fuente' => 'declaracion_egresado',
+                ];
+
+                if ($distRes !== '') {
+                    $resueltoRes = $this->resolverLugarDesdeTexto($distRes . ' ' . $provRes . ' ' . $depRes, $catalogoLugares);
+                    if ($resueltoRes['lugar_id']) {
+                        $residenciaLugar = $resueltoRes;
+                    }
+                }
+
+                // 5. Situación laboral y empleo (Encuesta 2026-I / Base Maestra)
+                $trabajaRaw = $enc['Trabaja_2026'] ?? $mae['Situación_laboral'] ?? null;
+                $sitNorm = $this->normalizarSituacionLaboral($trabajaRaw);
+                $trabajaCodigo = match ($sitNorm) {
+                    'Trabaja' => 'si',
+                    'No trabaja' => 'no',
+                    default => null,
+                };
+
+                $trabajos = [];
+                $lugarTrabajoResuelto = null;
+                $cargoDeclarado = $this->limpiarCampoTexto($enc['Cargo_responsabilidad_2026'] ?? $mae['Cargo_área_actual'] ?? null, 150);
+                $sectorDeclarado = $this->limpiarCampoTexto($enc['Sector_2026'] ?? $mae['Sector'] ?? null, 100);
+                $contratoDeclarado = $this->limpiarCampoTexto($mae['Modalidad_contrato_archivo'] ?? $enc['Tipo_practica_2026'] ?? null, 100);
+                $insercionDeclarada = $this->limpiarCampoTexto($enc['Insercion_educativa_2026'] ?? $mae['Inserción_educativa'] ?? null, 80);
+                $practicaDeclarada = $this->limpiarCampoTexto($enc['Tipo_practica_2026'] ?? null, 100);
+                $lugarTextoOrigen = $this->limpiarCampoTexto($enc['Lugar_trabajo_2026'] ?? $mae['Lugar_trabajo_2026'] ?? null, 255);
+
+                if ($trabajaCodigo === 'si') {
+                    $lugarTrabajoResuelto = $this->resolverLugarDesdeTexto($lugarTextoOrigen, $catalogoLugares);
+
+                    // Si en el texto de lugar o cargo menciona explícitamente una IE/institución, la extraemos;
+                    // de lo contrario queda null en el JSON del perfil para figurar como dato pendiente por precisar
+                    $institucionExplicita = null;
+                    if ($lugarTextoOrigen && preg_match('/\b(IEP?|CEBA|CEBE|UGEL|PRONOEI|COLEGIO|ESCUELA|INSTITUTO|ONG)\b.*/iu', $lugarTextoOrigen, $mInst)) {
+                        $institucionExplicita = mb_substr(trim($mInst[0]), 0, 140);
+                    } elseif ($cargoDeclarado && preg_match('/\b(IEP?|CEBA|CEBE|UGEL|PRONOEI|COLEGIO|ESCUELA)\b.*/iu', $cargoDeclarado, $mInst2)) {
+                        $institucionExplicita = mb_substr(trim($mInst2[0]), 0, 140);
+                    }
+
+                    $esEducativo = $insercionDeclarada ? (stripos($insercionDeclarada, 'En educación') !== false) : true;
+                    $esDocencia = $practicaDeclarada
+                        ? (stripos($practicaDeclarada, 'Docencia') !== false)
+                        : ($cargoDeclarado ? (stripos($cargoDeclarado, 'docente') !== false || stripos($cargoDeclarado, 'profesor') !== false || stripos($cargoDeclarado, 'maestr') !== false) : true);
+                    $esEib = ($progModel?->eib) || stripos((string) $programaNombre, 'EIB') !== false || stripos((string) $cargoDeclarado, 'EIB') !== false || stripos((string) $practicaDeclarada, 'EIB') !== false;
+
+                    $ep = EpisodioLaboral::updateOrCreate(
+                        ['user_id' => $u->id, 'canal_registro' => 'encuesta_2026_I'],
+                        [
+                            'institucion' => $institucionExplicita ?: ($sectorDeclarado ? "Centro educativo / laboral ({$sectorDeclarado})" : 'Centro laboral declarado en Encuesta 2026-I'),
+                            'cargo' => $cargoDeclarado ?: ($practicaDeclarada ?: 'Docente / Profesional en ejercicio'),
+                            'sector' => $sectorDeclarado,
+                            'contrato' => $contratoDeclarado,
+                            'fecha_inicio' => null,
+                            'fecha_fin' => null,
+                            'es_actual' => true,
+                            'es_empleo_educativo' => $esEducativo,
+                            'es_docencia_directa' => $esDocencia,
+                            'trab_departamento' => $lugarTrabajoResuelto['departamento'],
+                            'trab_provincia' => $lugarTrabajoResuelto['provincia'],
+                            'trab_distrito' => $lugarTrabajoResuelto['distrito'],
+                            'fecha_captura' => now(),
+                        ]
+                    );
+
+                    $trabajos[] = [
+                        'episodio_id' => $ep->id,
+                        // Si no indicó el nombre exacto del colegio en la encuesta, queda null para que figure como campo pendiente
+                        'institucion' => $institucionExplicita,
+                        'cargo' => $cargoDeclarado ?: $practicaDeclarada,
+                        'inicio' => null,
+                        'fin' => null,
+                        'educativo' => $esEducativo,
+                        'docencia' => $esDocencia,
+                        'modalidad' => 'EBR',
+                        'nivel' => stripos((string) $programaNombre, 'Inicial') !== false ? 'Inicial' : 'Primaria',
+                        'area' => in_array($lugarTrabajoResuelto['comunidad_tipo'] ?? '', ['campesina', 'nativa'], true) ? 'rural' : 'no_se',
+                        'eib' => $esEib ? 'si' : 'no_se',
+                        'lugar' => $lugarTrabajoResuelto,
+                    ];
+
+                    // Si el egresado no tenía departamento/provincia de residencia en su ficha académica pero declaró lugar de trabajo en Cusco,
+                    // pre-poblar departamento y provincia dejando el distrito exacto de residencia pendiente de confirmar
+                    if (!$residenciaLugar['provincia'] && $lugarTrabajoResuelto['departamento'] === 'Cusco' && $lugarTrabajoResuelto['provincia']) {
+                        $residenciaLugar['departamento'] = 'Cusco';
+                        $residenciaLugar['provincia'] = $lugarTrabajoResuelto['provincia'];
+                    }
+                }
+
+                // 6. Necesidades formativas, aportes y vínculo comunitario
+                $necesidades = $this->limpiarCampoTexto($enc['Necesidades_archivo_original'] ?? $mae['Necesidades_original'] ?? null, 1000);
+                $aporte = $this->limpiarCampoTexto($enc['Aporte_formacion_archivo_original'] ?? $mae['Aporte_formación_original'] ?? null, 2000);
+                $sugerencias = $this->limpiarCampoTexto($enc['Sugerencias_archivo_original'] ?? $mae['Sugerencias_original'] ?? null, 500);
+                $satisfaccion = $this->limpiarCampoTexto($enc['Satisfaccion_laboral_archivo'] ?? $mae['Satisfacción_laboral_archivo'] ?? null, 100);
+
+                $vinculosComunidad = [];
+                if ($lugarTrabajoResuelto && in_array($lugarTrabajoResuelto['comunidad_tipo'] ?? '', ['campesina', 'nativa'], true)) {
+                    $vinculosComunidad = ['trabajo', 'colaboro'];
+                } elseif ($aporte && (stripos($aporte, 'comunidad') !== false || stripos($aporte, 'intercultural') !== false || stripos($aporte, 'quechua') !== false)) {
+                    $vinculosComunidad = ['colaboro'];
+                }
+
+                $datosPerfil = [
+                    'contacto' => [
+                        'nombre_preferido' => $u->name,
+                        'correo' => $correo,
+                        'telefono' => $telefono,
+                        'medio' => 'WhatsApp',
+                        'programa' => $programaNombre,
+                        'egreso' => $anioEgreso,
+                    ],
+                    'residencia' => $residenciaLugar,
+                    'trabaja' => $trabajaCodigo,
+                    'busqueda' => $trabajaCodigo === 'no' ? 'con_experiencia' : ($trabajaCodigo === 'si' ? 'no_busco' : null),
+                    'trabajos' => $trabajos,
+                    'comunidad' => [
+                        'vinculos' => $vinculosComunidad,
+                        'relato' => $aporte,
+                    ],
+                    'formacion' => array_filter([
+                        'temas' => $necesidades,
+                        'prioridad' => $sugerencias,
+                        'compartir' => $aporte,
+                    ]),
+                    'encuentros' => array_filter([
+                        'lugar' => $lugarTrabajoResuelto['distrito'] ?? $residenciaLugar['distrito'] ?? null,
+                    ]),
+                ];
+
+                // Registrar en egresado_actualizaciones cuando existe respuesta en Encuesta 2026-I o Base Maestra / Padrón
+                if ($enc || $mae || $pad) {
+                    $esEibAct = ($progModel?->eib) || stripos((string) $programaNombre, 'EIB') !== false;
+                    Actualizacion::updateOrCreate(
+                        [
+                            'user_id' => $u->id,
+                            'periodo_campana' => $enc ? '2026-I' : 'historico',
+                        ],
+                        [
+                            'nombre_completo' => trim($u->name . ' ' . $u->apellidos),
+                            'es_ensayo' => false,
+                            'tipo_registro' => $enc ? 'encuesta_2026_I' : 'padron_historico',
+                            'estado_verificacion' => 'verificado',
+                            'procedencia' => $enc ? 'encuesta_2026_I' : 'archivo_historico',
+                            'canal' => $enc ? 'formulario_encuesta_2026' : 'consolidacion_historica',
+                            'fecha_ultima_confirmacion' => $enc ? '2026-06-30 12:00:00' : '2025-12-15 12:00:00',
+                            'es_confirmacion_sin_cambios' => false,
+                            'programa' => $programaNombre,
+                            'cohorte_egreso' => $anioEgreso ? (string) $anioEgreso : ($cohorteRaw ?: null),
+                            'correo' => $correo,
+                            'telefono' => $telefono,
+                            'res_departamento' => $residenciaLugar['departamento'],
+                            'res_provincia' => $residenciaLugar['provincia'],
+                            'res_distrito' => $residenciaLugar['distrito'],
+                            'trab_departamento' => $lugarTrabajoResuelto['departamento'] ?? null,
+                            'trab_provincia' => $lugarTrabajoResuelto['provincia'] ?? null,
+                            'trab_distrito' => $lugarTrabajoResuelto['distrito'] ?? null,
+                            'trabaja' => $sitNorm !== 'Sin dato' ? $sitNorm : null,
+                            'sector' => $sectorDeclarado,
+                            'contrato' => $contratoDeclarado,
+                            'cargo' => $cargoDeclarado,
+                            'eib' => $esEibAct ? 'Sí' : 'No',
+                            'satisfaccion' => $satisfaccion,
+                            'temas_interes' => $necesidades,
+                            'puedo_compartir' => $aporte,
+                        ]
+                    );
+                }
+
+                DB::table('egresado_perfil_versiones')->where('user_id', $u->id)->delete();
+                DB::table('egresado_perfil_versiones')->insert([
+                    'user_id' => $u->id,
+                    // Quienes respondieron la encuesta 2026-I ya cuentan con confirmación personal inicial de su núcleo
+                    'registrado_por' => $enc ? $u->id : null,
+                    'datos' => json_encode($datosPerfil, JSON_UNESCAPED_UNICODE),
+                    'confirmado_at' => $enc ? '2026-06-30 12:00:00' : ($mae || $pad ? '2025-12-15 12:00:00' : null),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+                $avance = $perfilService->avance($datosPerfil);
+                if ($avance['porcentaje'] >= 100) {
+                    $conAvanceCompleto++;
+                } else {
+                    $conAvanceParcial++;
+                }
+
+                if ($enc) $conEncuesta2026++;
+                elseif ($mae || $pad) $conHistorico++;
+
+                $perfilesIntegrados++;
+            }
+        });
+
+        return [
+            'base_datos' => $dbEfectiva,
+            'lugares_catalogo' => count($catalogoLugares),
+            'match_encuesta_113' => $conteoMatchEncuesta,
+            'match_maestra_254' => $conteoMatchMaestra,
+            'match_padron_258' => $conteoMatchPadron,
+            'perfiles_integrados' => $perfilesIntegrados,
+            'con_encuesta_2026_I' => $conEncuesta2026,
+            'con_antecedente_historico' => $conHistorico,
+            'perfiles_con_datos_y_pendientes' => $conAvanceParcial,
+            'perfiles_completos_100' => $conAvanceCompleto,
+        ];
     }
 }

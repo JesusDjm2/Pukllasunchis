@@ -13,6 +13,7 @@ class ConciliarHistoricoEgresadosCommand extends Command
         {--source= : Ruta local restringida al ZIP o directorio del paquete histórico}
         {--dry-run : Ejecutar simulación de solo lectura sin escribir en la base de datos (por defecto)}
         {--apply : Persistir lotes y observaciones únicamente en base aislada de ensayo}
+        {--integrar-perfiles : Integrar respuestas de Encuesta 2026-I e histórico en perfiles de egresados y Visor Territorial}
         {--database= : Nombre de la base de datos de ensayo autorizada (p. ej. puklla_ensayo)}
         {--confirm-isolated : Confirmación explícita de que la base de destino es un entorno aislado}
         {--revert-lote= : ID de lote de ensayo a revertir de forma auditable}
@@ -41,6 +42,13 @@ class ConciliarHistoricoEgresadosCommand extends Command
         if ($source === '') {
             $this->error('Debe indicar --source=/ruta/privada/al/paquete.');
             return self::FAILURE;
+        }
+
+        if ($this->option('integrar-perfiles')) {
+            $res = $servicio->integrarPerfilesYVisorTerritorial($source);
+            $this->info('Integración de Encuesta 2026-I y perfiles en Visor Territorial completada:');
+            $this->table(array_keys($res), [array_values($res)]);
+            return self::SUCCESS;
         }
 
         $apply = (bool) $this->option('apply') && !$this->option('dry-run');

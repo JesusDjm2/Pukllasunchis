@@ -23,7 +23,22 @@ class SeguimientoPanelController extends Controller
         $campanas=Campana::latest('id')->get();
         $responsables=$this->campanas->obtenerDocentesElegibles();
         $perfiles=Schema::hasTable('egresado_perfil_versiones') ? DB::table('egresado_perfil_versiones')->whereIn('user_id',$ids)->whereIn('id',fn($q)=>$q->selectRaw('MAX(id)')->from('egresado_perfil_versiones')->groupBy('user_id'))->get()->keyBy('user_id') : collect();
-        $filas=$personas->map(function($u)use($perfiles){$p=json_decode($perfiles->get($u->id)?->datos ?? '{}',true); return ['id'=>$u->id,'nombre'=>trim($u->name.' '.$u->apellidos),'grupo'=>$this->grupos->resolver($u)['etiqueta'],'avance'=>$this->perfil->avance($p),'formacion'=>$p['formacion']??[],'encuentros'=>$p['encuentros']??[]];});
+        $filas=$personas->map(function($u)use($perfiles){
+            $p=json_decode($perfiles->get($u->id)?->datos ?? '{}',true);
+            $av=$this->perfil->avance($p);
+            $trabajoActual=$p['trabajos'][0] ?? null;
+            return [
+                'id'=>$u->id,
+                'nombre'=>trim($u->name.' '.$u->apellidos),
+                'grupo'=>$this->grupos->resolver($u)['etiqueta'],
+                'avance'=>$av,
+                'trabaja'=>$p['trabaja'] ?? null,
+                'cargo'=>$trabajoActual['cargo'] ?? null,
+                'lugar_trabajo'=>$trabajoActual['lugar']['localidad'] ?? ($trabajoActual['lugar']['distrito'] ?? null),
+                'formacion'=>$p['formacion']??[],
+                'encuentros'=>$p['encuentros']??[],
+            ];
+        })->sortByDesc(fn($f)=>$f['avance']['porcentaje'])->values();
         $cortes=Schema::hasTable('egresado_campana_cortes') ? DB::table('egresado_campana_cortes')->latest('id')->get(['id','campana_id','created_at']) : collect();
         return view('seguimiento_egresados.panel_coordinacion',compact('grupoFormacion','filas','casos','campanas','responsables','cortes'));
     }

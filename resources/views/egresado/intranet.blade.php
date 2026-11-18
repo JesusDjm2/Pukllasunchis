@@ -89,9 +89,14 @@
                         </div>
                     </div>
                     <div>
-                        <a href="{{ route('seguimiento-egresados.index') }}" class="btn btn-sm text-white font-weight-bold" style="background: #832128; border-radius: 20px; padding: 0.35rem 1rem;">
+                        <a href="{{ route('seguimiento.mi-espacio') }}" class="btn btn-sm text-white font-weight-bold" style="background: #832128; border-radius: 20px; padding: 0.35rem 1rem;">
                             <i class="fas fa-edit mr-1"></i> Actualizar Ficha
                         </a>
+                        @if (Route::has('red.inicio'))
+                            <a href="{{ route('red.inicio') }}" class="btn btn-sm btn-outline-dark font-weight-bold ml-1" style="border-radius: 20px; padding: 0.35rem 1rem;">
+                                <i class="fas fa-users mr-1"></i> Red Puklla de Egresados
+                            </a>
+                        @endif
                     </div>
                 </div>
             </div>

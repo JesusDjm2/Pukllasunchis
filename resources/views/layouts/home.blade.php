@@ -81,13 +81,19 @@
                                         @php
                                             $user = auth()->user();
                                         @endphp
-                                        @if ($user->hasRole('admin'))
+                                        @if ($user->hasAnyRole(['super-admin', 'admin']))
                                             <li>
                                                 <a href="{{ route('admin') }}">
                                                     <i class="fa fa-download"></i> Administrador
                                                 </a>
                                             </li>
-                                        @elseif ($user->hasRole('docente'))
+                                        @elseif ($user->hasRole('coordinacion-empleabilidad'))
+                                            <li>
+                                                <a href="{{ route('seguimiento.panel.coordinacion') }}">
+                                                    <i class="fa fa-download"></i> Coordinación Egresados
+                                                </a>
+                                            </li>
+                                        @elseif ($user->hasRole('docente') && $user->docente)
                                             <li><a href="{{ route('vistaDocente', ['docente' => $user->docente->id]) }}">
                                                     <i class="fa fa-download"></i> Intranet</a>
                                             </li>
@@ -99,6 +105,14 @@
                                             <li><a href="{{ route('trabajo.index') }}"> <i class="fa fa-download"></i>
                                                     Intranet</a>
                                             </li>
+                                        @elseif ($user->hasAnyRole(['gestor-titulacion', 'secretaria']))
+                                            <li><a href="{{ route('titulacion.index') }}"> <i class="fa fa-download"></i>
+                                                    Intranet</a>
+                                            </li>
+                                        @elseif ($user->condicion === 'Egresado' || $user->hasRole('egresado'))
+                                            <li><a href="{{ route('egresado.intranet') }}"> <i class="fa fa-download"></i>
+                                                    Mi Cuenta Egresado</a>
+                                            </li>
                                         @elseif ($user->hasRole('alumnoB'))
                                             <li><a href="{{ route('ppd.index') }}"> <i class="fa fa-download"></i>
                                                     Intranet</a>
@@ -107,7 +121,7 @@
                                             <li><a href="{{ route('alumnos.index') }}"> <i class="fa fa-download"></i>
                                                     Matrícula</a></li>
                                         @else
-                                            <li><a href="{{ route('login') }}"> <i class="fa fa-download"></i> Intranet</a>
+                                            <li><a href="{{ route('ayllu.inicio') }}"> <i class="fa fa-download"></i> Intranet</a>
                                             </li>
                                         @endif
                                     @else

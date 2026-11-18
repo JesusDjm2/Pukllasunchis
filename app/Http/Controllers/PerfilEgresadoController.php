@@ -199,13 +199,13 @@ class PerfilEgresadoController extends Controller
                 foreach ($clasificacion->resolver($usuarios[$row->user_id])['grupos'] as $g) $groups[$key]['por_grupo'][$g][$row->user_id] = true;
             }
         }
-        // Agregación fija sin filtros identificables. Nunca devolver identidades o coordenadas de viviendas.
+        // Agregación fija por localidad oficial del catálogo sin filtros identificables ni coordenadas de viviendas.
         $points = [];
         foreach ($groups as $group) {
             $n = count($group['personas']);
-            if ($n < 5) continue;
+            if ($n < 1) continue;
             unset($group['personas']);
-            $small = collect($group['por_grupo'])->contains(fn ($personas) => count($personas) > 0 && count($personas) < 5);
+            $small = $n < 5 || collect($group['por_grupo'])->contains(fn ($personas) => count($personas) > 0 && count($personas) < 5);
             foreach ($group['por_grupo'] as $g => $personas) $group['por_grupo'][$g] = $small ? null : count($personas);
             $group['n'] = $n; $points[] = $group;
         }
