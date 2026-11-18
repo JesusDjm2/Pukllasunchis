@@ -7,12 +7,15 @@ use App\Models\Titulacion\CartaAceptacion;
 use App\Models\Titulacion\SeguimientoTitulacion;
 use App\Models\Titulacion\Solicitud;
 use App\Models\User;
+use App\Notifications\TitulacionAmpliacionSolicitada;
 use App\Services\Titulacion\AreasTitulacion;
 use App\Services\Titulacion\GrupoTitulacion;
 use App\Services\Titulacion\VigenciaPti;
 use App\Support\PanelDeUsuario;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -119,7 +122,7 @@ class MiSolicitudAmpliacionPtiController extends Controller
             $integrantes[] = ['id' => $c->id, 'nombre' => trim($c->name.' '.$c->apellidos), 'dni' => $c->dni];
         }
 
-        Solicitud::create([
+        $solicitud = Solicitud::create([
             'tipo' => Solicitud::AMPLIACION_PTI,
             'solicitante_id' => $user->id,
             'seguimiento_id' => $seguimiento->id,
@@ -141,6 +144,16 @@ class MiSolicitudAmpliacionPtiController extends Controller
                 'rd_pti_actual' => $seguimiento->pti?->rd_pti,
             ],
         ]);
+
+        try {
+            $destinatarios = AreasTitulacion::destinatarios([AreasTitulacion::SECRETARIA]);
+            Notification::send($destinatarios, new TitulacionAmpliacionSolicitada($solicitud, $user));
+        } catch (\Throwable $e) {
+            Log::warning('No se pudo notificar la solicitud de ampliación de PTI a Secretaría', [
+                'solicitud' => $solicitud->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         return redirect()->route('mi-titulacion.ampliacion-pti')
             ->with('success', 'Tu solicitud de ampliación de plazo fue enviada con éxito. Secretaría General evaluará tu justificativo y pago; recibirás aquí y en tu correo institucional la R.D. de prórroga.');

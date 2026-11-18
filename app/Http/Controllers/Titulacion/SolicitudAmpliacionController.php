@@ -7,6 +7,7 @@ use App\Http\Controllers\Titulacion\Concerns\ImportaFormularioGoogle;
 use App\Models\Titulacion\Resolucion;
 use App\Models\Titulacion\SeguimientoTitulacion;
 use App\Models\Titulacion\Solicitud;
+use App\Notifications\TitulacionAmpliacionAtendida;
 use App\Services\Titulacion\ArchivosRd;
 use App\Services\Titulacion\AreasTitulacion;
 use App\Services\Titulacion\GrupoTitulacion;
@@ -14,6 +15,8 @@ use App\Services\Titulacion\ImportarSolicitudesAmpliacion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -186,6 +189,21 @@ class SolicitudAmpliacionController extends Controller
             ]);
         });
 
+        try {
+            $destinatarios = collect([$solicitud->solicitante])->filter();
+            if ($seguimiento && $request->boolean('aplicar_grupo')) {
+                $destinatarios = $destinatarios->concat(GrupoTitulacion::companeros($seguimiento))->unique('id');
+            }
+            if ($destinatarios->isNotEmpty()) {
+                Notification::send($destinatarios, new TitulacionAmpliacionAtendida($solicitud));
+            }
+        } catch (\Throwable $e) {
+            Log::warning('No se pudo notificar la atención de ampliación de PTI a los estudiantes', [
+                'solicitud' => $solicitud->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
         return redirect()->route('titulacion.solicitudes-ampliacion.index', ['resaltar' => $solicitud->id])
             ->with('success', 'Ampliación registrada con R.D. '.$data['numero_rd'].'. El nuevo vencimiento ha sido actualizado.');
     }
@@ -210,6 +228,17 @@ class SolicitudAmpliacionController extends Controller
             'atendido_por' => auth()->id(),
             'atendido_en' => now(),
         ]);
+
+        try {
+            if ($solicitud->solicitante) {
+                $solicitud->solicitante->notify(new TitulacionAmpliacionAtendida($solicitud));
+            }
+        } catch (\Throwable $e) {
+            Log::warning('No se pudo notificar la observación de ampliación de PTI al estudiante', [
+                'solicitud' => $solicitud->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         return redirect()->route('titulacion.solicitudes-ampliacion.index', ['resaltar' => $solicitud->id])
             ->with('success', 'Solicitud observada. El estudiante verá la observación en su intranet.');

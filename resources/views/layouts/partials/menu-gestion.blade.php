@@ -84,7 +84,11 @@
                    title="Incidencias reportadas, solicitudes de tutoría y sugerencias del buzón QR">Incidencias y tutorías</a>
                 <a class="collapse-item {{ $activo('alumnos.demograficos') }}" href="{{ route('alumnos.demograficos') }}">Datos demográficos</a>
                 @if ($esSA && Route::has('titulacion.index'))
-                    <a class="collapse-item {{ $activo('titulacion.*') }}" href="{{ route('titulacion.index') }}">Titulación</a>
+                    <a class="collapse-item {{ $activo('titulacion.index', 'titulacion.show', 'titulacion.ficha') }}" href="{{ route('titulacion.index') }}">Titulación</a>
+                    <a class="collapse-item {{ $activo('titulacion.solicitudes*', 'titulacion.cartas*') }}" href="{{ route('titulacion.solicitudes.index') }}">
+                        Solicitudes @php $solP = \App\Services\Titulacion\BandejasSolicitudes::total(); @endphp
+                        @if ($solP > 0)<span class="badge badge-warning ml-1">{{ $solP }}</span>@endif
+                    </a>
                 @endif
             </div>
         </div>

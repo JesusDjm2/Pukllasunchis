@@ -246,6 +246,16 @@
         b.setAttribute('aria-expanded', det.hidden ? 'false' : 'true');
     });
     var nueva = document.querySelector('.ca-fila.is-resaltada');
-    if (nueva) setTimeout(function () { nueva.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 250);
+    if (nueva) {
+        var btn = nueva.querySelector('.js-ca-revisar');
+        if (btn) {
+            var det = document.getElementById(btn.getAttribute('aria-controls'));
+            if (det) {
+                det.hidden = false;
+                btn.setAttribute('aria-expanded', 'true');
+            }
+        }
+        setTimeout(function () { nueva.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 250);
+    }
     </script>
 @endsection

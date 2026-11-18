@@ -173,6 +173,15 @@
                         'enviada' => ['Carta de aceptación', 'fa-inbox', 'bg-info', 'Secretaría recibió tu solicitud: te responderá en 3 días hábiles'],
                         default => ['Carta de aceptación', 'fa-exclamation-circle', 'bg-warning', 'Tu solicitud fue observada: revísala y envíala de nuevo'],
                     },
+                    \App\Notifications\TitulacionAmpliacionSolicitada::class => [
+                        'Ampliación de PTI', 'fa-hourglass-half', 'bg-warning',
+                        ($n->data['alumno_nombre'] ?? 'Un estudiante').' solicita prórroga de '.($n->data['meses'] ?? 6).' meses para «'.($n->data['titulo'] ?? '').'»',
+                    ],
+                    \App\Notifications\TitulacionAmpliacionAtendida::class => match ($n->data['estado'] ?? '') {
+                        'atendida' => ['Ampliación de PTI', 'fa-check-circle', 'bg-success', 'Tu ampliación de PTI fue aprobada'.(! empty($n->data['numero_rd']) ? ' (R.D. '.$n->data['numero_rd'].')' : '')],
+                        'observada' => ['Ampliación de PTI', 'fa-exclamation-circle', 'bg-warning', 'Tu solicitud fue observada: '.($n->data['observacion'] ?? 'revísala y envíala de nuevo')],
+                        default => ['Ampliación de PTI', 'fa-info-circle', 'bg-info', 'Tu solicitud de ampliación de PTI fue actualizada'],
+                    },
                     default => ['Notificación', 'fa-bell', 'bg-secondary', $n->data['alumno_nombre'] ?? ''],
                 };
                 [$notiLabel, $notiIcono, $notiColor, $notiTexto] = $notiTipo;

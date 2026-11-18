@@ -29,14 +29,21 @@
     {{-- Menú de gestión (admin, super-admin, adminB): mismas opciones en ambos layouts --}}
     @include('layouts.partials.menu-gestion')
 
-    {{-- ── Titulación (gestor-titulacion): un solo enlace; asesores, PTI por vencer y datos
-         demográficos ya están en los botones e indicadores de la cabecera del módulo ── --}}
+    {{-- ── Titulación (gestor-titulacion, secretaria): Proceso general y bandeja de Solicitudes ── --}}
     @if ($esTitulacionSb)
         <div class="pk-sb-titulo">Titulación</div>
         <li class="nav-item">
-            <a class="nav-link pk-sb-link {{ request()->routeIs('titulacion.*') ? 'is-activo' : '' }}"
+            <a class="nav-link pk-sb-link {{ request()->routeIs('titulacion.index') || request()->routeIs('titulacion.show') || request()->routeIs('titulacion.ficha') || request()->routeIs('titulacion.asesores.*') || request()->routeIs('titulacion.demograficos') ? 'is-activo' : '' }}"
                 href="{{ route('titulacion.index') }}" title="Proceso de titulación">
                 <span class="pk-sb-icono"><i class="fas fa-user-graduate"></i></span><span class="pk-sb-texto">Proceso de titulación</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            @php $solPendientesSb = \App\Services\Titulacion\BandejasSolicitudes::total(); @endphp
+            <a class="nav-link pk-sb-link {{ request()->routeIs('titulacion.solicitudes*') || request()->routeIs('titulacion.cartas*') ? 'is-activo' : '' }}"
+                href="{{ route('titulacion.solicitudes.index') }}" title="Bandeja de solicitudes de estudiantes">
+                <span class="pk-sb-icono"><i class="fas fa-inbox"></i></span>
+                <span class="pk-sb-texto">Solicitudes @if ($solPendientesSb > 0)<span class="badge badge-warning ml-1">{{ $solPendientesSb }}</span>@endif</span>
             </a>
         </li>
     @endif

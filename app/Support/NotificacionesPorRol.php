@@ -21,6 +21,7 @@ class NotificacionesPorRol
         \App\Notifications\TitulacionPtiSolicitada::class,
         \App\Notifications\TitulacionPtiParaRd::class,
         \App\Notifications\TitulacionOriginalidadSolicitada::class,
+        \App\Notifications\TitulacionAmpliacionSolicitada::class,
     ];
 
     /** Rol de área con filtro => tipos de aviso que ve. */
