@@ -203,13 +203,30 @@
                     @endif
                 </div>
                 @if (($quedan !== null && $quedan <= VigenciaPti::MESES_AVISO_URGENTE) || $ptiVencido)
+                    @php
+                        $ampUltima = \App\Models\Titulacion\Solicitud::dePersona(\App\Models\Titulacion\Solicitud::AMPLIACION_PTI, $persona)->first();
+                        [$ampClaseBtn, $ampBotonTxt] = match ($ampUltima?->estado) {
+                            'recibida' => ['btn-info', 'Ver mi solicitud (en revisión)'],
+                            'observada' => ['btn-warning', 'Corregir y enviar'],
+                            'atendida' => ['btn-success', 'Ver ampliación otorgada'],
+                            default => [$ptiVencido ? 'btn-danger' : 'btn-outline-primary', 'Solicitar ampliación de plazo'],
+                        };
+                    @endphp
                     <div class="mt-2 pt-2 border-top d-flex align-items-center justify-content-between flex-wrap" style="gap:.5rem;">
                         <span class="small {{ $ptiVencido ? 'text-danger font-weight-bold' : 'text-dark' }}">
                             <i class="fas {{ $ptiVencido ? 'fa-exclamation-circle text-danger' : 'fa-hourglass-half text-warning' }} mr-1"></i>
-                            {{ $ptiVencido ? 'Plazo vencido: solicita una ampliación para continuar tu investigación.' : 'Próximo a vencer: puedes tramitar tu ampliación de plazo (Cód. 11 · S/ 50.00).' }}
+                            @if ($ampUltima?->estado === 'recibida')
+                                Solicitud de prórroga enviada: en revisión por Secretaría General.
+                            @elseif ($ampUltima?->estado === 'observada')
+                                Tu solicitud fue observada: corrígela para continuar.
+                            @elseif ($ptiVencido)
+                                Plazo vencido: tramita tu ampliación para continuar tu investigación.
+                            @else
+                                Próximo a vencer: puedes solicitar tu ampliación de plazo (Cód. 11 · S/ 50.00).
+                            @endif
                         </span>
-                        <a href="https://docs.google.com/forms/d/e/1FAIpQLSdJizTDL5Z8DAEfiRWSt32GspxaDO3MVQ_JyvpC_Q3sQt7rvQ/viewform" target="_blank" rel="noopener" class="btn btn-sm {{ $ptiVencido ? 'btn-danger' : 'btn-outline-primary' }}">
-                            <i class="fas fa-file-signature mr-1"></i>Solicitar ampliación de plazo
+                        <a href="{{ route('mi-titulacion.ampliacion-pti') }}" class="btn btn-sm {{ $ampClaseBtn }}">
+                            <i class="fas fa-file-signature mr-1"></i>{{ $ampBotonTxt }}
                         </a>
                     </div>
                 @endif

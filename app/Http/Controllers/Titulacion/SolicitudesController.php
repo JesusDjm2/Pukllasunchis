@@ -23,6 +23,7 @@ class SolicitudesController extends Controller
     private const BANDEJAS = [
         Solicitud::PTI => 'titulacion.solicitudes-pti.index',
         Solicitud::ORIGINALIDAD => 'titulacion.solicitudes-originalidad.index',
+        Solicitud::AMPLIACION_PTI => 'titulacion.solicitudes-ampliacion.index',
     ];
 
     /** Integrantes que se pueden registrar en una solicitud. */
@@ -50,6 +51,7 @@ class SolicitudesController extends Controller
     {
         abort_unless(isset(self::BANDEJAS[$solicitud->tipo]), 404);
         $esPti = $solicitud->tipo === Solicitud::PTI;
+        $esOriginalidad = $solicitud->tipo === Solicitud::ORIGINALIDAD;
         $data = $request->validate([
             'titulo' => 'required|string|min:3|max:1000',
             'correo' => 'nullable|string|max:150',
@@ -65,9 +67,9 @@ class SolicitudesController extends Controller
             'area' => [$esPti ? 'nullable' : 'prohibited', 'in:'.implode(',', array_keys(Solicitud::AREAS))],
             'linea' => [$esPti ? 'nullable' : 'prohibited', 'in:'.implode(',', array_keys(Solicitud::LINEAS))],
             // Revisión de originalidad
-            'etapa' => [$esPti ? 'prohibited' : 'required', 'in:'.implode(',', array_keys(Solicitud::ETAPAS))],
-            'fecha_pago' => [$esPti ? 'prohibited' : 'nullable', 'date'],
-            'similitud' => [$esPti ? 'prohibited' : 'nullable', 'numeric', 'min:0', 'max:100'],
+            'etapa' => [$esOriginalidad ? 'required' : 'prohibited', 'in:'.implode(',', array_keys(Solicitud::ETAPAS))],
+            'fecha_pago' => [$esOriginalidad ? 'nullable' : 'prohibited', 'date'],
+            'similitud' => [$esOriginalidad ? 'nullable' : 'prohibited', 'numeric', 'min:0', 'max:100'],
         ], [
             'integrantes.*.dni.digits_between' => 'El DNI debe tener solo números (8 dígitos).',
         ], ['titulo' => 'título', 'programa_estudios' => 'programa de estudios', 'linea' => 'línea de investigación', 'etapa' => 'documento', 'fecha_pago' => 'fecha de pago']);

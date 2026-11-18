@@ -7,9 +7,15 @@
     @php
         use App\Models\Titulacion\Solicitud;
         $esPti = $s->tipo === Solicitud::PTI;
+        $esOriginalidad = $s->tipo === Solicitud::ORIGINALIDAD;
         $v = fn ($campo, $defecto = '') => old($campo, $defecto);
         $filas = collect(old('integrantes', $s->integrantes ?? []))->pad(\App\Http\Controllers\Titulacion\SolicitudesController::MAX_INTEGRANTES, ['nombre' => '', 'user_id' => null]);
-        $nombreTipo = $esPti ? 'Solicitud de aprobación de PTI' : 'Revisión de originalidad';
+        $nombreTipo = match ($s->tipo) {
+            Solicitud::PTI => 'Solicitud de aprobación de PTI',
+            Solicitud::ORIGINALIDAD => 'Revisión de originalidad',
+            Solicitud::AMPLIACION_PTI => 'Ampliación de plazo de PTI',
+            default => 'Solicitud',
+        };
         $ediciones = collect($s->datos['ediciones'] ?? [])->reverse();
     @endphp
 
@@ -67,13 +73,13 @@
                     <div class="al-card-cab"><span class="al-card-cab-icono"><i class="fas fa-file-alt"></i></span><div><h2>Solicitud</h2><p>Datos del trabajo.</p></div></div>
                     <div class="al-card-cuerpo">
                         <div class="al-form-grid">
-                            @unless ($esPti)
+                            @if ($esOriginalidad)
                                 <label>Documento
                                     <select name="etapa" class="al-campo" required>
                                         @foreach (Solicitud::ETAPAS as $k => $n)<option value="{{ $k }}" @selected($v('etapa', $s->etapa()) === $k)>{{ $n }}</option>@endforeach
                                     </select>
                                 </label>
-                            @endunless
+                            @endif
                             <label class="al-form-ancho">Título
                                 <textarea name="titulo" rows="3" class="al-campo" required maxlength="1000">{{ $v('titulo', $s->titulo) }}</textarea>
                             </label>
@@ -94,7 +100,7 @@
                                     <select name="linea" class="al-campo"><option value="">—</option>@foreach (Solicitud::LINEAS as $k => $n)<option value="{{ $k }}" @selected($v('linea', $s->datos['linea'] ?? '') === $k)>{{ $n }}</option>@endforeach</select>
                                     @if ($s->datos['linea_texto'] ?? null)<small class="text-muted">Escribieron: {{ $s->datos['linea_texto'] }}</small>@endif
                                 </label>
-                            @else
+                            @elseif ($esOriginalidad)
                                 <label>Fecha de pago<input type="date" name="fecha_pago" value="{{ $v('fecha_pago', $s->datos['fecha_pago'] ?? '') }}" class="al-campo"></label>
                                 <label>% de similitud (del reporte)<input type="number" step="0.01" min="0" max="100" name="similitud" value="{{ $v('similitud', $s->similitud()) }}" class="al-campo" placeholder="Sin reporte"></label>
                             @endif

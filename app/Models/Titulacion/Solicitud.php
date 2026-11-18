@@ -34,6 +34,12 @@ class Solicitud extends Model
     /** Revisión de originalidad (Turnitin), del TI o de la Tesis (datos.etapa). */
     public const ORIGINALIDAD = 'revision_originalidad';
 
+    /** Ampliación de plazo de PTI (extensión extraordinaria). */
+    public const AMPLIACION_PTI = 'ampliacion_pti';
+
+    /** Pago en Caja Cusco de ampliación de plazo (Cód. 11 - S/ 50.00). */
+    public const PAGO_AMPLIACION = [11, 50.00, 'EXTENSIÓN DE PLAZO'];
+
     public const ETAPAS = ['ti' => 'Trabajo de Investigación', 'tesis' => 'Tesis'];
 
     /** Pago en Caja Cusco de cada revisión de originalidad: etapa => [código, monto, concepto] (PDF oficial 2026-II). */

@@ -19,6 +19,7 @@ class BandejasSolicitudes
         'pti' => ['Aprobación de PTI', 'fa-file-signature', 'titulacion.solicitudes-pti.index', 'titulacion.solicitudes-pti.*', 'Investigación'],
         'cartas' => ['Carta de aceptación', 'fa-envelope-open-text', 'titulacion.cartas.index', 'titulacion.cartas.*', 'Secretaría'],
         'originalidad' => ['Revisión de originalidad', 'fa-spell-check', 'titulacion.solicitudes-originalidad.index', 'titulacion.solicitudes-originalidad.*', 'Investigación'],
+        'ampliacion-pti' => ['Ampliación de PTI', 'fa-hourglass-half', 'titulacion.solicitudes-ampliacion.index', 'titulacion.solicitudes-ampliacion.*', 'Secretaría'],
     ];
 
     /** Cuántas hay por atender en cada trámite (clave => número). */
@@ -28,6 +29,7 @@ class BandejasSolicitudes
             'pti' => Solicitud::deTipo(Solicitud::PTI)->where('estado', 'recibida')->count(),
             'cartas' => CartaAceptacion::where('estado', 'enviada')->distinct('lote')->count('lote'),
             'originalidad' => Solicitud::deTipo(Solicitud::ORIGINALIDAD)->where('estado', 'recibida')->count(),
+            'ampliacion-pti' => Solicitud::deTipo(Solicitud::AMPLIACION_PTI)->where('estado', 'recibida')->count(),
         ];
     }
 
@@ -73,7 +75,19 @@ class BandejasSolicitudes
                 'url' => route('titulacion.solicitudes-originalidad.index', ['resaltar' => $s->id]),
             ]);
 
-        return $pti->concat($cartas)->concat($originalidad)->sortBy('fecha')->values();
+        $ampliaciones = Solicitud::deTipo(Solicitud::AMPLIACION_PTI)->where('estado', 'recibida')->with('solicitante')->get()
+            ->map(fn (Solicitud $s) => [
+                'tipo' => 'ampliacion-pti',
+                'fecha' => $s->created_at,
+                'quien' => $s->solicitante ? trim($s->solicitante->apellidos.', '.$s->solicitante->name) : (implode('; ', $s->nombresIntegrantes()) ?: '—'),
+                'detalle' => 'Ampliación de PTI ('.($s->datos['meses_solicitados'] ?? '6').' meses): “'.Str::limit((string) $s->titulo, 90).'”',
+                'origen' => $s->origen,
+                'limite' => null,
+                'url' => route('titulacion.solicitudes-ampliacion.index', ['resaltar' => $s->id]),
+            ]);
+
+        return $pti->concat($cartas)->concat($originalidad)->concat($ampliaciones)
+            ->sortBy('fecha')->values();
     }
 
     public static function total(): int

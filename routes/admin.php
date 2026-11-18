@@ -85,6 +85,13 @@ Route::middleware('auth')->group(function () {
         ->name('mi-titulacion.originalidad');
     Route::post('/mi-titulacion/originalidad', [App\Http\Controllers\Titulacion\MiSolicitudOriginalidadController::class, 'enviar'])
         ->middleware('throttle:30,10')->name('mi-titulacion.originalidad.enviar');
+    // Ampliación de plazo de PTI (extensión extraordinaria)
+    Route::get('/mi-titulacion/ampliacion-pti', [App\Http\Controllers\Titulacion\MiSolicitudAmpliacionPtiController::class, 'crear'])
+        ->name('mi-titulacion.ampliacion-pti');
+    Route::post('/mi-titulacion/ampliacion-pti', [App\Http\Controllers\Titulacion\MiSolicitudAmpliacionPtiController::class, 'enviar'])
+        ->middleware('throttle:30,10')->name('mi-titulacion.ampliacion-pti.enviar');
+    Route::get('/mi-titulacion/ampliacion-pti/{solicitud}/{cual}/{n}', [App\Http\Controllers\Titulacion\MiSolicitudAmpliacionPtiController::class, 'archivo'])
+        ->whereIn('cual', ['archivo', 'comprobante'])->whereNumber('n')->name('mi-titulacion.ampliacion-pti.archivo');
 });
 
 // GET simple para mantener viva la sesión (y el token CSRF) mientras se llena
@@ -683,6 +690,14 @@ Route::middleware('auth')->group(function () {
             Route::post('/solicitudes-originalidad/importar', [App\Http\Controllers\Titulacion\SolicitudOriginalidadController::class, 'importarPrevia'])->name('solicitudes-originalidad.importar.previa');
             Route::get('/solicitudes-originalidad/importar/{token}', [App\Http\Controllers\Titulacion\SolicitudOriginalidadController::class, 'importarVista'])->name('solicitudes-originalidad.importar.vista');
             Route::post('/solicitudes-originalidad/importar/aplicar', [App\Http\Controllers\Titulacion\SolicitudOriginalidadController::class, 'importarAplicar'])->name('solicitudes-originalidad.importar.aplicar');
+            // Ampliaciones de PTI: bandeja, atender (RD de ampliación + nuevo vencimiento), observar e importar de Excel / Google Forms.
+            Route::get('/solicitudes-ampliacion', [App\Http\Controllers\Titulacion\SolicitudAmpliacionController::class, 'index'])->name('solicitudes-ampliacion.index');
+            Route::post('/solicitudes-ampliacion/{solicitud}/atender', [App\Http\Controllers\Titulacion\SolicitudAmpliacionController::class, 'atender'])->name('solicitudes-ampliacion.atender');
+            Route::post('/solicitudes-ampliacion/{solicitud}/observar', [App\Http\Controllers\Titulacion\SolicitudAmpliacionController::class, 'observar'])->name('solicitudes-ampliacion.observar');
+            Route::get('/solicitudes-ampliacion/importar', [App\Http\Controllers\Titulacion\SolicitudAmpliacionController::class, 'importarForm'])->name('solicitudes-ampliacion.importar');
+            Route::post('/solicitudes-ampliacion/importar', [App\Http\Controllers\Titulacion\SolicitudAmpliacionController::class, 'importarPrevia'])->name('solicitudes-ampliacion.importar.previa');
+            Route::get('/solicitudes-ampliacion/importar/{token}', [App\Http\Controllers\Titulacion\SolicitudAmpliacionController::class, 'importarVista'])->name('solicitudes-ampliacion.importar.vista');
+            Route::post('/solicitudes-ampliacion/importar/aplicar', [App\Http\Controllers\Titulacion\SolicitudAmpliacionController::class, 'importarAplicar'])->name('solicitudes-ampliacion.importar.aplicar');
             // Secretaría corrige el grupo (retiro / incorporación con RD ya emitida): revisar y aplicar.
             Route::get('/egresados/{egresado}/grupo', [App\Http\Controllers\Titulacion\CambioGrupoController::class, 'editar'])->name('grupo.editar');
             Route::post('/egresados/{egresado}/grupo', [App\Http\Controllers\Titulacion\CambioGrupoController::class, 'aplicar'])->name('grupo.cambiar');
