@@ -20,7 +20,12 @@
     $estadoClave = $avance->estadoClave();
     $lineaTiempo = $avance->lineaDeTiempo();
     $siguiente = $avance->siguientePaso();
-    $guias = config('titulacion.guias', []);
+    $guiasConfig = config('titulacion.guias', []);
+    $guias = [
+        'pti' => $guiasConfig['pti'] ?: (\Illuminate\Support\Facades\Route::has('plan') ? route('plan') : null),
+        'ti' => $guiasConfig['ti'] ?: (\Illuminate\Support\Facades\Route::has('tinvestigacion') ? route('tinvestigacion') : null),
+        'tesis' => $guiasConfig['tesis'] ?: (\Illuminate\Support\Facades\Route::has('tesis') ? route('tesis') : null),
+    ];
     $companeros = GrupoTitulacion::companeros($seguimiento);
 
     // Vigencia del PTI: importa mientras falte llegar a la Tesis aprobada.

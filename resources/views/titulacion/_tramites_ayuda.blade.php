@@ -5,9 +5,13 @@
      Espera $bloque (GuiaTramites::actual/bloque) y $clavePersona (para recordar lo marcado). --}}
 @php
     $tramites = $bloque['tramites'] ?? [];
+    $hechosSistema = $bloque['hechos'] ?? [];
+    $primerPendiente = collect(array_keys($tramites))->first(fn ($k) => ! in_array($k, $hechosSistema, true))
+        ?? array_key_first($tramites);
     $conceptosPdf = config('titulacion.conceptos_pago_pdf');
     $contactos = collect(config('titulacion.contactos', []))->filter(fn ($c) => \App\Support\Telefono::whatsapp($c[1] ?? null))->all();
-    $url = fn (string $destino) => \Illuminate\Support\Str::startsWith($destino, ['http://', 'https://'])
+    $esExterno = fn (string $destino) => \Illuminate\Support\Str::startsWith($destino, ['http://', 'https://']);
+    $url = fn (string $destino) => $esExterno($destino)
         ? $destino
         : (\Illuminate\Support\Facades\Route::has($destino) ? route($destino) : asset($destino));
 @endphp
@@ -38,17 +42,22 @@
 
         <div class="tr-lista">
             @foreach ($tramites as $clave => $t)
-                @php [$monto, $codigo, $concepto] = $t['pago'] ?? [null, null, null]; @endphp
-                <details class="tr-tramite" data-tr-clave="{{ $clave }}" @if ($loop->first) open @endif>
+                @php
+                    [$monto, $codigo, $concepto] = $t['pago'] ?? [null, null, null];
+                    $hechoSistema = in_array($clave, $hechosSistema, true);
+                    $formExterno = ! empty($t['formulario']) && $esExterno($t['formulario'][1]);
+                @endphp
+                <details class="tr-tramite {{ $hechoSistema ? 'is-hecho' : '' }}" data-tr-clave="{{ $clave }}" @if ($hechoSistema) data-tr-sistema="1" @endif @if ($clave === $primerPendiente) open @endif>
                     <summary class="tr-tramite__cab">
                         <span class="tr-tramite__n" aria-hidden="true"><span>{{ $loop->iteration }}</span><i class="fas fa-check"></i></span>
                         <span class="tr-tramite__titulo">
                             {{ $t['titulo'] }}
                             @if (! empty($t['opcional'])) <span class="tr-chip tr-chip--suave">Recomendado</span> @endif
-                            <span class="tr-hecho-texto">· hecho</span>
+                            <span class="tr-hecho-texto">· {{ $hechoSistema ? 'registrado' : 'hecho' }}</span>
                         </span>
                         <span class="tr-tramite__chips">
                             @if (! empty($t['modalidad'])) <span class="tr-chip tr-chip--suave"><i class="fas {{ $t['modalidad'] === 'presencial' ? 'fa-building' : 'fa-laptop' }}"></i>{{ ucfirst($t['modalidad']) }}</span> @endif
+                            @if ($codigo) <span class="tr-chip tr-chip--suave">Cód. {{ $codigo }}</span> @endif
                             @if ($monto) <span class="tr-chip">S/ {{ $monto }}</span> @endif
                         </span>
                         <i class="fas fa-chevron-down tr-tramite__chev" aria-hidden="true"></i>
@@ -93,8 +102,8 @@
                         @if (! empty($t['formulario']) || ! empty($t['descargas']) || ! empty($t['enlace']))
                             <div class="tr-acciones">
                                 @if (! empty($t['formulario']))
-                                    <a class="btn btn-sm btn-primary" href="{{ $url($t['formulario'][1]) }}" target="_blank" rel="noopener">
-                                        <i class="fas fa-clipboard-list mr-1"></i>{{ $t['formulario'][0] }}<i class="fas fa-external-link-alt fa-xs ml-1"></i>
+                                    <a class="btn btn-sm btn-primary" href="{{ $url($t['formulario'][1]) }}" @if ($formExterno) target="_blank" rel="noopener" @endif>
+                                        <i class="fas fa-clipboard-list mr-1"></i>{{ $t['formulario'][0] }}<i class="fas {{ $formExterno ? 'fa-external-link-alt' : 'fa-arrow-right' }} fa-xs ml-1"></i>
                                     </a>
                                 @endif
                                 @foreach ($t['descargas'] ?? [] as [$texto, $ruta])
@@ -130,10 +139,17 @@
                         @endif
                         @if (! empty($t['nota'])) <p class="tr-nota"><i class="fas fa-exclamation-triangle"></i>{{ $t['nota'] }}</p> @endif
 
-                        <label class="tr-marcar">
-                            <input type="checkbox" data-tr-marcar>
-                            <span>Ya hice este trámite</span>
-                        </label>
+                        @if ($hechoSistema)
+                            <span class="tr-marcar" style="cursor:default; border-color: var(--tr-ok); color: var(--tr-ok);">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Completado y registrado en el sistema</span>
+                            </span>
+                        @else
+                            <label class="tr-marcar">
+                                <input type="checkbox" data-tr-marcar>
+                                <span>Ya hice este trámite</span>
+                            </label>
+                        @endif
                     </div>
                 </details>
             @endforeach
@@ -141,7 +157,10 @@
 
         <footer class="tr-ayuda__pie">
             @if ($conceptosPdf)
-                <a href="{{ asset($conceptosPdf) }}" target="_blank" rel="noopener"><i class="fas fa-file-invoice-dollar"></i>Conceptos de pago de <strong class="caja-cusco-brand">Caja Cusco</strong></a>
+                <a href="{{ asset($conceptosPdf) }}" target="_blank" rel="noopener"><i class="fas fa-file-invoice-dollar"></i>Tarifario <strong class="caja-cusco-brand">Caja Cusco</strong> (PDF)</a>
+            @endif
+            @if (\Illuminate\Support\Facades\Route::has('extraordinarios'))
+                <a href="{{ route('extraordinarios') }}" target="_blank" rel="noopener"><i class="fas fa-sliders-h"></i>Trámites extraordinarios</a>
             @endif
             @foreach ($contactos as [$area, $numero])
                 <a href="{{ \App\Support\Telefono::whatsapp($numero) }}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i>{{ $area }} · {{ $numero }}</a>
@@ -171,23 +190,26 @@
                     var abierto = false;
                     seccion.querySelectorAll('.tr-tramite').forEach(function (d) {
                         var caja = d.querySelector('[data-tr-marcar]');
-                        var hecho = leer(base + d.dataset.trClave);
-                        caja.checked = hecho;
+                        var esSistema = d.dataset.trSistema === '1';
+                        var hecho = esSistema || leer(base + d.dataset.trClave);
+                        if (caja) caja.checked = hecho;
                         d.classList.toggle('is-hecho', hecho);
-                        // Abierto: el primero que falta marcar.
+                        // Abierto: el primero que falta marcar o registrar.
                         d.open = !hecho && !abierto;
                         if (d.open) abierto = true;
-                        caja.addEventListener('change', function () {
-                            guardar(base + d.dataset.trClave, caja.checked);
-                            d.classList.toggle('is-hecho', caja.checked);
-                            if (caja.checked) {
-                                d.open = false;
-                                var siguiente = d.nextElementSibling;
-                                while (siguiente && siguiente.classList.contains('is-hecho')) siguiente = siguiente.nextElementSibling;
-                                if (siguiente) { siguiente.open = true; siguiente.querySelector('summary').focus(); }
-                            }
-                            actualizar(seccion);
-                        });
+                        if (caja) {
+                            caja.addEventListener('change', function () {
+                                guardar(base + d.dataset.trClave, caja.checked);
+                                d.classList.toggle('is-hecho', caja.checked);
+                                if (caja.checked) {
+                                    d.open = false;
+                                    var siguiente = d.nextElementSibling;
+                                    while (siguiente && siguiente.classList.contains('is-hecho')) siguiente = siguiente.nextElementSibling;
+                                    if (siguiente) { siguiente.open = true; siguiente.querySelector('summary').focus(); }
+                                }
+                                actualizar(seccion);
+                            });
+                        }
                     });
                     actualizar(seccion);
                 }
