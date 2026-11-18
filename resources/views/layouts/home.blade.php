@@ -356,7 +356,7 @@
                                             class="fa fa-download"></i> Intranet</a></li>
                                 <li><a href="http://repositorio.pukllasunchis.org/xmlui/" target="_blank"><i
                                             class="fa fa-file-pdf"></i> Repositorio</a></li>
-                                <li><a href="https://heyzine.com/flip-book/7964b0937c.html" target="_blank" rel="noopener"><i
+                                <li><a href="{{ asset('pdf/Reglamento-de-Proteccion-de-Datos-Personales.pdf') }}" target="_blank" rel="noopener"><i
                                             class="fa fa-shield-halved"></i> Reglamento de Protección de Datos</a></li>
                                 <li><a href="{{ route('bolsa') }}" target="_blank"><i class="fa fa-dollar-sign"></i>
                                         Bolsa de trabajo</a></li>

@@ -1373,7 +1373,7 @@
                                             {{ old('terminos') ? 'checked' : '' }} required>
                                         <label for="inf_terminos">
                                             He leído y acepto el
-                                            <a href="https://heyzine.com/flip-book/7964b0937c.html" target="_blank" rel="noopener">Reglamento de Protección de Datos Personales</a>.
+                                            <a href="{{ asset('pdf/Reglamento-de-Proteccion-de-Datos-Personales.pdf') }}" target="_blank" rel="noopener">Reglamento de Protección de Datos Personales</a>.
                                             <span>*</span>
                                         </label>
                                     </div>
