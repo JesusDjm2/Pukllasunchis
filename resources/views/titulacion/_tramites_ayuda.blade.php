@@ -6,6 +6,7 @@
 @php
     $tramites = $bloque['tramites'] ?? [];
     $hechosSistema = $bloque['hechos'] ?? [];
+    $estadosTramites = $bloque['estados'] ?? [];
     $primerPendiente = collect(array_keys($tramites))->first(fn ($k) => ! in_array($k, $hechosSistema, true))
         ?? array_key_first($tramites);
     $conceptosPdf = config('titulacion.conceptos_pago_pdf');
@@ -45,14 +46,25 @@
                 @php
                     [$monto, $codigo, $concepto] = $t['pago'] ?? [null, null, null];
                     $hechoSistema = in_array($clave, $hechosSistema, true);
+                    $est = $estadosTramites[$clave] ?? null;
+                    $yaEnviada = ($est['tipo'] ?? null) === 'enviada';
                     $formExterno = ! empty($t['formulario']) && $esExterno($t['formulario'][1]);
+                    $estChip = $est ? match ($est['tipo']) {
+                        'aprobada' => ['tr-chip--ok', 'fa-check-circle'],
+                        'observada' => ['tr-chip--warn', 'fa-exclamation-triangle'],
+                        default => ['tr-chip--info', 'fa-paper-plane'],
+                    } : null;
                 @endphp
-                <details class="tr-tramite {{ $hechoSistema ? 'is-hecho' : '' }}" data-tr-clave="{{ $clave }}" @if ($hechoSistema) data-tr-sistema="1" @endif @if ($clave === $primerPendiente) open @endif>
+                <details class="tr-tramite {{ $hechoSistema ? 'is-hecho' : '' }} {{ $yaEnviada ? 'is-enviada' : '' }}" data-tr-clave="{{ $clave }}" @if ($hechoSistema) data-tr-sistema="1" @endif @if ($clave === $primerPendiente) open @endif>
                     <summary class="tr-tramite__cab">
                         <span class="tr-tramite__n" aria-hidden="true"><span>{{ $loop->iteration }}</span><i class="fas fa-check"></i></span>
                         <span class="tr-tramite__titulo">
                             {{ $t['titulo'] }}
-                            @if (! empty($t['opcional'])) <span class="tr-chip tr-chip--suave">Recomendado</span> @endif
+                            @if ($estChip)
+                                <span class="tr-chip {{ $estChip[0] }}"><i class="fas {{ $estChip[1] }}"></i>{{ $est['chip'] }}</span>
+                            @elseif (! empty($t['opcional']))
+                                <span class="tr-chip tr-chip--suave">Recomendado</span>
+                            @endif
                             <span class="tr-hecho-texto">· {{ $hechoSistema ? 'registrado' : 'hecho' }}</span>
                         </span>
                         <span class="tr-tramite__chips">
@@ -64,7 +76,14 @@
                     </summary>
 
                     <div class="tr-tramite__cuerpo">
-                        @if (! empty($t['opcional'])) <p class="tr-nota tr-nota--info"><i class="fas fa-lightbulb"></i>{{ $t['opcional'] }}</p> @endif
+                        @if ($est)
+                            <div class="tr-estado-banner is-{{ $est['tipo'] }}">
+                                <i class="fas {{ $estChip[1] }}"></i>
+                                <div>{{ $est['aviso'] }}</div>
+                            </div>
+                        @elseif (! empty($t['opcional']))
+                            <p class="tr-nota tr-nota--info"><i class="fas fa-lightbulb"></i>{{ $t['opcional'] }}</p>
+                        @endif
 
                         @if ($monto)
                             <div class="tr-pago">
@@ -102,8 +121,21 @@
                         @if (! empty($t['formulario']) || ! empty($t['descargas']) || ! empty($t['enlace']))
                             <div class="tr-acciones">
                                 @if (! empty($t['formulario']))
-                                    <a class="btn btn-sm btn-primary" href="{{ $url($t['formulario'][1]) }}" @if ($formExterno) target="_blank" rel="noopener" @endif>
-                                        <i class="fas fa-clipboard-list mr-1"></i>{{ $t['formulario'][0] }}<i class="fas {{ $formExterno ? 'fa-external-link-alt' : 'fa-arrow-right' }} fa-xs ml-1"></i>
+                                    @php
+                                        $btnTexto = $est['boton'] ?? $t['formulario'][0];
+                                        $btnClase = match ($est['tipo'] ?? null) {
+                                            'enviada', 'aprobada' => 'btn-outline-primary',
+                                            'observada' => 'btn-warning',
+                                            default => 'btn-primary',
+                                        };
+                                        $btnIcono = match ($est['tipo'] ?? null) {
+                                            'enviada', 'aprobada' => 'fa-eye',
+                                            'observada' => 'fa-edit',
+                                            default => 'fa-clipboard-list',
+                                        };
+                                    @endphp
+                                    <a class="btn btn-sm {{ $btnClase }}" href="{{ $url($t['formulario'][1]) }}" @if ($formExterno) target="_blank" rel="noopener" @endif>
+                                        <i class="fas {{ $btnIcono }} mr-1"></i>{{ $btnTexto }}<i class="fas {{ $formExterno ? 'fa-external-link-alt' : 'fa-arrow-right' }} fa-xs ml-1"></i>
                                     </a>
                                 @endif
                                 @foreach ($t['descargas'] ?? [] as [$texto, $ruta])
@@ -143,6 +175,11 @@
                             <span class="tr-marcar" style="cursor:default; border-color: var(--tr-ok); color: var(--tr-ok);">
                                 <i class="fas fa-check-circle"></i>
                                 <span>Completado y registrado en el sistema</span>
+                            </span>
+                        @elseif ($yaEnviada)
+                            <span class="tr-marcar" style="cursor:default; border-color: var(--tr-acento); color: var(--tr-acento);">
+                                <i class="fas fa-hourglass-half"></i>
+                                <span>Solicitud ya enviada · En revisión</span>
                             </span>
                         @else
                             <label class="tr-marcar">

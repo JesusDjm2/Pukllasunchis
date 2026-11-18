@@ -145,12 +145,46 @@
                                 Con tu boleta electrónica y tu archivo finalizado, envía la <strong>Solicitud de Aprobación de Plan de Trabajo de Investigación y Asignación de Asesor</strong> desde tu <strong>Intranet</strong>:
                             </p>
 
-                            {{-- Formulario del sistema (MiSolicitudPtiController): reemplaza al de Google. Sin sesión, aviso y login. --}}
+                            {{-- Formulario del sistema (MiSolicitudPtiController): si ya envió, muestra el estado en vez de invitar a reenviar. --}}
                             @auth
-                                <a href="{{ route('mi-titulacion.solicitud-pti') }}" class="pk-btn-intranet-cta mt-2">
-                                    <i class="fa fa-file-signature"></i>
-                                    <span>Solicitar aprobación del PTI en mi Intranet</span>
-                                </a>
+                                @php
+                                    $uAuth = auth()->user();
+                                    $yaTienePti = $uAuth->seguimientoTitulacion()->whereHas('pti')->exists();
+                                    $solPti = $yaTienePti ? null : \App\Models\Titulacion\Solicitud::ptiDe($uAuth)->first();
+                                @endphp
+                                @if ($yaTienePti)
+                                    <div class="pk-milestone-result mb-2">
+                                        <i class="fa fa-check-circle"></i>
+                                        <span><strong>Tu PTI ya está registrado en el sistema.</strong> No necesitas volver a enviar esta solicitud.</span>
+                                    </div>
+                                    <a href="{{ \App\Support\PanelDeUsuario::url($uAuth) }}#titulacion" class="pk-btn-intranet-cta mt-2">
+                                        <i class="fa fa-route"></i>
+                                        <span>Ver mi proceso en la Intranet</span>
+                                    </a>
+                                @elseif ($solPti && $solPti->estado !== 'observada')
+                                    <div class="pk-milestone-result mb-2" style="background:#eff6ff; border-left-color:#2563eb; color:#1e40af;">
+                                        <i class="fa fa-paper-plane" style="color:#2563eb;"></i>
+                                        <span><strong>Ya enviaste tu solicitud el {{ $solPti->created_at->format('d/m/Y') }}</strong> ({{ $solPti->estado === 'atendida' ? 'Atendida' : 'En revisión por el Área de Investigación' }}). No puedes volver a enviarla.</span>
+                                    </div>
+                                    <a href="{{ route('mi-titulacion.solicitud-pti') }}" class="pk-btn-intranet-cta mt-2">
+                                        <i class="fa fa-eye"></i>
+                                        <span>Ver estado de mi solicitud</span>
+                                    </a>
+                                @elseif ($solPti && $solPti->estado === 'observada')
+                                    <div class="pk-milestone-notice mb-2">
+                                        <i class="fa fa-exclamation-triangle"></i>
+                                        <span><strong>Tu solicitud fue observada.</strong> Ingresa a tu Intranet para corregir lo indicado y reenviarla.</span>
+                                    </div>
+                                    <a href="{{ route('mi-titulacion.solicitud-pti') }}" class="pk-btn-intranet-cta mt-2">
+                                        <i class="fa fa-pen-to-square"></i>
+                                        <span>Corregir y reenviar mi PTI</span>
+                                    </a>
+                                @else
+                                    <a href="{{ route('mi-titulacion.solicitud-pti') }}" class="pk-btn-intranet-cta mt-2">
+                                        <i class="fa fa-file-signature"></i>
+                                        <span>Solicitar aprobación del PTI en mi Intranet</span>
+                                    </a>
+                                @endif
                             @else
                                 <button type="button" class="pk-btn-intranet-cta mt-2" data-bs-toggle="modal" data-bs-target="#modalPtiIntranet">
                                     <i class="fa fa-sign-in"></i>
@@ -207,10 +241,42 @@
                     </p>
                     <div>
                         @auth
-                            <a href="{{ route('mi-titulacion.carta') }}" class="pk-btn-intranet-cta">
-                                <i class="fa fa-file-text"></i>
-                                <span>Solicitar Carta en mi Intranet</span>
-                            </a>
+                            @php
+                                $cartaAuth = auth()->user()->seguimientoTitulacion?->cartasAceptacion()->first();
+                            @endphp
+                            @if ($cartaAuth && $cartaAuth->estado === 'emitida')
+                                <div class="pk-milestone-result mb-3">
+                                    <i class="fa fa-check-circle"></i>
+                                    <span><strong>Tu Carta de Aplicación ya fue aprobada.</strong> No necesitas volver a solicitarla.</span>
+                                </div>
+                                <a href="{{ route('mi-titulacion.carta') }}" class="pk-btn-intranet-cta">
+                                    <i class="fa fa-file-check"></i>
+                                    <span>Ver y descargar mi Carta</span>
+                                </a>
+                            @elseif ($cartaAuth && $cartaAuth->estado === 'enviada')
+                                <div class="pk-milestone-result mb-3" style="background:#eff6ff; border-left-color:#2563eb; color:#1e40af;">
+                                    <i class="fa fa-paper-plane" style="color:#2563eb;"></i>
+                                    <span><strong>Ya enviaste tu solicitud el {{ $cartaAuth->created_at->format('d/m/Y') }}</strong> (En revisión · Secretaría responde en hasta 3 días hábiles). No puedes volver a enviarla.</span>
+                                </div>
+                                <a href="{{ route('mi-titulacion.carta') }}" class="pk-btn-intranet-cta">
+                                    <i class="fa fa-eye"></i>
+                                    <span>Ver estado de mi solicitud</span>
+                                </a>
+                            @elseif ($cartaAuth && $cartaAuth->estado === 'observada')
+                                <div class="pk-milestone-notice mb-3">
+                                    <i class="fa fa-exclamation-triangle"></i>
+                                    <span><strong>Secretaría observó tu solicitud de carta.</strong> Ingresa para corregirla y enviarla de nuevo.</span>
+                                </div>
+                                <a href="{{ route('mi-titulacion.carta') }}" class="pk-btn-intranet-cta">
+                                    <i class="fa fa-pen-to-square"></i>
+                                    <span>Corregir y reenviar Carta</span>
+                                </a>
+                            @else
+                                <a href="{{ route('mi-titulacion.carta') }}" class="pk-btn-intranet-cta">
+                                    <i class="fa fa-file-text"></i>
+                                    <span>Solicitar Carta en mi Intranet</span>
+                                </a>
+                            @endif
                         @else
                             <button type="button" class="pk-btn-intranet-cta" data-bs-toggle="modal" data-bs-target="#modalCartaIntranet">
                                 <i class="fa fa-sign-in"></i>

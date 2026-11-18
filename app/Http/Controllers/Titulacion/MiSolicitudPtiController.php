@@ -60,8 +60,12 @@ class MiSolicitudPtiController extends Controller
             return $otra;
         }
         $ultima = Solicitud::ptiDe($user)->first();
-        if ($ultima && $ultima->estado === 'recibida') {
-            return redirect()->route('mi-titulacion.solicitud-pti')->with('error', 'Ya tienes una solicitud en revisión: espera la respuesta del Área de Investigación.');
+        if ($ultima && $ultima->estado !== 'observada') {
+            $msg = $ultima->estado === 'atendida'
+                ? 'Tu solicitud de PTI ya fue atendida: no necesitas volver a enviarla.'
+                : 'Ya enviaste tu solicitud de PTI y está en revisión: espera la respuesta del Área de Investigación.';
+
+            return redirect()->route('mi-titulacion.solicitud-pti')->with('error', $msg);
         }
 
         // Lo que se sabe de la ficha no lo decide el formulario.

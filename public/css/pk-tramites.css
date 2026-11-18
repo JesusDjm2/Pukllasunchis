@@ -64,6 +64,16 @@ body.dim-mode .tr-ayuda__icono { color: #241a24; }
 .tr-chip { display: inline-flex; align-items: center; gap: .3rem; padding: .1rem .5rem; border-radius: 999px; background: var(--tr-oro-f); color: var(--tr-oro);
     font-size: .72rem; font-weight: 700; white-space: nowrap; vertical-align: middle; }
 .tr-chip--suave { background: var(--tr-fondo-2); color: var(--tr-suave); border: 1px solid var(--tr-borde); font-weight: 600; }
+.tr-chip--info { background: var(--tr-acento-f); color: var(--tr-acento); border: 1px solid rgba(78, 115, 223, .28); }
+.tr-chip--ok { background: var(--tr-ok-f); color: var(--tr-ok); border: 1px solid rgba(14, 148, 103, .28); }
+.tr-chip--warn { background: var(--tr-oro-f); color: var(--tr-oro); border: 1px solid rgba(167, 109, 0, .28); }
+
+.tr-estado-banner { display: flex; align-items: flex-start; gap: .55rem; margin-bottom: .75rem; padding: .6rem .75rem; border-radius: .55rem; font-size: .82rem; line-height: 1.45; font-weight: 500; border-left: 3.5px solid var(--tr-acento); background: var(--tr-acento-f); color: var(--tr-texto); }
+.tr-estado-banner > i { margin-top: .2rem; flex-shrink: 0; color: var(--tr-acento); }
+.tr-estado-banner.is-aprobada { border-left-color: var(--tr-ok); background: var(--tr-ok-f); }
+.tr-estado-banner.is-aprobada > i { color: var(--tr-ok); }
+.tr-estado-banner.is-observada { border-left-color: var(--tr-oro); background: var(--tr-oro-f); }
+.tr-estado-banner.is-observada > i { color: var(--tr-oro); }
 
 .tr-tramite__cuerpo { padding: .1rem .9rem .85rem 3.15rem; font-size: .86rem; }
 
