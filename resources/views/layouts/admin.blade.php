@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="author" content="David Jesús Miranda">
     <title>@yield('titulo')</title>
     <link rel="shortcut icon" type="image/x-icon" href="{{ asset('img/logoiesp.ico') }}">
@@ -20,6 +21,7 @@
     <link rel="stylesheet" href="{{ asset('css/pk-sidebar.css') }}?v={{ filemtime(public_path('css/pk-sidebar.css')) }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <link rel="stylesheet" href="{{ asset('css/puklla-alert.css') }}?v={{ filemtime(public_path('css/puklla-alert.css')) }}">
+    @stack('styles')
 </head>
 
 <body id="page-top" class="{{ auth()->user()?->hasRole('super-admin') ? 'pk-rol-superadmin' : (auth()->user()?->hasAnyRole(['admin', 'adminB', 'gestor-titulacion', 'tutor']) ? 'pk-rol-admin' : (auth()->user()?->hasRole('docente') ? 'pk-rol-docente' : '')) }}">

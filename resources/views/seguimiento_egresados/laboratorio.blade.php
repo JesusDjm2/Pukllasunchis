@@ -567,7 +567,7 @@
                 <div class="hero-text">
                     <h1>Laboratorio de Inteligencia Institucional</h1>
                     <p>
-                        Analítica longitudinal de trayectorias formativas, calidad del empleo, inserción docente y distribución territorial de egresados de la EESP Pukllasunchis. Métricas protegidas con anonimato diferencial (R08) y universos estadísticos rigurosos (R07/R10).
+                        Analítica longitudinal de trayectorias formativas, calidad del empleo, inserción docente y distribución territorial de egresados de la EESP Pukllasunchis, mostrando los conteos exactos de personas únicas (incluidos los menores a 5).
                     </p>
                 </div>
                 <div class="hero-controls">
@@ -936,7 +936,7 @@
 @endsection
 @push('scripts')
 <script>
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || @json(csrf_token());
 
     function scrollToSection(id) {
         const el = document.getElementById(id);
