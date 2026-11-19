@@ -30,21 +30,30 @@ class MiSolicitudPtiController extends Controller
         if ($otra = $this->noCorresponde($user)) {
             return $otra;
         }
+
+        $seguimiento = $user->seguimientoTitulacion;
+        $ptiActual = $seguimiento?->pti;
+        $ptiVencido = (bool) ($ptiActual && $ptiActual->estaVencido());
+
         $ultima = Solicitud::ptiDe($user)->first();
+        // Si la última solicitud atendida correspondía al PTI anterior ya vencido, permitimos un nuevo formulario:
+        $solicitudMostrada = ($ptiVencido && $ultima?->estado === 'atendida') ? null : $ultima;
+
         $valores = $this->valoresIniciales($user);
         // Al corregir una observada, se parte de lo que ya escribió.
-        if ($ultima?->estado === 'observada') {
-            $nombres = $ultima->nombresIntegrantes();
+        if ($solicitudMostrada?->estado === 'observada') {
+            $nombres = $solicitudMostrada->nombresIntegrantes();
             $valores = array_merge($valores, [
                 'integrante2' => $nombres[1] ?? '', 'integrante3' => $nombres[2] ?? '',
-                'celulares' => $ultima->celulares, 'titulo' => $ultima->titulo,
-                'area' => $ultima->datos['area'] ?? '', 'linea' => $ultima->datos['linea'] ?? '',
-            ], array_filter(['programa_estudios' => $ultima->programa_estudios, 'ciclo' => $ultima->ciclo]), $this->fijos($user));
+                'celulares' => $solicitudMostrada->celulares, 'titulo' => $solicitudMostrada->titulo,
+                'area' => $solicitudMostrada->datos['area'] ?? '', 'linea' => $solicitudMostrada->datos['linea'] ?? '',
+            ], array_filter(['programa_estudios' => $solicitudMostrada->programa_estudios, 'ciclo' => $solicitudMostrada->ciclo]), $this->fijos($user));
         }
 
         return view('titulacion.solicitud-pti.solicitar', [
             'user' => $user,
-            'ultima' => $ultima,
+            'ultima' => $solicitudMostrada,
+            'ptiVencido' => $ptiVencido,
             'valores' => $valores,
             'fijos' => $this->fijos($user),
             'layout' => self::layout($user),
@@ -59,8 +68,14 @@ class MiSolicitudPtiController extends Controller
         if ($otra = $this->noCorresponde($user)) {
             return $otra;
         }
+
+        $seguimiento = $user->seguimientoTitulacion;
+        $ptiActual = $seguimiento?->pti;
+        $ptiVencido = (bool) ($ptiActual && $ptiActual->estaVencido());
+
         $ultima = Solicitud::ptiDe($user)->first();
-        if ($ultima && $ultima->estado !== 'observada') {
+        $bloquear = $ultima && $ultima->estado !== 'observada' && ! ($ptiVencido && $ultima->estado === 'atendida');
+        if ($bloquear) {
             $msg = $ultima->estado === 'atendida'
                 ? 'Tu solicitud de PTI ya fue atendida: no necesitas volver a enviarla.'
                 : 'Ya enviaste tu solicitud de PTI y está en revisión: espera la respuesta del Área de Investigación.';
@@ -158,7 +173,8 @@ class MiSolicitudPtiController extends Controller
      */
     private function noCorresponde(User $user)
     {
-        if ($user->seguimientoTitulacion()->whereHas('pti')->exists()) {
+        $ptiActual = $user->seguimientoTitulacion?->pti;
+        if ($ptiActual && ! $ptiActual->estaVencido()) {
             return redirect(PanelDeUsuario::url($user).'#titulacion')->with('info', 'Tu proceso de titulación ya está iniciado: tu PTI está registrado.');
         }
         if (PanelDeUsuario::esPersonal($user)) {

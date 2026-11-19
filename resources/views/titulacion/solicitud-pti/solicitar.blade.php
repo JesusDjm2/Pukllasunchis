@@ -36,6 +36,15 @@
     @if (session('success'))<div class="al-aviso is-ok"><i class="fas fa-check-circle"></i><div>{{ session('success') }}</div></div>@endif
     @if (session('error'))<div class="al-aviso is-mal"><i class="fas fa-times-circle"></i><div>{{ session('error') }}</div></div>@endif
 
+    @if (! empty($ptiVencido) && (! $ultima || $estado === 'observada'))
+        <div class="al-aviso is-warn mb-3">
+            <i class="fas fa-redo-alt"></i>
+            <div>
+                <strong>Reinicio del proceso:</strong> Tu Plan de Trabajo de Investigación anterior ha vencido. Al completar y enviar esta solicitud solicitarás la aprobación de un nuevo PTI para iniciar nuevamente el proceso. Las resoluciones de aprobación y registros anteriores se mantendrán registradas en tu historial.
+            </div>
+        </div>
+    @endif
+
     @if ($bloqueo)
         @php $porCiclo = str_contains($bloqueo, 'Ciclo IX'); @endphp
         <div class="al-card">

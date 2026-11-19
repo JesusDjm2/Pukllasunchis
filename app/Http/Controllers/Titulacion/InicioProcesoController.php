@@ -156,8 +156,7 @@ class InicioProcesoController extends Controller
             $total = User::whereIn('ciclo_id', $cs->pluck('id'))
                 ->when($sinUsuario, fn ($q) => $q->where('id', '!=', $sinUsuario))
                 ->where(fn ($q) => $q->where('condicion', 'Egresado')->orWhereHas('roles', fn ($r) => $r->whereIn('name', ['alumno', 'alumnoB'])))
-                ->whereDoesntHave('seguimientoTitulacion.pti')
-                ->with(['ciclo.programa', 'programa', 'roles'])
+                ->with(['ciclo.programa', 'programa', 'roles', 'seguimientoTitulacion.pti'])
                 ->get()
                 ->filter(fn (User $u) => self::esPpd($u) === $ppd && self::motivoNoPuede($u) === null)
                 ->count();
@@ -219,6 +218,12 @@ class InicioProcesoController extends Controller
                 }
                 $seguimiento->save();
 
+                // Si tenía un PTI anterior, queda registrado como vencido en el historial:
+                $anterior = $seguimiento->pti;
+                if ($anterior && $anterior->estado !== 'vencido') {
+                    $anterior->update(['estado' => 'vencido']);
+                }
+
                 Pti::create([
                     'seguimiento_id' => $seguimiento->id,
                     'numero' => (int) $seguimiento->ptis()->withTrashed()->max('numero') + 1,
@@ -268,7 +273,8 @@ class InicioProcesoController extends Controller
         if (! $u) {
             return 'no existe';
         }
-        if ($u->seguimientoTitulacion?->pti) {
+        $ptiActual = $u->seguimientoTitulacion?->pti;
+        if ($ptiActual && ! $ptiActual->estaVencido()) {
             return self::MOTIVO_YA_TIENE_PTI;
         }
         if ($u->condicion === 'Egresado') {

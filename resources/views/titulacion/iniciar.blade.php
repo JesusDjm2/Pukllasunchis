@@ -30,10 +30,20 @@
 
 <div class="container-fluid py-3 rdg">
     <a href="{{ $volver }}" class="small text-muted"><i class="fas fa-arrow-left fa-xs mr-1"></i> Volver</a>
-    <h4 class="font-weight-bold mt-2 mb-1"><i class="fas fa-play-circle mr-2" style="color:#4e73df;"></i>Iniciar proceso de titulación</h4>
+    @php
+        $esReinicio = (bool) $persona->seguimientoTitulacion?->pti?->estaVencido();
+    @endphp
+    <h4 class="font-weight-bold mt-2 mb-1">
+        <i class="fas {{ $esReinicio ? 'fa-redo-alt' : 'fa-play-circle' }} mr-2" style="color:#4e73df;"></i>
+        {{ $esReinicio ? 'Registrar nuevo PTI (reinicio del proceso)' : 'Iniciar proceso de titulación' }}
+    </h4>
     <p class="rdg-ayuda mb-3">
-        Se registran los datos del PTI, se genera el N° de expediente de cada integrante y queda armado el grupo.
-        El asesor se asigna después, en la etapa del TI.
+        @if ($esReinicio)
+            El PTI anterior se encuentra vencido. Se registrará un nuevo PTI conservando su número de expediente y las resoluciones de su proceso en el historial.
+        @else
+            Se registran los datos del PTI, se genera el N° de expediente de cada integrante y queda armado el grupo.
+            El asesor se asigna después, en la etapa del TI.
+        @endif
     </p>
 
     @if (session('error'))

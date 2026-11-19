@@ -44,4 +44,9 @@ class Pti extends Model
     {
         return $this->belongsTo(User::class, 'asesor_id');
     }
+
+    public function estaVencido(): bool
+    {
+        return $this->estado === 'vencido' || (new \App\Services\Titulacion\VigenciaPti($this))->vencido();
+    }
 }

@@ -142,6 +142,9 @@
                                             <span class="d-block">{{ $i['nombre'] }}@unless ($i['user_id'] ?? null) <small class="text-muted" title="No se reconoció en el sistema">(sin cuenta reconocida)</small>@endunless</span>
                                         @endforeach
                                         @if ($r->seguimiento?->numero_expediente)<small>Exp. {{ \App\Services\Titulacion\Expediente::mostrar($r->seguimiento->numero_expediente) }}</small>@endif
+                                        @if ($s?->seguimientoTitulacion?->pti?->estaVencido())
+                                            <span class="badge badge-warning text-dark d-inline-block mt-1"><i class="fas fa-redo-alt mr-1"></i>Reinicio (PTI vencido)</span>
+                                        @endif
                                     </div>
                                 </td>
                                 <td>
@@ -204,7 +207,10 @@
                                                 @elseif ($motivo)
                                                     <small class="text-muted d-block">No se puede iniciar desde aquí: {{ $motivo }}.</small>
                                                 @else
-                                                    <a href="{{ route('titulacion.inicio.crear', [$s->id, 'solicitud' => $r->id]) }}" class="btn tp-btn mt-1"><i class="fas fa-play mr-1"></i>Iniciar el proceso con estos datos</a>
+                                                    <a href="{{ route('titulacion.inicio.crear', [$s->id, 'solicitud' => $r->id]) }}" class="btn tp-btn mt-1">
+                                                        <i class="fas {{ $s?->seguimientoTitulacion?->pti?->estaVencido() ? 'fa-redo-alt' : 'fa-play' }} mr-1"></i>
+                                                        {{ $s?->seguimientoTitulacion?->pti?->estaVencido() ? 'Registrar nuevo PTI con estos datos' : 'Iniciar el proceso con estos datos' }}
+                                                    </a>
                                                 @endif
                                                 {{-- Observar: el estudiante la ve en su intranet y la corrige (solo tiene sentido si la envió desde el sistema). --}}
                                                 @if ($r->origen === 'sistema')

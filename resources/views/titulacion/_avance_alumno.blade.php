@@ -220,14 +220,21 @@
                             @elseif ($ampUltima?->estado === 'observada')
                                 Tu solicitud fue observada: corrígela para continuar.
                             @elseif ($ptiVencido)
-                                Plazo vencido: tramita tu ampliación para continuar tu investigación.
+                                Plazo vencido: puedes tramitar tu ampliación con R.D. o iniciar nuevamente el proceso con un nuevo PTI.
                             @else
                                 Próximo a vencer: puedes solicitar tu ampliación de plazo (Cód. 11 · S/ 50.00).
                             @endif
                         </span>
-                        <a href="{{ route('mi-titulacion.ampliacion-pti') }}" class="btn btn-sm {{ $ampClaseBtn }}">
-                            <i class="fas fa-file-signature mr-1"></i>{{ $ampBotonTxt }}
-                        </a>
+                        <div class="d-flex align-items-center flex-wrap" style="gap:.35rem;">
+                            <a href="{{ route('mi-titulacion.ampliacion-pti') }}" class="btn btn-sm {{ $ampClaseBtn }}">
+                                <i class="fas fa-file-signature mr-1"></i>{{ $ampBotonTxt }}
+                            </a>
+                            @if ($ptiVencido)
+                                <a href="{{ route('mi-titulacion.solicitud-pti') }}" class="btn btn-sm btn-outline-danger" title="Enviar una nueva solicitud de aprobación de PTI para iniciar de nuevo el proceso">
+                                    <i class="fas fa-redo-alt mr-1"></i>Iniciar nuevamente el proceso
+                                </a>
+                            @endif
+                        </div>
                     </div>
                 @endif
             </div>
