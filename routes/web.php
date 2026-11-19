@@ -190,6 +190,8 @@ Route::middleware(['auth'])->prefix('seguimiento-egresados')->group(function () 
         ->name('seguimiento.analitica');
     Route::get('/analitica/exportar', [App\Http\Controllers\SeguimientoLaboratorioController::class, 'exportar'])
         ->name('seguimiento.analitica.exportar');
+    Route::get('/analitica/exportar-cohortes', [App\Http\Controllers\SeguimientoLaboratorioController::class, 'exportarInformeCohortes'])
+        ->name('seguimiento.analitica.exportar-cohortes');
 
     // Alias compatibles para seguimiento-egresados.*
     Route::get('/laboratorio-alias', [App\Http\Controllers\SeguimientoLaboratorioController::class, 'index'])
@@ -198,6 +200,8 @@ Route::middleware(['auth'])->prefix('seguimiento-egresados')->group(function () 
         ->name('seguimiento-egresados.analitica');
     Route::get('/analitica/exportar-alias', [App\Http\Controllers\SeguimientoLaboratorioController::class, 'exportar'])
         ->name('seguimiento-egresados.analitica.exportar');
+    Route::get('/analitica/exportar-cohortes-alias', [App\Http\Controllers\SeguimientoLaboratorioController::class, 'exportarInformeCohortes'])
+        ->name('seguimiento-egresados.analitica.exportar-cohortes');
 
     // Episodios laborales (consulta y cierre con verificación en servidor de propiedad o asignación)
     Route::get('/episodios/{userId}', [App\Http\Controllers\SeguimientoEgresadoController::class, 'obtenerEpisodios'])

@@ -526,6 +526,10 @@
 
 }</style>
 <div class="seguimiento-panel">
+@php
+    $fuenteActiva = $fuenteDatos ?? request('fuente_datos', 'seguimiento_vigente');
+    $catalogoFuentes = $fuentesDatos ?? \App\Services\SeguimientoEgresado\SeguimientoAnaliticaService::FUENTES_DATOS;
+@endphp
 @include('seguimiento_egresados.partials.grupo_formacion')
 @include('seguimiento_egresados.partials.comparativa_grupos')
 @if(app(App\Services\SeguimientoEgresado\SeguimientoAutorizacionService::class)->esPersonalGestion())
@@ -574,44 +578,123 @@
                     <button type="button" class="btn btn-ocre" onclick="exportarDatos('csv')">
                         <span>📥</span> Exportar Cruce (CSV)
                     </button>
+                    <button type="button" class="btn btn-light" onclick="exportarInformeCohortes()">
+                        <span>📊</span> Exportar informe por cohorte (.xlsx)
+                    </button>
                     <a href="{{ route('seguimiento.index') }}" class="btn btn-light">
                         <span>📋</span> Ver Padrón Operativo
                     </a>
                 </div>
             </div>
 
+            <!-- Panel de Fuente de Datos, Vínculos Conciliados, Personas Únicas y Denominadores -->
+            <div class="analytics-card" id="resumen-fuente-conciliacion" style="margin-bottom:24px;border-left:5px solid var(--puklla-granate);">
+                <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:16px;margin-bottom:14px;">
+                    <div>
+                        <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.6px;color:var(--puklla-granate);">
+                            Fuente de Datos y Trazabilidad de Conciliación
+                        </div>
+                        <h3 style="margin:4px 0 0;font-size:18px;font-weight:850;color:var(--ink);" id="u-fuente-titulo">
+                            {{ $universos['fuente_etiqueta'] ?? ($catalogoFuentes[$fuenteActiva] ?? 'Seguimiento vigente') }}
+                        </h3>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                        <label for="filtro-fuente-datos" style="font-size:12px;font-weight:800;color:var(--ink);">Fuente de datos:</label>
+                        <select id="filtro-fuente-datos" name="fuente_datos" class="filter-select" style="font-weight:700;min-width:220px;" onchange="cambiarFuenteDatos(this.value)">
+                            @foreach($catalogoFuentes as $codFuente => $nomFuente)
+                                <option value="{{ $codFuente }}" @selected($fuenteActiva === $codFuente)>{{ $nomFuente }}</option>
+                            @endforeach
+                        </select>
+                        <span class="badge badge-amber" id="u-fecha-corte">
+                            Corte: {{ $universos['fecha_corte'] ?? now()->toDateString() }}
+                        </span>
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:14px;">
+                    <div style="background:#F8FAFC;padding:12px 16px;border-radius:8px;border:1px solid #E2E8F0;">
+                        <div style="font-size:11px;font-weight:750;text-transform:uppercase;color:#718096;">Registros Vinculados</div>
+                        <div style="font-size:24px;font-weight:900;color:var(--puklla-granate);" id="u-registros-vinculados">
+                            {{ $universos['registros_vinculados'] ?? 0 }}
+                        </div>
+                        <div style="font-size:12px;color:#4A5568;" id="u-registros-sub">
+                            {{ ($universos['fuente_datos'] ?? $fuenteActiva) === 'encuesta_depurada_2026' ? 'Vínculos confirmados en Conciliación histórica 2026' : 'Fichas de actualización verificadas' }}
+                        </div>
+                    </div>
+                    <div style="background:#F8FAFC;padding:12px 16px;border-radius:8px;border:1px solid #E2E8F0;">
+                        <div style="font-size:11px;font-weight:750;text-transform:uppercase;color:#718096;">Personas Únicas (users.id)</div>
+                        <div style="font-size:24px;font-weight:900;color:var(--puklla-azul);" id="u-personas-unicas">
+                            {{ $universos['personas_unicas'] ?? ($universos['total_padron'] ?? 0) }}
+                        </div>
+                        <div style="font-size:12px;color:#4A5568;">
+                            Denominador general de personas únicas
+                        </div>
+                    </div>
+                    <div style="background:#F8FAFC;padding:12px 16px;border-radius:8px;border:1px solid #E2E8F0;">
+                        <div style="font-size:11px;font-weight:750;text-transform:uppercase;color:#718096;">Con Situación Laboral Declarada</div>
+                        <div style="font-size:24px;font-weight:900;color:var(--puklla-verde);" id="u-con-info-laboral">
+                            {{ $universos['con_info_laboral'] ?? 0 }}
+                        </div>
+                        <div style="font-size:12px;color:#4A5568;">
+                            Denominador de Docencia Directa y Retención en Educación
+                        </div>
+                    </div>
+                    <div style="background:#F8FAFC;padding:12px 16px;border-radius:8px;border:1px solid #E2E8F0;">
+                        <div style="font-size:11px;font-weight:750;text-transform:uppercase;color:#718096;">Casos con Fechas para 1.ᵉʳ Empleo</div>
+                        <div style="font-size:24px;font-weight:900;color:#2D3748;" id="u-casos-tiempo-empleo">
+                            {{ $universos['casos_tiempo_primer_empleo'] ?? 0 }}
+                        </div>
+                        <div style="font-size:12px;color:#4A5568;">
+                            Denominador de Tiempo al 1.ᵉʳ Empleo
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:12px 16px;font-size:12.5px;color:#78350F;">
+                    <div id="u-explicacion-diferencia" style="margin-bottom:6px;font-weight:600;">
+                        {{ $universos['explicacion_diferencia'] ?? '' }}
+                    </div>
+                    <div id="u-denominadores-resumen" style="color:#92400E;">
+                        <strong>Denominadores por indicador:</strong>
+                        Respondientes y Tasa de Titulación: <span id="den-personas">{{ $universos['personas_unicas'] ?? ($universos['total_padron'] ?? 0) }}</span> personas únicas |
+                        En Docencia Directa y Retención en Educación: <span id="den-laboral">{{ $universos['con_info_laboral'] ?? 0 }}</span> personas únicas con situación laboral declarada |
+                        Tiempo al 1.ᵉʳ Empleo: <span id="den-tiempo">{{ $universos['casos_tiempo_primer_empleo'] ?? 0 }}</span> casos con fechas válidas de egreso e inicio laboral.
+                    </div>
+                </div>
+            </div>
+
             <!-- Module 1: Executive Universe Panels -->
             <div class="universos-grid" id="universos-container">
                 <div class="universe-card c-padron">
-                    <div class="u-title">Padrón Histórico</div>
-                    <div class="u-count" id="u-padron">{{ $universos['total_padron'] ?? 401 }}</div>
+                    <div class="u-title">Padrón / Personas Únicas</div>
+                    <div class="u-count" id="u-padron">{{ $universos['total_padron'] ?? 0 }}</div>
                     <div class="u-subtitle">
-                        <span>Egresados registrados</span>
-                        <span class="badge badge-blue">100% Padrón</span>
+                        <span>Personas únicas (users.id)</span>
+                        <span class="badge badge-blue">100% Universo</span>
                     </div>
                 </div>
                 <div class="universe-card c-elegibles">
                     <div class="u-title">Elegibles Seguimiento</div>
                     <div class="u-count" id="u-elegibles">{{ $universos['elegibles_seguimiento'] ?? 0 }}</div>
                     <div class="u-subtitle">
-                        <span>Cohortes 2021–2025</span>
+                        <span>Cuentas habilitadas</span>
                         <span class="badge badge-blue">Elegibles</span>
                     </div>
                 </div>
                 <div class="universe-card c-contactados">
-                    <div class="u-title">Contactados 2026-II</div>
-                    <div class="u-count" id="u-contactados">{{ $universos['contactados'] ?? 0 }}</div>
+                    <div class="u-title">Contactados / Vínculos</div>
+                    <div class="u-count" id="u-contactados">{{ ($universos['fuente_datos'] ?? $fuenteActiva) === 'encuesta_depurada_2026' ? ($universos['registros_vinculados'] ?? 0) : ($universos['contactados'] ?? 0) }}</div>
                     <div class="u-subtitle">
-                        <span>Contacto efectivo</span>
-                        <span class="badge badge-amber">{{ $universos['cobertura_padron_pct'] ?? 0 }}% Cobertura</span>
+                        <span id="u-contactados-label">{{ ($universos['fuente_datos'] ?? $fuenteActiva) === 'encuesta_depurada_2026' ? 'Registros vinculados' : 'Contacto efectivo' }}</span>
+                        <span class="badge badge-amber" id="u-cobertura-badge">{{ $universos['cobertura_padron_pct'] ?? 0 }}% Cobertura</span>
                     </div>
                 </div>
                 <div class="universe-card c-respondientes">
                     <div class="u-title">Respondientes Válidos</div>
                     <div class="u-count" id="u-respondientes">{{ $universos['respondientes'] ?? 0 }}</div>
                     <div class="u-subtitle">
-                        <span>Fichas con info laboral</span>
-                        <span class="badge badge-green">{{ isset($universos['tasa_respuesta_pct']) ? $universos['tasa_respuesta_pct'].' % de respuesta sobre padrón' : 'Respuesta no calculable' }}</span>
+                        <span>Con respuesta registrada</span>
+                        <span class="badge badge-green" id="u-respuesta-badge">{{ isset($universos['tasa_respuesta_pct']) && $universos['tasa_respuesta_pct'] !== null ? $universos['tasa_respuesta_pct'].' % de respuesta' : 'Sin dato' }}</span>
                     </div>
                 </div>
                 <div class="universe-card c-longitudinal">
@@ -629,7 +712,8 @@
                 <div class="alert-icon">⚠️</div>
                 <div>
                     <strong>Rigor Metodológico y Separación de Universos:</strong>
-                    Los <strong>{{ $universos['no_respondientes'] ?? 0 }} egresados sin actualización en el ciclo</strong> corresponden al universo de <em>no respondientes</em>.
+                    Los <strong id="u-no-respondientes">{{ $universos['no_respondientes'] ?? 0 }} egresados sin actualización en el corte</strong> corresponden al universo de <em>no respondientes</em>
+                    (y <strong id="u-sin-dato-laboral">{{ $universos['sin_dato_laboral'] ?? 0 }}</strong> no registran situación laboral confirmada).
                     Bajo ningún supuesto analítico se les imputa la condición de desempleados o inactivos.
                     Todas las tablas, matrices y gráficos muestran los conteos exactos de personas únicas, incluyendo los valores menores a 5 tal cual.
                 </div>
@@ -644,7 +728,7 @@
                             <span>Constructor Dinámico de Cruces de Variables</span>
                         </h2>
                         <p class="section-desc">
-                            Tabulación cruzada sobre <strong>personas únicas</strong> (evitando duplicidad por múltiples contratos).
+                            Tabulación cruzada sobre <strong>personas únicas</strong> (evitando duplicidad por múltiples contratos o respuestas).
                         </p>
                     </div>
                 </div>
@@ -673,9 +757,9 @@
                         <label class="filter-label" for="filtro-programa">Filtro Programa</label>
                         <select id="filtro-programa" class="filter-select" onchange="actualizarAnalitica()">
                             <option value="">Todos los programas</option>
-                            <option value="Inicial">Educación Inicial</option>
-                            <option value="Primaria EIB">Educación Primaria EIB</option>
-                            <option value="PPD">PPD / Complementación</option>
+                            <option value="Inicial" @selected(($filtros['programa'] ?? '') === 'Inicial')>Educación Inicial</option>
+                            <option value="Primaria EIB" @selected(($filtros['programa'] ?? '') === 'Primaria EIB')>Educación Primaria EIB</option>
+                            <option value="PPD" @selected(($filtros['programa'] ?? '') === 'PPD')>PPD / Complementación</option>
                         </select>
                     </div>
 
@@ -683,11 +767,12 @@
                         <label class="filter-label" for="filtro-cohorte">Filtro Cohorte</label>
                         <select id="filtro-cohorte" class="filter-select" onchange="actualizarAnalitica()">
                             <option value="">Todas las cohortes</option>
-                            <option value="2025">Cohorte 2025</option>
-                            <option value="2024">Cohorte 2024</option>
-                            <option value="2023">Cohorte 2023</option>
-                            <option value="2022">Cohorte 2022</option>
-                            <option value="2021">Cohorte 2021</option>
+                            <option value="2025" @selected(($filtros['cohorte'] ?? '') === '2025')>Cohorte 2025</option>
+                            <option value="2024" @selected(($filtros['cohorte'] ?? '') === '2024')>Cohorte 2024</option>
+                            <option value="2023" @selected(($filtros['cohorte'] ?? '') === '2023')>Cohorte 2023</option>
+                            <option value="2022" @selected(($filtros['cohorte'] ?? '') === '2022')>Cohorte 2022</option>
+                            <option value="2021" @selected(($filtros['cohorte'] ?? '') === '2021')>Cohorte 2021</option>
+                            <option value="Por verificar" @selected(($filtros['cohorte'] ?? '') === 'Por verificar')>Por verificar</option>
                         </select>
                     </div>
 
@@ -695,8 +780,8 @@
                         <label class="filter-label" for="filtro-docencia">Docencia Directa</label>
                         <select id="filtro-docencia" class="filter-select" onchange="actualizarAnalitica()">
                             <option value="">Todos</option>
-                            <option value="si">Solo en aula / docencia directa</option>
-                            <option value="no">Otras áreas / no aula</option>
+                            <option value="si" @selected(($filtros['docencia_directa'] ?? '') === 'si')>Solo en aula / docencia directa</option>
+                            <option value="no" @selected(($filtros['docencia_directa'] ?? '') === 'no')>Otras áreas / no aula</option>
                         </select>
                     </div>
                 </div>
@@ -720,20 +805,25 @@
 
             <!-- Module 3: Longitudinal Intelligence (R07/R10) -->
             <div class="analytics-card" id="longitudinal">
-                <div class="section-header">
+                <div class="section-header" style="flex-wrap:wrap;gap:12px;">
                     <div>
                         <h2 class="section-title">
                             <span>📈</span>
                             <span>Inteligencia Longitudinal y Calidad de Inserción</span>
                         </h2>
                         <p class="section-desc">
-                            Evolución de inserción docente, retención en el sector educativo y tiempo hasta el primer empleo por cohorte de egreso.
+                            Evolución de inserción docente, retención en el sector educativo y tiempo hasta el primer empleo por cohorte de egreso, con denominadores explícitos y sin valores de respaldo.
                         </p>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <button type="button" class="btn btn-sm btn-ocre" onclick="exportarInformeCohortes()">
+                            <span>📊</span> Exportar informe por cohorte (.xlsx)
+                        </button>
                     </div>
                 </div>
 
                 <div class="table-responsive">
-                    <table class="matrix-table">
+                    <table class="matrix-table" id="tabla-longitudinal-cohortes">
                         <thead>
                             <tr>
                                 <th>Cohorte</th>
@@ -746,72 +836,89 @@
                             </tr>
                         </thead>
                         <tbody id="longitudinal-tbody">
-                            @foreach($longitudinalInicial['cohortes'] ?? [] as $cohorteKey => $data)
-                                @php
-                                    $cohorteNom = is_array($data) ? ($data['cohorte'] ?? $cohorteKey) : $cohorteKey;
-                                    $totEgr = is_array($data) ? ($data['total_egresados'] ?? $data['total'] ?? 0) : 0;
-                                    $respCount = is_array($data) ? ($data['respondientes'] ?? $totEgr) : 0;
-                                    $docPct = is_array($data) ? ($data['tasa_docencia_directa'] ?? $data['en_docencia_pct'] ?? 0) : 0;
-                                    $docAbs = is_array($data) ? ($data['docencia_directa'] ?? $data['insercion_docente'] ?? 0) : 0;
-                                    $tiempo = is_array($data) ? ($data['tiempo_promedio_primer_empleo_meses'] ?? 4.2) : 4.2;
-                                    $retPct = is_array($data) ? ($data['tasa_empleo'] ?? $data['retencion_educativa_pct'] ?? 0) : 0;
-                                    $titPct = is_array($data) ? ($data['tasa_titulacion'] ?? $data['tasa_titulacion_pct'] ?? 0) : 0;
-                                @endphp
+                            @forelse($longitudinalInicial['cohortes'] ?? [] as $data)
                                 <tr>
-                                    <td><strong>{{ $cohorteNom }}</strong></td>
-                                    <td>{{ $totEgr }}</td>
-                                    <td>{{ $respCount }}</td>
+                                    <td><strong>{{ $data['cohorte'] }}</strong></td>
+                                    <td>{{ $data['padron_texto'] }}</td>
+                                    <td>{{ $data['respondientes_texto'] }}</td>
                                     <td>
-                                        <span class="badge badge-green">{{ $docPct }}%</span>
-                                        <small style="color:#718096;">({{ $docAbs }})</small>
+                                        @if($data['tasa_docencia_directa'] === null)
+                                            <span class="badge badge-amber">{{ $data['docencia_directa_texto'] }}</span>
+                                        @else
+                                            <span class="badge badge-green">{{ $data['docencia_directa_texto'] }}</span>
+                                        @endif
                                     </td>
-                                    <td>{{ $tiempo }} meses</td>
+                                    <td>{{ $data['tiempo_primer_empleo_texto'] }}</td>
                                     <td>
-                                        <span class="badge badge-blue">{{ $retPct }}%</span>
+                                        @if($data['retencion_educativa_pct'] === null)
+                                            <span class="badge badge-amber">{{ $data['retencion_educativa_texto'] }}</span>
+                                        @else
+                                            <span class="badge badge-blue">{{ $data['retencion_educativa_texto'] }}</span>
+                                        @endif
                                     </td>
                                     <td>
-                                        <span class="badge badge-amber">{{ $titPct }}%</span>
+                                        <span class="badge badge-amber">{{ $data['tasa_titulacion_texto'] }}</span>
                                     </td>
                                 </tr>
-                            @endforeach
+                            @empty
+                                <tr>
+                                    <td colspan="7" style="text-align:center;color:#718096;font-style:italic;">
+                                        Sin registros para los filtros seleccionados en esta fuente.
+                                    </td>
+                                </tr>
+                            @endforelse
                         </tbody>
+                        <tfoot id="longitudinal-tfoot">
+                            @if(isset($longitudinalInicial['totales']))
+                                @php $tot = $longitudinalInicial['totales']; @endphp
+                                <tr style="border-top:2px solid #CBD5E0;background:#EDF2F7;font-weight:800;">
+                                    <td><strong>{{ $tot['cohorte'] }}</strong></td>
+                                    <td>{{ $tot['padron_texto'] }}</td>
+                                    <td>{{ $tot['respondientes_texto'] }}</td>
+                                    <td>{{ $tot['docencia_directa_texto'] }}</td>
+                                    <td>{{ $tot['tiempo_primer_empleo_texto'] }}</td>
+                                    <td>{{ $tot['retencion_educativa_texto'] }}</td>
+                                    <td>{{ $tot['tasa_titulacion_texto'] }}</td>
+                                </tr>
+                            @endif
+                        </tfoot>
                     </table>
                 </div>
 
                 <!-- Program Comparative Callout -->
                 <div class="two-cols" style="margin-top:20px;margin-bottom:0;">
-                    <div style="background:#F7FAFC;border-radius:8px;padding:16px;border:1px solid #E2E8F0;">
+                    <div style="background:#F7FAFC;border-radius:8px;padding:16px;border:1px solid #E2E8F0;" id="comparativa-programas-box">
                         <h4 style="margin:0 0 8px;font-size:14px;color:var(--puklla-granate);">Educación Inicial vs Educación Primaria EIB</h4>
                         <p style="font-size:12px;color:#4A5568;margin-bottom:12px;">
-                            Comparativa de velocidad de inserción y estabilidad en docencia pública / por convenio.
+                            Comparativa de inserción en docencia directa sobre personas con información laboral válida.
                         </p>
                         <div style="display:flex;gap:16px;">
                             <div style="flex:1;">
                                 <div style="font-size:11px;color:#718096;font-weight:700;">INICIAL</div>
-                                <div style="font-size:18px;font-weight:800;color:#2D3748;">
-                                    {{ $longitudinalInicial['comparativa_programas']['Inicial']['en_docencia_pct'] ?? 84 }}%
+                                <div style="font-size:18px;font-weight:800;color:#2D3748;" id="comp-inicial-docencia">
+                                    {{ $longitudinalInicial['comparativa_programas']['Inicial']['en_docencia_texto'] ?? 'Sin dato (0/0)' }}
                                 </div>
-                                <div style="font-size:11px;color:#718096;">en docencia activa</div>
+                                <div style="font-size:11px;color:#718096;">en docencia directa en aula</div>
                             </div>
                             <div style="flex:1;">
                                 <div style="font-size:11px;color:#718096;font-weight:700;">PRIMARIA EIB</div>
-                                <div style="font-size:18px;font-weight:800;color:var(--puklla-verde);">
-                                    {{ $longitudinalInicial['comparativa_programas']['Primaria EIB']['en_docencia_pct'] ?? 91 }}%
+                                <div style="font-size:18px;font-weight:800;color:var(--puklla-verde);" id="comp-eib-docencia">
+                                    {{ $longitudinalInicial['comparativa_programas']['Primaria EIB']['en_docencia_texto'] ?? 'Sin dato (0/0)' }}
                                 </div>
-                                <div style="font-size:11px;color:#718096;">en docencia activa</div>
+                                <div style="font-size:11px;color:#718096;">en docencia directa en aula</div>
                             </div>
                         </div>
                     </div>
 
-                    <div style="background:#F7FAFC;border-radius:8px;padding:16px;border:1px solid #E2E8F0;">
+                    <div style="background:#F7FAFC;border-radius:8px;padding:16px;border:1px solid #E2E8F0;" id="progreso-titulacion-box">
                         <h4 style="margin:0 0 8px;font-size:14px;color:var(--puklla-azul);">Progreso del Proceso de Titulación</h4>
                         <p style="font-size:12px;color:#4A5568;margin-bottom:12px;">
-                            Transición desde Bachillerato / PTI hacia Título Profesional Pedagógico.
+                            Transición desde Bachillerato / PTI hacia Título Profesional Pedagógico en el universo filtrado.
                         </p>
                         <div style="display:flex;gap:12px;flex-wrap:wrap;">
-                            <span class="badge badge-green">Licenciados/Titulados: {{ $longitudinalInicial['titulacion']['licenciado'] ?? 0 }}</span>
-                            <span class="badge badge-blue">Tesis/PTI Aprobado: {{ $longitudinalInicial['titulacion']['tesis_aprobada'] ?? 0 }}</span>
-                            <span class="badge badge-amber">En Proceso: {{ $longitudinalInicial['titulacion']['pti_en_proceso'] ?? 0 }}</span>
+                            <span class="badge badge-green" id="tit-badge-lic">Licenciados/Titulados: {{ $longitudinalInicial['titulacion']['licenciado'] ?? 0 }}</span>
+                            <span class="badge badge-blue" id="tit-badge-tesis">Tesis/PTI Aprobado: {{ $longitudinalInicial['titulacion']['tesis_aprobada'] ?? 0 }}</span>
+                            <span class="badge badge-amber" id="tit-badge-proc">En Proceso: {{ $longitudinalInicial['titulacion']['pti_en_proceso'] ?? 0 }}</span>
                         </div>
                     </div>
                 </div>
@@ -947,17 +1054,49 @@
         document.getElementById('loading-overlay').style.display = show ? 'grid' : 'none';
     }
 
-    function actualizarAnalitica() {
-        const fila = document.getElementById('sel-fila').value;
-        const columna = document.getElementById('sel-columna').value;
-        const prog = document.getElementById('filtro-programa').value;
-        const cohorte = document.getElementById('filtro-cohorte').value;
-        const docencia = document.getElementById('filtro-docencia').value;
+    function obtenerFiltrosActivos() {
+        const fuente = document.getElementById('filtro-fuente-datos')?.value || 'seguimiento_vigente';
+        const grupo = document.getElementById('grupo-formacion-global')?.value || 'TODOS';
+        const prog = document.getElementById('filtro-programa')?.value || '';
+        const cohorte = document.getElementById('filtro-cohorte')?.value || '';
+        const docencia = document.getElementById('filtro-docencia')?.value || '';
 
-        const filtros = {grupo_formacion: document.getElementById('grupo-formacion-global').value};
+        const filtros = {
+            fuente_datos: fuente,
+            grupo_formacion: grupo
+        };
         if (prog) filtros.programa = prog;
         if (cohorte) filtros.cohorte = cohorte;
         if (docencia) filtros.docencia_directa = docencia;
+        return filtros;
+    }
+
+    function sincronizarFormularioGrupo(fuente) {
+        const form = document.querySelector('form.puklla-grupo-formacion');
+        if (!form) return;
+        let inputFuente = form.querySelector('input[name="fuente_datos"]');
+        if (!inputFuente) {
+            inputFuente = document.createElement('input');
+            inputFuente.type = 'hidden';
+            inputFuente.name = 'fuente_datos';
+            form.appendChild(inputFuente);
+        }
+        inputFuente.value = fuente;
+    }
+
+    function cambiarFuenteDatos(nuevaFuente) {
+        sincronizarFormularioGrupo(nuevaFuente);
+        const url = new URL(window.location.href);
+        url.searchParams.set('fuente_datos', nuevaFuente);
+        window.history.replaceState({}, '', url.toString());
+        actualizarAnalitica();
+    }
+
+    function actualizarAnalitica() {
+        const fila = document.getElementById('sel-fila').value;
+        const columna = document.getElementById('sel-columna').value;
+        const filtros = obtenerFiltrosActivos();
+        sincronizarFormularioGrupo(filtros.fuente_datos);
 
         toggleLoading(true);
 
@@ -974,25 +1113,131 @@
         .then(data => {
             toggleLoading(false);
             if (data.success) {
-                // Actualizar universos
                 if (data.universos) {
-                    document.getElementById('u-padron').innerText = data.universos.total_padron;
-                    document.getElementById('u-elegibles').innerText = data.universos.elegibles_seguimiento;
-                    document.getElementById('u-contactados').innerText = data.universos.contactados;
-                    document.getElementById('u-respondientes').innerText = data.universos.respondientes;
-                    document.getElementById('u-longitudinales').innerText = data.universos.longitudinales_multiperiodo;
+                    renderizarUniversosYFuente(data.universos);
                 }
-
-                document.getElementById('comparativa-grupos')?.setAttribute('hidden','');
-                // Las tablas de cohorte se recalculan al recargar; no mostrar corte anterior bajo filtros nuevos.
-                // Renderizar matriz actualizada
-                renderizarMatriz(data.matriz);
+                if (data.matriz) {
+                    renderizarMatriz(data.matriz);
+                }
+                if (data.longitudinal) {
+                    renderizarLongitudinal(data.longitudinal);
+                }
             }
         })
         .catch(err => {
             toggleLoading(false);
             console.error('Error al actualizar analítica:', err);
         });
+    }
+
+    function renderizarUniversosYFuente(u) {
+        document.getElementById('u-padron').innerText = u.total_padron ?? 0;
+        document.getElementById('u-elegibles').innerText = u.elegibles_seguimiento ?? 0;
+        const esEncuesta = u.fuente_datos === 'encuesta_depurada_2026';
+        document.getElementById('u-contactados').innerText = esEncuesta ? (u.registros_vinculados ?? 0) : (u.contactados ?? 0);
+        const lblContactados = document.getElementById('u-contactados-label');
+        if (lblContactados) lblContactados.innerText = esEncuesta ? 'Registros vinculados' : 'Contacto efectivo';
+        const bCobertura = document.getElementById('u-cobertura-badge');
+        if (bCobertura) bCobertura.innerText = (u.cobertura_padron_pct ?? 0) + '% Cobertura';
+
+        document.getElementById('u-respondientes').innerText = u.respondientes ?? 0;
+        const bRespuesta = document.getElementById('u-respuesta-badge');
+        if (bRespuesta) {
+            bRespuesta.innerText = (u.tasa_respuesta_pct !== null && u.tasa_respuesta_pct !== undefined)
+                ? (u.tasa_respuesta_pct + ' % de respuesta')
+                : 'Sin dato';
+        }
+        document.getElementById('u-longitudinales').innerText = u.longitudinales_multiperiodo ?? 0;
+
+        // Panel de fuente y denominadores
+        const elTitulo = document.getElementById('u-fuente-titulo');
+        if (elTitulo) elTitulo.innerText = u.fuente_etiqueta || '';
+        const elCorte = document.getElementById('u-fecha-corte');
+        if (elCorte) elCorte.innerText = 'Corte: ' + (u.fecha_corte || '');
+        const elReg = document.getElementById('u-registros-vinculados');
+        if (elReg) elReg.innerText = u.registros_vinculados ?? 0;
+        const elRegSub = document.getElementById('u-registros-sub');
+        if (elRegSub) elRegSub.innerText = esEncuesta ? 'Vínculos confirmados en Conciliación histórica 2026' : 'Fichas de actualización verificadas';
+        const elPers = document.getElementById('u-personas-unicas');
+        if (elPers) elPers.innerText = u.personas_unicas ?? (u.total_padron ?? 0);
+        const elLab = document.getElementById('u-con-info-laboral');
+        if (elLab) elLab.innerText = u.con_info_laboral ?? 0;
+        const elTiempo = document.getElementById('u-casos-tiempo-empleo');
+        if (elTiempo) elTiempo.innerText = u.casos_tiempo_primer_empleo ?? 0;
+
+        const elExp = document.getElementById('u-explicacion-diferencia');
+        if (elExp) elExp.innerText = u.explicacion_diferencia || '';
+        const denPers = document.getElementById('den-personas');
+        if (denPers) denPers.innerText = u.personas_unicas ?? (u.total_padron ?? 0);
+        const denLab = document.getElementById('den-laboral');
+        if (denLab) denLab.innerText = u.con_info_laboral ?? 0;
+        const denTiempo = document.getElementById('den-tiempo');
+        if (denTiempo) denTiempo.innerText = u.casos_tiempo_primer_empleo ?? 0;
+
+        const elNoResp = document.getElementById('u-no-respondientes');
+        if (elNoResp) elNoResp.innerText = (u.no_respondientes ?? 0) + ' egresados sin actualización en el corte';
+        const elSinDatoLab = document.getElementById('u-sin-dato-laboral');
+        if (elSinDatoLab) elSinDatoLab.innerText = u.sin_dato_laboral ?? 0;
+    }
+
+    function renderizarLongitudinal(longitudinal) {
+        const tbody = document.getElementById('longitudinal-tbody');
+        const tfoot = document.getElementById('longitudinal-tfoot');
+        if (!tbody) return;
+
+        const cohortes = longitudinal.cohortes || [];
+        if (cohortes.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#718096;font-style:italic;">Sin registros para los filtros seleccionados en esta fuente.</td></tr>';
+        } else {
+            let html = '';
+            cohortes.forEach(c => {
+                const docBadgeClass = c.tasa_docencia_directa === null ? 'badge-amber' : 'badge-green';
+                const retBadgeClass = c.retencion_educativa_pct === null ? 'badge-amber' : 'badge-blue';
+                html += '<tr>';
+                html += '<td><strong>' + c.cohorte + '</strong></td>';
+                html += '<td>' + c.padron_texto + '</td>';
+                html += '<td>' + c.respondientes_texto + '</td>';
+                html += '<td><span class="badge ' + docBadgeClass + '">' + c.docencia_directa_texto + '</span></td>';
+                html += '<td>' + c.tiempo_primer_empleo_texto + '</td>';
+                html += '<td><span class="badge ' + retBadgeClass + '">' + c.retencion_educativa_texto + '</span></td>';
+                html += '<td><span class="badge badge-amber">' + c.tasa_titulacion_texto + '</span></td>';
+                html += '</tr>';
+            });
+            tbody.innerHTML = html;
+        }
+
+        if (tfoot && longitudinal.totales) {
+            const t = longitudinal.totales;
+            tfoot.innerHTML = '<tr style="border-top:2px solid #CBD5E0;background:#EDF2F7;font-weight:800;">'
+                + '<td><strong>' + t.cohorte + '</strong></td>'
+                + '<td>' + t.padron_texto + '</td>'
+                + '<td>' + t.respondientes_texto + '</td>'
+                + '<td>' + t.docencia_directa_texto + '</td>'
+                + '<td>' + t.tiempo_primer_empleo_texto + '</td>'
+                + '<td>' + t.retencion_educativa_texto + '</td>'
+                + '<td>' + t.tasa_titulacion_texto + '</td>'
+                + '</tr>';
+        }
+
+        if (longitudinal.comparativa_programas) {
+            const elIni = document.getElementById('comp-inicial-docencia');
+            const elEib = document.getElementById('comp-eib-docencia');
+            if (elIni && longitudinal.comparativa_programas['Inicial']) {
+                elIni.innerText = longitudinal.comparativa_programas['Inicial'].en_docencia_texto || 'Sin dato (0/0)';
+            }
+            if (elEib && longitudinal.comparativa_programas['Primaria EIB']) {
+                elEib.innerText = longitudinal.comparativa_programas['Primaria EIB'].en_docencia_texto || 'Sin dato (0/0)';
+            }
+        }
+
+        if (longitudinal.titulacion) {
+            const bLic = document.getElementById('tit-badge-lic');
+            const bTes = document.getElementById('tit-badge-tesis');
+            const bPti = document.getElementById('tit-badge-proc');
+            if (bLic) bLic.innerText = 'Licenciados/Titulados: ' + (longitudinal.titulacion.licenciado ?? 0);
+            if (bTes) bTes.innerText = 'Tesis/PTI Aprobado: ' + (longitudinal.titulacion.tesis_aprobada ?? 0);
+            if (bPti) bPti.innerText = 'En Proceso: ' + (longitudinal.titulacion.pti_en_proceso ?? 0);
+        }
     }
 
     function renderizarMatriz(matriz) {
@@ -1053,7 +1298,10 @@
 
     function dibujarGraficoSvg(matriz) {
         const container = document.getElementById('matrix-svg-chart');
-        if (!container || !matriz || !matriz.valores_fila || matriz.valores_fila.length === 0) return;
+        if (!container || !matriz || !matriz.valores_fila || matriz.valores_fila.length === 0) {
+            if (container) container.innerHTML = '<div style="padding:16px;color:#718096;font-style:italic;">Sin datos para graficar en este filtro.</div>';
+            return;
+        }
 
         const filas = matriz.valores_fila;
         const maxConteo = Math.max(...filas.map(f => {
@@ -1091,21 +1339,33 @@
     function exportarDatos(formato) {
         const fila = document.getElementById('sel-fila').value;
         const columna = document.getElementById('sel-columna').value;
-        const prog = document.getElementById('filtro-programa').value;
-        const cohorte = document.getElementById('filtro-cohorte').value;
-        const docencia = document.getElementById('filtro-docencia').value;
+        const filtros = obtenerFiltrosActivos();
 
         let url = "{{ route('seguimiento.analitica.exportar') }}?fila=" + encodeURIComponent(fila) + "&columna=" + encodeURIComponent(columna) + "&formato=" + encodeURIComponent(formato);
-        url += '&grupo_formacion=' + encodeURIComponent(document.getElementById('grupo-formacion-global').value);
-        if (prog) url += "&programa=" + encodeURIComponent(prog);
-        if (cohorte) url += "&cohorte=" + encodeURIComponent(cohorte);
-        if (docencia) url += "&docencia_directa=" + encodeURIComponent(docencia);
+        url += '&fuente_datos=' + encodeURIComponent(filtros.fuente_datos);
+        url += '&grupo_formacion=' + encodeURIComponent(filtros.grupo_formacion);
+        if (filtros.programa) url += "&programa=" + encodeURIComponent(filtros.programa);
+        if (filtros.cohorte) url += "&cohorte=" + encodeURIComponent(filtros.cohorte);
+        if (filtros.docencia_directa) url += "&docencia_directa=" + encodeURIComponent(filtros.docencia_directa);
+
+        window.location.href = url;
+    }
+
+    function exportarInformeCohortes() {
+        const filtros = obtenerFiltrosActivos();
+        let url = "{{ route('seguimiento.analitica.exportar-cohortes') }}?formato=xlsx";
+        url += '&fuente_datos=' + encodeURIComponent(filtros.fuente_datos);
+        url += '&grupo_formacion=' + encodeURIComponent(filtros.grupo_formacion);
+        if (filtros.programa) url += "&programa=" + encodeURIComponent(filtros.programa);
+        if (filtros.cohorte) url += "&cohorte=" + encodeURIComponent(filtros.cohorte);
+        if (filtros.docencia_directa) url += "&docencia_directa=" + encodeURIComponent(filtros.docencia_directa);
 
         window.location.href = url;
     }
 
     // Inicializar visualización al cargar
     document.addEventListener('DOMContentLoaded', () => {
+        sincronizarFormularioGrupo(document.getElementById('filtro-fuente-datos')?.value || 'seguimiento_vigente');
         @if(isset($matrizInicial))
             dibujarGraficoSvg(@json($matrizInicial));
         @endif

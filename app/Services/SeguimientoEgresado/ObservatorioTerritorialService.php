@@ -128,12 +128,24 @@ class ObservatorioTerritorialService
      */
     protected function obtenerEgresadosConTerritorio(array $filtros = []): Collection
     {
-        $query = User::query()
-            ->where('condicion', 'Egresado')
-            ->with(['alumno.programa', 'seguimientoTitulacion']);
+        $fuente = strtolower(trim((string) ($filtros['fuente_datos'] ?? 'seguimiento_vigente')));
+        if ($fuente === 'encuesta_depurada_2026') {
+            $ctx = app(SeguimientoAnaliticaService::class)->obtenerContextoEncuestaDepurada2026($filtros);
+            $idsEncuesta = $ctx['personas']->pluck('user_id')->values()->all();
+            if (empty($idsEncuesta)) {
+                return collect();
+            }
+            $query = User::query()
+                ->whereIn('id', $idsEncuesta)
+                ->with(['alumno.programa', 'alumnoB.programa', 'seguimientoTitulacion']);
+        } else {
+            $query = User::query()
+                ->where('condicion', 'Egresado')
+                ->with(['alumno.programa', 'alumnoB.programa', 'seguimientoTitulacion']);
+        }
 
         // Aplicar filtros opcionales
-        if (!empty($filtros['programa'])) {
+        if (!empty($filtros['programa']) && strtoupper(trim((string) $filtros['programa'])) !== 'PPD') {
             $query->where(function ($q) use ($filtros) {
                 foreach (['programa', 'alumno.programa', 'alumnoB.programa'] as $relation) $q->orWhereHas($relation, fn ($p) => $p->where('nombre', 'like', '%'.$filtros['programa'].'%'));
             });
