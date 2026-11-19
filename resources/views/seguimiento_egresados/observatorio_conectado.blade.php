@@ -15,29 +15,57 @@
 <section>
     <h1>Observatorio territorial conectado</h1>
     <p>Residencia y empleo (Base institucional, Encuesta 2026-I e historial longitudinal) se muestran por localidad o distrito oficial del catálogo, incluyendo los conteos exactos de cada ubicación (también aquellos menores a 5).</p>
-    <div class="grid">
+    <div class="grid" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:12px;margin-bottom:12px;">
         <div>
-            <label for="capa">Ubicación</label>
-            <select id="capa">
+            <label for="capa" style="font-weight:600;font-size:0.88rem;color:#2D3748;margin-bottom:4px;display:block;">Ubicación</label>
+            <select id="capa" style="width:100%;padding:8px 12px;border:1px solid #CBD5E0;border-radius:8px;background:#fff;">
                 <option value="ambos" selected>Trabajo y Residencia (Ambos)</option>
                 <option value="trabajo">Trabajo (Encuesta 2026-I y BD Institucional)</option>
                 <option value="residencia">Residencia (BD Institucional y Confirmaciones)</option>
             </select>
         </div>
         <div>
-            <label for="vista">Vista</label>
-            <select id="vista">
-                <option value="puntos">Geolocalización agrupada</option>
-                <option value="calor">Concentración (calor)</option>
+            <label for="vista" style="font-weight:600;font-size:0.88rem;color:#2D3748;margin-bottom:4px;display:block;">Tipo de Vista</label>
+            <select id="vista" style="width:100%;padding:8px 12px;border:1px solid #CBD5E0;border-radius:8px;background:#fff;">
+                <option value="calor" selected>Concentración de calor (Mapa térmico territorial)</option>
+                <option value="puntos">Geolocalización agrupada (Círculos por localidad)</option>
+            </select>
+        </div>
+        <div id="wrapper-radio-calor">
+            <label for="radio-calor" style="font-weight:600;font-size:0.88rem;color:#2D3748;margin-bottom:4px;display:block;">Cobertura de Calor</label>
+            <select id="radio-calor" style="width:100%;padding:8px 12px;border:1px solid #CBD5E0;border-radius:8px;background:#fff;">
+                <option value="55" selected>Alta cobertura territorial (55px · Recomendado)</option>
+                <option value="72">Máxima cobertura regional (72px)</option>
+                <option value="42">Focalizada por distrito (42px)</option>
+            </select>
+        </div>
+        <div id="wrapper-opacidad-calor">
+            <label for="opacidad-calor" style="font-weight:600;font-size:0.88rem;color:#2D3748;margin-bottom:4px;display:block;">Intensidad y Visibilidad</label>
+            <select id="opacidad-calor" style="width:100%;padding:8px 12px;border:1px solid #CBD5E0;border-radius:8px;background:#fff;">
+                <option value="0.75" selected>Muy notoria y sólida (Opacidad 75%)</option>
+                <option value="0.88">Máxima saturación (Opacidad 88%)</option>
+                <option value="0.60">Equilibrada (Opacidad 60%)</option>
             </select>
         </div>
     </div>
-    <button id="actualizar" type="button">Actualizar mapa</button>
-    <p id="estado" role="status"></p>
-    <div class="d-flex flex-wrap align-items-center mb-2" style="gap:16px;font-size:0.88rem;">
+    <div style="margin-bottom:12px;">
+        <button id="actualizar" type="button" class="btn btn-primary" style="padding:7px 18px;border-radius:8px;font-weight:600;">Actualizar mapa</button>
+    </div>
+    <p id="estado" role="status" style="font-size:0.85rem;color:#4A5568;margin-bottom:12px;background:#EDF2F7;padding:8px 12px;border-radius:6px;"></p>
+    
+    <!-- Leyenda Puntos -->
+    <div id="leyenda-puntos" class="d-flex flex-wrap align-items-center mb-2" style="display:none;gap:16px;font-size:0.88rem;">
         <span><strong style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#bf7b16;margin-right:5px;"></strong> Lugar de trabajo</span>
         <span><strong style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#224db5;margin-right:5px;"></strong> Lugar de residencia</span>
         <small>Haz clic en cualquier círculo para ver el detalle exacto de egresados FID y PPD.</small>
+    </div>
+
+    <!-- Leyenda Calor (Muy notoria y visible) -->
+    <div id="leyenda-calor" class="d-flex flex-wrap align-items-center mb-2" style="gap:14px;font-size:0.88rem;background:#F8FAFC;padding:10px 16px;border-radius:10px;border:1px solid #CBD5E0;">
+        <span style="font-weight:700;color:#1A202C;">🔥 Concentración de calor territorial:</span>
+        <div style="height:14px;width:200px;border-radius:7px;background:linear-gradient(to right, #1e40af, #0284c7, #059669, #eab308, #f97316, #dc2626);border:1px solid #A0AEC0;"></div>
+        <span style="font-size:0.84rem;color:#4A5568;">Baja (1-2) → Moderada (5-10) → Alta concentración (15-50+ egresados)</span>
+        <small style="margin-left:auto;color:#718096;font-style:italic;">* Haz clic en los núcleos para ver la localidad y conteos exactos</small>
     </div>
     <div id="mapa" style="height:560px;min-height:520px;width:100%;border-radius:16px;margin-top:8px;"></div>
 </section>
@@ -106,11 +134,66 @@ function draw() {
         }
     }
 
-    if (document.getElementById('vista').value === 'calor') {
-        L.heatLayer(
-            rawPoints.map(p => [Number(p.latitud), Number(p.longitud), p.n]),
-            {radius: 30, max: Math.max(5, ...rawPoints.map(p => p.n))}
-        ).addTo(layer);
+    const esCalor = document.getElementById('vista').value === 'calor';
+    const leyPuntos = document.getElementById('leyenda-puntos');
+    const leyCalor = document.getElementById('leyenda-calor');
+    const wrapRadio = document.getElementById('wrapper-radio-calor');
+    const wrapOpac = document.getElementById('wrapper-opacidad-calor');
+
+    if (leyPuntos) leyPuntos.style.display = esCalor ? 'none' : 'flex';
+    if (leyCalor) leyCalor.style.display = esCalor ? 'flex' : 'none';
+    if (wrapRadio) wrapRadio.style.display = esCalor ? 'block' : 'none';
+    if (wrapOpac) wrapOpac.style.display = esCalor ? 'block' : 'none';
+
+    if (esCalor) {
+        const radiusVal = Number(document.getElementById('radio-calor')?.value || 55);
+        const opacityVal = Number(document.getElementById('opacidad-calor')?.value || 0.75);
+
+        const maxN = Math.max(1, ...rawPoints.map(p => p.n));
+        const heatPoints = rawPoints.map(p => {
+            const lat = Number(p.latitud);
+            const lng = Number(p.longitud);
+            // Ponderación perceptiva calibrada: garantiza presencia territorial visible y notoria (base 0.48),
+            // evitando desvanecerse en transparencia frente a grandes urbes.
+            const ratio = Math.log10(p.n + 1) / Math.log10(maxN + 1);
+            const intensidad = Math.max(0.48, Math.min(1.0, 0.45 + (ratio * 0.55)));
+            return [lat, lng, intensidad];
+        });
+
+        // Capa de concentración de calor: colores más vivos, menor transparencia y mayor radio territorial
+        L.heatLayer(heatPoints, {
+            radius: radiusVal,
+            blur: Math.round(radiusVal * 0.46),
+            maxZoom: 11,
+            max: 1.0,
+            minOpacity: opacityVal,
+            gradient: {
+                0.15: '#1e40af', // Azul cobalto perimetral nítido y visible
+                0.32: '#0284c7', // Azul cerúleo luminoso
+                0.50: '#059669', // Verde esmeralda vivo
+                0.68: '#eab308', // Amarillo oro cálido
+                0.82: '#f97316', // Naranja fuego intenso
+                1.00: '#dc2626'  // Rojo carmesí de máxima concentración
+            }
+        }).addTo(layer);
+
+        // Puntos de referencia interactivos para consulta de la localidad exacta al hacer clic
+        rawPoints.forEach(p => {
+            const lat = Number(p.latitud);
+            const lng = Number(p.longitud);
+            const fid = p.por_grupo?.FID ?? 0;
+            const ppd = p.por_grupo?.PPD ?? 0;
+            const text = document.createElement('span');
+            text.textContent = `[${p.tipo === 'trabajo' ? 'Trabajo' : 'Residencia'}] ${p.nombre}: ${p.n} egresado(s) · FID: ${fid} · PPD: ${ppd}.`;
+
+            L.circleMarker([lat, lng], {
+                radius: Math.min(8, 3.5 + Math.sqrt(p.n)),
+                color: '#ffffff',
+                fillColor: p.tipo === 'residencia' ? '#1e3a8a' : '#7c2d12',
+                weight: 1.5,
+                fillOpacity: 0.90
+            }).bindPopup(text).addTo(layer);
+        });
     } else {
         // Si en vista "ambos" coinciden trabajo y residencia en la misma localidad, desplazar ligeramente para que ambos círculos sean visibles y clicables
         const seenCoords = {};
@@ -164,6 +247,8 @@ window.addEventListener('resize', () => map.invalidateSize());
 setTimeout(() => map.invalidateSize(), 250);
 document.getElementById('capa').onchange = draw;
 document.getElementById('vista').onchange = draw;
+document.getElementById('radio-calor').onchange = draw;
+document.getElementById('opacidad-calor').onchange = draw;
 document.getElementById('actualizar').onclick = refresh;
 refresh();
 setInterval(() => { if (!document.hidden) refresh(); }, 60000);

@@ -928,13 +928,20 @@
             <div class="two-cols" id="observatorio">
                 <!-- Territorial Distribution -->
                 <div class="analytics-card" style="margin-bottom:0;">
-                    <h2 class="section-title" style="margin-bottom:6px;">
-                        <span>🗺️</span>
-                        <span>Observatorio Territorial Cusco y Nacional</span>
-                    </h2>
-                    <p class="section-desc" style="margin-bottom:16px;">
-                        Concentración de egresados por departamento y provincias del departamento de Cusco.
-                    </p>
+                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+                        <div>
+                            <h2 class="section-title" style="margin-bottom:4px;">
+                                <span>🗺️</span>
+                                <span>Observatorio Territorial Cusco y Nacional</span>
+                            </h2>
+                            <p class="section-desc" style="margin-bottom:0;">
+                                Concentración de egresados por departamento y provincias del departamento de Cusco.
+                            </p>
+                        </div>
+                        <a href="{{ route('seguimiento.observatorio-conectado') }}" class="btn btn-sm" style="background:#2B6CB0;color:#fff;border-radius:6px;font-size:12px;padding:6px 14px;text-decoration:none;font-weight:600;display:inline-flex;align-items:center;gap:6px;">
+                            🔥 Ver Mapa Territorial (Calor y Geolocalización) →
+                        </a>
+                    </div>
 
                     <h4 style="font-size:12px;text-transform:uppercase;color:#718096;margin:12px 0 6px;">Provincias de Cusco (Zona de Influencia)</h4>
                     <div class="table-responsive">

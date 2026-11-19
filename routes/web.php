@@ -362,6 +362,7 @@ if (app()->isLocal()) {
         Route::get('/login/{perfil}', function (string $perfil) {
             $emails = [
                 'superadmin' => 'auditor.superadmin@puklla.test',
+                'empleabilidad' => 'auditor.coordinacion@puklla.test',
                 'docente-seguimiento' => 'auditor.docente.seguimiento@puklla.test',
                 'docente-entrevistador' => 'marcelbosch.iesp@pukllavirtual.edu.pe',
                 'docente-regular' => 'auditor.docente.regular@puklla.test',
