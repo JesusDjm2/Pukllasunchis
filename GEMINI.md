@@ -1,5 +1,11 @@
 # Memoria y Recordatorios del Proyecto Puklla2026
 
+## Directivas de Despliegue y Trabajo
+
+### Despliegue a Producción Automático
+- **Regla fija del usuario**: Cada vez que se implementen cambios, correcciones o nuevas funcionalidades solicitadas, confirmarlas en Git (`main`), subirlas a GitHub (`push origin main`) y desplegarlas directamente a producción (por FTP a `eesppukllasunchis.edu.pe`) **sin preguntar ni pedir confirmación previa**.
+- Verificar siempre que los archivos y rutas en producción respondan correctamente (`HTTP 200` / `302`) y reportar el resultado de la subida al usuario.
+
 ## Tareas pendientes con recordatorio periódico
 
 ### 1. Volver a subir `public/pdf/Flujograma-de-procesos.pdf` (sin firmas del director)
