@@ -121,19 +121,30 @@
                         $requisito = $avance->hitos[\App\Services\Titulacion\PasosProceso::ETAPAS[$p['etapa']][1]]['label'] ?? '';
                     @endphp
                     @if ($bloqPorPtiVencido)
+                        @php
+                            $puedeAmpliar = $vigencia->puedeSolicitarAmpliacion();
+                            $limiteAmp = $vigencia->limiteSolicitarAmpliacion();
+                        @endphp
                         <div class="tp-vacio tp-vacio--accion" style="border: 2px dashed #e74a3b; background: #fff8f8; border-radius: .5rem; padding: 1.5rem; text-align: center;">
                             <i class="fas fa-hourglass-end text-danger mb-2" style="font-size: 2rem;"></i>
                             <h4 class="text-danger font-weight-bold mb-1" style="font-size: 1.1rem;">Trámite detenido: El PTI venció{{ $vigencia->conocida() ? ' el '.$vigencia->vencimiento->format('d/m/Y') : '' }}</h4>
                             <p class="text-dark mb-2">
-                                Para continuar con el <strong>Trabajo de Investigación (TI)</strong> y habilitar este paso, se requiere registrar una Resolución de Ampliación de plazo o Iniciar un nuevo proceso (PTI N° {{ ($pti->numero ?? 1) + 1 }}).
+                                @if (! $puedeAmpliar)
+                                    El plazo reglamentario para solicitar ampliación (hasta 2 días tras vencer) expiró el <strong>{{ $limiteAmp?->format('d/m/Y') }}</strong>.<br>
+                                    El trámite no puede continuarse y debe <strong>reiniciarse desde cero</strong> mediante un nuevo PTI (PTI N° {{ ($pti->numero ?? 1) + 1 }}).
+                                @else
+                                    Para continuar con el <strong>Trabajo de Investigación (TI)</strong> y habilitar este paso, se requiere registrar una Resolución de Ampliación de plazo (plazo hasta el {{ $limiteAmp?->format('d/m/Y') }}) o Iniciar un nuevo proceso (PTI N° {{ ($pti->numero ?? 1) + 1 }}).
+                                @endif
                             </p>
                             <div class="d-flex align-items-center justify-content-center mt-3" style="gap: .75rem; flex-wrap: wrap;">
-                                <button type="button" class="btn btn-outline-danger" data-tp-ir="pti_datos">
-                                    <i class="fas fa-hourglass-half mr-1"></i>Registrar Ampliación de PTI
-                                </button>
                                 <a href="{{ route('titulacion.inicio.crear', $egresado->id) }}" class="btn btn-primary">
                                     <i class="fas fa-play mr-1"></i>Iniciar Nuevo PTI (PTI N° {{ ($pti->numero ?? 1) + 1 }})
                                 </a>
+                                @if ($puedeAmpliar)
+                                    <button type="button" class="btn btn-outline-danger" data-tp-ir="pti_datos">
+                                        <i class="fas fa-hourglass-half mr-1"></i>Registrar Ampliación de PTI
+                                    </button>
+                                @endif
                             </div>
                         </div>
                     @else
@@ -175,20 +186,36 @@
                             @endphp
 
                             @if ($ptiVencido)
+                                @php
+                                    $puedeAmpliar = $vigencia->puedeSolicitarAmpliacion();
+                                    $limiteAmp = $vigencia->limiteSolicitarAmpliacion();
+                                @endphp
                                 <div class="alert alert-danger d-flex align-items-start shadow-sm mb-3" style="border-left: 4px solid #e74a3b;">
                                     <i class="fas fa-exclamation-triangle fa-lg mr-2 mt-1 text-danger"></i>
                                     <div class="flex-grow-1">
-                                        <div class="font-weight-bold">El Plan de Trabajo de Investigación (PTI) venció el {{ $vigencia->conocida() ? $vigencia->vencimiento->format('d/m/Y') : '' }}.</div>
+                                        <div class="font-weight-bold">
+                                            El Plan de Trabajo de Investigación (PTI) venció el {{ $vigencia->conocida() ? $vigencia->vencimiento->format('d/m/Y') : '' }}.
+                                            @if (! $puedeAmpliar)
+                                                <span class="badge badge-danger ml-1">Plazo de ampliación caducado</span>
+                                            @endif
+                                        </div>
                                         <div class="small mt-1 text-dark">
-                                            La etapa de Trabajo de Investigación (TI) se encuentra en pausa reglamentaria. Se debe regularizar mediante una <strong>Resolución de Ampliación</strong> con nuevo plazo o dar inicio a un <strong>Nuevo Proceso (PTI N° {{ ($pti->numero ?? 1) + 1 }})</strong>.
+                                            @if (! $puedeAmpliar)
+                                                El plazo reglamentario para solicitar ampliación (hasta 2 días tras vencer) finalizó el <strong>{{ $limiteAmp?->format('d/m/Y') }}</strong>.
+                                                Corresponde <strong>iniciar nuevamente el proceso desde cero (PTI N° {{ ($pti->numero ?? 1) + 1 }})</strong> a través de una nueva solicitud de PTI. Las RDs previas quedan archivadas en su historial como antecedentes.
+                                            @else
+                                                La etapa de Trabajo de Investigación (TI) se encuentra en pausa reglamentaria. El egresado tiene plazo hasta el <strong>{{ $limiteAmp?->format('d/m/Y') }}</strong> (hasta 2 días tras vencer) para regularizar mediante una <strong>Resolución de Ampliación</strong> o dar inicio a un <strong>Nuevo Proceso (PTI N° {{ ($pti->numero ?? 1) + 1 }})</strong>.
+                                            @endif
                                         </div>
                                         <div class="mt-2 d-flex align-items-center" style="gap: .5rem; flex-wrap: wrap;">
-                                            <a href="#{{ $idPaso('ampliacionpti') }}" class="btn btn-sm btn-danger py-1" onclick="document.getElementById('{{ $idPaso('ampliacionpti') }}').open = true;">
-                                                <i class="fas fa-hourglass-half mr-1"></i>Registrar Ampliación (R.D.)
-                                            </a>
-                                            <a href="{{ route('titulacion.inicio.crear', $egresado->id) }}" class="btn btn-sm btn-outline-dark py-1">
+                                            <a href="{{ route('titulacion.inicio.crear', $egresado->id) }}" class="btn btn-sm btn-primary py-1">
                                                 <i class="fas fa-play mr-1"></i>Iniciar Nuevo PTI (PTI N° {{ ($pti->numero ?? 1) + 1 }})
                                             </a>
+                                            @if ($puedeAmpliar)
+                                                <a href="#{{ $idPaso('ampliacionpti') }}" class="btn btn-sm btn-outline-danger py-1" onclick="document.getElementById('{{ $idPaso('ampliacionpti') }}').open = true;">
+                                                    <i class="fas fa-hourglass-half mr-1"></i>Registrar Ampliación (R.D.)
+                                                </a>
+                                            @endif
                                         </div>
                                     </div>
                                 </div>

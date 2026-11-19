@@ -222,8 +222,11 @@ class PasosProceso
             unset($pRef);
             $actual = 'pti_datos';
             $pasos['pti_datos']['estado'] = 'actual';
+            $vigPti = new VigenciaPti($pti);
             $vencTexto = $pti->fecha_vencimiento ? ' el '.$pti->fecha_vencimiento->format('d/m/Y') : '';
-            $pasos['pti_datos']['resumen'] = 'PTI vencido'.$vencTexto.': requiere ampliación o nuevo PTI';
+            $pasos['pti_datos']['resumen'] = $vigPti->puedeSolicitarAmpliacion()
+                ? 'PTI vencido'.$vencTexto.': en plazo de ampliación o nuevo PTI'
+                : 'PTI vencido'.$vencTexto.': ampliación caducada, reiniciar proceso';
         }
 
         $this->pasos = $pasos;

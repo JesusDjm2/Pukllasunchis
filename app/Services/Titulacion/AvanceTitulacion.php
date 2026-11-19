@@ -296,7 +296,14 @@ class AvanceTitulacion
     {
         $tiYaAprobado = (bool) ($this->hitos['ti_aprobado']['logrado'] || $this->hitos['bachiller']['logrado'] || $this->hitos['licenciado']['logrado']);
         if (! $tiYaAprobado && $this->seguimiento->pti?->estaVencido()) {
+            $vigencia = new VigenciaPti($this->seguimiento->pti);
             $vence = $this->seguimiento->pti->fecha_vencimiento?->format('d/m/Y');
+            $puedeAmpliar = $vigencia->puedeSolicitarAmpliacion();
+            $limiteAmp = $vigencia->limiteSolicitarAmpliacion()?->format('d/m/Y');
+
+            $falta = $puedeAmpliar
+                ? 'Tu Plan de Trabajo de Investigación venció'.($vence ? ' el '.$vence : '').'. Tienes hasta el '.$limiteAmp.' (hasta 2 días después del vencimiento) para solicitar una Ampliación de plazo o Iniciar un nuevo PTI.'
+                : 'Tu Plan de Trabajo de Investigación venció'.($vence ? ' el '.$vence : '').' y el plazo para solicitar ampliación (hasta 2 días después) ha caducado. Para continuar, debes Iniciar nuevamente el proceso desde cero con un nuevo PTI.';
 
             return [
                 'clave' => 'pti_vencido',
@@ -305,7 +312,7 @@ class AvanceTitulacion
                 'logrado' => false,
                 'fecha' => $this->seguimiento->pti->fecha_vencimiento,
                 'detalle' => 'Venció'.($vence ? ' el '.$vence : ''),
-                'falta' => 'Tu Plan de Trabajo de Investigación venció'.($vence ? ' el '.$vence : '').'. Para continuar, debes solicitar una Ampliación de plazo o Iniciar un nuevo PTI.',
+                'falta' => $falta,
                 'enlace' => null,
             ];
         }

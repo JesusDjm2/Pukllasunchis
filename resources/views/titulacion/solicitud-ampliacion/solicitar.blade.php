@@ -6,7 +6,8 @@
     use App\Models\Titulacion\Solicitud;
     $v = fn ($campo) => old($campo, $valores[$campo] ?? '');
     $estado = $ultima?->estado;
-    $mostrarForm = $institucional && $ptiAprobado && (! $ultima || $estado === 'observada');
+    $caducadoAmpliacion = $vigencia->debeReiniciarProceso();
+    $mostrarForm = $institucional && $ptiAprobado && (! $caducadoAmpliacion || $estado === 'observada') && (! $ultima || $estado === 'observada');
     $fmt = fn ($d) => $d ? $d->format('d/m/Y') : '—';
 @endphp
 
@@ -48,6 +49,20 @@
         <div class="al-aviso is-warn">
             <i class="fas fa-lock"></i>
             <div><strong>Todavía no puedes solicitar una ampliación.</strong> La ampliación de plazo se solicita cuando tu Plan de Trabajo de Investigación (PTI) ya cuenta con R.D. de aprobación emitida y se encuentra próximo a vencer o vencido.</div>
+        </div>
+    @elseif ($caducadoAmpliacion && (! $ultima || $estado !== 'observada'))
+        <div class="al-aviso is-mal">
+            <i class="fas fa-calendar-times"></i>
+            <div>
+                <strong>El plazo para solicitar ampliación ha vencido.</strong><br>
+                Tu Plan de Trabajo de Investigación venció el <strong>{{ $fmt($vigencia->vencimiento) }}</strong>. Reglamentariamente, solo se permite solicitar ampliación hasta 2 días después de la fecha de vencimiento (el plazo improrrogable finalizó el <strong>{{ $fmt($vigencia->limiteSolicitarAmpliacion()) }}</strong>).<br>
+                Al haber expirado este plazo, debes <strong>iniciar nuevamente el proceso de titulación desde cero</strong> a través de una nueva solicitud de PTI. Tus RDs anteriores quedan archivadas como antecedentes en tu historial.<br>
+                <div class="mt-2 pt-1">
+                    <a href="{{ route('mi-titulacion.solicitud-pti') }}" class="btn btn-sm btn-danger font-weight-bold">
+                        <i class="fas fa-redo-alt mr-1"></i>Iniciar nueva solicitud de PTI
+                    </a>
+                </div>
+            </div>
         </div>
     @endif
 

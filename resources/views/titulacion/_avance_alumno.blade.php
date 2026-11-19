@@ -36,6 +36,8 @@
     $conExtension = $mostrarVigencia && $extensionHasta && $extensionHasta->gt($vigencia->vencimiento);
     $venceEl = $conExtension ? $extensionHasta : $vigencia->vencimiento;
     $ptiVencido = $mostrarVigencia && ($venceEl->copy()->endOfDay()->isPast() || $pti?->estado === 'vencido');
+    $puedeAmpliar = $vigencia->puedeSolicitarAmpliacion();
+    $debeReiniciar = $ptiVencido && ! $puedeAmpliar;
     $avanceVigencia = ($mostrarVigencia && $vigencia->inscripcion && $venceEl->gt($vigencia->inscripcion))
         ? (int) round(min(100, max(0, $vigencia->inscripcion->diffInDays(now()) / $vigencia->inscripcion->diffInDays($venceEl) * 100)))
         : null;
@@ -98,10 +100,12 @@
             <div class="mt-siguiente {{ $ptiVencido ? 'mt-siguiente--vencido' : '' }}">
                 <div class="mt-siguiente__icono"><i class="fas {{ $ptiVencido ? 'fa-hourglass-end' : 'fa-flag' }}"></i></div>
                 <div class="flex-grow-1">
-                    <div class="mt-siguiente__kicker">{{ $ptiVencido ? 'Trámite detenido: Plazo de PTI vencido' : 'Tu siguiente paso' }}</div>
+                    <div class="mt-siguiente__kicker">{{ $debeReiniciar ? 'Trámite detenido: Plazo de PTI caducado' : ($ptiVencido ? 'Trámite detenido: Plazo de PTI vencido (últimos 2 días de gracia)' : 'Tu siguiente paso') }}</div>
                     <div class="mt-siguiente__texto">
-                        @if ($ptiVencido)
-                            Tu Plan de Trabajo de Investigación venció el <strong>{{ $fmt($venceEl) }}</strong>. Para continuar con tu Trabajo de Investigación y optar por el grado, debes regularizar tu plazo mediante una <strong>Ampliación de plazo</strong> o <strong>Iniciar nuevamente el proceso</strong>.
+                        @if ($debeReiniciar)
+                            Tu Plan de Trabajo de Investigación venció el <strong>{{ $fmt($venceEl) }}</strong>. Reglamentariamente, la ampliación de plazo solo se solicita hasta 2 días después de la fecha de vencimiento (plazo finalizado el <strong>{{ $fmt($vigencia->limiteSolicitarAmpliacion()) }}</strong>). Al haber caducado este plazo, debes <strong>iniciar nuevamente tu proceso desde cero</strong> con un nuevo PTI. Tus RDs anteriores quedan archivadas como antecedentes en tu historial.
+                        @elseif ($ptiVencido)
+                            Tu Plan de Trabajo de Investigación venció el <strong>{{ $fmt($venceEl) }}</strong>. Tienes hasta el <strong>{{ $fmt($vigencia->limiteSolicitarAmpliacion()) }}</strong> (hasta 2 días tras vencer) para solicitar una ampliación de plazo o iniciar un nuevo PTI.
                         @else
                             {{ $siguiente['falta'] }}
                         @endif
@@ -109,11 +113,13 @@
                     <div class="small text-muted">Etapa: {{ AvanceTitulacion::ETAPAS[$siguiente['etapa']] ?? 'PTI' }}</div>
                     @if ($ptiVencido)
                         <div class="mt-2 d-flex align-items-center flex-wrap" style="gap: .5rem;">
-                            <a href="{{ route('mi-titulacion.ampliacion-pti') }}" class="btn btn-sm btn-danger">
-                                <i class="fas fa-file-signature mr-1"></i>Solicitar ampliación de plazo
-                            </a>
-                            <a href="{{ route('mi-titulacion.solicitud-pti') }}" class="btn btn-sm btn-outline-danger">
-                                <i class="fas fa-redo-alt mr-1"></i>Iniciar nuevamente el proceso
+                            @if ($puedeAmpliar)
+                                <a href="{{ route('mi-titulacion.ampliacion-pti') }}" class="btn btn-sm btn-danger">
+                                    <i class="fas fa-file-signature mr-1"></i>Solicitar ampliación de plazo
+                                </a>
+                            @endif
+                            <a href="{{ route('mi-titulacion.solicitud-pti') }}" class="btn btn-sm {{ $debeReiniciar ? 'btn-danger font-weight-bold' : 'btn-outline-danger' }}">
+                                <i class="fas fa-redo-alt mr-1"></i>Iniciar nuevamente el proceso (Nuevo PTI)
                             </a>
                         </div>
                     @endif
@@ -239,18 +245,22 @@
                                 Solicitud de prórroga enviada: en revisión por Secretaría General.
                             @elseif ($ampUltima?->estado === 'observada')
                                 Tu solicitud fue observada: corrígela para continuar.
+                            @elseif ($debeReiniciar)
+                                Plazo de ampliación caducado (venció el {{ $fmt($vigencia->limiteSolicitarAmpliacion()) }}): debes iniciar el proceso desde cero con un nuevo PTI.
                             @elseif ($ptiVencido)
-                                Plazo vencido: puedes tramitar tu ampliación con R.D. o iniciar nuevamente el proceso con un nuevo PTI.
+                                Plazo vencido: puedes tramitar tu ampliación hasta el {{ $fmt($vigencia->limiteSolicitarAmpliacion()) }} (2 días de tolerancia) o iniciar un nuevo PTI.
                             @else
                                 Próximo a vencer: puedes solicitar tu ampliación de plazo (Cód. 11 · S/ 50.00).
                             @endif
                         </span>
                         <div class="d-flex align-items-center flex-wrap" style="gap:.35rem;">
-                            <a href="{{ route('mi-titulacion.ampliacion-pti') }}" class="btn btn-sm {{ $ampClaseBtn }}">
-                                <i class="fas fa-file-signature mr-1"></i>{{ $ampBotonTxt }}
-                            </a>
+                            @if (! $debeReiniciar || $ampUltima?->estado === 'observada' || $ampUltima?->estado === 'recibida')
+                                <a href="{{ route('mi-titulacion.ampliacion-pti') }}" class="btn btn-sm {{ $ampClaseBtn }}">
+                                    <i class="fas fa-file-signature mr-1"></i>{{ $ampBotonTxt }}
+                                </a>
+                            @endif
                             @if ($ptiVencido)
-                                <a href="{{ route('mi-titulacion.solicitud-pti') }}" class="btn btn-sm btn-outline-danger" title="Enviar una nueva solicitud de aprobación de PTI para iniciar de nuevo el proceso">
+                                <a href="{{ route('mi-titulacion.solicitud-pti') }}" class="btn btn-sm {{ $debeReiniciar ? 'btn-danger font-weight-bold' : 'btn-outline-danger' }}" title="Enviar una nueva solicitud de aprobación de PTI para iniciar de nuevo el proceso">
                                     <i class="fas fa-redo-alt mr-1"></i>Iniciar nuevamente el proceso
                                 </a>
                             @endif

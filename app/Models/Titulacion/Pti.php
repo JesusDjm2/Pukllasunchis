@@ -49,4 +49,19 @@ class Pti extends Model
     {
         return $this->estado === 'vencido' || (new \App\Services\Titulacion\VigenciaPti($this))->vencido();
     }
+
+    public function limiteSolicitarAmpliacion(): ?\Illuminate\Support\Carbon
+    {
+        return (new \App\Services\Titulacion\VigenciaPti($this))->limiteSolicitarAmpliacion();
+    }
+
+    public function puedeSolicitarAmpliacion(): bool
+    {
+        return (new \App\Services\Titulacion\VigenciaPti($this))->puedeSolicitarAmpliacion();
+    }
+
+    public function debeReiniciarProceso(): bool
+    {
+        return (new \App\Services\Titulacion\VigenciaPti($this))->debeReiniciarProceso();
+    }
 }

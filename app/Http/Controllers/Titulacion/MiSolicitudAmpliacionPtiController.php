@@ -82,6 +82,12 @@ class MiSolicitudAmpliacionPtiController extends Controller
                 ->with('error', 'Solo puedes solicitar ampliación si tu Plan de Trabajo de Investigación ya fue aprobado (R.D.).');
         }
 
+        $vigencia = new VigenciaPti($seguimiento->pti);
+        if ($vigencia->debeReiniciarProceso()) {
+            return redirect()->route('mi-titulacion.ampliacion-pti')
+                ->with('error', 'El plazo reglamentario para solicitar ampliación finalizó el '.$vigencia->limiteSolicitarAmpliacion()?->format('d/m/Y').' (máximo 2 días tras el vencimiento). Debes iniciar nuevamente el proceso desde cero con un nuevo PTI.');
+        }
+
         $ultima = Solicitud::dePersona(Solicitud::AMPLIACION_PTI, $user)->first();
         if ($ultima && $ultima->estado === 'recibida') {
             return redirect()->route('mi-titulacion.ampliacion-pti')

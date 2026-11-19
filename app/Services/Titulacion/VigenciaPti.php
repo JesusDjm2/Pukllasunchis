@@ -54,6 +54,33 @@ class VigenciaPti
         return $this->vencimiento !== null && $this->vencimiento->endOfDay()->isPast();
     }
 
+    /** Días de gracia reglamentarios tras la fecha de vencimiento para solicitar ampliación. */
+    public const DIAS_GRACIA_AMPLIACION = 2;
+
+    /** Fecha límite improrrogable para solicitar ampliación (vencimiento + 2 días al final del día). */
+    public function limiteSolicitarAmpliacion(): ?Carbon
+    {
+        return $this->vencimiento ? $this->vencimiento->copy()->addDays(self::DIAS_GRACIA_AMPLIACION)->endOfDay() : null;
+    }
+
+    /** Si aún está en plazo reglamentario para solicitar ampliación (antes de vencer o hasta 2 días después). */
+    public function puedeSolicitarAmpliacion(): bool
+    {
+        if (! $this->conocida()) {
+            return false;
+        }
+
+        $limite = $this->limiteSolicitarAmpliacion();
+
+        return $limite && now()->lte($limite);
+    }
+
+    /** Si pasaron los 2 días de gracia posteriores al vencimiento, por lo que debe reiniciar el proceso desde cero. */
+    public function debeReiniciarProceso(): bool
+    {
+        return $this->vencido() && ! $this->puedeSolicitarAmpliacion();
+    }
+
     /** Meses completos que faltan (0 si vence este mes o ya venció). */
     public function mesesRestantes(): ?int
     {
