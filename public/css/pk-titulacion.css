@@ -120,6 +120,10 @@ body.dim-mode .ft-ficha, body.dim-mode .tc {
 .tp-etapa__nombre { font-size: .7rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--t-suave); flex: 1; }
 .tp-etapa__estado { font-size: .7rem; font-weight: 700; color: var(--t-verde); white-space: nowrap; }
 .tp-etapa--bloqueada .tp-etapa__nombre, .tp-etapa--bloqueada .tp-etapa__estado { color: var(--t-tenue); }
+.tp-etapa--vencida .tp-etapa__nombre { color: var(--t-rojo, #e74a3b); }
+.tp-etapa--vencida .tp-etapa__estado { color: var(--t-rojo, #e74a3b); font-weight: 800; }
+.tp-progreso--vencido .tp-progreso__barra span { background: var(--t-rojo, #e74a3b); }
+.tp-progreso--vencido .tp-progreso__texto { color: var(--t-rojo, #e74a3b); }
 
 .tp-pasos { list-style: none; margin: 0; padding: 0; position: relative; }
 .tp-pasos li { position: relative; }

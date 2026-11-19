@@ -95,14 +95,30 @@
 
         {{-- ── Siguiente paso ── --}}
         @if ($siguiente)
-            <div class="mt-siguiente">
-                <div class="mt-siguiente__icono"><i class="fas fa-flag"></i></div>
+            <div class="mt-siguiente {{ $ptiVencido ? 'mt-siguiente--vencido' : '' }}">
+                <div class="mt-siguiente__icono"><i class="fas {{ $ptiVencido ? 'fa-hourglass-end' : 'fa-flag' }}"></i></div>
                 <div class="flex-grow-1">
-                    <div class="mt-siguiente__kicker">Tu siguiente paso</div>
-                    <div class="mt-siguiente__texto">{{ $siguiente['falta'] }}</div>
-                    <div class="small text-muted">Etapa: {{ AvanceTitulacion::ETAPAS[$siguiente['etapa']] }}</div>
+                    <div class="mt-siguiente__kicker">{{ $ptiVencido ? 'Trámite detenido: Plazo de PTI vencido' : 'Tu siguiente paso' }}</div>
+                    <div class="mt-siguiente__texto">
+                        @if ($ptiVencido)
+                            Tu Plan de Trabajo de Investigación venció el <strong>{{ $fmt($venceEl) }}</strong>. Para continuar con tu Trabajo de Investigación y optar por el grado, debes regularizar tu plazo mediante una <strong>Ampliación de plazo</strong> o <strong>Iniciar nuevamente el proceso</strong>.
+                        @else
+                            {{ $siguiente['falta'] }}
+                        @endif
+                    </div>
+                    <div class="small text-muted">Etapa: {{ AvanceTitulacion::ETAPAS[$siguiente['etapa']] ?? 'PTI' }}</div>
+                    @if ($ptiVencido)
+                        <div class="mt-2 d-flex align-items-center flex-wrap" style="gap: .5rem;">
+                            <a href="{{ route('mi-titulacion.ampliacion-pti') }}" class="btn btn-sm btn-danger">
+                                <i class="fas fa-file-signature mr-1"></i>Solicitar ampliación de plazo
+                            </a>
+                            <a href="{{ route('mi-titulacion.solicitud-pti') }}" class="btn btn-sm btn-outline-danger">
+                                <i class="fas fa-redo-alt mr-1"></i>Iniciar nuevamente el proceso
+                            </a>
+                        </div>
+                    @endif
                 </div>
-                @if (! empty($guias[$siguiente['etapa']]))
+                @if (! $ptiVencido && ! empty($guias[$siguiente['etapa']]))
                     <a href="{{ $guias[$siguiente['etapa']] }}" target="_blank" rel="noopener" class="btn btn-sm btn-primary align-self-center">
                         <i class="fas fa-book-open mr-1"></i>Ver guía
                     </a>
@@ -127,7 +143,9 @@
         @if ($mostrarCarta)
             @php
                 [$cartaClase, $cartaIcono, $cartaTexto, $cartaBoton] = match ($cartaUltima?->estado) {
-                    'emitida' => ['is-ok', 'fa-check-circle', 'Tu carta para «'.\Illuminate\Support\Str::limit($cartaUltima->institucion, 60).'» fue aprobada: ya continúas con el Bachiller.', 'Ver respuesta'],
+                    'emitida' => $ptiVencido
+                        ? ['is-warn', 'fa-hourglass-end', 'Tu carta para «'.\Illuminate\Support\Str::limit($cartaUltima->institucion, 60).'» fue emitida, pero tu PTI venció el '.$fmt($venceEl).'. Se requiere ampliar el plazo del PTI o iniciar un nuevo proceso antes de continuar al Bachiller.', 'Ver carta']
+                        : ['is-ok', 'fa-check-circle', 'Tu carta para «'.\Illuminate\Support\Str::limit($cartaUltima->institucion, 60).'» fue aprobada: ya continúas con el Bachiller.', 'Ver respuesta'],
                     'enviada' => ['is-info', 'fa-inbox', 'Secretaría recibió tu solicitud: te responderá en 3 días hábiles.', 'Ver mi solicitud'],
                     'observada' => ['is-warn', 'fa-exclamation-circle', 'Secretaría observó tu solicitud: corrígela y envíala de nuevo.', 'Corregir y enviar'],
                     default => ['', 'fa-envelope-open-text', 'Con tu PTI aprobado, solicita la carta para la Institución Educativa donde harás tu investigación.', 'Solicitar carta'],
@@ -146,7 +164,7 @@
         {{-- ── Revisión de originalidad (Turnitin) del TI o de la Tesis: con el PTI aprobado y hasta titularse (vista propia).
              Solo con config titulacion.originalidad_alumnos encendido (por ahora siguen con el formulario de Google). ── --}}
         @php
-            $mostrarOrig = config('titulacion.originalidad_alumnos') && $avance->hitos['pti_aprobado']['logrado'] && ! $avance->hitos['licenciado']['logrado'];
+            $mostrarOrig = ! $ptiVencido && config('titulacion.originalidad_alumnos') && $avance->hitos['pti_aprobado']['logrado'] && ! $avance->hitos['licenciado']['logrado'];
             $origUltima = $mostrarOrig ? \App\Models\Titulacion\Solicitud::dePersona(\App\Models\Titulacion\Solicitud::ORIGINALIDAD, $persona)->first() : null;
         @endphp
         @if ($mostrarOrig)
@@ -173,7 +191,9 @@
         @endif
 
         {{-- ── Qué hacer ahora: solo los trámites del tramo en curso ── --}}
-        @include('titulacion._tramites_ayuda', ['bloque' => \App\Services\Titulacion\GuiaTramites::actual($avance), 'clavePersona' => 's'.$seguimiento->id])
+        @unless ($ptiVencido)
+            @include('titulacion._tramites_ayuda', ['bloque' => \App\Services\Titulacion\GuiaTramites::actual($avance), 'clavePersona' => 's'.$seguimiento->id])
+        @endunless
 
         {{-- ── Vigencia del PTI ── --}}
         @if ($mostrarVigencia)
@@ -250,8 +270,8 @@
                     <div class="mt-etapa__cuerpo">
                         <div class="d-flex justify-content-between align-items-start flex-wrap" style="gap:.25rem;">
                             <div class="mt-etapa__titulo">{{ $etapa['titulo'] }}</div>
-                            <span class="mt-etapa__chip">
-                                {{ ['completo' => 'Completado', 'en_proceso' => 'En curso', 'pendiente' => 'Por venir'][$etapa['estado']] }}
+                            <span class="mt-etapa__chip mt-etapa__chip--{{ $etapa['estado'] }}">
+                                {{ ['completo' => 'Completado', 'vencido' => 'Vencido', 'en_proceso' => 'En curso', 'bloqueado' => 'En pausa', 'pendiente' => 'Por venir'][$etapa['estado']] ?? 'En pausa' }}
                             </span>
                         </div>
 
@@ -378,6 +398,9 @@
         .mt-siguiente--completo { background: #e8f8f1; border-color: #a7e3c8; }
         .mt-siguiente--completo .mt-siguiente__icono { background: #1cc88a; }
         .mt-siguiente--completo .mt-siguiente__kicker { color: #13855c; }
+        .mt-siguiente--vencido { background: #fff5f5; border-color: #fca5a5; }
+        .mt-siguiente--vencido .mt-siguiente__icono { background: #e74a3b; }
+        .mt-siguiente--vencido .mt-siguiente__kicker { color: #e74a3b; }
 
         .mt-vigencia { padding: .75rem 1rem; border-radius: .6rem; border: 1px solid #e3e6f0; background: #f8f9fc; margin-bottom: 1rem; }
         .mt-vigencia .progress-bar { background: #4e73df; }
@@ -393,12 +416,16 @@
         .mt-etapa__marca { width: 2rem; height: 2rem; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .85rem; background: #e9ecef; color: #6c757d; border: 2px solid #e9ecef; position: relative; z-index: 1; }
         .mt-etapa--en_proceso .mt-etapa__marca { background: #eef2ff; color: #4e73df; border-color: #4e73df; }
         .mt-etapa--completo .mt-etapa__marca { background: #1cc88a; color: #fff; border-color: #1cc88a; }
+        .mt-etapa--vencido .mt-etapa__marca { background: #e74a3b; color: #fff; border-color: #e74a3b; }
+        .mt-etapa--bloqueado .mt-etapa__marca { background: #f8f9fc; color: #b7b9cc; border-color: #e3e6f0; }
         .mt-etapa__cuerpo { flex: 1; min-width: 0; padding-top: .2rem; }
         .mt-etapa__titulo { font-weight: 700; color: #1e293b; }
-        .mt-etapa--pendiente .mt-etapa__titulo { color: #8892a6; }
+        .mt-etapa--pendiente .mt-etapa__titulo, .mt-etapa--bloqueado .mt-etapa__titulo { color: #8892a6; }
         .mt-etapa__chip { font-size: .68rem; font-weight: 700; padding: .1rem .5rem; border-radius: 999px; background: #e9ecef; color: #6c757d; white-space: nowrap; }
         .mt-etapa--en_proceso .mt-etapa__chip { background: #eef2ff; color: #4e73df; }
         .mt-etapa--completo .mt-etapa__chip { background: #e8f8f1; color: #13855c; }
+        .mt-etapa--vencido .mt-etapa__chip { background: #fdecea; color: #e74a3b; }
+        .mt-etapa--bloqueado .mt-etapa__chip { background: #f1f3f9; color: #8892a6; }
         .mt-etapa__datos { font-size: .82rem; margin-top: .35rem; color: #374151; }
         .mt-hitos { list-style: none; padding: 0; margin: .5rem 0 .35rem; }
         .mt-hito { display: flex; align-items: baseline; gap: .45rem; font-size: .83rem; padding: .12rem 0; flex-wrap: wrap; }

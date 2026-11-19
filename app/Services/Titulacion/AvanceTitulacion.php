@@ -212,21 +212,30 @@ class AvanceTitulacion
         $resultado = [];
         $anteriorCompleta = true;
 
+        $tiYaAprobado = (bool) ($this->hitos['ti_aprobado']['logrado'] || $this->hitos['bachiller']['logrado'] || $this->hitos['licenciado']['logrado']);
+        $ptiVencido = ! $tiYaAprobado && (bool) $this->seguimiento->pti?->estaVencido();
+
         foreach ($cierre as $etapa => $hitoCierre) {
             $hitosEtapa = collect($this->hitos)->where('etapa', $etapa);
             $estado = match (true) {
+                $etapa === 'pti' && $ptiVencido => 'vencido',
                 $this->hitos[$hitoCierre]['logrado'] => 'completo',
+                $etapa === 'ti' && $ptiVencido => 'bloqueado',
                 $hitosEtapa->contains('logrado', true) || $anteriorCompleta => 'en_proceso',
                 default => 'pendiente',
             };
             $ultimo = $hitosEtapa->where('logrado', true)->last();
+            $resumen = match (true) {
+                $etapa === 'pti' && $ptiVencido => 'Vencido ('.($this->seguimiento->pti->fecha_vencimiento ? $this->seguimiento->pti->fecha_vencimiento->format('d/m/Y') : 'plazo cumplido').')',
+                $etapa === 'ti' && $ptiVencido => 'Pausado por PTI vencido',
+                $estado === 'completo' => $this->hitos[$hitoCierre]['label'],
+                default => ($ultimo['label'] ?? ($estado === 'en_proceso' ? 'Por iniciar' : null)),
+            };
             $resultado[$etapa] = [
                 'estado' => $estado,
                 'hitos' => $hitosEtapa->values()->all(),
                 // Resumen corto bajo cada paso del indicador.
-                'resumen' => $estado === 'completo'
-                    ? $this->hitos[$hitoCierre]['label']
-                    : ($ultimo['label'] ?? ($estado === 'en_proceso' ? 'Por iniciar' : null)),
+                'resumen' => $resumen,
             ];
             $anteriorCompleta = $estado === 'completo';
         }
@@ -285,6 +294,22 @@ class AvanceTitulacion
      */
     public function siguientePaso(): ?array
     {
+        $tiYaAprobado = (bool) ($this->hitos['ti_aprobado']['logrado'] || $this->hitos['bachiller']['logrado'] || $this->hitos['licenciado']['logrado']);
+        if (! $tiYaAprobado && $this->seguimiento->pti?->estaVencido()) {
+            $vence = $this->seguimiento->pti->fecha_vencimiento?->format('d/m/Y');
+
+            return [
+                'clave' => 'pti_vencido',
+                'etapa' => 'pti',
+                'label' => 'PTI vencido',
+                'logrado' => false,
+                'fecha' => $this->seguimiento->pti->fecha_vencimiento,
+                'detalle' => 'Venció'.($vence ? ' el '.$vence : ''),
+                'falta' => 'Tu Plan de Trabajo de Investigación venció'.($vence ? ' el '.$vence : '').'. Para continuar, debes solicitar una Ampliación de plazo o Iniciar un nuevo PTI.',
+                'enlace' => null,
+            ];
+        }
+
         $siguiente = null;
         foreach (array_reverse($this->hitos) as $hito) {
             if ($hito['logrado']) {

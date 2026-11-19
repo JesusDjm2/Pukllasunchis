@@ -31,6 +31,8 @@
     $cargosActo = array_values(array_filter(\App\Models\Titulacion\Participante::CARGOS['jurado'], fn ($c) => ! \App\Services\Titulacion\PasosProceso::esDictaminante($c)));
     $historialPti = $seguimiento->ptis ?? collect();
     $tiAprobado = $avance->hitos['ti_aprobado']['logrado'];
+    $tiYaAprobado = $avance->hitos['ti_aprobado']['logrado'] || $avance->hitos['bachiller']['logrado'] || $avance->hitos['licenciado']['logrado'];
+    $ptiVencido = ! $tiYaAprobado && (bool) $pti?->estaVencido();
 @endphp
 
 @if ($alertas)
@@ -47,7 +49,7 @@
 <div class="tp" data-tp>
     {{-- ── Línea de tiempo ── --}}
     <nav class="tp-linea" aria-label="Pasos del proceso">
-        <div class="tp-progreso" title="Avance del proceso completo">
+        <div class="tp-progreso {{ $ptiVencido ? 'tp-progreso--vencido' : '' }}" title="Avance del proceso completo">
             <div class="tp-progreso__barra"><span style="width: {{ $pasos->porcentaje() }}%"></span></div>
             <span class="tp-progreso__texto">{{ $pasos->porcentaje() }}%</span>
         </div>
@@ -57,6 +59,7 @@
                 <div class="tp-etapa__cab">
                     <span class="tp-etapa__nombre">{{ $nombreEtapa }}</span>
                     @if ($estEtapa === 'completa') <span class="tp-etapa__estado"><i class="fas fa-check"></i> Completa</span>
+                    @elseif ($estEtapa === 'vencida') <span class="tp-etapa__estado tp-etapa__estado--vencida"><i class="fas fa-hourglass-end"></i> PTI Vencido</span>
                     @elseif ($estEtapa === 'bloqueada') <span class="tp-etapa__estado"><i class="fas fa-lock"></i></span>
                     @endif
                 </div>
@@ -113,12 +116,33 @@
                 @endif
 
                 @if ($p['estado'] === 'bloqueado')
-                    @php $requisito = $avance->hitos[\App\Services\Titulacion\PasosProceso::ETAPAS[$p['etapa']][1]]['label'] ?? ''; @endphp
-                    <div class="tp-vacio">
-                        <i class="fas fa-lock"></i>
-                        <p>Este paso se habilita cuando esté registrado <strong>«{{ $requisito }}»</strong>.</p>
-                        <p class="tp-vacio__sub">{{ $p['ayuda'] }}</p>
-                    </div>
+                    @php
+                        $bloqPorPtiVencido = $ptiVencido && in_array($p['etapa'], ['ti', 'tesis'], true);
+                        $requisito = $avance->hitos[\App\Services\Titulacion\PasosProceso::ETAPAS[$p['etapa']][1]]['label'] ?? '';
+                    @endphp
+                    @if ($bloqPorPtiVencido)
+                        <div class="tp-vacio tp-vacio--accion" style="border: 2px dashed #e74a3b; background: #fff8f8; border-radius: .5rem; padding: 1.5rem; text-align: center;">
+                            <i class="fas fa-hourglass-end text-danger mb-2" style="font-size: 2rem;"></i>
+                            <h4 class="text-danger font-weight-bold mb-1" style="font-size: 1.1rem;">Trámite detenido: El PTI venció{{ $vigencia->conocida() ? ' el '.$vigencia->vencimiento->format('d/m/Y') : '' }}</h4>
+                            <p class="text-dark mb-2">
+                                Para continuar con el <strong>Trabajo de Investigación (TI)</strong> y habilitar este paso, se requiere registrar una Resolución de Ampliación de plazo o Iniciar un nuevo proceso (PTI N° {{ ($pti->numero ?? 1) + 1 }}).
+                            </p>
+                            <div class="d-flex align-items-center justify-content-center mt-3" style="gap: .75rem; flex-wrap: wrap;">
+                                <button type="button" class="btn btn-outline-danger" data-tp-ir="pti_datos">
+                                    <i class="fas fa-hourglass-half mr-1"></i>Registrar Ampliación de PTI
+                                </button>
+                                <a href="{{ route('titulacion.inicio.crear', $egresado->id) }}" class="btn btn-primary">
+                                    <i class="fas fa-play mr-1"></i>Iniciar Nuevo PTI (PTI N° {{ ($pti->numero ?? 1) + 1 }})
+                                </a>
+                            </div>
+                        </div>
+                    @else
+                        <div class="tp-vacio">
+                            <i class="fas fa-lock"></i>
+                            <p>Este paso se habilita cuando esté registrado <strong>«{{ $requisito }}»</strong>.</p>
+                            <p class="tp-vacio__sub">{{ $p['ayuda'] }}</p>
+                        </div>
+                    @endif
             </div>{{-- cierra el .tp-det: @continue salta el cierre del final del bucle --}}
                     @continue
                 @endif
@@ -149,6 +173,27 @@
                                 $ampliacionSoloCampo = filled($pti->rd_ampliacion)
                                     && ! $ampliaciones->contains(fn ($r) => \App\Services\Titulacion\GrupoTitulacion::claveRd($r->numero_rd) === \App\Services\Titulacion\GrupoTitulacion::claveRd($pti->rd_ampliacion));
                             @endphp
+
+                            @if ($ptiVencido)
+                                <div class="alert alert-danger d-flex align-items-start shadow-sm mb-3" style="border-left: 4px solid #e74a3b;">
+                                    <i class="fas fa-exclamation-triangle fa-lg mr-2 mt-1 text-danger"></i>
+                                    <div class="flex-grow-1">
+                                        <div class="font-weight-bold">El Plan de Trabajo de Investigación (PTI) venció el {{ $vigencia->conocida() ? $vigencia->vencimiento->format('d/m/Y') : '' }}.</div>
+                                        <div class="small mt-1 text-dark">
+                                            La etapa de Trabajo de Investigación (TI) se encuentra en pausa reglamentaria. Se debe regularizar mediante una <strong>Resolución de Ampliación</strong> con nuevo plazo o dar inicio a un <strong>Nuevo Proceso (PTI N° {{ ($pti->numero ?? 1) + 1 }})</strong>.
+                                        </div>
+                                        <div class="mt-2 d-flex align-items-center" style="gap: .5rem; flex-wrap: wrap;">
+                                            <a href="#{{ $idPaso('ampliacionpti') }}" class="btn btn-sm btn-danger py-1" onclick="document.getElementById('{{ $idPaso('ampliacionpti') }}').open = true;">
+                                                <i class="fas fa-hourglass-half mr-1"></i>Registrar Ampliación (R.D.)
+                                            </a>
+                                            <a href="{{ route('titulacion.inicio.crear', $egresado->id) }}" class="btn btn-sm btn-outline-dark py-1">
+                                                <i class="fas fa-play mr-1"></i>Iniciar Nuevo PTI (PTI N° {{ ($pti->numero ?? 1) + 1 }})
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+
                             <dl class="tp-datos">
                                 <div class="tp-datos__ancho"><dt>Título</dt><dd>{{ $pti->titulo ?: '—' }}</dd></div>
                                 <div><dt>Inscripción</dt><dd>{{ $pti->fecha_pti?->format('d/m/Y') ?? '—' }}</dd></div>

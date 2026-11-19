@@ -12,10 +12,19 @@
         <div class="titulacion-stepper__paso titulacion-stepper__paso--{{ $etapa['estado'] }}"
              title="{{ collect($etapa['hitos'])->map(fn ($h) => ($h['logrado'] ? '✓ ' : '○ ').$h['label'])->implode("\n") }}">
             <span class="titulacion-stepper__circulo">
-                {{ $n }}
+                @if ($etapa['estado'] === 'vencido')
+                    <i class="fas fa-hourglass-end"></i>
+                @else
+                    {{ $n }}
+                @endif
             </span>
             <span>
-                <span class="titulacion-stepper__label">{{ $label }}</span>
+                <span class="titulacion-stepper__label">
+                    {{ $label }}
+                    @if ($etapa['estado'] === 'vencido')
+                        <span class="badge badge-danger ml-1" style="font-size: .65rem; font-weight: 700;">Vencido</span>
+                    @endif
+                </span>
                 @if ($etapa['resumen'])
                     <span class="titulacion-stepper__resumen">{{ $etapa['resumen'] }}</span>
                 @endif
@@ -45,6 +54,11 @@
         .titulacion-stepper__paso--en_proceso .titulacion-stepper__label { color: #4e73df; }
         .titulacion-stepper__paso--completo .titulacion-stepper__circulo { background: #1cc88a; color: #fff; border-color: #1cc88a; }
         .titulacion-stepper__paso--completo .titulacion-stepper__label { color: #1cc88a; }
+        .titulacion-stepper__paso--vencido .titulacion-stepper__circulo { background: #e74a3b; color: #fff; border-color: #e74a3b; }
+        .titulacion-stepper__paso--vencido .titulacion-stepper__label { color: #e74a3b; }
+        .titulacion-stepper__paso--vencido .titulacion-stepper__resumen { color: #e74a3b; font-weight: 600; }
+        .titulacion-stepper__paso--bloqueado .titulacion-stepper__circulo { background: #f8f9fc; color: #b7b9cc; border-color: #e3e6f0; }
+        .titulacion-stepper__paso--bloqueado .titulacion-stepper__label { color: #858796; }
         .titulacion-etapa { border-left: 3px solid #e3e6f0; padding-left: .75rem; margin-bottom: 1rem; }
         .titulacion-etapa__titulo { font-size: .74rem; font-weight: 700; text-transform: uppercase; letter-spacing: .02em; color: #8892a6; margin-bottom: .5rem; }
     </style>

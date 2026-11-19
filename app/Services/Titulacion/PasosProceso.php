@@ -208,6 +208,24 @@ class PasosProceso
             };
         }
 
+        // Si el PTI está vencido y aún no se aprueba el TI, se frenan las etapas posteriores (TI / Tesis):
+        // el foco del proceso regresa a los datos del PTI (ampliación o reinicio) y el TI queda bloqueado.
+        $tiYaAprobado = $h('ti_aprobado') || $h('bachiller') || $h('licenciado');
+        $ptiVencido = ! $tiYaAprobado && (bool) $pti?->estaVencido();
+        if ($ptiVencido) {
+            foreach ($pasos as $k => &$pRef) {
+                if (in_array($pRef['etapa'], ['ti', 'tesis'], true) && $pRef['estado'] !== 'hecho') {
+                    $pRef['estado'] = 'bloqueado';
+                    $pRef['espera'] = null;
+                }
+            }
+            unset($pRef);
+            $actual = 'pti_datos';
+            $pasos['pti_datos']['estado'] = 'actual';
+            $vencTexto = $pti->fecha_vencimiento ? ' el '.$pti->fecha_vencimiento->format('d/m/Y') : '';
+            $pasos['pti_datos']['resumen'] = 'PTI vencido'.$vencTexto.': requiere ampliación o nuevo PTI';
+        }
+
         $this->pasos = $pasos;
         $this->actual = $actual;
     }
@@ -260,11 +278,20 @@ class PasosProceso
         return str_starts_with(mb_strtolower(trim((string) $cargo)), 'dictaminante');
     }
 
-    /** Estado de una etapa para la cabecera de su grupo en la línea: completa | en_curso | bloqueada. */
+    /** Estado de una etapa para la cabecera de su grupo en la línea: completa | en_curso | bloqueada | vencida. */
     public function estadoEtapa(string $etapa): string
     {
         [, $abre, $cierra] = self::ETAPAS[$etapa];
         $h = fn ($hito) => (bool) ($this->avance->hitos[$hito]['logrado'] ?? false);
+        $tiYaAprobado = $h('ti_aprobado') || $h('bachiller') || $h('licenciado');
+        $ptiVencido = ! $tiYaAprobado && (bool) $this->seguimiento->pti?->estaVencido();
+
+        if ($etapa === 'pti' && $ptiVencido) {
+            return 'vencida';
+        }
+        if ($etapa === 'ti' && $ptiVencido) {
+            return 'bloqueada';
+        }
 
         return match (true) {
             $h($cierra) => 'completa',
