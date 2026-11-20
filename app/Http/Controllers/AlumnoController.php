@@ -349,7 +349,14 @@ class AlumnoController extends Controller
         }
 
         $programas = Programa::all();
+        $ciclos = Ciclo::all();
         $user = auth()->user();
+        $usuarioEstudiante = $alumno->user;
+        $condiciones = ['Regular', 'Beca Continua', 'Beca 18', 'Beca Puklla', 'Reincorporación', 'Egresado'];
+
+        $periodoActual = PeriodoActual::where('actual', true)->first();
+        $matriculaActual = $periodoActual ? $alumno->matriculas()->where('periodo_actual_id', $periodoActual->id)->first() : null;
+
         // Los casts automáticamente convierten JSON a array, no necesitamos explode
         $departamentos = Departamento::with('provincias.distritos')->get();
         $departamentosData = [];
@@ -412,7 +419,9 @@ class AlumnoController extends Controller
         return view('alumnos.edit', compact('alumno',
             'programas',
             'ciclosPorPrograma',
-            'user', 'opcionesBienesVivienda', 'opcionesServicios', 'opcionesHabilidades', 'departamentosData', 'provinciasData', 'distritosData'));
+            'ciclos',
+            'user', 'usuarioEstudiante', 'condiciones', 'periodoActual', 'matriculaActual',
+            'opcionesBienesVivienda', 'opcionesServicios', 'opcionesHabilidades', 'departamentosData', 'provinciasData', 'distritosData'));
     }
 
     public function update(Request $request, Alumno $alumno)
@@ -429,7 +438,16 @@ class AlumnoController extends Controller
         }
 
         if ($esPersonal) {
+            $user = $alumno->user;
             $rules = [
+                'nombres' => 'nullable|string|max:255',
+                'apellidos' => 'nullable|string|max:255',
+                'dni' => ['nullable', 'string', 'max:20', \Illuminate\Validation\Rule::unique('users', 'dni')->ignore($user?->id ?? 0)],
+                'email' => ['nullable', 'email', 'max:255', \Illuminate\Validation\Rule::unique('users', 'email')->ignore($user?->id ?? 0)],
+                'condicion' => 'nullable|string|max:40',
+                'beca' => 'nullable|boolean',
+                'programa_id' => 'nullable|exists:programas,id',
+                'ciclo_id' => 'nullable|exists:ciclos,id',
                 'genero' => 'nullable|string',
                 'numero' => 'nullable|string|max:20',
                 'numero_referencia' => 'nullable|string|max:20',
@@ -441,8 +459,6 @@ class AlumnoController extends Controller
                 'provincia' => 'nullable|string|max:255',
                 'distrito' => 'nullable|string|max:255',
                 'direccion' => 'nullable|string|max:255',
-                'programa_id' => 'nullable|exists:programas,id',
-                'ciclo_id' => 'nullable|exists:ciclos,id',
             ];
         } else {
             $rules = [
@@ -470,23 +486,73 @@ class AlumnoController extends Controller
             }
         }
 
-        $data = $request->except(['programa_id', 'ciclo_id']);
-        if ($esPersonal) {
-            if (empty($data['num_comprobante'])) {
-                unset($data['num_comprobante']);
-            }
-            if ($request->filled('programa_id')) {
-                $data['programa_id'] = (int) $request->input('programa_id');
-            }
-            if ($request->filled('ciclo_id')) {
-                $data['ciclo_id'] = (int) $request->input('ciclo_id');
-            }
-        }
-        $alumno->update($data);
+        $periodoActual = PeriodoActual::where('actual', true)->first();
+        $matriculaActual = $periodoActual ? $alumno->matriculas()->where('periodo_actual_id', $periodoActual->id)->first() : null;
 
         if ($esPersonal) {
-            return redirect()->route('admin')->with('success', 'Ficha técnica actualizada correctamente.');
+            // 1. Actualizar cuenta de usuario (User)
+            if ($user = $alumno->user) {
+                if ($request->filled('nombres')) $user->name = $request->input('nombres');
+                if ($request->filled('apellidos')) $user->apellidos = $request->input('apellidos');
+                if ($request->filled('dni')) $user->dni = $request->input('dni');
+                if ($request->filled('email')) $user->email = $request->input('email');
+                if ($request->has('condicion')) $user->condicion = $request->input('condicion');
+                if ($request->has('beca')) $user->beca = (int) $request->input('beca');
+                if ($request->filled('programa_id')) $user->programa_id = (int) $request->input('programa_id');
+                if ($request->filled('ciclo_id')) $user->ciclo_id = (int) $request->input('ciclo_id');
+                $user->save();
+            }
+
+            // 2. Actualizar ficha Alumno
+            $campos = [
+                'numero', 'numero_referencia', 'fecha_nacimiento', 'genero',
+                'trabajas', 'departamento', 'provincia', 'distrito', 'direccion'
+            ];
+            $alumnoData = [];
+            foreach ($campos as $c) {
+                if ($request->has($c)) {
+                    $alumnoData[$c] = $request->input($c);
+                }
+            }
+            if ($request->has('num_hijos')) {
+                $alumnoData['num_hijos'] = $request->filled('num_hijos') ? (int) $request->input('num_hijos') : ($alumno->num_hijos ?? 0);
+            }
+            if ($request->filled('nombres')) $alumnoData['nombres'] = $request->input('nombres');
+            if ($request->filled('apellidos')) $alumnoData['apellidos'] = $request->input('apellidos');
+            if ($request->filled('dni')) $alumnoData['dni'] = $request->input('dni');
+            if ($request->filled('email')) $alumnoData['email'] = $request->input('email');
+            if ($request->filled('programa_id')) $alumnoData['programa_id'] = (int) $request->input('programa_id');
+            if ($request->filled('ciclo_id')) $alumnoData['ciclo_id'] = (int) $request->input('ciclo_id');
+            if ($request->has('num_comprobante')) {
+                $alumnoData['num_comprobante'] = $request->input('num_comprobante') ?? $alumno->num_comprobante ?? '';
+            }
+            $alumno->update($alumnoData);
+
+            // 3. Actualizar matrícula en periodo actual
+            if ($matriculaActual) {
+                $matUpdates = [];
+                if ($request->has('num_comprobante')) {
+                    $matUpdates['comprobante'] = $request->input('num_comprobante');
+                }
+                if ($request->filled('condicion')) {
+                    $matUpdates['condicion'] = $request->input('condicion');
+                }
+                if ($request->filled('programa_id')) {
+                    $matUpdates['programa_id'] = (int) $request->input('programa_id');
+                }
+                if ($request->filled('ciclo_id')) {
+                    $matUpdates['ciclo_id'] = (int) $request->input('ciclo_id');
+                }
+                if (! empty($matUpdates)) {
+                    $matriculaActual->update($matUpdates);
+                }
+            }
+
+            return redirect()->route('admin')->with('success', 'Ficha técnica y datos de usuario actualizados correctamente.');
         }
+
+        $data = $request->except(['programa_id', 'ciclo_id']);
+        $alumno->update($data);
 
         return redirect()->route('alumnos.index', $alumno)->with('success', 'Datos registrados correctamente.');
     }

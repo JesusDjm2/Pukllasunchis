@@ -621,9 +621,15 @@ class PpdController extends Controller
         $matriculaActual = $periodoActualPpd ? $alumno->matriculaEnPeriodo($periodoActualPpd->id) : null;
         $formularioHabilitado = $periodoActualPpd?->formulario_habilitado ?? false;
 
+        $programas = Programa::all();
+        $ciclos = Ciclo::all();
+        $usuarioEstudiante = $alumno->user;
+        $condiciones = ['Regular', 'Beca Continua', 'Beca 18', 'Beca Puklla', 'Reincorporación', 'Egresado'];
+
         return view('alumnos.ppd.edit', compact(
             'alumno', 'departamentosData', 'provinciasData', 'distritosData',
-            'periodoActualPpd', 'matriculaActual', 'formularioHabilitado'
+            'periodoActualPpd', 'matriculaActual', 'formularioHabilitado',
+            'programas', 'ciclos', 'usuarioEstudiante', 'condiciones'
         ));
     }
 
@@ -642,7 +648,16 @@ class PpdController extends Controller
         }
 
         if ($esPersonal) {
+            $user = $alumno->user;
             $validated = $request->validate([
+                'nombres' => 'nullable|string|max:255',
+                'apellidos' => 'nullable|string|max:255',
+                'dni' => ['nullable', 'string', 'max:20', \Illuminate\Validation\Rule::unique('users', 'dni')->ignore($user?->id ?? 0)],
+                'email' => ['nullable', 'email', 'max:255', \Illuminate\Validation\Rule::unique('users', 'email')->ignore($user?->id ?? 0)],
+                'condicion' => 'nullable|string|max:40',
+                'beca' => 'nullable|boolean',
+                'programa_id' => 'nullable|exists:programas,id',
+                'ciclo_id' => 'nullable|exists:ciclos,id',
                 'genero' => 'nullable|string',
                 'numero' => 'nullable|string|max:20',
                 'numero_referencia' => 'nullable|string|max:20',
@@ -655,10 +670,6 @@ class PpdController extends Controller
                 'distrito' => 'nullable|string|max:255',
                 'direccion' => 'nullable|string|max:255',
             ]);
-
-            if (empty($validated['num_comprobante'])) {
-                unset($validated['num_comprobante']);
-            }
         } else {
             $validated = $request->validate([
                 'genero' => 'required|string',
@@ -680,15 +691,69 @@ class PpdController extends Controller
             ? $alumno->matriculaEnPeriodo($periodoActualPpd->id)
             : null;
 
-        $alumno->update($validated);
-
         if ($esPersonal) {
-            if (! empty($validated['num_comprobante']) && $matriculaActual) {
-                $matriculaActual->update(['comprobante' => $validated['num_comprobante']]);
+            // 1. Actualizar cuenta de usuario (User)
+            if ($user = $alumno->user) {
+                if ($request->filled('nombres')) $user->name = $request->input('nombres');
+                if ($request->filled('apellidos')) $user->apellidos = $request->input('apellidos');
+                if ($request->filled('dni')) $user->dni = $request->input('dni');
+                if ($request->filled('email')) $user->email = $request->input('email');
+                if ($request->has('condicion')) $user->condicion = $request->input('condicion');
+                if ($request->has('beca')) $user->beca = (int) $request->input('beca');
+                if ($request->filled('programa_id')) $user->programa_id = (int) $request->input('programa_id');
+                if ($request->filled('ciclo_id')) $user->ciclo_id = (int) $request->input('ciclo_id');
+                $user->save();
             }
 
-            return redirect()->route('admin')->with('success', 'Ficha técnica actualizada correctamente.');
+            // 2. Actualizar modelo ppd
+            $campos = [
+                'numero', 'numero_referencia', 'fecha_nacimiento', 'genero',
+                'trabajas', 'departamento', 'provincia', 'distrito', 'direccion'
+            ];
+            $alumnoData = [];
+            foreach ($campos as $c) {
+                if ($request->has($c)) {
+                    $alumnoData[$c] = $request->input($c);
+                }
+            }
+            if ($request->has('num_hijos')) {
+                $alumnoData['num_hijos'] = $request->filled('num_hijos') ? (int) $request->input('num_hijos') : ($alumno->num_hijos ?? 0);
+            }
+            if ($request->filled('nombres')) $alumnoData['nombres'] = $request->input('nombres');
+            if ($request->filled('apellidos')) $alumnoData['apellidos'] = $request->input('apellidos');
+            if ($request->filled('dni')) $alumnoData['dni'] = $request->input('dni');
+            if ($request->filled('email')) $alumnoData['email'] = $request->input('email');
+            if ($request->filled('programa_id')) $alumnoData['programa_id'] = (int) $request->input('programa_id');
+            if ($request->filled('ciclo_id')) $alumnoData['ciclo_id'] = (int) $request->input('ciclo_id');
+            if ($request->has('num_comprobante')) {
+                $alumnoData['num_comprobante'] = $request->input('num_comprobante') ?? $alumno->num_comprobante ?? '';
+            }
+            $alumno->update($alumnoData);
+
+            // 3. Actualizar datos y comprobante en la matrícula activa
+            if ($matriculaActual) {
+                $matUpdates = [];
+                if ($request->has('num_comprobante')) {
+                    $matUpdates['comprobante'] = $request->input('num_comprobante');
+                }
+                if ($request->filled('condicion')) {
+                    $matUpdates['condicion'] = $request->input('condicion');
+                }
+                if ($request->filled('programa_id')) {
+                    $matUpdates['programa_id'] = (int) $request->input('programa_id');
+                }
+                if ($request->filled('ciclo_id')) {
+                    $matUpdates['ciclo_id'] = (int) $request->input('ciclo_id');
+                }
+                if (! empty($matUpdates)) {
+                    $matriculaActual->update($matUpdates);
+                }
+            }
+
+            return redirect()->route('admin')->with('success', 'Ficha técnica y datos de usuario actualizados correctamente.');
         }
+
+        $alumno->update($validated);
 
         $mensajeExito = 'Datos registrados correctamente.';
         $mostrarPopupMatricula = false;
