@@ -338,6 +338,16 @@ class AlumnoController extends Controller
 
     public function edit(Request $request, Alumno $alumno)
     {
+        $esPersonal = $request->user()?->hasAnyRole(['super-admin', 'admin', 'adminB', 'secretaria']);
+
+        if (! $esPersonal && auth()->user()?->condicion === 'Egresado') {
+            return redirect()->route('egresado.intranet')->with('info', 'Como egresado(a), no requieres realizar matrícula académica.');
+        }
+
+        if (! $esPersonal && auth()->user()->hasRole('alumno') && (int) auth()->user()->alumno?->id !== (int) $alumno->id) {
+            abort(403);
+        }
+
         $programas = Programa::all();
         $user = auth()->user();
         // Los casts automáticamente convierten JSON a array, no necesitamos explode
@@ -408,29 +418,50 @@ class AlumnoController extends Controller
     public function update(Request $request, Alumno $alumno)
     {
         $alumno = Alumno::findOrFail($alumno->id);
+        $esPersonal = $request->user()?->hasAnyRole(['super-admin', 'admin', 'adminB', 'secretaria']);
 
-        $rules = [
-            'genero' => 'required|string',
-            'numero' => 'required|string|max:20',
-            'numero_referencia' => 'required|string|max:20',
-            'fecha_nacimiento' => 'required|date',
-            'num_hijos' => 'nullable|integer|min:0',
-            'trabajas' => 'required|string',
-            'departamento' => 'required|string|max:255',
-            'provincia' => 'required|string|max:255',
-            'distrito' => 'required|string|max:255',
-            'direccion' => 'required|string|max:255',
-        ];
-        if (! $request->user()->hasRole('admin')) {
-            $rules['num_comprobante'] = 'required|string|max:50';
+        if (! $esPersonal && auth()->user()?->condicion === 'Egresado') {
+            return redirect()->route('egresado.intranet')->with('info', 'Como egresado(a), no requieres realizar matrícula académica.');
         }
-        if ($request->user()->hasRole('admin')) {
-            $rules['programa_id'] = 'required|exists:programas,id';
-            $rules['ciclo_id'] = 'required|exists:ciclos,id';
+
+        if (! $esPersonal && auth()->user()->hasRole('alumno') && (int) auth()->user()->alumno?->id !== (int) $alumno->id) {
+            abort(403);
+        }
+
+        if ($esPersonal) {
+            $rules = [
+                'genero' => 'nullable|string',
+                'numero' => 'nullable|string|max:20',
+                'numero_referencia' => 'nullable|string|max:20',
+                'fecha_nacimiento' => 'nullable|date',
+                'num_hijos' => 'nullable|integer|min:0',
+                'num_comprobante' => 'nullable|string|max:50',
+                'trabajas' => 'nullable|string',
+                'departamento' => 'nullable|string|max:255',
+                'provincia' => 'nullable|string|max:255',
+                'distrito' => 'nullable|string|max:255',
+                'direccion' => 'nullable|string|max:255',
+                'programa_id' => 'nullable|exists:programas,id',
+                'ciclo_id' => 'nullable|exists:ciclos,id',
+            ];
+        } else {
+            $rules = [
+                'genero' => 'required|string',
+                'numero' => 'required|string|max:20',
+                'numero_referencia' => 'required|string|max:20',
+                'fecha_nacimiento' => 'required|date',
+                'num_hijos' => 'nullable|integer|min:0',
+                'num_comprobante' => 'required|string|max:50',
+                'trabajas' => 'required|string',
+                'departamento' => 'required|string|max:255',
+                'provincia' => 'required|string|max:255',
+                'distrito' => 'required|string|max:255',
+                'direccion' => 'required|string|max:255',
+            ];
         }
         $request->validate($rules);
 
-        if ($request->user()->hasRole('admin')) {
+        if ($esPersonal && $request->filled('ciclo_id') && $request->filled('programa_id')) {
             $ciclo = Ciclo::findOrFail($request->input('ciclo_id'));
             if ((int) $ciclo->programa_id !== (int) $request->input('programa_id')) {
                 return redirect()->back()->withInput()->withErrors([
@@ -440,15 +471,21 @@ class AlumnoController extends Controller
         }
 
         $data = $request->except(['programa_id', 'ciclo_id']);
-        if ($request->user()->hasRole('admin')) {
-            unset($data['num_comprobante']);
-            $data['programa_id'] = (int) $request->input('programa_id');
-            $data['ciclo_id'] = (int) $request->input('ciclo_id');
+        if ($esPersonal) {
+            if (empty($data['num_comprobante'])) {
+                unset($data['num_comprobante']);
+            }
+            if ($request->filled('programa_id')) {
+                $data['programa_id'] = (int) $request->input('programa_id');
+            }
+            if ($request->filled('ciclo_id')) {
+                $data['ciclo_id'] = (int) $request->input('ciclo_id');
+            }
         }
         $alumno->update($data);
 
-        if ($request->user()->hasRole('admin')) {
-            return redirect()->route('adminAlumnos')->with('success', 'Datos registrados correctamente.');
+        if ($esPersonal) {
+            return redirect()->route('admin')->with('success', 'Ficha técnica actualizada correctamente.');
         }
 
         return redirect()->route('alumnos.index', $alumno)->with('success', 'Datos registrados correctamente.');

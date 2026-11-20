@@ -629,29 +629,51 @@ class PpdController extends Controller
 
     public function update(Request $request, ppd $profesionalización_docente)
     {
-        if (auth()->user()?->condicion === 'Egresado') {
+        $esPersonal = $request->user()?->hasAnyRole(['super-admin', 'admin', 'adminB', 'secretaria']);
+
+        if (! $esPersonal && auth()->user()?->condicion === 'Egresado') {
             return redirect()->route('egresado.intranet')->with('info', 'Como egresado(a), no requieres realizar matrícula académica.');
         }
 
         $alumno = $profesionalización_docente;
 
-        if (auth()->user()->hasRole('alumnoB') && auth()->user()->alumnoB?->id !== $alumno->id) {
+        if (! $esPersonal && auth()->user()->hasRole('alumnoB') && auth()->user()->alumnoB?->id !== $alumno->id) {
             abort(403);
         }
 
-        $validated = $request->validate([
-            'genero' => 'required|string',
-            'numero' => 'required|string|max:20',
-            'numero_referencia' => 'required|string|max:20',
-            'fecha_nacimiento' => 'required|date',
-            'num_hijos' => 'nullable|integer|min:0',
-            'num_comprobante' => 'required|string|max:50',
-            'trabajas' => 'required|string',
-            'departamento' => 'required|string|max:255',
-            'provincia' => 'required|string|max:255',
-            'distrito' => 'required|string|max:255',
-            'direccion' => 'required|string|max:255',
-        ]);
+        if ($esPersonal) {
+            $validated = $request->validate([
+                'genero' => 'nullable|string',
+                'numero' => 'nullable|string|max:20',
+                'numero_referencia' => 'nullable|string|max:20',
+                'fecha_nacimiento' => 'nullable|date',
+                'num_hijos' => 'nullable|integer|min:0',
+                'num_comprobante' => 'nullable|string|max:50',
+                'trabajas' => 'nullable|string',
+                'departamento' => 'nullable|string|max:255',
+                'provincia' => 'nullable|string|max:255',
+                'distrito' => 'nullable|string|max:255',
+                'direccion' => 'nullable|string|max:255',
+            ]);
+
+            if (empty($validated['num_comprobante'])) {
+                unset($validated['num_comprobante']);
+            }
+        } else {
+            $validated = $request->validate([
+                'genero' => 'required|string',
+                'numero' => 'required|string|max:20',
+                'numero_referencia' => 'required|string|max:20',
+                'fecha_nacimiento' => 'required|date',
+                'num_hijos' => 'nullable|integer|min:0',
+                'num_comprobante' => 'required|string|max:50',
+                'trabajas' => 'required|string',
+                'departamento' => 'required|string|max:255',
+                'provincia' => 'required|string|max:255',
+                'distrito' => 'required|string|max:255',
+                'direccion' => 'required|string|max:255',
+            ]);
+        }
 
         $periodoActualPpd = PeriodoActualPpd::where('actual', true)->first();
         $matriculaActual = $periodoActualPpd
@@ -659,6 +681,14 @@ class PpdController extends Controller
             : null;
 
         $alumno->update($validated);
+
+        if ($esPersonal) {
+            if (! empty($validated['num_comprobante']) && $matriculaActual) {
+                $matriculaActual->update(['comprobante' => $validated['num_comprobante']]);
+            }
+
+            return redirect()->route('admin')->with('success', 'Ficha técnica actualizada correctamente.');
+        }
 
         $mensajeExito = 'Datos registrados correctamente.';
         $mostrarPopupMatricula = false;

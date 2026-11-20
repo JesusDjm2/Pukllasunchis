@@ -1,4 +1,7 @@
-﻿@php $layout = auth()->user()?->hasRole('super-admin') ? 'layouts.superadmin' : 'layouts.admin'; @endphp
+﻿@php
+    $esAdmin = auth()->user()?->hasAnyRole(['super-admin', 'admin', 'adminB', 'secretaria']);
+    $layout = auth()->user()?->hasRole('super-admin') ? 'layouts.superadmin' : 'layouts.admin';
+@endphp
 @extends($layout)
 @section('contenido')
     <div class="container-fluid">
@@ -33,10 +36,10 @@
                 @endif
             </div>
             <div class="col-lg-12 card pt-3 pb-3 border border-primary">
-                <form action="{{ route('alumnos.update', ['alumno' => $alumno->id]) }}" method="POST">
+                <form action="{{ route('alumnos.update', ['alumno' => $alumno->id]) }}" method="POST" @if ($esAdmin) novalidate @endif>
                     @csrf
                     @method('PUT')
-                    @role('admin')
+                    @hasanyrole('super-admin|admin|adminB')
                         <div class="container-fluid mt-3">
                             <div class="row">
                                 <div class="col-12 mb-3">
@@ -51,7 +54,7 @@
                                                     <label for="admin_programa_selector">Programa</label>
                                                     <select name="programa_id" id="admin_programa_selector"
                                                         class="form-control form-control-sm @error('programa_id') is-invalid @enderror"
-                                                        required>
+                                                        {{ $esAdmin ? '' : 'required' }}>
                                                         @foreach ($programas as $programa)
                                                             <option value="{{ $programa->id }}"
                                                                 {{ (int) old('programa_id', $alumno->programa_id) === (int) $programa->id ? 'selected' : '' }}>
@@ -66,7 +69,7 @@
                                                     <label for="admin_ciclo_selector">Ciclo</label>
                                                     <select name="ciclo_id" id="admin_ciclo_selector"
                                                         class="form-control form-control-sm @error('ciclo_id') is-invalid @enderror"
-                                                        required>
+                                                        {{ $esAdmin ? '' : 'required' }}>
                                                         @foreach ($ciclosPorPrograma as $ciclo)
                                                             <option value="{{ $ciclo->id }}"
                                                                 {{ (int) old('ciclo_id', $alumno->ciclo_id) === (int) $ciclo->id ? 'selected' : '' }}>
@@ -79,14 +82,14 @@
                                                 </div>
                                             </div>
                                             <small class="text-muted">Al cambiar el programa se cargan los ciclos de ese
-                                                programa.</small>
+                                                 programa.</small>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    @endrole
-                    @unless (auth()->user()->hasRole('admin'))
+                    @endhasanyrole
+                    @unless ($esAdmin)
                         <div class="container-fluid mt-2">
                             <div class="alert alert-light border small mb-0">
                                 <strong>Programa y ciclo:</strong>
@@ -103,7 +106,7 @@
                                 <label for="numero">Número:</label>
                                 <input type="text"
                                     class="form-control form-control-sm @error('numero') is-invalid @enderror"
-                                    id="numero" name="numero" value="{{ old('numero', $alumno->numero) }}" required>
+                                    id="numero" name="numero" value="{{ old('numero', $alumno->numero) }}" {{ $esAdmin ? '' : 'required' }}>
                                 @error('numero')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -113,7 +116,7 @@
                                 <input type="text"
                                     class="form-control form-control-sm @error('numero_referencia') is-invalid @enderror"
                                     id="numero_referencia" name="numero_referencia"
-                                    value="{{ old('numero_referencia', $alumno->numero_referencia) }}" required>
+                                    value="{{ old('numero_referencia', $alumno->numero_referencia) }}" {{ $esAdmin ? '' : 'required' }}>
                                 @error('numero_referencia')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -123,12 +126,12 @@
                                 <input type="number"
                                     class="form-control form-control-sm @error('num_hijos') is-invalid @enderror"
                                     id="num_hijos" name="num_hijos" value="{{ old('num_hijos', $alumno->num_hijos ?? '') }}"
-                                    required>
+                                    {{ $esAdmin ? '' : 'required' }}>
                                 @error('num_hijos')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-                            @unless (auth()->user()->hasRole('admin'))
+                            @unless ($esAdmin)
                                 <div class="col-lg-4 mb-3">
                                     <label for="num_comprobante">Número de boleta electrónica emitida por la EESP:
                                         <small>
@@ -142,8 +145,8 @@
                                         <input type="text"
                                             class="form-control form-control-sm @error('num_comprobante') is-invalid @enderror"
                                             id="num_comprobante" name="num_comprobante"
-                                            value="{{ stripos($alumno->num_comprobante, 'beca') !== false ? 'Beca' : (old('num_comprobante') ?: '') }}"
-                                            @if (stripos($alumno->num_comprobante, 'beca') !== false) readonly @endif required>
+                                            value="{{ stripos($alumno->num_comprobante, 'beca') !== false ? 'Beca' : old('num_comprobante', $alumno->num_comprobante) }}"
+                                            @if (stripos($alumno->num_comprobante, 'beca') !== false) readonly @endif {{ $esAdmin ? '' : 'required' }}>
                                     </div>
                                     @error('num_comprobante')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -158,7 +161,7 @@
                                         class="form-control form-control-sm @error('fecha_nacimiento') is-invalid @enderror"
                                         id="fecha_nacimiento" name="fecha_nacimiento"
                                         value="{{ old('fecha_nacimiento', $alumno->fechaNacimientoResueltaParaInput() ?? '') }}"
-                                        required>
+                                        {{ $esAdmin ? '' : 'required' }}>
                                 </div>
                                 @error('fecha_nacimiento')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -168,8 +171,8 @@
                                 <label for="genero">Género:</label>
                                 <div class="input-group">
                                     <select class="form-control form-control-sm @error('genero') is-invalid @enderror"
-                                        id="genero" name="genero" required>
-                                        <option selected disabled>-- Selecciona --</option>
+                                        id="genero" name="genero" {{ $esAdmin ? '' : 'required' }}>
+                                        <option value="" {{ empty(old('genero', $alumno->genero)) ? 'selected' : '' }}>-- Selecciona --</option>
                                         <option value="Masculino"
                                             {{ old('genero', $alumno->genero) == 'Masculino' ? 'selected' : '' }}>Masculino
                                         </option>
@@ -188,7 +191,7 @@
                                 <label for="trabajas">¿Trabajas actualmente?:</label>
                                 <select class="form-control form-control-sm @error('trabajas') is-invalid @enderror"
                                     name="trabajas" id="trabajas">
-                                    <option value="" disabled
+                                    <option value="" {{ $esAdmin ? '' : 'disabled' }}
                                         {{ old('trabajas', isset($alumno) ? $alumno->trabajas : '') == '' ? 'selected' : '' }}>
                                         Selecciona una opción
                                     </option>
@@ -253,7 +256,7 @@
 
                             <div class="col-lg-4 mb-3">
                                 <label>Departamento</label>
-                                <select id="departamento" name="departamento" class="form-control form-control-sm" required>
+                                <select id="departamento" name="departamento" class="form-control form-control-sm" {{ $esAdmin ? '' : 'required' }}>
                                     <option value="">Seleccione...</option>
                                     @foreach ($departamentosData as $dep => $data)
                                         <option value="{{ $dep }}"
@@ -266,7 +269,7 @@
 
                             <div class="col-lg-4 mb-3">
                                 <label>Provincia</label>
-                                <select id="provincia" name="provincia" class="form-control form-control-sm" required>
+                                <select id="provincia" name="provincia" class="form-control form-control-sm" {{ $esAdmin ? '' : 'required' }}>
                                     <option value="">Seleccione...</option>
                                     @if (!empty($provinciasData))
                                         @foreach ($provinciasData as $prov)
@@ -281,7 +284,7 @@
 
                             <div class="col-lg-4 mb-3">
                                 <label>Distrito</label>
-                                <select id="distrito" name="distrito" class="form-control form-control-sm" required>
+                                <select id="distrito" name="distrito" class="form-control form-control-sm" {{ $esAdmin ? '' : 'required' }}>
                                     <option value="">Seleccione...</option>
                                     @if (!empty($distritosData))
                                         @foreach ($distritosData as $dist)
@@ -298,7 +301,7 @@
                                 <label for="direccion">Dirección actual:</label>
                                 <input type="text"
                                     class="form-control form-control-sm mb-2 @error('direccion') is-invalid @enderror"
-                                    name="direccion" value="{{ old('direccion', $alumno->direccion) }}" required>
+                                    name="direccion" value="{{ old('direccion', $alumno->direccion) }}" {{ $esAdmin ? '' : 'required' }}>
                                 @error('direccion')
                                     <span class="invalid-feedback" role="alert">{{ $message }}</span>
                                 @enderror
@@ -370,7 +373,7 @@
             </div>
         </div>
     </div>
-    @unless (auth()->user()->hasRole('admin'))
+    @unless ($esAdmin)
         <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
             aria-hidden="true">
             <div class="modal-dialog" role="document">
@@ -449,7 +452,7 @@
             }
         });
     </script>
-    @role('admin')
+    @hasanyrole('super-admin|admin|adminB')
         <script>
             (function() {
                 var base = @json(url('/obtener-ciclos'));
@@ -497,5 +500,5 @@
                 });
             })();
         </script>
-    @endrole
+    @endhasanyrole
 @endsection

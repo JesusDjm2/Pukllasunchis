@@ -40,7 +40,10 @@
                 @endif
             </div>
             <div class="col-lg-12 card pt-3 pb-3 border border-primary">
-                <form action="{{ route('ppd.update', $alumno) }}" method="POST" enctype="multipart/form-data">
+                @php
+                    $esAdmin = auth()->user()?->hasAnyRole(['super-admin', 'admin', 'adminB', 'secretaria']);
+                @endphp
+                <form action="{{ route('ppd.update', $alumno) }}" method="POST" enctype="multipart/form-data" @if ($esAdmin) novalidate @endif>
                     @csrf
                     @method('PUT')
                     <div class="container-fluid mt-3">
@@ -49,7 +52,7 @@
                                 <label for="numero">Celular:</label>
                                 <input type="text"
                                     class="form-control form-control-sm @error('numero') is-invalid @enderror"
-                                    id="numero" name="numero" value="{{ old('numero', $alumno->numero) }}" required>
+                                    id="numero" name="numero" value="{{ old('numero', $alumno->numero) }}" {{ $esAdmin ? '' : 'required' }}>
                                 @error('numero')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -59,7 +62,7 @@
                                 <input type="text"
                                     class="form-control form-control-sm @error('numero_referencia') is-invalid @enderror"
                                     id="numero_referencia" name="numero_referencia"
-                                    value="{{ old('numero_referencia', $alumno->numero_referencia) }}" required>
+                                    value="{{ old('numero_referencia', $alumno->numero_referencia) }}" {{ $esAdmin ? '' : 'required' }}>
                                 @error('numero_referencia')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -69,7 +72,7 @@
                                 <input type="number"
                                     class="form-control form-control-sm @error('num_hijos') is-invalid @enderror"
                                     id="num_hijos" name="num_hijos" value="{{ old('num_hijos', $alumno->num_hijos ?? '') }}"
-                                    required>
+                                    {{ $esAdmin ? '' : 'required' }}>
                                 @error('num_hijos')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -87,8 +90,8 @@
                                     <input type="text"
                                         class="form-control form-control-sm @error('num_comprobante') is-invalid @enderror"
                                         id="num_comprobante" name="num_comprobante"
-                                        value="{{ stripos($alumno->num_comprobante, 'beca') !== false ? 'Beca' : (old('num_comprobante') ?: '') }}"
-                                        @if (stripos($alumno->num_comprobante, 'beca') !== false) readonly @endif required>
+                                        value="{{ stripos($alumno->num_comprobante, 'beca') !== false ? 'Beca' : old('num_comprobante', $alumno->num_comprobante) }}"
+                                        @if (stripos($alumno->num_comprobante, 'beca') !== false) readonly @endif {{ $esAdmin ? '' : 'required' }}>
                                 </div>
                                 @error('num_comprobante')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -101,7 +104,7 @@
                                     <input type="date"
                                         class="form-control form-control-sm @error('fecha_nacimiento') is-invalid @enderror"
                                         id="fecha_nacimiento" name="fecha_nacimiento"
-                                        value="{{ old('fecha_nacimiento', $alumno->fecha_nacimiento) }}" required>
+                                        value="{{ old('fecha_nacimiento', $alumno->fecha_nacimiento) }}" {{ $esAdmin ? '' : 'required' }}>
                                 </div>
                                 @error('fecha_nacimiento')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -111,8 +114,8 @@
                                 <label for="genero">Género:</label>
                                 <div class="input-group">
                                     <select class="form-control form-control-sm @error('genero') is-invalid @enderror"
-                                        id="genero" name="genero" required>
-                                        <option selected disabled>-- Selecciona --</option>
+                                        id="genero" name="genero" {{ $esAdmin ? '' : 'required' }}>
+                                        <option value="" {{ empty(old('genero', $alumno->genero)) ? 'selected' : '' }}>-- Selecciona --</option>
                                         <option value="Masculino"
                                             {{ old('genero', $alumno->genero) == 'Masculino' ? 'selected' : '' }}>Masculino
                                         </option>
@@ -129,7 +132,7 @@
                                 <label for="trabajas">¿Trabajas actualmente?:</label>
                                 <select class="form-control form-control-sm @error('trabajas') is-invalid @enderror"
                                     name="trabajas" id="trabajas">
-                                    <option value="" disabled
+                                    <option value="" {{ $esAdmin ? '' : 'disabled' }}
                                         {{ old('trabajas', isset($alumno) ? $alumno->trabajas : '') == '' ? 'selected' : '' }}>
                                         Selecciona una opción
                                     </option>
@@ -158,7 +161,7 @@
 
                             <div class="col-lg-4 mb-3">
                                 <label>Departamento</label>
-                                <select id="departamento" name="departamento" class="form-control form-control-sm" required>
+                                <select id="departamento" name="departamento" class="form-control form-control-sm" {{ $esAdmin ? '' : 'required' }}>
                                     <option value="">Seleccione...</option>
                                     @foreach ($departamentosData as $dep => $data)
                                         <option value="{{ $dep }}"
@@ -171,7 +174,7 @@
 
                             <div class="col-lg-4 mb-3">
                                 <label>Provincia</label>
-                                <select id="provincia" name="provincia" class="form-control form-control-sm" required>
+                                <select id="provincia" name="provincia" class="form-control form-control-sm" {{ $esAdmin ? '' : 'required' }}>
                                     <option value="">Seleccione...</option>
                                     @if (!empty($provinciasData))
                                         @foreach ($provinciasData as $prov)
@@ -186,7 +189,7 @@
 
                             <div class="col-lg-4 mb-3">
                                 <label>Distrito</label>
-                                <select id="distrito" name="distrito" class="form-control form-control-sm" required>
+                                <select id="distrito" name="distrito" class="form-control form-control-sm" {{ $esAdmin ? '' : 'required' }}>
                                     <option value="">Seleccione...</option>
                                     @if (!empty($distritosData))
                                         @foreach ($distritosData as $dist)
@@ -203,7 +206,7 @@
                                 <label for="direccion">Dirección actual:</label>
                                 <input type="text"
                                     class="form-control form-control-sm mb-2 @error('direccion') is-invalid @enderror"
-                                    name="direccion" value="{{ old('direccion', $alumno->direccion) }}" required>
+                                    name="direccion" value="{{ old('direccion', $alumno->direccion) }}" {{ $esAdmin ? '' : 'required' }}>
                                 @error('direccion')
                                     <span class="invalid-feedback" role="alert">{{ $message }}</span>
                                 @enderror
