@@ -3,7 +3,9 @@
 @section('contenido')
     @include('alumnos.partials.ui')
     @php
-        $matriculaAbierta = $alumno && $formularioHabilitado && $periodoActualPpd && ! $matriculaActual;
+        $usuarioPpd = $alumno?->user ?? auth()->user();
+        $esEgresado = ($usuarioPpd?->condicion === 'Egresado') || ($usuarioPpd?->perfil === 'Retirado');
+        $matriculaAbierta = ! $esEgresado && $alumno && $formularioHabilitado && $periodoActualPpd && ! $matriculaActual;
     @endphp
 
     <div class="al-ui">
@@ -66,7 +68,9 @@
                                 <span class="al-chip"><i class="fas fa-layer-group"></i>{{ $nombreCiclo($alumno->ciclo) }}</span>
                             @endif
                             <span class="al-chip"><i class="fas fa-id-card"></i>DNI {{ $alumno->dni }}</span>
-                            @if ($matriculaActual)
+                            @if ($esEgresado)
+                                <span class="al-chip is-oro"><i class="fas fa-user-graduate"></i>Egresado(a)</span>
+                            @elseif ($matriculaActual)
                                 <span class="al-chip is-ok"><i class="fas fa-check-circle"></i>Matriculado · {{ $periodoActualPpd->nombre }}</span>
                             @elseif ($matriculaAbierta)
                                 <span class="al-chip is-warn"><i class="fas fa-exclamation-circle"></i>Matrícula pendiente</span>
@@ -252,7 +256,7 @@
         </script>
     @endif
 
-    @if ($alumno && $formularioHabilitado && $periodoActualPpd && ! $matriculaActual)
+    @if (! $esEgresado && $alumno && $formularioHabilitado && $periodoActualPpd && ! $matriculaActual)
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 if (sessionStorage.getItem('matriculaAlertVista')) return;

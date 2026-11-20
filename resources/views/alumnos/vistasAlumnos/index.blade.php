@@ -3,12 +3,14 @@
 @section('contenido')
     @include('alumnos.partials.ui')
     @php
-        $alumno = auth()->user()->alumno ?? auth()->user()->alumnoB;
-        $esFid = (bool) auth()->user()->alumno;
+        $usuario = auth()->user();
+        $alumno = $usuario?->alumno ?? $usuario?->alumnoB;
+        $esEgresado = ($usuario?->condicion === 'Egresado') || ($usuario?->perfil === 'Retirado');
+        $esFid = (bool) $usuario?->alumno;
         // En producción el controlador aún no envía "Mis solicitudes" (función solo local): sin datos, no se muestra.
         $misTutorias = $misTutorias ?? collect();
         $misSugerencias = $misSugerencias ?? collect();
-        $matriculaAbierta = $esFid && isset($periodoActual) && $periodoActual && $periodoActual->formulario_habilitado && isset($yaMatriculado) && !$yaMatriculado;
+        $matriculaAbierta = ! $esEgresado && $esFid && isset($periodoActual) && $periodoActual && $periodoActual->formulario_habilitado && isset($yaMatriculado) && !$yaMatriculado;
     @endphp
 
     <div class="al-ui">
@@ -62,7 +64,9 @@
                                 <span class="al-chip"><i class="fas fa-layer-group"></i>Ciclo {{ $alumno->ciclo->nombre }}</span>
                             @endif
                             <span class="al-chip"><i class="fas fa-id-card"></i>DNI {{ $alumno->dni }}</span>
-                            @if (isset($yaMatriculado) && $yaMatriculado)
+                            @if ($esEgresado)
+                                <span class="al-chip is-oro"><i class="fas fa-user-graduate"></i>Egresado(a)</span>
+                            @elseif (isset($yaMatriculado) && $yaMatriculado)
                                 <span class="al-chip is-ok"><i class="fas fa-check-circle"></i>Matriculado · {{ optional($periodoActual)->nombre }}</span>
                             @elseif ($matriculaAbierta)
                                 <span class="al-chip is-warn"><i class="fas fa-exclamation-circle"></i>Matrícula pendiente</span>
@@ -272,7 +276,7 @@
     @endif
 @endpush
 
-@if (auth()->user()->alumno && isset($periodoActual) && $periodoActual && $periodoActual->formulario_habilitado && isset($yaMatriculado) && !$yaMatriculado)
+@if (! $esEgresado && auth()->user()->alumno && isset($periodoActual) && $periodoActual && $periodoActual->formulario_habilitado && isset($yaMatriculado) && !$yaMatriculado)
     @push('scripts')
         <script>
             document.addEventListener('DOMContentLoaded', function () {

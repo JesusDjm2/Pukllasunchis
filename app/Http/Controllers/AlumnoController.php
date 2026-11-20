@@ -31,7 +31,12 @@ class AlumnoController extends Controller
             return redirect()->route('login');
         }
 
-        $alumno = auth()->user()->alumno;
+        $usuario = auth()->user();
+        if ($usuario?->condicion === 'Egresado') {
+            return redirect()->route('egresado.intranet');
+        }
+
+        $alumno = $usuario?->alumno;
 
         if ($alumno) {
             $usuario = $alumno->user;
@@ -511,6 +516,10 @@ class AlumnoController extends Controller
 
     public function editarDatos()
     {
+        if (auth()->user()?->condicion === 'Egresado') {
+            return redirect()->route('egresado.intranet')->with('info', 'Como egresado(a), no requieres realizar matrícula académica.');
+        }
+
         $alumno = auth()->user()->alumno;
         if (! $alumno) {
             return redirect()->route('alumnos.index');
@@ -527,6 +536,10 @@ class AlumnoController extends Controller
 
     public function actualizarDatos(Request $request)
     {
+        if (auth()->user()?->condicion === 'Egresado') {
+            return redirect()->route('egresado.intranet')->with('info', 'Como egresado(a), no requieres realizar matrícula académica.');
+        }
+
         $alumno = auth()->user()->alumno;
         if (! $alumno) {
             return redirect()->route('alumnos.index');

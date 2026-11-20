@@ -45,7 +45,12 @@ class PpdController extends Controller
  */
     public function index(Request $request)
     {
-        $alumno = auth()->user()->alumnoB;
+        $usuario = auth()->user();
+        if ($usuario?->condicion === 'Egresado') {
+            return redirect()->route('egresado.intranet');
+        }
+
+        $alumno = $usuario?->alumnoB;
 
         if ($alumno) {
             // Obtener todos los cursos del programa a través de los ciclos
@@ -579,6 +584,10 @@ class PpdController extends Controller
 
     public function edit($id)
     {
+        if (auth()->user()?->condicion === 'Egresado') {
+            return redirect()->route('egresado.intranet')->with('info', 'Como egresado(a), no requieres realizar matrícula académica.');
+        }
+
         $alumno = ppd::findOrFail($id);
 
         if (auth()->user()->hasRole('alumnoB') && auth()->user()->alumnoB?->id !== $alumno->id) {
@@ -620,6 +629,10 @@ class PpdController extends Controller
 
     public function update(Request $request, ppd $profesionalización_docente)
     {
+        if (auth()->user()?->condicion === 'Egresado') {
+            return redirect()->route('egresado.intranet')->with('info', 'Como egresado(a), no requieres realizar matrícula académica.');
+        }
+
         $alumno = $profesionalización_docente;
 
         if (auth()->user()->hasRole('alumnoB') && auth()->user()->alumnoB?->id !== $alumno->id) {
