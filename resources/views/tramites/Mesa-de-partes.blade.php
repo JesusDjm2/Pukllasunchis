@@ -55,6 +55,7 @@
                             </a>
                         </div>
                     </div>
+                    {{-- Retirado temporalmente hasta subir versión sin firmas del director (ver GEMINI.md)
                     <div class="col-lg-4 col-12">
                         <div class="card">
                             <a href="{{ asset('pdf/Flujograma-de-procesos.pdf') }}" target="_blank" class="text-center">
@@ -64,6 +65,7 @@
                             </a>
                         </div>
                     </div>
+                    --}}
                 </div>                
             </div>
         </div>
