@@ -6,8 +6,11 @@
 @section('contenido')
     <div class="container-fluid">
         <div class="d-sm-flex align-items-center justify-content-between mb-4">
-            <h4 class="mb-0 text-gray-800">Actualizar matrícula: <strong> {{ $alumno->apellidos }}
-                    {{ $alumno->nombres }}</strong></h4>
+            <h4 class="mb-0 text-gray-800">
+                <i class="fas {{ $esAdmin ? 'fa-user-edit text-primary' : 'fa-graduation-cap' }} mr-1"></i>
+                {{ $esAdmin ? 'Editar datos y matrícula:' : 'Actualizar matrícula:' }}
+                <strong>{{ $alumno->apellidos }} {{ $alumno->nombres }}</strong>
+            </h4>
             <a href="javascript:history.go(-1)" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
                 Volver
             </a>
@@ -23,23 +26,29 @@
                         </ul>
                     </div>
                 @endif
-                @if (stripos($alumno->num_comprobante, 'beca') !== false)
-                    <div class="alert alert-info text-center" role="alert">
-                        <strong>Llenar los nuevos campos y de no tener ningun dato para actualizar, solo guardar el
-                            formulario. Seguidamente strong>NOTIFICAR</strong> que terminaste tu ficha de matrícula.
-                    </div></strong>
-                @else
-                    <div class="alert alert-info text-center" role="alert">
-                        Por favor <strong>completar los nuevos campos</strong> y actualizar datos de ser necesario.
-                        Seguidamente <strong>NOTIFICAR</strong> que terminaste tu ficha de matrícula.
+                @if ($esAdmin)
+                    <div class="alert alert-info text-center py-2 mb-3 shadow-sm" role="alert" style="font-size:0.9rem;">
+                        <i class="fas fa-info-circle mr-1"></i> <strong>Vista de administración unificada:</strong> Puedes editar datos de la cuenta de usuario (User), información personal de la ficha y número de comprobante de matrícula. Al guardar, todos los registros se actualizan automáticamente.
                     </div>
+                @else
+                    @if (stripos($alumno->num_comprobante, 'beca') !== false)
+                        <div class="alert alert-info text-center" role="alert">
+                            <strong>Llenar los nuevos campos y de no tener ningun dato para actualizar, solo guardar el
+                                formulario. Seguidamente strong>NOTIFICAR</strong> que terminaste tu ficha de matrícula.
+                        </div></strong>
+                    @else
+                        <div class="alert alert-info text-center" role="alert">
+                            Por favor <strong>completar los nuevos campos</strong> y actualizar datos de ser necesario.
+                            Seguidamente <strong>NOTIFICAR</strong> que terminaste tu ficha de matrícula.
+                        </div>
+                    @endif
                 @endif
             </div>
             <div class="col-lg-12 card pt-3 pb-3 border border-primary">
-                <form action="{{ route('alumnos.update', ['alumno' => $alumno->id]) }}" method="POST" @if ($esAdmin) novalidate @endif>
+                <form action="{{ route('alumnos.update', ['alumno' => $alumno->id]) }}" method="POST" enctype="multipart/form-data" @if ($esAdmin) novalidate @endif>
                     @csrf
                     @method('PUT')
-                    @hasanyrole('super-admin|admin|adminB')
+                    @if ($esAdmin)
                         <div class="container-fluid mt-3">
                             <div class="row">
                                 <div class="col-12 mb-3">
@@ -129,13 +138,31 @@
                                                     </select>
                                                     @error('ciclo_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                                 </div>
+                                                <div class="col-md-3 mb-2">
+                                                    <label for="admin_password" class="small font-weight-bold">Nueva contraseña:</label>
+                                                    <input type="password" name="password" id="admin_password" autocomplete="new-password"
+                                                        class="form-control form-control-sm @error('password') is-invalid @enderror"
+                                                        placeholder="Dejar vacía para mantener">
+                                                    @error('password')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                                </div>
+                                                <div class="col-md-3 mb-2">
+                                                    <label for="admin_foto" class="small font-weight-bold">Foto del estudiante:</label>
+                                                    <input type="file" name="foto" id="admin_foto" accept="image/*"
+                                                        class="form-control-file small @error('foto') is-invalid @enderror">
+                                                    @if ($usuarioEstudiante?->foto)
+                                                        <small class="text-muted d-block mt-1">
+                                                            Foto actual: <a href="{{ asset('img/estudiantes/' . $usuarioEstudiante->foto) }}" target="_blank" class="text-primary font-weight-bold"><i class="fas fa-image mr-1"></i> Ver foto</a>
+                                                        </small>
+                                                    @endif
+                                                    @error('foto')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    @endhasanyrole
+                    @endif
                     @unless ($esAdmin)
                         <div class="container-fluid mt-2">
                             <div class="alert alert-light border small mb-0">

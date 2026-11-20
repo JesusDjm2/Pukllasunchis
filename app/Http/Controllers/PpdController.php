@@ -16,6 +16,7 @@ use App\Models\ppd;
 use App\Models\Programa;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -658,6 +659,8 @@ class PpdController extends Controller
                 'beca' => 'nullable|boolean',
                 'programa_id' => 'nullable|exists:programas,id',
                 'ciclo_id' => 'nullable|exists:ciclos,id',
+                'password' => 'nullable|string|min:7',
+                'foto' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
                 'genero' => 'nullable|string',
                 'numero' => 'nullable|string|max:20',
                 'numero_referencia' => 'nullable|string|max:20',
@@ -702,6 +705,13 @@ class PpdController extends Controller
                 if ($request->has('beca')) $user->beca = (int) $request->input('beca');
                 if ($request->filled('programa_id')) $user->programa_id = (int) $request->input('programa_id');
                 if ($request->filled('ciclo_id')) $user->ciclo_id = (int) $request->input('ciclo_id');
+                if ($request->filled('password')) $user->password = Hash::make($request->input('password'));
+                if ($request->hasFile('foto')) {
+                    $foto = $request->file('foto');
+                    $nombreFoto = time().'_'.$foto->getClientOriginalName();
+                    $foto->move(public_path('img/estudiantes'), $nombreFoto);
+                    $user->foto = $nombreFoto;
+                }
                 $user->save();
             }
 

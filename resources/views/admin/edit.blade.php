@@ -45,6 +45,22 @@
         <div class="alert alert-success" style="border-radius:.6rem;"><i class="fas fa-check-circle mr-1"></i> {{ session('success') }}</div>
     @endif
 
+    @php
+        $fichaUrl = $admin->alumno ? route('alumnos.edit', $admin->alumno->id) : ($admin->alumnoB ? route('ppd.edit', $admin->alumnoB->id) : null);
+    @endphp
+    @if ($fichaUrl)
+        <div class="alert alert-info d-flex align-items-center justify-content-between mb-3 shadow-sm" style="border-radius:.6rem; border-left: 4px solid #4e73df !important;">
+            <div>
+                <i class="fas fa-user-edit mr-2 text-primary"></i>
+                <strong>Este usuario es estudiante ({{ $admin->alumno ? 'FID' : 'PPD' }}):</strong>
+                Puedes editar sus datos personales, cuenta de usuario, ficha técnica y comprobante de matrícula en la vista unificada.
+            </div>
+            <a href="{{ $fichaUrl }}" class="btn btn-sm btn-primary ml-3 text-nowrap">
+                <i class="fas fa-external-link-alt mr-1"></i> Ir a Editar datos y matrícula
+            </a>
+        </div>
+    @endif
+
     <form id="editForm" method="POST" action="{{ route('adminUpdate', $admin->id) }}" enctype="multipart/form-data">
     @csrf
     @method('PUT')

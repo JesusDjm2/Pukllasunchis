@@ -1,10 +1,13 @@
+@php
+    $esAdmin = auth()->user()?->hasAnyRole(['super-admin', 'admin', 'adminB', 'secretaria']);
+@endphp
 @extends('layouts.profesionalizacion')
 @section('contenido')
     <div class="container-fluid">
         <div class="ppd-page-header">
             <div>
-                <span class="ppd-eyebrow"><i class="fa fa-graduation-cap mr-1"></i>Matrícula</span>
-                <h4 class="ppd-page-title">Actualizar matrícula PPD: <strong>{{ $alumno->apellidos }}
+                <span class="ppd-eyebrow"><i class="fas {{ $esAdmin ? 'fa-user-edit' : 'fa-graduation-cap' }} mr-1"></i>{{ $esAdmin ? 'Administración de Estudiantes' : 'Matrícula' }}</span>
+                <h4 class="ppd-page-title">{{ $esAdmin ? 'Editar datos y matrícula PPD:' : 'Actualizar matrícula PPD:' }} <strong>{{ $alumno->apellidos }}
                         {{ $alumno->nombres }}</strong></h4>
             </div>
             <a href="javascript:history.go(-1)" class="btn btn-sm btn-ppd-volver">
@@ -22,27 +25,30 @@
                         </ul>
                     </div>
                 @endif
-                <div class="alert alert-info text-center" role="alert">
-                    Por favor <strong>completa los datos</strong> y actualiza lo que sea necesario. Al guardar,
-                    tus cambios quedan registrados automáticamente.
-                </div>
-                @if ($formularioHabilitado && $periodoActualPpd)
-                    @php $yaMatriculado = $matriculaActual !== null; @endphp
-                    <div class="alert {{ $yaMatriculado ? 'alert-success' : 'alert-warning' }} text-center" role="alert">
-                        <strong><i class="fas fa-graduation-cap mr-1"></i> Matrícula — {{ $periodoActualPpd->nombre }}:</strong>
-                        @if ($yaMatriculado)
-                            Ya completaste tu matrícula para este periodo. La institución verificará tu información
-                            antes de confirmarte por correo.
-                        @else
-                            Al guardar este formulario quedarás matriculado/a en el periodo actual.
-                        @endif
+                @if ($esAdmin)
+                    <div class="alert alert-info text-center py-2 mb-3 shadow-sm" role="alert" style="font-size:0.9rem;">
+                        <i class="fas fa-info-circle mr-1"></i> <strong>Vista de administración unificada:</strong> Puedes editar datos de la cuenta de usuario (User), información personal de la ficha y número de comprobante de matrícula. Al guardar, todos los registros se actualizan automáticamente.
                     </div>
+                @else
+                    <div class="alert alert-info text-center" role="alert">
+                        Por favor <strong>completa los datos</strong> y actualiza lo que sea necesario. Al guardar,
+                        tus cambios quedan registrados automáticamente.
+                    </div>
+                    @if ($formularioHabilitado && $periodoActualPpd)
+                        @php $yaMatriculado = $matriculaActual !== null; @endphp
+                        <div class="alert {{ $yaMatriculado ? 'alert-success' : 'alert-warning' }} text-center" role="alert">
+                            <strong><i class="fas fa-graduation-cap mr-1"></i> Matrícula — {{ $periodoActualPpd->nombre }}:</strong>
+                            @if ($yaMatriculado)
+                                Ya completaste tu matrícula para este periodo. La institución verificará tu información
+                                antes de confirmarte por correo.
+                            @else
+                                Al guardar este formulario quedarás matriculado/a en el periodo actual.
+                            @endif
+                        </div>
+                    @endif
                 @endif
             </div>
             <div class="col-lg-12 card pt-3 pb-3 border border-primary">
-                @php
-                    $esAdmin = auth()->user()?->hasAnyRole(['super-admin', 'admin', 'adminB', 'secretaria']);
-                @endphp
                 <form action="{{ route('ppd.update', $alumno) }}" method="POST" enctype="multipart/form-data" @if ($esAdmin) novalidate @endif>
                     @csrf
                     @method('PUT')
@@ -135,6 +141,24 @@
                                                         @endforeach
                                                     </select>
                                                     @error('ciclo_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                                </div>
+                                                <div class="col-md-3 mb-2">
+                                                    <label for="admin_password" class="small font-weight-bold">Nueva contraseña:</label>
+                                                    <input type="password" name="password" id="admin_password" autocomplete="new-password"
+                                                        class="form-control form-control-sm @error('password') is-invalid @enderror"
+                                                        placeholder="Dejar vacía para mantener">
+                                                    @error('password')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                                </div>
+                                                <div class="col-md-3 mb-2">
+                                                    <label for="admin_foto" class="small font-weight-bold">Foto del estudiante:</label>
+                                                    <input type="file" name="foto" id="admin_foto" accept="image/*"
+                                                        class="form-control-file small @error('foto') is-invalid @enderror">
+                                                    @if ($usuarioEstudiante?->foto)
+                                                        <small class="text-muted d-block mt-1">
+                                                            Foto actual: <a href="{{ asset('img/estudiantes/' . $usuarioEstudiante->foto) }}" target="_blank" class="text-primary font-weight-bold"><i class="fas fa-image mr-1"></i> Ver foto</a>
+                                                        </small>
+                                                    @endif
+                                                    @error('foto')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                                                 </div>
                                             </div>
                                         </div>

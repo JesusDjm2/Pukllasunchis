@@ -285,7 +285,7 @@
                     <i class="fas fa-id-card-alt fa-xs"></i> Ficha completa
                 </a>
             @endif
-            <a href="{{ route('adminEdit', ['id' => $u->id]) }}" class="ex-btn"><i class="fas fa-pen fa-xs"></i> Editar datos</a>
+            <a href="{{ $fichaEditar ?: route('adminEdit', ['id' => $u->id]) }}" class="ex-btn"><i class="fas fa-pen fa-xs"></i> Editar datos</a>
             <button type="button" class="ex-btn" data-abrir="dlgDocumento"><i class="fas fa-paperclip fa-xs"></i> Subir documento</button>
             <button type="button" class="ex-btn" data-abrir="dlgAccion"><i class="fas fa-hands-helping fa-xs"></i> Registrar seguimiento</button>
             <button type="button" class="ex-btn is-primary" data-abrir="dlgNuevo"><i class="fas fa-plus fa-xs"></i> Registrar evento</button>

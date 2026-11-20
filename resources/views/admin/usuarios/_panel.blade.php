@@ -1289,12 +1289,12 @@
         var r = RUTAS[cont.dataset.mod], f = cont.dataset.ficha, m = cont.dataset.matid;
         var h = '<div class="up-menu-sep"></div><div class="up-menu-label">Matrícula</div>'
             + '<a role="menuitem" class="js-drawer" data-titulo="Ficha de matrícula · ' + esc(cont.dataset.nombre) + '" href="' + url(r.ficha, f, m) + '"><i class="fas fa-id-card-alt"></i> Ver ficha de matrícula</a>'
-            + '<a role="menuitem" class="js-drawer" data-titulo="Editar ficha · ' + esc(cont.dataset.nombre) + '" href="' + url(r.editar, f, m) + '"><i class="fas fa-edit"></i> Editar ficha de matrícula</a>';
+            + '<a role="menuitem" class="js-drawer" data-titulo="Editar datos y matrícula · ' + esc(cont.dataset.nombre) + '" href="' + url(r.editar, f, m) + '"><i class="fas fa-user-edit"></i> Editar datos y matrícula</a>';
         if (m) {
             h += '<button type="button" role="menuitem" class="js-voucher" data-url="' + url(r.voucher, f, m) + '"><i class="fas fa-check-circle"></i> <span class="js-voucher-txt"></span></button>'
                + '<button type="button" role="menuitem" class="js-enviar" data-url="' + url(r.enviar, f, m) + '"><i class="fas fa-paper-plane"></i> <span class="js-enviar-txt"></span></button>';
         }
-        if (r.carnet && cont.dataset.foto === '1') {
+        if (r.carnet && (cont.dataset.tieneFoto === '1' || cont.dataset.foto === '1')) {
             // La pantalla de carnets ya trae sus botones "Descargar PNG": se abre en el panel.
             h += '<a role="menuitem" class="js-drawer" data-titulo="Carnets · ' + esc(cont.dataset.nombre) + '" href="' + url(r.carnet, f, m) + '"><i class="fas fa-address-card"></i> Ver y descargar carnets</a>';
         }

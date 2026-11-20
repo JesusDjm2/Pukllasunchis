@@ -24,6 +24,17 @@
     $mat = $esEstudiante ? ($matriculas[$u->id] ?? null) : null;
     $esPpdMat = $mat?->modalidad === 'ppd';
     $matId = $mat?->matricula?->id;
+
+    $rutaEditarEstudiante = null;
+    if ($esEstudiante) {
+        if ($u->alumno) {
+            $rutaEditarEstudiante = route('alumnos.edit', ['alumno' => $u->alumno->id]);
+        } elseif ($u->alumnoB) {
+            $rutaEditarEstudiante = route('ppd.edit', $u->alumnoB->id);
+        }
+    }
+    $urlEditar = $rutaEditarEstudiante ?: route('adminEdit', ['id' => $u->id]);
+    $tituloBotonEditar = $rutaEditarEstudiante ? 'Editar datos y matrícula' : 'Editar datos';
 @endphp
 <div class="up-row" data-id="{{ $u->id }}" data-buscar="{{ $buscar }}" data-beca="{{ $u->beca == 1 ? 1 : 0 }}" data-pend="{{ $pendientes->count() }}"
     data-motivo="{{ $motivo }}" data-inhab="{{ $esInhabilitado ? 1 : 0 }}" data-egresado="{{ $u->condicion === 'Egresado' || $u->perfil === 'Egresado' ? 1 : 0 }}"
@@ -127,8 +138,8 @@
         </div>
 
         <div class="up-actions">
-            <a href="{{ route('adminEdit', ['id' => $u->id]) }}" class="up-icon-btn js-drawer" title="Cuenta y roles"
-                data-titulo="Cuenta y roles · {{ $nombre }}"><i class="fas fa-pen"></i></a>
+            <a href="{{ $urlEditar }}" class="up-icon-btn js-drawer" title="{{ $tituloBotonEditar }}"
+                data-titulo="{{ $tituloBotonEditar }} · {{ $nombre }}"><i class="fas fa-pen"></i></a>
             <div class="up-menu-wrap">
                 <button type="button" class="up-icon-btn js-menu" aria-haspopup="true" aria-expanded="false" title="Más acciones">
                     <i class="fas fa-ellipsis-h"></i>
@@ -144,7 +155,7 @@
                         {{-- Las opciones de matrícula las arma el JS de _panel al abrir el menú (armarMenuMatricula),
                              con plantillas de URL definidas una sola vez: así cada fila no repite ~8 URLs. --}}
                         <div class="js-menu-mat" data-mod="{{ $mat->modalidad }}" data-ficha="{{ $mat->ficha->id }}"
-                            data-matid="{{ $matId }}" data-foto="{{ $u->foto ? 1 : 0 }}" data-nombre="{{ $nombre }}"></div>
+                            data-matid="{{ $matId }}" data-tiene-foto="{{ $u->foto ? 1 : 0 }}" data-nombre="{{ $nombre }}"></div>
                     @endif
                     @if (in_array($tipo, ['fid', 'inhabilitados'], true))
                         <a role="menuitem" href="{{ route('asignar.cursos', ['id' => $u->id]) }}" class="js-drawer" data-titulo="Asignar cursos · {{ $nombre }}"><i class="fas fa-book-open"></i> Asignar cursos</a>
@@ -159,7 +170,7 @@
                         <button type="button" role="menuitem" class="js-motivo" data-id="{{ $u->id }}" data-nombre="{{ $nombre }}"
                             data-perfil="{{ $u->perfil }}"><i class="fas fa-ban"></i> Cambiar motivo</button>
                     @endif
-                    <a role="menuitem" href="{{ route('adminEdit', ['id' => $u->id]) }}" class="js-drawer" data-titulo="Cuenta y roles · {{ $nombre }}"><i class="fas fa-user-cog"></i> Cuenta y roles</a>
+                    <a role="menuitem" href="{{ route('adminEdit', ['id' => $u->id]) }}" class="js-drawer" data-titulo="Cuenta y roles · {{ $nombre }}"><i class="fas fa-user-cog"></i> {{ $rutaEditarEstudiante ? 'Contraseña y roles' : 'Cuenta y roles' }}</a>
                     <div class="up-menu-sep"></div>
                     <button type="button" role="menuitem" class="is-danger js-eliminar"
                         data-url="{{ route('adminDestroy', ['id' => $u->id]) }}" data-nombre="{{ $nombre }}">

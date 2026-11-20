@@ -58,9 +58,12 @@
     document.addEventListener('click', function (e) {
         var el = e.target.closest('[data-foto]');
         if (!el) return;
+        if (e.target.closest('a, button:not(.up-avatar-btn)') && !el.classList.contains('up-avatar-btn')) return;
+        var urlFoto = el.getAttribute('data-foto');
+        if (!urlFoto || urlFoto === '0' || urlFoto === '1' || urlFoto === 'true' || urlFoto === 'false') return;
         e.preventDefault();
         e.stopPropagation();
-        abrir(el.getAttribute('data-foto'), el.getAttribute('data-foto-titulo'), el.getAttribute('data-foto-sub'));
+        abrir(urlFoto, el.getAttribute('data-foto-titulo'), el.getAttribute('data-foto-sub'));
     });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') cerrar(); });
 
