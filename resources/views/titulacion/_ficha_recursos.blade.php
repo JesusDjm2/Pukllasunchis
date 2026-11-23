@@ -176,6 +176,77 @@
         })();
     </script>
     <style>
+        /* Fila de paso con accesos directos a RD */
+        .tp-paso-item { position: relative; display: flex; align-items: center; width: 100%; }
+        .tp-paso-item.is-visible .tp-paso { background: var(--t-azul-f, #eff6ff); box-shadow: inset 3px 0 0 var(--t-azul, #2563eb); }
+        .tp-paso-item.has-rds .tp-paso { padding-right: 2.3rem; }
+
+        /* Dock flotante de accesos directos a RD */
+        .tp-paso-dock {
+            position: absolute; right: .4rem; top: 50%; transform: translateY(-50%);
+            display: flex; align-items: center; gap: .25rem; z-index: 5;
+        }
+        .tp-rd-pill {
+            display: inline-flex; align-items: center; gap: .25rem;
+            font-size: .66rem; font-weight: 700; line-height: 1;
+            padding: .26rem .45rem; border-radius: 999px;
+            background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5;
+            text-decoration: none !important; transition: all .16s ease-in-out;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08); white-space: nowrap;
+        }
+        .tp-rd-pill:hover {
+            background: #dc2626; color: #ffffff !important; border-color: #b91c1c;
+            transform: translateY(-1px) scale(1.04); box-shadow: 0 3px 8px rgba(220, 38, 38, 0.35);
+        }
+        .tp-rd-pill__ico { font-size: .68rem; color: #dc2626; transition: color .16s ease; }
+        .tp-rd-pill:hover .tp-rd-pill__ico { color: #ffffff; }
+        .tp-rd-pill__tag { font-weight: 700; letter-spacing: -.01em; }
+        .tp-rd-pill__salida { font-size: .52rem; opacity: .75; }
+        .tp-rd-pill:hover .tp-rd-pill__salida { opacity: 1; }
+
+        .tp-rd-pill--sin-pdf {
+            background: #f1f5f9; color: #64748b; border-color: #cbd5e1;
+            cursor: default; box-shadow: none;
+        }
+        .tp-rd-pill--sin-pdf .tp-rd-pill__ico { color: #94a3b8; }
+
+        .dark-mode .tp-rd-pill, .dim-mode .tp-rd-pill {
+            background: rgba(239, 68, 68, 0.16); color: #fca5a5; border-color: rgba(239, 68, 68, 0.35);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+        }
+        .dark-mode .tp-rd-pill:hover, .dim-mode .tp-rd-pill:hover {
+            background: #dc2626; color: #ffffff !important; border-color: #ef4444;
+            box-shadow: 0 3px 10px rgba(239, 68, 68, 0.45);
+        }
+        .dark-mode .tp-rd-pill__ico, .dim-mode .tp-rd-pill__ico { color: #f87171; }
+        .dark-mode .tp-rd-pill:hover .tp-rd-pill__ico, .dim-mode .tp-rd-pill:hover .tp-rd-pill__ico { color: #ffffff; }
+        .dark-mode .tp-rd-pill--sin-pdf, .dim-mode .tp-rd-pill--sin-pdf {
+            background: rgba(255, 255, 255, 0.05); color: #94a3b8; border-color: rgba(255, 255, 255, 0.12);
+        }
+
+        @media (min-width: 768px) and (hover: hover) {
+            .tp-paso-dock {
+                opacity: 0; pointer-events: none; transform: translateY(-50%) translateX(6px);
+                transition: opacity .18s ease, transform .18s ease;
+            }
+            .tp-paso-item:hover .tp-paso-dock, .tp-paso-dock:hover {
+                opacity: 1; pointer-events: auto; transform: translateY(-50%) translateX(0);
+            }
+            .tp-paso-item.is-visible .tp-paso-dock {
+                opacity: .88; pointer-events: auto; transform: translateY(-50%) translateX(0);
+            }
+            .tp-paso-item.is-visible:hover .tp-paso-dock { opacity: 1; }
+        }
+
+        .tp-det__rd-btn {
+            font-size: .78rem; font-weight: 700; border-radius: 999px; padding: .25rem .65rem;
+            display: inline-flex; align-items: center; gap: .25rem; line-height: 1.2;
+            transition: all .16s ease-in-out;
+        }
+        .tp-det__rd-btn:hover {
+            transform: translateY(-1px); box-shadow: 0 3px 8px rgba(220, 38, 38, 0.25);
+        }
+
         .ft-ficha { background: #fff; border: 1px solid #e3e6f0; border-radius: .6rem; padding: .75rem 1rem 1rem; }
         .ft-ficha .mt-tabs__nav { margin-left: -1rem; margin-right: -1rem; padding: 0 .75rem; }
         .ft-alertas { display: grid; gap: .35rem; }
