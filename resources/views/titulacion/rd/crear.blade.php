@@ -127,68 +127,89 @@
                     Integrantes del grupo
                 @endif
             </div>
-            @php
-                // Para el buscador: todos los del programa, con lo que hace falta para mostrarlos y validarlos.
-                $candidatosJs = $candidatos->concat($preseleccion)->unique('id')->map(fn ($u) => [
-                    'id' => $u->id,
-                    'nombre' => $u->apellidos.', '.$u->name,
-                    'dni' => $u->dni ?: '—',
-                    'meta' => trim(($u->condicion === 'Egresado' ? 'Egresado(a)' : '').($u->seguimientoTitulacion?->numero_expediente ? ' · Exp. '.$u->seguimientoTitulacion->numero_expediente : '')
-                        .($u->seguimientoTitulacion ? (fn ($d) => match ($d['estado']) {
-                            'completa' => ' · RD PTI '.$d['mostrar'],
-                            'incompleta' => ' · RD PTI '.$d['mostrar'].' (falta año)',
-                            default => ' · sin RD de PTI',
-                        })(\App\Services\Titulacion\RdPti::de($u->seguimientoTitulacion)) : ''), ' ·'),
-                    'previa' => $rdPrevia($u),
-                    'exp' => $u->seguimientoTitulacion?->numero_expediente,
-                    'falta' => \App\Services\Titulacion\ReglasProceso::faltaIntegrante($u->seguimientoTitulacion, $def['tipo']),
-                    'buscar' => \Illuminate\Support\Str::lower(\Illuminate\Support\Str::ascii($u->apellidos.' '.$u->name.' '.$u->dni)),
-                ])->keyBy('id');
-            @endphp
-            <p class="rdg-ayuda mb-2">
-                @if ($plantilla === 'cambio_asesor')
+
+            @if ($plantilla === 'cambio_asesor')
+                <p class="rdg-ayuda mb-2">
                     @if ($preseleccion->count() > 1)
                         Esta resolución de cambio de asesor aplica a los integrantes registrados en este trabajo de investigación.
                     @else
                         Esta resolución de cambio de asesor aplica a <strong>{{ $egresado->apellidos }}, {{ $egresado->name }}</strong>.
                     @endif
-                @elseif ($plantilla === 'retiro_grupo')
-                    <strong>{{ $egresado->apellidos }}, {{ $egresado->name }}</strong> es quien se retira. Los demás integrantes son quienes continúan con el PTI.
-                    Al emitir, deja de figurar en este grupo y su PTI pasa a su historial; conserva sus RD.
-                @elseif ($plantilla === 'incorporacion_grupo')
-                    Ya están puestos los integrantes del grupo que recibe. <strong>Agregue con el buscador a quien se incorpora.</strong>
-                    Al emitir, entra al grupo con el mismo PTI (título, RD, asesor y vigencia). Si pertenece a otro grupo, primero emita su RD de retiro.
-                @else
-                    {{ $preseleccion->count() > 1 ? 'Ya están puestos esta persona y su grupo (según las RD o actas que comparten).' : 'Está puesta esta persona.' }}
-                    Si el grupo recién presenta su PTI, agréguelos con el buscador: desde esta RD quedarán agrupados.
+                </p>
+                <div class="rdg-elegidos" aria-live="polite">
+                    @foreach ($preseleccion as $u)
+                        @php $titular = $u->id === $egresado->id; @endphp
+                        <div class="rdg-chip {{ $titular ? 'is-titular' : '' }}">
+                            <span class="rdg-chip-ini">{{ mb_substr($u->name ?: $u->apellidos, 0, 1) }}</span>
+                            <span class="rdg-chip-txt">
+                                <strong>{{ $u->apellidos }}, {{ $u->name }}</strong>
+                                <small>DNI {{ $u->dni ?: '—' }}{{ $u->condicion === 'Egresado' ? ' · Egresado(a)' : '' }}{{ $titular ? ' · titular' : '' }}</small>
+                            </span>
+                            <i class="fas fa-lock rdg-chip-lock" title="{{ $titular ? 'La RD se genera desde su ficha' : 'Integrante registrado del trabajo' }}"></i>
+                            <input type="hidden" name="integrantes[]" value="{{ $u->id }}">
+                        </div>
+                    @endforeach
+                </div>
+                <div class="rdg-ayuda mt-1">
+                    <strong>{{ $preseleccion->count() }}</strong> {{ $preseleccion->count() > 1 ? 'estudiantes' : 'estudiante' }} en esta RD.
+                </div>
+            @else
+                @php
+                    // Para el buscador: todos los del programa, con lo que hace falta para mostrarlos y validarlos.
+                    $candidatosJs = $candidatos->concat($preseleccion)->unique('id')->map(fn ($u) => [
+                        'id' => $u->id,
+                        'nombre' => $u->apellidos.', '.$u->name,
+                        'dni' => $u->dni ?: '—',
+                        'meta' => trim(($u->condicion === 'Egresado' ? 'Egresado(a)' : '').($u->seguimientoTitulacion?->numero_expediente ? ' · Exp. '.$u->seguimientoTitulacion->numero_expediente : '')
+                            .($u->seguimientoTitulacion ? (fn ($d) => match ($d['estado']) {
+                                'completa' => ' · RD PTI '.$d['mostrar'],
+                                'incompleta' => ' · RD PTI '.$d['mostrar'].' (falta año)',
+                                default => ' · sin RD de PTI',
+                            })(\App\Services\Titulacion\RdPti::de($u->seguimientoTitulacion)) : ''), ' ·'),
+                        'previa' => $rdPrevia($u),
+                        'exp' => $u->seguimientoTitulacion?->numero_expediente,
+                        'falta' => \App\Services\Titulacion\ReglasProceso::faltaIntegrante($u->seguimientoTitulacion, $def['tipo']),
+                        'buscar' => \Illuminate\Support\Str::lower(\Illuminate\Support\Str::ascii($u->apellidos.' '.$u->name.' '.$u->dni)),
+                    ])->keyBy('id');
+                @endphp
+                <p class="rdg-ayuda mb-2">
+                    @if ($plantilla === 'retiro_grupo')
+                        <strong>{{ $egresado->apellidos }}, {{ $egresado->name }}</strong> es quien se retira. Los demás integrantes son quienes continúan con el PTI.
+                        Al emitir, deja de figurar en este grupo y su PTI pasa a su historial; conserva sus RD.
+                    @elseif ($plantilla === 'incorporacion_grupo')
+                        Ya están puestos los integrantes del grupo que recibe. <strong>Agregue con el buscador a quien se incorpora.</strong>
+                        Al emitir, entra al grupo con el mismo PTI (título, RD, asesor y vigencia). Si pertenece a otro grupo, primero emita su RD de retiro.
+                    @else
+                        {{ $preseleccion->count() > 1 ? 'Ya están puestos esta persona y su grupo (según las RD o actas que comparten).' : 'Está puesta esta persona.' }}
+                        Si el grupo recién presenta su PTI, agréguelos con el buscador: desde esta RD quedarán agrupados.
+                    @endif
+                </p>
+                <div class="rdg-elegidos" id="rdgElegidos" aria-live="polite"></div>
+                <div id="rdgInputs">
+                    @foreach ($marcados as $id)
+                        <input type="hidden" name="integrantes[]" value="{{ $id }}">
+                    @endforeach
+                </div>
+                @if ($plantilla !== 'retiro_grupo')
+                    <div class="rdg-agregar">
+                        <label for="rdgBuscar" class="mb-1">Agregar integrante</label>
+                        <input type="search" class="form-control form-control-sm" id="rdgBuscar" placeholder="Escriba nombre o DNI (mismo programa)…" autocomplete="off">
+                        <div class="rdg-resultados" id="rdgResultados" hidden></div>
+                    </div>
                 @endif
-            </p>
-            <div class="rdg-elegidos" id="rdgElegidos" aria-live="polite"></div>
-            <div id="rdgInputs">
-                @foreach ($marcados as $id)
-                    <input type="hidden" name="integrantes[]" value="{{ $id }}">
-                @endforeach
-            </div>
-            @if ($plantilla !== 'cambio_asesor' && $plantilla !== 'retiro_grupo')
-                <div class="rdg-agregar">
-                    <label for="rdgBuscar" class="mb-1">Agregar integrante</label>
-                    <input type="search" class="form-control form-control-sm" id="rdgBuscar" placeholder="Escriba nombre o DNI (mismo programa)…" autocomplete="off">
-                    <div class="rdg-resultados" id="rdgResultados" hidden></div>
+                @error('integrantes')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                <script>
+                    window.RDG_INTEGRANTES = {
+                        candidatos: @json($candidatosJs),
+                        titular: {{ $egresado->id }},
+                        elegidos: @json($marcados->values()),
+                        permiteQuitar: true,
+                    };
+                </script>
+                <div class="rdg-ayuda mt-1">
+                    <strong id="rdgCuenta">{{ $marcados->count() }}</strong> integrante(s) en esta RD.
                 </div>
             @endif
-            @error('integrantes')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
-            <script>
-                window.RDG_INTEGRANTES = {
-                    candidatos: @json($candidatosJs),
-                    titular: {{ $egresado->id }},
-                    elegidos: @json($marcados->values()),
-                    permiteQuitar: {{ $plantilla === 'cambio_asesor' ? 'false' : 'true' }},
-                };
-            </script>
-            <div class="rdg-ayuda mt-1">
-                <strong id="rdgCuenta">{{ $marcados->count() }}</strong>
-                {{ $plantilla === 'cambio_asesor' ? ($marcados->count() > 1 ? 'estudiantes' : 'estudiante') : 'integrante(s)' }} en esta RD.
-            </div>
         </div>
 
         <div class="rdg-card">
@@ -349,6 +370,7 @@
 <script>
 (function () {
     var form = document.getElementById('rdgForm');
+    @if ($plantilla !== 'cambio_asesor')
     // Integrantes: tarjetas de los elegidos (el titular, fijo) + buscador que agrega.
     var D = window.RDG_INTEGRANTES, C = D.candidatos;
     var elegidos = D.elegidos.map(Number).filter(function (id) { return C[id] && (!C[id].falta || id === D.titular); });
@@ -422,6 +444,7 @@
         });
     }
     pintar();
+    @endif
 
     // Fechas: calendario en español (mes y año navegables, botón «Hoy»). Se guarda AAAA-MM-DD y se
     // muestra «22 de octubre de 2026»; también se puede escribir. Sin la librería, queda el campo de texto.

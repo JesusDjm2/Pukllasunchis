@@ -48,7 +48,12 @@
             var tp = boton.closest('[data-tp]');
             if (!tp) return;
             var clave = boton.dataset.tpIr;
-            tp.querySelectorAll('[data-tp-ir]').forEach(function (b) { b.classList.toggle('is-visible', b.dataset.tpIr === clave); });
+            tp.querySelectorAll('[data-tp-ir]').forEach(function (b) {
+                var activo = b.dataset.tpIr === clave;
+                b.classList.toggle('is-visible', activo);
+                var item = b.closest('.tp-paso-item');
+                if (item) item.classList.toggle('is-visible', activo);
+            });
             var panel = null;
             tp.querySelectorAll('[data-tp-det]').forEach(function (d) {
                 var es = d.dataset.tpDet === clave;

@@ -33,6 +33,41 @@
     $tiAprobado = $avance->hitos['ti_aprobado']['logrado'];
     $tiYaAprobado = $avance->hitos['ti_aprobado']['logrado'] || $avance->hitos['bachiller']['logrado'] || $avance->hitos['licenciado']['logrado'];
     $ptiVencido = ! $tiYaAprobado && (bool) $pti?->estaVencido();
+
+    // Resoluciones para acceso directo con 1 clic junto a los pasos del proceso
+    $todasResoluciones = $seguimiento->resoluciones ?? collect();
+    $rdsPti = $todasResoluciones->filter(fn ($r) => in_array($r->tipo, ['PTI', 'AmpliacionPti', 'CambioAsesor', 'CambioTema', 'RetiroGrupo', 'IncorporacionGrupo', 'AnulacionPti'], true))->values();
+    $rdsTiAsesores = $todasResoluciones->filter(fn ($r) => in_array($r->tipo, ['CambioAsesor'], true))->values();
+    $rdsTiRd = $todasResoluciones->filter(fn ($r) => in_array($r->tipo, ['Exposicion'], true))->values();
+    $rdsTesisFecha = $todasResoluciones->filter(fn ($r) => in_array($r->tipo, ['FechaSustentacion', 'Extension'], true))->values();
+    $rdsTesisRd = $todasResoluciones->filter(fn ($r) => in_array($r->tipo, ['Tesis'], true))->values();
+
+    $rdCampoPaso = function (string $clave) use ($pti, $tesis, $rdsPti, $rdsTiRd, $rdsTesisRd) {
+        return match ($clave) {
+            'pti_datos' => ($pti?->rd_pti && ! $rdsPti->contains(fn ($r) => \App\Services\Titulacion\GrupoTitulacion::claveRd($r->numero_rd) === \App\Services\Titulacion\GrupoTitulacion::claveRd($pti->rd_pti)))
+                ? (object)['numero_rd' => $pti->rd_pti, 'tipo' => 'PTI', 'archivo' => null] : null,
+            'ti_rd' => ($tesis?->rd_ti && ! $rdsTiRd->contains(fn ($r) => \App\Services\Titulacion\GrupoTitulacion::claveRd($r->numero_rd) === \App\Services\Titulacion\GrupoTitulacion::claveRd($tesis->rd_ti)))
+                ? (object)['numero_rd' => $tesis->rd_ti, 'tipo' => 'Exposicion', 'archivo' => null] : null,
+            'tesis_rd' => ($tesis?->rd_tesis && ! $rdsTesisRd->contains(fn ($r) => \App\Services\Titulacion\GrupoTitulacion::claveRd($r->numero_rd) === \App\Services\Titulacion\GrupoTitulacion::claveRd($tesis->rd_tesis)))
+                ? (object)['numero_rd' => $tesis->rd_tesis, 'tipo' => 'Tesis', 'archivo' => null] : null,
+            default => null,
+        };
+    };
+
+    $obtenerRdsDelPaso = function (string $clave) use ($rdsPti, $rdsTiAsesores, $rdsTiRd, $rdsTesisFecha, $rdsTesisRd, $rdCampoPaso) {
+        $lista = match ($clave) {
+            'pti_datos' => $rdsPti,
+            'ti_asesores' => $rdsTiAsesores,
+            'ti_rd' => $rdsTiRd,
+            'tesis_fecha' => $rdsTesisFecha,
+            'tesis_rd' => $rdsTesisRd,
+            default => collect(),
+        };
+        if ($extra = $rdCampoPaso($clave)) {
+            $lista = $lista->concat([$extra]);
+        }
+        return $lista;
+    };
 @endphp
 
 @if ($alertas)
@@ -65,23 +100,63 @@
                 </div>
                 <ol class="tp-pasos">
                     @foreach ($pasos->deEtapa($etapa) as $p)
+                        @php $rdsDelPaso = $obtenerRdsDelPaso($p['clave']); @endphp
                         <li>
-                            <button type="button" class="tp-paso tp-paso--{{ $p['estado'] }} {{ $p['clave'] === $visible ? 'is-visible' : '' }}"
-                                    data-tp-ir="{{ $p['clave'] }}" aria-controls="tp-{{ $p['clave'] }}-{{ $egresado->id }}">
-                                <span class="tp-paso__punto">@if ($iconoEstado[$p['estado']])<i class="fas {{ $iconoEstado[$p['estado']] }}"></i>@endif</span>
-                                <span class="tp-paso__texto">
-                                    <span class="tp-paso__titulo">{{ $p['titulo'] }}</span>
-                                    @if ($p['espera'])
-                                        <span class="tp-paso__resumen tp-paso__resumen--espera">{{ $p['espera'] }}</span>
-                                    @elseif ($p['estado'] === 'actual')
-                                        <span class="tp-paso__resumen tp-paso__resumen--actual">Ahora toca</span>
-                                    @elseif ($p['resumen'] && $p['estado'] === 'hecho')
-                                        <span class="tp-paso__resumen">{{ $p['resumen'] }}</span>
-                                    @elseif ($p['estado'] === 'sin_registro')
-                                        <span class="tp-paso__resumen">No se registró</span>
-                                    @endif
-                                </span>
-                            </button>
+                            <div class="tp-paso-item {{ $p['clave'] === $visible ? 'is-visible' : '' }}">
+                                <button type="button" class="tp-paso tp-paso--{{ $p['estado'] }} {{ $p['clave'] === $visible ? 'is-visible' : '' }}"
+                                        data-tp-ir="{{ $p['clave'] }}" aria-controls="tp-{{ $p['clave'] }}-{{ $egresado->id }}">
+                                    <span class="tp-paso__punto">@if ($iconoEstado[$p['estado']])<i class="fas {{ $iconoEstado[$p['estado']] }}"></i>@endif</span>
+                                    <span class="tp-paso__texto">
+                                        <span class="tp-paso__titulo">{{ $p['titulo'] }}</span>
+                                        @if ($p['espera'])
+                                            <span class="tp-paso__resumen tp-paso__resumen--espera">{{ $p['espera'] }}</span>
+                                        @elseif ($p['estado'] === 'actual')
+                                            <span class="tp-paso__resumen tp-paso__resumen--actual">Ahora toca</span>
+                                        @elseif ($p['resumen'] && $p['estado'] === 'hecho')
+                                            <span class="tp-paso__resumen">{{ $p['resumen'] }}</span>
+                                        @elseif ($p['estado'] === 'sin_registro')
+                                            <span class="tp-paso__resumen">No se registró</span>
+                                        @endif
+                                    </span>
+                                </button>
+                                @if ($rdsDelPaso->isNotEmpty())
+                                    <div class="tp-paso-rds">
+                                        @foreach ($rdsDelPaso as $r)
+                                            @php
+                                                $esEnlace = $r->archivo && ! \App\Services\Titulacion\ArchivosRd::nombreDesdeUrl($r->archivo);
+                                                $tag = match ($r->tipo) {
+                                                    'PTI' => 'RD PTI',
+                                                    'AmpliacionPti' => 'Ampliación',
+                                                    'CambioAsesor' => 'Cambio asesor',
+                                                    'CambioTema' => 'Cambio tema',
+                                                    'RetiroGrupo' => 'Retiro',
+                                                    'IncorporacionGrupo' => 'Incorporación',
+                                                    'AnulacionPti' => 'Anulación',
+                                                    'Exposicion' => 'RD Exposición',
+                                                    'FechaSustentacion' => 'RD Sustentación',
+                                                    'Extension' => 'Extensión',
+                                                    'Tesis' => 'RD Tesis',
+                                                    default => $r->tipo,
+                                                };
+                                            @endphp
+                                            @if ($r->archivo)
+                                                <a href="{{ $r->archivo }}" target="_blank" rel="noopener" class="tp-rd-chip" title="Abrir {{ $tag }}: {{ $r->numero_rd }}" onclick="event.stopPropagation();">
+                                                    <i class="fas {{ $esEnlace ? 'fa-external-link-alt' : 'fa-file-pdf' }} tp-rd-chip__ico"></i>
+                                                    <span class="tp-rd-chip__num">{{ $r->numero_rd }}</span>
+                                                    <span class="tp-rd-chip__tag">{{ $tag }}</span>
+                                                    <i class="fas fa-external-link-alt tp-rd-chip__salida"></i>
+                                                </a>
+                                            @else
+                                                <span class="tp-rd-chip tp-rd-chip--sin-pdf" title="RD registrada sin PDF: {{ $r->numero_rd }}">
+                                                    <i class="far fa-file-alt tp-rd-chip__ico"></i>
+                                                    <span class="tp-rd-chip__num">{{ $r->numero_rd }}</span>
+                                                    <span class="tp-rd-chip__tag">{{ $tag }}</span>
+                                                </span>
+                                            @endif
+                                        @endforeach
+                                    </div>
+                                @endif
+                            </div>
                         </li>
                     @endforeach
                 </ol>
@@ -94,6 +169,11 @@
                     @if ($marca) <span class="tp-extra__marca tp-extra__marca--{{ $marca }}">{{ $marca === 'urgente' ? 'Urgente' : 'Sugerido' }}</span> @endif
                 </button>
             @endforeach
+            @if ($todasResoluciones->isNotEmpty())
+                <label for="{{ $tabId }}-resoluciones" class="tp-extra" style="cursor: pointer; margin-bottom: 0;" title="Ver todas las resoluciones en el Historial">
+                    <i class="fas fa-gavel fa-fw" style="color: #4e73df;"></i><span>Todas las Resoluciones ({{ $todasResoluciones->count() }})</span>
+                </label>
+            @endif
         </div>
     </nav>
 
@@ -322,6 +402,8 @@
                     @case('ti_asesores')
                         @include('titulacion._participantes', ['lista' => $asesoresTi, 'funcion' => 'asesor', 'etapaP' => 'ti', 'idP' => $idPaso('asesores'), 'plano' => true,
                             'asesorPrevio' => $asesoresTi->isEmpty() ? ($pti?->asesorNombre() ?: $tesis?->asesorNombre()) : null])
+                        <div class="tp-subtitulo mt-3">Resolución de cambio de asesor</div>
+                        @include('titulacion._rd_slot', ['etiqueta' => 'RD de cambio de asesor', 'res' => $rdDe('CambioAsesor'), 'plantilla' => 'cambio_asesor', 'tabVolver' => 'proceso'])
                         @break
 
                     @case('ti_enlace')
