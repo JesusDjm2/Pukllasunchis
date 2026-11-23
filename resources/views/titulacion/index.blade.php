@@ -387,7 +387,7 @@
                                     ])
                                 @elseif ($item->tipo === 'registrado')
                                     {{-- Las demás se piden al abrir la fila (TitulacionController@ficha). --}}
-                                    <div class="js-ficha-lazy" data-url="{{ route('titulacion.ficha', $item->user_id) }}"
+                                    <div class="js-ficha-lazy" data-url="{{ route('titulacion.ficha', $item->user_id) }}?v={{ filemtime(resource_path('views/titulacion/_proceso.blade.php')) }}"
                                          data-completa="{{ route('titulacion.show', $item->user_id) }}">
                                         <div class="text-center text-muted small py-4"><i class="fas fa-spinner fa-spin mr-1"></i>Cargando la ficha…</div>
                                     </div>
@@ -587,7 +587,9 @@
                 if (!caja || caja.dataset.estado) return;
                 caja.dataset.estado = 'cargando';
                 caja.innerHTML = '<div class="tl-esqueleto"><span></span><span></span><span class="is-corta"></span><div class="tl-esqueleto__grid"><i></i><i></i></div></div>';
-                fetch(caja.dataset.url, { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' })
+                var sep = caja.dataset.url.indexOf('?') === -1 ? '?' : '&';
+                var urlFresh = caja.dataset.url + sep + '_t=' + Date.now();
+                fetch(urlFresh, { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin', cache: 'no-store' })
                     .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
                     .then(function (html) { caja.innerHTML = html; caja.dataset.estado = 'lista'; })
                     .catch(function () {

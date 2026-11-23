@@ -68,6 +68,23 @@
         }
         return $lista;
     };
+
+    $tagRd = function ($tipo) {
+        return match ($tipo) {
+            'PTI' => 'RD PTI',
+            'AmpliacionPti' => 'Ampliación',
+            'CambioAsesor' => 'Cambio asesor',
+            'CambioTema' => 'Cambio tema',
+            'RetiroGrupo' => 'Retiro',
+            'IncorporacionGrupo' => 'Incorporación',
+            'AnulacionPti' => 'Anulación',
+            'Exposicion' => 'RD Exposición',
+            'FechaSustentacion' => 'RD Sustentación',
+            'Extension' => 'Extensión',
+            'Tesis' => 'RD Tesis',
+            default => $tipo,
+        };
+    };
 @endphp
 
 @if ($alertas)
@@ -100,9 +117,12 @@
                 </div>
                 <ol class="tp-pasos">
                     @foreach ($pasos->deEtapa($etapa) as $p)
-                        @php $rdsDelPaso = $obtenerRdsDelPaso($p['clave']); @endphp
+                        @php
+                            $rdsDelPaso = $obtenerRdsDelPaso($p['clave']);
+                            $primeraRdConArchivo = $rdsDelPaso->first(fn ($r) => filled($r->archivo));
+                        @endphp
                         <li>
-                            <div class="tp-paso-item {{ $p['clave'] === $visible ? 'is-visible' : '' }}">
+                            <div class="tp-paso-item {{ $p['clave'] === $visible ? 'is-visible' : '' }} {{ $rdsDelPaso->isNotEmpty() ? 'has-rds' : '' }}">
                                 <button type="button" class="tp-paso tp-paso--{{ $p['estado'] }} {{ $p['clave'] === $visible ? 'is-visible' : '' }}"
                                         data-tp-ir="{{ $p['clave'] }}" aria-controls="tp-{{ $p['clave'] }}-{{ $egresado->id }}">
                                     <span class="tp-paso__punto">@if ($iconoEstado[$p['estado']])<i class="fas {{ $iconoEstado[$p['estado']] }}"></i>@endif</span>
@@ -113,44 +133,34 @@
                                         @elseif ($p['estado'] === 'actual')
                                             <span class="tp-paso__resumen tp-paso__resumen--actual">Ahora toca</span>
                                         @elseif ($p['resumen'] && $p['estado'] === 'hecho')
-                                            <span class="tp-paso__resumen">{{ $p['resumen'] }}</span>
+                                            <span class="tp-paso__resumen" title="{{ $p['resumen'] }}">
+                                                @if ($primeraRdConArchivo)
+                                                    <i class="fas fa-file-pdf text-danger mr-1" title="Resolución con archivo adjunto"></i>
+                                                @endif
+                                                {{ $p['resumen'] }}
+                                            </span>
                                         @elseif ($p['estado'] === 'sin_registro')
                                             <span class="tp-paso__resumen">No se registró</span>
                                         @endif
                                     </span>
                                 </button>
                                 @if ($rdsDelPaso->isNotEmpty())
-                                    <div class="tp-paso-rds">
+                                    <div class="tp-paso-dock" onclick="event.stopPropagation();">
                                         @foreach ($rdsDelPaso as $r)
                                             @php
                                                 $esEnlace = $r->archivo && ! \App\Services\Titulacion\ArchivosRd::nombreDesdeUrl($r->archivo);
-                                                $tag = match ($r->tipo) {
-                                                    'PTI' => 'RD PTI',
-                                                    'AmpliacionPti' => 'Ampliación',
-                                                    'CambioAsesor' => 'Cambio asesor',
-                                                    'CambioTema' => 'Cambio tema',
-                                                    'RetiroGrupo' => 'Retiro',
-                                                    'IncorporacionGrupo' => 'Incorporación',
-                                                    'AnulacionPti' => 'Anulación',
-                                                    'Exposicion' => 'RD Exposición',
-                                                    'FechaSustentacion' => 'RD Sustentación',
-                                                    'Extension' => 'Extensión',
-                                                    'Tesis' => 'RD Tesis',
-                                                    default => $r->tipo,
-                                                };
+                                                $tag = $tagRd($r->tipo);
                                             @endphp
                                             @if ($r->archivo)
-                                                <a href="{{ $r->archivo }}" target="_blank" rel="noopener" class="tp-rd-chip" title="Abrir {{ $tag }}: {{ $r->numero_rd }}" onclick="event.stopPropagation();">
-                                                    <i class="fas {{ $esEnlace ? 'fa-external-link-alt' : 'fa-file-pdf' }} tp-rd-chip__ico"></i>
-                                                    <span class="tp-rd-chip__num">{{ $r->numero_rd }}</span>
-                                                    <span class="tp-rd-chip__tag">{{ $tag }}</span>
-                                                    <i class="fas fa-external-link-alt tp-rd-chip__salida"></i>
+                                                <a href="{{ $r->archivo }}" target="_blank" rel="noopener" class="tp-rd-pill" title="Abrir {{ $tag }}: {{ $r->numero_rd }}" onclick="event.stopPropagation();">
+                                                    <i class="fas {{ $esEnlace ? 'fa-external-link-alt' : 'fa-file-pdf' }} tp-rd-pill__ico"></i>
+                                                    <span class="tp-rd-pill__tag">{{ $tag }}</span>
+                                                    <i class="fas fa-external-link-alt tp-rd-pill__salida"></i>
                                                 </a>
                                             @else
-                                                <span class="tp-rd-chip tp-rd-chip--sin-pdf" title="RD registrada sin PDF: {{ $r->numero_rd }}">
-                                                    <i class="far fa-file-alt tp-rd-chip__ico"></i>
-                                                    <span class="tp-rd-chip__num">{{ $r->numero_rd }}</span>
-                                                    <span class="tp-rd-chip__tag">{{ $tag }}</span>
+                                                <span class="tp-rd-pill tp-rd-pill--sin-pdf" title="RD registrada sin archivo: {{ $r->numero_rd }}">
+                                                    <i class="far fa-file-alt tp-rd-pill__ico"></i>
+                                                    <span class="tp-rd-pill__tag">{{ $tag }}</span>
                                                 </span>
                                             @endif
                                         @endforeach
@@ -186,9 +196,27 @@
                         <div class="tp-det__eyebrow">{{ \App\Services\Titulacion\PasosProceso::ETAPAS[$p['etapa']][0] }} · Paso {{ $pasos->posicion($clave) }}</div>
                         <h3 class="tp-det__titulo">{{ $p['titulo'] }}</h3>
                     </div>
-                    <span class="tp-chip tp-chip--{{ $p['estado'] }}">
-                        @if ($iconoEstado[$p['estado']])<i class="fas {{ $iconoEstado[$p['estado']] }}"></i>@endif {{ $textoEstado[$p['estado']] }}
-                    </span>
+                    <div class="d-flex align-items-center" style="gap: .45rem; flex-wrap: wrap;">
+                        @php $rdsPanel = $obtenerRdsDelPaso($clave); @endphp
+                        @if ($rdsPanel->isNotEmpty())
+                            @foreach ($rdsPanel as $r)
+                                @if ($r->archivo)
+                                    @php
+                                        $esEnlace = $r->archivo && ! \App\Services\Titulacion\ArchivosRd::nombreDesdeUrl($r->archivo);
+                                        $tag = $tagRd($r->tipo);
+                                    @endphp
+                                    <a href="{{ $r->archivo }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-danger tp-det__rd-btn" title="Abrir {{ $tag }}: {{ $r->numero_rd }}">
+                                        <i class="fas {{ $esEnlace ? 'fa-external-link-alt' : 'fa-file-pdf' }} mr-1"></i>
+                                        <span>{{ $tag }}</span>
+                                        <i class="fas fa-external-link-alt ml-1 fa-xs"></i>
+                                    </a>
+                                @endif
+                            @endforeach
+                        @endif
+                        <span class="tp-chip tp-chip--{{ $p['estado'] }}">
+                            @if ($iconoEstado[$p['estado']])<i class="fas {{ $iconoEstado[$p['estado']] }}"></i>@endif {{ $textoEstado[$p['estado']] }}
+                        </span>
+                    </div>
                 </div>
 
                 @if ($avanzo && $clave === $visible)

@@ -1159,14 +1159,17 @@ class TitulacionController extends Controller
         ]);
         $egresado->load(['programa', 'ciclo']);
 
-        return view('titulacion._ficha_ajax', [
-            'egresado' => $egresado,
-            'seguimiento' => $seguimiento,
-            'docentes' => User::role('docente')->orderBy('name')->get(['id', 'name', 'apellidos']),
-            'asesores' => Asesor::orderBy('apellidos')->orderBy('nombres')->get(),
-            'integrantes' => GrupoTitulacion::companeros($seguimiento),
-            'filasImportadas' => $this->filasImportadasDe($egresado),
-        ]);
+        return response()
+            ->view('titulacion._ficha_ajax', [
+                'egresado' => $egresado,
+                'seguimiento' => $seguimiento,
+                'docentes' => User::role('docente')->orderBy('name')->get(['id', 'name', 'apellidos']),
+                'asesores' => Asesor::orderBy('apellidos')->orderBy('nombres')->get(),
+                'integrantes' => GrupoTitulacion::companeros($seguimiento),
+                'filasImportadas' => $this->filasImportadasDe($egresado),
+            ])
+            ->header('Cache-Control', 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0')
+            ->header('Pragma', 'no-cache');
     }
 
     /** Filas de los archivos importados que corresponden a esta persona (por cuenta o DNI). */

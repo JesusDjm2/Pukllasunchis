@@ -163,38 +163,78 @@ body.dim-mode .ft-ficha, body.dim-mode .tc {
 @keyframes tp-pulso { 0%, 100% { box-shadow: 0 0 0 4px var(--t-azul-f); } 50% { box-shadow: 0 0 0 7px var(--t-azul-f); } }
 
 /* Fila de paso con accesos directos a RD */
-.tp-paso-item { position: relative; }
+.tp-paso-item { position: relative; display: flex; align-items: center; width: 100%; }
 .tp-paso-item.is-visible .tp-paso { background: var(--t-azul-f); box-shadow: inset 3px 0 0 var(--t-azul); }
-.tp-paso-rds {
-    display: flex; flex-wrap: wrap; gap: .3rem;
-    padding-left: calc(26px + .65rem);
-    margin-top: .15rem; margin-bottom: .45rem;
-    position: relative; z-index: 2;
+.tp-paso-item.has-rds .tp-paso { padding-right: 2.3rem; }
+
+/* Dock flotante de accesos directos a RD */
+.tp-paso-dock {
+    position: absolute; right: .4rem; top: 50%; transform: translateY(-50%);
+    display: flex; align-items: center; gap: .25rem; z-index: 5;
 }
-.tp-rd-chip {
-    display: inline-flex; align-items: center; gap: .3rem;
-    font-size: .68rem; font-weight: 600; line-height: 1.2;
-    padding: .15rem .4rem; border-radius: 6px;
-    background: #eef2ff; color: #3730a3; border: 1px solid #c7d2fe;
-    text-decoration: none !important; transition: all .15s ease-in-out; max-width: 100%;
+.tp-rd-pill {
+    display: inline-flex; align-items: center; gap: .25rem;
+    font-size: .66rem; font-weight: 700; line-height: 1;
+    padding: .26rem .45rem; border-radius: 999px;
+    background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5;
+    text-decoration: none !important; transition: all .16s ease-in-out;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08); white-space: nowrap;
 }
-.tp-rd-chip:hover {
-    background: #e0e7ff; color: #1e1b4b; border-color: #818cf8;
-    transform: translateY(-1px); box-shadow: 0 2px 4px rgba(99, 102, 241, 0.2);
+.tp-rd-pill:hover {
+    background: #dc2626; color: #ffffff !important; border-color: #b91c1c;
+    transform: translateY(-1px) scale(1.04); box-shadow: 0 3px 8px rgba(220, 38, 38, 0.35);
 }
-.tp-rd-chip__ico { font-size: .7rem; color: #dc2626; }
-.tp-rd-chip__num { font-weight: 700; max-width: 110px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.tp-rd-chip__tag { font-size: .62rem; padding: 1px 3px; border-radius: 4px; background: rgba(79, 70, 229, 0.12); color: #4338ca; white-space: nowrap; }
-.tp-rd-chip__salida { font-size: .55rem; opacity: .6; }
-.tp-rd-chip--sin-pdf { background: #f1f5f9; color: #64748b; border-color: #e2e8f0; cursor: default; }
-.tp-rd-chip--sin-pdf .tp-rd-chip__ico { color: #94a3b8; }
-.tp-rd-chip--sin-pdf .tp-rd-chip__tag { background: rgba(100, 116, 139, 0.12); color: #475569; }
-.dark-mode .tp-rd-chip, .dim-mode .tp-rd-chip { background: rgba(99, 102, 241, 0.16); color: #c7d2fe; border-color: rgba(99, 102, 241, 0.32); }
-.dark-mode .tp-rd-chip:hover, .dim-mode .tp-rd-chip:hover { background: rgba(99, 102, 241, 0.28); color: #e0e7ff; border-color: rgba(99, 102, 241, 0.55); }
-.dark-mode .tp-rd-chip__ico, .dim-mode .tp-rd-chip__ico { color: #f87171; }
-.dark-mode .tp-rd-chip__tag, .dim-mode .tp-rd-chip__tag { background: rgba(165, 180, 252, 0.15); color: #a5b4fc; }
-.dark-mode .tp-rd-chip--sin-pdf, .dim-mode .tp-rd-chip--sin-pdf { background: rgba(255, 255, 255, 0.05); color: #94a3b8; border-color: rgba(255, 255, 255, 0.1); }
-.dark-mode .tp-rd-chip--sin-pdf .tp-rd-chip__tag, .dim-mode .tp-rd-chip--sin-pdf .tp-rd-chip__tag { background: rgba(255, 255, 255, 0.08); color: #cbd5e1; }
+.tp-rd-pill__ico { font-size: .68rem; color: #dc2626; transition: color .16s ease; }
+.tp-rd-pill:hover .tp-rd-pill__ico { color: #ffffff; }
+.tp-rd-pill__tag { font-weight: 700; letter-spacing: -.01em; }
+.tp-rd-pill__salida { font-size: .52rem; opacity: .75; }
+.tp-rd-pill:hover .tp-rd-pill__salida { opacity: 1; }
+
+.tp-rd-pill--sin-pdf {
+    background: #f1f5f9; color: #64748b; border-color: #cbd5e1;
+    cursor: default; box-shadow: none;
+}
+.tp-rd-pill--sin-pdf .tp-rd-pill__ico { color: #94a3b8; }
+
+/* Modos Dark y Dim */
+.dark-mode .tp-rd-pill, .dim-mode .tp-rd-pill {
+    background: rgba(239, 68, 68, 0.16); color: #fca5a5; border-color: rgba(239, 68, 68, 0.35);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+.dark-mode .tp-rd-pill:hover, .dim-mode .tp-rd-pill:hover {
+    background: #dc2626; color: #ffffff !important; border-color: #ef4444;
+    box-shadow: 0 3px 10px rgba(239, 68, 68, 0.45);
+}
+.dark-mode .tp-rd-pill__ico, .dim-mode .tp-rd-pill__ico { color: #f87171; }
+.dark-mode .tp-rd-pill:hover .tp-rd-pill__ico, .dim-mode .tp-rd-pill:hover .tp-rd-pill__ico { color: #ffffff; }
+.dark-mode .tp-rd-pill--sin-pdf, .dim-mode .tp-rd-pill--sin-pdf {
+    background: rgba(255, 255, 255, 0.05); color: #94a3b8; border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* En escritorio: el dock flotante aparece suavemente al pasar el mouse por el paso */
+@media (min-width: 768px) and (hover: hover) {
+    .tp-paso-dock {
+        opacity: 0; pointer-events: none; transform: translateY(-50%) translateX(6px);
+        transition: opacity .18s ease, transform .18s ease;
+    }
+    .tp-paso-item:hover .tp-paso-dock, .tp-paso-dock:hover {
+        opacity: 1; pointer-events: auto; transform: translateY(-50%) translateX(0);
+    }
+    .tp-paso-item.is-visible .tp-paso-dock {
+        opacity: .88; pointer-events: auto; transform: translateY(-50%) translateX(0);
+    }
+    .tp-paso-item.is-visible:hover .tp-paso-dock { opacity: 1; }
+}
+
+/* Botón de acceso directo a RD en la cabecera del panel derecho */
+.tp-det__rd-btn {
+    font-size: .78rem; font-weight: 700; border-radius: 999px; padding: .25rem .65rem;
+    display: inline-flex; align-items: center; gap: .25rem; line-height: 1.2;
+    transition: all .16s ease-in-out;
+}
+.tp-det__rd-btn:hover {
+    transform: translateY(-1px); box-shadow: 0 3px 8px rgba(220, 38, 38, 0.25);
+}
 
 .tp-extras { border-top: 1px solid var(--t-borde); margin-top: .65rem; padding-top: .5rem; }
 /* Escritorio: la línea es sticky y más alta que la pantalla en procesos largos; con alto máximo y
