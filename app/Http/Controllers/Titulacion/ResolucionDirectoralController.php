@@ -43,11 +43,13 @@ class ResolucionDirectoralController extends Controller
             ->each(fn (User $u) => $u->loadMissing(['seguimientoTitulacion', 'alumno:id,user_id,genero', 'alumnoB:id,user_id,genero']));
 
         // Para sumar integrantes: estudiantes y egresados del mismo programa.
-        $candidatos = User::with(['seguimientoTitulacion.resoluciones', 'seguimientoTitulacion.pti', 'seguimientoTitulacion.ptis', 'seguimientoTitulacion.tesis', 'seguimientoTitulacion.actas', 'alumno:id,user_id,genero', 'alumnoB:id,user_id,genero'])
-            ->where('programa_id', $egresado->programa_id)
-            ->whereHas('roles', fn ($q) => $q->whereIn('name', ['alumno', 'alumnoB', 'inhabilitado']))
-            ->orderBy('apellidos')->orderBy('name')
-            ->get(['id', 'name', 'apellidos', 'dni', 'programa_id', 'condicion', 'genero']);
+        $candidatos = $plantilla === 'cambio_asesor'
+            ? $preseleccion
+            : User::with(['seguimientoTitulacion.resoluciones', 'seguimientoTitulacion.pti', 'seguimientoTitulacion.ptis', 'seguimientoTitulacion.tesis', 'seguimientoTitulacion.actas', 'alumno:id,user_id,genero', 'alumnoB:id,user_id,genero'])
+                ->where('programa_id', $egresado->programa_id)
+                ->whereHas('roles', fn ($q) => $q->whereIn('name', ['alumno', 'alumnoB', 'inhabilitado']))
+                ->orderBy('apellidos')->orderBy('name')
+                ->get(['id', 'name', 'apellidos', 'dni', 'programa_id', 'condicion', 'genero']);
 
         $def = PlantillasRd::PLANTILLAS[$plantilla];
         $campos = PlantillasRd::campos($plantilla);
@@ -76,6 +78,11 @@ class ResolucionDirectoralController extends Controller
             return redirect()->route('titulacion.index', ['ver' => $egresado->id, 'tab' => 'proceso'])->with('error', $motivo);
         }
         $campos = PlantillasRd::campos($plantilla);
+
+        if ($plantilla === 'cambio_asesor' && ! $request->has('integrantes')) {
+            $companeros = GrupoTitulacion::companeros($this->seguimiento($egresado));
+            $request->merge(['integrantes' => collect([$egresado->id])->merge($companeros->pluck('id'))->all()]);
+        }
 
         $reglas = [
             'integrantes' => 'required|array|min:1',
@@ -451,6 +458,10 @@ class ResolucionDirectoralController extends Controller
                 'etapa' => 'ti', 'funcion' => 'asesor', 'cargo' => null,
             ]);
             Tesis::updateOrCreate(['seguimiento_id' => $seguimiento->id], Tesis::columnasAsesor($data['asesor']));
+            if ($pti = $seguimiento->pti()->first()) {
+                $pti->fill(Pti::columnasAsesor($data['asesor']));
+                $pti->save();
+            }
 
             return;
         }

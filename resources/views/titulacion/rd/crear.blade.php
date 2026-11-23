@@ -119,7 +119,14 @@
         @csrf
 
         <div class="rdg-card">
-            <div class="rdg-h"><span class="n">1</span> Integrantes del grupo</div>
+            <div class="rdg-h">
+                <span class="n">1</span>
+                @if ($plantilla === 'cambio_asesor')
+                    {{ $preseleccion->count() > 1 ? 'Integrantes del trabajo de investigación' : 'Estudiante titular' }}
+                @else
+                    Integrantes del grupo
+                @endif
+            </div>
             @php
                 // Para el buscador: todos los del programa, con lo que hace falta para mostrarlos y validarlos.
                 $candidatosJs = $candidatos->concat($preseleccion)->unique('id')->map(fn ($u) => [
@@ -139,7 +146,13 @@
                 ])->keyBy('id');
             @endphp
             <p class="rdg-ayuda mb-2">
-                @if ($plantilla === 'retiro_grupo')
+                @if ($plantilla === 'cambio_asesor')
+                    @if ($preseleccion->count() > 1)
+                        Esta resolución de cambio de asesor aplica a los integrantes registrados en este trabajo de investigación.
+                    @else
+                        Esta resolución de cambio de asesor aplica a <strong>{{ $egresado->apellidos }}, {{ $egresado->name }}</strong>.
+                    @endif
+                @elseif ($plantilla === 'retiro_grupo')
                     <strong>{{ $egresado->apellidos }}, {{ $egresado->name }}</strong> es quien se retira. Los demás integrantes son quienes continúan con el PTI.
                     Al emitir, deja de figurar en este grupo y su PTI pasa a su historial; conserva sus RD.
                 @elseif ($plantilla === 'incorporacion_grupo')
@@ -151,21 +164,31 @@
                 @endif
             </p>
             <div class="rdg-elegidos" id="rdgElegidos" aria-live="polite"></div>
-            <div id="rdgInputs"></div>
-            <div class="rdg-agregar">
-                <label for="rdgBuscar" class="mb-1">Agregar integrante</label>
-                <input type="search" class="form-control form-control-sm" id="rdgBuscar" placeholder="Escriba nombre o DNI (mismo programa)…" autocomplete="off">
-                <div class="rdg-resultados" id="rdgResultados" hidden></div>
+            <div id="rdgInputs">
+                @foreach ($marcados as $id)
+                    <input type="hidden" name="integrantes[]" value="{{ $id }}">
+                @endforeach
             </div>
+            @if ($plantilla !== 'cambio_asesor' && $plantilla !== 'retiro_grupo')
+                <div class="rdg-agregar">
+                    <label for="rdgBuscar" class="mb-1">Agregar integrante</label>
+                    <input type="search" class="form-control form-control-sm" id="rdgBuscar" placeholder="Escriba nombre o DNI (mismo programa)…" autocomplete="off">
+                    <div class="rdg-resultados" id="rdgResultados" hidden></div>
+                </div>
+            @endif
             @error('integrantes')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
             <script>
                 window.RDG_INTEGRANTES = {
                     candidatos: @json($candidatosJs),
                     titular: {{ $egresado->id }},
                     elegidos: @json($marcados->values()),
+                    permiteQuitar: {{ $plantilla === 'cambio_asesor' ? 'false' : 'true' }},
                 };
             </script>
-            <div class="rdg-ayuda mt-1"><strong id="rdgCuenta">{{ $marcados->count() }}</strong> integrante(s) en esta RD.</div>
+            <div class="rdg-ayuda mt-1">
+                <strong id="rdgCuenta">{{ $marcados->count() }}</strong>
+                {{ $plantilla === 'cambio_asesor' ? ($marcados->count() > 1 ? 'estudiantes' : 'estudiante') : 'integrante(s)' }} en esta RD.
+            </div>
         </div>
 
         <div class="rdg-card">
@@ -344,8 +367,8 @@
                 + '<span class="rdg-chip-txt"><strong>' + esc(c.nombre) + '</strong>'
                 + '<small>DNI ' + esc(c.dni) + (c.meta ? ' · ' + esc(c.meta) : '') + (titular ? ' · titular' : '') + '</small>'
                 + (c.previa ? '<span class="rdg-aviso">Ya tiene RD ' + esc(c.previa) + '</span>' : '') + '</span>'
-                + (titular ? '<i class="fas fa-lock rdg-chip-lock" title="La RD se genera desde su ficha"></i>'
-                           : '<button type="button" data-quitar="' + id + '" aria-label="Quitar a ' + esc(c.nombre) + '">&times;</button>')
+                + (titular || D.permiteQuitar === false ? '<i class="fas fa-lock rdg-chip-lock" title="' + (titular ? 'La RD se genera desde su ficha' : 'Integrante registrado del trabajo') + '"></i>'
+                                                        : '<button type="button" data-quitar="' + id + '" aria-label="Quitar a ' + esc(c.nombre) + '">&times;</button>')
                 + '</div>';
         }).join('');
         cajaInputs.innerHTML = elegidos.map(function (id) { return '<input type="hidden" name="integrantes[]" value="' + id + '">'; }).join('');
@@ -360,41 +383,44 @@
         }
     }
     cajaElegidos.addEventListener('click', function (e) {
+        if (D.permiteQuitar === false) return;
         var b = e.target.closest('[data-quitar]');
         if (!b) return;
         elegidos = elegidos.filter(function (id) { return id !== +b.dataset.quitar; });
         pintar();
     });
 
-    function buscarCoincidencias() {
-        var q = buscar.value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
-        if (q.length < 2) { resultados.hidden = true; resultados.innerHTML = ''; return; }
-        var lista = Object.keys(C).map(function (k) { return C[k]; })
-            .filter(function (c) { return elegidos.indexOf(c.id) === -1 && c.buscar.indexOf(q) !== -1; })
-            .slice(0, 8);
-        resultados.innerHTML = lista.length ? lista.map(function (c) {
-            return '<button type="button" class="rdg-res' + (c.falta ? ' is-bloqueado' : '') + '" data-agregar="' + c.id + '"' + (c.falta ? ' disabled' : '') + '>'
-                + '<strong>' + esc(c.nombre) + '</strong> <small>DNI ' + esc(c.dni) + (c.meta ? ' · ' + esc(c.meta) : '') + '</small>'
-                + (c.falta ? '<span class="rdg-res-falta"><i class="fas fa-lock fa-xs"></i> Falta: ' + esc(c.falta) + '</span>' : '')
-                + (!c.falta && c.previa ? '<span class="rdg-aviso">Ya tiene RD ' + esc(c.previa) + '</span>' : '')
-                + '</button>';
-        }).join('') : '<div class="rdg-res-vacio">Nadie del programa coincide con «' + esc(buscar.value) + '».</div>';
-        resultados.hidden = false;
+    if (buscar && resultados) {
+        function buscarCoincidencias() {
+            var q = buscar.value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+            if (q.length < 2) { resultados.hidden = true; resultados.innerHTML = ''; return; }
+            var lista = Object.keys(C).map(function (k) { return C[k]; })
+                .filter(function (c) { return elegidos.indexOf(c.id) === -1 && c.buscar.indexOf(q) !== -1; })
+                .slice(0, 8);
+            resultados.innerHTML = lista.length ? lista.map(function (c) {
+                return '<button type="button" class="rdg-res' + (c.falta ? ' is-bloqueado' : '') + '" data-agregar="' + c.id + '"' + (c.falta ? ' disabled' : '') + '>'
+                    + '<strong>' + esc(c.nombre) + '</strong> <small>DNI ' + esc(c.dni) + (c.meta ? ' · ' + esc(c.meta) : '') + '</small>'
+                    + (c.falta ? '<span class="rdg-res-falta"><i class="fas fa-lock fa-xs"></i> Falta: ' + esc(c.falta) + '</span>' : '')
+                    + (!c.falta && c.previa ? '<span class="rdg-aviso">Ya tiene RD ' + esc(c.previa) + '</span>' : '')
+                    + '</button>';
+            }).join('') : '<div class="rdg-res-vacio">Nadie del programa coincide con «' + esc(buscar.value) + '».</div>';
+            resultados.hidden = false;
+        }
+        buscar.addEventListener('input', buscarCoincidencias);
+        buscar.addEventListener('keydown', function (e) { if (e.key === 'Enter') e.preventDefault(); });
+        resultados.addEventListener('click', function (e) {
+            var b = e.target.closest('[data-agregar]');
+            if (!b || b.disabled) return;
+            elegidos.push(+b.dataset.agregar);
+            buscar.value = '';
+            resultados.hidden = true;
+            pintar();
+            buscar.focus();
+        });
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('.rdg-agregar')) resultados.hidden = true;
+        });
     }
-    buscar.addEventListener('input', buscarCoincidencias);
-    buscar.addEventListener('keydown', function (e) { if (e.key === 'Enter') e.preventDefault(); });
-    resultados.addEventListener('click', function (e) {
-        var b = e.target.closest('[data-agregar]');
-        if (!b || b.disabled) return;
-        elegidos.push(+b.dataset.agregar);
-        buscar.value = '';
-        resultados.hidden = true;
-        pintar();
-        buscar.focus();
-    });
-    document.addEventListener('click', function (e) {
-        if (!e.target.closest('.rdg-agregar')) resultados.hidden = true;
-    });
     pintar();
 
     // Fechas: calendario en español (mes y año navegables, botón «Hoy»). Se guarda AAAA-MM-DD y se
