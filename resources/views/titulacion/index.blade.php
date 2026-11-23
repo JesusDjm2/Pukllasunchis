@@ -511,6 +511,7 @@
                 <button type="button" class="tl-panel__nav" data-tl-mover="-1" title="Anterior de la lista (↑)"><i class="fas fa-chevron-up"></i></button>
                 <button type="button" class="tl-panel__nav" data-tl-mover="1" title="Siguiente de la lista (↓)"><i class="fas fa-chevron-down"></i></button>
                 <div class="tl-panel__titulo" id="tlPanelTitulo"></div>
+                <button type="button" class="tl-panel__nav" id="tlPanelRecargar" title="Recargar ficha fresca"><i class="fas fa-sync-alt"></i></button>
                 <a href="#" class="tl-panel__nav" id="tlPanelCompleta" title="Abrir en página completa" target="_blank" rel="noopener"><i class="fas fa-external-link-alt"></i></a>
                 <button type="button" class="tl-panel__cerrar" data-tl-cerrar title="Cerrar (Esc)"><i class="fas fa-times"></i></button>
             </div>
@@ -617,8 +618,11 @@
                 titulo.textContent = nombre ? nombre.textContent.trim() : 'Ficha';
                 var lazy = cuerpo.querySelector('.js-ficha-lazy');
                 completa.hidden = !lazy;
-                if (lazy) completa.href = lazy.dataset.completa;
-                cargarFicha(lazy);
+                if (lazy) {
+                    completa.href = lazy.dataset.completa;
+                    lazy.dataset.estado = '';
+                    cargarFicha(lazy);
+                }
                 cuerpo.scrollTop = 0;
                 panel.classList.add('is-abierto');
                 panel.setAttribute('aria-hidden', 'false');
@@ -641,6 +645,14 @@
 
             panel.addEventListener('click', function (e) {
                 if (e.target.closest('[data-tl-cerrar]')) { cerrar(); return; }
+                if (e.target.closest('#tlPanelRecargar')) {
+                    var lazy = cuerpo.querySelector('.js-ficha-lazy');
+                    if (lazy) {
+                        lazy.dataset.estado = '';
+                        cargarFicha(lazy);
+                    }
+                    return;
+                }
                 var mover = e.target.closest('[data-tl-mover]');
                 if (mover && prestado) moverA(parseInt(mover.dataset.tlMover, 10));
             });
