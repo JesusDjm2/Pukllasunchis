@@ -179,7 +179,7 @@
         /* Fila de paso con accesos directos a RD */
         .tp-paso-item { position: relative; display: flex; align-items: center; width: 100%; }
         .tp-paso-item.is-visible .tp-paso { background: var(--t-azul-f, #eff6ff); box-shadow: inset 3px 0 0 var(--t-azul, #2563eb); }
-        .tp-paso-item.has-rds .tp-paso { padding-right: 2.3rem; }
+        .tp-paso-item.has-rds .tp-paso { padding-right: 4.8rem; }
 
         /* Dock flotante de accesos directos a RD */
         .tp-paso-dock {

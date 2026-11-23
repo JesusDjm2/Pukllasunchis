@@ -148,18 +148,15 @@
                                     <div class="tp-paso-dock" onclick="event.stopPropagation();">
                                         @foreach ($rdsDelPaso as $r)
                                             @php
-                                                $esEnlace = $r->archivo && ! \App\Services\Titulacion\ArchivosRd::nombreDesdeUrl($r->archivo);
                                                 $tag = $tagRd($r->tipo);
                                             @endphp
                                             @if ($r->archivo)
                                                 <a href="{{ $r->archivo }}" target="_blank" rel="noopener" class="tp-rd-pill" title="Abrir {{ $tag }}: {{ $r->numero_rd }}" onclick="event.stopPropagation();">
-                                                    <i class="fas {{ $esEnlace ? 'fa-external-link-alt' : 'fa-file-pdf' }} tp-rd-pill__ico"></i>
                                                     <span class="tp-rd-pill__tag">{{ $tag }}</span>
                                                     <i class="fas fa-external-link-alt tp-rd-pill__salida"></i>
                                                 </a>
                                             @else
                                                 <span class="tp-rd-pill tp-rd-pill--sin-pdf" title="RD registrada sin archivo: {{ $r->numero_rd }}">
-                                                    <i class="far fa-file-alt tp-rd-pill__ico"></i>
                                                     <span class="tp-rd-pill__tag">{{ $tag }}</span>
                                                 </span>
                                             @endif
@@ -206,7 +203,7 @@
                                         $tag = $tagRd($r->tipo);
                                     @endphp
                                     <a href="{{ $r->archivo }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-danger tp-det__rd-btn" title="Abrir {{ $tag }}: {{ $r->numero_rd }}">
-                                        <i class="fas {{ $esEnlace ? 'fa-external-link-alt' : 'fa-file-pdf' }} mr-1"></i>
+                                        <i class="fas fa-file-pdf mr-1"></i>
                                         <span>{{ $tag }}</span>
                                         <i class="fas fa-external-link-alt ml-1 fa-xs"></i>
                                     </a>
