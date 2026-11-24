@@ -174,7 +174,6 @@
                                             </h5>
                                             <ul class="list-unstyled ms-2 mt-2" style="font-size: 14.5px; line-height: 24px;">
                                                 <li class="mb-2"><i class="fa fa-check text-primary me-2"></i> FUT debidamente llenado y firmado.</li>
-                                                <li class="mb-2"><i class="fa fa-check text-primary me-2"></i> Certificado de estudios superiores del programa PPD (Cód: 8 · S/ 50.00 por ciclo).</li>
                                                 <li class="mb-2"><i class="fa fa-check text-primary me-2"></i> Carta de aceptación de la institución educativa sede de investigación (original).</li>
                                                 <li class="mb-2"><i class="fa fa-check text-primary me-2"></i> Constancia de no deudor original (Cód: 28 · S/ 30.00).</li>
                                                 <li class="mb-2"><i class="fa fa-check text-primary me-2"></i> Constancia de egresado original (Cód: 9 · S/ 50.00).</li>
@@ -267,6 +266,9 @@
                                     <li>• Seis (6) fotos tamaño pasaporte con fondo blanco y terno.</li>
                                     <li>• FUT y comprobante de pago por cada ciclo académico a certificar.</li>
                                 </ul>
+                                <p class="mb-0 mt-2" style="font-size: 13.5px; line-height: 20px;">
+                                    <i class="fa fa-circle-info text-primary me-1"></i> Este trámite es exclusivo para estudiantes de <strong>Formación Inicial Docente (FID)</strong>.
+                                </p>
                             </div>
                         </div>
                     </div>

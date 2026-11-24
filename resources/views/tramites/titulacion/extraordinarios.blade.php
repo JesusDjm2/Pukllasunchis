@@ -115,7 +115,7 @@
                                 <td class="text-center"><span class="pk-badge-code">43</span></td>
                                 <td class="text-center font-weight-bold text-dark">S/ 30.00</td>
                                 <td class="text-end">
-                                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdmgoFlBMsEoZCkyvGFZqYGC301BkbyZ-wZpGHL5d52_tLbxg/viewform"
+                                    <a href="https://forms.gle/psWnX95sj9TRisqi9"
                                        target="_blank" class="btn btn-sm btn-outline-primary" style="font-size: 13px; font-weight: 500;">
                                         Formulario <i class="fa fa-arrow-up-right-from-square"></i>
                                     </a>
@@ -129,9 +129,10 @@
                                 <td class="text-center"><span class="pk-badge-code">47</span></td>
                                 <td class="text-center font-weight-bold text-dark">S/ 30.00</td>
                                 <td class="text-end">
-                                    <span class="badge bg-light text-muted border" style="font-size: 12px; font-weight: 500;">
-                                        FUT Presencial
-                                    </span>
+                                    <a href="https://forms.gle/ppVvtEgFPvVe7KaS8"
+                                       target="_blank" class="btn btn-sm btn-outline-primary" style="font-size: 13px; font-weight: 500;">
+                                        Formulario <i class="fa fa-arrow-up-right-from-square"></i>
+                                    </a>
                                 </td>
                             </tr>
                             <tr>
@@ -184,7 +185,7 @@
                                 <td class="text-center"><span class="pk-badge-code">14</span></td>
                                 <td class="text-center font-weight-bold text-dark">S/ 30.00</td>
                                 <td class="text-end">
-                                    <a href="https://docs.google.com/forms/d/1CzTidT0pvsKBPVuIPxoIelt8fYP40kODJ7YIfexhT1E/viewform"
+                                    <a href="https://forms.gle/Nhq92ozSVYKKnMMt7"
                                        target="_blank" class="btn btn-sm btn-outline-primary" style="font-size: 13px; font-weight: 500;">
                                         Formulario <i class="fa fa-arrow-up-right-from-square"></i>
                                     </a>
@@ -288,7 +289,7 @@
                     </a>
 
                     <!-- Card 4: Separación de Grupo -->
-                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdmgoFlBMsEoZCkyvGFZqYGC301BkbyZ-wZpGHL5d52_tLbxg/viewform" target="_blank" class="pk-card-tramite">
+                    <a href="https://forms.gle/psWnX95sj9TRisqi9" target="_blank" class="pk-card-tramite">
                         <div class="pk-card-tramite__top">
                             <div class="pk-card-tramite__icon">
                                 <i class="fa fa-users-slash"></i>
@@ -303,7 +304,7 @@
                     </a>
 
                     <!-- Card 4b: Integración al Grupo -->
-                    <div class="pk-card-tramite" style="cursor: default;">
+                    <a href="https://forms.gle/ppVvtEgFPvVe7KaS8" target="_blank" class="pk-card-tramite">
                         <div class="pk-card-tramite__top">
                             <div class="pk-card-tramite__icon">
                                 <i class="fa fa-user-plus"></i>
@@ -312,10 +313,10 @@
                         </div>
                         <h4>Integración al Grupo de Investigación</h4>
                         <p>Incorporación o adhesión de un nuevo integrante a un grupo de investigación.</p>
-                        <div class="pk-card-tramite__action text-muted">
-                            <span>Vía FUT en Secretaría</span> <i class="fa fa-building-columns"></i>
+                        <div class="pk-card-tramite__action">
+                            <span>Abrir Formulario</span> <i class="fa fa-external-link"></i>
                         </div>
-                    </div>
+                    </a>
 
                     <!-- Card 5: Extensión de Plazo -->
                     <a href="https://docs.google.com/forms/d/e/1FAIpQLSdJizTDL5Z8DAEfiRWSt32GspxaDO3MVQ_JyvpC_Q3sQt7rvQ/viewform" target="_blank" class="pk-card-tramite">
@@ -363,7 +364,7 @@
                     </a>
 
                     <!-- Card 8: Dejar sin efecto RD PTI -->
-                    <a href="https://docs.google.com/forms/d/1CzTidT0pvsKBPVuIPxoIelt8fYP40kODJ7YIfexhT1E/viewform" target="_blank" class="pk-card-tramite">
+                    <a href="https://forms.gle/Nhq92ozSVYKKnMMt7" target="_blank" class="pk-card-tramite">
                         <div class="pk-card-tramite__top">
                             <div class="pk-card-tramite__icon">
                                 <i class="fa fa-ban"></i>
