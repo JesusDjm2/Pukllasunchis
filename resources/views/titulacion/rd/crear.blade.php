@@ -222,6 +222,13 @@
                         <span>-<span id="rdgAnio">{{ $anio }}</span></span>
                     </div>
                     <div class="rdg-ayuda">Sugerido: siguiente de las RD de Titulación de este año.</div>
+                    @if (session('rd_salto'))
+                        {{-- Volvió por saltar números: se emite solo confirmando ESTE N° (si se cambia, vuelve a revisarse). --}}
+                        <label class="d-flex align-items-start mt-1 mb-0 small text-danger" style="gap:.35rem; cursor:pointer;">
+                            <input type="checkbox" name="confirmar_numero" value="{{ session('rd_salto') }}" class="mt-1">
+                            <span>Confirmo el N° {{ str_pad((string) session('rd_salto'), 3, '0', STR_PAD_LEFT) }}: los intermedios se emitieron fuera del sistema.</span>
+                        </label>
+                    @endif
                 </div>
                 <div class="form-group col-md-3">
                     <label for="fecha">Fecha de la RD</label>

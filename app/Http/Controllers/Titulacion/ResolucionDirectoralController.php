@@ -153,6 +153,15 @@ class ResolucionDirectoralController extends Controller
         }
 
         $fecha = Carbon::parse($data['fecha']);
+        // Sin requisitos de avance (Secretaría emite en cualquier momento), pero el N° debe ser correlativo.
+        // Un N° repetido nunca; un salto, solo si se confirma (marcando la casilla que aparece con el aviso).
+        if ($data['accion'] === 'emitir' && ($correlativo = PlantillasRd::validarCorrelativo($data['numero_rd'], $fecha->year))) {
+            [$tipoAviso, $motivo] = $correlativo;
+            $confirmado = $tipoAviso === 'salto' && (string) $request->input('confirmar_numero') === (string) (int) $data['numero_rd'];
+            if (! $confirmado) {
+                return back()->withInput()->withErrors(['numero_rd' => $motivo])->with('rd_salto', $tipoAviso === 'salto' ? (int) $data['numero_rd'] : null);
+            }
+        }
         $numero = str_pad($data['numero_rd'], 3, '0', STR_PAD_LEFT);
         $numeroRd = $numero.'-'.$fecha->year;
 

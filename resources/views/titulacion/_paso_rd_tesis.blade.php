@@ -17,7 +17,7 @@
 @elseif ($faltaTramite)
     <div class="tp-aviso"><i class="fas fa-lock"></i><div>Disponible cuando esté: <strong>{{ $faltaTramite }}</strong>.</div></div>
 @else
-    <div class="tp-aviso tp-aviso--espera"><i class="fas fa-hourglass-half"></i><div><strong>A la espera del pago del trámite.</strong> Cuando el estudiante pague, regístrelo para poder generar la RD.</div></div>
+    <div class="tp-aviso tp-aviso--espera"><i class="fas fa-hourglass-half"></i><div><strong>A la espera del pago del trámite.</strong> Cuando el estudiante pague, regístrelo aquí.</div></div>
 @endif
 @unless ($faltaTramite && ! $tesis?->tramite_sust_pagado_en)
     <details class="tp-mas mt-0" @if (! $tramitePagado) open @endif>

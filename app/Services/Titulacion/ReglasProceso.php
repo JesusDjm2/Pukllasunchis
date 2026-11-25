@@ -19,36 +19,24 @@ use App\Models\Titulacion\Tesis;
  */
 class ReglasProceso
 {
-    /** Hito que debe estar logrado para registrar cada RD, por tipo. */
-    public const REQUISITO_RD = [
-        'PTI' => 'pti_inscrito',
-        'AmpliacionPti' => 'pti_inscrito',
-        'AnulacionPti' => 'pti_inscrito',
-        'CambioTema' => 'pti_inscrito',
-        'CambioAsesor' => 'pti_inscrito',
-        'CambioGrupo' => 'pti_inscrito',
-        'RetiroGrupo' => 'pti_aprobado',
-        'IncorporacionGrupo' => 'pti_aprobado',
-        // RD de aprobación de exposición: trámite independiente de Secretaría, NO exige el enlace del TI
-        // aprobado por el asesor (25/11). La de la Tesis sí exige su enlace (29/10).
-        'Exposicion' => 'ti_expuesto',
-        'FechaSustentacion' => 'bachiller',
-        'Extension' => 'bachiller',
-        // La de la Tesis, además, el pago del trámite de aprobación de sustentación (30/10).
-        'Tesis' => ['tesis_sustentada', 'tesis_enlace', 'tesis_tramite'],
-    ];
+    /**
+     * Hito que debe estar logrado para registrar cada RD, por tipo. VACÍO desde el 25/11: Secretaría
+     * (única que genera y registra RD) las emite en cualquier momento, sin depender del avance del
+     * proceso; lo único que se cuida es que el N° sea correlativo (PlantillasRd::validarCorrelativo).
+     * Antes: PTI/trámites → pti_inscrito; retiro/incorporación → pti_aprobado; Exposición → ti_expuesto;
+     * FechaSustentación/Extensión → bachiller; Tesis → tesis_sustentada + tesis_enlace + tesis_tramite.
+     */
+    public const REQUISITO_RD = [];
 
     /** Hito que debe estar logrado para registrar cada dato de TI/Tesis. */
     public const REQUISITO_CAMPO = [
         'fecha_exposicion' => 'pti_carta',
-        'rd_ti' => 'ti_expuesto',
+        // Los N° de RD en los formularios de etapa tampoco dependen del avance (25/11, ver REQUISITO_RD).
         'url_repositorio_ti' => 'ti_aprobado',
         'fecha_bachiller_sunedu' => 'ti_repositorio',
         'bachiller_sunedu' => 'ti_repositorio',
         'fecha_sustentacion' => 'bachiller',
-        'rd_extension' => 'bachiller',
         'fecha_extension' => 'bachiller',
-        'rd_tesis' => ['tesis_sustentada', 'tesis_enlace', 'tesis_tramite'],
         'tramite_sust_pagado_en' => 'tesis_enlace',
         'url_repositorio' => 'tesis_sustentada',
         'fecha_titulo_sunedu' => 'tesis_aprobada',

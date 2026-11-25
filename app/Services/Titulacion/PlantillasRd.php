@@ -160,13 +160,50 @@ class PlantillasRd
      */
     public static function numeroSugerido(int $anio): string
     {
-        $max = Resolucion::query()
+        $max = self::numerosUsados($anio)->max() ?? 0;
+
+        return str_pad((string) ($max + 1), 3, '0', STR_PAD_LEFT);
+    }
+
+    /** N° de RD ya usados en el año («045-2026» → 45), sin repetir (una RD de grupo se guarda por integrante). */
+    public static function numerosUsados(int $anio): \Illuminate\Support\Collection
+    {
+        return Resolucion::query()
             ->where(fn ($q) => $q->whereYear('fecha', $anio)->orWhere('numero_rd', 'like', "%-{$anio}%"))
             ->pluck('numero_rd')
             ->map(fn ($n) => preg_match('/(\d{1,4})\s*-\s*'.$anio.'/', (string) $n, $m) ? (int) $m[1] : 0)
-            ->max() ?? 0;
+            ->filter()
+            ->unique()
+            ->values();
+    }
 
-        return str_pad((string) ($max + 1), 3, '0', STR_PAD_LEFT);
+    /**
+     * Las RD van correlativas por año. Devuelve null si el N° se puede usar, o [tipo, mensaje]:
+     *  - 'repetido' (o menor que 1): nunca se emite.
+     *  - 'salto': deja números sin usar respecto de lo que el sistema conoce; se emite solo si Secretaría
+     *    lo confirma, porque hay RD emitidas fuera del sistema (importadas con N° en texto libre, sin año)
+     *    que el sistema no puede contar.
+     */
+    public static function validarCorrelativo(string $numero, int $anio): ?array
+    {
+        $n = (int) $numero;
+        $usados = self::numerosUsados($anio);
+        $siguiente = ($usados->max() ?? 0) + 1;
+        $formato = fn (int $x) => str_pad((string) $x, 3, '0', STR_PAD_LEFT).'-'.$anio;
+
+        if ($n < 1) {
+            return ['repetido', 'El N° de RD debe ser mayor que cero. El siguiente correlativo es '.$formato($siguiente).'.'];
+        }
+        if ($usados->contains($n)) {
+            return ['repetido', 'La RD N° '.$formato($n).' ya está registrada. El siguiente correlativo es '.$formato($siguiente)
+                .'. Si es la misma RD corregida, use «Subir de nuevo» en la RD ya registrada.'];
+        }
+        if ($n > $siguiente) {
+            return ['salto', 'Las RD deben ser correlativas: según el sistema, el siguiente N° de '.$anio.' es '.$formato($siguiente)
+                .' y con '.$formato($n).' quedarían números sin usar. Si los intermedios se emitieron fuera del sistema, confirme el N° para continuar.'];
+        }
+
+        return null;
     }
 
     /** "Educación Primaria Intercultural Bilingüe", como va en la RD. */
