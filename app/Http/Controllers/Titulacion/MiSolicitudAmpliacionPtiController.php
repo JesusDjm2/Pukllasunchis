@@ -21,11 +21,16 @@ use Illuminate\Support\Str;
 
 class MiSolicitudAmpliacionPtiController extends Controller
 {
-    /** Fecha (Y-m-d) de la RD de aprobación del PTI más reciente, para sugerirla en el formulario. */
+    /**
+     * Fecha (Y-m-d) de aprobación del PTI que conoce el sistema: la de su RD y, si no la tiene, la fecha del PTI
+     * (pti.fecha_pti, la misma con la que se calcula la vigencia). '' si no se sabe: entonces se pregunta.
+     */
     private function fechaRdPti(?SeguimientoTitulacion $seguimiento): string
     {
-        return (string) $seguimiento?->resoluciones->where('tipo', 'PTI')->filter(fn ($r) => $r->fecha)
-            ->sortByDesc(fn ($r) => $r->fecha->format('Y-m-d'))->first()?->fecha?->format('Y-m-d');
+        $deRd = $seguimiento?->resoluciones->where('tipo', 'PTI')->filter(fn ($r) => $r->fecha)
+            ->sortByDesc(fn ($r) => $r->fecha->format('Y-m-d'))->first()?->fecha;
+
+        return (string) ($deRd ?? $seguimiento?->pti?->fecha_pti)?->format('Y-m-d');
     }
 
     /** Ampliaciones de plazo permitidas por PTI. */
@@ -111,6 +116,8 @@ class MiSolicitudAmpliacionPtiController extends Controller
             'previas' => $previas,
             'maximo' => self::MAXIMO,
             'programa' => MiSolicitudPtiController::programaDe($user) ?: $user->programa?->nombre,
+            // Si el sistema la conoce, la fecha de aprobación del PTI se muestra fija y no se pregunta.
+            'fechaPtiSistema' => $this->fechaRdPti($seguimiento),
             'companeros' => $seguimiento ? GrupoTitulacion::companeros($seguimiento) : collect(),
             'layout' => $layout,
             'volver' => PanelDeUsuario::url($user),
@@ -147,6 +154,11 @@ class MiSolicitudAmpliacionPtiController extends Controller
         if ($previas >= self::MAXIMO) {
             return redirect()->route('mi-titulacion.ampliacion-pti')
                 ->with('error', 'Ya se aprobaron las '.self::MAXIMO.' ampliaciones permitidas para tu Plan de Trabajo de Investigación: no se puede solicitar otra.');
+        }
+
+        // Fecha de aprobación del PTI: la del sistema si la conoce (no se puede cambiar desde el formulario).
+        if ($fechaSistema = $this->fechaRdPti($seguimiento)) {
+            $request->merge(['fecha_pti' => $fechaSistema]);
         }
 
         $data = $request->validate([

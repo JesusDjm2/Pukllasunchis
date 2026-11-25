@@ -242,10 +242,19 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="font-weight-bold small">Fecha de aprobación del PTI <span class="text-danger">*</span></label>
-                        <input type="date" name="fecha_pti" value="{{ $v('fecha_pti') }}" max="{{ now()->toDateString() }}" class="form-control @error('fecha_pti') is-invalid @enderror" style="max-width:220px;" required>
-                        <small class="text-muted">Escribe la fecha de la RD de aprobación del PTI.</small>
-                        @error('fecha_pti') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        <label class="font-weight-bold small d-block">Fecha de aprobación del PTI <span class="text-danger">*</span></label>
+                        @if ($fechaPtiSistema)
+                            {{-- La conoce el sistema (RD del PTI o fecha del PTI): no se escribe; el servidor usa la misma. --}}
+                            <div class="d-inline-flex align-items-center border rounded bg-light px-3 py-2" style="gap:.5rem;">
+                                <i class="fas fa-lock text-muted fa-xs"></i>
+                                <strong>{{ \Carbon\Carbon::parse($fechaPtiSistema)->format('d/m/Y') }}</strong>
+                            </div>
+                            <small class="d-block text-muted mt-1">Según tu proceso de titulación. Si no es correcta, avísanos desde «¿Algún dato no coincide?».</small>
+                        @else
+                            <input type="date" name="fecha_pti" value="{{ $v('fecha_pti') }}" max="{{ now()->toDateString() }}" class="form-control @error('fecha_pti') is-invalid @enderror" style="max-width:220px;" required>
+                            <small class="text-muted">Escribe la fecha de la RD de aprobación del PTI.</small>
+                        @endif
+                        @error('fecha_pti') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
                     </div>
 
                     <div class="form-group">
@@ -259,7 +268,7 @@
 
                     <div class="form-row">
                         <div class="form-group col-md-6">
-                            <label class="font-weight-bold small">Anexo 1: RD de aprobación de PTI y asignación de asesor <span class="text-danger">*</span></label>
+                            <label class="font-weight-bold small d-flex align-items-end" style="min-height:2.9em;"><span>Anexo 1: RD de aprobación de PTI y asignación de asesor <span class="text-danger">*</span></span></label>
                             <div class="custom-file">
                                 <input type="file" name="rd_pti" class="custom-file-input @error('rd_pti') is-invalid @enderror" accept=".pdf,application/pdf" required id="rdPtiFile">
                                 <label class="custom-file-label small" for="rdPtiFile" data-browse="Elegir">Adjuntar la RD (PDF)...</label>
@@ -269,7 +278,7 @@
                         </div>
 
                         <div class="form-group col-md-6">
-                            <label class="font-weight-bold small">Anexo 2: Comprobante de pago por derecho de extensión de plazo de investigación <span class="text-danger">*</span></label>
+                            <label class="font-weight-bold small d-flex align-items-end" style="min-height:2.9em;"><span>Anexo 2: Comprobante de pago por derecho de extensión de plazo de investigación <span class="text-danger">*</span></span></label>
                             <div class="custom-file">
                                 <input type="file" name="comprobante" class="custom-file-input @error('comprobante') is-invalid @enderror" accept=".pdf,.jpg,.jpeg,.png" required id="cpFile">
                                 <label class="custom-file-label small" for="cpFile" data-browse="Elegir">Adjuntar el comprobante...</label>
