@@ -21,7 +21,7 @@ trait GestionaGruposTaqe
 {
     /**
      * Alumnos "disponibles" para armar/ampliar un grupo de Investigaciones de este curso:
-     * matriculados (o del mismo ciclo si no hay asignación explícita),
+     * los del mismo ciclo del curso en cualquier programa con el mismo Proyecto Integrador,
      * excluyendo a quien ya esté aceptado en algún grupo del periodo y a
      * cualquier alumno inhabilitado. $excluirAlumnoId saca opcionalmente a un
      * alumno puntual de la lista (el propio usuario en el autoservicio del
@@ -29,21 +29,15 @@ trait GestionaGruposTaqe
      */
     private function companerosDisponibles(Curso $curso, PeriodoActual $periodoActual, ?int $excluirAlumnoId = null, ?int $proyectoId = null): Collection
     {
-        $query = $curso->alumnos()->wherePivot('periodo_actual_id', $periodoActual->id);
-        if ($excluirAlumnoId) {
-            $query->where('alumnos.id', '!=', $excluirAlumnoId);
-        }
-        $compañeros = $query->orderBy('apellidos')
-            ->get(['alumnos.id', 'alumnos.user_id', 'alumnos.ciclo_id', 'alumnos.nombres', 'alumnos.apellidos', 'alumnos.dni']);
-
-        // Sin asignaciones explícitas en alumno_cursos, el curso se toma por
-        // ciclo — los compañeros son el resto de alumnos de ese mismo ciclo.
-        if ($compañeros->isEmpty() && $curso->ciclo_id) {
-            $compañeros = Alumno::where('ciclo_id', $curso->ciclo_id)
+        // Compañeros = alumnos del MISMO ciclo que el curso, de cualquier programa que comparta su
+        // Proyecto Integrador (Inicial II con Primaria EIB II, etc.). No se mezclan ciclos distintos
+        // aunque compartan proyecto (I con II). Ver ciclosHermanos().
+        $compañeros = $curso->ciclo_id
+            ? Alumno::whereIn('ciclo_id', $this->ciclosHermanos((int) $curso->ciclo_id))
                 ->when($excluirAlumnoId, fn ($q) => $q->where('id', '!=', $excluirAlumnoId))
-                ->orderBy('apellidos')
-                ->get(['id', 'user_id', 'ciclo_id', 'nombres', 'apellidos', 'dni']);
-        }
+                ->orderBy('apellidos')->orderBy('nombres')
+                ->get(['id', 'user_id', 'ciclo_id', 'nombres', 'apellidos', 'dni'])
+            : collect();
 
         // Un alumno pertenece a un solo grupo de Investigaciones por periodo: quien ya está aceptado en uno
         // (de cualquier curso) no aparece como compañero disponible.
@@ -52,7 +46,7 @@ trait GestionaGruposTaqe
 
         // Ningún alumno inhabilitado (retirado, licencia, deuda, etc.) puede
         // aparecer como compañero disponible para armar un grupo de Investigaciones.
-        $compañeros = $compañeros->load('user.roles', 'ciclo')
+        $compañeros = $compañeros->load('user.roles', 'ciclo.programa')
             ->reject(fn ($a) => (bool) $a->user?->roles->contains('name', 'inhabilitado'));
 
         // Solo compañeros del mismo Proyecto Integrador (el de su propio ciclo): quien lleva el curso
@@ -60,6 +54,9 @@ trait GestionaGruposTaqe
         if ($proyectoId) {
             $compañeros = $compañeros->filter(fn ($a) => (int) $a->ciclo?->proyecto_id === $proyectoId);
         }
+
+        // Texto para listas (vista y JSON): incluye el programa porque el grupo puede mezclarlos.
+        $compañeros->each(fn ($a) => $a->setAttribute('etiqueta_taqe', $this->etiquetaCompanero($a)));
 
         return $compañeros->values();
     }
@@ -99,18 +96,47 @@ trait GestionaGruposTaqe
         return $alumno->ciclo?->proyecto_id;
     }
 
-    /** De estos alumnos, los que NO pertenecen al Proyecto Integrador indicado. */
-    private function alumnoIdsDeOtroProyecto(Collection $alumnoIds, ?int $proyectoId): Collection
+    /**
+     * Ciclos con los que se puede formar grupo: el mismo número de ciclo (II, IV…) en cualquier
+     * programa que comparta el Proyecto Integrador (hoy Inicial y Primaria EIB). Un ciclo sin
+     * proyecto solo se empareja consigo mismo.
+     */
+    private function ciclosHermanos(?int $cicloId): Collection
     {
-        if (! $proyectoId || $alumnoIds->isEmpty()) {
+        $ciclo = $cicloId ? \App\Models\Ciclo::find($cicloId) : null;
+        if (! $ciclo) {
+            return collect();
+        }
+        if (! $ciclo->proyecto_id) {
+            return collect([$ciclo->id]);
+        }
+
+        return \App\Models\Ciclo::where('proyecto_id', $ciclo->proyecto_id)->get()
+            ->filter(fn ($c) => $c->numero_romano === $ciclo->numero_romano)
+            ->pluck('id')
+            ->values();
+    }
+
+    /** De estos alumnos, los que NO son del mismo ciclo (o ciclo hermano de otro programa) que el indicado. */
+    private function alumnoIdsDeOtroCiclo(Collection $alumnoIds, ?int $cicloId): Collection
+    {
+        if (! $cicloId || $alumnoIds->isEmpty()) {
             return collect();
         }
 
-        return Alumno::whereIn('alumnos.id', $alumnoIds)
-            ->leftJoin('ciclos', 'ciclos.id', '=', 'alumnos.ciclo_id')
-            ->where(fn ($q) => $q->whereNull('ciclos.proyecto_id')->orWhere('ciclos.proyecto_id', '!=', $proyectoId))
-            ->pluck('alumnos.id');
+        return Alumno::whereIn('id', $alumnoIds)
+            ->where(fn ($q) => $q->whereNull('ciclo_id')->orWhereNotIn('ciclo_id', $this->ciclosHermanos($cicloId)))
+            ->pluck('id');
     }
+
+    /** «Apellidos, Nombres · Primaria EIB»: el programa se muestra porque los grupos pueden mezclar programas. */
+    private function etiquetaCompanero(Alumno $a): string
+    {
+        $programa = trim(preg_replace('/^Programa\s+/i', '', (string) $a->ciclo?->programa?->nombre));
+
+        return $a->apellidos.', '.$a->nombres.($programa !== '' ? ' · '.$programa : '');
+    }
+
 
     /** IDs de alumnos ya aceptados en algún grupo de Investigaciones del periodo (regla: un grupo por alumno y periodo). */
     private function alumnoIdsConGrupoEnPeriodo(int $periodoActualId): Collection

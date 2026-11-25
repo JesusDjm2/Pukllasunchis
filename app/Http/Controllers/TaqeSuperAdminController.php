@@ -100,7 +100,7 @@ class TaqeSuperAdminController extends Controller
         return back()->with('success', 'Solicitud marcada como atendida.');
     }
 
-    /** Compañeros disponibles para sumar a ESTE grupo (mismo curso+periodo), para el modal de gestión. */
+    /** Compañeros disponibles para sumar a ESTE grupo (mismo ciclo, cualquier programa con el mismo Proyecto Integrador), para el modal de gestión. */
     public function alumnosDisponibles(TaqeGrupo $grupo)
     {
         $periodoActual = PeriodoActual::findOrFail($grupo->periodo_actual_id);
@@ -112,7 +112,7 @@ class TaqeSuperAdminController extends Controller
 
         return response()->json($disponibles->map(fn ($a) => [
             'id' => $a->id,
-            'nombre' => $a->apellidos.', '.$a->nombres.' — DNI '.$a->dni,
+            'nombre' => $a->etiqueta_taqe.' — DNI '.$a->dni,
         ]));
     }
 
@@ -140,8 +140,8 @@ class TaqeSuperAdminController extends Controller
             ->whereHas('user.roles', fn ($r) => $r->where('name', 'inhabilitado'))
             ->pluck('id');
 
-        // Mismas reglas que el autoservicio, incluido el Proyecto Integrador del ciclo de cada alumno.
-        $deOtroProyecto = $this->alumnoIdsDeOtroProyecto($integrantesIds, $grupo->proyecto_id);
+        // Mismas reglas que el autoservicio, incluido que sean del mismo ciclo (de cualquier programa con el mismo Proyecto Integrador).
+        $deOtroProyecto = $this->alumnoIdsDeOtroCiclo($integrantesIds, $grupo->ciclo_id);
         $aInvitar = $integrantesIds->diff($comprometidos)->diff($inhabilitados)->diff($deOtroProyecto);
 
         foreach ($aInvitar as $integranteId) {
@@ -157,7 +157,7 @@ class TaqeSuperAdminController extends Controller
         }
 
         if ($aInvitar->isEmpty()) {
-            return back()->with('error', 'No hay nuevos integrantes para invitar (ya están en otro grupo este periodo, están inhabilitados, son de otro Proyecto Integrador o ya tienen relación con este grupo).');
+            return back()->with('error', 'No hay nuevos integrantes para invitar (ya están en otro grupo este periodo, están inhabilitados, son de otro ciclo o ya tienen relación con este grupo).');
         }
 
         return back()->with('success', 'Invitación enviada.');

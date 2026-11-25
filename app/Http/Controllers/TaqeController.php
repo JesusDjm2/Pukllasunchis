@@ -91,12 +91,13 @@ class TaqeController extends Controller
             ->orderByDesc('periodo_actual_id')
             ->get();
 
-        // Proyecto Integrador del alumno = el de SU ciclo. Solo puede formar grupo en cursos de ese
-        // mismo proyecto (un alumno de Ciclo V no hace el proyecto de Ciclo II, aunque lleve un curso de II).
+        // Proyecto Integrador del alumno = el de SU ciclo. Solo puede formar grupo en cursos de SU mismo
+        // ciclo (un alumno de Ciclo I no arma grupo en un curso de Ciclo II aunque compartan proyecto).
         $alumno->loadMissing('ciclo.proyecto');
         $proyectoAlumno = $alumno->ciclo?->proyecto;
+        $ciclosPermitidos = $proyectoAlumno ? $this->ciclosHermanos($alumno->ciclo_id) : collect();
         $cursosSinGrupo = $misGrupos->isNotEmpty() ? collect() : $cursos
-            ->filter(fn ($curso) => $proyectoAlumno && (int) $curso->ciclo?->proyecto_id === (int) $proyectoAlumno->id)
+            ->filter(fn ($curso) => $ciclosPermitidos->contains((int) $curso->ciclo_id))
             ->values();
 
         // Para los grupos donde el propio alumno es el organizador, se
@@ -141,7 +142,7 @@ class TaqeController extends Controller
 
         return response()->json($compañeros->map(fn ($a) => [
             'id' => $a->id,
-            'nombre' => $a->apellidos.', '.$a->nombres.' — DNI '.$a->dni,
+            'nombre' => $a->etiqueta_taqe.' — DNI '.$a->dni,
         ]));
     }
 
@@ -178,8 +179,8 @@ class TaqeController extends Controller
         if (! $proyectoId) {
             return back()->withInput()->with('error', "El ciclo de ese curso no tiene un Proyecto Integrador asignado. Avisa a la coordinación para poder formar tu grupo de Investigaciones.");
         }
-        if ((int) $this->proyectoDelAlumno($alumno) !== (int) $proyectoId) {
-            return back()->withInput()->with('error', 'Ese curso pertenece al Proyecto Integrador de otro ciclo. Solo puedes formar grupo en el Proyecto Integrador de tu ciclo.');
+        if (! $this->ciclosHermanos($alumno->ciclo_id)->contains((int) $curso->ciclo_id)) {
+            return back()->withInput()->with('error', 'Ese curso es de otro ciclo. Solo puedes formar grupo en un curso de tu propio ciclo.');
         }
 
         // Un grupo por alumno y periodo (de cualquier curso).
@@ -220,7 +221,7 @@ class TaqeController extends Controller
             ->whereHas('user.roles', fn ($r) => $r->where('name', 'inhabilitado'))
             ->pluck('id');
 
-        $deOtroProyecto = $this->alumnoIdsDeOtroProyecto($integrantesIds, $proyectoId);
+        $deOtroProyecto = $this->alumnoIdsDeOtroCiclo($integrantesIds, $curso->ciclo_id);
 
         $integrantesOmitidosPorGrupo = $integrantesIds->intersect($comprometidos);
         $integrantesOmitidosPorInhabilitado = $integrantesIds->intersect($inhabilitados)->diff($integrantesOmitidosPorGrupo);
@@ -252,7 +253,7 @@ class TaqeController extends Controller
             $nombres = Alumno::whereIn('id', $integrantesOmitidosPorProyecto)->get()
                 ->map(fn ($a) => $a->apellidos.', '.$a->nombres)
                 ->implode('; ');
-            $mensaje .= ' No se pudo invitar a: '.$nombres.' (su ciclo tiene otro Proyecto Integrador).';
+            $mensaje .= ' No se pudo invitar a: '.$nombres.' (es de otro ciclo).';
         }
 
         return redirect()->route('taqe.index')->with('success', $mensaje);
@@ -283,8 +284,8 @@ class TaqeController extends Controller
                 return back()->with('error', "Ya perteneces a un grupo de Investigaciones este periodo (solo se puede estar en uno). Sal de él primero si quieres cambiarte a este.");
             }
 
-            if ($grupo->proyecto_id && (int) $this->proyectoDelAlumno($alumno) !== (int) $grupo->proyecto_id) {
-                return back()->with('error', 'No puedes unirte: ese grupo trabaja el Proyecto Integrador de otro ciclo. Solo puedes participar en el de tu ciclo.');
+            if ($grupo->ciclo_id && ! $this->ciclosHermanos((int) $grupo->ciclo_id)->contains((int) $alumno->ciclo_id)) {
+                return back()->with('error', 'No puedes unirte: ese grupo es de otro ciclo. Solo puedes participar en un grupo de tu mismo ciclo.');
             }
         }
 
@@ -435,7 +436,7 @@ class TaqeController extends Controller
             ->whereHas('user.roles', fn ($r) => $r->where('name', 'inhabilitado'))
             ->pluck('id');
 
-        $deOtroProyecto = $this->alumnoIdsDeOtroProyecto($integrantesIds, $grupo->proyecto_id);
+        $deOtroProyecto = $this->alumnoIdsDeOtroCiclo($integrantesIds, $grupo->ciclo_id);
 
         $omitidosPorGrupo = $integrantesIds->intersect($comprometidos);
         $omitidosPorInhabilitado = $integrantesIds->intersect($inhabilitados)->diff($omitidosPorGrupo);
@@ -475,7 +476,7 @@ class TaqeController extends Controller
             $nombres = Alumno::whereIn('id', $omitidosPorProyecto)->get()
                 ->map(fn ($a) => $a->apellidos.', '.$a->nombres)
                 ->implode('; ');
-            $mensaje .= ' No se pudo invitar a: '.$nombres.' (su ciclo tiene otro Proyecto Integrador).';
+            $mensaje .= ' No se pudo invitar a: '.$nombres.' (es de otro ciclo).';
         }
 
         return back()->with('success', $mensaje);

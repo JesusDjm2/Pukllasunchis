@@ -309,11 +309,11 @@
                                         <form action="{{ route('taqe.integrantes.agregar', $grupo->id) }}" method="POST">
                                             @csrf
                                             @if (($companerosPorGrupo[$grupo->id] ?? collect())->isEmpty())
-                                                <p class="tq-nota">No hay más compañeros disponibles en este curso para invitar.</p>
+                                                <p class="tq-nota">No hay más compañeros de tu ciclo disponibles para invitar.</p>
                                             @else
                                                 <div class="taqe-companion-list mb-2">
                                                     @foreach ($companerosPorGrupo[$grupo->id] as $c)
-                                                        <label><input type="checkbox" name="integrantes[]" value="{{ $c->id }}"> {{ $c->apellidos }}, {{ $c->nombres }}</label>
+                                                        <label><input type="checkbox" name="integrantes[]" value="{{ $c->id }}"> {{ $c->etiqueta_taqe }}</label>
                                                     @endforeach
                                                 </div>
                                                 <button type="submit" class="al-btn al-btn-petroleo al-btn-sm"><i class="fas fa-user-plus"></i> Invitar seleccionados</button>
@@ -428,7 +428,7 @@
                 <div class="modal-body p-0">
                     <ol class="tq-guia">
                         <li><b>Crea tu grupo</b><span>Elige un curso de tu ciclo y ponle un nombre. Tú quedas como organizador(a). Solo puedes estar en <strong>un grupo por periodo</strong>.</span></li>
-                        <li><b>Invita a tu equipo</b><span>Solo compañeros de tu mismo Proyecto Integrador. Aceptan la invitación desde su intranet.</span></li>
+                        <li><b>Invita a tu equipo</b><span>Solo compañeros de tu mismo ciclo, de tu programa o de otro (Inicial y Primaria EIB pueden formar grupo juntos). Aceptan la invitación desde su intranet.</span></li>
                         <li><b>Sube evidencias</b><span>Fotos, audios, videos, documentos o enlaces del proceso. Cualquier integrante puede subirlas.</span></li>
                         <li><b>Arma y entrega el trabajo final</b><span>Todo el equipo puede subir archivos o pasar evidencias al final; el organizador lo entrega y el grupo queda Finalizado.</span></li>
                     </ol>

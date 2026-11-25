@@ -117,7 +117,7 @@
                         @endforeach
                     @endif
 
-                    <p class="tq-modal-etiqueta mt-3">Invitar a compañeros del mismo curso</p>
+                    <p class="tq-modal-etiqueta mt-3">Invitar a compañeros del mismo ciclo (cualquier programa)</p>
                     <form action="{{ route('admin.taqe.integrantes.agregar', $grupo->id) }}" method="POST" class="taqe-sa-form-invitar" data-grupo="{{ $grupo->id }}">
                         @csrf
                         <div class="taqe-companion-list mb-2" data-lista-companeros>
