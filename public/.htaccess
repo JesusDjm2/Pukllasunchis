@@ -14,6 +14,14 @@
 
     RewriteEngine On
 
+    # Un solo dominio: eesppukllasunchis.edu.pe → www.eesppukllasunchis.edu.pe (25/11/2026).
+    # Cada dominio tenía su propia sesión: un enlace guardado con «www» (p. ej. el PDF de una RD) se abría
+    # con otra cuenta y daba 403. Solo GET/HEAD, para no convertir en GET un formulario enviado (POST).
+    RewriteCond %{HTTP_HOST} ^eesppukllasunchis\.edu\.pe$ [NC]
+    RewriteCond %{REQUEST_METHOD} ^(GET|HEAD)$
+    # $1 (ruta relativa a public/) y no %{REQUEST_URI}: el .htaccess de la raíz ya reescribió a public/.
+    RewriteRule ^(.*)$ https://www.eesppukllasunchis.edu.pe/$1 [L,R=301]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
