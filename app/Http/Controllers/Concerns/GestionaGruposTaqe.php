@@ -36,7 +36,7 @@ trait GestionaGruposTaqe
             ? Alumno::whereIn('ciclo_id', $this->ciclosHermanos((int) $curso->ciclo_id))
                 ->when($excluirAlumnoId, fn ($q) => $q->where('id', '!=', $excluirAlumnoId))
                 ->orderBy('apellidos')->orderBy('nombres')
-                ->get(['id', 'user_id', 'ciclo_id', 'nombres', 'apellidos', 'dni'])
+                ->get(['id', 'user_id', 'ciclo_id', 'nombres', 'apellidos'])
             : collect();
 
         // Un alumno pertenece a un solo grupo de Investigaciones por periodo: quien ya está aceptado en uno
@@ -148,13 +148,15 @@ trait GestionaGruposTaqe
         return $programa !== '' ? $programa : 'Sin programa';
     }
 
-    /** Formato JSON común de la lista de compañeros (crear grupo, editar grupo y gestión del Super Admin). */
+    /**
+     * Formato JSON común de la lista de compañeros (crear grupo, editar grupo y gestión del Super Admin).
+     * Sin DNI (protección de datos personales): ni se muestra ni viaja al navegador.
+     */
     private function companerosJson(Collection $compañeros): array
     {
         return $compañeros->map(fn ($a) => [
             'id' => $a->id,
             'nombre' => $a->apellidos.', '.$a->nombres,
-            'dni' => (string) $a->dni,
             'programa' => $a->programa_taqe,
         ])->values()->all();
     }

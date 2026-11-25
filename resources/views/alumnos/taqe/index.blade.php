@@ -532,7 +532,7 @@
             if (!cursoId) return;
             lista.innerHTML = '<span class="tq-nota">Cargando…</span>';
 
-            fetch('{{ url('taqe/curso') }}/' + cursoId + '/alumnos', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            fetch('/taqe/curso/' + cursoId + '/alumnos', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
                 .then(function (r) { return r.json(); })
                 .then(function (companeros) {
                     TaqeCompaneros.render(lista, companeros, { vacio: 'No hay compañeros de tu ciclo disponibles.' });

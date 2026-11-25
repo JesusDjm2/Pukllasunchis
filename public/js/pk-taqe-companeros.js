@@ -1,6 +1,6 @@
 /**
  * Lista de compañeros para grupos de Investigaciones (crear grupo, editar grupo y gestión del Super Admin).
- * Recibe [{id, nombre, dni, programa}] ya ordenados por el servidor (programa del curso primero y
+ * Recibe [{id, nombre, programa}] (sin DNI: protección de datos) ya ordenados por el servidor (programa del curso primero y
  * alfabético dentro de cada programa) y pinta un buscador + un acordeón por programa con casillas
  * integrantes[]. Estilos en public/css/pk-taqe.css (.tq-comp-*).
  *
@@ -42,7 +42,7 @@
         });
 
         var html = '<div class="tq-comp-buscar"><i class="fas fa-search"></i>'
-            + '<input type="search" class="tq-comp-input" placeholder="Buscar por nombre, apellido o DNI…" autocomplete="off"></div>'
+            + '<input type="search" class="tq-comp-input" placeholder="Buscar por nombre o apellido…" autocomplete="off"></div>'
             + '<div class="tq-comp-grupos">';
 
         grupos.forEach(function (g) {
@@ -53,10 +53,9 @@
                 + '<span class="tq-comp-total">' + g.alumnos.length + '</span></summary>'
                 + '<div class="tq-comp-items">';
             g.alumnos.forEach(function (c) {
-                html += '<label class="tq-comp-item" data-busqueda="' + escapar(normalizar(c.nombre + ' ' + (c.dni || ''))) + '">'
+                html += '<label class="tq-comp-item" data-busqueda="' + escapar(normalizar(c.nombre)) + '">'
                     + '<input type="checkbox" name="integrantes[]" value="' + parseInt(c.id, 10) + '">'
                     + '<span class="tq-comp-nombre">' + escapar(c.nombre) + '</span>'
-                    + (c.dni ? '<span class="tq-comp-dni">DNI ' + escapar(c.dni) + '</span>' : '')
                     + '</label>';
             });
             html += '</div></details>';

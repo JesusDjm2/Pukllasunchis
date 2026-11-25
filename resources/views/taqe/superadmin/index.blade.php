@@ -64,7 +64,7 @@
             var lista = form.querySelector('[data-lista-companeros]');
             if (lista.dataset.cargado) return;
 
-            fetch('{{ url('admin/taqe') }}/' + form.dataset.grupo + '/alumnos-disponibles', {
+            fetch('/admin/taqe/' + form.dataset.grupo + '/alumnos-disponibles', {
                 headers: { 'X-Requested-With': 'XMLHttpRequest' },
             })
                 .then(function (r) { return r.json(); })
