@@ -29,8 +29,9 @@ class ReglasProceso
         'CambioGrupo' => 'pti_inscrito',
         'RetiroGrupo' => 'pti_aprobado',
         'IncorporacionGrupo' => 'pti_aprobado',
-        // La RD de aprobación de cada etapa también exige el enlace aprobado por el asesor (29/10).
-        'Exposicion' => ['ti_expuesto', 'ti_enlace'],
+        // RD de aprobación de exposición: trámite independiente de Secretaría, NO exige el enlace del TI
+        // aprobado por el asesor (25/11). La de la Tesis sí exige su enlace (29/10).
+        'Exposicion' => 'ti_expuesto',
         'FechaSustentacion' => 'bachiller',
         'Extension' => 'bachiller',
         // La de la Tesis, además, el pago del trámite de aprobación de sustentación (30/10).
@@ -40,7 +41,7 @@ class ReglasProceso
     /** Hito que debe estar logrado para registrar cada dato de TI/Tesis. */
     public const REQUISITO_CAMPO = [
         'fecha_exposicion' => 'pti_carta',
-        'rd_ti' => ['ti_expuesto', 'ti_enlace'],
+        'rd_ti' => 'ti_expuesto',
         'url_repositorio_ti' => 'ti_aprobado',
         'fecha_bachiller_sunedu' => 'ti_repositorio',
         'bachiller_sunedu' => 'ti_repositorio',

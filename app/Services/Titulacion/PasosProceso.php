@@ -156,9 +156,10 @@ class PasosProceso
             ];
         }
 
-        // La RD de la etapa exige el enlace aprobado (ReglasProceso): si la RD es lo que toca pero el
-        // enlace falta (grupos que ya expusieron/sustentaron antes del 29/10), lo que toca es el enlace.
-        foreach (['ti_rd' => 'ti_enlace', 'tesis_rd' => 'tesis_enlace'] as $rdPaso => $enlacePaso) {
+        // La RD de la Tesis exige el enlace aprobado (ReglasProceso): si la RD es lo que toca pero el
+        // enlace falta (grupos que ya sustentaron antes del 29/10), lo que toca es el enlace.
+        // La RD de exposición del TI no (25/11): Secretaría la genera aunque falte el enlace del TI.
+        foreach (['tesis_rd' => 'tesis_enlace'] as $rdPaso => $enlacePaso) {
             if ($actual === $rdPaso && $pasos[$enlacePaso]['estado'] === 'sin_registro') {
                 $pasos[$enlacePaso]['estado'] = 'actual';
                 $pasos[$rdPaso]['estado'] = 'pendiente';
