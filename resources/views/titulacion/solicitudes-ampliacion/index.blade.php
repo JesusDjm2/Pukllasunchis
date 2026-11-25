@@ -116,7 +116,10 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <div><span class="badge badge-info">{{ $meses }} meses de prórroga</span></div>
+                                    <div>
+                                        @if ($r->datos['vez'] ?? null)<span class="badge {{ (int) $r->datos['vez'] === 2 ? 'badge-warning' : 'badge-secondary' }} mr-1">{{ (int) $r->datos['vez'] }}.ª vez</span>@endif
+                                        @if ($r->datos['meses_solicitados'] ?? null)<span class="badge badge-info">{{ $meses }} meses de prórroga</span>@endif
+                                    </div>
                                     <div class="small text-dark mt-1" style="max-width:380px;">“{{ Str::limit($r->datos['motivo'] ?? $r->titulo, 100) }}”</div>
                                 </td>
                                 <td>
@@ -140,8 +143,12 @@
                                         <dl class="tp-carta-datos mb-0">
                                             <div class="tp-carta-ancho"><dt>Estudiante(s)</dt><dd>{{ implode('; ', $r->nombresIntegrantes()) ?: '—' }}</dd></div>
                                             <div class="tp-carta-ancho"><dt>Título del PTI</dt><dd>“{{ $r->titulo ?: '—' }}”</dd></div>
-                                            <div class="tp-carta-ancho"><dt>Motivo y justificación</dt><dd class="tp-carta-mensaje">{{ $r->datos['motivo'] ?? '—' }}</dd></div>
-                                            <div><dt>Prórroga pedida</dt><dd><strong>{{ $meses }} meses</strong></dd></div>
+                                            <div class="tp-carta-ancho"><dt>Razones de la extensión</dt><dd class="tp-carta-mensaje">{{ $r->datos['motivo'] ?? '—' }}</dd></div>
+                                            @if ($r->datos['vez'] ?? null)<div><dt>Solicitud</dt><dd><strong>{{ (int) $r->datos['vez'] }}.ª vez</strong> (máximo 2)</dd></div>@endif
+                                            @if ($r->datos['meses_solicitados'] ?? null)<div><dt>Prórroga pedida</dt><dd><strong>{{ $meses }} meses</strong></dd></div>@endif
+                                            @if ($r->ciclo)<div><dt>Ciclo</dt><dd>{{ $r->ciclo }}</dd></div>@endif
+                                            @if ($r->datos['fecha_aprobacion_pti'] ?? null)<div><dt>Aprobación del PTI</dt><dd>{{ \Carbon\Carbon::parse($r->datos['fecha_aprobacion_pti'])->format('d/m/Y') }}</dd></div>@endif
+                                            @if ($r->datos['domicilio'] ?? null)<div class="tp-carta-ancho"><dt>Domicilio actual</dt><dd>{{ $r->datos['domicilio'] }}</dd></div>@endif
                                             @if ($r->celulares)<div><dt>Teléfono</dt><dd>{{ $r->celulares }}</dd></div>@endif
                                             @if ($r->correo)<div><dt>Correo</dt><dd>{{ $r->correo }}</dd></div>@endif
                                             @if ($r->origen === 'formulario')
@@ -163,7 +170,7 @@
 
                                             @foreach ($documentos as $n => $e)
                                                 <a href="{{ $e }}" target="_blank" rel="noopener" class="tp-enlace mb-2">
-                                                    <i class="fas fa-file-alt"></i><span>Documento anexo{{ count($documentos) > 1 ? ' ('.($n + 1).')' : '' }}</span><i class="fas fa-external-link-alt"></i>
+                                                    <i class="fas fa-file-alt"></i><span>{{ ($r->datos['fecha_aprobacion_pti'] ?? null) ? 'RD de aprobación del PTI' : 'Documento anexo' }}{{ count($documentos) > 1 ? ' ('.($n + 1).')' : '' }}</span><i class="fas fa-external-link-alt"></i>
                                                 </a>
                                             @endforeach
 

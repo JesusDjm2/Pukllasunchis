@@ -7,7 +7,10 @@
     $v = fn ($campo) => old($campo, $valores[$campo] ?? '');
     $estado = $ultima?->estado;
     $caducadoAmpliacion = $vigencia->debeReiniciarProceso();
-    $mostrarForm = $institucional && $ptiAprobado && (! $caducadoAmpliacion || $estado === 'observada') && (! $ultima || $estado === 'observada');
+    // Máximo $maximo ampliaciones por PTI: con una ya aprobada se puede pedir la siguiente; con todas, ya no.
+    $limiteAlcanzado = $previas >= $maximo;
+    $mostrarForm = $institucional && $ptiAprobado && ! $limiteAlcanzado && (! $caducadoAmpliacion || $estado === 'observada')
+        && (! $ultima || in_array($estado, ['observada', 'atendida'], true));
     $fmt = fn ($d) => $d ? $d->format('d/m/Y') : '—';
 @endphp
 
@@ -18,8 +21,8 @@
         <div class="al-hero-fila">
             <div class="al-hero-texto">
                 <span class="al-kicker">Proceso de titulación · Trabajo de Investigación</span>
-                <h1>Ampliación de Plazo de PTI</h1>
-                <p class="al-hero-sub">Solicita a Secretaría General la prórroga de vigencia de tu Plan de Trabajo de Investigación (tasa de Caja Cusco: Cód. 11 · S/ 50.00). La respuesta y nueva R.D. llegarán a tu intranet y correo institucional.</p>
+                <h1>Solicitud de extensión de plazo de investigación</h1>
+                <p class="al-hero-sub">Solicita la ampliación del plazo de tu Plan de Trabajo de Investigación (derecho de trámite: Cód. 11 · S/ 50.00; se puede solicitar como máximo 2 veces). La respuesta y la nueva R.D. llegarán a tu intranet y a tu correo institucional.</p>
             </div>
             @if ($ultima)
                 <span class="al-badge {{ ['recibida' => 'is-info', 'atendida' => 'is-ok', 'observada' => 'is-warn'][$estado] }} cr-hero-estado">
@@ -86,10 +89,18 @@
                 @endif
 
                 <dl class="row mb-0 small">
-                    <dt class="col-sm-3 text-muted">Tiempo solicitado:</dt>
-                    <dd class="col-sm-9 font-weight-bold">{{ $ultima->datos['meses_solicitados'] ?? '6' }} meses</dd>
+                    @if ($ultima->datos['vez'] ?? null)
+                        <dt class="col-sm-3 text-muted">Solicitud:</dt>
+                        <dd class="col-sm-9 font-weight-bold">{{ (int) $ultima->datos['vez'] }}.ª vez</dd>
+                    @endif
+                    @if ($ultima->datos['meses_solicitados'] ?? null)
+                        <dt class="col-sm-3 text-muted">Tiempo solicitado:</dt>
+                        <dd class="col-sm-9 font-weight-bold">{{ $ultima->datos['meses_solicitados'] }} meses</dd>
+                    @endif
+                    <dt class="col-sm-3 text-muted">Investigación:</dt>
+                    <dd class="col-sm-9">“{{ $ultima->titulo }}”@if ($ultima->datos['fecha_aprobacion_pti'] ?? null) · PTI aprobado el {{ \Carbon\Carbon::parse($ultima->datos['fecha_aprobacion_pti'])->format('d/m/Y') }}@endif</dd>
 
-                    <dt class="col-sm-3 text-muted">Motivo / Justificación:</dt>
+                    <dt class="col-sm-3 text-muted">Razones:</dt>
                     <dd class="col-sm-9">{{ $ultima->datos['motivo'] ?? '—' }}</dd>
 
                     <dt class="col-sm-3 text-muted">Comprobante:</dt>
@@ -103,18 +114,25 @@
                     </dd>
 
                     @if ($ultima->archivo)
-                        <dt class="col-sm-3 text-muted">Documento adicional:</dt>
+                        <dt class="col-sm-3 text-muted">RD de aprobación del PTI:</dt>
                         <dd class="col-sm-9">
                             @php $docs = Solicitud::enlaces($ultima->archivo, fn ($n) => route('mi-titulacion.ampliacion-pti.archivo', [$ultima->id, 'archivo', $n])); @endphp
                             @foreach ($docs as $e)
                                 <a href="{{ $e }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary py-0">
-                                    <i class="fas fa-paperclip mr-1"></i>Ver anexo
+                                    <i class="fas fa-paperclip mr-1"></i>Ver RD
                                 </a>
                             @endforeach
                         </dd>
                     @endif
                 </dl>
             </div>
+        </div>
+    @endif
+
+    @if ($ptiAprobado && $limiteAlcanzado)
+        <div class="al-aviso is-mal mb-4">
+            <i class="fas fa-ban"></i>
+            <div><strong>Ya se aprobaron las {{ $maximo }} ampliaciones permitidas.</strong> La ampliación de plazo del PTI solo puede solicitarse hasta {{ $maximo }} veces; no es posible enviar otra solicitud.</div>
         </div>
     @endif
 
@@ -134,16 +152,30 @@
     @if ($mostrarForm)
         <div class="card shadow-sm">
             <div class="card-header bg-white font-weight-bold">
-                <i class="fas fa-edit mr-2 text-primary"></i>Datos para la ampliación de plazo
+                <i class="fas fa-edit mr-2 text-primary"></i>{{ $estado === 'atendida' ? 'Solicitar la '.($previas + 1).'.ª ampliación de plazo' : 'Datos para la ampliación de plazo' }}
             </div>
             <div class="card-body">
-                {{-- Ficha resumen del PTI actual --}}
+                {{-- Encabezado del formulario oficial «Solicitud de extensión de plazo de investigación» --}}
+                <div class="al-aviso is-info mb-3">
+                    <i class="fas fa-info-circle"></i>
+                    <div><strong>Nota:</strong> la justificación que se presente en esta solicitud será evaluada por la Comisión de Investigación; de ser considerada válida, se emitirá la RD correspondiente.</div>
+                </div>
+                <p class="mb-3 small">
+                    <strong>Señor:</strong> Richard Suárez Sánchez<br>
+                    Director de la Escuela de Educación Superior Pedagógica Pukllasunchis.
+                </p>
+
+                {{-- Grupo, programa y vigencia: el sistema ya los conoce, no se vuelven a escribir --}}
                 <div class="bg-light p-3 rounded mb-4 border">
-                    <h6 class="font-weight-bold mb-2 text-dark"><i class="fas fa-info-circle text-primary mr-1"></i>Datos de tu Plan de Trabajo de Investigación</h6>
+                    <h6 class="font-weight-bold mb-2 text-dark"><i class="fas fa-users text-primary mr-1"></i>Grupo de investigación</h6>
                     <div class="row small">
                         <div class="col-md-8 mb-1">
-                            <span class="text-muted">Título del PTI:</span>
-                            <div class="font-weight-bold">“{{ $pti?->titulo ?: 'Plan de Trabajo de Investigación' }}”</div>
+                            <span class="text-muted">Integrantes (según el sistema, en orden alfabético):</span>
+                            <div class="font-weight-bold">
+                                {{ collect([$user])->merge($companeros)->sortBy(fn ($c) => \Illuminate\Support\Str::ascii(mb_strtolower($c->apellidos.' '.$c->name)))->map(fn ($c) => $c->apellidos.', '.$c->name)->implode('; ') }}
+                            </div>
+                            <span class="text-muted d-block mt-2">Programa de estudios:</span>
+                            <div class="font-weight-bold">{{ $programa ?: '—' }}</div>
                         </div>
                         <div class="col-md-4 mb-1">
                             <span class="text-muted">Vigencia actual:</span>
@@ -158,72 +190,99 @@
                                 @endif
                             </div>
                         </div>
-                        @if ($companeros->isNotEmpty())
-                            <div class="col-12 mt-2">
-                                <span class="text-muted">Integrantes del grupo:</span>
-                                <div>{{ $user->name.' '.$user->apellidos }} (tú), {{ $companeros->map(fn($c) => $c->name.' '.$c->apellidos)->implode(', ') }}</div>
-                            </div>
-                        @endif
+                        <div class="col-12 mt-2 text-muted">Si algún dato no coincide, avísanos desde «¿Algún dato no coincide?» en tu proceso de titulación.</div>
                     </div>
                 </div>
 
                 <form method="POST" action="{{ route('mi-titulacion.ampliacion-pti.enviar') }}" enctype="multipart/form-data">
                     @csrf
 
-                    <div class="form-row">
-                        <div class="form-group col-md-6">
-                            <label class="font-weight-bold small">Tiempo de prórroga solicitado <span class="text-danger">*</span></label>
-                            <select name="meses_solicitados" class="form-control @error('meses_solicitados') is-invalid @enderror" required>
-                                <option value="6" @selected($v('meses_solicitados') === '6')>6 meses (medio año adicional)</option>
-                                <option value="12" @selected($v('meses_solicitados') === '12')>12 meses (1 año adicional)</option>
-                            </select>
-                            <small class="text-muted">Selecciona el plazo necesario para concluir el trabajo de campo y redacción.</small>
-                            @error('meses_solicitados') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    <div class="form-group">
+                        <label class="font-weight-bold small d-block">¿Es la primera o la segunda vez que solicita la ampliación? <span class="text-danger">*</span></label>
+                        <div class="btn-group btn-group-toggle" data-toggle="buttons" role="group" aria-label="Número de solicitud">
+                            @foreach (['1' => '1.ª vez', '2' => '2.ª vez'] as $num => $texto)
+                                @php $noDisponible = (int) $num <= $previas; @endphp
+                                <label class="btn btn-outline-primary btn-sm px-3 {{ $v('vez') === $num ? 'active' : '' }} {{ $noDisponible ? 'disabled' : '' }}" @if ($noDisponible) title="Ya tienes {{ $previas }} ampliación aprobada" @endif>
+                                    <input type="radio" name="vez" value="{{ $num }}" autocomplete="off" @checked($v('vez') === $num) @disabled($noDisponible) required> {{ $texto }}
+                                </label>
+                            @endforeach
                         </div>
-
-                        <div class="form-group col-md-6">
-                            <label class="font-weight-bold small">Teléfono / WhatsApp de contacto <span class="text-danger">*</span></label>
-                            <input type="tel" name="celular" value="{{ $v('celular') }}" class="form-control @error('celular') is-invalid @enderror" placeholder="987 654 321" required>
-                            <small class="text-muted">Para coordinaciones de Secretaría.</small>
-                            @error('celular') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        </div>
+                        <small class="d-block text-muted mt-1">
+                            La ampliación del PTI se puede solicitar <strong>como máximo {{ $maximo }} veces</strong>.
+                            @if ($previas) Ya tienes {{ $previas }} aprobada en el sistema, así que esta es la {{ $previas + 1 }}.ª. @endif
+                        </small>
+                        @error('vez') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
                     </div>
 
                     <div class="form-group">
-                        <label class="font-weight-bold small">Motivo y justificación académica de la ampliación <span class="text-danger">*</span></label>
-                        <textarea name="motivo" rows="4" maxlength="2000" class="form-control @error('motivo') is-invalid @enderror" placeholder="Explique brevemente las razones por las cuales requiere la prórroga (por ejemplo: reajuste en la recolección de datos, aplicación de instrumentos en campo, extensión de muestra, redacción del informe final, etc.)." required>{{ $v('motivo') }}</textarea>
-                        <small class="text-muted">Mínimo 15 caracteres. Detalla claramente los motivos académicos.</small>
+                        <label class="font-weight-bold small d-block">Ciclo <span class="text-danger">*</span></label>
+                        <div class="btn-group btn-group-toggle flex-wrap" data-toggle="buttons" role="group" aria-label="Ciclo">
+                            @foreach (Solicitud::CICLOS as $c)
+                                <label class="btn btn-outline-primary btn-sm px-3 {{ $v('ciclo') === $c ? 'active' : '' }}">
+                                    <input type="radio" name="ciclo" value="{{ $c }}" autocomplete="off" @checked($v('ciclo') === $c) required> {{ $c }}
+                                </label>
+                            @endforeach
+                        </div>
+                        <small class="d-block text-muted mt-1">Indica en qué ciclo estás o si eres egresado(a).</small>
+                        @error('ciclo') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+                    </div>
+
+                    <div class="form-group">
+                        <label class="font-weight-bold small">Domicilio actual (Barrio o Comunidad / Distrito / Provincia / Departamento) <span class="text-danger">*</span></label>
+                        <input type="text" name="domicilio" value="{{ $v('domicilio') }}" maxlength="300" class="form-control @error('domicilio') is-invalid @enderror" required>
+                        <small class="text-muted">Detalla claramente la dirección: calle-número / barrio-lote / nombre de la comunidad / distrito / provincia / departamento.</small>
+                        @error('domicilio') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    </div>
+
+                    <div class="form-group">
+                        <label class="font-weight-bold small">Con el debido respeto me presento y solicito se me permita extender el plazo para realizar mi investigación titulada: <span class="text-danger">*</span></label>
+                        <textarea name="titulo" rows="3" maxlength="1000" class="form-control @error('titulo') is-invalid @enderror" required>{{ $v('titulo') }}</textarea>
+                        <small class="text-muted">Escribe el nombre con el que se aprobó tu investigación.</small>
+                        @error('titulo') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    </div>
+
+                    <div class="form-group">
+                        <label class="font-weight-bold small">Fecha de aprobación del PTI <span class="text-danger">*</span></label>
+                        <input type="date" name="fecha_pti" value="{{ $v('fecha_pti') }}" max="{{ now()->toDateString() }}" class="form-control @error('fecha_pti') is-invalid @enderror" style="max-width:220px;" required>
+                        <small class="text-muted">Escribe la fecha de la RD de aprobación del PTI.</small>
+                        @error('fecha_pti') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    </div>
+
+                    <div class="form-group">
+                        <label class="font-weight-bold small">Las razones que tengo para solicitar la extensión de plazo de investigación son las siguientes: <span class="text-danger">*</span></label>
+                        <textarea name="motivo" rows="4" maxlength="2000" class="form-control @error('motivo') is-invalid @enderror" required>{{ $v('motivo') }}</textarea>
+                        <small class="text-muted">Detalla claramente las razones que te llevaron a realizar esta solicitud.</small>
                         @error('motivo') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
 
+                    <p class="small mb-3">Para este fin remito a su despacho la R.D. de aprobación del Plan de Trabajo de Investigación y asignación de asesor, en versión digital. Agradecido(a) por su deferencia, quedo de usted.</p>
+
                     <div class="form-row">
                         <div class="form-group col-md-6">
-                            <label class="font-weight-bold small">Comprobante de pago (Caja Cusco) <span class="text-danger">*</span></label>
+                            <label class="font-weight-bold small">Anexo 1: RD de aprobación de PTI y asignación de asesor <span class="text-danger">*</span></label>
                             <div class="custom-file">
-                                <input type="file" name="comprobante" class="custom-file-input @error('comprobante') is-invalid @enderror" accept=".pdf,.jpg,.jpeg,.png" required id="cpFile">
-                                <label class="custom-file-label small" for="cpFile" data-browse="Elegir">Adjuntar boleta / voucher...</label>
+                                <input type="file" name="rd_pti" class="custom-file-input @error('rd_pti') is-invalid @enderror" accept=".pdf,application/pdf" required id="rdPtiFile">
+                                <label class="custom-file-label small" for="rdPtiFile" data-browse="Elegir">Adjuntar la RD (PDF)...</label>
                             </div>
-                            <small class="text-muted d-block mt-1">
-                                Tasa institucional: <strong>Cód. 11 · S/ 50.00</strong> (Extensión de plazo) en Caja Cusco. Formatos: PDF o imagen (hasta 10 MB).
-                            </small>
-                            @error('comprobante') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+                            <small class="text-muted d-block mt-1">1 archivo PDF (hasta 10 MB).</small>
+                            @error('rd_pti') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
                         </div>
 
                         <div class="form-group col-md-6">
-                            <label class="font-weight-bold small">Documento de sustento o anexo <span class="text-muted font-weight-normal">(opcional)</span></label>
+                            <label class="font-weight-bold small">Anexo 2: Comprobante de pago por derecho de extensión de plazo de investigación <span class="text-danger">*</span></label>
                             <div class="custom-file">
-                                <input type="file" name="archivo" class="custom-file-input @error('archivo') is-invalid @enderror" accept=".pdf,.doc,.docx" id="anexoFile">
-                                <label class="custom-file-label small" for="anexoFile" data-browse="Elegir">FUT o informe de avance...</label>
+                                <input type="file" name="comprobante" class="custom-file-input @error('comprobante') is-invalid @enderror" accept=".pdf,.jpg,.jpeg,.png" required id="cpFile">
+                                <label class="custom-file-label small" for="cpFile" data-browse="Elegir">Adjuntar el comprobante...</label>
                             </div>
-                            <small class="text-muted d-block mt-1">Si cuentas con FUT institucional o carta de avance de tu asesor, puedes adjuntarlo aquí (PDF o Word).</small>
-                            @error('archivo') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+                            <small class="text-muted d-block mt-1">Cód. 11 · S/ 50.00. 1 archivo PDF o imagen (hasta 10 MB).</small>
+                            @error('comprobante') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
                         </div>
                     </div>
 
                     <div class="custom-control custom-checkbox my-3">
                         <input type="checkbox" name="declaracion" value="1" class="custom-control-input @error('declaracion') is-invalid @enderror" id="decVeracidad" required>
                         <label class="custom-control-label small" for="decVeracidad">
-                            Declaro bajo juramento que los datos y el comprobante adjunto son verídicos y corresponden a mi trámite de titulación en la EESP Pukllasunchis.
+                            <strong>Declaración de veracidad.</strong> Declaro bajo juramento que la información registrada expresa la verdad.
                         </label>
                         @error('declaracion') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                     </div>
@@ -231,7 +290,7 @@
                     <div class="d-flex justify-content-end align-items-center mt-3" style="gap:.5rem;">
                         <a href="{{ $volver }}#titulacion" class="btn btn-light border">Cancelar</a>
                         <button type="submit" class="btn btn-primary px-4">
-                            <i class="fas fa-paper-plane mr-1"></i>{{ $estado === 'observada' ? 'Reenviar solicitud subsanada' : 'Enviar solicitud de ampliación' }}
+                            <i class="fas fa-paper-plane mr-1"></i>{{ $estado === 'observada' ? 'Reenviar solicitud subsanada' : 'Enviar solicitud' }}
                         </button>
                     </div>
                 </form>

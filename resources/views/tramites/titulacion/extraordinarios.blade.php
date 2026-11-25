@@ -143,10 +143,12 @@
                                 <td class="text-center"><span class="pk-badge-code">11</span></td>
                                 <td class="text-center font-weight-bold text-dark">S/ 50.00</td>
                                 <td class="text-end">
-                                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdJizTDL5Z8DAEfiRWSt32GspxaDO3MVQ_JyvpC_Q3sQt7rvQ/viewform"
-                                       target="_blank" class="btn btn-sm btn-outline-primary" style="font-size: 13px; font-weight: 500;">
-                                        Formulario <i class="fa fa-arrow-up-right-from-square"></i>
-                                    </a>
+                                    {{-- Formulario del sistema (MiSolicitudAmpliacionPtiController): con sesión va directo; sin sesión, aviso y login. --}}
+                                    @auth
+                                        <a href="{{ route('mi-titulacion.ampliacion-pti') }}" class="btn btn-sm btn-outline-primary" style="font-size: 13px; font-weight: 500;">Formulario <i class="fa fa-arrow-right"></i></a>
+                                    @else
+                                        <button type="button" class="btn btn-sm btn-outline-primary" style="font-size: 13px; font-weight: 500;" data-bs-toggle="modal" data-bs-target="#modalExtensionIntranet">Formulario <i class="fa fa-sign-in"></i></button>
+                                    @endauth
                                 </td>
                             </tr>
                             <tr>
@@ -319,7 +321,8 @@
                     </a>
 
                     <!-- Card 5: Extensión de Plazo -->
-                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdJizTDL5Z8DAEfiRWSt32GspxaDO3MVQ_JyvpC_Q3sQt7rvQ/viewform" target="_blank" class="pk-card-tramite">
+                    @auth
+                        <a href="{{ route('mi-titulacion.ampliacion-pti') }}" class="pk-card-tramite">
                         <div class="pk-card-tramite__top">
                             <div class="pk-card-tramite__icon">
                                 <i class="fa fa-clock-rotate-left"></i>
@@ -329,9 +332,24 @@
                         <h4>Extensión de Plazo para Sustentación</h4>
                         <p>Prórroga extraordinaria fundamentada para la culminación y entrega del informe final.</p>
                         <div class="pk-card-tramite__action">
-                            <span>Abrir Formulario</span> <i class="fa fa-external-link"></i>
+                            <span>Solicitar en mi Intranet</span> <i class="fa fa-arrow-right"></i>
                         </div>
                     </a>
+                    @else
+                        <a href="javascript:void(0)" class="pk-card-tramite" data-bs-toggle="modal" data-bs-target="#modalExtensionIntranet">
+                        <div class="pk-card-tramite__top">
+                            <div class="pk-card-tramite__icon">
+                                <i class="fa fa-clock-rotate-left"></i>
+                            </div>
+                            <span class="pk-card-tramite__badge">S/ 50.00 · Cód: 11</span>
+                        </div>
+                        <h4>Extensión de Plazo para Sustentación</h4>
+                        <p>Prórroga extraordinaria fundamentada para la culminación y entrega del informe final.</p>
+                        <div class="pk-card-tramite__action">
+                            <span>Solicitar en mi Intranet</span> <i class="fa fa-arrow-right"></i>
+                        </div>
+                    </a>
+                    @endauth
 
                     <!-- Card 6: Revisión TI / Dictaminantes -->
                     <a href="https://docs.google.com/forms/d/e/1FAIpQLSfr-AXQ-NLEpO_2PGr8E8MVvHp8Cw8ook1hfqVB_WFlYpRw1Q/viewform" target="_blank" class="pk-card-tramite">
@@ -471,6 +489,42 @@
                 <div class="modal-footer border-0 bg-light p-3 justify-content-center">
                     <button type="button" class="btn btn-outline-secondary px-3" data-bs-dismiss="modal" style="border-radius: 8px; font-size: 14px;">Cerrar</button>
                     <a href="{{ route('mi-titulacion.solicitud-pti') }}" class="pk-btn-intranet-cta">
+                        <i class="fa fa-sign-in"></i>
+                        <span>Ir al Login de la Intranet</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Modal informativo previo al login para la Solicitud de Extensión de Plazo de Investigación --}}
+    @php $tramiteExt = \App\Services\Titulacion\TramitesExtraordinarios::tipo('extension_plazo'); @endphp
+    <div class="modal fade" id="modalExtensionIntranet" tabindex="-1" aria-labelledby="modalExtensionIntranetLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 1rem 3rem rgba(0,0,0,0.25); overflow: hidden; font-family: 'Poppins', sans-serif;">
+                <div class="modal-header border-0 text-white" style="background: linear-gradient(135deg, #364651, #243038); padding: 1.25rem 1.5rem;">
+                    <h5 class="modal-title d-flex align-items-center gap-2 mb-0" id="modalExtensionIntranetLabel" style="font-size: 1.15rem; font-weight: 600; color: #fff;">
+                        <i class="fa fa-clock-rotate-left" style="color: #cd9244;"></i> Extensión de Plazo de Investigación
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <div class="mb-3">
+                        <span style="display: inline-flex; width: 64px; height: 64px; border-radius: 50%; background: #fff8eb; align-items: center; justify-content: center; color: #cd9244; font-size: 28px;">
+                            <i class="fa fa-id-card"></i>
+                        </span>
+                    </div>
+                    <h5 class="font-weight-bold text-dark mb-2">Ingreso a la Intranet Institucional</h5>
+                    <p class="text-muted mb-3" style="font-size: 15px; line-height: 24px;">
+                        La <strong>Solicitud de Extensión de Plazo de Investigación</strong> se completa desde tu <strong>Intranet</strong>: ingresa con tu cuenta y, en «Tu proceso de titulación», abre la ampliación de plazo de tu PTI. Adjuntarás la RD de aprobación de tu PTI (PDF) y tu comprobante de pago. Se puede solicitar <strong>como máximo 2 veces</strong>.
+                    </p>
+                    <div class="alert alert-warning text-start mb-0 py-2 px-3" style="font-size: 14px; border-radius: 8px; border-left: 4px solid #cd9244; background-color: #fff9ed; color: #856404;">
+                        <i class="fa fa-info-circle me-1"></i> Derecho de trámite en <strong class="caja-cusco-brand" style="color: #d3141b;">Caja Cusco</strong>: {{ $tramiteExt['concepto_caja'] }} | Código: {{ $tramiteExt['codigo'] }} | Monto: {{ \App\Services\Titulacion\TramitesExtraordinarios::monto($tramiteExt) }}.
+                    </div>
+                </div>
+                <div class="modal-footer border-0 bg-light p-3 justify-content-center">
+                    <button type="button" class="btn btn-outline-secondary px-3" data-bs-dismiss="modal" style="border-radius: 8px; font-size: 14px;">Cerrar</button>
+                    <a href="{{ route('mi-titulacion.ampliacion-pti') }}" class="pk-btn-intranet-cta">
                         <i class="fa fa-sign-in"></i>
                         <span>Ir al Login de la Intranet</span>
                     </a>

@@ -21,6 +21,42 @@ use Illuminate\Support\Str;
 
 class MiSolicitudAmpliacionPtiController extends Controller
 {
+    /** Fecha (Y-m-d) de la RD de aprobación del PTI más reciente, para sugerirla en el formulario. */
+    private function fechaRdPti(?SeguimientoTitulacion $seguimiento): string
+    {
+        return (string) $seguimiento?->resoluciones->where('tipo', 'PTI')->filter(fn ($r) => $r->fecha)
+            ->sortByDesc(fn ($r) => $r->fecha->format('Y-m-d'))->first()?->fecha?->format('Y-m-d');
+    }
+
+    /** Ampliaciones de plazo permitidas por PTI. */
+    public const MAXIMO = 2;
+
+    /**
+     * Ampliaciones ya concedidas al grupo: las solicitudes atendidas (de cualquier integrante) o las
+     * RD de ampliación registradas, lo que sea mayor (una RD puede haberse registrado sin solicitud).
+     */
+    private function ampliacionesPrevias(User $user, ?SeguimientoTitulacion $seguimiento): int
+    {
+        $ids = collect([$user->id]);
+        if ($seguimiento) {
+            $ids = $ids->merge(GrupoTitulacion::companeros($seguimiento)->pluck('id'));
+        }
+        $atendidas = Solicitud::deTipo(Solicitud::AMPLIACION_PTI)->where('estado', 'atendida')
+            ->where(function ($q) use ($ids) {
+                $q->whereIn('solicitante_id', $ids);
+                foreach ($ids as $id) {
+                    $q->orWhereJsonContains('integrantes', ['id' => $id])->orWhereJsonContains('integrantes', ['user_id' => $id]);
+                }
+            })
+            ->count();
+        $rds = $seguimiento
+            ? $seguimiento->resoluciones->where('tipo', 'AmpliacionPti')->pluck('numero_rd')
+                ->map(fn ($n) => GrupoTitulacion::claveRd($n))->filter()->unique()->count()
+            : 0;
+
+        return max($atendidas, $rds);
+    }
+
     public function crear(Request $request)
     {
         $user = $request->user();
@@ -35,18 +71,27 @@ class MiSolicitudAmpliacionPtiController extends Controller
 
         $historial = Solicitud::dePersona(Solicitud::AMPLIACION_PTI, $user)->get();
         $ultima = $historial->first();
+        $previas = $this->ampliacionesPrevias($user, $seguimiento);
 
+        // Preguntas del formulario oficial «Solicitud de extensión de plazo de investigación» (25/11/2026).
         $valores = [
+            // Lo que corresponde según lo aprobado; el estudiante puede marcar 2.ª si tuvo una fuera del sistema.
+            'vez' => (string) min($previas + 1, self::MAXIMO),
+            'ciclo' => MiSolicitudPtiController::segunFicha($user)['ciclo'] ?? '',
+            'domicilio' => '',
+            'titulo' => (string) $pti?->titulo,
+            'fecha_pti' => $this->fechaRdPti($seguimiento),
             'motivo' => '',
-            'meses_solicitados' => '6',
-            'celular' => (string) (($user->alumno ?? $user->alumnoB)?->numero ?: $user->telefono),
         ];
 
         if ($ultima?->estado === 'observada') {
             $valores = [
+                'vez' => (string) ($ultima->datos['vez'] ?? $valores['vez']),
+                'ciclo' => $ultima->ciclo ?: $valores['ciclo'],
+                'domicilio' => $ultima->datos['domicilio'] ?? '',
+                'titulo' => $ultima->titulo ?: $valores['titulo'],
+                'fecha_pti' => $ultima->datos['fecha_aprobacion_pti'] ?? $valores['fecha_pti'],
                 'motivo' => $ultima->datos['motivo'] ?? '',
-                'meses_solicitados' => (string) ($ultima->datos['meses_solicitados'] ?? '6'),
-                'celular' => $ultima->celulares ?: $valores['celular'],
             ];
         }
 
@@ -63,6 +108,9 @@ class MiSolicitudAmpliacionPtiController extends Controller
             'ultima' => $ultima,
             'historial' => $historial,
             'valores' => $valores,
+            'previas' => $previas,
+            'maximo' => self::MAXIMO,
+            'programa' => MiSolicitudPtiController::programaDe($user) ?: $user->programa?->nombre,
             'companeros' => $seguimiento ? GrupoTitulacion::companeros($seguimiento) : collect(),
             'layout' => $layout,
             'volver' => PanelDeUsuario::url($user),
@@ -94,20 +142,42 @@ class MiSolicitudAmpliacionPtiController extends Controller
                 ->with('error', 'Ya tienes una solicitud de ampliación en curso: espera la respuesta de Secretaría General.');
         }
 
+        // Máximo 2 ampliaciones por PTI. Una observada que se corrige no cuenta como envío nuevo.
+        $previas = $this->ampliacionesPrevias($user, $seguimiento);
+        if ($previas >= self::MAXIMO) {
+            return redirect()->route('mi-titulacion.ampliacion-pti')
+                ->with('error', 'Ya se aprobaron las '.self::MAXIMO.' ampliaciones permitidas para tu Plan de Trabajo de Investigación: no se puede solicitar otra.');
+        }
+
         $data = $request->validate([
+            'vez' => 'required|in:1,2',
+            'ciclo' => 'required|in:'.implode(',', Solicitud::CICLOS),
+            'domicilio' => 'required|string|min:5|max:300',
+            'titulo' => 'required|string|max:1000',
+            'fecha_pti' => 'required|date|before_or_equal:today',
             'motivo' => 'required|string|min:15|max:2000',
-            'meses_solicitados' => 'required|in:6,12',
-            'celular' => ['required', 'regex:/^\+?[\d\s]{9,15}$/'],
+            'rd_pti' => 'required|file|mimes:pdf|max:10240',
             'comprobante' => 'required|file|mimes:pdf,jpg,jpeg,png|max:10240',
-            'archivo' => 'nullable|file|mimes:pdf,doc,docx|max:10240',
             'declaracion' => 'accepted',
         ], [
-            'motivo.required' => 'Escriba los motivos o justificación académica de su ampliación de plazo.',
-            'motivo.min' => 'La justificación debe contener al menos 15 caracteres.',
-            'meses_solicitados.required' => 'Seleccione el tiempo de prórroga solicitado.',
-            'comprobante.required' => 'Adjunte el comprobante de pago de Caja Cusco (Cód. 11 - S/ 50.00).',
+            'vez.required' => 'Indique si es la 1.ª o la 2.ª vez que solicita la ampliación.',
+            'vez.in' => 'Indique si es la 1.ª o la 2.ª vez que solicita la ampliación.',
+            'ciclo.required' => 'Indique su ciclo o si es egresado(a).',
+            'domicilio.required' => 'Escriba su domicilio actual.',
+            'titulo.required' => 'Escriba el título con el que se aprobó su investigación.',
+            'fecha_pti.required' => 'Escriba la fecha de la RD de aprobación del PTI.',
+            'fecha_pti.before_or_equal' => 'La fecha de aprobación del PTI no puede ser posterior a hoy.',
+            'motivo.required' => 'Detalle las razones por las que solicita la extensión de plazo.',
+            'motivo.min' => 'Las razones deben tener al menos 15 caracteres.',
+            'rd_pti.required' => 'Adjunte la RD de aprobación del PTI y asignación de asesor (PDF).',
+            'rd_pti.mimes' => 'La RD de aprobación del PTI debe estar en PDF.',
+            'comprobante.required' => 'Adjunte el comprobante de pago por derecho de extensión de plazo (Cód. 11 · S/ 50.00).',
             'declaracion.accepted' => 'Debe aceptar la declaración de veracidad.',
         ]);
+
+        if ((int) $data['vez'] <= $previas) {
+            return back()->withInput()->withErrors(['vez' => 'Ya tienes '.$previas.' ampliación aprobada en el sistema: esta sería la '.($previas + 1).'.ª vez.']);
+        }
 
         $vigencia = new VigenciaPti($seguimiento->pti);
 
@@ -120,7 +190,7 @@ class MiSolicitudAmpliacionPtiController extends Controller
         };
 
         $comprobanteRef = $subir($data['comprobante']);
-        $archivoRef = isset($data['archivo']) && $data['archivo'] ? $subir($data['archivo']) : null;
+        $archivoRef = $subir($data['rd_pti']); // Anexo 1: RD de aprobación del PTI
 
         $integrantes = [['id' => $user->id, 'nombre' => trim($user->name.' '.$user->apellidos), 'dni' => $user->dni]];
         $companeros = GrupoTitulacion::companeros($seguimiento);
@@ -134,18 +204,21 @@ class MiSolicitudAmpliacionPtiController extends Controller
             'seguimiento_id' => $seguimiento->id,
             'correo' => $user->email,
             'integrantes' => $integrantes,
-            'celulares' => $data['celular'],
-            'programa_estudios' => $user->programa?->nombre ?? 'Educación',
-            'ciclo' => 'Egresado',
-            'titulo' => $seguimiento->pti?->titulo ?: 'Plan de Trabajo de Investigación',
+            // El formulario oficial no pide teléfono: va el de la ficha, para que Secretaría pueda contactar.
+            'celulares' => (string) (($user->alumno ?? $user->alumnoB)?->numero ?: $user->telefono),
+            'programa_estudios' => MiSolicitudPtiController::programaDe($user) ?: ($user->programa?->nombre ?? 'Educación'),
+            'ciclo' => $data['ciclo'],
+            'titulo' => trim($data['titulo']),
             'archivo' => $archivoRef,
             'comprobante' => $comprobanteRef,
             'declaracion' => true,
             'estado' => 'recibida',
             'origen' => 'sistema',
             'datos' => [
+                'vez' => (int) $data['vez'],
                 'motivo' => $data['motivo'],
-                'meses_solicitados' => (int) $data['meses_solicitados'],
+                'domicilio' => trim($data['domicilio']),
+                'fecha_aprobacion_pti' => $data['fecha_pti'],
                 'fecha_vencimiento_actual' => $vigencia->vencimiento?->format('Y-m-d'),
                 'rd_pti_actual' => $seguimiento->pti?->rd_pti,
             ],

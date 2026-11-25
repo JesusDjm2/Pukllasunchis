@@ -196,6 +196,12 @@ class MiSolicitudPtiController extends Controller
     /** Lo que se sabe de la ficha: programa de estudios y ciclo o programa (null si no se sabe). */
     private function fijos(User $user): array
     {
+        return self::segunFicha($user);
+    }
+
+    /** Programa de estudios y ciclo («IX Ciclo», «Egresado», «PPD»…) según la ficha; también lo usa la ampliación de PTI. */
+    public static function segunFicha(User $user): array
+    {
         $user->loadMissing(['programa', 'ciclo.programa']);
         $programa = self::programaDe($user);
         $orden = $user->ciclo?->ordenCiclo();
