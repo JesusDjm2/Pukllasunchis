@@ -126,6 +126,10 @@
                                 $s = $r->solicitante;
                                 $esImagen = in_array($r->extensionComprobante(), ['jpg', 'jpeg', 'png'], true);
                                 $idFila = 'ca-'.$r->id;
+                                // Comprobante subido (no enlace de Drive del formulario antiguo): se ve en un popup en esta misma vista.
+                                $comprobantePopup = $r->comprobante && ! $r->comprobanteEsEnlace();
+                                $popupComprobante = $comprobantePopup ? ' js-ca-comprobante' : '';
+                                $popupDatos = $comprobantePopup ? 'data-tipo="'.($esImagen ? 'imagen' : 'pdf').'" data-titulo="'.e(trim($s?->apellidos.', '.$s?->name, ', ')).'"' : '';
                                 // Si el envío de ESTA fila volvió con errores, sigue abierta y con lo que se escribió.
                                 $filaConError = (string) old('carta_fila') === (string) $r->id;
                                 $abierta = $resaltada || $filaConError;
@@ -162,7 +166,7 @@
                                 </td>
                                 <td class="ca-acciones">
                                     @if ($r->comprobante)
-                                        <a href="{{ route('mi-titulacion.carta.archivo', [$r->id, 'comprobante']) }}" target="_blank" rel="noopener" class="btn btn-sm tp-btn tp-btn--claro" title="Abrir el comprobante en otra pestaña"><i class="fas fa-file-invoice-dollar"></i></a>
+                                        <a href="{{ route('mi-titulacion.carta.archivo', [$r->id, 'comprobante']) }}" target="_blank" rel="noopener" class="btn btn-sm tp-btn tp-btn--claro{{ $popupComprobante }}" {!! $popupDatos !!} title="Ver el comprobante de pago"><i class="fas fa-file-invoice-dollar"></i></a>
                                     @endif
                                     <button type="button" class="btn btn-sm tp-btn js-ca-revisar" aria-expanded="{{ $abierta ? 'true' : 'false' }}" aria-controls="{{ $idFila }}-det">
                                         <i class="fas fa-chevron-down mr-1"></i>{{ $puedeGestionar && $r->estado === 'enviada' ? 'Revisar' : 'Ver' }}
@@ -201,11 +205,11 @@
                                             @elseif ($r->comprobanteEsEnlace())
                                                 <a href="{{ $r->comprobante }}" target="_blank" rel="noopener" class="tp-enlace mb-0"><i class="fab fa-google-drive"></i><span>Abrir el comprobante (Drive)</span><i class="fas fa-external-link-alt"></i></a>
                                             @elseif ($esImagen)
-                                                <a href="{{ route('mi-titulacion.carta.archivo', [$r->id, 'comprobante']) }}" target="_blank" rel="noopener" title="Abrir en otra pestaña">
+                                                <a href="{{ route('mi-titulacion.carta.archivo', [$r->id, 'comprobante']) }}" target="_blank" rel="noopener" class="{{ trim($popupComprobante) }}" {!! $popupDatos !!} title="Ver el comprobante">
                                                     <img src="{{ route('mi-titulacion.carta.archivo', [$r->id, 'comprobante']) }}" alt="Comprobante de pago" loading="lazy">
                                                 </a>
                                             @else
-                                                <a href="{{ route('mi-titulacion.carta.archivo', [$r->id, 'comprobante']) }}" target="_blank" rel="noopener" class="tp-enlace mb-0"><i class="fas fa-file-pdf"></i><span>Abrir el comprobante (PDF)</span><i class="fas fa-external-link-alt"></i></a>
+                                                <a href="{{ route('mi-titulacion.carta.archivo', [$r->id, 'comprobante']) }}" target="_blank" rel="noopener" class="tp-enlace mb-0{{ $popupComprobante }}" {!! $popupDatos !!}><i class="fas fa-file-pdf"></i><span>Ver el comprobante (PDF)</span><i class="fas fa-search-plus"></i></a>
                                             @endif
                                             @if ($r->carta)
                                                 <a href="{{ route('mi-titulacion.carta.archivo', [$r->id, 'carta']) }}" target="_blank" rel="noopener" class="tp-enlace mt-2 mb-0"><i class="far fa-file-word"></i><span>Carta de Presentación{{ $r->numero_carta ? " N° 0".$r->numero_carta : "" }}</span><i class="fas fa-download"></i></a>
@@ -289,6 +293,27 @@
         </section>
     </div>
 
+    {{-- Comprobante de pago en un popup, sin salir de la lista ni cerrar la solicitud abierta. --}}
+    <div class="modal fade" id="modalComprobante" tabindex="-1" role="dialog" aria-labelledby="modalComprobanteTitulo" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header py-2">
+                    <h6 class="modal-title font-weight-bold" id="modalComprobanteTitulo"><i class="fas fa-file-invoice-dollar mr-1"></i>Comprobante de pago<span class="js-comp-quien font-weight-normal"></span></h6>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body p-0 text-center" style="background:#f4f6fb; min-height:200px;">
+                    <div class="js-comp-cargando text-muted small py-5"><i class="fas fa-spinner fa-spin mr-1"></i>Cargando…</div>
+                    <img class="js-comp-img" alt="Comprobante de pago" style="display:none; max-width:100%; max-height:75vh; margin:0 auto;">
+                    <iframe class="js-comp-pdf w-100 border-0" title="Comprobante de pago" style="display:none; height:75vh;"></iframe>
+                </div>
+                <div class="modal-footer py-2">
+                    <a href="#" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary mr-auto js-comp-pestana"><i class="fas fa-external-link-alt mr-1"></i>Abrir en otra pestaña</a>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
     (function () {
         // «Revisar / Ver» despliega el detalle de la solicitud bajo su fila.
@@ -319,6 +344,37 @@
             if (!f) return;
             if (e.target.name === 'numero_carta') f.querySelectorAll('.js-ca-num').forEach(function (s) { s.textContent = e.target.value; });
             if (e.target.name === 'fecha_carta' && e.target.value) f.querySelectorAll('.js-ca-anio').forEach(function (s) { s.textContent = e.target.value.slice(0, 4); });
+        });
+        // Comprobante de pago: se ve en el popup (imagen o PDF). Sin jQuery/Bootstrap, el enlace abre otra pestaña.
+        var modalComp = document.getElementById('modalComprobante');
+        document.addEventListener('click', function (e) {
+            var a = e.target.closest('.js-ca-comprobante');
+            if (!a || !window.jQuery || !jQuery.fn.modal) return;
+            e.preventDefault();
+            var img = modalComp.querySelector('.js-comp-img'), pdf = modalComp.querySelector('.js-comp-pdf');
+            var cargando = modalComp.querySelector('.js-comp-cargando');
+            var listo = function () { cargando.style.display = 'none'; };
+            modalComp.querySelector('.js-comp-quien').textContent = a.dataset.titulo ? ' · ' + a.dataset.titulo : '';
+            modalComp.querySelector('.js-comp-pestana').href = a.href;
+            cargando.style.display = '';
+            img.style.display = 'none'; pdf.style.display = 'none';
+            img.onload = img.onerror = pdf.onload = listo;
+            if (a.dataset.tipo === 'imagen') {
+                img.src = a.href; img.style.display = 'block';
+            } else {
+                pdf.src = a.href; pdf.style.display = 'block';
+            }
+            if (!modalComp.dataset.listo) {
+                // Fuera del contenedor de la página (nada lo recorta) y, al cerrar, se vacía para que
+                // un PDF no siga cargado en segundo plano. Aquí jQuery ya está seguro cargado.
+                modalComp.dataset.listo = '1';
+                document.body.appendChild(modalComp);
+                jQuery(modalComp).on('hidden.bs.modal', function () {
+                    pdf.removeAttribute('src');
+                    img.removeAttribute('src');
+                });
+            }
+            jQuery(modalComp).modal('show');
         });
         // «Vista previa (Word)» no usa la validación del formulario completo (no necesita el correo), pero sí
         // los datos de la carta: si falta alguno se avisa ahí mismo, sin recargar ni cerrar la solicitud.
