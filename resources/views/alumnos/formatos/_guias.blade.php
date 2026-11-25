@@ -11,7 +11,7 @@
     ];
     $secciones = [
         'ti' => ['Trabajo de investigación', 'fa-flask', 'Para el Bachiller: formato, carátula y guías del TI.', [
-            $doc('FormatoTI.docx', 'Formato de TI', 'Trabajo-de-investigacion-EESPukllasunchis.png', 'Plantilla con márgenes, fuentes y estructura.'),
+            $doc('Formato-de-TI-2026.docx', 'Formato de TI', 'Trabajo-de-investigacion-EESPukllasunchis.png', 'Plantilla con márgenes, fuentes y estructura.'),
             $esPpd
                 ? $doc('CaratulaTI-2025 PPD.docx', 'Carátula de TI (PPD)', 'caratula.png', 'Carátula oficial para Profesionalización.')
                 : $doc('CaratulaTI-2025.docx', 'Carátula de TI (FID)', 'caratula.png', 'Carátula oficial para Formación Inicial.'),

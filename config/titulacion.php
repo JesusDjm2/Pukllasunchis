@@ -91,7 +91,7 @@ return [
                 'Espera 2 días hábiles tu boleta electrónica oficial y llena el formulario de Turnitin.',
             ],
             'descargas' => [
-                ['Formato TI (.docx)', 'pdf/FormatoTI.docx'],
+                ['Formato TI (.docx)', 'pdf/Formato-de-TI-2026.docx'],
                 ['Carátula TI FID (.docx)', 'pdf/CaratulaTI-2025.docx'],
                 ['Carátula TI PPD (.docx)', 'pdf/CaratulaTI-2025 PPD.docx'],
             ],

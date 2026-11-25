@@ -537,7 +537,7 @@
                 <h3 class="mt-5 linea-debajo">Formatos y Carátulas Oficiales</h3>
                 <div class="pk-downloads-deck mb-4">
                     <!-- Formato TI -->
-                    <a href="{{ asset('pdf/FormatoTI.docx') }}" target="_blank" class="pk-download-card">
+                    <a href="{{ asset('pdf/Formato-de-TI-2026.docx') }}" target="_blank" class="pk-download-card">
                         <div class="pk-download-card__icon-wrapper">
                             <div class="pk-download-card__icon word">
                                 <i class="fa fa-file-word"></i>
