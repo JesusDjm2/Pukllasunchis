@@ -25,6 +25,17 @@
             'ruta' => route('titulacion.solicitudes-originalidad.index'),
             'boton' => 'Ver solicitudes de originalidad',
         ],
+        'ampliacion' => [
+            'titulo' => 'Extensión de plazo de investigación',
+            'kicker' => 'Proceso de titulación · Plan de Trabajo de Investigación',
+            'h1' => 'Solicitud de extensión de plazo de investigación',
+            'sub' => 'Formulario con el que los estudiantes, con su PTI aprobado, solicitan ampliar el plazo de su investigación (como máximo 2 veces).',
+            'cuando' => 'cuando su Plan de Trabajo de Investigación aprobado está por vencer o acaba de vencer.',
+            'bandeja' => 'Solicitudes de ampliación de PTI',
+            'area' => 'Secretaría',
+            'ruta' => route('titulacion.solicitudes-ampliacion.index'),
+            'boton' => 'Ver solicitudes de ampliación',
+        ],
         default => [
             'titulo' => 'Carta de aceptación',
             'kicker' => 'Proceso de titulación · Trabajo de Investigación',

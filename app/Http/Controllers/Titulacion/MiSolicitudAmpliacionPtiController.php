@@ -269,11 +269,23 @@ class MiSolicitudAmpliacionPtiController extends Controller
             ->first();
     }
 
+    /**
+     * Mismo filtro que los demás formularios de titulación (PTI, carta, originalidad): el personal ve la página
+     * «solo para estudiantes» (con acceso a la bandeja si la atiende); el estudiante sin proceso va primero al PTI.
+     */
     private function noCorresponde(User $user)
     {
-        if (! $user->hasAnyRole(['alumno', 'alumnoB', 'egresado'])) {
-            return redirect(PanelDeUsuario::url($user));
+        if (PanelDeUsuario::esPersonal($user)) {
+            return view('titulacion.carta.solo-estudiantes', [
+                'user' => $user, 'panel' => PanelDeUsuario::url($user), 'tramite' => 'ampliacion',
+                'puedeRegistros' => $user->hasAnyRole(['super-admin', 'secretaria', 'gestor-titulacion']),
+            ]);
         }
+        if (! $user->seguimientoTitulacion()->exists()) {
+            return redirect()->route('mi-titulacion.solicitud-pti')
+                ->with('error', 'La extensión de plazo se pide cuando ya tienes tu proceso de titulación iniciado y tu PTI aprobado: primero solicita la aprobación de tu PTI.');
+        }
+
         return null;
     }
 }
