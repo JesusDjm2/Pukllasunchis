@@ -6,7 +6,7 @@
     <meta name="description"
         content="Requisitos y procedimientos para trámites presenciales, descarga del FUT y armado de expediente de graduación en la EESPP Pukllasunchis.">
     <meta name="keywords" content="{{ $titulo }}, Expediente Titulacion Pukllasunchis, FUT Pukllasunchis, Tramites Presenciales">
-    <link rel="stylesheet" href="{{ asset('css/pk-tramites-titulacion.css') }}?v=20261117d">
+    <link rel="stylesheet" href="{{ asset('css/pk-tramites-titulacion.css') }}?v=20261125a">
 @endsection
 
 @section('contenido')
@@ -86,12 +86,12 @@
                         <!-- Opción FID (5 años) -->
                         <div class="accordion-item">
                             <h2 class="accordion-header" id="headingFID">
-                                <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                                    data-bs-target="#collapseFID" aria-expanded="true" aria-controls="collapseFID">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapseFID" aria-expanded="false" aria-controls="collapseFID">
                                     <i class="fa fa-graduation-cap me-2 text-primary"></i> Para Estudiantes de Formación Inicial Docente — FID (5 años)
                                 </button>
                             </h2>
-                            <div id="collapseFID" class="accordion-collapse collapse show" aria-labelledby="headingFID"
+                            <div id="collapseFID" class="accordion-collapse collapse" aria-labelledby="headingFID"
                                 data-bs-parent="#accordionExpediente">
                                 <div class="accordion-body">
                                     <div class="row g-4">
@@ -99,7 +99,7 @@
                                             <h5 class="pb-2 border-bottom">
                                                 <i class="fa fa-id-card-clip text-warning me-1"></i> Documentos Externos a Presentar:
                                             </h5>
-                                            <ul class="list-unstyled ms-2 mt-2" style="font-size: 14.5px; line-height: 24px;">
+                                            <ul class="pk-doc-lista">
                                                 <li class="mb-2"><i class="fa fa-check text-success me-2"></i> Dos (2) fotocopias de DNI ampliado y legalizado notarialmente.</li>
                                                 <li class="mb-2"><i class="fa fa-check text-success me-2"></i> Partida de nacimiento original (vigente).</li>
                                                 <li class="mb-2"><i class="fa fa-check text-success me-2"></i> Certificado de estudios secundarios original.</li>
@@ -114,8 +114,9 @@
                                             <h5 class="pb-2 border-bottom">
                                                 <i class="fa fa-building-circle-check text-primary me-1"></i> Documentos Tramitados en la Escuela:
                                             </h5>
-                                            <ul class="list-unstyled ms-2 mt-2" style="font-size: 14.5px; line-height: 24px;">
+                                            <ul class="pk-doc-lista">
                                                 <li class="mb-2"><i class="fa fa-check text-primary me-2"></i> FUT debidamente completado y firmado.</li>
+                                                <li class="mb-2"><i class="fa fa-check text-primary me-2"></i> Certificado de estudios superiores (30 días hábiles · Cód: 8 · S/ 50.00 por ciclo).</li>
                                                 <li class="mb-2"><i class="fa fa-check text-primary me-2"></i> Copia de R.D. de aprobación de prácticas preprofesionales (Cód: 30 · S/ 50.00).</li>
                                                 <li class="mb-2"><i class="fa fa-check text-primary me-2"></i> Carta de aceptación de la I.E. donde se ejecutó la investigación (original).</li>
                                                 <li class="mb-2"><i class="fa fa-check text-primary me-2"></i> Constancia de no deudor original (Cód: 28 · S/ 30.00).</li>
@@ -152,13 +153,13 @@
                                             <h5 class="pb-2 border-bottom">
                                                 <i class="fa fa-id-card-clip text-warning me-1"></i> Documentos Externos a Presentar:
                                             </h5>
-                                            <ul class="list-unstyled ms-2 mt-2" style="font-size: 14.5px; line-height: 24px;">
+                                            <ul class="pk-doc-lista">
                                                 <li class="mb-2"><i class="fa fa-check text-success me-2"></i> Dos (2) fotocopias de DNI ampliado y legalizado.</li>
                                                 <li class="mb-2"><i class="fa fa-check text-success me-2"></i> Cuatro (4) fotos tamaño pasaporte a color, fondo blanco, terno y papel mate (4 cm x 5 cm). <strong>Escribe tus nombres y apellidos completos en la parte de atrás de cada foto.</strong></li>
                                                 <li class="mb-2"><i class="fa fa-check text-success me-2"></i> Documento acreditando conocimiento de idioma A2 o lengua originaria.</li>
                                                 <li class="mb-2">
                                                     <i class="fa fa-check text-success me-2"></i> Certificado original de estudios superiores:
-                                                    <ul class="mt-1 ps-3 text-muted">
+                                                    <ul class="pk-doc-sublista">
                                                         <li>Procedentes de IESP: original visado por la DREC.</li>
                                                         <li>Procedentes de Universidad: legalizado por notario o fedatado por la universidad de origen.</li>
                                                         <li><em>(Si ya obra en el expediente de ingreso, no es necesario volver a presentarlo).</em></li>
@@ -171,9 +172,10 @@
                                             <h5 class="pb-2 border-bottom">
                                                 <i class="fa fa-building-circle-check text-primary me-1"></i> Documentos Tramitados en la Escuela:
                                             </h5>
-                                            <ul class="list-unstyled ms-2 mt-2" style="font-size: 14.5px; line-height: 24px;">
+                                            <ul class="pk-doc-lista">
                                                 <li class="mb-2"><i class="fa fa-check text-primary me-2"></i> FUT debidamente llenado y firmado.</li>
                                                 <li class="mb-2"><i class="fa fa-check text-primary me-2"></i> Carta de aceptación de la institución educativa sede de investigación (original).</li>
+                                                <li class="mb-2"><i class="fa fa-check text-primary me-2"></i> Constancia de no deudor original (Cód: 28 · S/ 30.00).</li>
                                                 <li class="mb-2"><i class="fa fa-check text-primary me-2"></i> Constancia de egresado original (Cód: 9 · S/ 50.00).</li>
                                                 <li class="mb-2"><i class="fa fa-check text-primary me-2"></i> Constancia de primera matrícula (Cód: 29 · S/ 50.00).</li>
                                                 <li class="mb-2"><i class="fa fa-check text-primary me-2"></i> Informe de Trabajo de Investigación Apto (original).</li>

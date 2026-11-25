@@ -1511,6 +1511,65 @@ a.pk-step-box:hover .pk-step-link,
     line-height: 24px;
 }
 
+/* Listas de documentos (expediente de graduación): el check es el marcador, en un círculo del color
+   de la columna (verde = externos, azul = de la Escuela); las sublistas van con sangría, línea lateral
+   y un marcador pequeño, para que se distingan del nivel principal. */
+.pk-accordion .accordion-body ul.pk-doc-lista {
+    list-style: none;
+    padding-left: 0;
+    margin: 12px 0 0;
+    font-size: 14.5px;
+    line-height: 23px;
+}
+.pk-accordion .accordion-body ul.pk-doc-lista > li {
+    list-style: none;
+    position: relative;
+    padding: 0 0 0 30px;
+    margin: 0 0 11px;
+}
+.pk-accordion .accordion-body ul.pk-doc-lista > li > i.fa-check:first-child {
+    position: absolute;
+    left: 0;
+    top: 2px;
+    width: 19px;
+    height: 19px;
+    margin: 0 !important;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    background: color-mix(in srgb, currentColor 13%, transparent);
+}
+.pk-accordion .accordion-body ul.pk-doc-sublista {
+    list-style: none;
+    margin: 8px 0 2px;
+    padding: 2px 0 2px 14px;
+    border-left: 2px solid var(--pk-slate-200);
+}
+.pk-accordion .accordion-body ul.pk-doc-sublista > li {
+    list-style: none;
+    position: relative;
+    padding-left: 16px;
+    margin: 0 0 5px;
+    font-size: 13.5px;
+    line-height: 20px;
+    color: var(--pk-slate-500, #64748b);
+}
+.pk-accordion .accordion-body ul.pk-doc-sublista > li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 7px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    border: 1.5px solid var(--pk-gold-dark, #b9823b);
+}
+.pk-accordion .accordion-body ul.pk-doc-sublista > li:last-child {
+    margin-bottom: 0;
+}
+
 /* ═════════════════════════════════════════════════════════
    9. TABLA DE TRÁMITES EXTRAORDINARIOS
    ═════════════════════════════════════════════════════════ */
