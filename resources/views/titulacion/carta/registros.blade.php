@@ -126,6 +126,9 @@
                                 $s = $r->solicitante;
                                 $esImagen = in_array($r->extensionComprobante(), ['jpg', 'jpeg', 'png'], true);
                                 $idFila = 'ca-'.$r->id;
+                                // Si el envío de ESTA fila volvió con errores, sigue abierta y con lo que se escribió.
+                                $filaConError = (string) old('carta_fila') === (string) $r->id;
+                                $abierta = $resaltada || $filaConError;
                             @endphp
                             <tr class="ca-fila {{ $resaltada ? 'is-resaltada' : '' }}" id="{{ $idFila }}">
                                 <td class="ca-c-fecha">
@@ -161,12 +164,12 @@
                                     @if ($r->comprobante)
                                         <a href="{{ route('mi-titulacion.carta.archivo', [$r->id, 'comprobante']) }}" target="_blank" rel="noopener" class="btn btn-sm tp-btn tp-btn--claro" title="Abrir el comprobante en otra pestaña"><i class="fas fa-file-invoice-dollar"></i></a>
                                     @endif
-                                    <button type="button" class="btn btn-sm tp-btn js-ca-revisar" aria-expanded="{{ $resaltada ? 'true' : 'false' }}" aria-controls="{{ $idFila }}-det">
+                                    <button type="button" class="btn btn-sm tp-btn js-ca-revisar" aria-expanded="{{ $abierta ? 'true' : 'false' }}" aria-controls="{{ $idFila }}-det">
                                         <i class="fas fa-chevron-down mr-1"></i>{{ $puedeGestionar && $r->estado === 'enviada' ? 'Revisar' : 'Ver' }}
                                     </button>
                                 </td>
                             </tr>
-                            <tr class="ca-detalle {{ $resaltada ? 'is-resaltada' : '' }}" id="{{ $idFila }}-det" @unless ($resaltada) hidden @endunless>
+                            <tr class="ca-detalle {{ $resaltada ? 'is-resaltada' : '' }}" id="{{ $idFila }}-det" @unless ($abierta) hidden @endunless @if ($filaConError) data-con-error @endif>
                                 <td colspan="6">
                                     <div class="ca-detalle__grid">
                                         <dl class="tp-carta-datos mb-0">
@@ -217,13 +220,15 @@
                                     @if ($r->estado === 'enviada' && $puedeGestionar)
                                         <form method="POST" action="{{ route('titulacion.cartas.atender', $r->id) }}" enctype="multipart/form-data" class="tp-form js-carta-form ca-respuesta">
                                             @csrf
+                                            <input type="hidden" name="carta_fila" value="{{ $r->id }}">
                                             <span class="tp-label d-block">Respuesta de Secretaría</span>
                                             <div class="tp-enlace-opciones mb-2">
-                                                <label class="tp-enlace-opcion"><input type="radio" name="accion" value="aprobar" checked><span><i class="fas fa-check-circle"></i> Datos y comprobante correctos: aprobar y enviar correo</span></label>
-                                                <label class="tp-enlace-opcion"><input type="radio" name="accion" value="observar"><span><i class="fas fa-undo"></i> Observar la solicitud</span></label>
+                                                @php $observando = $filaConError && old('accion') === 'observar'; @endphp
+                                                <label class="tp-enlace-opcion"><input type="radio" name="accion" value="aprobar" @checked(! $observando)><span><i class="fas fa-check-circle"></i> Datos y comprobante correctos: aprobar y enviar correo</span></label>
+                                                <label class="tp-enlace-opcion"><input type="radio" name="accion" value="observar" @checked($observando)><span><i class="fas fa-undo"></i> Observar la solicitud</span></label>
                                             </div>
                                             <div class="js-carta-aprobar">
-                                                @php $cp = \App\Services\Titulacion\CartaPresentacion::sugeridos($r); $vc = fn ($k) => old($k, $cp[$k] ?? ''); @endphp
+                                                @php $cp = \App\Services\Titulacion\CartaPresentacion::sugeridos($r); $vc = fn ($k) => $filaConError ? old($k, $cp[$k] ?? '') : ($cp[$k] ?? ''); @endphp
                                                 <span class="tp-label d-block mb-1"><i class="far fa-file-word mr-1"></i>Carta de Presentación (Word, se llena con su plantilla)</span>
                                                 <div class="ca-carta-grid">
                                                     <label>N° de carta
@@ -252,7 +257,7 @@
                                                 </div>
                                                 <div class="form-group mt-2 mb-2">
                                                     <label class="tp-label" for="{{ $idFila }}-msg">Correo de aprobación (llega a cada integrante, con la Carta de Presentación y el modelo de Carta de Aceptación adjuntos)</label>
-                                                    <textarea name="mensaje" id="{{ $idFila }}-msg" rows="7" maxlength="5000" class="form-control" required>{{ old('mensaje', $r->mensajeAprobacion()) }}</textarea>
+                                                    <textarea name="mensaje" id="{{ $idFila }}-msg" rows="7" maxlength="5000" class="form-control" required>{{ $filaConError ? old('mensaje', $r->mensajeAprobacion()) : $r->mensajeAprobacion() }}</textarea>
                                                 </div>
                                                 <div class="ca-adjuntos">
                                                     <span><i class="far fa-file-word"></i> Carta de Presentación N° 0<span class="js-ca-num">{{ $vc('numero_carta') }}</span>-<span class="js-ca-anio">{{ substr($vc('fecha_carta'), 0, 4) }}</span>.docx</span>
@@ -263,7 +268,7 @@
                                             <div class="js-carta-observar" hidden>
                                                 <div class="form-group mb-2">
                                                     <label class="tp-label" for="{{ $idFila }}-obs">¿Qué debe corregir el estudiante?</label>
-                                                    <textarea name="observacion" id="{{ $idFila }}-obs" rows="3" maxlength="1500" class="form-control" placeholder="Ej.: El comprobante no corresponde al derecho de trámite."></textarea>
+                                                    <textarea name="observacion" id="{{ $idFila }}-obs" rows="3" maxlength="1500" class="form-control" placeholder="Ej.: El comprobante no corresponde al derecho de trámite.">{{ $filaConError ? old('observacion') : '' }}</textarea>
                                                 </div>
                                             </div>
                                             <div class="small text-muted mb-2"><i class="fas fa-users mr-1"></i>Cada integrante recibe un aviso en el sistema y el correo. Con la aprobación se abre el TI · Bachiller.</div>
@@ -315,8 +320,29 @@
             if (e.target.name === 'numero_carta') f.querySelectorAll('.js-ca-num').forEach(function (s) { s.textContent = e.target.value; });
             if (e.target.name === 'fecha_carta' && e.target.value) f.querySelectorAll('.js-ca-anio').forEach(function (s) { s.textContent = e.target.value.slice(0, 4); });
         });
-        // Desde la campanita: lleva a la solicitud nueva.
-        var nueva = document.querySelector('.ca-fila.is-resaltada');
+        // «Vista previa (Word)» no usa la validación del formulario completo (no necesita el correo), pero sí
+        // los datos de la carta: si falta alguno se avisa ahí mismo, sin recargar ni cerrar la solicitud.
+        document.addEventListener('click', function (e) {
+            var b = e.target.closest('.js-carta-form button[value="previa"]');
+            if (!b) return;
+            var campos = b.closest('form').querySelectorAll('.ca-carta-grid [required]');
+            for (var i = 0; i < campos.length; i++) {
+                if (!campos[i].checkValidity()) {
+                    e.preventDefault();
+                    campos[i].reportValidity();
+                    campos[i].focus();
+                    return;
+                }
+            }
+        });
+        // Una observación que volvió con errores: se muestra de nuevo su campo (y se oculta lo de aprobar).
+        document.querySelectorAll('.js-carta-form input[name="accion"][value="observar"]:checked').forEach(function (r) {
+            r.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+        // Volvió con errores: se lleva a la solicitud que se estaba atendiendo (sigue abierta).
+        // Si no, desde la campanita: lleva a la solicitud nueva.
+        var conError = document.querySelector('.ca-detalle[data-con-error]');
+        var nueva = conError ? conError.previousElementSibling : document.querySelector('.ca-fila.is-resaltada');
         if (nueva) setTimeout(function () { nueva.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 250);
     })();
     </script>
