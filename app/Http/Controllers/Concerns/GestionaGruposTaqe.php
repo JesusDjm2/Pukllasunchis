@@ -55,8 +55,19 @@ trait GestionaGruposTaqe
             $compañeros = $compañeros->filter(fn ($a) => (int) $a->ciclo?->proyecto_id === $proyectoId);
         }
 
-        // Texto para listas (vista y JSON): incluye el programa porque el grupo puede mezclarlos.
-        $compañeros->each(fn ($a) => $a->setAttribute('etiqueta_taqe', $this->etiquetaCompanero($a)));
+        // Programa de cada compañero (el grupo puede mezclarlos) para agruparlos en la lista.
+        $compañeros->each(fn ($a) => $a->setAttribute('programa_taqe', $this->programaCorto($a)));
+
+        // Orden: primero el programa del curso, luego los demás; dentro de cada uno, alfabético.
+        $programaCurso = (int) $curso->ciclo?->programa_id;
+        $compañeros = $compañeros->sortBy([
+            fn ($a, $b) => ((int) $a->ciclo?->programa_id !== $programaCurso) <=> ((int) $b->ciclo?->programa_id !== $programaCurso),
+            fn ($a, $b) => strcmp($a->programa_taqe, $b->programa_taqe),
+            fn ($a, $b) => strcmp(
+                \Illuminate\Support\Str::lower(\Illuminate\Support\Str::ascii($a->apellidos.' '.$a->nombres)),
+                \Illuminate\Support\Str::lower(\Illuminate\Support\Str::ascii($b->apellidos.' '.$b->nombres))
+            ),
+        ]);
 
         return $compañeros->values();
     }
@@ -129,12 +140,23 @@ trait GestionaGruposTaqe
             ->pluck('id');
     }
 
-    /** «Apellidos, Nombres · Primaria EIB»: el programa se muestra porque los grupos pueden mezclar programas. */
-    private function etiquetaCompanero(Alumno $a): string
+    /** Nombre corto del programa del alumno («Inicial», «Primaria EIB»), para agrupar la lista. */
+    private function programaCorto(Alumno $a): string
     {
         $programa = trim(preg_replace('/^Programa\s+/i', '', (string) $a->ciclo?->programa?->nombre));
 
-        return $a->apellidos.', '.$a->nombres.($programa !== '' ? ' · '.$programa : '');
+        return $programa !== '' ? $programa : 'Sin programa';
+    }
+
+    /** Formato JSON común de la lista de compañeros (crear grupo, editar grupo y gestión del Super Admin). */
+    private function companerosJson(Collection $compañeros): array
+    {
+        return $compañeros->map(fn ($a) => [
+            'id' => $a->id,
+            'nombre' => $a->apellidos.', '.$a->nombres,
+            'dni' => (string) $a->dni,
+            'programa' => $a->programa_taqe,
+        ])->values()->all();
     }
 
 

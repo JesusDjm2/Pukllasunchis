@@ -109,9 +109,10 @@ class TaqeController extends Controller
             foreach ($misGrupos as $grupo) {
                 if ($grupo->creador_alumno_id === $alumno->id) {
                     $yaEnGrupo = $grupo->alumnos->pluck('id');
-                    $companerosPorGrupo[$grupo->id] = $this->companerosDisponibles($grupo->curso, $periodoActual, $alumno->id, $grupo->proyecto_id)
-                        ->reject(fn ($a) => $yaEnGrupo->contains($a->id))
-                        ->values();
+                    $companerosPorGrupo[$grupo->id] = $this->companerosJson(
+                        $this->companerosDisponibles($grupo->curso, $periodoActual, $alumno->id, $grupo->proyecto_id)
+                            ->reject(fn ($a) => $yaEnGrupo->contains($a->id))
+                    );
                 }
             }
         }
@@ -140,10 +141,7 @@ class TaqeController extends Controller
 
         $compañeros = $this->companerosDisponibles($curso, $periodoActual, $alumno->id, $this->proyectoDelAlumno($alumno));
 
-        return response()->json($compañeros->map(fn ($a) => [
-            'id' => $a->id,
-            'nombre' => $a->etiqueta_taqe.' — DNI '.$a->dni,
-        ]));
+        return response()->json($this->companerosJson($compañeros));
     }
 
     public function store(Request $request)

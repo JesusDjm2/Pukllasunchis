@@ -52,6 +52,32 @@
     .al-ui .taqe-companion-list { max-height: 220px; overflow-y: auto; border: 1px solid var(--al-borde); border-radius: 10px; padding: .5rem .7rem; background: var(--al-fondo-2); }
     .al-ui .taqe-companion-list label { display: block; font-size: .84rem; font-weight: 500; margin-bottom: .3rem; color: var(--al-texto); cursor: pointer; }
 
+    /* Lista de compañeros agrupada por programa con buscador (public/js/pk-taqe-companeros.js) */
+    .al-ui .taqe-companion-list.tq-comp { max-height: 320px; padding: 0; }
+    .al-ui .tq-comp-buscar { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: .45rem; padding: .5rem .6rem; background: var(--al-fondo-2); border-bottom: 1px solid var(--al-borde); }
+    .al-ui .tq-comp-buscar i { color: var(--al-suave); font-size: .8rem; }
+    .al-ui .tq-comp-input { flex: 1; min-width: 0; border: 1px solid var(--al-borde); border-radius: 8px; padding: .35rem .6rem; font-size: .84rem; background: var(--al-fondo); color: var(--al-texto); outline: none; }
+    .al-ui .tq-comp-input:focus { border-color: var(--al-oro); box-shadow: 0 0 0 3px rgba(205, 146, 68, .18); }
+    .al-ui .tq-comp-grupos { padding: .35rem .45rem .45rem; }
+    .al-ui .tq-comp-grupo { border: 1px solid var(--al-borde); border-radius: 9px; background: var(--al-fondo); margin-bottom: .4rem; overflow: hidden; }
+    .al-ui .tq-comp-grupo:last-child { margin-bottom: 0; }
+    .al-ui .tq-comp-grupo > summary { list-style: none; display: flex; align-items: center; gap: .5rem; padding: .5rem .65rem; cursor: pointer; user-select: none; font-size: .8rem; font-weight: 800; letter-spacing: .02em; text-transform: uppercase; color: var(--al-petroleo); }
+    .al-ui .tq-comp-grupo > summary::-webkit-details-marker { display: none; }
+    .al-ui .tq-comp-flecha { font-size: .65rem; color: var(--al-suave); transition: transform .15s ease; }
+    .al-ui .tq-comp-grupo[open] > summary .tq-comp-flecha { transform: rotate(90deg); }
+    .al-ui .tq-comp-grupo[open] > summary { border-bottom: 1px solid var(--al-borde); }
+    .al-ui .tq-comp-programa { flex: 1; }
+    .al-ui .tq-comp-total { font-size: .68rem; font-weight: 800; padding: .1rem .5rem; border-radius: 999px; background: var(--al-fondo-2); color: var(--al-suave); }
+    .al-ui .tq-comp-sel { font-size: .66rem; font-weight: 800; text-transform: none; letter-spacing: 0; padding: .1rem .5rem; border-radius: 999px; background: rgba(205, 146, 68, .16); color: var(--al-oro-2); }
+    .al-ui .tq-comp-items { padding: .3rem .4rem; }
+    .al-ui .taqe-companion-list .tq-comp-item { display: flex; align-items: center; gap: .55rem; margin: 0; padding: .32rem .35rem; border-radius: 6px; font-size: .84rem; }
+    .al-ui .taqe-companion-list .tq-comp-item:hover { background: var(--al-fondo-2); }
+    .al-ui .tq-comp-item input { flex: none; margin: 0; }
+    .al-ui .tq-comp-nombre { flex: 1; min-width: 0; }
+    .al-ui .tq-comp-dni { flex: none; font-size: .72rem; color: var(--al-suave); font-variant-numeric: tabular-nums; }
+    .al-ui .tq-comp-sin { margin: 0; padding: .5rem .8rem .7rem; font-size: .8rem; color: var(--al-suave); }
+    .al-ui .tq-comp [hidden] { display: none !important; }
+
     /* Archivos */
     .tq-archivo { display: flex; align-items: center; gap: .7rem; padding: .6rem .7rem; border: 1px solid var(--al-borde); border-radius: 12px; margin-bottom: .45rem; background: var(--al-fondo); }
     .tq-archivo.is-final { border-color: rgba(14, 148, 103, .35); background: var(--al-ok-f); }

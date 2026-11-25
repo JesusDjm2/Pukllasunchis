@@ -51,15 +51,13 @@
 @endsection
 
 @push('scripts')
+<script src="{{ asset('js/pk-taqe-companeros.js') }}?v={{ filemtime(public_path('js/pk-taqe-companeros.js')) }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         // Cada modal "Integrantes" carga su lista de compañeros disponibles recién al abrirse
         // (puede haber muchos grupos en esta página). Bootstrap 4 emite show.bs.modal solo por
         // jQuery: antes se escuchaba como evento nativo y la lista quedaba en "Cargando…".
         if (!window.jQuery) return;
-        var escapar = function (s) {
-            return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; });
-        };
 
         jQuery('[id^="modalGestionar"]').on('show.bs.modal', function () {
             var form = this.querySelector('.taqe-sa-form-invitar');
@@ -72,13 +70,7 @@
                 .then(function (r) { return r.json(); })
                 .then(function (companeros) {
                     lista.dataset.cargado = '1';
-                    if (!companeros.length) {
-                        lista.innerHTML = '<span class="tq-nota">No hay más alumnos disponibles en este curso.</span>';
-                        return;
-                    }
-                    lista.innerHTML = companeros.map(function (c) {
-                        return '<label><input type="checkbox" name="integrantes[]" value="' + parseInt(c.id, 10) + '"> ' + escapar(c.nombre) + '</label>';
-                    }).join('');
+                    TaqeCompaneros.render(lista, companeros, { vacio: 'No hay más alumnos disponibles de este ciclo.' });
                 })
                 .catch(function () {
                     lista.innerHTML = '<span class="text-danger small">No se pudo cargar la lista. Intenta de nuevo.</span>';

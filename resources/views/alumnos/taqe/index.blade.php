@@ -308,14 +308,10 @@
                                         <p class="tq-modal-etiqueta mt-3">Invitar a nuevos compañeros</p>
                                         <form action="{{ route('taqe.integrantes.agregar', $grupo->id) }}" method="POST">
                                             @csrf
-                                            @if (($companerosPorGrupo[$grupo->id] ?? collect())->isEmpty())
+                                            @if (empty($companerosPorGrupo[$grupo->id] ?? []))
                                                 <p class="tq-nota">No hay más compañeros de tu ciclo disponibles para invitar.</p>
                                             @else
-                                                <div class="taqe-companion-list mb-2">
-                                                    @foreach ($companerosPorGrupo[$grupo->id] as $c)
-                                                        <label><input type="checkbox" name="integrantes[]" value="{{ $c->id }}"> {{ $c->etiqueta_taqe }}</label>
-                                                    @endforeach
-                                                </div>
+                                                <div class="taqe-companion-list mb-2" data-companeros='@json($companerosPorGrupo[$grupo->id])'></div>
                                                 <button type="submit" class="al-btn al-btn-petroleo al-btn-sm"><i class="fas fa-user-plus"></i> Invitar seleccionados</button>
                                             @endif
                                         </form>
@@ -505,11 +501,17 @@
 @endsection
 
 @push('scripts')
+<script src="{{ asset('js/pk-taqe-companeros.js') }}?v={{ filemtime(public_path('js/pk-taqe-companeros.js')) }}"></script>
 <script>
 
     document.addEventListener('DOMContentLoaded', function () {
         var select = document.getElementById('taqe-curso-select');
         var lista = document.getElementById('taqe-companion-list');
+
+        // «Editar grupo»: la lista viene en data-companeros desde el servidor.
+        document.querySelectorAll('.taqe-companion-list[data-companeros]').forEach(function (el) {
+            try { TaqeCompaneros.render(el, JSON.parse(el.getAttribute('data-companeros'))); } catch (e) {}
+        });
 
         // "Solicitar ayuda": el detalle solo es obligatorio (y visible) con el motivo "Otro".
         document.querySelectorAll('.taqe-ayuda-motivo').forEach(function (motivo) {
@@ -533,14 +535,7 @@
             fetch('{{ url('taqe/curso') }}/' + cursoId + '/alumnos', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
                 .then(function (r) { return r.json(); })
                 .then(function (companeros) {
-                    if (!companeros.length) {
-                        lista.innerHTML = '<span class="tq-nota">No hay más alumnos matriculados en este curso.</span>';
-                        return;
-                    }
-                    lista.innerHTML = companeros.map(function (c) {
-                        var nombre = String(c.nombre).replace(/[&<>"]/g, function (ch) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]; });
-                        return '<label><input type="checkbox" name="integrantes[]" value="' + parseInt(c.id, 10) + '"> ' + nombre + '</label>';
-                    }).join('');
+                    TaqeCompaneros.render(lista, companeros, { vacio: 'No hay compañeros de tu ciclo disponibles.' });
                 })
                 .catch(function () {
                     lista.innerHTML = '<span class="text-danger small">No se pudo cargar la lista. Intenta de nuevo.</span>';

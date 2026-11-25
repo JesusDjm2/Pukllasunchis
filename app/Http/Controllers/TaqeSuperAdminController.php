@@ -110,10 +110,7 @@ class TaqeSuperAdminController extends Controller
             ->reject(fn ($a) => $yaEnGrupo->contains($a->id))
             ->values();
 
-        return response()->json($disponibles->map(fn ($a) => [
-            'id' => $a->id,
-            'nombre' => $a->etiqueta_taqe.' — DNI '.$a->dni,
-        ]));
+        return response()->json($this->companerosJson($disponibles));
     }
 
     /** Invita nuevos integrantes a cualquier grupo (mismas reglas de elegibilidad que el autoservicio). */
