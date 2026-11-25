@@ -160,36 +160,5 @@ Route::get('/guia-preview/{modo}', function ($modo) {
     return view('alumnos.taqe.guia_preview', compact('alumno', 'periodoActual', 'modo'));
 })->name('guia.preview');
 
-// Limpieza integral de caché de vistas, framework y OPcache en producción
-Route::get('/limpiar-cache-sistema/{token}', function ($token) {
-    abort_unless($token === 'puklla2026deploy', 403);
-
-    $op = function_exists('opcache_reset') ? (opcache_reset() ? 'OK' : 'FAIL') : 'NO_DISPONIBLE';
-
-    $vDir = storage_path('framework/views');
-    $del = 0;
-    if (is_dir($vDir)) {
-        foreach (glob($vDir . '/*.php') as $f) {
-            @unlink($f);
-            $del++;
-        }
-    }
-
-    \Illuminate\Support\Facades\Artisan::call('view:clear');
-    \Illuminate\Support\Facades\Artisan::call('cache:clear');
-    \Illuminate\Support\Facades\Artisan::call('config:clear');
-    \Illuminate\Support\Facades\Artisan::call('route:clear');
-
-    return response()->json([
-        'status' => 'success',
-        'opcache' => $op,
-        'views_deleted_disk' => $del,
-        'timestamp' => now()->toDateTimeString(),
-        'proceso_mtime' => file_exists(resource_path('views/titulacion/_proceso.blade.php'))
-            ? date('Y-m-d H:i:s', filemtime(resource_path('views/titulacion/_proceso.blade.php')))
-            : null,
-    ]);
-});
-
 
 
