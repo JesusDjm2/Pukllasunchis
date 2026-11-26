@@ -759,6 +759,10 @@
         });
     </script>
     @include('docentes.partials.competencia-modal')
+    @include('docentes.partials.calificar-draft', [
+        'draftKey' => "puklla_draft_fid_{$docente->id}_{$curso->id}",
+        'formSelector' => 'form[action="' . route('periodouno.storeBloque') . '"], form[action="' . route('guardarPeriodo2yDesempenoEnBloque') . '"]',
+    ])
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             activarBotonYMostrarTabla('btnPeriodoUno', 'tablaPeriodoUno');

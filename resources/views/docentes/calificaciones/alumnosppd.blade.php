@@ -367,6 +367,10 @@
 
     @include('docentes.partials.calificar-scripts')
     @include('docentes.partials.competencia-modal')
+    @include('docentes.partials.calificar-draft', [
+        'draftKey' => "puklla_draft_ppd_{$docente->id}_{$curso->id}",
+        'formSelector' => 'form[action="' . route('calificarppd') . '"]',
+    ])
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const inputs = document.querySelectorAll('.indicador-input.editable');

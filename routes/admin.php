@@ -88,6 +88,13 @@ Route::middleware('auth')->group(function () {
     // Ampliación de plazo de PTI (extensión extraordinaria)
     Route::get('/mi-titulacion/ampliacion-pti', [App\Http\Controllers\Titulacion\MiSolicitudAmpliacionPtiController::class, 'crear'])
         ->name('mi-titulacion.ampliacion-pti');
+    // Keep-alive silencioso para evitar expiración de sesión y CSRF en formularios largos (docentes/calificaciones)
+    Route::get('/docente/sesion/keep-alive', function () {
+        return response()->json([
+            'ok' => true,
+            'csrf_token' => csrf_token(),
+        ]);
+    })->name('docente.keepalive');
     Route::post('/mi-titulacion/ampliacion-pti', [App\Http\Controllers\Titulacion\MiSolicitudAmpliacionPtiController::class, 'enviar'])
         ->middleware('throttle:30,10')->name('mi-titulacion.ampliacion-pti.enviar');
     Route::get('/mi-titulacion/ampliacion-pti/{solicitud}/{cual}/{n}', [App\Http\Controllers\Titulacion\MiSolicitudAmpliacionPtiController::class, 'archivo'])

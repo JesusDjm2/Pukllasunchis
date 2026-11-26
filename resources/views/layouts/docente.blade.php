@@ -646,6 +646,86 @@
         })();
     </script>
 
+    {{-- Keep-alive de sesión y renovación de token CSRF para evitar pérdida de trabajo en registros largos --}}
+    <script>
+        (function() {
+            var keepAliveUrl = @json(route('docente.keepalive'));
+            var PING_INTERVAL_MS = 10 * 60 * 1000; // 10 minutos
+            var VISIBILITY_MIN_GAP_MS = 5 * 60 * 1000; // 5 minutos
+            var lastPingAt = Date.now();
+            var bannerId = 'puklla-session-expired-banner';
+
+            function showExpiredBanner() {
+                if (document.getElementById(bannerId)) return;
+                var banner = document.createElement('div');
+                banner.id = bannerId;
+                banner.className = 'alert alert-warning shadow-sm mx-3 mt-2 mb-2';
+                banner.setAttribute('role', 'alert');
+                banner.style.position = 'sticky';
+                banner.style.top = '0.5rem';
+                banner.style.zIndex = '1050';
+                banner.innerHTML =
+                    '<i class="fas fa-exclamation-triangle mr-2"></i>' +
+                    '<strong>Tu sesión ha expirado por inactividad.</strong> ' +
+                    'No recargues ni cierres esta pestaña: tus notas siguen respaldadas localmente en este navegador. ' +
+                    '<a href="{{ route('login') }}" target="_blank" rel="noopener" class="alert-link">Inicia sesión en otra pestaña</a> ' +
+                    'y luego regresa aquí para guardar.';
+                var content = document.getElementById('content');
+                if (content) {
+                    content.insertBefore(banner, content.children[1] || null);
+                }
+            }
+
+            function hideExpiredBanner() {
+                var banner = document.getElementById(bannerId);
+                if (banner) banner.remove();
+            }
+
+            function refreshCsrf(token) {
+                if (!token) return;
+                var meta = document.querySelector('meta[name="csrf-token"]');
+                if (meta) meta.setAttribute('content', token);
+                document.querySelectorAll('input[name="_token"]').forEach(function(input) {
+                    input.value = token;
+                });
+            }
+
+            function ping() {
+                lastPingAt = Date.now();
+                fetch(keepAliveUrl, {
+                    method: 'GET',
+                    credentials: 'same-origin',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                }).then(function(res) {
+                    if (res.status === 401 || res.status === 419 || res.redirected) {
+                        showExpiredBanner();
+                        return null;
+                    }
+                    if (!res.ok) return null;
+                    return res.json();
+                }).then(function(data) {
+                    if (data && data.ok) {
+                        refreshCsrf(data.csrf_token);
+                        hideExpiredBanner();
+                    }
+                }).catch(function() {
+                    // Silencioso si hay caída momentánea de red; se reintentará en el siguiente ciclo.
+                });
+            }
+
+            setInterval(ping, PING_INTERVAL_MS);
+
+            document.addEventListener('visibilitychange', function() {
+                if (document.visibilityState === 'visible' && (Date.now() - lastPingAt) >= VISIBILITY_MIN_GAP_MS) {
+                    ping();
+                }
+            });
+        })();
+    </script>
+
 </body>
 
 </html>
