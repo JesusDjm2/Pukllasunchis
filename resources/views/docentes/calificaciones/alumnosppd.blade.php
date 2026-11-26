@@ -111,6 +111,117 @@
         table.docente-cal-table tbody tr:hover {
             background-color: rgba(78, 115, 223, 0.05);
         }
+
+        table.docente-cal-table tbody tr.ppd-row-focused {
+            background-color: rgba(229, 151, 58, 0.12) !important;
+        }
+
+        table.docente-cal-table tbody tr.ppd-row-focused td.sticky-col-left-1 {
+            background-color: #fff7eb !important;
+        }
+
+        /* ── Barra de herramientas responsive PPD ── */
+        .ppd-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            background: #f8f9fc;
+            border: 1px solid #e3e6f0;
+            border-radius: 0.65rem;
+            padding: 0.6rem 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .ppd-toolbar-group {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .ppd-toolbar .form-control-sm {
+            min-width: 190px;
+        }
+
+        /* Secciones y modo compacto en la tabla */
+        table.ppd-table-dynamic:not([data-ppd-section="all"]) {
+            min-width: 100% !important;
+        }
+
+        table.ppd-table-dynamic.ppd-compact {
+            min-width: 100% !important;
+        }
+
+        table.ppd-table-dynamic.ppd-compact .ppd-col-obs {
+            width: 240px !important;
+            min-width: 220px;
+        }
+
+        table.ppd-table-dynamic.ppd-compact .ppd-col-calc {
+            display: none !important;
+        }
+
+        table.ppd-table-dynamic[data-ppd-section="proceso"] .ppd-col-final,
+        table.ppd-table-dynamic[data-ppd-section="proceso"] .ppd-col-promedios,
+        table.ppd-table-dynamic[data-ppd-section="proceso"] .ppd-col-resumen {
+            display: none !important;
+        }
+
+        table.ppd-table-dynamic[data-ppd-section="final"] .ppd-col-proceso,
+        table.ppd-table-dynamic[data-ppd-section="final"] .ppd-col-promedios,
+        table.ppd-table-dynamic[data-ppd-section="final"] .ppd-col-resumen {
+            display: none !important;
+        }
+
+        table.ppd-table-dynamic[data-ppd-section="resumen"] .ppd-col-proceso,
+        table.ppd-table-dynamic[data-ppd-section="resumen"] .ppd-col-final {
+            display: none !important;
+        }
+
+        /* Vista por alumno (tarjetas para pantallas pequeñas) */
+        #ppd-card-view {
+            display: none;
+        }
+
+        .ppd-student-card {
+            background: #fff;
+            border: 1px solid #e3e6f0;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+        }
+
+        .ppd-comp-box {
+            border: 1px solid #e3e6f0;
+            border-radius: 0.6rem;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+            background: #fcfcfd;
+        }
+
+        .ppd-comp-box h6 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #2e384d;
+        }
+
+        .ppd-mini-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.5rem;
+        }
+
+        @media (max-width: 575.98px) {
+            .ppd-mini-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+            .ppd-toolbar .form-control-sm {
+                min-width: 100%;
+            }
+        }
     </style>
     <div class="container-fluid docente-ui-page">
         @include('docentes.partials.calificar-hero', [
@@ -162,9 +273,46 @@
                     <div class="docente-cal-savebar">
                         <button type="submit" class="btn btn-primary btn-sm mb-2" data-loading-text="Guardando…"><i class="fas fa-save mr-1"></i> Guardar/Actualizar</button>
                     </div>
-                    <p class="docente-cal-scroll-hint"><i class="fas fa-arrows-alt-h"></i>Desliza horizontalmente para ver todas las columnas</p>
-                    <div class="docente-cal-scroll-wrap" style="max-height: 800px; overflow-x: auto;">
-                        <table class="table table-hover table-bordered text-center text-dark docente-cal-table"
+
+                    {{-- Barra de herramientas para pantallas pequeñas y navegación rápida --}}
+                    <div class="ppd-toolbar" id="ppd-toolbar">
+                        <div class="ppd-toolbar-group">
+                            <input type="search" id="ppd-buscar-alumno" class="form-control form-control-sm"
+                                placeholder="Buscar alumno…" aria-label="Buscar alumno">
+                            <div class="custom-control custom-switch ml-1">
+                                <input type="checkbox" class="custom-control-input" id="ppd-solo-pendientes">
+                                <label class="custom-control-label small" for="ppd-solo-pendientes">Solo pendientes</label>
+                            </div>
+                        </div>
+
+                        <div class="ppd-toolbar-group" id="ppd-section-controls">
+                            <div class="btn-group btn-group-sm" role="group" aria-label="Secciones de calificación">
+                                <button type="button" class="btn btn-outline-secondary active" data-ppd-sec="all">Todo</button>
+                                <button type="button" class="btn btn-outline-warning" data-ppd-sec="proceso">Proceso 40%</button>
+                                <button type="button" class="btn btn-outline-warning" data-ppd-sec="final">Final 60%</button>
+                                <button type="button" class="btn btn-outline-success" data-ppd-sec="resumen">Resumen</button>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-primary" id="ppd-btn-compacto"
+                                title="Oculta promedios intermedios calculados automáticamente para reducir el scroll horizontal">
+                                <i class="fas fa-compress-alt mr-1"></i>Modo compacto
+                            </button>
+                        </div>
+
+                        <div class="ppd-toolbar-group">
+                            <button type="button" class="btn btn-sm btn-outline-dark" id="ppd-btn-vista-tarjetas"
+                                title="Alternar entre tabla completa y vista cómoda alumno por alumno">
+                                <i class="fas fa-id-card mr-1"></i>Vista por alumno
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- Vista por alumno (ideal para pantallas pequeñas / móviles; sincroniza con la tabla) --}}
+                    <div id="ppd-card-view" class="mb-3"></div>
+
+                    <p class="docente-cal-scroll-hint" id="ppd-scroll-hint"><i class="fas fa-arrows-alt-h"></i>Desliza horizontalmente para ver todas las columnas</p>
+                    <div class="docente-cal-scroll-wrap" id="ppd-table-wrap" style="max-height: 800px; overflow-x: auto;">
+                        <table id="ppd-table" data-ppd-section="all"
+                            class="table table-hover table-bordered text-center text-dark docente-cal-table ppd-table-dynamic"
                             style="font-size: 13px; min-width: 4000px;">
                             <thead style="color: #000">
                                 <tr>
@@ -173,26 +321,26 @@
                                         class="text-center align-middle sortable sticky-col-left-1 bg-dark text-white">
                                         Alumno</th>
                                     <th colspan="{{ count($competenciasSeleccionadas) * 3 }}"
-                                        class="text-center align-middle sortable" style="background-color: #e5973a">
+                                        class="text-center align-middle sortable ppd-col-proceso" data-ppd-group-head="proceso" style="background-color: #e5973a">
                                         Productos de Proceso 40%</th>
                                     <th colspan="{{ count($competenciasSeleccionadas) * 3 }}"
-                                        class="text-center align-middle sortable" style="background-color: #ffd39f">Producto
+                                        class="text-center align-middle sortable ppd-col-final" data-ppd-group-head="final" style="background-color: #ffd39f">Producto
                                         Final 60%</th>
                                     <th colspan="{{ count($competenciasSeleccionadas) * 3 }}"
-                                        class="text-center align-middle sortable bg-success">Promedios Generales por
+                                        class="text-center align-middle sortable bg-success ppd-col-promedios">Promedios Generales por
                                         competencia</th>
-                                    <th rowspan="3" class="align-middle sortable bg-warning">Nivel de desempeño</th>
-                                    <th rowspan="3" class="align-middle sortable bg-warning">Calificación del Curso</th>
-                                    <th rowspan="3" class="align-middle sortable bg-warning">Calificación en el Sistema
+                                    <th rowspan="3" class="align-middle sortable bg-warning ppd-col-resumen">Nivel de desempeño</th>
+                                    <th rowspan="3" class="align-middle sortable bg-warning ppd-col-resumen">Calificación del Curso</th>
+                                    <th rowspan="3" class="align-middle sortable bg-warning ppd-col-resumen">Calificación en el Sistema
                                         Superior</th>
-                                    <th rowspan="3" class="align-middle text-white bg-dark">
+                                    <th rowspan="3" class="align-middle text-white bg-dark ppd-col-resumen ppd-col-obs">
                                         Observaciones
                                     </th>
                                 </tr>
 
                                 <tr style="pointer-events: none">
                                     @foreach ($competenciasSeleccionadas as $competencia)
-                                        <th colspan="3" class="text-center sortable" style="background-color: #e5973a">
+                                        <th colspan="3" class="text-center sortable ppd-col-proceso" data-ppd-comp-head="proceso" style="background-color: #e5973a">
                                             {{ $competencia->nombre }}<br>
                                             <small style="font-size: 10px">
                                                 {{ implode(' ', array_slice(explode(' ', $competencia->descripcion), 0, 12)) }}
@@ -204,7 +352,7 @@
                                     @endforeach
 
                                     @foreach ($competenciasSeleccionadas as $competencia)
-                                        <th colspan="3" class="text-center sortable" style="background: #ffd39f">
+                                        <th colspan="3" class="text-center sortable ppd-col-final" data-ppd-comp-head="final" style="background: #ffd39f">
                                             {{ $competencia->nombre }}<br>
                                             <small style="font-size: 10px">
                                                 {{ implode(' ', array_slice(explode(' ', $competencia->descripcion), 0, 12)) }}
@@ -216,7 +364,7 @@
                                     @endforeach
 
                                     @foreach ($competenciasSeleccionadas as $competencia)
-                                        <th colspan="3" class="text-center sortable bg-success">
+                                        <th colspan="3" class="text-center sortable bg-success ppd-col-promedios">
                                             {{ $competencia->nombre }}<br>
                                             <small style="font-size: 10px">
                                                 {{ implode(' ', array_slice(explode(' ', $competencia->descripcion), 0, 12)) }}
@@ -230,21 +378,21 @@
 
                                 <tr style="pointer-events: none; font-size: 12px">
                                     @foreach ($competenciasSeleccionadas as $competencia)
-                                        <th style="background: #e5973a">Participación</th>
-                                        <th style="background: #e5973a">Actividad</th>
-                                        <th style="background: #e5973a">Promedio</th>
+                                        <th class="ppd-col-proceso" style="background: #e5973a">Participación</th>
+                                        <th class="ppd-col-proceso" style="background: #e5973a">Actividad</th>
+                                        <th class="ppd-col-proceso ppd-col-calc" style="background: #e5973a">Promedio</th>
                                     @endforeach
 
                                     @foreach ($competenciasSeleccionadas as $competencia)
-                                        <th style="background-color: #ffd39f">Autoevaluación 40%</th>
-                                        <th style="background-color: #ffd39f">Evaluación 60%</th>
-                                        <th style="background-color: #ffd39f">Promedio</th>
+                                        <th class="ppd-col-final" style="background-color: #ffd39f">Autoevaluación 40%</th>
+                                        <th class="ppd-col-final" style="background-color: #ffd39f">Evaluación 60%</th>
+                                        <th class="ppd-col-final ppd-col-calc" style="background-color: #ffd39f">Promedio</th>
                                     @endforeach
 
                                     @foreach ($competenciasSeleccionadas as $competencia)
-                                        <th class="text-center bg-success">Proceso 40%</th>
-                                        <th class="text-center bg-success">Final 60%</th>
-                                        <th class="text-center bg-success">Valoración</th>
+                                        <th class="text-center bg-success ppd-col-promedios">Proceso 40%</th>
+                                        <th class="text-center bg-success ppd-col-promedios">Final 60%</th>
+                                        <th class="text-center bg-success ppd-col-promedios">Valoración</th>
                                     @endforeach
                                 </tr>
                             </thead>
@@ -267,7 +415,11 @@
                                     <input type="hidden" name="alumnos[{{ $alumno->id }}][curso_id]"
                                         value="{{ $curso->id }}">
 
-                                    <tr class="{{ $alumno->es_inhabilitado ? 'table-secondary' : '' }}">
+                                    <tr class="{{ $alumno->es_inhabilitado ? 'table-secondary' : '' }}"
+                                        data-alumno-id="{{ $alumno->id }}"
+                                        data-alumno-nombre="{{ mb_strtolower($alumno->apellidos . ' ' . $alumno->name) }}"
+                                        data-alumno-label="{{ $alumno->apellidos }}, {{ $alumno->name }}"
+                                        data-pendiente="{{ $alumno->tiene_calificacion_guardada ? '0' : '1' }}">
                                         <td class="align-middle text-center">{{ $index + 1 }}</td>
                                         <td class="align-middle sticky-col-left-1">
                                             <div>
@@ -286,7 +438,7 @@
                                         @foreach ([1, 2, 3] as $c)
                                             @foreach ([1, 2, 4] as $i)
                                                 @php $campo = "pp_c{$c}_{$i}"; @endphp
-                                                <td>
+                                                <td class="ppd-col-proceso {{ $i == 4 ? 'ppd-col-calc' : '' }}">
                                                     <input type="number" style="width: 60px"
                                                         name="alumnos[{{ $alumno->id }}][proceso][c{{ $c }}][indicador_{{ $i }}]"
                                                         class="form-control form-control-sm text-center indicador-input {{ $i < 4 ? 'editable' : '' }} @error("alumnos.{$alumno->id}.proceso.c{$c}.indicador_{$i}") is-invalid @enderror"
@@ -303,7 +455,7 @@
                                         @foreach ([1, 2, 3] as $c)
                                             @foreach (range(1, 3) as $i)
                                                 @php $campo = "pf_c{$c}_{$i}"; @endphp
-                                                <td>
+                                                <td class="ppd-col-final {{ $i == 3 ? 'ppd-col-calc' : '' }}">
                                                     <input type="number" style="width: 60px"
                                                         name="alumnos[{{ $alumno->id }}][final][c{{ $c }}][indicador_{{ $i }}]"
                                                         class="form-control form-control-sm text-center final-indicador-input @error("alumnos.{$alumno->id}.final.c{$c}.indicador_{$i}") is-invalid @enderror"
@@ -319,7 +471,7 @@
                                         {{-- Promedios --}}
                                         @foreach ([1, 2, 3] as $c)
                                             @foreach (range(1, 3) as $i)
-                                                <td>
+                                                <td class="ppd-col-promedios">
                                                     <input type="number" style="width: 60px"
                                                         name="alumnos[{{ $alumno->id }}][promedios][c{{ $c }}][indicador_{{ $i }}]"
                                                         class="form-control form-control-sm text-center promedio-general-input"
@@ -331,26 +483,26 @@
                                             @endforeach
                                         @endforeach
                                         {{-- Nivel de desempeño --}}
-                                        <td>
+                                        <td class="ppd-col-resumen">
                                             <input type="number" name="alumnos[{{ $alumno->id }}][nivel_desempeno]"
                                                 class="form-control form-control-sm text-center nivel-desempeno-input"
                                                 min="0" max="20" readonly {{ $readonly }}>
                                         </td>
                                         {{-- Calificación curso --}}
-                                        <td>
+                                        <td class="ppd-col-resumen">
                                             <input type="number" name="alumnos[{{ $alumno->id }}][calificacion_curso]"
                                                 class="form-control form-control-sm text-center calificacion-curso-input"
                                                 min="0" max="20" readonly {{ $readonly }}>
                                         </td>
                                         {{-- Calificación sistema --}}
-                                        <td>
+                                        <td class="ppd-col-resumen">
                                             <input type="number"
                                                 name="alumnos[{{ $alumno->id }}][calificacion_sistema]"
                                                 class="form-control form-control-sm text-center calificacion-sistema-input"
                                                 min="0" max="20" readonly {{ $readonly }}>
                                         </td>
                                         {{-- Observaciones --}}
-                                        <td style="width: 950px;">
+                                        <td class="ppd-col-resumen ppd-col-obs" style="width: 950px;">
                                             <textarea name="alumnos[{{ $alumno->id }}][observaciones]" class="form-control form-control-sm text-start"
                                                 rows="2" style="resize: vertical; width: 100%;" placeholder="Observaciones (Opcional)"
                                                 {{ $readonly }}>{{ old("alumnos.{$alumno->id}.observaciones", $calificacion?->observaciones) }}</textarea>
@@ -709,9 +861,10 @@
         /* helpers */
         function buildGrid() {
             return Array.from(tbody.querySelectorAll('tr'))
+                .filter(tr => tr.style.display !== 'none')
                 .map(tr => Array.from(tr.querySelectorAll(
                     'input[type=number]:not([readonly]):not([disabled])'
-                )))
+                )).filter(inp => inp.offsetParent !== null))
                 .filter(row => row.length > 0);
         }
 
@@ -1022,6 +1175,304 @@
             dragSource = null;
             if (activeEl) placeHandle(activeEl); else handle.style.display = 'none';
         });
+    });
+    </script>
+
+    {{-- ── UX Responsive PPD: filtros, secciones, modo compacto y vista por alumno ── --}}
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const table = document.getElementById('ppd-table');
+        const tableWrap = document.getElementById('ppd-table-wrap');
+        const scrollHint = document.getElementById('ppd-scroll-hint');
+        const cardView = document.getElementById('ppd-card-view');
+        const searchInput = document.getElementById('ppd-buscar-alumno');
+        const pendingSwitch = document.getElementById('ppd-solo-pendientes');
+        const btnCompacto = document.getElementById('ppd-btn-compacto');
+        const btnTarjetas = document.getElementById('ppd-btn-vista-tarjetas');
+        const sectionControls = document.getElementById('ppd-section-controls');
+        if (!table || !tableWrap || !cardView) return;
+
+        const competenciasMeta = @json($competenciasSeleccionadas->values()->map(fn($c) => ['nombre' => $c->nombre, 'descripcion' => $c->descripcion]));
+        const compCount = competenciasMeta.length || 3;
+        const allRows = Array.from(table.querySelectorAll('tbody tr[data-alumno-id]'));
+
+        let isCompact = false;
+        let isCardMode = false;
+        let currentCardIndex = 0;
+
+        // Resaltado de fila activa en la tabla
+        table.addEventListener('focusin', function (e) {
+            const tr = e.target.closest('tr[data-alumno-id]');
+            allRows.forEach(r => r.classList.remove('ppd-row-focused'));
+            if (tr) tr.classList.add('ppd-row-focused');
+        });
+
+        function getFilteredRows() {
+            const q = (searchInput?.value || '').trim().toLowerCase();
+            const onlyPending = Boolean(pendingSwitch?.checked);
+            return allRows.filter(tr => {
+                const name = tr.dataset.alumnoNombre || '';
+                const isPending = tr.dataset.pendiente === '1';
+                const matchName = !q || name.includes(q);
+                const matchPending = !onlyPending || isPending;
+                return matchName && matchPending;
+            });
+        }
+
+        function applyRowFilters() {
+            const visibleSet = new Set(getFilteredRows());
+            allRows.forEach(tr => {
+                tr.style.display = visibleSet.has(tr) ? '' : 'none';
+            });
+            if (isCardMode) {
+                currentCardIndex = 0;
+                renderCardView();
+            }
+        }
+
+        function updateColspans() {
+            const perComp = isCompact ? 2 : 3;
+            table.querySelectorAll('[data-ppd-group-head="proceso"], [data-ppd-group-head="final"]').forEach(th => {
+                th.setAttribute('colspan', String(compCount * perComp));
+            });
+            table.querySelectorAll('[data-ppd-comp-head="proceso"], [data-ppd-comp-head="final"]').forEach(th => {
+                th.setAttribute('colspan', String(perComp));
+            });
+        }
+
+        function setCompact(next) {
+            isCompact = next;
+            table.classList.toggle('ppd-compact', isCompact);
+            if (btnCompacto) btnCompacto.classList.toggle('active', isCompact);
+            updateColspans();
+        }
+
+        function setSection(sec) {
+            table.setAttribute('data-ppd-section', sec);
+            document.querySelectorAll('[data-ppd-sec]').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.ppdSec === sec);
+            });
+        }
+
+        function setCardMode(next) {
+            isCardMode = next;
+            cardView.style.display = isCardMode ? 'block' : 'none';
+            tableWrap.style.display = isCardMode ? 'none' : '';
+            if (scrollHint) scrollHint.style.display = isCardMode ? 'none' : '';
+            if (sectionControls) sectionControls.style.display = isCardMode ? 'none' : '';
+            if (btnTarjetas) {
+                btnTarjetas.classList.toggle('active', isCardMode);
+                btnTarjetas.innerHTML = isCardMode
+                    ? '<i class="fas fa-table mr-1"></i>Ver tabla'
+                    : '<i class="fas fa-id-card mr-1"></i>Vista por alumno';
+            }
+            if (isCardMode) renderCardView();
+        }
+
+        function getTableField(alumnoId, selectorSuffix) {
+            return table.querySelector(`[name="alumnos[${alumnoId}]${selectorSuffix}"]`);
+        }
+
+        function syncCardReadonly(alumnoId) {
+            if (!isCardMode) return;
+            cardView.querySelectorAll('[data-sync-ro]').forEach(el => {
+                const src = getTableField(alumnoId, el.dataset.syncRo);
+                if (src) el.value = src.value;
+            });
+        }
+
+        function renderCardView() {
+            const rows = getFilteredRows();
+            if (!rows.length) {
+                cardView.innerHTML = '<div class="alert alert-light border text-center mb-0">No hay alumnos que coincidan con el filtro.</div>';
+                return;
+            }
+            if (currentCardIndex >= rows.length) currentCardIndex = rows.length - 1;
+            if (currentCardIndex < 0) currentCardIndex = 0;
+
+            const tr = rows[currentCardIndex];
+            const alumnoId = tr.dataset.alumnoId;
+            const alumnoLabel = tr.dataset.alumnoLabel || 'Alumno';
+
+            let optionsHtml = rows.map((r, idx) =>
+                `<option value="${idx}" ${idx === currentCardIndex ? 'selected' : ''}>${idx + 1}. ${r.dataset.alumnoLabel}</option>`
+            ).join('');
+
+            let compsHtml = '';
+            for (let c = 1; c <= 3; c++) {
+                const comp = competenciasMeta[c - 1] || { nombre: `Competencia ${c}`, descripcion: '' };
+                const pp1 = getTableField(alumnoId, `[proceso][c${c}][indicador_1]`)?.value ?? '';
+                const pp2 = getTableField(alumnoId, `[proceso][c${c}][indicador_2]`)?.value ?? '';
+                const pp4 = getTableField(alumnoId, `[proceso][c${c}][indicador_4]`)?.value ?? '';
+                const pf1 = getTableField(alumnoId, `[final][c${c}][indicador_1]`)?.value ?? '';
+                const pf2 = getTableField(alumnoId, `[final][c${c}][indicador_2]`)?.value ?? '';
+                const pf3 = getTableField(alumnoId, `[final][c${c}][indicador_3]`)?.value ?? '';
+                const pg1 = getTableField(alumnoId, `[promedios][c${c}][indicador_1]`)?.value ?? '';
+                const pg2 = getTableField(alumnoId, `[promedios][c${c}][indicador_2]`)?.value ?? '';
+                const pg3 = getTableField(alumnoId, `[promedios][c${c}][indicador_3]`)?.value ?? '';
+
+                compsHtml += `
+                <div class="ppd-comp-box">
+                    <h6>${comp.nombre}</h6>
+                    <div class="small text-muted mb-2">${comp.descripcion ? comp.descripcion.slice(0, 110) + (comp.descripcion.length > 110 ? '…' : '') : ''}</div>
+                    <div class="small font-weight-bold text-warning mb-1">Productos de Proceso (40%)</div>
+                    <div class="ppd-mini-grid mb-2">
+                        <div>
+                            <label class="small mb-0">Participación</label>
+                            <input type="number" min="0" max="20" step="1" class="form-control form-control-sm text-center"
+                                data-sync-rw="[proceso][c${c}][indicador_1]" value="${pp1}">
+                        </div>
+                        <div>
+                            <label class="small mb-0">Actividad</label>
+                            <input type="number" min="0" max="20" step="1" class="form-control form-control-sm text-center"
+                                data-sync-rw="[proceso][c${c}][indicador_2]" value="${pp2}">
+                        </div>
+                        <div>
+                            <label class="small mb-0">Promedio</label>
+                            <input type="number" class="form-control form-control-sm text-center bg-light" readonly
+                                data-sync-ro="[proceso][c${c}][indicador_4]" value="${pp4}">
+                        </div>
+                    </div>
+                    <div class="small font-weight-bold text-info mb-1">Producto Final (60%)</div>
+                    <div class="ppd-mini-grid mb-2">
+                        <div>
+                            <label class="small mb-0">Autoeval. 40%</label>
+                            <input type="number" min="0" max="20" step="1" class="form-control form-control-sm text-center"
+                                data-sync-rw="[final][c${c}][indicador_1]" value="${pf1}">
+                        </div>
+                        <div>
+                            <label class="small mb-0">Evaluación 60%</label>
+                            <input type="number" min="0" max="20" step="1" class="form-control form-control-sm text-center"
+                                data-sync-rw="[final][c${c}][indicador_2]" value="${pf2}">
+                        </div>
+                        <div>
+                            <label class="small mb-0">Promedio</label>
+                            <input type="number" class="form-control form-control-sm text-center bg-light" readonly
+                                data-sync-ro="[final][c${c}][indicador_3]" value="${pf3}">
+                        </div>
+                    </div>
+                    <div class="small font-weight-bold text-success mb-1">Promedio General</div>
+                    <div class="ppd-mini-grid">
+                        <div>
+                            <label class="small mb-0">Proc. 40%</label>
+                            <input type="number" class="form-control form-control-sm text-center bg-light" readonly
+                                data-sync-ro="[promedios][c${c}][indicador_1]" value="${pg1}">
+                        </div>
+                        <div>
+                            <label class="small mb-0">Final 60%</label>
+                            <input type="number" class="form-control form-control-sm text-center bg-light" readonly
+                                data-sync-ro="[promedios][c${c}][indicador_2]" value="${pg2}">
+                        </div>
+                        <div>
+                            <label class="small mb-0">Valoración</label>
+                            <input type="number" class="form-control form-control-sm text-center bg-light font-weight-bold" readonly
+                                data-sync-ro="[promedios][c${c}][indicador_3]" value="${pg3}">
+                        </div>
+                    </div>
+                </div>`;
+            }
+
+            const nivel = getTableField(alumnoId, '[nivel_desempeno]')?.value ?? '';
+            const calCurso = getTableField(alumnoId, '[calificacion_curso]')?.value ?? '';
+            const calSis = getTableField(alumnoId, '[calificacion_sistema]')?.value ?? '';
+            const obs = getTableField(alumnoId, '[observaciones]')?.value ?? '';
+
+            cardView.innerHTML = `
+                <div class="ppd-student-card">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3 pb-2 border-bottom">
+                        <div>
+                            <span class="badge badge-dark mr-1">${currentCardIndex + 1} / ${rows.length}</span>
+                            <strong class="h6 mb-0">${alumnoLabel}</strong>
+                        </div>
+                        <div class="d-flex align-items-center" style="gap: 0.35rem;">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="ppd-card-prev" ${currentCardIndex === 0 ? 'disabled' : ''}>
+                                <i class="fas fa-chevron-left"></i> Anterior
+                            </button>
+                            <select class="form-control form-control-sm" id="ppd-card-select" style="max-width: 210px;">
+                                ${optionsHtml}
+                            </select>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="ppd-card-next" ${currentCardIndex >= rows.length - 1 ? 'disabled' : ''}>
+                                Siguiente <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    ${compsHtml}
+
+                    <div class="ppd-comp-box bg-light">
+                        <h6>Resultado del Curso</h6>
+                        <div class="ppd-mini-grid mb-2">
+                            <div>
+                                <label class="small mb-0">Nivel desempeño</label>
+                                <input type="number" class="form-control form-control-sm text-center font-weight-bold" readonly data-sync-ro="[nivel_desempeno]" value="${nivel}">
+                            </div>
+                            <div>
+                                <label class="small mb-0">Calif. Curso</label>
+                                <input type="number" class="form-control form-control-sm text-center font-weight-bold" readonly data-sync-ro="[calificacion_curso]" value="${calCurso}">
+                            </div>
+                            <div>
+                                <label class="small mb-0">Sistema Superior</label>
+                                <input type="number" class="form-control form-control-sm text-center font-weight-bold" readonly data-sync-ro="[calificacion_sistema]" value="${calSis}">
+                            </div>
+                        </div>
+                        <label class="small font-weight-bold mb-1">Observaciones</label>
+                        <textarea rows="2" class="form-control form-control-sm" placeholder="Observaciones (Opcional)" data-sync-rw="[observaciones]"></textarea>
+                    </div>
+                </div>
+            `;
+
+            const obsEl = cardView.querySelector('[data-sync-rw="[observaciones]"]');
+            if (obsEl) obsEl.value = obs;
+
+            cardView.querySelector('#ppd-card-prev')?.addEventListener('click', () => {
+                if (currentCardIndex > 0) { currentCardIndex--; renderCardView(); }
+            });
+            cardView.querySelector('#ppd-card-next')?.addEventListener('click', () => {
+                if (currentCardIndex < rows.length - 1) { currentCardIndex++; renderCardView(); }
+            });
+            cardView.querySelector('#ppd-card-select')?.addEventListener('change', (e) => {
+                currentCardIndex = parseInt(e.target.value, 10) || 0;
+                renderCardView();
+            });
+
+            // Sincronización inmediata tarjeta -> tabla real
+            cardView.querySelectorAll('[data-sync-rw]').forEach(el => {
+                el.addEventListener('input', function () {
+                    const target = getTableField(alumnoId, this.dataset.syncRw);
+                    if (!target) return;
+                    if (this.tagName === 'INPUT' && this.type === 'number') {
+                        this.value = this.value.replace(/[^0-9]/g, '');
+                    }
+                    target.value = this.value;
+                    target.dispatchEvent(new Event('input', { bubbles: true }));
+                    target.dispatchEvent(new Event('change', { bubbles: true }));
+                    setTimeout(() => syncCardReadonly(alumnoId), 50);
+                });
+            });
+        }
+
+        // Mantener los valores calculados actualizados en la tarjeta
+        setInterval(() => {
+            if (!isCardMode) return;
+            const rows = getFilteredRows();
+            const tr = rows[currentCardIndex];
+            if (tr) syncCardReadonly(tr.dataset.alumnoId);
+        }, 250);
+
+        searchInput?.addEventListener('input', applyRowFilters);
+        pendingSwitch?.addEventListener('change', applyRowFilters);
+        btnCompacto?.addEventListener('click', () => setCompact(!isCompact));
+        btnTarjetas?.addEventListener('click', () => setCardMode(!isCardMode));
+        document.querySelectorAll('[data-ppd-sec]').forEach(btn => {
+            btn.addEventListener('click', () => setSection(btn.dataset.ppdSec));
+        });
+
+        // En pantallas pequeñas (<768px) iniciar en Vista por alumno; en medianas (<1200px) en Modo compacto
+        if (window.innerWidth < 768) {
+            setCardMode(true);
+        } else if (window.innerWidth < 1200) {
+            setCompact(true);
+        }
     });
     </script>
 @endsection
