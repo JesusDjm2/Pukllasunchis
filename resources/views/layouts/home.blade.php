@@ -356,6 +356,8 @@
                                             class="fa fa-download"></i> Intranet</a></li>
                                 <li><a href="http://repositorio.pukllasunchis.org/xmlui/" target="_blank"><i
                                             class="fa fa-file-pdf"></i> Repositorio</a></li>
+                                <li><a href="https://pukllavirtual.eesppukllasunchis.edu.pe/" target="_blank" rel="noopener"><i
+                                            class="fa fa-book-open"></i> Biblioteca Virtual</a></li>
                                 <li><a href="{{ asset('pdf/Reglamento-de-Proteccion-de-Datos-Personales.pdf') }}" target="_blank" rel="noopener"><i
                                             class="fa fa-shield-halved"></i> Reglamento de Protección de Datos</a></li>
                                 <li><a href="{{ route('bolsa') }}" target="_blank"><i class="fa fa-dollar-sign"></i>
