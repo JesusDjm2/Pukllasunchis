@@ -222,6 +222,53 @@
                 min-width: 100%;
             }
         }
+
+        /* ── Modo Popup / Pantalla completa ── */
+        #ppd-fullscreen-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.58);
+            backdrop-filter: blur(2px);
+            z-index: 1055;
+        }
+
+        #ppd-fullscreen-backdrop.is-open {
+            display: block;
+        }
+
+        form.ppd-fullscreen-active {
+            position: fixed;
+            inset: 10px;
+            z-index: 1060;
+            background: #ffffff;
+            border-radius: 0.75rem;
+            padding: 0.85rem 1rem;
+            overflow-y: auto;
+            box-shadow: 0 14px 48px rgba(0, 0, 0, 0.35);
+            margin: 0;
+        }
+
+        form.ppd-fullscreen-active .docente-cal-savebar {
+            top: 0;
+            justify-content: space-between;
+            background: #ffffff;
+            padding-bottom: 0.35rem;
+            border-bottom: 1px solid #e3e6f0;
+        }
+
+        form.ppd-fullscreen-active #ppd-table-wrap {
+            max-height: calc(100vh - 205px) !important;
+        }
+
+        #ppd-btn-exit-fullscreen {
+            display: none;
+        }
+
+        form.ppd-fullscreen-active #ppd-btn-exit-fullscreen {
+            display: inline-flex;
+            align-items: center;
+        }
     </style>
     <div class="container-fluid docente-ui-page">
         @include('docentes.partials.calificar-hero', [
@@ -263,7 +310,8 @@
         </div>
         <div class="row pb-5">
             <div class="col-lg-12 table-responsive">
-                <form action="{{ route('calificarppd') }}" method="POST">
+                <div id="ppd-fullscreen-backdrop" aria-hidden="true"></div>
+                <form id="ppd-form" action="{{ route('calificarppd') }}" method="POST">
                     @csrf
                     <input type="hidden" name="curso_id" value="{{ $curso->id }}">
                     <input type="hidden" name="docente_id" value="{{ $docente->id }}">
@@ -272,6 +320,9 @@
                     @endforeach
                     <div class="docente-cal-savebar">
                         <button type="submit" class="btn btn-primary btn-sm mb-2" data-loading-text="Guardando…"><i class="fas fa-save mr-1"></i> Guardar/Actualizar</button>
+                        <button type="button" id="ppd-btn-exit-fullscreen" class="btn btn-outline-secondary btn-sm mb-2">
+                            <i class="fas fa-compress mr-1"></i> Volver a vista normal
+                        </button>
                     </div>
 
                     {{-- Barra de herramientas para pantallas pequeñas y navegación rápida --}}
@@ -302,6 +353,10 @@
                             <button type="button" class="btn btn-sm btn-outline-dark" id="ppd-btn-vista-tarjetas"
                                 title="Alternar entre tabla completa y vista cómoda alumno por alumno">
                                 <i class="fas fa-id-card mr-1"></i>Vista por alumno
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-info" id="ppd-btn-fullscreen"
+                                title="Abrir el registro en pantalla completa (Esc para salir)">
+                                <i class="fas fa-expand-arrows-alt mr-1"></i>Pantalla completa
                             </button>
                         </div>
                     </div>
@@ -1189,8 +1244,35 @@
         const pendingSwitch = document.getElementById('ppd-solo-pendientes');
         const btnCompacto = document.getElementById('ppd-btn-compacto');
         const btnTarjetas = document.getElementById('ppd-btn-vista-tarjetas');
+        const btnFullscreen = document.getElementById('ppd-btn-fullscreen');
+        const btnExitFullscreen = document.getElementById('ppd-btn-exit-fullscreen');
+        const ppdForm = document.getElementById('ppd-form');
+        const fsBackdrop = document.getElementById('ppd-fullscreen-backdrop');
         const sectionControls = document.getElementById('ppd-section-controls');
         if (!table || !tableWrap || !cardView) return;
+
+        let isFullscreen = false;
+
+        function setFullscreen(next) {
+            if (!ppdForm) return;
+            isFullscreen = next;
+            ppdForm.classList.toggle('ppd-fullscreen-active', isFullscreen);
+            if (fsBackdrop) fsBackdrop.classList.toggle('is-open', isFullscreen);
+            document.body.style.overflow = isFullscreen ? 'hidden' : '';
+            if (btnFullscreen) {
+                btnFullscreen.classList.toggle('active', isFullscreen);
+                btnFullscreen.innerHTML = isFullscreen
+                    ? '<i class="fas fa-compress mr-1"></i>Vista normal'
+                    : '<i class="fas fa-expand-arrows-alt mr-1"></i>Pantalla completa';
+            }
+        }
+
+        btnFullscreen?.addEventListener('click', () => setFullscreen(!isFullscreen));
+        btnExitFullscreen?.addEventListener('click', () => setFullscreen(false));
+        fsBackdrop?.addEventListener('click', () => setFullscreen(false));
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && isFullscreen) setFullscreen(false);
+        });
 
         const competenciasMeta = @json($competenciasSeleccionadas->values()->map(fn($c) => ['nombre' => $c->nombre, 'descripcion' => $c->descripcion]));
         const compCount = competenciasMeta.length || 3;
