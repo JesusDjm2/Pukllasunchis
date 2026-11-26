@@ -187,7 +187,7 @@
             align-items: center;
             gap: 8px;
         }
-        .card-:scope { padding: 20px; }
+        .card-body { padding: 20px; }
 
         /* KPI Grid */
         .kpi-grid {
@@ -312,9 +312,6 @@
 <div class="seguimiento-panel">
 @include('seguimiento_egresados.partials.grupo_formacion')
 <div id="app-layout">
-    <!-- Sidebar -->
-
-
     <!-- Main Workspace -->
     <div class="main-content">
         <!-- Top Navbar -->
@@ -332,18 +329,35 @@
         </header>
 
         <div class="container">
+            {{-- Mensajes de Éxito / Error Flash --}}
+            @if(session('success'))
+                <div style="background:#DEF7EC;color:#03543F;padding:12px 18px;border-radius:8px;margin-bottom:20px;font-weight:700;display:flex;align-items:center;gap:8px;border:1px solid #BCF0DA;">
+                    <i class="fas fa-check-circle"></i>
+                    <span>{{ session('success') }}</span>
+                </div>
+            @endif
+            @if($errors->any())
+                <div style="background:#FDE8E8;color:#9B1C1C;padding:12px 18px;border-radius:8px;margin-bottom:20px;font-weight:700;display:flex;align-items:center;gap:8px;border:1px solid #FBD5D5;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>{{ $errors->first() }}</span>
+                </div>
+            @endif
+
             <!-- Hero Banner -->
             <div class="hero-banner">
                 <div>
                     <h1 class="hero-title">Gestión de Campañas y Asignación de Entrevistadores</h1>
                     <p class="hero-desc">
                         Organiza campañas de seguimiento utilizando <strong>docentes y egresados reales</strong> de Pukllasunchis.
-                        Selecciona a los docentes entrevistadores, revisa el padrón y ejecuta la distribución aleatoria equilibrada.
+                        Selecciona a los docentes entrevistadores, revisa el padrón y ejecuta la distribución aleatoria equilibrada o asignación manual.
                     </p>
                 </div>
-                <div>
+                <div style="display:flex;gap:10px;">
+                    <a href="{{ route('seguimiento.observatorio-conectado', ['grupo_formacion' => $grupoFormacion]) }}" class="btn btn-outline" style="background:#fff;color:var(--puklla-granate);">
+                        <i class="fas fa-map-marked-alt mr-1"></i> Observatorio Territorial
+                    </a>
                     <a href="{{ route('seguimiento.campanas.monitoreo', ['campanaId' => $campanaActual?->id ?? 10]) }}" class="btn btn-verde">
-                        <i class="fas fa-chart-line"></i> Ver Monitoreo en Vivo
+                        <i class="fas fa-chart-line"></i> Monitoreo en Vivo
                     </a>
                 </div>
             </div>
@@ -370,6 +384,52 @@
                     @endif
                 </div>
             </div>
+
+            {{-- Banner de Filtros Activos provenientes del Observatorio Territorial --}}
+            @php
+                $hayFiltros = !empty(array_filter($filtros ?? []));
+            @endphp
+            @if($hayFiltros)
+                <div style="background:#EEF2FF;border:1px solid #C7D2FE;border-radius:10px;padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+                    <div>
+                        <div style="font-weight:800;color:#3730A3;font-size:14px;display:flex;align-items:center;gap:6px;">
+                            <i class="fas fa-filter"></i>
+                            <span>Filtro activo desde el Observatorio territorial:</span>
+                        </div>
+                        <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;">
+                            @if(!empty($filtros['distrito']))
+                                <span class="badge badge-blue">Distrito: {{ $filtros['distrito'] }}</span>
+                            @endif
+                            @if(!empty($filtros['provincia']))
+                                <span class="badge badge-blue">Provincia: {{ $filtros['provincia'] }}</span>
+                            @endif
+                            @if(!empty($filtros['departamento']))
+                                <span class="badge badge-blue">Departamento: {{ $filtros['departamento'] }}</span>
+                            @endif
+                            @if(!empty($filtros['sin_ubicacion']))
+                                <span class="badge badge-amber"><i class="fas fa-map-marker-slash mr-1"></i> Sin ubicación verificable</span>
+                            @endif
+                            @if(!empty($filtros['estado_contacto']) && $filtros['estado_contacto'] !== 'todos')
+                                <span class="badge badge-green">Estado de contacto: {{ $filtros['estado_contacto'] }}</span>
+                            @endif
+                            @if(!empty($filtros['programa']))
+                                <span class="badge badge-gray">Programa: {{ $filtros['programa'] }}</span>
+                            @endif
+                            @if(!empty($filtros['cohorte']))
+                                <span class="badge badge-gray">Cohorte: {{ $filtros['cohorte'] }}</span>
+                            @endif
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:10px;align-items:center;">
+                        <a href="{{ route('seguimiento.observatorio-conectado', array_filter(['grupo_formacion' => $grupoFormacion, 'estado_contacto' => $filtros['estado_contacto'] ?? null])) }}" class="btn btn-outline" style="background:#fff;color:#3730A3;font-weight:700;">
+                            <i class="fas fa-arrow-left mr-1"></i> Volver al Observatorio
+                        </a>
+                        <a href="{{ route('seguimiento.campanas.gestion', ['campana_id' => $campanaActual?->id, 'grupo_formacion' => $grupoFormacion]) }}" class="btn btn-outline" style="background:#fff;color:#dc2626;border-color:#fca5a5;font-weight:700;">
+                            <i class="fas fa-times mr-1"></i> Limpiar filtros
+                        </a>
+                    </div>
+                </div>
+            @endif
 
             <!-- Diagnóstico del Padrón de Egresados Reales -->
             <div class="card">
@@ -423,7 +483,7 @@
             <!-- Paso 1: Selección de Docentes Entrevistadores Reales -->
             <form id="formDistribucion" method="POST" action="{{ route('seguimiento.campanas.distribuir') }}">
                 @csrf
-<input type="hidden" name="grupo_formacion" value="{{ $grupoFormacion ?? 'TODOS' }}">
+                <input type="hidden" name="grupo_formacion" value="{{ $grupoFormacion ?? 'TODOS' }}">
                 <input type="hidden" name="campana_id" value="{{ $campanaActual?->id }}">
                 <input type="hidden" name="es_ensayo" value="{{ $campanaActual?->es_ensayo ? '1' : '0' }}">
 
@@ -521,29 +581,49 @@
             <!-- Padrón de Egresados en la Campaña -->
             <div class="card">
                 <div class="card-header">
-                    <h2 class="card-title">
-                        <i class="fas fa-list-ul"></i>
-                        <span>Padrón de Egresados Reales en esta Campaña ({{ $padronEgresados->count() }} Registros)</span>
-                    </h2>
-                    <span class="badge badge-gray">Identificador Canónico: users.id</span>
+                    <div>
+                        <h2 class="card-title">
+                            <i class="fas fa-list-ul"></i>
+                            <span>Padrón de Egresados en esta Campaña ({{ $padronEgresados->count() }} Registros)</span>
+                        </h2>
+                        <span class="badge badge-gray" style="margin-top:4px;">Identificador Canónico: users.id · Selección Nominal Autorizada</span>
+                    </div>
+                    <div style="display:flex;gap:8px;">
+                        <button type="button" class="btn btn-outline" onclick="seleccionarTodosEgresadosVisibles(true)">
+                            <i class="fas fa-check-square"></i> Seleccionar todos ({{ $padronEgresados->count() }})
+                        </button>
+                        <button type="button" class="btn btn-outline" onclick="seleccionarTodosEgresadosVisibles(false)">
+                            <i class="fas fa-square"></i> Desmarcar
+                        </button>
+                    </div>
                 </div>
                 <div class="card-body">
-                    <div class="table-responsive" style="max-height: 400px;">
+                    <div class="table-responsive" style="max-height: 480px;">
                         <table class="data-table">
                             <thead>
                                 <tr>
+                                    <th style="width: 40px;">
+                                        <input type="checkbox" id="checkAllEgresados" onchange="toggleAllEgresados(this)">
+                                    </th>
                                     <th>ID</th>
                                     <th>Egresado/a</th>
                                     <th>Programa</th>
                                     <th>Cohorte</th>
-                                    <th>Teléfono</th>
+                                    <th>Teléfono / Canal</th>
+                                    <th>Estado de Contacto</th>
                                     <th>Residencia Basal</th>
                                     <th>Estado de Asignación</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($padronEgresados->take(80) as $egr)
+                                @foreach ($padronEgresados->take(120) as $egr)
+                                    @php
+                                        $cStatus = $egr['estado_contacto'] ?? [];
+                                    @endphp
                                     <tr>
+                                        <td>
+                                            <input type="checkbox" value="{{ $egr['user_id'] }}" class="egresado-row-check" onchange="actualizarContadorEgresados()">
+                                        </td>
                                         <td><code>REAL-{{ $egr['user_id'] }}</code></td>
                                         <td>
                                             <div style="font-weight: 700;">{{ $egr['nombre_completo'] }}</div>
@@ -557,12 +637,24 @@
                                             @else
                                                 <span class="badge badge-amber"><i class="fas fa-exclamation-triangle mr-1"></i> Sin teléfono</span>
                                             @endif
+                                            @if(!empty($cStatus['sin_canal_valido']))
+                                                <span class="badge badge-red" title="Sin canal válido de contacto registrado" style="margin-top:2px;">Sin canal válido</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if(!empty($cStatus['contacto_efectivo']))
+                                                <span class="badge badge-green"><i class="fas fa-check-circle mr-1"></i> Contacto efectivo</span>
+                                            @elseif(!empty($cStatus['intento_sin_respuesta']))
+                                                <span class="badge badge-amber"><i class="fas fa-phone-slash mr-1"></i> Intento sin respuesta</span>
+                                            @else
+                                                <span class="badge badge-red"><i class="fas fa-hourglass-start mr-1"></i> Sin intento</span>
+                                            @endif
                                         </td>
                                         <td>{{ $egr['res_departamento'] }} / {{ $egr['res_provincia'] }}</td>
                                         <td>
                                             @if ($egr['esta_asignado'])
                                                 <span class="badge badge-blue">
-                                                    <i class="fas fa-user-check mr-1"></i> Asignado a: {{ $egr['asignacion_actual']['docente_nombre'] }}
+                                                    <i class="fas fa-user-check mr-1"></i> Asignado: {{ $egr['asignacion_actual']['docente_nombre'] }}
                                                 </span>
                                             @else
                                                 <span class="badge badge-gray">Sin asignar en campaña</span>
@@ -573,13 +665,27 @@
                             </tbody>
                         </table>
                     </div>
+
+                    {{-- Barra de Acción Rápida para Asignación Manual / Focalizada --}}
+                    <div style="margin-top: 16px; padding: 14px 18px; background: #F5F3FF; border-radius: 8px; border: 1px solid #DDD6FE; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                        <div>
+                            <span style="font-weight: 800; color: #5B21B6; font-size: 14px;">Egresados Seleccionados:</span>
+                            <span id="contadorEgresados" style="font-size: 18px; font-weight: 800; color: var(--puklla-granate); margin-left: 6px;">0</span>
+                            <small style="color: #6D28D9; margin-left: 10px;">(Selecciona egresados en la tabla para asignarlos de forma directa o distribuida a docentes)</small>
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button type="button" id="btnAsignarSeleccionados" class="btn btn-granate" onclick="abrirModalAsignarSeleccionados()" disabled>
+                                <i class="fas fa-user-plus mr-1"></i> Asignar seleccionados a campaña
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Modal Vista Previa de Distribución -->
+<!-- Modal Vista Previa de Distribución Equilibrada -->
 <div id="modalPreview" class="modal-overlay">
     <div class="modal-box">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-line); padding-bottom: 12px; margin-bottom: 16px;">
@@ -605,6 +711,58 @@
     </div>
 </div>
 
+<!-- Modal Asignación de Egresados Seleccionados Manualmente -->
+<div id="modalAsignarSeleccionados" class="modal-overlay">
+    <div class="modal-box">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-line); padding-bottom: 12px; margin-bottom: 16px;">
+            <h3 style="margin: 0; font-size: 18px; font-weight: 800; color: var(--puklla-granate);">
+                <i class="fas fa-user-plus mr-2"></i> Asignar Egresados Seleccionados a Campaña
+            </h3>
+            <button onclick="cerrarModalAsignarSeleccionados()" style="border: 0; background: transparent; font-size: 18px; color: #718096;">&times;</button>
+        </div>
+
+        <div style="margin-bottom: 16px; background: #EEF2FF; padding: 12px 16px; border-radius: 8px; border: 1px solid #C7D2FE;">
+            <div style="font-weight: 800; color: #3730A3;">
+                Has seleccionado <span id="modalSelCount" style="font-size: 16px; color: var(--puklla-granate);">0</span> egresados para asignar en la campaña: <strong>{{ $campanaActual?->nombre }}</strong>
+            </div>
+            <p style="margin: 4px 0 0; font-size: 12px; color: #4B5563;">
+                Selecciona uno o más docentes entrevistadores. Si seleccionas varios, la asignación se repartirá equitativamente entre ellos de forma transaccional (ACID).
+            </p>
+        </div>
+
+        <div style="margin-bottom: 16px;">
+            <label style="font-weight: 700; font-size: 13px; color: #374151; display: block; margin-bottom: 6px;">
+                Docentes Entrevistadores de Destino:
+            </label>
+            <div style="max-height: 180px; overflow-y: auto; border: 1px solid var(--border-line); border-radius: 6px; padding: 8px;">
+                @foreach ($docentesElegibles as $d)
+                    <label style="display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-bottom: 1px solid #F3F4F6; font-size: 13px; cursor: pointer;">
+                        <input type="checkbox" value="{{ $d['user_id'] }}" class="docente-asignar-check">
+                        <span><strong>{{ $d['nombre_completo'] }}</strong> <small class="text-muted">({{ $d['programa'] }}) · {{ $d['asignados_actuales'] }} asignados</small></span>
+                    </label>
+                @endforeach
+            </div>
+            <div style="margin-top: 8px;">
+                <button type="button" class="btn btn-outline" style="padding: 4px 10px; font-size: 11px;" onclick="seleccionarTodosDocentesAsignar(true)">Seleccionar todos</button>
+                <button type="button" class="btn btn-outline" style="padding: 4px 10px; font-size: 11px;" onclick="seleccionarTodosDocentesAsignar(false)">Limpiar</button>
+            </div>
+        </div>
+
+        <div id="previewAsignarSelContenido" style="display: none; margin-bottom: 16px; background: #F8FAFC; border: 1px solid var(--border-line); border-radius: 8px; padding: 14px;">
+            {{-- Rellenado vía AJAX preview --}}
+        </div>
+
+        <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--border-line); padding-top: 14px;">
+            <button type="button" class="btn btn-outline" onclick="cerrarModalAsignarSeleccionados()">Cancelar</button>
+            <button type="button" class="btn btn-outline" style="background:#F3F4F6;" onclick="ejecutarPreviewAsignarSeleccionados()">
+                <i class="fas fa-calculator mr-1"></i> Vista previa de asignación
+            </button>
+            <button type="button" id="btnConfirmarAsignacionSel" class="btn btn-granate" onclick="confirmarAsignacionSeleccionados()">
+                <i class="fas fa-check-circle mr-1"></i> Confirmar y Aplicar (Transaccional)
+            </button>
+        </div>
+    </div>
+</div>
 
 </div>
 @endsection
@@ -643,6 +801,158 @@
         if (btn) btn.disabled = (count === 0);
     }
 
+    // --- Manejo de Egresados Seleccionados ---
+    function toggleAllEgresados(master) {
+        document.querySelectorAll('.egresado-row-check').forEach(c => c.checked = master.checked);
+        actualizarContadorEgresados();
+    }
+
+    function seleccionarTodosEgresadosVisibles(marcar) {
+        document.querySelectorAll('.egresado-row-check').forEach(c => c.checked = marcar);
+        const master = document.getElementById('checkAllEgresados');
+        if (master) master.checked = marcar;
+        actualizarContadorEgresados();
+    }
+
+    function actualizarContadorEgresados() {
+        const checks = document.querySelectorAll('.egresado-row-check:checked');
+        const count = checks.length;
+        document.getElementById('contadorEgresados').textContent = count;
+        const btn = document.getElementById('btnAsignarSeleccionados');
+        if (btn) btn.disabled = (count === 0);
+    }
+
+    function seleccionarTodosDocentesAsignar(marcar) {
+        document.querySelectorAll('.docente-asignar-check').forEach(c => c.checked = marcar);
+    }
+
+    function abrirModalAsignarSeleccionados() {
+        const count = document.querySelectorAll('.egresado-row-check:checked').length;
+        if (count === 0) {
+            alert('Por favor selecciona al menos un egresado.');
+            return;
+        }
+        document.getElementById('modalSelCount').textContent = count;
+        document.getElementById('previewAsignarSelContenido').style.display = 'none';
+        document.getElementById('modalAsignarSeleccionados').style.display = 'flex';
+    }
+
+    function cerrarModalAsignarSeleccionados() {
+        document.getElementById('modalAsignarSeleccionados').style.display = 'none';
+    }
+
+    function ejecutarPreviewAsignarSeleccionados() {
+        const egresados = Array.from(document.querySelectorAll('.egresado-row-check:checked')).map(c => Number(c.value));
+        const docentes = Array.from(document.querySelectorAll('.docente-asignar-check:checked')).map(c => Number(c.value));
+
+        if (!docentes.length) {
+            alert('Por favor selecciona al menos un docente para asignar.');
+            return;
+        }
+
+        const previewDiv = document.getElementById('previewAsignarSelContenido');
+        previewDiv.style.display = 'block';
+        previewDiv.innerHTML = '<div style="text-align:center;padding:12px;"><i class="fas fa-spinner fa-spin mr-2"></i> Calculando vista previa...</div>';
+
+        fetch("{{ route('seguimiento.campanas.asignar-seleccionados.preview') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                campana_id: "{{ $campanaActual?->id }}",
+                docentes: docentes,
+                egresados: egresados,
+                es_ensayo: "{{ $campanaActual?->es_ensayo ? '1' : '0' }}" === '1'
+            })
+        })
+        .then(res => res.json())
+        .then(res => {
+            if (!res.success) {
+                previewDiv.innerHTML = `<div style="color:red;"><strong>Error:</strong> ${res.error}</div>`;
+                return;
+            }
+            const d = res.data;
+            let repHtml = '';
+            (d.reparto || []).forEach(r => {
+                repHtml += `<li><strong>${r.docente_nombre}</strong>: ${r.asignados_count} asignaciones</li>`;
+            });
+
+            previewDiv.innerHTML = `
+                <div style="font-weight:700;color:#1E293B;margin-bottom:8px;">Resultado de la Vista Previa:</div>
+                <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:8px;text-align:center;margin-bottom:10px;">
+                    <div style="background:#DEF7EC;padding:8px;border-radius:6px;border:1px solid #BCF0DA;">
+                        <div style="font-size:11px;color:#03543F;font-weight:700;">A Asignar</div>
+                        <div style="font-size:20px;font-weight:800;color:#03543F;">${d.asignados}</div>
+                    </div>
+                    <div style="background:#FEF08A;padding:8px;border-radius:6px;border:1px solid #FDE047;">
+                        <div style="font-size:11px;color:#854D0E;font-weight:700;">Ya Asignados</div>
+                        <div style="font-size:20px;font-weight:800;color:#854D0E;">${d.ya_asignados}</div>
+                    </div>
+                    <div style="background:#F3F4F6;padding:8px;border-radius:6px;border:1px solid #E5E7EB;">
+                        <div style="font-size:11px;color:#4B5563;font-weight:700;">No Elegibles</div>
+                        <div style="font-size:20px;font-weight:800;color:#4B5563;">${d.no_elegibles}</div>
+                    </div>
+                </div>
+                <div style="font-size:12px;color:#4B5563;">
+                    <strong>Reparto previsto por docente:</strong>
+                    <ul style="margin:4px 0 0 16px;padding:0;">${repHtml}</ul>
+                </div>
+            `;
+        })
+        .catch(err => {
+            previewDiv.innerHTML = `<div style="color:red;"><strong>Error de conexión:</strong> ${err.message}</div>`;
+        });
+    }
+
+    function confirmarAsignacionSeleccionados() {
+        const egresados = Array.from(document.querySelectorAll('.egresado-row-check:checked')).map(c => Number(c.value));
+        const docentes = Array.from(document.querySelectorAll('.docente-asignar-check:checked')).map(c => Number(c.value));
+
+        if (!docentes.length) {
+            alert('Por favor selecciona al menos un docente para asignar.');
+            return;
+        }
+
+        const btn = document.getElementById('btnConfirmarAsignacionSel');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Asignando de forma transaccional...';
+
+        fetch("{{ route('seguimiento.campanas.asignar-seleccionados') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                campana_id: "{{ $campanaActual?->id }}",
+                docentes: docentes,
+                egresados: egresados,
+                es_ensayo: "{{ $campanaActual?->es_ensayo ? '1' : '0' }}" === '1'
+            })
+        })
+        .then(res => res.json())
+        .then(res => {
+            if (!res.success) {
+                alert('Error al asignar: ' + res.error);
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check-circle mr-1"></i> Confirmar y Aplicar (Transaccional)';
+                return;
+            }
+            alert(`Asignación completada exitosamente:\n- ${res.data.asignados} egresados asignados.\n- ${res.data.ya_asignados} ya estaban asignados.\n- ${res.data.no_elegibles} no elegibles.`);
+            window.location.reload();
+        })
+        .catch(err => {
+            alert('Error de red al aplicar asignación: ' + err.message);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-check-circle mr-1"></i> Confirmar y Aplicar (Transaccional)';
+        });
+    }
+
+    // --- Distribución Aleatoria Equilibrada ---
     function abrirPreview() {
         const checks = document.querySelectorAll('.docente-check:checked');
         if (checks.length === 0) {
@@ -664,7 +974,8 @@
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                 'Accept': 'application/json'
             },
-            body: JSON.stringify({ grupo_formacion: document.getElementById('grupo-formacion-global').value,
+            body: JSON.stringify({
+                grupo_formacion: document.getElementById('grupo-formacion-global')?.value || 'TODOS',
                 campana_id: campanaId,
                 docentes: docentes,
                 es_ensayo: esEnsayo === '1'

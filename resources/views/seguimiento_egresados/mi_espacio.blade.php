@@ -39,6 +39,31 @@
 @if($borrador)<button type="button" id="restaurar">Continuar mi borrador guardado</button>@endif
 </header>
 
+@if(!empty($esPiloto))
+    <div id="banner-piloto-beta" style="background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); color: #fff; padding: 18px 22px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(30, 58, 138, 0.25);">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+            <div>
+                <span class="badge" style="background: #fbbf24; color: #78350f; font-weight: 800; padding: 4px 10px; border-radius: 12px; margin-bottom: 6px; display: inline-block;">
+                    🚀 PILOTO DE LA RED: {{ $codigoPiloto ?? 'PUKLLA-BETA-PILOTO' }}
+                </span>
+                <h3 style="margin: 4px 0; color: #fff; font-size: 1.15rem;">Bienvenido/a al Piloto de la Red de Egresados Pukllasunchis</h3>
+                <p style="margin: 0; font-size: 0.9rem; opacity: 0.95; max-width: 650px;">
+                    Tu participación ayuda a consolidar la Red. Si la trayectoria oficial registrada y tus datos precargados son correctos, puedes confirmar tu participación en 1 solo clic sin alterar tu expediente.
+                </p>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <button type="button" id="btn-confirmar-sin-cambios" style="background: #10b981; color: #fff; font-weight: 700; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-size: 0.9rem;">
+                    <i class="fas fa-check-circle"></i> Confirmar mis datos sin cambios
+                </button>
+                <a href="{{ route('red.inicio') }}" id="btn-ir-red-puklla" style="background: rgba(255,255,255,0.2); color: #fff; border: 1px solid rgba(255,255,255,0.4); font-weight: 600; padding: 10px 18px; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-size: 0.9rem;">
+                    Continuar a Red Puklla →
+                </a>
+            </div>
+        </div>
+        <div id="piloto-feedback" style="margin-top: 12px; font-size: 0.88rem; display: none; background: rgba(0,0,0,0.2); padding: 8px 12px; border-radius: 6px;"></div>
+    </div>
+@endif
+
 {{-- 0 · TRAYECTORIA REGISTRADA POR LA INSTITUCIÓN (P0: visible ANTES del formulario de actualización) --}}
 <section id="trayectoria-institucional" aria-labelledby="titulo-trayectoria-oficial">
 <div class="d-flex flex-wrap justify-content-between align-items-center mb-2">
@@ -273,6 +298,56 @@
 @push('scripts')
 <script>
 window.PUKLLA_PERFIL = {datos: @json($datos), borrador: @json($borrador), esEntrevista: @json($esEntrevista), campanaId: @json($campanaId), guardar: @json($esEntrevista ? route('seguimiento.panel.entrevista.guardar', ['egresado'=>$titular->id]) : route('seguimiento.mi-espacio.guardar')), draft: @json(route('seguimiento.mi-espacio.borrador')), divisiones: @json(route('seguimiento.divisiones')), lugares: @json(route('seguimiento.lugares'))};
+
+const btnConfirmarSinCambios = document.getElementById('btn-confirmar-sin-cambios');
+if (btnConfirmarSinCambios) {
+    btnConfirmarSinCambios.addEventListener('click', async function () {
+        btnConfirmarSinCambios.disabled = true;
+        btnConfirmarSinCambios.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Registrando confirmación...';
+        const feedback = document.getElementById('piloto-feedback');
+
+        try {
+            const res = await fetch("{{ route('seguimiento.mi-espacio.confirmar-sin-cambios') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    codigo_piloto: "{{ $codigoPiloto ?? 'PUKLLA-BETA-PILOTO' }}"
+                })
+            });
+            const data = await res.json();
+            if (!res.ok || !data.success) {
+                feedback.style.display = 'block';
+                feedback.innerHTML = `<span style="color:#fca5a5;">⚠️ ${data.message || 'Error al confirmar datos.'}</span>`;
+                btnConfirmarSinCambios.disabled = false;
+                btnConfirmarSinCambios.innerHTML = '<i class="fas fa-check-circle"></i> Confirmar mis datos sin cambios';
+                return;
+            }
+            feedback.style.display = 'block';
+            feedback.innerHTML = `<span style="color:#6ee7b7;">✅ ${data.message} Puedes continuar a la Red de Egresados cuando desees.</span>`;
+            btnConfirmarSinCambios.style.display = 'none';
+
+            const confirmacionSpan = document.getElementById('confirmacion');
+            if (confirmacionSpan) {
+                confirmacionSpan.textContent = new Date().toLocaleString('es-PE');
+            }
+            const btnRed = document.getElementById('btn-ir-red-puklla');
+            if (btnRed) {
+                btnRed.style.background = '#10b981';
+                btnRed.style.borderColor = '#10b981';
+                btnRed.style.fontWeight = '800';
+            }
+        } catch (err) {
+            feedback.style.display = 'block';
+            feedback.innerHTML = `<span style="color:#fca5a5;">⚠️ Error de conexión: ${err.message}</span>`;
+            btnConfirmarSinCambios.disabled = false;
+            btnConfirmarSinCambios.innerHTML = '<i class="fas fa-check-circle"></i> Confirmar mis datos sin cambios';
+        }
+    });
+}
 </script>
 <script src="{{ asset('js/perfil-egresado.js') }}?v={{ filemtime(public_path('js/perfil-egresado.js')) }}"></script>
 @endpush

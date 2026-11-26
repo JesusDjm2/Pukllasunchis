@@ -44,7 +44,9 @@ class SeguimientoCampanaController extends Controller
 
         $docentesElegibles = $this->asignacionService->obtenerDocentesElegibles();
         $diagnosticoPadron = $this->asignacionService->diagnosticarPadron($grupoFormacion);
-        $padronEgresados = $this->asignacionService->obtenerPadronEgresadosElegibles($campanaActual?->id, false, $grupoFormacion);
+        
+        $filtros = $request->only(['distrito', 'provincia', 'departamento', 'sin_ubicacion', 'estado_contacto', 'programa', 'cohorte']);
+        $padronEgresados = $this->asignacionService->obtenerPadronEgresadosElegibles($campanaActual?->id, false, $grupoFormacion, $filtros);
 
         $asignacionesActuales = $campanaActual
             ? AsignacionCampana::activos()->whereIn('egresado_user_id', $padronEgresados->pluck('user_id'))->where('campana_id', $campanaActual->id)->with(['docente', 'egresado'])->get()
@@ -56,7 +58,8 @@ class SeguimientoCampanaController extends Controller
             'docentesElegibles',
             'diagnosticoPadron',
             'padronEgresados',
-            'asignacionesActuales'
+            'asignacionesActuales',
+            'filtros'
         ));
     }
 
@@ -129,6 +132,81 @@ class SeguimientoCampanaController extends Controller
                 return response()->json(['success' => false, 'error' => $e->getMessage()], 422);
             }
             return back()->withErrors(['distribucion' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Vista previa AJAX para asignación manual de egresados seleccionados.
+     */
+    public function previewAsignarSeleccionados(Request $request)
+    {
+        if (!auth()->check() || !$this->autorizacionService->esPersonalGestion(auth()->user())) {
+            return response()->json(['success' => false, 'error' => 'No autorizado.'], 403);
+        }
+
+        $request->validate([
+            'campana_id' => 'required|exists:egresado_campanas,id',
+            'docentes' => 'required|array|min:1',
+            'docentes.*' => 'exists:users,id',
+            'egresados' => 'required|array|min:1',
+            'egresados.*' => 'integer',
+        ]);
+
+        try {
+            $preview = $this->asignacionService->asignarSeleccionados(
+                (int) $request->input('campana_id'),
+                $request->input('docentes'),
+                $request->input('egresados'),
+                auth()->id(),
+                $request->boolean('es_ensayo'),
+                true
+            );
+
+            return response()->json(['success' => true, 'data' => $preview]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 422);
+        }
+    }
+
+    /**
+     * Ejecución transaccional para asignación de egresados seleccionados (ACID).
+     */
+    public function ejecutarAsignarSeleccionados(Request $request)
+    {
+        if (!auth()->check() || !$this->autorizacionService->esPersonalGestion(auth()->user())) {
+            return response()->json(['success' => false, 'error' => 'No autorizado.'], 403);
+        }
+
+        $request->validate([
+            'campana_id' => 'required|exists:egresado_campanas,id',
+            'docentes' => 'required|array|min:1',
+            'docentes.*' => 'exists:users,id',
+            'egresados' => 'required|array|min:1',
+            'egresados.*' => 'integer',
+        ]);
+
+        try {
+            $resultado = $this->asignacionService->asignarSeleccionados(
+                (int) $request->input('campana_id'),
+                $request->input('docentes'),
+                $request->input('egresados'),
+                auth()->id(),
+                $request->boolean('es_ensayo'),
+                false
+            );
+
+            if ($request->wantsJson()) {
+                return response()->json(['success' => true, 'data' => $resultado]);
+            }
+
+            return redirect()->route('seguimiento.campanas.gestion', [
+                'campana_id' => $request->input('campana_id'),
+            ])->with('success', "Asignación completada: {$resultado['asignados']} egresados asignados, {$resultado['ya_asignados']} ya estaban asignados en esta campaña.");
+        } catch (\Exception $e) {
+            if ($request->wantsJson()) {
+                return response()->json(['success' => false, 'error' => $e->getMessage()], 422);
+            }
+            return back()->withErrors(['asignacion' => $e->getMessage()]);
         }
     }
 

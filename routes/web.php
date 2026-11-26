@@ -238,6 +238,11 @@ Route::middleware(['auth'])->prefix('seguimiento-egresados')->group(function () 
     Route::post('/campanas/distribuir', [App\Http\Controllers\SeguimientoCampanaController::class, 'ejecutarDistribucion'])
         ->name('seguimiento.campanas.distribuir');
 
+    Route::post('/campanas/asignar-seleccionados/preview', [App\Http\Controllers\SeguimientoCampanaController::class, 'previewAsignarSeleccionados'])
+        ->name('seguimiento.campanas.asignar-seleccionados.preview');
+    Route::post('/campanas/asignar-seleccionados', [App\Http\Controllers\SeguimientoCampanaController::class, 'ejecutarAsignarSeleccionados'])
+        ->name('seguimiento.campanas.asignar-seleccionados');
+
     Route::get('/campanas/{campanaId}/monitoreo', [App\Http\Controllers\SeguimientoCampanaController::class, 'monitoreo'])
         ->name('seguimiento.campanas.monitoreo');
     Route::get('/campanas/{campanaId}/monitoreo-alias', [App\Http\Controllers\SeguimientoCampanaController::class, 'monitoreo'])
@@ -456,10 +461,17 @@ if (app()->isLocal()) {
 
 
 
+// Enlace común para Piloto de la Red de Egresados (PUKLLA-BETA-PILOTO)
+Route::get('/seguimiento/piloto/{codigo}', [App\Http\Controllers\PerfilEgresadoController::class, 'piloto'])
+    ->name('seguimiento.piloto');
+Route::get('/seguimiento-egresados/piloto/{codigo}', [App\Http\Controllers\PerfilEgresadoController::class, 'piloto'])
+    ->name('seguimiento-egresados.piloto');
+
 // Mi espacio del egresado: identidad siempre tomada de la sesión, nunca del payload.
 Route::middleware(['auth'])->prefix('seguimiento-egresados')->group(function () {
     Route::get('/mi-espacio', [App\Http\Controllers\PerfilEgresadoController::class, 'index'])->name('seguimiento.mi-espacio');
     Route::post('/mi-espacio', [App\Http\Controllers\PerfilEgresadoController::class, 'guardar'])->middleware('throttle:30,1')->name('seguimiento.mi-espacio.guardar');
+    Route::post('/mi-espacio/confirmar-sin-cambios', [App\Http\Controllers\PerfilEgresadoController::class, 'confirmarSinCambios'])->middleware('throttle:30,1')->name('seguimiento.mi-espacio.confirmar-sin-cambios');
     Route::post('/mi-espacio/borrador', [App\Http\Controllers\PerfilEgresadoController::class, 'borrador'])->middleware('throttle:30,1')->name('seguimiento.mi-espacio.borrador');
     Route::get('/divisiones-territoriales', [App\Http\Controllers\PerfilEgresadoController::class, 'divisiones'])->name('seguimiento.divisiones');
     Route::get('/lugares', [App\Http\Controllers\PerfilEgresadoController::class, 'lugares'])->name('seguimiento.lugares');

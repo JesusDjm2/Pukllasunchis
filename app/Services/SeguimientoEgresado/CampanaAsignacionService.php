@@ -73,7 +73,7 @@ class CampanaAsignacionService
      * Recupera y diagnostica el padrón de egresados reales institucionales.
      * Criterio: users.condicion = 'Egresado', excluyendo usuarios de test.
      */
-    public function obtenerPadronEgresadosElegibles(?int $campanaId = null, bool $excluirAsignados = false, string $grupoFormacion = 'TODOS'): Collection
+    public function obtenerPadronEgresadosElegibles(?int $campanaId = null, bool $excluirAsignados = false, string $grupoFormacion = 'TODOS', array $filtrosAdicionales = []): Collection
     {
         $query = User::query()
             ->where('condicion', 'Egresado')
@@ -99,7 +99,7 @@ class CampanaAsignacionService
         $clasificacion->aplicar($query, $grupoFormacion);
         $egresados = $query->get();
 
-        return $egresados->map(function (User $u) use ($campanaId, $grupoFormacion, $clasificacion) {
+        $padron = $egresados->map(function (User $u) use ($campanaId, $grupoFormacion, $clasificacion) {
             $alumno = $clasificacion->ficha($u, $grupoFormacion);
             $meta = $clasificacion->resolver($u);
             $ultima = Actualizacion::where('user_id', $u->id)->where('estado_verificacion','verificado')->latest('id')->first();
@@ -107,12 +107,34 @@ class CampanaAsignacionService
 
             $tel = $ultima?->telefono ?: ($alumno?->numero ?: $u->telefono ?: '');
             $telAlt = $alumno?->numero_referencia ?: '';
-            $tieneTelefono = strlen(trim($tel)) >= 6 || strlen(trim($telAlt)) >= 6;
+            $tieneTelefono = strlen(trim((string) $tel)) >= 6 || strlen(trim((string) $telAlt)) >= 6;
             $emailValido = filter_var($u->email, FILTER_VALIDATE_EMAIL) !== false;
 
             $dep = $ultima?->res_departamento ?: $alumno?->departamento ?: '';
             $prov = $ultima?->res_provincia ?: $alumno?->provincia ?: '';
             $dist = $ultima?->res_distrito ?: $alumno?->distrito ?: '';
+
+            $verPerfil = DB::table('egresado_perfil_versiones')->where('user_id', $u->id)->latest('id')->first();
+            $tieneUbicacionVerificable = false;
+            if ($verPerfil && $verPerfil->datos) {
+                $dat = json_decode($verPerfil->datos, true);
+                $res = $dat['residencia'] ?? [];
+                if (empty($dep) && empty($prov) && empty($dist)) {
+                    $dep = $res['departamento'] ?? '';
+                    $prov = $res['provincia'] ?? '';
+                    $dist = $res['distrito'] ?? ($res['localidad'] ?? '');
+                }
+                if (isset($res['latitud'], $res['longitud']) && in_array($res['precision'] ?? '', ['localidad', 'escuela', 'sede'])) {
+                    $tieneUbicacionVerificable = true;
+                }
+                foreach ($dat['trabajos'] ?? [] as $tb) {
+                    $lugar = $tb['lugar'] ?? [];
+                    if (isset($lugar['latitud'], $lugar['longitud']) && in_array($lugar['precision'] ?? '', ['localidad', 'escuela', 'sede'])) {
+                        $tieneUbicacionVerificable = true;
+                    }
+                }
+            }
+
             $tieneResidencia = !empty($dep) || !empty($prov) || !empty($dist);
 
             $tieneTrabajo = EpisodioLaboral::where('user_id', $u->id)->exists()
@@ -146,6 +168,9 @@ class CampanaAsignacionService
                 }
             }
 
+            // Estado de contacto unificado y canónico
+            $estadoContacto = $this->clasificarEstadoContacto($u->id, $campanaId);
+
             return [
                 'user_id' => $u->id,
                 'dni' => $u->dni,
@@ -159,15 +184,165 @@ class CampanaAsignacionService
                 'telefono' => $tel,
                 'telefono_alt' => $telAlt,
                 'tiene_telefono' => $tieneTelefono,
+                'tiene_canal_valido' => $estadoContacto['tiene_canal_valido'],
+                'sin_canal_valido' => $estadoContacto['sin_canal_valido'],
+                'contacto_efectivo' => $estadoContacto['contacto_efectivo'],
+                'intento_sin_respuesta' => $estadoContacto['intento_sin_respuesta'],
+                'sin_intento' => $estadoContacto['sin_intento'],
+                'sin_contacto_efectivo' => $estadoContacto['sin_contacto_efectivo'],
+                'estado_contacto' => $estadoContacto['estado_clave'],
+                'estado_contacto_etiqueta' => $estadoContacto['estado_etiqueta'],
+                'fecha_ultimo_contacto' => $estadoContacto['fecha_ultimo_contacto'],
                 'res_departamento' => $dep ?: 'No declarado',
                 'res_provincia' => $prov ?: 'No declarado',
                 'res_distrito' => $dist ?: 'No declarado',
                 'tiene_residencia' => $tieneResidencia,
                 'tiene_trabajo' => $tieneTrabajo,
+                'tiene_ubicacion_verificable' => $tieneUbicacionVerificable,
                 'asignacion_actual' => $asignacionActual,
                 'esta_asignado' => $asignacionActual !== null,
             ];
         });
+
+        // Filtrado adicional si se especifica
+        if (!empty($filtrosAdicionales['departamento'])) {
+            $depFiltro = strtolower(trim($filtrosAdicionales['departamento']));
+            $padron = $padron->filter(fn ($e) => strtolower($e['res_departamento']) === $depFiltro);
+        }
+        if (!empty($filtrosAdicionales['provincia'])) {
+            $provFiltro = strtolower(trim($filtrosAdicionales['provincia']));
+            $padron = $padron->filter(fn ($e) => strtolower($e['res_provincia']) === $provFiltro);
+        }
+        if (!empty($filtrosAdicionales['distrito'])) {
+            $distFiltro = strtolower(trim($filtrosAdicionales['distrito']));
+            $padron = $padron->filter(fn ($e) => strtolower($e['res_distrito']) === $distFiltro);
+        }
+        if (!empty($filtrosAdicionales['sin_ubicacion'])) {
+            $padron = $padron->filter(fn ($e) => empty($e['tiene_ubicacion_verificable']));
+        }
+        if (!empty($filtrosAdicionales['estado_contacto']) && $filtrosAdicionales['estado_contacto'] !== 'todos') {
+            $ec = $filtrosAdicionales['estado_contacto'];
+            if ($ec === 'sin_contacto_efectivo') {
+                $padron = $padron->where('sin_contacto_efectivo', true);
+            } elseif ($ec === 'contacto_efectivo') {
+                $padron = $padron->where('contacto_efectivo', true);
+            } elseif ($ec === 'intento_sin_respuesta') {
+                $padron = $padron->where('intento_sin_respuesta', true);
+            } elseif ($ec === 'sin_intento') {
+                $padron = $padron->where('sin_intento', true);
+            } elseif ($ec === 'sin_canal_valido') {
+                $padron = $padron->where('sin_canal_valido', true);
+            }
+        }
+        if (!empty($filtrosAdicionales['programa']) && $filtrosAdicionales['programa'] !== 'TODOS') {
+            $progFiltro = strtolower(trim($filtrosAdicionales['programa']));
+            $padron = $padron->filter(fn ($e) => strtolower($e['programa']) === $progFiltro);
+        }
+        if (!empty($filtrosAdicionales['cohorte']) && $filtrosAdicionales['cohorte'] !== 'TODAS') {
+            $cohFiltro = (string) $filtrosAdicionales['cohorte'];
+            $padron = $padron->filter(fn ($e) => (string) $e['cohorte'] === $cohFiltro);
+        }
+
+        return $padron->values();
+    }
+
+    /**
+     * Mapeo canónico y riguroso de Estado de Contacto para una persona (users.id)
+     * en el marco de una campaña o periodo institucional.
+     */
+    public function clasificarEstadoContacto(int $userId, ?int $campanaId = null): array
+    {
+        $user = User::find($userId);
+        if (!$user) {
+            return [
+                'tiene_canal_valido' => false,
+                'sin_canal_valido' => true,
+                'contacto_efectivo' => false,
+                'intento_sin_respuesta' => false,
+                'sin_intento' => true,
+                'sin_contacto_efectivo' => true,
+                'estado_clave' => 'sin_intento',
+                'estado_etiqueta' => 'Sin intento registrado',
+                'fecha_ultimo_contacto' => null,
+                'respondio_autoservicio' => false,
+                'asignado_campana' => false,
+            ];
+        }
+
+        $alumno = Alumno::where('user_id', $userId)->first();
+        $ultima = Actualizacion::where('user_id', $userId)->where('estado_verificacion', 'verificado')->latest('id')->first();
+        $tel = $ultima?->telefono ?: ($alumno?->numero ?: $user->telefono ?: '');
+        $telAlt = $alumno?->numero_referencia ?: '';
+        $tieneTel = (strlen(trim((string) $tel)) >= 6) || (strlen(trim((string) $telAlt)) >= 6);
+        $emailValido = filter_var($user->email, FILTER_VALIDATE_EMAIL) !== false;
+        $tieneCanalValido = $tieneTel || $emailValido;
+
+        // Búsqueda de eventos que prueban contacto acreditado
+        $qLlamadas = Llamada::where('user_id', $userId);
+        $qActualizaciones = Actualizacion::where('user_id', $userId)->where('estado_verificacion', 'verificado');
+        $qAsignaciones = AsignacionCampana::activos()->where('egresado_user_id', $userId);
+
+        if ($campanaId) {
+            $qLlamadas->where('campana_id', $campanaId);
+            $qActualizaciones->where('campana_id', $campanaId);
+            $qAsignaciones->where('campana_id', $campanaId);
+        }
+
+        $llamadas = $qLlamadas->get();
+        $actualizaciones = $qActualizaciones->get();
+        $asignaciones = $qAsignaciones->get();
+
+        // 1. Contacto efectivo acreditado en la campaña/periodo
+        $llamadaEfectiva = $llamadas->first(function ($l) {
+            return (bool) $l->es_contacto_efectivo || strtolower(trim((string) $l->resultado)) === 'efectiva';
+        });
+        $tieneActualizacionCampana = $actualizaciones->isNotEmpty();
+        $asignacionCompletada = $asignaciones->whereIn('estado', ['completado', 'contactado'])->isNotEmpty();
+
+        $contactoEfectivo = ($llamadaEfectiva !== null) || $tieneActualizacionCampana || $asignacionCompletada;
+
+        // Fecha de último contacto / intento
+        $fechas = collect();
+        if ($llamadaEfectiva && $llamadaEfectiva->fecha_hora) $fechas->push($llamadaEfectiva->fecha_hora);
+        if ($actualizaciones->isNotEmpty() && $actualizaciones->first()->fecha_ultima_confirmacion) {
+            $fechas->push($actualizaciones->first()->fecha_ultima_confirmacion);
+        }
+        foreach ($llamadas as $ll) {
+            if ($ll->fecha_hora) $fechas->push($ll->fecha_hora);
+        }
+
+        $fechaUltimoContacto = $fechas->sortDesc()->first();
+
+        // 2. Intentos sin respuesta
+        $tieneIntentos = $llamadas->isNotEmpty();
+        $intentoSinRespuesta = !$contactoEfectivo && $tieneIntentos;
+
+        // 3. Sin intento registrado
+        $sinIntento = !$contactoEfectivo && !$tieneIntentos;
+
+        // 4. Superconjunto sin contacto efectivo
+        $sinContactoEfectivo = !$contactoEfectivo;
+
+        $estadoClave = $contactoEfectivo ? 'contacto_efectivo' : ($intentoSinRespuesta ? 'intento_sin_respuesta' : 'sin_intento');
+        $estadoEtiqueta = match ($estadoClave) {
+            'contacto_efectivo' => 'Contacto efectivo',
+            'intento_sin_respuesta' => 'Intento sin respuesta',
+            default => 'Sin intento registrado',
+        };
+
+        return [
+            'tiene_canal_valido' => $tieneCanalValido,
+            'sin_canal_valido' => !$tieneCanalValido,
+            'contacto_efectivo' => $contactoEfectivo,
+            'intento_sin_respuesta' => $intentoSinRespuesta,
+            'sin_intento' => $sinIntento,
+            'sin_contacto_efectivo' => $sinContactoEfectivo,
+            'estado_clave' => $estadoClave,
+            'estado_etiqueta' => $estadoEtiqueta,
+            'fecha_ultimo_contacto' => $fechaUltimoContacto ? (is_string($fechaUltimoContacto) ? $fechaUltimoContacto : $fechaUltimoContacto->toDateTimeString()) : null,
+            'respondio_autoservicio' => $actualizaciones->where('procedencia', 'intranet_autogestion')->isNotEmpty(),
+            'asignado_campana' => $asignaciones->isNotEmpty(),
+        ];
     }
 
     /**
@@ -730,5 +905,166 @@ class CampanaAsignacionService
             'distribucion_departamentos' => $departamentos,
             'distribucion_provincias_cusco' => $provinciasCusco,
         ];
+    }
+
+    /**
+     * Asignación manual / filtrada de un lote específico de egresados seleccionados.
+     * Garantiza:
+     * 1. Distribución equitativa y equilibrada entre los docentes seleccionados.
+     * 2. Evita duplicados por persona y campaña en reintentos/concurrencia (ACID con lockForUpdate).
+     * 3. Informa cuántos registros se asignaron, ya estaban asignados o dejaron de ser elegibles.
+     * 4. Registro de auditoría y compatibilidad con reasignaciones posteriores.
+     */
+    public function asignarSeleccionados(
+        int $campanaId,
+        array $docenteUserIds,
+        array $egresadoUserIds,
+        int $asignadoPorId,
+        bool $esEnsayo = false,
+        bool $previewOnly = false
+    ): array {
+        if (empty($docenteUserIds)) {
+            throw new \InvalidArgumentException('Debes seleccionar al menos un docente entrevistador.');
+        }
+        if (empty($egresadoUserIds)) {
+            throw new \InvalidArgumentException('Debes seleccionar al menos un egresado para asignar.');
+        }
+
+        $campana = Campana::findOrFail($campanaId);
+        if (!in_array(strtolower($campana->estado), ['activo', 'activa'])) {
+            throw new \InvalidArgumentException('Solo se pueden asignar egresados a campañas activas.');
+        }
+
+        $docentes = User::role('docente')
+            ->whereIn('id', $docenteUserIds)
+            ->get();
+        if ($docentes->isEmpty()) {
+            throw new \InvalidArgumentException('Ninguno de los docentes seleccionados es elegible.');
+        }
+
+        // Obtener egresados válidos en la base institucional
+        $egresadosValidos = User::where('condicion', 'Egresado')
+            ->whereIn('id', $egresadoUserIds)
+            ->whereNotIn('email', ['auditor.egresada@puklla.test', 'egresado.noasignado@puklla.test'])
+            ->get();
+
+        $validosIds = $egresadosValidos->pluck('id')->toArray();
+        $omitidosNoElegibles = array_values(array_diff($egresadoUserIds, $validosIds));
+
+        // Comprobar asignaciones ya existentes en esta campaña para evitar duplicados concurrentes
+        $yaAsignadosIds = AsignacionCampana::activos()
+            ->where('campana_id', $campanaId)
+            ->whereIn('egresado_user_id', $validosIds)
+            ->pluck('egresado_user_id')
+            ->toArray();
+
+        $elegiblesAAsignar = array_values(array_diff($validosIds, $yaAsignadosIds));
+
+        // Distribución equitativa entre los docentes elegidos
+        $numDocentes = $docentes->count();
+        $docenteKeys = array_values($docentes->pluck('id')->toArray());
+        $distribucionPorDocente = [];
+        foreach ($docentes as $doc) {
+            $distribucionPorDocente[$doc->id] = [
+                'docente_user_id' => $doc->id,
+                'docente_nombre' => trim($doc->name . ' ' . $doc->apellidos),
+                'docente_email' => $doc->email,
+                'cantidad' => 0,
+            ];
+        }
+
+        $i = 0;
+        foreach ($elegiblesAAsignar as $eId) {
+            $docId = $docenteKeys[$i % $numDocentes];
+            $distribucionPorDocente[$docId]['cantidad']++;
+            $i++;
+        }
+
+        if ($previewOnly) {
+            return [
+                'preview' => true,
+                'campana_id' => $campana->id,
+                'campana_nombre' => $campana->nombre,
+                'total_solicitados' => count($egresadoUserIds),
+                'asignados' => count($elegiblesAAsignar),
+                'elegibles_a_asignar' => count($elegiblesAAsignar),
+                'ya_asignados' => count($yaAsignadosIds),
+                'ya_asignados_ids' => $yaAsignadosIds,
+                'omitidos_no_elegibles' => count($omitidosNoElegibles),
+                'omitidos_ids' => $omitidosNoElegibles,
+                'distribucion_docentes' => array_values($distribucionPorDocente),
+            ];
+        }
+
+        // Ejecución transaccional con ACID y bloqueo pesimista
+        return DB::transaction(function () use (
+            $campana, $docentes, $docenteKeys, $numDocentes, $elegiblesAAsignar,
+            $yaAsignadosIds, $omitidosNoElegibles, $asignadoPorId, $esEnsayo,
+            $distribucionPorDocente, $egresadoUserIds
+        ) {
+            $bloqueada = Campana::where('id', $campana->id)->lockForUpdate()->first();
+            if (!in_array(strtolower($bloqueada->estado), ['activo', 'activa'])) {
+                throw new \RuntimeException('La campaña se cerró antes de completar la asignación.');
+            }
+
+            // Re-validar dentro de la transacción para evitar condiciones de carrera concurrentes
+            $yaAsignadosTrans = AsignacionCampana::activos()
+                ->where('campana_id', $campana->id)
+                ->whereIn('egresado_user_id', $elegiblesAAsignar)
+                ->lockForUpdate()
+                ->pluck('egresado_user_id')
+                ->toArray();
+
+            $finalesAAsignar = array_values(array_diff($elegiblesAAsignar, $yaAsignadosTrans));
+            $totalYaAsignados = array_values(array_unique(array_merge($yaAsignadosIds, $yaAsignadosTrans)));
+
+            $ahora = now();
+            $registros = [];
+            $k = 0;
+            foreach ($finalesAAsignar as $egrId) {
+                $docId = $docenteKeys[$k % $numDocentes];
+                $registros[] = [
+                    'campana_id' => $campana->id,
+                    'docente_user_id' => $docId,
+                    'egresado_user_id' => $egrId,
+                    'estado' => 'asignado',
+                    'asignado_por' => $asignadoPorId,
+                    'fecha_asignacion' => $ahora,
+                    'docente_anterior_id' => null,
+                    'motivo_reasignacion' => null,
+                    'es_ensayo' => $esEnsayo || $campana->es_ensayo,
+                    'observaciones' => 'Asignación manual filtrada desde Padrón / Observatorio Territorial',
+                    'created_at' => $ahora,
+                    'updated_at' => $ahora,
+                ];
+                $k++;
+            }
+
+            foreach ($docentes as $docUser) {
+                if (!$docUser->hasRole('seguimiento-egresados')) {
+                    $docUser->assignRole('seguimiento-egresados');
+                }
+            }
+
+            if (!empty($registros)) {
+                foreach (array_chunk($registros, 100) as $chunk) {
+                    DB::table('egresado_campana_asignaciones')->insert($chunk);
+                }
+            }
+
+            Log::info("Asignación de seleccionados ejecutada para campaña {$campana->id}: " . count($finalesAAsignar) . " asignados, " . count($totalYaAsignados) . " ya estaban asignados.");
+
+            return [
+                'preview' => false,
+                'success' => true,
+                'campana_id' => $campana->id,
+                'campana_nombre' => $campana->nombre,
+                'total_solicitados' => count($egresadoUserIds),
+                'asignados' => count($finalesAAsignar),
+                'ya_asignados' => count($totalYaAsignados),
+                'omitidos_no_elegibles' => count($omitidosNoElegibles),
+                'distribucion_docentes' => array_values($distribucionPorDocente),
+            ];
+        });
     }
 }
